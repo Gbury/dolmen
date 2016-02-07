@@ -1,20 +1,10 @@
-*.annot
-*.cmo
-*.cma
-*.cmi
-*.a
-*.o
-*.cmx
-*.cmxs
-*.cmxa
-
 # ocamlbuild working directory
-_build/
+src/_build/
+src/dolmen
 
 # ocamlbuild targets
 *.byte
 *.native
 
-# oasis generated files
-setup.data
-setup.log
+# swpa files
+*.swp

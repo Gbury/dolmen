@@ -1,0 +1,9 @@
+<util/*.cmx>: for-pack(Dolmen)
+<languages/**/*.cmx>: for-pack(Dolmen)
+<interface/**/*.cmx>: for-pack(Dolmen)
+
+# more warnings
+<**/*.ml>: warn_K, warn_Y, warn_X
+<**/*.ml>: short_paths, safe_string, strict_sequence
+<**/*.cm*>: debug
+
