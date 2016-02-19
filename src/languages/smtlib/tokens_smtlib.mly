@@ -1,0 +1,23 @@
+
+(* This file is free software, part of dolmen. See file "LICENSE" for more information *)
+
+/* Token declarations for Smtlib parser */
+
+%token EOF
+
+%token OPEN CLOSE
+%token <string> NUMERAL DECIMAL HEXADECIMAL BINARY STRING SYMBOL KEYWORD
+
+%token UNDERSCORE
+
+%token AS
+
+%token LET FORALL EXISTS ATTRIBUTE
+
+%token SET_LOGIC SET_OPTION SET_INFO DECLARE_SORT DEFINE_SORT DECLARE_FUN
+DEFINE_FUN PUSH POP ASSERT CHECK_SAT GET_ASSERTIONS GET_PROOF GET_UNSAT_CORE
+GET_VALUE GET_ASSIGNMENT GET_OPTION GET_INFO EXIT
+
+%%
+
+
