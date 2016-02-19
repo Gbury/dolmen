@@ -1,11 +1,15 @@
 
-module type Ast = Ast_dimacs.S
+(* This file is free software, part of dolmen. See file "LICENSE" formore information *)
+
+module type Term = Ast_dimacs.Term
+module type Statement = Ast_dimacs.Statement
 
 module Make
     (L : ParseLocation.S)
-    (T : Ast_dimacs.S) = struct
+    (T : Term with type location := L.t)
+    (S : Statement with type location := L.t and type atom := T.t) = struct
 
-  module P = ParseDimacs.Make(L)(T)
+  module P = ParseDimacs.Make(L)(T)(S)
 
   let parse_file file =
     let ch = open_in file in

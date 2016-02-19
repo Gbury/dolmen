@@ -4,7 +4,7 @@ for d in `ls ./`; do
   for f in `find $d -name *.*`; do
     if [ -f $f ]
     then
-      ../src/dolmen $d $f
+      ../src/dolmen $f
     fi
   done
 done

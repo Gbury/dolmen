@@ -2,9 +2,18 @@
 # Util modules
 ParseLocation
 
+# Common definitions
+Cnf
+Term
+Statement
+
 # Dimacs language
 Dimacs
 LexDimacs
 ParseDimacs
 
+#Smtlib language
+Smtlib
+LexSmtlib
+ParseSmtlib
 

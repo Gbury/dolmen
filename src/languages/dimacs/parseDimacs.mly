@@ -4,11 +4,12 @@
 /* Functor parameters */
 
 %parameter <L : ParseLocation.S>
-%parameter <T : Ast_dimacs.S>
+%parameter <T : Ast_dimacs.Term with type location := L.t>
+%parameter <S : Ast_dimacs.Statement with type location := L.t and type atom := T.t>
 
 /* Starting symbols */
 
-%start <T.clause list> file
+%start <S.t list> file
 
 %%
 
@@ -17,13 +18,14 @@ file:
     { l }
 
 start:
-  | P CNF nbvar=INT nbclause=INT NEWLINE+ { () }
+  | P CNF nbvar=INT nbclause=INT NEWLINE+
+    { () }
 
 clause:
   | c=nonempty_list(atom) ZERO NEWLINE+
-    { T.mk_clause c }
+    { let loc = L.mk_pos $startpos $endpos in S.clause ~loc c }
 
 atom:
   | i=INT
-    { T.mk_atom i }
+    { let loc = L.mk_pos $startpos $endpos in T.atom ~loc i }
 
