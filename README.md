@@ -9,7 +9,8 @@ Currently the following parsers are working:
 - dimacs
 - smtlib
 
-The following parsers areeither work in progress:
+The following parsers are either work in progress, or soon to be
+work in progress:
 
 - tptp
 - coq
