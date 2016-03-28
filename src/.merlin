@@ -12,3 +12,5 @@ B _build/languages
 B _build/languages/tptp
 B _build/languages/dimacs
 B _build/languages/smtlib
+
+PKG cmdliner

@@ -3,7 +3,7 @@
 LOG=build.log
 COMP=ocamlbuild
 FLAGS=-use-menhir -use-ocamlfind
-DIRS=-Is common,interface,languages/dimacs,languages/tptp,languages/smtlib
+DIRS=-Is common,interface,languages/dimacs,languages/zf,languages/smtlib
 DOC=dolmen.docdir/index.html
 BIN=main.native
 NAME=dolmen

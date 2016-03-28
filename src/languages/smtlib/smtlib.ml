@@ -1,6 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
+module Lexer = LexSmtlib
+module Parser = ParseSmtlib
+
 module type Term = Ast_smtlib.Term
 module type Statement = Ast_smtlib.Statement
 
@@ -9,14 +12,14 @@ module Make
     (T : Term with type location := L.t)
     (S : Statement with type location := L.t and type term := T.t) = struct
 
-  module P = ParseSmtlib.Make(L)(T)(S)
+  module P = Parser.Make(L)(T)(S)
 
   let parse_file file =
     let ch = open_in file in
     let lexbuf = Lexing.from_channel ch in
     ParseLocation.set_file lexbuf file;
     try
-      P.file LexSmtlib.token lexbuf
+      P.file Lexer.token lexbuf
     with
     | P.Error ->
       let pos = L.of_lexbuf lexbuf in

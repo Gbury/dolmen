@@ -1,7 +1,11 @@
+
+# Dependencies
+<main.*>: package(cmdliner)
+
+# Pack information
 <common/*.cmx>: for-pack(Dolmen)
 <languages/**/*.cmx>: for-pack(Dolmen)
 <interface/**/*.cmx>: for-pack(Dolmen)
-
 
 # more warnings
 <**/*.ml>: warn_K, warn_Y, warn_X

@@ -1,16 +1,16 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
-module type Term = Ast_dimacs.Term
-module type Statement = Ast_dimacs.Statement
+module Lexer = LexZf
+module Parser = ParseZf
 
-module Lexer = LexDimacs
-module Parser = ParseDimacs
+module type Term = Ast_zf.Term
+module type Statement = Ast_zf.Statement
 
 module Make
     (L : ParseLocation.S)
     (T : Term with type location := L.t)
-    (S : Statement with type location := L.t and type atom := T.t) = struct
+    (S : Statement with type location := L.t and type term := T.t) = struct
 
   module P = Parser.Make(L)(T)(S)
 
@@ -24,7 +24,7 @@ module Make
     | P.Error ->
       let pos = L.of_lexbuf lexbuf in
       raise (L.Syntax_error (pos, ""))
-    | LexDimacs.Error ->
+    | Lexer.Error ->
       let pos = L.of_lexbuf lexbuf in
       raise (L.Lexing_error (pos, Lexing.lexeme lexbuf))
     | _ as e ->
@@ -32,4 +32,3 @@ module Make
       raise (L.Uncaught (pos, e))
 
 end
-

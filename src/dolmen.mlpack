@@ -12,8 +12,15 @@ Dimacs
 LexDimacs
 ParseDimacs
 
-#Smtlib language
+# Smtlib language
 Smtlib
 LexSmtlib
 ParseSmtlib
+
+# Zf language
+Zf
+LexZf
+ParseZf
+
+
 
