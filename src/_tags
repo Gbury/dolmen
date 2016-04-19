@@ -1,3 +1,9 @@
+# Include paths
+<common>: include
+<interface>: include
+<languages/zf>: include
+<languages/dimacs>: include
+<languages/smtlib>: include
 
 # Dependencies
 <main.*>: package(cmdliner)

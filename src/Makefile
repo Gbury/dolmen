@@ -3,7 +3,6 @@
 LOG=build.log
 COMP=ocamlbuild
 FLAGS=-use-menhir -use-ocamlfind
-DIRS=-Is common,interface,languages/dimacs,languages/zf,languages/smtlib
 DOC=dolmen.docdir/index.html
 BIN=main.native
 NAME=dolmen
@@ -13,13 +12,13 @@ LIB=$(addprefix $(NAME), .cma .cmxa .cmxs)
 all: lib bin
 
 lib:
-	$(COMP) $(FLAGS) $(DIRS) $(LIB)
+	$(COMP) $(FLAGS) $(LIB)
 
 doc:
-	$(COMP) $(FLAGS) $(DIRS) $(DOC)
+	$(COMP) $(FLAGS) $(DOC)
 
 bin:
-	$(COMP) $(FLAGS) $(DIRS) $(BIN)
+	$(COMP) $(FLAGS) $(BIN)
 	cp $(BIN) $(NAME) && rm $(BIN)
 
 test: bin
