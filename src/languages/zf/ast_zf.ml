@@ -46,7 +46,7 @@ module type Statement = sig
   val attr : ?loc:location -> string -> attr
 
   val decl : ?loc:location -> string -> term -> t
-  val def : ?loc:location -> string -> term -> term -> t
+  val definition : ?loc:location -> string -> term -> term -> t
   val inductive : ?loc:location -> string -> term list -> (string * term list) list -> t
 
   val data : ?loc:location -> t list -> t

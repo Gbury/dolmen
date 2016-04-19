@@ -122,7 +122,7 @@ statement:
   | VAL v=name COLON t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.decl ~loc v t }
   | DEF v=name COLON t=term EQDEF u=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.def ~loc v t u }
+    { let loc = L.mk_pos $startpos $endpos in S.definition ~loc v t u }
   | ASSERT a=attrs t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attr:a t }
   | GOAL a=attrs t=term DOT

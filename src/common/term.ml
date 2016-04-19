@@ -17,7 +17,7 @@ type builtin =
 
 (** The type of binders, these are prettymuch always builtin in all languages. *)
 type binder =
-  | All | Ex | Let
+  | All | Ex | Let | Fun
 
 (** The AST for terms *)
 type descr =
@@ -99,7 +99,7 @@ let equiv ?loc p q = app ?loc equiv_sym [p; q]
 let letin = mk_bind Let
 let exists = mk_bind Ex
 let forall = mk_bind All
-
+let mk_fun = mk_bind Fun
 
 (** {2 Wrappers for dimacs} *)
 

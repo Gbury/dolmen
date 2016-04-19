@@ -103,7 +103,7 @@ command:
     { let loc = L.mk_pos $startpos $endpos in S.push ~loc (int_of_string $3) }
 
   | OPEN ASSERT term CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc $3 }
+    { let loc = L.mk_pos $startpos $endpos in S.assert_ ~loc $3 }
   | OPEN CHECK_SAT CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc () }
 
@@ -125,7 +125,7 @@ command:
   | OPEN DEFINE_SORT SYMBOL OPEN symbol* CLOSE sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.type_alias ~loc $3 $5 $7 }
   | OPEN DECLARE_FUN SYMBOL OPEN sort* CLOSE sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.type_def ~loc $3 $5 $7 }
+    { let loc = L.mk_pos $startpos $endpos in S.type_cstr ~loc $3 $5 $7 }
   | OPEN DEFINE_FUN SYMBOL OPEN sorted_var* CLOSE sort term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_def ~loc $3 $5 $7 $8 }
 
