@@ -7,16 +7,9 @@ module type Statement = Ast_dimacs.Statement
 module Make
     (L : ParseLocation.S)
     (T : Term with type location := L.t)
-    (S : Statement with type location := L.t and type atom := T.t) = struct
-
-  module P = ParseDimacs.Make(L)(T)(S)
-
-  module M = Transformer.Make(L)(struct
-      type token = Tokens_dimacs.token
-      type statement = S.t
-    end)(LexDimacs)(P)
-
-  include M
-
-end
+    (S : Statement with type location := L.t and type atom := T.t) =
+  Transformer.Make(L)(struct
+    type token = Tokens_dimacs.token
+    type statement = S.t
+  end)(LexDimacs)(ParseDimacs.Make(L)(T)(S))
 

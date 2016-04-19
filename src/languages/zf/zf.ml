@@ -7,15 +7,9 @@ module type Statement = Ast_zf.Statement
 module Make
     (L : ParseLocation.S)
     (T : Term with type location := L.t)
-    (S : Statement with type location := L.t and type term := T.t) = struct
+    (S : Statement with type location := L.t and type term := T.t) =
+  Transformer.Make(L)(struct
+    type token = Tokens_zf.token
+    type statement = S.t
+  end)(LexZf)(ParseZf.Make(L)(T)(S))
 
-  module P = ParseZf.Make(L)(T)(S)
-
-  module M = Transformer.Make(L)(struct
-      type token = Tokens_zf.token
-      type statement = S.t
-    end)(LexZf)(P)
-
-  include M
-
-end

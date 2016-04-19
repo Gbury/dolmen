@@ -7,15 +7,8 @@ module type Statement = Ast_smtlib.Statement
 module Make
     (L : ParseLocation.S)
     (T : Term with type location := L.t)
-    (S : Statement with type location := L.t and type term := T.t) = struct
-
-  module P = ParseSmtlib.Make(L)(T)(S)
-
-  module M = Transformer.Make(L)(struct
-      type token = Tokens_smtlib.token
-      type statement = S.t
-    end)(LexSmtlib)(P)
-
-  include M
-
-end
+    (S : Statement with type location := L.t and type term := T.t) =
+  Transformer.Make(L)(struct
+    type token = Tokens_smtlib.token
+    type statement = S.t
+  end)(LexSmtlib)(ParseSmtlib.Make(L)(T)(S))
