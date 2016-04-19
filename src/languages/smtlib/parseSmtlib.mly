@@ -120,13 +120,13 @@ command:
   | OPEN SET_OPTION command_option CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.set_option ~loc $3 }
 
-  | OPEN DECLARE_SORT symbol NUMERAL CLOSE
+  | OPEN DECLARE_SORT SYMBOL NUMERAL CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.new_type ~loc $3 (int_of_string $4) }
-  | OPEN DEFINE_SORT symbol OPEN symbol* CLOSE sort CLOSE
+  | OPEN DEFINE_SORT SYMBOL OPEN symbol* CLOSE sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.type_alias ~loc $3 $5 $7 }
-  | OPEN DECLARE_FUN symbol OPEN sort* CLOSE sort CLOSE
+  | OPEN DECLARE_FUN SYMBOL OPEN sort* CLOSE sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.type_def ~loc $3 $5 $7 }
-  | OPEN DEFINE_FUN symbol OPEN sorted_var* CLOSE sort term CLOSE
+  | OPEN DEFINE_FUN SYMBOL OPEN sorted_var* CLOSE sort term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_def ~loc $3 $5 $7 $8 }
 
   | OPEN GET_PROOF CLOSE

@@ -9,25 +9,28 @@ module type Term = sig
   val tType : t
   val wildcard : t
 
+  val prop : t
   val true_ : t
   val false_ : t
 
-  val at_loc : t -> location -> t
+  val at_loc : loc:location -> t -> t
 
   val const : ?loc:location -> string -> t
   val app : ?loc:location -> t -> t list -> t
   val typed : ?loc:location -> t -> t -> t
+  val fun_ty : ?loc:location -> t list -> t -> t
 
   val eq : ?loc:location -> t -> t -> t
 
   val not_ : ?loc:location -> t -> t
-  val or_ : ?loc:location -> t -> t list -> t
-  val and_ : ?loc:location -> t -> t list -> t
+  val or_ : ?loc:location -> t list -> t
+  val and_ : ?loc:location -> t list -> t
   val imply : ?loc:location -> t -> t -> t
   val equiv : ?loc:location -> t -> t -> t
 
   val letin : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
+  val forall_ty : ?loc:location -> t list -> t -> t
   val exists : ?loc:location -> t list -> t -> t
 
 end
@@ -44,7 +47,7 @@ module type Statement = sig
 
   val decl : ?loc:location -> string -> term -> t
   val def : ?loc:location -> string -> term -> term -> t
-  val type_def : ?loc:location -> string -> term list -> (term * term) list -> t
+  val inductive : ?loc:location -> string -> term list -> (string * term list) list -> t
 
   val data : ?loc:location -> t list -> t
   val goal : ?loc:location -> attr:attr -> term -> t

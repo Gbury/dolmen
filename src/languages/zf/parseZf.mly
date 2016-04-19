@@ -23,7 +23,7 @@ typed_var:
   | v=raw_var
     { v }
   | LEFT_PAREN v=raw_var COLON t=term RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.typed v t }
+    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc v t }
 
 typed_ty_var:
   | v=raw_var
@@ -37,17 +37,17 @@ var:
   | v=raw_var
     { v }
   | WILDCARD
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc T.wildcard loc }
+    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.wildcard }
 
 const:
   | TYPE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc T.tType loc }
+    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.tType }
   | PROP
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc T.prop loc }
+    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.prop }
   | LOGIC_TRUE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc T.true_ loc }
+    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.true_ }
   | LOGIC_FALSE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc T.false_ loc }
+    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.false_ }
 
 atomic_term:
   | v=var                         { v }
@@ -108,7 +108,7 @@ constructors:
 
 type_def:
   | t=name vars=raw_var* EQDEF l=constructors
-    { let loc = L.mk_pos $startpos $endpos in S.type_def t vars l }
+    { let loc = L.mk_pos $startpos $endpos in S.inductive ~loc t vars l }
 
 mutual_types:
   | l=separated_nonempty_list(AND, type_def) { l }
@@ -116,7 +116,7 @@ mutual_types:
 attrs:
   | LEFT_BRACKET s=name RIGHT_BRACKET
     { let loc = L.mk_pos $startpos $endpos in S.attr ~loc s }
-  | { let loc = L.mk_pos $startpos $endpos in S.default_attrs }
+  | { S.default_attr }
 
 statement:
   | VAL v=name COLON t=term DOT
@@ -126,11 +126,18 @@ statement:
   | ASSERT a=attrs t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attr:a t }
   | GOAL a=attrs t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.goal ~attrs:a ~loc t }
+    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attr:a t }
   | DATA l=mutual_types DOT
     { let loc = L.mk_pos $startpos $endpos in S.data ~loc l }
   | error
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected statement")) }
+
+input:
+  | EOF         { None }
+  | s=statement { Some s }
+
+file:
+  | l=statement* EOF { l }
 
 %%
 

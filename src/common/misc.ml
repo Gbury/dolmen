@@ -14,3 +14,10 @@ let get_extension s =
   in
   aux s (-1) 0
 
+let replicate n x =
+  let rec aux x acc i =
+    if i <= 0 then acc
+    else aux x (x :: acc) (i - 1)
+  in
+  aux x [] n
+
