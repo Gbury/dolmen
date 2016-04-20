@@ -29,19 +29,19 @@ three module arguments:
 
 - A representation of locations in files. This is used for reporting
   parsing and lexing errors, but also to attach to each expression parsed
-  its location
+  its location.
 - A representation of terms. The functions in this module are used by the
   parser to build the various types, terms and formulas corresponding
   to the grammar of the input language. All functions of this module
   typically takes as first (optional) argument a location (of the type
-  defined by the previous argument) so that is is possible to hace the
-  location of each expression
+  defined by the previous argument) so that is is possible to have
+  locations for expressions.
 - A representation of top-level directives. Languages usually defines
   several top-level directives to more easily distinguish type definitions,
   axioms, lemma, theorems to prove, new assertions, or even sometimes direct
-  commands for the solver (to set options forinstance). Again, the functions
-  in this moudle usually have a first optional argument to set the location
-  of the directives
+  commands for the solver (to set some options for instance). Again, the functions
+  in this module usually have a first optional argument to set the location
+  of the directives.
 
 Some simple implementation of theses modules are provided in this library.
 See the next section for more information.
