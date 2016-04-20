@@ -8,6 +8,7 @@ Currently the following parsers are working:
 
 - dimacs
 - smtlib
+- zf (zipperposition format)
 
 The following parsers are either work in progress, or soon to be
 work in progress:
