@@ -27,7 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 TPTP Lexer} *)
 
 {
-  open Parsetptp
+  open Tokens_tptp
+
+  exception Error
 }
 
 let printable_char = [^ '\n']
@@ -40,12 +42,6 @@ let sq_char = [^ '\\' '''] | "\\\\" | "\\'"
 let do_char = [^ '"' '\\' ] |  "\\\\" | "\\\""
 let single_quoted = ''' sq_char+ '''
 let distinct_object = '"' do_char* '"'
-
-let vline = '|'
-let star = '*'
-let plus = '+'
-let arrow = '>'
-let less_sign = '<'
 
 let zero_numeric = '0'
 let non_zero_numeric = ['1' - '9']
@@ -79,55 +75,86 @@ let dollar_dollar_word = "$$" lower_word
 rule token = parse
   | comment { token lexbuf }
   | comment_block { token lexbuf }  (* TODO: count new lines in lexeme lexbuf *)
+
   | '\n' { Lexing.new_line lexbuf; token lexbuf }
   | [' ' '\t' '\r'] { token lexbuf }
   | eof { EOF }
-  | "fof" { FOF }
+
+  | '.'   { DOT }
+  | ','   { COMMA }
+  | ':'   { COLON }
+
+  | '('   { LEFT_PAREN }
+  | ')'   { RIGHT_PAREN }
+  | '['   { LEFT_BRACKET }
+  | ']'   { RIGHT_BRACKET }
+
   | "cnf" { CNF }
+  | "fof" { FOF }
   | "tff" { TFF }
+  | "thf" { THF }
+  | "tpi" { TPI }
   | "include" { INCLUDE }
-  | vline { VLINE }
-  | '&' { AND }
-  | "!>" { FORALL_TY }
-  | '!' { FORALL }
-  | '?' { EXISTS }
-  | "$true" { TRUE }
-  | "$false" { FALSE }
-  | "$tType" { TYPE_TY }
-  | "$_" { WILDCARD }
-  (* | ';' { SEMICOLUMN } *)
-  | ':' { COLUMN }
-  | '>' { ARROW }
-  | '*' { STAR }
-  | "<=>" { EQUIV }
-  | "=>" { IMPLY }
-  | "<=" { LEFT_IMPLY }
-  | '~' { NOT }
-  | "~|" { NOTVLINE }
-  | "~&" { NOTAND }
-  | '|' { VLINE }
+
+  | '^'   { LAMBDA }
+  | '@'   { APPLY }
+  | "@+"  { AROBASE_PLUS }
+  | "@-"  { AROBASE_MINUS }
+  | "!>"  { FORALL_TY }
+  | '!'   { FORALL }
+  | "?*"  { EXISTS_TY }
+  | '?'   { EXISTS }
+
+  | "!!"  { BANGBANG }
+  | "??"  { QUESTION }
+
+  | "$_"  { WILDCARD }
+  | '_'   { UNDERSCORE }
+
+
+  | '<'   { LESS }
+  | '>'   { ARROW }
+  | '*'   { STAR }
+
   | "<~>" { XOR }
-  | '(' { LEFT_PAREN }
-  | ')' { RIGHT_PAREN }
-  | '[' { LEFT_BRACKET }
-  | ']' { RIGHT_BRACKET }
+  | "<=>" { EQUIV }
+  | "=>"  { IMPLY }
+  | "<="  { LEFT_IMPLY }
+
+  | '~'   { NOT }
+  | '&'   { AND }
+  | '|'   { VLINE }
+  | "~|"  { NOTVLINE }
+  | "~&"  { NOTAND }
+
+  | '='   { EQUAL }
+  | "!="  { NOT_EQUAL }
   | "-->" { GENTZEN_ARROW }
-  | '=' { EQUAL }
-  | ',' { COMMA }
-  | '.' { DOT }
-  | '_' { UNDERSCORE }
-  | "!=" { NOT_EQUAL }
-  | lower_word { LOWER_WORD(Lexing.lexeme lexbuf) }
-  | upper_word { UPPER_WORD(Lexing.lexeme lexbuf) }
-  | dollar_word { DOLLAR_WORD(Lexing.lexeme lexbuf) }
-  | dollar_dollar_word { DOLLAR_DOLLAR_WORD(Lexing.lexeme lexbuf) }
-  | single_quoted { SINGLE_QUOTED(Lexing.lexeme lexbuf) }
-  | distinct_object { DISTINCT_OBJECT(Lexing.lexeme lexbuf) }
-  | integer { INTEGER(Lexing.lexeme lexbuf) }
-  | rational { RATIONAL(Lexing.lexeme lexbuf) }
-  | real { REAL(Lexing.lexeme lexbuf) }
-  | _ as c { failwith (Printf.sprintf "lexer fails on char %c\n" c) }
 
-{
+  | "$ite_f"  { ITE_F }
+  | "$ite_t"  { ITE_t }
+  | "$let_tf" { LET_TF }
+  | "$let_tf" { LET_TF }
+  | "$let_ff" { LET_FT }
+  | "$let_ff" { LET_TT }
 
-}
+  | lower_word {
+    match Lexing.lexeme lexbuf with
+    | "$thf" -> DOLLAR_THF
+    | "$tff" -> DOLLAR_TFF
+    | "$fof" -> DOLLAR_FOF
+    | "$cnf" -> DOLLAR_CNF
+    | "$fot" -> DOLLAR_FOT
+    | s -> LOWER_WORD(s)
+  }
+  | upper_word          { UPPER_WORD(Lexing.lexeme lexbuf) }
+  | dollar_word         { DOLLAR_WORD(Lexing.lexeme lexbuf) }
+  | dollar_dollar_word  { DOLLAR_DOLLAR_WORD(Lexing.lexeme lexbuf) }
+  | single_quoted       { SINGLE_QUOTED(Lexing.lexeme lexbuf) }
+  | distinct_object     { DISTINCT_OBJECT(Lexing.lexeme lexbuf) }
+  | integer             { INTEGER(Lexing.lexeme lexbuf) }
+  | rational            { RATIONAL(Lexing.lexeme lexbuf) }
+  | real                { REAL(Lexing.lexeme lexbuf) }
+
+  | _ { raise Error }
+
