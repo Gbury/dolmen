@@ -22,5 +22,9 @@ languages/zf/Zf
 #languages/zf/LexZf
 #languages/zf/ParseZf
 
+# Tptp language
+languages/tptp/Tptp
+#languages/tptp/LexTptp
+#languages/tptp/ParseTptp
 
 

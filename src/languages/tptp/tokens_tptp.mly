@@ -21,36 +21,51 @@
 %token TPI
 %token INCLUDE
 
-%token NOT
-
-%token STAR
-%token ARROW
-%token FORALL_TY
-%token TYPE_TY
-%token WILDCARD
-
 %token LAMBDA
 %token APPLY
-%token AND
-%token NOTAND
-%token VLINE
-%token NOTVLINE
-%token IMPLY
-%token LEFT_IMPLY
-%token EQUIV
-%token XOR
-%token GENTZEN_ARROW
-%token EQUAL
-%token NOT_EQUAL
-
-%token ITE_F
-%token LET_TF
-%token LET_FF
-
+%token AROBASE_PLUS
+%token AROBASE_MINUS
+%token FORALL_TY
 %token FORALL
+%token EXISTS_TY
 %token EXISTS
 
-%token UNDERSCORE
+%token BANGBANG
+%token QUESTION
+
+%token LESS
+%token ARROW
+
+%token STAR
+%token PLUS
+
+%token XOR
+%token EQUIV
+%token IMPLY
+%token LEFT_IMPLY
+
+%token NOT
+%token AND
+%token VLINE
+%token NOTAND
+%token NOTVLINE
+
+%token EQUAL
+%token NOT_EQUAL
+%token GENTZEN_ARROW
+
+%token ITE_F
+%token ITE_T
+%token LET_TF
+%token LET_FF
+%token LET_FT
+%token LET_TT
+
+%token DOLLAR_THF
+%token DOLLAR_TFF
+%token DOLLAR_FOF
+%token DOLLAR_CNF
+%token DOLLAR_FOT
 
 %token <string> LOWER_WORD
 %token <string> UPPER_WORD
@@ -62,6 +77,8 @@
 %token <string> RATIONAL
 %token <string> INTEGER
 
+/*
+
 %left VLINE
 %left AND
 %nonassoc EQUIV
@@ -70,6 +87,8 @@
 %nonassoc LEFT_IMPLY
 %nonassoc NOTVLINE
 %nonassoc NOTAND
+
+*/
 
 %%
 

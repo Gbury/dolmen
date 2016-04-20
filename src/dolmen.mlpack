@@ -24,5 +24,8 @@ Zf
 LexZf
 ParseZf
 
-
+# Tptp language
+Tptp
+LexTptp
+ParseTptp
 

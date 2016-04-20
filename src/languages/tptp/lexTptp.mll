@@ -108,13 +108,11 @@ rule token = parse
   | "!!"  { BANGBANG }
   | "??"  { QUESTION }
 
-  | "$_"  { WILDCARD }
-  | '_'   { UNDERSCORE }
-
-
   | '<'   { LESS }
   | '>'   { ARROW }
+
   | '*'   { STAR }
+  | '+'   { PLUS }
 
   | "<~>" { XOR }
   | "<=>" { EQUIV }
@@ -124,15 +122,15 @@ rule token = parse
   | '~'   { NOT }
   | '&'   { AND }
   | '|'   { VLINE }
-  | "~|"  { NOTVLINE }
   | "~&"  { NOTAND }
+  | "~|"  { NOTVLINE }
 
   | '='   { EQUAL }
   | "!="  { NOT_EQUAL }
   | "-->" { GENTZEN_ARROW }
 
   | "$ite_f"  { ITE_F }
-  | "$ite_t"  { ITE_t }
+  | "$ite_t"  { ITE_T }
   | "$let_tf" { LET_TF }
   | "$let_tf" { LET_TF }
   | "$let_ff" { LET_FT }

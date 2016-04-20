@@ -2,6 +2,7 @@
 <common>: include
 <interface>: include
 <languages/zf>: include
+<languages/tptp>: include
 <languages/dimacs>: include
 <languages/smtlib>: include
 
