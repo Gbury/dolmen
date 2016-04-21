@@ -18,7 +18,7 @@ file:
     { l }
 
 start:
-  | P CNF nbvar=INT nbclause=INT NEWLINE+
+  | P CNF INT INT NEWLINE+
     { () }
 
 clause:

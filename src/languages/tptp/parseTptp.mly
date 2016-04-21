@@ -18,7 +18,10 @@ file:
   | l=tptp_input* EOF { l }
 
 input:
-  | i=tptp_input? { i }
+  | i=tptp_input
+    { Some i }
+  | EOF
+    { None }
 
 tptp_input:
   | i=tptp_include
@@ -37,32 +40,32 @@ annotated_formula:
 
 tpi_annotated:
   | TPI LEFT_PAREN s=name COMMA r=formula_role COMMA
-    f=tpi_formula annot=annotations LEFT_PAREN DOT
+    f=tpi_formula annot=annotations RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.tpi ~loc ?annot s r f }
 
 thf_annotated:
   | THF LEFT_PAREN s=name COMMA r=formula_role COMMA
-    f=thf_formula annot=annotations LEFT_PAREN DOT
+    f=thf_formula annot=annotations RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.thf ~loc ?annot s r f }
 
 tff_annotated:
   | TFF LEFT_PAREN s=name COMMA r=formula_role COMMA
-    f=tff_formula annot=annotations LEFT_PAREN DOT
+    f=tff_formula annot=annotations RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.tff ~loc ?annot s r f }
 
 fof_annotated:
   | FOF LEFT_PAREN s=name COMMA r=formula_role COMMA
-    f=fof_formula annot=annotations LEFT_PAREN DOT
+    f=fof_formula annot=annotations RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.fof ~loc ?annot s r f }
 
 cnf_annotated:
   | CNF LEFT_PAREN s=name COMMA r=formula_role COMMA
-    f=cnf_formula annot=annotations LEFT_PAREN DOT
+    f=cnf_formula annot=annotations RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.cnf ~loc ?annot s r f }
 
 annotations:
   | COMMA s=source i=optional_info
-    { let loc = L.mk_pos $startpos $endpo in Some (S.annot ~loc s i) }
+    { let loc = L.mk_pos $startpos $endpos in Some (S.annot ~loc s i) }
   | { None }
 
 tpi_formula:
@@ -136,7 +139,7 @@ thf_variable:
 
 thf_typed_variable:
   | c=variable COLON ty=thf_top_level_type
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc c ty }
+    { let loc = L.mk_pos $startpos $endpos in T.column ~loc c ty }
 
 thf_unary_formula:
   | c=thf_unary_connective LEFT_PAREN f=thf_logic_formula RIGHT_PAREN
@@ -165,7 +168,7 @@ thf_let_formula_defn:
 
 thf_type_formula:
   | f=thf_typeable_formula COLON ty=thf_top_level_type
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc f ty }
+    { let loc = L.mk_pos $startpos $endpos in T.column ~loc f ty }
 
 thf_typeable_formula:
   | f=thf_atom
@@ -242,7 +245,7 @@ tff_binary_formula:
 
 tff_binary_nonassoc:
   | f=tff_unitary_formula c=binary_connective g=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in c ~loc f g }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f; g] }
 
 tff_binary_assoc:
   | f=tff_or_formula
@@ -285,7 +288,7 @@ tff_variable:
 
 tff_typed_variable:
   | v=variable COLON ty=tff_atomic_type
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc v ty }
+    { let loc = L.mk_pos $startpos $endpos in T.column ~loc v ty }
 
 tff_unary_formula:
   | u=unary_connective f=tff_unitary_formula
@@ -296,7 +299,7 @@ tff_unary_formula:
 tff_conditional:
   | ITE_F LEFT_PAREN cond=tff_logic_formula COMMA if_then=tff_logic_formula COMMA
     if_else=tff_logic_formula RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.ite_f ~loc cond if_then if_else }
+    { let loc = L.mk_pos $startpos $endpos in T.ite ~loc cond if_then if_else }
 
 tff_let:
   | LET_TF LEFT_PAREN l=tff_let_term_defn COMMA f=tff_formula RIGHT_PAREN
@@ -310,8 +313,8 @@ tff_let_term_defn:
     { t }
 
 tff_let_term_binding:
-  | t=term EQUAL u=term
-    { let loc = L.mk_pos $startpos $endpos in T.equal ~loc t u }
+  | t=term f=infix_equality u=term
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
   | LEFT_PAREN t=tff_let_term_binding RIGHT_PAREN
     { t }
 
@@ -322,8 +325,8 @@ tff_let_formula_defn:
     { t }
 
 tff_let_formula_binding:
-  | t=atomic_formula EQUIV u=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.equiv ~loc t u }
+  | t=atomic_formula f=equiv u=tff_unitary_formula
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
   | LEFT_PAREN t=tff_let_formula_binding RIGHT_PAREN
     { t }
 
@@ -347,7 +350,7 @@ tff_tuple_list:
 
 tff_typed_atom:
   | t=tff_untyped_atom COLON ty=tff_top_level_type
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc t ty }
+    { let loc = L.mk_pos $startpos $endpos in T.column ~loc t ty }
   | LEFT_PAREN t=tff_typed_atom RIGHT_PAREN
     { t }
 
@@ -365,7 +368,7 @@ tff_top_level_type:
 
 tff_quantified_type:
   | FORALL_TY LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET COLON t=tff_monotype
-    { let loc = L.mk_pos $startpos $endpos in T.forall_ty ~loc l t }
+    { let loc = L.mk_pos $startpos $endpos in T.pi ~loc l t }
 
 tff_monotype:
   | t=tff_atomic_type
@@ -416,11 +419,11 @@ fof_logic_formula:
 fof_binary_formula:
   | f=fof_binary_nonassoc
   | f=fof_binary_assoc
-    { $1 }
+    { f }
 
 fof_binary_nonassoc:
   | f=fof_unitary_formula c=binary_connective g=fof_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in c ~loc f g }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f; g] }
 
 fof_binary_assoc:
   | f=fof_or_formula
@@ -491,8 +494,8 @@ disjunction:
 literal:
   | f=atomic_formula
     { f }
-  | NOT f=atomic_formula
-    { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc f }
+  | c=unary_negation f=atomic_formula
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f] }
   | f=fol_infix_unary
     { f }
 
@@ -506,8 +509,8 @@ thf_conn_term:
     { t }
 
 fol_infix_unary:
-  | t=term NOT_EQUAL u=term
-    { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc (T.equal ~loc t u) }
+  | t=term f=infix_inequality u=term
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
 
 
 /* THF connective */
@@ -531,8 +534,8 @@ thf_pair_connective:
     { t }
 
 thf_unary_connective:
-  | unary_connective
-    { $1 }
+  | c=unary_connective
+    { c }
   | BANGBANG | QUESTION
     { assert false }
 
@@ -545,9 +548,13 @@ fol_quantifier:
   | EXISTS
     { T.exists }
 
-binary_connective:
+equiv:
   | EQUIV
     { let loc = L.mk_pos $startpos $endpos in T.equiv ~loc }
+
+binary_connective:
+  | c=equiv
+    { c }
   | IMPLY
     { let loc = L.mk_pos $startpos $endpos in T.implies ~loc }
   | LEFT_IMPLY
@@ -565,11 +572,16 @@ assoc_connective:
     { t }
 
 unary_connective:
+  | c=unary_negation
+    { c }
+
+unary_negation:
   | NOT
     { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc }
 
 defined_type:
-  | atomic_defined_word { $1 }
+  | t=atomic_defined_word
+    { t }
 
 /* First order atoms */
 
@@ -594,7 +606,7 @@ defined_plain_formula:
 
 defined_infix_formula:
   | t=term c=defined_infix_pred u=term
-    { let loc = L.mk_pos $startpos $endpos in c ~loc t u }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [t; u] }
 
 defined_infix_pred:
   | t=infix_equality
@@ -602,11 +614,11 @@ defined_infix_pred:
 
 infix_equality:
   | EQUAL
-    { T.equal }
+    { let loc = L.mk_pos $startpos $endpos in T.eq ~loc }
 
 infix_inequality:
   | NOT_EQUAL
-    { fun ?loc t u -> T.not_ ~loc (T.not_equal ~loc t u) }
+    { let loc = L.mk_pos $startpos $endpos in T.neq ~loc }
 
 system_atomic_formula:
   | t=system_term
@@ -672,7 +684,7 @@ defined_functor:
 system_term:
   | c=system_constant
     { c }
-  | f=system_functor LEFT_PAREN arguments RIGHT_PAREN
+  | f=system_functor LEFT_PAREN l=arguments RIGHT_PAREN
     { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f l }
 
 system_constant:
@@ -695,7 +707,7 @@ arguments:
 
 conditional_term:
   | ITE_T LEFT_PAREN cond=tff_logic_formula COMMA if_then=term COMMA if_else=term RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.ite_t ~loc cond if_then if_else }
+    { let loc = L.mk_pos $startpos $endpos in T.ite ~loc cond if_then if_else }
 
 let_term:
   | LET_FT LEFT_PAREN l=tff_let_formula_defn COMMA t=term RIGHT_PAREN
@@ -711,8 +723,8 @@ source:
 
 optional_info:
   | COMMA i=useful_info
-    { Some i }
-  | { None }
+    { i }
+  | { [] }
 
 useful_info:
   | l=general_list
@@ -740,7 +752,8 @@ general_term:
   | d=general_data
     { d }
   | l=general_list
-    { l }
+    { let d = let loc = L.mk_pos $startpos $startpos in T.data ~loc in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc d l }
   | d=general_data COLON t=general_term
     { let loc = L.mk_pos $startpos $endpos in T.column ~loc d t }
 
