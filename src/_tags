@@ -1,3 +1,6 @@
+# Menhir options
+true: use_menhir, explain
+
 # Include paths
 <common>: include
 <interface>: include
@@ -7,12 +10,13 @@
 <languages/smtlib>: include
 
 # Dependencies
-<main.*>: package(cmdliner)
+<main.*>: package(cmdliner), package(menhirLib)
+<languages/**/*>: package(menhirLib)
 
 # Pack information
 <common/*.cmx>: for-pack(Dolmen)
-<languages/**/*.cmx>: for-pack(Dolmen)
 <interface/**/*.cmx>: for-pack(Dolmen)
+<languages/**/*.cmx>: for-pack(Dolmen)
 
 # more warnings
 <**/*.ml>: warn_K, warn_Y, warn_X

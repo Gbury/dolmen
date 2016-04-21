@@ -2,7 +2,7 @@
 
 LOG=build.log
 COMP=ocamlbuild
-FLAGS=-use-menhir -use-ocamlfind
+FLAGS=-use-ocamlfind -yaccflag '--table'
 DOC=dolmen.docdir/index.html
 BIN=main.native
 NAME=dolmen
