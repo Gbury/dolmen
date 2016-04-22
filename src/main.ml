@@ -35,6 +35,10 @@ let () =
             let module Parse = Zf.Make(ParseLocation)(Term)(Statement) in
             let _ = Parse.parse_file file in
             ()
+          | ".p" ->
+            let module Parse = Tptp.Make(ParseLocation)(Term)(Statement) in
+            let _ = Parse.parse_file file in
+            ()
           | fmt ->
             Format.printf "Unrecognised format: '%s'@." fmt;
             exit 1

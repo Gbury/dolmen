@@ -7,23 +7,23 @@ module type Term = sig
 
   type location
 
-  val const : ?loc:location -> string -> t
+  val const   : ?loc:location -> string -> t
 
-  val app : ?loc:location -> t -> t list -> t
+  val apply   : ?loc:location -> t -> t list -> t
 
-  val typed : ?loc:location -> t -> t -> t
+  val colon   : ?loc:location -> t -> t -> t
 
-  val letin : ?loc:location -> t list -> t -> t
-  val forall : ?loc:location -> t list -> t -> t
-  val exists : ?loc:location -> t list -> t -> t
+  val letin   : ?loc:location -> t list -> t -> t
+  val forall  : ?loc:location -> t list -> t -> t
+  val exists  : ?loc:location -> t list -> t -> t
 
-  val sexpr : ?loc:location -> t list -> t
-  val attr : ?loc:location -> t -> (string * t option) list -> t
+  val sexpr   : ?loc:location -> t list -> t
+  val attr    : ?loc:location -> t -> (string * t option) list -> t
 
-  val int : ?loc:location -> string -> t
-  val real : ?loc:location -> string -> t
-  val hexa : ?loc:location -> string -> t
-  val binary : ?loc:location -> string -> t
+  val int     : ?loc:location -> string -> t
+  val real    : ?loc:location -> string -> t
+  val hexa    : ?loc:location -> string -> t
+  val binary  : ?loc:location -> string -> t
 
 end
 

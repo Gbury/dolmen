@@ -19,35 +19,39 @@ name:
 raw_var:
   | s=name { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
 
+tType:
+  | TYPE
+    { T.tType }
+
 typed_var:
   | v=raw_var
     { v }
   | LEFT_PAREN v=raw_var COLON t=term RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc v t }
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
 
 typed_ty_var:
   | v=raw_var
     { v }
-  | v=raw_var COLON TYPE
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc v T.tType }
-  | LEFT_PAREN v=raw_var COLON TYPE RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc v T.tType }
+  | v=raw_var COLON t=tType
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
+  | LEFT_PAREN v=raw_var COLON t=tType RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
 
 var:
   | v=raw_var
     { v }
   | WILDCARD
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.wildcard }
+    { T.wildcard }
 
 const:
-  | TYPE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.tType }
+  | t=tType
+    { t }
   | PROP
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.prop }
+    { T.prop }
   | LOGIC_TRUE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.true_ }
+    { T.true_ }
   | LOGIC_FALSE
-    { let loc = L.mk_pos $startpos $endpos in T.at_loc ~loc T.false_ }
+    { T.false_ }
 
 atomic_term:
   | v=var                         { v }
@@ -58,7 +62,7 @@ apply_term:
   | t=atomic_term
     { t }
   | t=atomic_term u=atomic_term+
-    { let loc = L.mk_pos $startpos $endpos in T.app ~loc t u }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc t u }
   | LOGIC_NOT t=apply_term
     { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc t }
 
@@ -89,14 +93,14 @@ or_term:
 term:
   | t=or_term
     { t }
+  | t=apply_term ARROW u=term
+    { let loc = L.mk_pos $startpos $endpos in T.arrow ~loc t u }
+  | PI vars=typed_ty_var+ DOT t=term
+    { let loc = L.mk_pos $startpos $endpos in T.pi ~loc vars t }
   | LOGIC_FORALL vars=typed_var+ DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc vars t }
   | LOGIC_EXISTS vars=typed_var+ DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc vars t }
-  | t=apply_term ARROW u=term
-    { let loc = L.mk_pos $startpos $endpos in T.fun_ty ~loc [t] u }
-  | PI vars=typed_ty_var+ DOT t=term
-    { let loc = L.mk_pos $startpos $endpos in T.forall_ty ~loc vars t }
   | error
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected term")) }
 

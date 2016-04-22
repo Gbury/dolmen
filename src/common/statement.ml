@@ -5,8 +5,9 @@
 
 (** Terms *)
 type term = Term.t
+type attr = Term.t
 
-type attr = string
+type annotation = attr
 
 type inductive = {
   name : string;
@@ -17,12 +18,15 @@ type inductive = {
 
 (** Description of statements. *)
 type descr =
+  | Pack of t list
+
   | Pop of int
   | Push of int
 
-  | Assume of term
   | Check_sat
+  | Assume of term
 
+  | Include of string
   | Set_logic of string
 
   | Get_info of string
@@ -45,18 +49,21 @@ type descr =
 
 (** Statements are wrapped in a record to have a location. *)
 and t = {
+  name : string;
   descr : descr;
   attr : attr option;
   loc : ParseLocation.t option;
 }
 
 (** Attributes *)
-let attr ?loc:_ msg = msg
+let attr = Term.const
 
 let default_attr = attr ""
 
+let annot = Term.apply
+
 (** Internal shortcut. *)
-let mk ?loc ?attr descr = { descr; loc; attr; }
+let mk ?(name="") ?loc ?attr descr = { name; descr; loc; attr; }
 
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
@@ -117,18 +124,78 @@ let type_cstr ?loc s l t' =
   decl ?loc s ty
 
 let type_alias ?loc s args body =
-  let t = Term.mk_fun args body in
+  let t = Term.lambda args body in
   def ?loc s t
 
 let fun_def ?loc s args ty_ret body =
-  let t = Term.mk_fun args (Term.column body ty_ret) in
+  let t = Term.lambda args (Term.colon body ty_ret) in
   def ?loc s t
 
 (* Wrappers for Zf *)
 let definition ?loc s ty term =
-  let t = Term.column term ty in
+  let t = Term.colon term ty in
   def ?loc s t
 
 let goal ?loc ~attr t = assume ?loc ~attr (Term.not_ t)
+
+(* Wrappers for tptp *)
+
+let include_ ?loc s l =
+  let attr = Term.apply ?loc Term.and_t l in
+  mk ?loc ~attr (Include s)
+
+let tptp ?loc ?annot name_t role t =
+  let aux t =
+    match annot with
+    | None -> t
+    | Some t' -> Term.colon t t'
+  in
+  let attr = aux (Term.const role) in
+  let name =
+    match name_t with
+    | { Term.term = Term.Symbol s } -> Some s
+    | _ -> None
+  in
+  let descr = match role with
+    | "axiom"
+    | "hypothesis"
+    | "definition"
+    | "lemma"
+    | "theorem"
+      -> Assume t
+    | "assumption"
+    | "conjecture"
+      -> Pack [
+          mk (Push 1);
+          mk ~attr:(Term.false_) (Assume (Term.not_ t));
+          mk Check_sat;
+          mk (Pop 1);
+          mk ~attr:(Term.true_) (Assume t);
+         ]
+    | "negated_conjecture"
+      -> Pack [
+          mk (Push 1);
+          mk ~attr:(Term.false_) (Assume t);
+          mk Check_sat;
+          mk (Pop 1);
+          mk ~attr:(Term.true_) (Assume (Term.not_ t));
+         ]
+    | "plain"
+    | "fi_domain"
+    | "fi_functors"
+    | "fi_predicates"
+      -> Pack []
+    | _ ->
+      Format.eprintf "WARNING: unknown tptp formula role: '%s'" role;
+      Pack []
+  in
+  mk ?name ?loc ~attr descr
+
+let tpi = tptp
+let thf = tptp
+let tff = tptp
+let fof = tptp
+let cnf = tptp
+
 
 

@@ -5,38 +5,38 @@ module type Term = sig
   type t
   type location
 
-  val column : ?loc:location -> t -> t -> t
+  val eq_t      : t
+  val neq_t     : t
+  val not_t     : t
+  val or_t      : t
+  val and_t     : t
+  val xor_t     : t
+  val nor_t     : t
+  val nand_t    : t
+  val equiv_t   : t
+  val implies_t : t
+  val implied_t : t
+  val data_t    : t
 
-  val var : ?loc:location -> string -> t
-  val const : ?loc:location -> string -> t
+  val colon : ?loc:location -> t -> t -> t
+
+  val var      : ?loc:location -> string -> t
+  val const    : ?loc:location -> string -> t
   val distinct : ?loc:location -> string -> t
-  val integer : ?loc:location -> string -> t
-  val rational : ?loc:location -> string -> t
-  val real : ?loc:location -> string -> t
+  val int      : ?loc:location -> string -> t
+  val rat      : ?loc:location -> string -> t
+  val real     : ?loc:location -> string -> t
 
-  val eq   : loc:location -> t
-  val neq  : loc:location -> t
-  val not_ : loc:location -> t
-  val or_  : loc:location -> t
-  val and_ : loc:location -> t
-  val xor  : loc:location -> t
-  val nor  : loc:location -> t
-  val nand : loc:location -> t
-  val equiv : loc:location -> t
-  val implies : loc:location -> t
-  val implied : loc:location -> t
-  val data : loc:location -> t
-
-  val ite : ?loc:location -> t -> t -> t -> t
+  val ite   : ?loc:location -> t -> t -> t -> t
   val apply : ?loc:location -> t -> t list -> t
 
-  val prod    : ?loc:location -> t -> t -> t
   val union   : ?loc:location -> t -> t -> t
+  val product : ?loc:location -> t -> t -> t
   val arrow   : ?loc:location -> t -> t -> t
   val subtype : ?loc:location -> t -> t -> t
 
-  val letin  : ?loc:location -> t -> t -> t
   val pi     : ?loc:location -> t list -> t -> t
+  val letin  : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
   val exists : ?loc:location -> t list -> t -> t
   val lambda : ?loc:location -> t list -> t -> t

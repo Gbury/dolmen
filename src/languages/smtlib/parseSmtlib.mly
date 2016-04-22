@@ -51,7 +51,7 @@ sort:
   | identifier
     { $1 }
   | OPEN identifier sort+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.app ~loc $2 $3 }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $2 $3 }
 ;
 
 attribute_value:
@@ -67,21 +67,21 @@ attribute:
 
 qual_identifier:
   | identifier                       { $1 }
-  | OPEN AS identifier sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc $3 $4 }
+  | OPEN AS identifier sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $3 $4 }
 ;
 
 var_binding:
-  | OPEN symbol term CLOSE    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc $2 $3 }
+  | OPEN symbol term CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $2 $3 }
 ;
 
 sorted_var:
-  | OPEN symbol sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.typed ~loc $2 $3 }
+  | OPEN symbol sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $2 $3 }
 ;
 
 term:
   | spec_constant                                     { $1 }
-  | qual_identifier                                   { let loc = L.mk_pos $startpos $endpos in T.app ~loc $1 [] }
-  | OPEN qual_identifier term+ CLOSE                  { let loc = L.mk_pos $startpos $endpos in T.app ~loc $2 $3 }
+  | qual_identifier                                   { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $1 [] }
+  | OPEN qual_identifier term+ CLOSE                  { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $2 $3 }
   | OPEN LET OPEN var_binding+ CLOSE term CLOSE       { let loc = L.mk_pos $startpos $endpos in T.letin ~loc $4 $6 }
   | OPEN FORALL OPEN sorted_var+ CLOSE term CLOSE     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc $4 $6 }
   | OPEN EXISTS OPEN sorted_var+ CLOSE term CLOSE     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc $4 $6 }
