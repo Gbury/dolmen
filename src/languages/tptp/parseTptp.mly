@@ -736,7 +736,7 @@ useful_info:
 /* Inlcude directives */
 
 tptp_include:
-  | INCLUDE LEFT_PAREN f=file_name g=formula_section RIGHT_PAREN
+  | INCLUDE LEFT_PAREN f=file_name g=formula_section RIGHT_PAREN DOT
     { let loc = L.mk_pos $startpos $endpos in S.include_ ~loc f g }
 
 formula_section:
