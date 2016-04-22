@@ -10,19 +10,30 @@
 /* Starting symbols */
 
 %start <S.t list> file
+%start <S.t option> input
 
 %%
+
+input:
+  | start? c=clause
+    { Some c }
+  | EOF
+    { None }
 
 file:
   | NEWLINE* start l=clause* EOF
     { l }
 
 start:
-  | P CNF INT INT NEWLINE+
+  | P CNF INT INT NEWLINE
     { () }
 
 clause:
-  | c=nonempty_list(atom) ZERO NEWLINE+
+  | NEWLINE* c=naked_clause
+    { c }
+
+naked_clause:
+  | c=nonempty_list(atom) ZERO NEWLINE
     { let loc = L.mk_pos $startpos $endpos in S.clause ~loc c }
 
 atom:

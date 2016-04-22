@@ -12,6 +12,7 @@ true: use_menhir, explain
 # Dependencies
 <main.*>: package(cmdliner), package(menhirLib)
 <languages/**/*>: package(menhirLib)
+<interface/**/*>: package(menhirLib)
 
 # Pack information
 <common/*.cmx>: for-pack(Dolmen)

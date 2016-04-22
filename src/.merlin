@@ -16,3 +16,4 @@ B _build/languages/dimacs
 B _build/languages/smtlib
 
 PKG cmdliner
+PKG menhirLib

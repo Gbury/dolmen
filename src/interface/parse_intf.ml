@@ -11,7 +11,25 @@ module type S = sig
 
   exception Error
 
+  (* Standard parsing of the whole file *)
+
   val file : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> statement list
+
+
+  (* Needed for incremental parsing of input *)
+
+  module MenhirInterpreter : sig
+
+    include MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE
+      with type token = token
+
+  end
+
+  module Incremental : sig
+
+    val input : Lexing.position -> (statement option) MenhirInterpreter.checkpoint
+
+  end
 
 end
 
