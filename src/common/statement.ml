@@ -23,8 +23,9 @@ type descr =
   | Pop of int
   | Push of int
 
-  | Check_sat
-  | Assume of term
+  | Prove
+  | Consequent of term
+  | Antecedent of term
 
   | Include of string
   | Set_logic of string
@@ -70,8 +71,9 @@ let pop ?loc i = mk ?loc (Pop i)
 let push ?loc i = mk ?loc (Push i)
 
 (* Assumptions and fact checking *)
-let check_sat ?loc () = mk ?loc Check_sat
-let assume ?loc ~attr t = mk ?loc ~attr (Assume t)
+let prove ?loc () = mk ?loc Prove
+let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
+let consequent ?loc ?attr t = mk ?loc ?attr (Consequent t)
 
 (* Options statements *)
 let set_logic ?loc s = mk ?loc (Set_logic s)
@@ -113,7 +115,8 @@ let exit ?loc () = mk ?loc Exit
 
 
 (* Smtlib wrappers *)
-let assert_ ?loc t = mk ?loc (Assume t)
+let check_sat = prove
+let assert_ ?loc t = antecedent ?loc t
 
 let new_type ?loc s n =
   let ty = Term.fun_ty ?loc (Misc.replicate n Term.tType) Term.tType in
@@ -131,15 +134,24 @@ let fun_def ?loc s args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
   def ?loc s t
 
+
 (* Wrappers for Zf *)
 let definition ?loc s ty term =
   let t = Term.colon term ty in
   def ?loc s t
 
-let goal ?loc ~attr t = assume ?loc ~attr (Term.not_ t)
+let rewrite ?loc ~attr t = antecedent ?loc ~attr t
+
+let assume ?loc ~attr t = antecedent ?loc ~attr t
+
+let goal ?loc ~attr t =
+  mk ?loc ~attr (Pack [
+      consequent t;
+      prove ();
+    ])
+
 
 (* Wrappers for tptp *)
-
 let include_ ?loc s l =
   let attr = Term.apply ?loc Term.and_t l in
   mk ?loc ~attr (Include s)
@@ -162,31 +174,40 @@ let tptp ?loc ?annot name_t role t =
     | "definition"
     | "lemma"
     | "theorem"
-      -> Assume t
+      -> Antecedent t
     | "assumption"
     | "conjecture"
       -> Pack [
-          mk (Push 1);
-          mk ~attr:(Term.false_) (Assume (Term.not_ t));
-          mk Check_sat;
-          mk (Pop 1);
-          mk ~attr:(Term.true_) (Assume t);
+          push 1;
+          consequent ~attr:(Term.false_) t;
+          prove ();
+          pop 1;
+          antecedent ~attr:(Term.true_) t;
          ]
     | "negated_conjecture"
       -> Pack [
-          mk (Push 1);
-          mk ~attr:(Term.false_) (Assume t);
-          mk Check_sat;
-          mk (Pop 1);
-          mk ~attr:(Term.true_) (Assume (Term.not_ t));
-         ]
+          push 1;
+          antecedent ~attr:(Term.false_) t;
+          prove ();
+          pop 1;
+          antecedent ~attr:(Term.true_) (Term.not_ t);
+        ]
+    | "type"
+      -> begin match t with
+          | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
+            Decl (s, ty)
+          | _ ->
+            Format.eprintf "WARNING: unexpected type declaration@.";
+            Pack []
+        end
     | "plain"
+    | "unknown"
     | "fi_domain"
     | "fi_functors"
     | "fi_predicates"
       -> Pack []
     | _ ->
-      Format.eprintf "WARNING: unknown tptp formula role: '%s'" role;
+      Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role;
       Pack []
   in
   mk ?name ?loc ~attr descr

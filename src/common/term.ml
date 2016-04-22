@@ -26,7 +26,9 @@ type builtin =
 
 (** The type of binders, these are prettymuch always builtin in all languages. *)
 type binder =
-  | All | Ex | Pi | Let | Fun
+  | All | Ex | Pi | Let | Fun   (* Standard binders *)
+  | Choice                      (* Indefinite description, or epsilon terms *)
+  | Description                 (* Definite description *)
 
 (** The AST for terms *)
 type descr =
@@ -122,6 +124,8 @@ let letin = mk_bind Let
 let exists = mk_bind Ex
 let forall = mk_bind All
 let lambda = mk_bind Fun
+let choice = mk_bind Choice
+let description = mk_bind Description
 
 
 (** {2 Wrappers for dimacs} *)

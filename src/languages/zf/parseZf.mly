@@ -54,9 +54,12 @@ const:
     { T.false_ }
 
 atomic_term:
-  | v=var                         { v }
-  | t=const                       { t }
-  | LEFT_PAREN t=term RIGHT_PAREN { t }
+  | v=var
+    { v }
+  | t=const
+    { t }
+  | LEFT_PAREN t=term RIGHT_PAREN
+    { t }
 
 apply_term:
   | t=atomic_term
@@ -117,7 +120,7 @@ type_def:
 mutual_types:
   | l=separated_nonempty_list(AND, type_def) { l }
 
-attrs:
+attr:
   | LEFT_BRACKET s=name RIGHT_BRACKET
     { let loc = L.mk_pos $startpos $endpos in S.attr ~loc s }
   | { S.default_attr }
@@ -127,10 +130,12 @@ statement:
     { let loc = L.mk_pos $startpos $endpos in S.decl ~loc v t }
   | DEF v=name COLON t=term EQDEF u=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.definition ~loc v t u }
-  | ASSERT a=attrs t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attr:a t }
-  | GOAL a=attrs t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attr:a t }
+  | REWRITE attr=attr t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ~attr t }
+  | ASSERT attr=attr t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attr t }
+  | GOAL attr=attr t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attr t }
   | DATA l=mutual_types DOT
     { let loc = L.mk_pos $startpos $endpos in S.data ~loc l }
   | error

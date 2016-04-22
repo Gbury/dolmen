@@ -41,6 +41,9 @@ module type Term = sig
   val exists : ?loc:location -> t list -> t -> t
   val lambda : ?loc:location -> t list -> t -> t
 
+  val choice : ?loc:location -> t list -> t -> t
+  val description : ?loc:location -> t list -> t -> t
+
   val sequent : ?loc:location -> t list -> t list -> t
 
 end

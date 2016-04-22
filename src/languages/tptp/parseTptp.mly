@@ -24,8 +24,8 @@ input:
     { None }
 
 tptp_input:
-  | i=tptp_include
   | i=annotated_formula
+  | i=tptp_include
     { i }
 
 /* Formula records */
@@ -90,8 +90,10 @@ thf_logic_formula:
     { f }
 
 thf_binary_formula:
-  | f=thf_binary_pair | f=thf_binary_tuple
-  | f=thf_binary_type { f }
+  | f=thf_binary_pair
+  | f=thf_binary_tuple
+  | f=thf_binary_type
+    { f }
 
 thf_binary_pair:
   | f=thf_unitary_formula c=thf_pair_connective g=thf_unitary_formula
@@ -277,7 +279,7 @@ tff_unitary_formula:
     { f }
 
 tff_quantified_formula:
-  | q=fol_quantifier LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET f=tff_unitary_formula
+  | q=fol_quantifier LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET COLON f=tff_unitary_formula
     { let loc = L.mk_pos $startpos $endpos in q ~loc l f }
 
 tff_variable_list:
@@ -318,8 +320,8 @@ tff_let_term_defn:
     { t }
 
 tff_let_term_binding:
-  | t=term f=infix_equality u=term
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
+  | t=term EQUAL u=term
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.eq_t [t; u] }
   | LEFT_PAREN t=tff_let_term_binding RIGHT_PAREN
     { t }
 
@@ -529,8 +531,10 @@ thf_quantifier:
     { T.forall }
   | EXISTS_TY
     { T.exists }
-  | AROBASE_PLUS | AROBASE_MINUS
-    { assert false }
+  | DEFINITE_DESCRIPTION
+    { T.description }
+  | INDEFINITE_DESCRIPTION
+    { T.choice }
 
 thf_pair_connective:
   | t=infix_equality
@@ -541,8 +545,12 @@ thf_pair_connective:
 thf_unary_connective:
   | c=unary_connective
     { c }
-  | BANGBANG | QUESTION
-    { assert false }
+  /* These two quantifiers have been removed from THF0, and will come back in THF1
+  when it is released, so it doesn't really matter how we handle them right now*/
+  | PI
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc "$pi" }
+  | SIGMA
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc "$sigma" }
 
 subtype_sign:
   | LESS LESS { () }

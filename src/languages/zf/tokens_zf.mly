@@ -36,6 +36,7 @@
 %token DEF
 %token VAL
 %token GOAL
+%token REWRITE
 
 %token ARROW
 %token PI

@@ -23,15 +23,15 @@
 
 %token LAMBDA
 %token APPLY
-%token AROBASE_PLUS
-%token AROBASE_MINUS
+%token DEFINITE_DESCRIPTION
+%token INDEFINITE_DESCRIPTION
 %token FORALL_TY
 %token FORALL
 %token EXISTS_TY
 %token EXISTS
 
-%token BANGBANG
-%token QUESTION
+%token PI
+%token SIGMA
 
 %token LESS
 %token ARROW

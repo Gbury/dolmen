@@ -40,17 +40,20 @@ let () =
             let _ = Parse.parse_file file in
             ()
           | fmt ->
-            Format.printf "Unrecognised format: '%s'@." fmt;
+            Format.printf "%s: unrecognised format: '%s'@." file fmt;
             exit 1
         end;
         Format.printf "%s: ok@." Sys.argv.(1)
       with
-      | ParseLocation.Syntax_error (pos, msg) ->
-        Format.printf "%a@\nSyntax error: %s@." ParseLocation.fmt pos msg
       | ParseLocation.Lexing_error (pos, lexeme) ->
-        Format.printf "%a@\nLexing error, unrecognised lexeme: '%s'@." ParseLocation.fmt pos lexeme
+        Format.printf "%a@\nLexing error, unrecognised lexeme: '%s'@." ParseLocation.fmt pos lexeme;
+        exit 2
+      | ParseLocation.Syntax_error (pos, msg) ->
+        Format.printf "%a@\nSyntax error: %s@." ParseLocation.fmt pos msg;
+        exit 3
       | ParseLocation.Uncaught (pos, e) ->
-        Format.printf "%a@\n%s@." ParseLocation.fmt pos (Printexc.to_string e)
+        Format.printf "%a@\n%s@." ParseLocation.fmt pos (Printexc.to_string e);
+        exit 4
     end
 
 

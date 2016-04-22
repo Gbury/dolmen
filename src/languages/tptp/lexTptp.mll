@@ -89,24 +89,17 @@ rule token = parse
   | '['   { LEFT_BRACKET }
   | ']'   { RIGHT_BRACKET }
 
-  | "cnf" { CNF }
-  | "fof" { FOF }
-  | "tff" { TFF }
-  | "thf" { THF }
-  | "tpi" { TPI }
-  | "include" { INCLUDE }
-
   | '^'   { LAMBDA }
   | '@'   { APPLY }
-  | "@+"  { AROBASE_PLUS }
-  | "@-"  { AROBASE_MINUS }
+  | "@+"  { INDEFINITE_DESCRIPTION }
+  | "@-"  { DEFINITE_DESCRIPTION }
   | "!>"  { FORALL_TY }
   | '!'   { FORALL }
   | "?*"  { EXISTS_TY }
   | '?'   { EXISTS }
 
-  | "!!"  { BANGBANG }
-  | "??"  { QUESTION }
+  | "!!"  { PI }
+  | "??"  { SIGMA }
 
   | '<'   { LESS }
   | '>'   { ARROW }
@@ -129,24 +122,33 @@ rule token = parse
   | "!="  { NOT_EQUAL }
   | "-->" { GENTZEN_ARROW }
 
-  | "$ite_f"  { ITE_F }
-  | "$ite_t"  { ITE_T }
-  | "$let_tf" { LET_TF }
-  | "$let_tf" { LET_TF }
-  | "$let_ff" { LET_FT }
-  | "$let_ff" { LET_TT }
 
   | lower_word {
     match Lexing.lexeme lexbuf with
-    | "$thf" -> DOLLAR_THF
-    | "$tff" -> DOLLAR_TFF
-    | "$fof" -> DOLLAR_FOF
-    | "$cnf" -> DOLLAR_CNF
-    | "$fot" -> DOLLAR_FOT
+    | "cnf" -> CNF
+    | "fof" -> FOF
+    | "tff" -> TFF
+    | "thf" -> THF
+    | "tpi" -> TPI
+    | "include" -> INCLUDE
     | s -> LOWER_WORD(s)
   }
+  | dollar_word {
+    match Lexing.lexeme lexbuf with
+    | "$cnf" -> DOLLAR_CNF
+    | "$fof" -> DOLLAR_FOF
+    | "$tff" -> DOLLAR_TFF
+    | "$thf" -> DOLLAR_THF
+    | "$fot" -> DOLLAR_FOT
+    | "$ite_f" -> ITE_F
+    | "$ite_t" -> ITE_T
+    | "$let_tf" -> LET_TF
+    | "$let_ft" -> LET_FT
+    | "$let_ff" -> LET_FF
+    | "$let_tt" -> LET_TT
+    | s -> DOLLAR_WORD(s)
+  }
   | upper_word          { UPPER_WORD(Lexing.lexeme lexbuf) }
-  | dollar_word         { DOLLAR_WORD(Lexing.lexeme lexbuf) }
   | dollar_dollar_word  { DOLLAR_DOLLAR_WORD(Lexing.lexeme lexbuf) }
   | single_quoted       { SINGLE_QUOTED(Lexing.lexeme lexbuf) }
   | distinct_object     { DISTINCT_OBJECT(Lexing.lexeme lexbuf) }
