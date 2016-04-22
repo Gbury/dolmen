@@ -1,11 +1,17 @@
 #!/bin/bash
 
-for d in `ls ./`; do
-  for f in `find $d -name *.*`; do
-    if [ -f $f ]
-    then
-      ../src/dolmen $f
+function do_test {
+  for f in `find $1 -name *.*`; do
+    if ! ../src/dolmen $f > /dev/null; then
+      echo -e "\e[1;31m[KO]\e[0m $1 ($f)"
+      return 1
     fi
   done
-done
+  echo -e "\e[32m[OK]\e[0m $1"
+}
+
+do_test dimacs
+do_test smtlib
+do_test tptp
+do_test zf
 
