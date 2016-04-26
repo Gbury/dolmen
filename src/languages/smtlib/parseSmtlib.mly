@@ -43,49 +43,69 @@ s_expr:
 
 identifier:
   | symbol { $1 }
-  | OPEN UNDERSCORE SYMBOL numeral_plus CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ($3 ^ "_" ^ $4) }
+  | OPEN UNDERSCORE s=SYMBOL n=numeral_plus CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc (s ^ "_" ^ n) }
 ;
 
 sort:
-  | identifier
-    { $1 }
-  | OPEN identifier sort+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $2 $3 }
+  | s=identifier
+    { s }
+  | OPEN f=identifier args=sort+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
 ;
 
 attribute_value:
-  | spec_constant             { $1 }
-  | symbol                    { $1 }
-  | OPEN s_expr* CLOSE        { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc $2 }
+  | v=symbol
+  | v=spec_constant
+    { v }
+  | OPEN l=s_expr* CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
 
 attribute:
-  | KEYWORD                    { ($1,None) }
-  | KEYWORD attribute_value    { ($1,Some $2) }
+  | s=KEYWORD a=attribute_value?
+    {
+      let t = let loc = L.mk_pos $startpos(s) $endpos(s) in T.const ~loc s in
+      match a with
+      | None -> t
+      | Some t' ->
+        let loc = L.mk_pos $startpos $endpos in
+        T.colon ~loc t t'
+    }
 ;
 
 qual_identifier:
-  | identifier                       { $1 }
-  | OPEN AS identifier sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $3 $4 }
+  | s=identifier
+    { s }
+  | OPEN AS s=identifier ty=sort CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s ty }
 ;
 
 var_binding:
-  | OPEN symbol term CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $2 $3 }
+  | OPEN s=symbol t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s t }
 ;
 
 sorted_var:
-  | OPEN symbol sort CLOSE    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc $2 $3 }
+  | OPEN s=symbol ty=sort CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s ty }
 ;
 
 term:
-  | spec_constant                                     { $1 }
-  | qual_identifier                                   { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $1 [] }
-  | OPEN qual_identifier term+ CLOSE                  { let loc = L.mk_pos $startpos $endpos in T.apply ~loc $2 $3 }
-  | OPEN LET OPEN var_binding+ CLOSE term CLOSE       { let loc = L.mk_pos $startpos $endpos in T.letin ~loc $4 $6 }
-  | OPEN FORALL OPEN sorted_var+ CLOSE term CLOSE     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc $4 $6 }
-  | OPEN EXISTS OPEN sorted_var+ CLOSE term CLOSE     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc $4 $6 }
-  | OPEN ATTRIBUTE term attribute+ CLOSE              { let loc = L.mk_pos $startpos $endpos in T.attr ~loc $3 $4 }
+  | c=spec_constant
+    { c }
+  | s=qual_identifier
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc s [] }
+  | OPEN f=qual_identifier args=term+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+  | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.letin ~loc l t }
+  | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
+  | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.exists ~loc l t }
+  | OPEN ATTRIBUTE f=term args=attribute+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
 ;
 
 command_option:

@@ -78,8 +78,7 @@ module type Full = sig
   (** Sequents as terms *)
   val sequent : ?loc:location -> t list -> t list -> t
 
-  (** TODO *)
+  (** S-expressions (for smtlib attributes) *)
   val sexpr   : ?loc:location -> t list -> t
-  val attr    : ?loc:location -> t -> (string * t option) list -> t
 
 end
