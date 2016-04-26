@@ -1,5 +1,5 @@
-S common
 S classes
+S standard
 S interface
 S languages
 S languages/zf
@@ -8,8 +8,8 @@ S languages/dimacs
 S languages/smtlib
 
 B _build/
-B _build/common
 B _build/classes
+B _build/standard
 B _build/interface
 B _build/languages
 B _build/languages/zf

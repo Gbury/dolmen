@@ -109,7 +109,8 @@ term:
 ;
 
 command_option:
-  | attribute    { $1 }
+  | s=KEYWORD t=attribute_value?
+    { (s, t) }
 ;
 
 info_flag:
@@ -132,7 +133,7 @@ command:
 
   | OPEN GET_INFO info_flag CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.get_info ~loc $3 }
-  | OPEN SET_INFO attribute CLOSE
+  | OPEN SET_INFO command_option CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.set_info ~loc $3 }
 
   | OPEN GET_OPTION KEYWORD CLOSE
@@ -165,12 +166,16 @@ command:
 ;
 
 file:
-  | EOF { [] }
-  | command file { $1 :: $2 }
+  | EOF
+    { [] }
+  | c=command l=file
+    { c :: l }
 ;
 
 input:
-  | EOF { None }
-  | command { Some $1 }
+  | EOF
+    { None }
+  | c=command
+    { Some c }
 
 %%
