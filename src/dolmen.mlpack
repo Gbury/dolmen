@@ -4,8 +4,7 @@ Misc
 Transformer
 ParseLocation
 
-# Common definitions
-Cnf
+# Standard implementation
 Term
 Statement
 
@@ -29,3 +28,5 @@ Tptp
 LexTptp
 ParseTptp
 
+# Logic languages class
+Logic

@@ -15,6 +15,7 @@ module type S = sig
 
   val file : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> statement list
 
+  val input : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> statement option
 
   (* Needed for incremental parsing of input *)
 

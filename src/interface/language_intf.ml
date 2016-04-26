@@ -18,5 +18,8 @@ module type S = sig
 
   val parse_file : string -> statement list
 
+  val parse_input :
+    [ `Stdin | `File of string ] -> (unit -> statement option)
+
 end
 

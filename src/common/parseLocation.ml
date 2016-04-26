@@ -1,6 +1,7 @@
 
 (*
 Copyright (c) 2013, Simon Cruanes
+Copyright (c) 2016, Guillaume Bury
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,6 +41,13 @@ exception Uncaught of t * exn
 exception Lexing_error of t * string
 exception Syntax_error of t * string
 
+
+(* Hash and equality *)
+let eq a b = a = b
+let hash a = Hashtbl.hash a
+
+
+(* Constructor functions *)
 let mk file start_line start_column stop_line stop_column =
   { file; start_line; start_column; stop_line; stop_column; }
 
@@ -52,9 +60,8 @@ let mk_pos start stop =
     start.pos_lnum (start.pos_cnum - start.pos_bol)
     stop.pos_lnum (stop.pos_cnum - stop.pos_bol)
 
-let eq a b = a = b
-let hash a = Hashtbl.hash a
 
+(* Combining positions *)
 let _min_pos (l1,c1) (l2,c2) =
   if l1 = l2
   then l1, min c1 c2
@@ -93,6 +100,7 @@ let smaller p1 p2 =
    ||  (p1.stop_line = p2.stop_line && p1.stop_column <= p2.stop_column))
 
 
+(* Printing of positions *)
 let pp buf pos =
   if pos.start_line = pos.stop_line
   then
@@ -118,14 +126,21 @@ let fmt_hint fmt pos =
       (String.make (pos.start_column) ' ')
       (String.make (pos.stop_column - pos.start_column) '^')
 
-let pp_opt buf o = match o with
-  | None -> Printf.bprintf buf "<no location>"
-  | Some pos -> pp buf pos
 
+(* Operations on Lexing.lexbuf *)
 let set_file buf filename =
   let open Lexing in
   buf.lex_curr_p <- {buf.lex_curr_p with pos_fname=filename;};
   ()
+
+let mk_lexbuf i =
+  let s, ch = match i with
+    | `Stdin -> "<stdin>", stdin
+    | `File s -> s, open_in s
+  in
+  let buf = Lexing.from_channel ch in
+  set_file buf s;
+  buf
 
 let of_lexbuf lexbuf =
   let start = Lexing.lexeme_start_p lexbuf in

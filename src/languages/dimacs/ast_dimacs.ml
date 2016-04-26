@@ -15,10 +15,10 @@ module type Statement = sig
 
   type t
 
-  type atom
+  type term
 
   type location
 
-  val clause : ?loc:location -> atom list -> t
+  val clause : ?loc:location -> term list -> t
 
 end

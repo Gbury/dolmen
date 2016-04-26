@@ -46,15 +46,21 @@ type t = {
 exception Uncaught of t * exn
 exception Lexing_error of t * string
 exception Syntax_error of t * string
+(** Exceptions that may occur during parsing *)
+
+val hash : t -> int
+val eq : t -> t -> bool
+(** Hash and equality *)
 
 val mk : string -> int -> int -> int -> int -> t
-
 val mk_pair : string -> (int * int) -> (int * int) -> t
-
 val mk_pos : Lexing.position -> Lexing.position -> t
+(** Construction functions *)
 
-val eq : t -> t -> bool
-val hash : t -> int
+val pp : Buffer.t -> t -> unit
+val fmt : Format.formatter -> t -> unit
+val fmt_hint : Format.formatter -> t -> unit
+(** Printing functions *)
 
 val combine : t -> t -> t
 (** LogtkPosition that spans the two given positions. The file is assumed to be
@@ -68,17 +74,16 @@ val smaller : t -> t -> bool
 (** [smaller p1 p2] is true if [p1] is included in [p2], ie
     [p1] is a sub-location of [p2] (interval inclusion) *)
 
-val pp : Buffer.t -> t -> unit
-val fmt : Format.formatter -> t -> unit
-val fmt_hint : Format.formatter -> t -> unit
-val to_string : t -> string
-
-val pp_opt : Buffer.t -> t option -> unit
 
 (** {2 Lexbuf} *)
 
 val set_file : Lexing.lexbuf -> string -> unit
 (** Change the file name used for positions in this lexbuf *)
 
+val mk_lexbuf : [ `Stdin | `File of string ] -> Lexing.lexbuf
+(** Reutnrs the lexbuf associetd with the given file or stdin,
+    with the correct filename. *)
+
 val of_lexbuf : Lexing.lexbuf -> t
 (** Recover a position from a lexbuf *)
+

@@ -5,7 +5,7 @@
 
 %parameter <L : ParseLocation.S>
 %parameter <T : Ast_dimacs.Term with type location := L.t>
-%parameter <S : Ast_dimacs.Statement with type location := L.t and type atom := T.t>
+%parameter <S : Ast_dimacs.Statement with type location := L.t and type term := T.t>
 
 /* Starting symbols */
 

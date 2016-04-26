@@ -5,9 +5,6 @@
 
 (** Terms *)
 type term = Term.t
-type attr = Term.t
-
-type annotation = attr
 
 type inductive = {
   name : string;
@@ -52,7 +49,7 @@ type descr =
 and t = {
   name : string;
   descr : descr;
-  attr : attr option;
+  attr : term option;
   loc : ParseLocation.t option;
 }
 
@@ -113,6 +110,12 @@ let get_assertions ?loc () = mk ?loc Get_assertions
 (* End statement *)
 let exit ?loc () = mk ?loc Exit
 
+(** The following functions should be moved to a functor... *)
+
+(* Dimacs wrapper *)
+let clause ?loc l =
+  let t = Term.or_ ?loc l in
+  antecedent ?loc t
 
 (* Smtlib wrappers *)
 let check_sat = prove

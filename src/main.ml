@@ -24,7 +24,7 @@ let () =
     begin try
         begin match Misc.get_extension (Filename.basename file) with
           | ".cnf" ->
-            let module Parse = Dimacs.Make(ParseLocation)(Term)(Cnf) in
+            let module Parse = Dimacs.Make(ParseLocation)(Term)(Statement) in
             let _ = Parse.parse_file file in
             ()
           | ".smt2" ->
