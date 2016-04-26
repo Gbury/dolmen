@@ -22,28 +22,9 @@ let () =
   | `Error (`Parse | `Term | `Exn) -> exit 1
   | `Ok file ->
     begin try
-        begin match Misc.get_extension (Filename.basename file) with
-          | ".cnf" ->
-            let module Parse = Dimacs.Make(ParseLocation)(Term)(Statement) in
-            let _ = Parse.parse_file file in
-            ()
-          | ".smt2" ->
-            let module Parse = Smtlib.Make(ParseLocation)(Term)(Statement) in
-            let _ = Parse.parse_file file in
-            ()
-          | ".zf" ->
-            let module Parse = Zf.Make(ParseLocation)(Term)(Statement) in
-            let _ = Parse.parse_file file in
-            ()
-          | ".p" ->
-            let module Parse = Tptp.Make(ParseLocation)(Term)(Statement) in
-            let _ = Parse.parse_file file in
-            ()
-          | fmt ->
-            Format.printf "%s: unrecognised format: '%s'@." file fmt;
-            exit 1
-        end;
-        Format.printf "%s: ok@." Sys.argv.(1)
+        let module M = Logic.Make(ParseLocation)(Term)(Statement) in
+        let _ = M.parse_file file in
+        Format.printf "%s: ok@." file
       with
       | ParseLocation.Lexing_error (pos, lexeme) ->
         Format.printf "%a@\nLexing error, unrecognised lexeme: '%s'@." ParseLocation.fmt pos lexeme;

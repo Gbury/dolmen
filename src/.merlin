@@ -1,4 +1,5 @@
 S common
+S classes
 S interface
 S languages
 S languages/zf
@@ -8,6 +9,7 @@ S languages/smtlib
 
 B _build/
 B _build/common
+B _build/classes
 B _build/interface
 B _build/languages
 B _build/languages/zf
