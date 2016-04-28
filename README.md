@@ -6,14 +6,14 @@ A library providing parsers for languages such as dimacs, tptp and smtlib.
 
 Currently the following parsers are working:
 
-- dimacs
+- tptp
 - smtlib
+- dimacs
 - zf (zipperposition format)
 
 The following parsers are either work in progress, or soon to be
 work in progress:
 
-- tptp
 - coq
 - dedukti
 
