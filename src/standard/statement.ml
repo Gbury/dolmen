@@ -143,12 +143,12 @@ let definition ?loc s ty term =
   let t = Term.colon term ty in
   def ?loc s t
 
-let rewrite ?loc ~attr t = antecedent ?loc ~attr t
+let rewrite ?loc ?attr t = antecedent ?loc ?attr t
 
-let assume ?loc ~attr t = antecedent ?loc ~attr t
+let assume ?loc ?attr t = antecedent ?loc ?attr t
 
-let goal ?loc ~attr t =
-  mk ?loc ~attr (Pack [
+let goal ?loc ?attr t =
+  mk ?loc ?attr (Pack [
       consequent t;
       prove ();
     ])

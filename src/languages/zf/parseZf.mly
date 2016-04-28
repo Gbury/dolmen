@@ -122,8 +122,8 @@ mutual_types:
 
 attr:
   | LEFT_BRACKET s=name RIGHT_BRACKET
-    { let loc = L.mk_pos $startpos $endpos in S.attr ~loc s }
-  | { S.default_attr }
+    { let loc = L.mk_pos $startpos $endpos in Some (S.attr ~loc s) }
+  | { None }
 
 statement:
   | VAL v=name COLON t=term DOT
@@ -131,11 +131,11 @@ statement:
   | DEF v=name COLON t=term EQDEF u=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.definition ~loc v t u }
   | REWRITE attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ~attr t }
+    { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ?attr t }
   | ASSERT attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attr t }
+    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ?attr t }
   | GOAL attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attr t }
+    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ?attr t }
   | DATA l=mutual_types DOT
     { let loc = L.mk_pos $startpos $endpos in S.data ~loc l }
   | error

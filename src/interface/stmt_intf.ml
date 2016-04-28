@@ -1,15 +1,19 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(** Interfaces for statements.
+    This module defines interfaces for statements, i.e top-level
+    declarations in files. *)
+
 module type Logic = sig
 
-  type t
+  include Base_intf.S
+
   type term
-  type location
+  (** The type of terms used in statements. *)
 
-  (** {2 Additional infos for statements} *)
+  (** {2 Optional nfos for statements} *)
 
-  val default_attr : term
   val attr  : ?loc:location -> string -> term
   val annot : ?loc:location -> term -> term list -> term
 
@@ -65,8 +69,8 @@ module type Logic = sig
   val definition  : ?loc:location -> string -> term -> term -> t
   val inductive   : ?loc:location -> string -> term list -> (string * term list) list -> t
 
-  val goal        : ?loc:location -> attr:term -> term -> t
-  val assume      : ?loc:location -> attr:term -> term -> t
-  val rewrite     : ?loc:location -> attr:term -> term -> t
+  val goal        : ?loc:location -> ?attr:term -> term -> t
+  val assume      : ?loc:location -> ?attr:term -> term -> t
+  val rewrite     : ?loc:location -> ?attr:term -> term -> t
 
 end

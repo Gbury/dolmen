@@ -39,7 +39,6 @@ module type Statement = sig
   type term
   type location
 
-  val default_attr : term
   val attr : ?loc:location -> string -> term
 
   val data        : ?loc:location -> t list -> t
@@ -47,9 +46,9 @@ module type Statement = sig
   val definition  : ?loc:location -> string -> term -> term -> t
   val inductive   : ?loc:location -> string -> term list -> (string * term list) list -> t
 
-  val rewrite     : ?loc:location -> attr:term -> term -> t
-  val goal        : ?loc:location -> attr:term -> term -> t
-  val assume      : ?loc:location -> attr:term -> term -> t
+  val rewrite     : ?loc:location -> ?attr:term -> term -> t
+  val goal        : ?loc:location -> ?attr:term -> term -> t
+  val assume      : ?loc:location -> ?attr:term -> term -> t
 
 end
 

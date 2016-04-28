@@ -6,20 +6,6 @@
     respect in order to be used to instantiated the corresponding
     language classes. *)
 
-(** {2 Basic signature} *)
-
-module type Base = sig
-
-  (** Signature common to all other signatures *)
-
-  type t
-  (** The type of terms. *)
-
-  type location
-  (** The type of locations attached to terms. *)
-
-end
-
 (** {2 Signature for Logic languages} *)
 
 module type Logic = sig
@@ -32,8 +18,7 @@ module type Logic = sig
       also need to be represented by standalone terms.
   *)
 
-  include Base
-
+  include Base_intf.S
 
   (** {3 Predefined terms} *)
 
