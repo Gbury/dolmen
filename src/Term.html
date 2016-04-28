@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="next" href="Statement.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Term" rel="Chapter" href="Term.html">
+<link title="Statement" rel="Chapter" href="Statement.html">
+<link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
+<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Term_intf" rel="Chapter" href="Term_intf.html">
+<link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
+<link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
+<link title="Parse_intf" rel="Chapter" href="Parse_intf.html">
+<link title="Location_intf" rel="Chapter" href="Location_intf.html">
+<link title="Language_intf" rel="Chapter" href="Language_intf.html">
+<link title="Dimacs" rel="Chapter" href="Dimacs.html">
+<link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="Smtlib" rel="Chapter" href="Smtlib.html">
+<link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
+<link title="Zf" rel="Chapter" href="Zf.html">
+<link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
+<link title="Tptp" rel="Chapter" href="Tptp.html">
+<link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
+<link title="Logic" rel="Chapter" href="Logic.html"><title>Term</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Statement.html" title="Statement">Next</a>
+</div>
+<h1>Module <a href="type_Term.html">Term</a></h1>
+
+<pre><span class="keyword">module</span> Term: <code class="code">sig</code> <a href="Term.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Terms<br>
+</div>
+<hr width="100%">
+
+<pre><code><span id="TYPEbuiltin"><span class="keyword">type</span> <code class="type"></code>builtin</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Wildcard"><span class="constructor">Wildcard</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.True"><span class="constructor">True</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.False"><span class="constructor">False</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Eq"><span class="constructor">Eq</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Distinct"><span class="constructor">Distinct</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Ite"><span class="constructor">Ite</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Sequent"><span class="constructor">Sequent</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Arrow"><span class="constructor">Arrow</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Subtype"><span class="constructor">Subtype</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Product"><span class="constructor">Product</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Union"><span class="constructor">Union</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Not"><span class="constructor">Not</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.And"><span class="constructor">And</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Or"><span class="constructor">Or</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Nand"><span class="constructor">Nand</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Xor"><span class="constructor">Xor</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Nor"><span class="constructor">Nor</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Imply"><span class="constructor">Imply</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Implied"><span class="constructor">Implied</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Equiv"><span class="constructor">Equiv</span></span></code></td>
+
+</tr></table>
+
+<div class="info ">
+The type of builtins symbols for terms.
+    Some languages have specific syntax for logical connectives
+    (tptp's'&amp;&amp;' or '||' for isntance) whereas some don't
+    (in smtlib for instance)<br>
+</div>
+
+
+<pre><code><span id="TYPEbinder"><span class="keyword">type</span> <code class="type"></code>binder</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.All"><span class="constructor">All</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Ex"><span class="constructor">Ex</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Pi"><span class="constructor">Pi</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Let"><span class="constructor">Let</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Fun"><span class="constructor">Fun</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Choice"><span class="constructor">Choice</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Description"><span class="constructor">Description</span></span></code></td>
+
+</tr></table>
+
+<div class="info ">
+The type of binders, these are prettymuch always builtin in all languages.<br>
+</div>
+
+
+<pre><code><span id="TYPEdescr"><span class="keyword">type</span> <code class="type"></code>descr</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.Symbol"><span class="constructor">Symbol</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.Builtin"><span class="constructor">Builtin</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEbuiltin">builtin</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.Colon"><span class="constructor">Colon</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEt">t</a> * <a href="Term.html#TYPEt">t</a></code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.App"><span class="constructor">App</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEt">t</a> * <a href="Term.html#TYPEt">t</a> list</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.Binder"><span class="constructor">Binder</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEbinder">binder</a> * <a href="Term.html#TYPEt">t</a> list * <a href="Term.html#TYPEt">t</a></code></code></td>
+
+</tr></table>
+
+<div class="info ">
+The AST for terms<br>
+</div>
+
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.loc">loc</span>&nbsp;: <code class="type"><a href="ParseLocation.html#TYPEt">ParseLocation.t</a> option</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.term">term</span>&nbsp;: <code class="type"><a href="Term.html#TYPEdescr">descr</a></code>;</code></td>
+
+</tr></table>
+}
+
+<div class="info ">
+The type of terms. A record wontaining an optional location,
+    and a description of the term.<br>
+</div>
+
+
+<pre><span id="VALmake"><span class="keyword">val</span> make</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEdescr">descr</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make a term from its description<br>
+</div>
+
+<pre><span id="VALmk_bind"><span class="keyword">val</span> mk_bind</span> : <code class="type"><a href="Term.html#TYPEbinder">binder</a> -> ?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Internal shortcut to make a formula with bound variables.<br>
+</div>
+
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Create a constant and/or variable, that is a leaf
+    of the term AST.<br>
+</div>
+
+<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Apply a term to a list of terms.<br>
+</div>
+
+<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Juxtapose two terms, usually a term and its type.
+    Used mainly for typed variables, or type annotations.<br>
+</div>
+
+<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALite_t"><span class="keyword">val</span> ite_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsequent_t"><span class="keyword">val</span> sequent_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALarrow_t"><span class="keyword">val</span> arrow_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALunion_t"><span class="keyword">val</span> union_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALproduct_t"><span class="keyword">val</span> product_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsubtype_t"><span class="keyword">val</span> subtype_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfun_ty"><span class="keyword">val</span> fun_ty</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnot_"><span class="keyword">val</span> not_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_"><span class="keyword">val</span> or_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_"><span class="keyword">val</span> and_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimply"><span class="keyword">val</span> imply</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv"><span class="keyword">val</span> equiv</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALlambda"><span class="keyword">val</span> lambda</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdescription"><span class="keyword">val</span> description</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALatom"><span class="keyword">val</span> atom</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtyped"><span class="keyword">val</span> typed</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:'a -> 'b -> 'c -> 'b</code></pre>
+<pre><span id="VALsexpr"><span class="keyword">val</span> sexpr</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALite"><span class="keyword">val</span> ite</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsubtype"><span class="keyword">val</span> subtype</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre></body></html>

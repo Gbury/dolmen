@@ -1,0 +1,68 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Term" rel="Chapter" href="Term.html">
+<link title="Statement" rel="Chapter" href="Statement.html">
+<link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
+<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Term_intf" rel="Chapter" href="Term_intf.html">
+<link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
+<link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
+<link title="Parse_intf" rel="Chapter" href="Parse_intf.html">
+<link title="Location_intf" rel="Chapter" href="Location_intf.html">
+<link title="Language_intf" rel="Chapter" href="Language_intf.html">
+<link title="Dimacs" rel="Chapter" href="Dimacs.html">
+<link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="Smtlib" rel="Chapter" href="Smtlib.html">
+<link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
+<link title="Zf" rel="Chapter" href="Zf.html">
+<link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
+<link title="Tptp" rel="Chapter" href="Tptp.html">
+<link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
+<link title="Logic" rel="Chapter" href="Logic.html"><title>Parse_intf.S.MenhirInterpreter</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;token&nbsp;=&nbsp;token<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;env<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;production<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;=&nbsp;<span class="keyword">private</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">InputNeeded</span>&nbsp;<span class="keyword">of</span>&nbsp;env<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Shifting</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;env&nbsp;*&nbsp;bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">AboutToReduce</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;production<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">HandlingError</span>&nbsp;<span class="keyword">of</span>&nbsp;env<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Accepted</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="keywordsign">'</span>a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Rejected</span><br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;offer&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;resume&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;supplier&nbsp;=&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;lexer_lexbuf_to_supplier&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop&nbsp;:&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle_undo&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_test&nbsp;:&nbsp;(env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;acceptable&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;number&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;element&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Element</span>&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;*&nbsp;<span class="keywordsign">'</span>a&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;element<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;stack&nbsp;=&nbsp;element&nbsp;<span class="constructor">MenhirLib</span>.<span class="constructor">General</span>.stream<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;stack&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;stack<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;positions&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;has_default_reduction&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+<span class="keyword">end</span></code></body></html>

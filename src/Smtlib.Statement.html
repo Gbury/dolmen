@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Smtlib.Term.html">
+<link rel="Up" href="Smtlib.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Term" rel="Chapter" href="Term.html">
+<link title="Statement" rel="Chapter" href="Statement.html">
+<link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
+<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Term_intf" rel="Chapter" href="Term_intf.html">
+<link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
+<link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
+<link title="Parse_intf" rel="Chapter" href="Parse_intf.html">
+<link title="Location_intf" rel="Chapter" href="Location_intf.html">
+<link title="Language_intf" rel="Chapter" href="Language_intf.html">
+<link title="Dimacs" rel="Chapter" href="Dimacs.html">
+<link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="Smtlib" rel="Chapter" href="Smtlib.html">
+<link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
+<link title="Zf" rel="Chapter" href="Zf.html">
+<link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
+<link title="Tptp" rel="Chapter" href="Tptp.html">
+<link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
+<link title="Logic" rel="Chapter" href="Logic.html"><title>Smtlib.Statement</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Smtlib.Term.html" title="Smtlib.Term">Previous</a>
+&nbsp;<a class="up" href="Smtlib.html" title="Smtlib">Up</a>
+&nbsp;</div>
+<h1>Module type <a href="type_Smtlib.Statement.html">Smtlib.Statement</a></h1>
+
+<pre><span class="keyword">module type</span> Statement = <code class="type"><a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a></code></pre><hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+
+
+<pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
+
+
+<pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+
+
+<pre><span id="VALpop"><span class="keyword">val</span> pop</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> int -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALpush"><span class="keyword">val</span> push</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> int -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALassert_"><span class="keyword">val</span> assert_</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALcheck_sat"><span class="keyword">val</span> check_sat</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALset_logic"><span class="keyword">val</span> set_logic</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_info"><span class="keyword">val</span> get_info</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALset_info"><span class="keyword">val</span> set_info</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string * <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> option -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_option"><span class="keyword">val</span> get_option</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALset_option"><span class="keyword">val</span> set_option</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string * <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> option -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnew_type"><span class="keyword">val</span> new_type</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> string -> int -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtype_alias"><span class="keyword">val</span> type_alias</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtype_cstr"><span class="keyword">val</span> type_cstr</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_proof"><span class="keyword">val</span> get_proof</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_unsat_core"><span class="keyword">val</span> get_unsat_core</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_value"><span class="keyword">val</span> get_value</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_assignment"><span class="keyword">val</span> get_assignment</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALget_assertions"><span class="keyword">val</span> get_assertions</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALexit"><span class="keyword">val</span> exit</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> unit -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre></body></html>

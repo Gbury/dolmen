@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Statement.html">
+<link rel="next" href="Base_intf.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Term" rel="Chapter" href="Term.html">
+<link title="Statement" rel="Chapter" href="Statement.html">
+<link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
+<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Term_intf" rel="Chapter" href="Term_intf.html">
+<link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
+<link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
+<link title="Parse_intf" rel="Chapter" href="Parse_intf.html">
+<link title="Location_intf" rel="Chapter" href="Location_intf.html">
+<link title="Language_intf" rel="Chapter" href="Language_intf.html">
+<link title="Dimacs" rel="Chapter" href="Dimacs.html">
+<link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="Smtlib" rel="Chapter" href="Smtlib.html">
+<link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
+<link title="Zf" rel="Chapter" href="Zf.html">
+<link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
+<link title="Tptp" rel="Chapter" href="Tptp.html">
+<link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Interface definition" rel="Section" href="#2_Interfacedefinition">
+<link title="Concrete positions" rel="Section" href="#2_Concretepositions">
+<link title="Lexbuf" rel="Section" href="#2_Lexbuf">
+<title>ParseLocation</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Statement.html" title="Statement">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Base_intf.html" title="Base_intf">Next</a>
+</div>
+<h1>Module <a href="type_ParseLocation.html">ParseLocation</a></h1>
+
+<pre><span class="keyword">module</span> ParseLocation: <code class="code">sig</code> <a href="ParseLocation.html">..</a> <code class="code">end</code></pre><div class="info module top">
+<h1 id="1_Locationinafile">Location in a file</h1><br>
+</div>
+<hr width="100%">
+<br>
+<h2 id="2_Interfacedefinition">Interface definition</h2><br>
+
+<pre><span class="keyword">module type</span> <a href="ParseLocation.S.html">S</a> = <code class="type"><a href="Location_intf.S.html">Location_intf.S</a></code></pre><div class="info">
+An anstract module type for providing locations.
+</div>
+<br>
+<h2 id="2_Concretepositions">Concrete positions</h2><br>
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.file">file</span>&nbsp;: <code class="type">string</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.start_line">start_line</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.start_column">start_column</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.stop_line">stop_line</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.stop_column">stop_column</span>&nbsp;: <code class="type">int</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="EXCEPTIONUncaught"><span class="keyword">exception</span> Uncaught</span> <span class="keyword">of</span> <code class="type"><a href="ParseLocation.html#TYPEt">t</a> * exn</code></pre>
+
+<pre><span id="EXCEPTIONLexing_error"><span class="keyword">exception</span> Lexing_error</span> <span class="keyword">of</span> <code class="type"><a href="ParseLocation.html#TYPEt">t</a> * string</code></pre>
+
+<pre><span id="EXCEPTIONSyntax_error"><span class="keyword">exception</span> Syntax_error</span> <span class="keyword">of</span> <code class="type"><a href="ParseLocation.html#TYPEt">t</a> * string</code></pre>
+<div class="info ">
+Exceptions that may occur during parsing<br>
+</div>
+
+<pre><span id="VALhash"><span class="keyword">val</span> hash</span> : <code class="type"><a href="ParseLocation.html#TYPEt">t</a> -> int</code></pre>
+<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type"><a href="ParseLocation.html#TYPEt">t</a> -> <a href="ParseLocation.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+Hash and equality<br>
+</div>
+
+<pre><span id="VALmk"><span class="keyword">val</span> mk</span> : <code class="type">string -> int -> int -> int -> int -> <a href="ParseLocation.html#TYPEt">t</a></code></pre>
+<pre><span id="VALmk_pair"><span class="keyword">val</span> mk_pair</span> : <code class="type">string -> int * int -> int * int -> <a href="ParseLocation.html#TYPEt">t</a></code></pre>
+<pre><span id="VALmk_pos"><span class="keyword">val</span> mk_pos</span> : <code class="type">Lexing.position -> Lexing.position -> <a href="ParseLocation.html#TYPEt">t</a></code></pre><div class="info ">
+Construction functions<br>
+</div>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="ParseLocation.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALfmt"><span class="keyword">val</span> fmt</span> : <code class="type">Format.formatter -> <a href="ParseLocation.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALfmt_hint"><span class="keyword">val</span> fmt_hint</span> : <code class="type">Format.formatter -> <a href="ParseLocation.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Printing functions<br>
+</div>
+
+<pre><span id="VALcombine"><span class="keyword">val</span> combine</span> : <code class="type"><a href="ParseLocation.html#TYPEt">t</a> -> <a href="ParseLocation.html#TYPEt">t</a> -> <a href="ParseLocation.html#TYPEt">t</a></code></pre><div class="info ">
+LogtkPosition that spans the two given positions. The file is assumed to be
+    the same in both case, and is chosen from one of the two positions.<br>
+</div>
+
+<pre><span id="VALcombine_list"><span class="keyword">val</span> combine_list</span> : <code class="type"><a href="ParseLocation.html#TYPEt">t</a> list -> <a href="ParseLocation.html#TYPEt">t</a></code></pre><div class="info ">
+N-ary version of <a href="ParseLocation.html#VALcombine"><code class="code">ParseLocation.combine</code></a>.<br>
+<b>Raises</b> <code>Invalid_argument</code> if the list is empty<br>
+</div>
+
+<pre><span id="VALsmaller"><span class="keyword">val</span> smaller</span> : <code class="type"><a href="ParseLocation.html#TYPEt">t</a> -> <a href="ParseLocation.html#TYPEt">t</a> -> bool</code></pre><div class="info ">
+<code class="code">smaller p1 p2</code> is true if <code class="code">p1</code> is included in <code class="code">p2</code>, ie
+    <code class="code">p1</code> is a sub-location of <code class="code">p2</code> (interval inclusion)<br>
+</div>
+<br>
+<h2 id="2_Lexbuf">Lexbuf</h2><br>
+
+<pre><span id="VALset_file"><span class="keyword">val</span> set_file</span> : <code class="type">Lexing.lexbuf -> string -> unit</code></pre><div class="info ">
+Change the file name used for positions in this lexbuf<br>
+</div>
+
+<pre><span id="VALmk_lexbuf"><span class="keyword">val</span> mk_lexbuf</span> : <code class="type">[ `File of string | `Stdin ] -> Lexing.lexbuf</code></pre><div class="info ">
+Reutnrs the lexbuf associetd with the given file or stdin,
+    with the correct filename.<br>
+</div>
+
+<pre><span id="VALof_lexbuf"><span class="keyword">val</span> of_lexbuf</span> : <code class="type">Lexing.lexbuf -> <a href="ParseLocation.html#TYPEt">t</a></code></pre><div class="info ">
+Recover a position from a lexbuf<br>
+</div>
+</body></html>
