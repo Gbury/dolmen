@@ -3,8 +3,8 @@
 
 module Make
     (L : ParseLocation.S)
-    (T : Term_intf.Full with type location := L.t)
-    (S : Stmt_intf.Full with type location := L.t and type term := T.t)
+    (T : Term_intf.Logic with type location := L.t)
+    (S : Stmt_intf.Logic with type location := L.t and type term := T.t)
 = struct
 
   module type S = Language_intf.S with type statement := S.t

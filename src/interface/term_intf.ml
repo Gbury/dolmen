@@ -1,22 +1,67 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module type Full = sig
+(** Interfaces for Terms
+    This module defines Interfaces that implementation of terms must
+    respect in order to be used to instantiated the corresponding
+    language classes. *)
+
+(** {2 Basic signature} *)
+
+module type Base = sig
+
+  (** Signature common to all other signatures *)
 
   type t
-  type location
+  (** The type of terms. *)
 
-  (** Predefined terms *)
-  val wildcard  : t
+  type location
+  (** The type of locations attached to terms. *)
+
+end
+
+(** {2 Signature for Logic languages} *)
+
+module type Logic = sig
+
+  (** Signature used by the Logic classes, which parse languages
+      such as tptp, smtlib, etc...
+      Mainly used to parse first-order terms, it is also used to
+      parse tptp's THF language, which uses higher order terms, so
+      some first-order constructs such as conjunction, equality, etc...
+      also need to be represented by standalone terms.
+  *)
+
+  include Base
+
+
+  (** {3 Predefined terms} *)
 
   val eq_t      : t
   val neq_t     : t
+  (** The terms representing equality and diequality, respectively. *)
+
+  val wildcard  : t
+  (** The wildcard term, usually used in place of type arguments
+      to explicit polymorphic functions to not explicit types that
+      can be inferred by the type-checker. *)
 
   val tType     : t
+  (** The type of types, defined as specific token by the Zipperposition format;
+      in other languages, will be represented as a constant (the "$tType" constant
+      in tptp for instance). Used to define new types, or quantify type variables
+      in languages that support polymorphism. *)
+
   val prop      : t
+  (** The type of propositions. Also defined as a lexical token by the Zipperposition
+      format. Will be defined as a constant in most other languages (for instance,
+      "$o" in tptp). *)
 
   val true_     : t
   val false_    : t
+  (** The constants for the true and fals propositional constants. Again defined
+      as lexical token in the Zipperposition format, while treated as a constant
+      in other languages ("$true" in tptp). *)
 
   val not_t     : t
   val or_t      : t
@@ -25,38 +70,76 @@ module type Full = sig
   val nor_t     : t
   val nand_t    : t
   val equiv_t   : t
-  val implies_t : t
   val implied_t : t
+  val implies_t : t
+  (** Standard logical connectives viewed as terms. [implies_t] is usual
+      right implication, i.e [apply implies_t \[p; q\] ] is "p imples q",
+      while [apply impled_t \[p; q \]] means "p is implied by q" or
+      "q implies p". *)
 
   val data_t    : t
+  (** Term without semantic meaning, used for creating "data" terms.
+      Used in tptp's annotations, and with similar meaning as smtlib's
+      s-expressions (as used in the [sexpr] function defined later). *)
 
-  (** Juxtaposition of two terms *)
-  val colon : ?loc:location -> t -> t -> t
 
-  (** Variables/Constants constructors *)
+  (** {3 Terms leaf constructors} *)
+
   val var      : ?loc:location -> string -> t
-  val atom     : ?loc:location -> string -> t
   val const    : ?loc:location -> string -> t
+  (** Variable and constant constructors. While in some languages
+      they can distinguished at the laxical level (in tptp for instance),
+      in most languages, it is an issue dependant on scoping rules,
+      so terms parsed from an smtlib file will have all variables
+      parsed as constants. *)
+
+  val atom     : ?loc:location -> string -> t
   val distinct : ?loc:location -> string -> t
+  (** These functions are similar to constant building. Atoms are used
+      for dimacs cnf parsing. [distinct] is used in tptp to specify
+      constants different from other constants, for instance the
+      'distinct' "Apple" should be syntactically different from the "Apple"
+      constant. Can be safely aliased to the [const] function as the
+      [distinct] function is given strings already enclosed with quotes,
+      so in the example above, [const] would be called with ["Apple"] as
+      string argument, while [distinct] would be called with the following
+      string ["\"Apple\""] *)
 
   val int      : ?loc:location -> string -> t
   val rat      : ?loc:location -> string -> t
   val real     : ?loc:location -> string -> t
   val hexa     : ?loc:location -> string -> t
   val binary   : ?loc:location -> string -> t
+  (** Constructors for words defined as numeric formats by the languages
+      specifications. These also can be safely aliased to [const]. *)
 
-  (** Term construction *)
+
+  (** {3 Term constructors} *)
+
+  val colon : ?loc:location -> t -> t -> t
+  (** Representes juxtaposition of two terms, usually denoted "t : t'"
+      in most languages, and mainly used to annotated terms with their
+      supposed, or defined, type. *)
+
   val eq    : ?loc:location -> t -> t -> t
-
   val not_  : ?loc:location -> t -> t
   val or_   : ?loc:location -> t list -> t
   val and_  : ?loc:location -> t list -> t
   val imply : ?loc:location -> t -> t -> t
   val equiv : ?loc:location -> t -> t -> t
+  (** Proposition construction functions. The conjunction and disjunction
+      are n-ary instead of binary mostly because they are in smtlib (and
+      that is subsumes the binary case). *)
 
-  (** Application and conditional *)
-  val ite   : ?loc:location -> t -> t -> t -> t
   val apply : ?loc:location -> t -> t list -> t
+  (** Application constructor, seen as higher order application
+      rather than first-order application for the following reasons:
+      being able to parse tptp's THF, having location attached
+      to function symbols. *)
+
+  val ite   : ?loc:location -> t -> t -> t -> t
+  (** Conditional constructor, both for first-order terms and propositions.
+      Used in the following schema: [ite condition then_branch else_branch]. *)
 
   (** Binders constructors *)
   val pi     : ?loc:location -> t list -> t -> t
@@ -64,21 +147,51 @@ module type Full = sig
   val forall : ?loc:location -> t list -> t -> t
   val exists : ?loc:location -> t list -> t -> t
   val lambda : ?loc:location -> t list -> t -> t
-
-  (** Type constructors *)
-  val arrow   : ?loc:location -> t -> t -> t
-  val union   : ?loc:location -> t -> t -> t
-  val product : ?loc:location -> t -> t -> t
-  val subtype : ?loc:location -> t -> t -> t
-
-  (** Descriptions *)
   val choice : ?loc:location -> t list -> t -> t
   val description : ?loc:location -> t list -> t -> t
+  (** Binders for variables. Takes a list of terms as first argument
+      for simplicity, the lists will almost always be a list of variables,
+      optionally typed using the [colon] term constructor.
+      - Pi is the polymorphic type quantification, for instance
+        the polymorphic identity function has type: "Pi alpha. alpha -> alpha"
+      - Letin is local binding, takes a list of equality of equivalences
+        whose left hand-side is a variable.
+      - Forall is universal quantification
+      - Exists is existencial quantification
+      - Lambda is used for function construction
+      - Choice is the choice operator, also called indefinite description, or
+        also epsilon terms, i.e "Choice x. p(x)" is one "x" such that "p(x)"
+        is true.
+      - Description is the definite description, i.e "Description x. p(x)"
+        is the {b only} "x" that satisfies p.
+  *)
 
-  (** Sequents as terms *)
+  (** {3 Type constructors} *)
+
+  val arrow   : ?loc:location -> t -> t -> t
+  (** Function type constructor, for curryfied functions. Functions
+      that takes multiple arguments in first-order terms (and so
+      naturally not curryfied) will take a product as only argument
+      (see the following [product] function). *)
+
+  val product : ?loc:location -> t -> t -> t
+  (** Product type constructor, used for instance in the types of
+      functions that takes multiple arguments in a non-curry way. *)
+
+  val union   : ?loc:location -> t -> t -> t
+  (** Union type constructor, currently used in tptp's THF format. *)
+
+  val subtype : ?loc:location -> t -> t -> t
+  (** Subtype relation for types. *)
+
+
+  (** {3 Special constructions} *)
+
   val sequent : ?loc:location -> t list -> t list -> t
+  (** Sequents as terms *)
 
-  (** S-expressions (for smtlib attributes) *)
   val sexpr   : ?loc:location -> t list -> t
+  (** S-expressions (for smtlib attributes), should probably be related
+      to the [data_t] term. *)
 
 end

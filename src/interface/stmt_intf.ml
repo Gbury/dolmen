@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module type Full = sig
+module type Logic = sig
 
   type t
   type term
