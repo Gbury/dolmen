@@ -2,6 +2,10 @@
 
 A library providing parsers for languages such as dimacs, tptp and smtlib.
 
+## LICENSE
+
+BSD2, see file LICENSE.
+
 ## Current state
 
 Currently the following parsers are working:
