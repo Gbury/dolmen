@@ -1,6 +1,8 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
+(** Smtlib language input *)
+
 module type Term = Ast_smtlib.Term
 module type Statement = Ast_smtlib.Statement
 (** Implementation requirement for the Smtlib format. *)

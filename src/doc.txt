@@ -6,8 +6,18 @@ This code is free, under the BSD license.
 
 {2 Contents}
 
-Dolmen provides functor to easily create parsers for some languages, and
-standard implementation of the required arguments for the functors.
+Dolmen is a parser library, intended to considerably reduce the burden of having
+to parse different input languages. The main idea of dolmen
+is to provide an easy way to obtain a structured representation
+of an input, but not to completely abstract over the different input languages.
+Indeed, most languages are different enough that completeley abstracting over many
+of them would require specific encodings that would be detrimental to keeping
+the original structure of the input. Instead, the idea is to identify the
+core requirements of each language and provide easy way to obtain parsers
+for these languages when provided with an implementation that meets the requirements.
+
+To that effect, dolmen mainly provides functors that take an adequate implementation
+of terms and top-level directives, and then return parsers for various languages.
 
 {4 Language classes}
 
