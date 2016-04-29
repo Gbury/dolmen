@@ -47,11 +47,11 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_info&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;new_type&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_alias&nbsp;:<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_cstr&nbsp;:<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_def&nbsp;:<br>
@@ -85,16 +85,16 @@
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;definition&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;inductive&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;list)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;definition&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;goal&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Stmt_intf</span>.<span class="constructor">Logic</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assume&nbsp;:<br>

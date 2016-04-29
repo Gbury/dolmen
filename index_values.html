@@ -49,7 +49,10 @@
 <tr><td><a href="Ast_tptp.Statement.html#VALannot">annot</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALannot">annot</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Constructors for attribute/annotations.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALannot">annot</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Statement.html#VALantecedent">antecedent</a> [<a href="Statement.html">Statement</a>]</td>
@@ -89,13 +92,19 @@ Function type constructor, for curryfied functions.
 <tr><td><a href="Ast_smtlib.Statement.html#VALassert_">assert_</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALassert_">assert_</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Add an assertion to the current set of assertions.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALassert_">assert_</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALassume">assume</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALassume">assume</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Adds an hypothesis.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALassume">assume</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_dimacs.Term.html#VALatom">atom</a> [<a href="Ast_dimacs.Term.html">Ast_dimacs.Term</a>]</td>
@@ -130,7 +139,10 @@ Constructors for words defined as numeric formats by the languages
 <tr><td><a href="Ast_smtlib.Statement.html#VALcheck_sat">check_sat</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALcheck_sat">check_sat</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Directive that instructs the prover to solve the current set of assertions.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALcheck_sat">check_sat</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALchoice">choice</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -142,13 +154,19 @@ Constructors for words defined as numeric formats by the languages
 <tr><td><a href="Ast_dimacs.Statement.html#VALclause">clause</a> [<a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALclause">clause</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Add to the current set of assertions the given list of terms as a clause.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALclause">clause</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALcnf">cnf</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALcnf">cnf</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+TPTP directives.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALcnf">cnf</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALcolon">colon</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -159,7 +177,7 @@ Constructors for words defined as numeric formats by the languages
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALcolon">colon</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
-Representes juxtaposition of two terms, usually denoted "t : t'"
+Represents juxtaposition of two terms, usually denoted "t : t'"
       in most languages, and mainly used to annotated terms with their
       supposed, or defined, type.
 </div>
@@ -202,7 +220,10 @@ Create a constant and/or variable, that is a leaf
 <tr><td><a href="Ast_zf.Statement.html#VALdata">data</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdata">data</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Packs a list of mutually recursive inductive type declarations.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALdata">data</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdata_t">data_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -217,7 +238,10 @@ Term without semantic meaning, used for creating "data" terms.
 <tr><td><a href="Ast_zf.Statement.html#VALdecl">decl</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdecl">decl</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Symbol declaration.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALdecl">decl</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Statement.html#VALdef">def</a> [<a href="Statement.html">Statement</a>]</td>
@@ -227,7 +251,10 @@ Term without semantic meaning, used for creating "data" terms.
 <tr><td><a href="Ast_zf.Statement.html#VALdefinition">definition</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdefinition">definition</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Symbol definition.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALdefinition">definition</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdescription">description</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -294,7 +321,10 @@ Proposition construction functions.
 <tr><td><a href="Ast_smtlib.Statement.html#VALexit">exit</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALexit">exit</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Exit directive (used in interactive mode).
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALexit">exit</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>F</td></tr>
@@ -302,7 +332,7 @@ Proposition construction functions.
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALfalse_">false_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
-The constants for the true and fals propositional constants.
+The constants for the true and false propositional constants.
 </div>
 </td></tr>
 <tr><td><a href="Term.html#VALfalse_">false_</a> [<a href="Term.html">Term</a>]</td>
@@ -332,10 +362,22 @@ Printing functions
 <td></td></tr>
 <tr><td><a href="Term.html#VALforall">forall</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_smtlib.Statement.html#VALfun_decl">fun_decl</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
+<td></td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALfun_decl">fun_decl</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Symbol declaration.
+</div>
+</td></tr>
+<tr><td><a href="Statement.html#VALfun_decl">fun_decl</a> [<a href="Statement.html">Statement</a>]</td>
+<td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALfun_def">fun_def</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALfun_def">fun_def</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Symbol definition.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALfun_def">fun_def</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term.html#VALfun_ty">fun_ty</a> [<a href="Term.html">Term</a>]</td>
@@ -344,13 +386,20 @@ Printing functions
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_assertions">get_assertions</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALget_assertions">get_assertions</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Instructs the prover to print all current assertions.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALget_assertions">get_assertions</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_assignment">get_assignment</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALget_assignment">get_assignment</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Instructs the prover to return truth assignemnt for labelled formulas (see smtlib manual
+      for more information).
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALget_assignment">get_assignment</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_info">get_info</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
@@ -368,25 +417,40 @@ Printing functions
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_proof">get_proof</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALget_proof">get_proof</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+If the last call to <code class="code">check_sat</code> returned UNSAT, then instruct the prover to return
+      the proof of unsat.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALget_proof">get_proof</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_unsat_core">get_unsat_core</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALget_unsat_core">get_unsat_core</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+If the last call to <code class="code">check_sat</code> returned UNSAT, then instruct the prover to return
+      the unsat core of the unsatisfiability proof, i.e the smallest set of assertions
+      needed to prove <code class="code">false</code>.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALget_unsat_core">get_unsat_core</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_value">get_value</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALget_value">get_value</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Instructs the prover to return the values of the given closed quantifier-free terms.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALget_value">get_value</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALgoal">goal</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALgoal">goal</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The goal, i.e the propositional formula to prove.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALgoal">goal</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>H</td></tr>
@@ -423,13 +487,19 @@ Standard logical connectives viewed as terms.
 <tr><td><a href="Ast_tptp.Statement.html#VALinclude_">include_</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALinclude_">include_</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Inlcude directive.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALinclude_">include_</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALinductive">inductive</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALinductive">inductive</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Inductive type definitions.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALinductive">inductive</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Parse_intf.S.Incremental.html#VALinput">input</a> [<a href="Parse_intf.S.Incremental.html">Parse_intf.S.Incremental</a>]</td>
@@ -516,16 +586,10 @@ Construction functions
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALneq_t">neq_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
-The terms representing equality and diequality, respectively.
+The terms representing equality and disequality, respectively.
 </div>
 </td></tr>
 <tr><td><a href="Term.html#VALneq_t">neq_t</a> [<a href="Term.html">Term</a>]</td>
-<td></td></tr>
-<tr><td><a href="Ast_smtlib.Statement.html#VALnew_type">new_type</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
-<td></td></tr>
-<tr><td><a href="Stmt_intf.Logic.html#VALnew_type">new_type</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
-<tr><td><a href="Statement.html#VALnew_type">new_type</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALnor_t">nor_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
@@ -583,10 +647,7 @@ Recover a position from a lexbuf
 <tr><td><a href="Ast_zf.Term.html#VALpi">pi</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALpi">pi</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
-<td><div class="info">
-Binders constructors
-</div>
-</td></tr>
+<td></td></tr>
 <tr><td><a href="Term.html#VALpi">pi</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALpop">pop</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
@@ -623,7 +684,10 @@ The type of propositions.
 <tr><td><a href="Ast_smtlib.Statement.html#VALpush">push</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALpush">push</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Directives for manipulating the set of assertions.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALpush">push</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>R</td></tr>
@@ -644,7 +708,11 @@ The type of propositions.
 <tr><td><a href="Ast_zf.Statement.html#VALrewrite">rewrite</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALrewrite">rewrite</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Declare a rewrite rule, i.e a universally quantified equality or equivalence that
+      can be oriented according to a specific ordering.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALrewrite">rewrite</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>S</td></tr>
@@ -667,19 +735,28 @@ Change the file name used for positions in this lexbuf
 <tr><td><a href="Ast_smtlib.Statement.html#VALset_info">set_info</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALset_info">set_info</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Getter and setter for various informations (see smtlib manual).
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALset_info">set_info</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALset_logic">set_logic</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALset_logic">set_logic</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Set the logic to be used for solving.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALset_logic">set_logic</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALset_option">set_option</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALset_option">set_option</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Getter and setter for prover options (see smtlib manual).
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#VALset_option">set_option</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALsexpr">sexpr</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
@@ -749,17 +826,23 @@ The type of types, defined as specific token by the Zipperposition format;
 <td></td></tr>
 <tr><td><a href="Term.html#VALtrue_">true_</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
-<tr><td><a href="Ast_smtlib.Statement.html#VALtype_alias">type_alias</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
+<tr><td><a href="Ast_smtlib.Statement.html#VALtype_decl">type_decl</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
-<tr><td><a href="Stmt_intf.Logic.html#VALtype_alias">type_alias</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<tr><td><a href="Stmt_intf.Logic.html#VALtype_decl">type_decl</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Type declaration.
+</div>
+</td></tr>
+<tr><td><a href="Statement.html#VALtype_decl">type_decl</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
-<tr><td><a href="Statement.html#VALtype_alias">type_alias</a> [<a href="Statement.html">Statement</a>]</td>
+<tr><td><a href="Ast_smtlib.Statement.html#VALtype_def">type_def</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td></td></tr>
-<tr><td><a href="Ast_smtlib.Statement.html#VALtype_cstr">type_cstr</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
-<td></td></tr>
-<tr><td><a href="Stmt_intf.Logic.html#VALtype_cstr">type_cstr</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
-<tr><td><a href="Statement.html#VALtype_cstr">type_cstr</a> [<a href="Statement.html">Statement</a>]</td>
+<tr><td><a href="Stmt_intf.Logic.html#VALtype_def">type_def</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Type definition.
+</div>
+</td></tr>
+<tr><td><a href="Statement.html#VALtype_def">type_def</a> [<a href="Statement.html">Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term.html#VALtyped">typed</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>

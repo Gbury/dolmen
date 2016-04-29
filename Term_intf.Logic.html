@@ -42,7 +42,7 @@
 
 <pre><span class="keyword">module type</span> Logic = <code class="code">sig</code> <a href="Term_intf.Logic.html">..</a> <code class="code">end</code></pre><hr width="100%">
 <br>
-Signature used by the Logic classes, which parse languages
+Signature used by the Logic class, which parses languages
       such as tptp, smtlib, etc...
       Mainly used to parse first-order terms, it is also used to
       parse tptp's THF language, which uses higher order terms, so
@@ -55,7 +55,7 @@ Signature used by the Logic classes, which parse languages
 
 <pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type">t</code></pre>
 <pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type">t</code></pre><div class="info ">
-The terms representing equality and diequality, respectively.<br>
+The terms representing equality and disequality, respectively.<br>
 </div>
 
 <pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type">t</code></pre><div class="info ">
@@ -79,7 +79,7 @@ The type of propositions. Also defined as a lexical token by the Zipperposition
 
 <pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type">t</code></pre>
 <pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type">t</code></pre><div class="info ">
-The constants for the true and fals propositional constants. Again defined
+The constants for the true and false propositional constants. Again defined
       as lexical token in the Zipperposition format, while treated as a constant
       in other languages ("$true" in tptp).<br>
 </div>
@@ -94,8 +94,8 @@ The constants for the true and fals propositional constants. Again defined
 <pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type">t</code></pre>
 <pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type">t</code></pre><div class="info ">
 Standard logical connectives viewed as terms. <code class="code">implies_t</code> is usual
-      right implication, i.e <code class="code">apply implies_t [p; q] </code> is "p imples q",
-      while <code class="code">apply impled_t [p; q ]</code> means "p is implied by q" or
+      right implication, i.e <code class="code">apply implies_t [p; q] </code> is "p implies q",
+      while <code class="code">apply implied_t [p; q ]</code> means "p is implied by q" or
       "q implies p".<br>
 </div>
 
@@ -110,7 +110,7 @@ Term without semantic meaning, used for creating "data" terms.
 <pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:location -> string -> t</code></pre>
 <pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:location -> string -> t</code></pre><div class="info ">
 Variable and constant constructors. While in some languages
-      they can distinguished at the laxical level (in tptp for instance),
+      they can distinguished at the lexical level (in tptp for instance),
       in most languages, it is an issue dependant on scoping rules,
       so terms parsed from an smtlib file will have all variables
       parsed as constants.<br>
@@ -141,7 +141,7 @@ Constructors for words defined as numeric formats by the languages
 <h3 id="3_Termconstructors">Term constructors</h3><br>
 
 <pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
-Representes juxtaposition of two terms, usually denoted "t : t'"
+Represents juxtaposition of two terms, usually denoted "t : t'"
       in most languages, and mainly used to annotated terms with their
       supposed, or defined, type.<br>
 </div>
@@ -169,10 +169,7 @@ Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: <code class="code">ite condition then_branch else_branch</code>.<br>
 </div>
 
-<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre><div class="info ">
-Binders constructors<br>
-</div>
-
+<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
 <pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
 <pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
 <pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
@@ -187,7 +184,7 @@ Binders for variables. Takes a list of terms as first argument
 <li>Letin is local binding, takes a list of equality of equivalences
         whose left hand-side is a variable.</li>
 <li>Forall is universal quantification</li>
-<li>Exists is existencial quantification</li>
+<li>Exists is existential quantification</li>
 <li>Lambda is used for function construction</li>
 <li>Choice is the choice operator, also called indefinite description, or
         also epsilon terms, i.e "Choice x. p(x)" is one "x" such that "p(x)"

@@ -42,6 +42,12 @@
 <h1>Module type <a href="type_Stmt_intf.Logic.html">Stmt_intf.Logic</a></h1>
 
 <pre><span class="keyword">module type</span> Logic = <code class="code">sig</code> <a href="Stmt_intf.Logic.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<br>
+Signature used by the Logic class, which parses languages
+      such as tptp, smtlib, etc...
+      Statements of dirrent languages currently have a lot less in common
+      than terms, so this interface looks a lot more like a patchwork
+      of different logical framework directives than it should.<br>
 
 <pre><span class="keyword">include</span> <a href="Base_intf.S.html">Base_intf.S</a></pre>
 
@@ -54,47 +60,165 @@ The type of terms used in statements.<br>
 <h2 id="2_Optionalnfosforstatements">Optional nfos for statements</h2><br>
 
 <pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre>
-<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:location -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre><br>
+<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:location -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre><div class="info ">
+Constructors for attribute/annotations. Annotations are used in TPTP, and
+      attributes in the Zipperposition format.<br>
+</div>
+<br>
 <h2 id="2_Genericstatements">Generic statements</h2><br>
 
-<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre><br>
+<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre><div class="info ">
+Inlcude directive. <code class="code">include file l</code> means to include in the current scope
+      the directives from file <code class="code">file</code> that appear in <code class="code">l</code>. If <code class="code">l</code> is the empty list,
+      all directives should be imported.<br>
+</div>
+<br>
 <h2 id="2_DimacsStatements">Dimacs Statements</h2><br>
 
-<pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre><br>
+<pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre><div class="info ">
+Add to the current set of assertions the given list of terms as a clause.<br>
+</div>
+<br>
 <h2 id="2_Smtlibstatements">Smtlib statements</h2><br>
 
 <pre><span id="VALpop"><span class="keyword">val</span> pop</span> : <code class="type">?loc:location -> int -> t</code></pre>
-<pre><span id="VALpush"><span class="keyword">val</span> push</span> : <code class="type">?loc:location -> int -> t</code></pre>
-<pre><span id="VALassert_"><span class="keyword">val</span> assert_</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALcheck_sat"><span class="keyword">val</span> check_sat</span> : <code class="type">?loc:location -> unit -> t</code></pre>
-<pre><span id="VALset_logic"><span class="keyword">val</span> set_logic</span> : <code class="type">?loc:location -> string -> t</code></pre>
+<pre><span id="VALpush"><span class="keyword">val</span> push</span> : <code class="type">?loc:location -> int -> t</code></pre><div class="info ">
+Directives for manipulating the set of assertions. Push directives
+      creates backtrack point that can be reached using Pop directives.<br>
+</div>
+
+<pre><span id="VALassert_"><span class="keyword">val</span> assert_</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Add an assertion to the current set of assertions.<br>
+</div>
+
+<pre><span id="VALcheck_sat"><span class="keyword">val</span> check_sat</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+Directive that instructs the prover to solve the current set of assertions.<br>
+</div>
+
+<pre><span id="VALset_logic"><span class="keyword">val</span> set_logic</span> : <code class="type">?loc:location -> string -> t</code></pre><div class="info ">
+Set the logic to be used for solving.<br>
+</div>
+
 <pre><span id="VALget_info"><span class="keyword">val</span> get_info</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALset_info"><span class="keyword">val</span> set_info</span> : <code class="type">?loc:location -> string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> option -> t</code></pre>
+<pre><span id="VALset_info"><span class="keyword">val</span> set_info</span> : <code class="type">?loc:location -> string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> option -> t</code></pre><div class="info ">
+Getter and setter for various informations (see smtlib manual).<br>
+</div>
+
 <pre><span id="VALget_option"><span class="keyword">val</span> get_option</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALset_option"><span class="keyword">val</span> set_option</span> : <code class="type">?loc:location -> string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> option -> t</code></pre>
-<pre><span id="VALnew_type"><span class="keyword">val</span> new_type</span> : <code class="type">?loc:location -> string -> int -> t</code></pre>
-<pre><span id="VALtype_alias"><span class="keyword">val</span> type_alias</span> : <code class="type">?loc:location -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALtype_cstr"><span class="keyword">val</span> type_cstr</span> : <code class="type">?loc:location -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:location -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALget_proof"><span class="keyword">val</span> get_proof</span> : <code class="type">?loc:location -> unit -> t</code></pre>
-<pre><span id="VALget_unsat_core"><span class="keyword">val</span> get_unsat_core</span> : <code class="type">?loc:location -> unit -> t</code></pre>
-<pre><span id="VALget_value"><span class="keyword">val</span> get_value</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre>
-<pre><span id="VALget_assignment"><span class="keyword">val</span> get_assignment</span> : <code class="type">?loc:location -> unit -> t</code></pre>
-<pre><span id="VALget_assertions"><span class="keyword">val</span> get_assertions</span> : <code class="type">?loc:location -> unit -> t</code></pre>
-<pre><span id="VALexit"><span class="keyword">val</span> exit</span> : <code class="type">?loc:location -> unit -> t</code></pre><br>
+<pre><span id="VALset_option"><span class="keyword">val</span> set_option</span> : <code class="type">?loc:location -> string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> option -> t</code></pre><div class="info ">
+Getter and setter for prover options (see smtlib manual).<br>
+</div>
+
+<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:location -> string -> int -> t</code></pre><div class="info ">
+Type declaration. <code class="code">type_decl s n</code> declare <code class="code">s</code> as a type constructor with
+      arity <code class="code">n</code>.<br>
+</div>
+
+<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:location -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Type definition. <code class="code">type_def f args body</code> declare that <code class="code">f(args) = body</code>,
+      i.e any occurence of "f(l)" should be replaced by <code class="code">body</code> where the "args" have been
+      substituted by their corresponding value in <code class="code">l</code>.<br>
+</div>
+
+<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:location -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Symbol declaration. <code class="code">fun_decl f args ret</code> defines <code class="code">f</code> as a function
+      which takes arguemnts of type as described in <code class="code">args</code> and which returns
+      a value of type <code class="code">ret</code>.<br>
+</div>
+
+<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:location -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Symbol definition. <code class="code">fun_def f args ret body</code> means that "f(args) = (body : ret)",
+      i.e f is a function symbol with arguments <code class="code">args</code>, and which returns the value
+      <code class="code">body</code> which is of type <code class="code">ret</code>.<br>
+</div>
+
+<pre><span id="VALget_proof"><span class="keyword">val</span> get_proof</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+If the last call to <code class="code">check_sat</code> returned UNSAT, then instruct the prover to return
+      the proof of unsat.<br>
+</div>
+
+<pre><span id="VALget_unsat_core"><span class="keyword">val</span> get_unsat_core</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+If the last call to <code class="code">check_sat</code> returned UNSAT, then instruct the prover to return
+      the unsat core of the unsatisfiability proof, i.e the smallest set of assertions
+      needed to prove <code class="code">false</code>.<br>
+</div>
+
+<pre><span id="VALget_value"><span class="keyword">val</span> get_value</span> : <code class="type">?loc:location -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> t</code></pre><div class="info ">
+Instructs the prover to return the values of the given closed quantifier-free terms.<br>
+</div>
+
+<pre><span id="VALget_assignment"><span class="keyword">val</span> get_assignment</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+Instructs the prover to return truth assignemnt for labelled formulas (see smtlib manual
+      for more information).<br>
+</div>
+
+<pre><span id="VALget_assertions"><span class="keyword">val</span> get_assertions</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+Instructs the prover to print all current assertions.<br>
+</div>
+
+<pre><span id="VALexit"><span class="keyword">val</span> exit</span> : <code class="type">?loc:location -> unit -> t</code></pre><div class="info ">
+Exit directive (used in interactive mode).<br>
+</div>
+<br>
 <h2 id="2_TPTPStatements">TPTP Statements</h2><br>
 
 <pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
 <pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
 <pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
 <pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><br>
+<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:location -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+TPTP directives. <code class="code">tptp name role t</code> instructs the prover to register
+      a new directive with the given name, role and term. Current tptp roles are:<ul>
+<li><code class="code">"axiom", "hypothesis", "definition", "lemma", "theorem"</code> acts
+        as new assertions/declartions</li>
+<li><code class="code">"assumption", "conjecture"</code> are proposition that need to be proved,
+        and then can be used to prove other propositions. They are equivalent
+        to the following sequence of smtlib statements:</li>
+<li><code class="code">push 1</code></li>
+<li><code class="code">assert (not t)</code></li>
+<li><code class="code">check_sat</code></li>
+<li><code class="code">pop 1</code></li>
+<li><code class="code">assert t</code></li>
+<li><code class="code">"negated_conjecture"</code> is the same as <code class="code">"conjecture"</code>, but the given proposition
+        is false (i.e its negation is the proposition to prove).</li>
+<li><code class="code">"type"</code> declares a new symbol and its type</li>
+<li><code class="code">"plain", "unknown", "fi_domain", "fi_functors", "fi_predicates"</code> are valid
+        roles with no specified semantics</li>
+<li>any other role is an error</li>
+</ul>
+<br>
+</div>
+<br>
 <h2 id="2_Zipperpositionstatements">Zipperposition statements</h2><br>
 
-<pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:location -> t list -> t</code></pre>
-<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:location -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> (string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> t</code></pre>
-<pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre>
-<pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre></body></html>
+<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:location -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> (string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> t</code></pre><div class="info ">
+Inductive type definitions. <code class="code">inductive name vars l</code> defines aan inductive type <code class="code">name</code>,
+      with polymorphic variables <code class="code">vars</code>, and with a list of inductive constructors <code class="code">l</code>.<br>
+</div>
+
+<pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:location -> t list -> t</code></pre><div class="info ">
+Packs a list of mutually recursive inductive type declarations. into a single declaration.<br>
+</div>
+
+<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Symbol declaration. <code class="code">decl name ty</code> declares a new symbol <code class="code">name</code> with type <code class="code">ty</code>.<br>
+</div>
+
+<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Symbol definition. <code class="code">def name ty term</code> defines a new symbol <code class="code">name</code> of type <code class="code">ty</code>
+      which is equal to <code class="code">term</code>.<br>
+</div>
+
+<pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+The goal, i.e the propositional formula to prove.<br>
+</div>
+
+<pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Adds an hypothesis.<br>
+</div>
+
+<pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:location -> ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> t</code></pre><div class="info ">
+Declare a rewrite rule, i.e a universally quantified equality or equivalence that
+      can be oriented according to a specific ordering.<br>
+</div>
+</body></html>

@@ -53,15 +53,15 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;*&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;new_type&nbsp;:<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_alias&nbsp;:<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_cstr&nbsp;:<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>

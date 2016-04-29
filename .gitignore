@@ -1,10 +1,1 @@
-# ocamlbuild working directory
-src/_build/
-src/dolmen
-
-# ocamlbuild targets
-*.byte
-*.native
-
-# swpa files
-*.swp
+src/

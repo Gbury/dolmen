@@ -186,7 +186,7 @@ Terms<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTdescr.Inductive"><span class="constructor">Inductive</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEinductive">inductive</a> list</code></code></td>
+<code><span id="TYPEELTdescr.Inductive"><span class="constructor">Inductive</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEinductive">inductive</a></code></code></td>
 
 </tr>
 <tr>
@@ -306,9 +306,9 @@ Internal shortcut.<br>
 <pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALcheck_sat"><span class="keyword">val</span> check_sat</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALassert_"><span class="keyword">val</span> assert_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnew_type"><span class="keyword">val</span> new_type</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> int -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtype_cstr"><span class="keyword">val</span> type_cstr</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtype_alias"><span class="keyword">val</span> type_alias</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> int -> <a href="Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
