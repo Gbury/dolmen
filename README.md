@@ -6,13 +6,17 @@ A library providing parsers for languages such as dimacs, tptp and smtlib.
 
 BSD2, see file LICENSE.
 
+## Documentation
+
+Online documentation for the dev version can be found at <http://gbury.github.io/dolmen>
+
 ## Current state
 
 Currently the following parsers are working:
 
-- tptp
-- smtlib
 - dimacs
+- smtlib
+- tptp
 - zf (zipperposition format)
 
 The following parsers are either work in progress, or soon to be
