@@ -1,0 +1,104 @@
+
+(* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
+
+(** Standard imlplementation of statements.
+    This module provides a reasonable and standard implementation of statements,
+    that can directly be used to instantiated the various functors of the dolmen library.
+    These statements are closer to smtlib statements than to other languages statements
+    because it is easier to express other languages statements using smtlib's than the
+    other way around. Still, a generalisation of smtlib statements was needed so as not
+    to lose some important distinctions between conjectures and assertions for instance.
+*)
+
+
+(** {2 Type definitions} *)
+
+type term = Term.t
+type location = ParseLocation.t
+(** Type aliases for readability. *)
+
+type inductive = {
+  name : string;
+  vars : term list;
+  cstrs : (string * term list) list;
+  loc : location option;
+}
+(** The type for inductive type declarations. The "vars" field if used
+    to store polymorphic variables of the inductive type. For instance,
+    a polymorphic type for lists would have a single variable "a".
+    The constructors each have a name and a list of concrete arguments types
+    (they all implicitly take as many type arguments as there are variables).
+    So, for instance, the polymorphic list type would have two constructors:
+    - ["Nil", \[\]]
+    - ["Cons", \[var "a"\]]
+*)
+
+type descr =
+  | Pack of t list
+  (** Pack a list of statements that have a semantic meaning (for instance
+      a list of mutually recursive inductive definitions, or the translation
+      of a statement such as tptp's theorem). *)
+
+  | Pop of int
+  (** Pop the stack of assertions as many times as specified. *)
+  | Push of int
+  (** Push as many new levels on the stack of assertions as specified. *)
+
+
+  | Prove
+  (** Try and prove the current sequent. *)
+
+  | Consequent of term
+  (** Add the given proposition on the left of the current sequent.*)
+  | Antecedent of term
+  (** Add the given proposition on the right of the current sequent. *)
+
+  | Include of string
+  (** File include, qualified include paths, if any, are stored in the attribute. *)
+  | Set_logic of string
+  (** Set the logic to use for proving. *)
+
+  | Get_info of string
+  (** Get required information. *)
+  | Set_info of string * term option
+  (** Set the information value. *)
+
+  | Get_option of string
+  (** Get the required option value. *)
+  | Set_option of string * term option
+  (** Set the option value. *)
+
+  | Def of string * term
+  (** Symbol definition, i.e the symbol is equal to the given term. *)
+  | Decl of string * term
+  (** Symbol declaration, i.e the symbol has the given term as its type. *)
+  | Inductive of inductive
+  (** Inductive type definition, see the [inductive] type. *)
+
+  | Get_proof
+  (** Get the proof of the last sequent (if it was proved). *)
+  | Get_unsat_core
+  (** Get the unsat core of the last sequent. *)
+  | Get_value of term list
+  (** Get the value of some temrs in the current model of the prover. *)
+  | Get_assignment
+  (** Get the assignment of labbeled formulas (see smtlib manual). *)
+  | Get_assertions
+  (** Get the current set of assertions. *)
+
+  | Exit
+  (** Exit the interactive loop. *)
+
+and t = {
+  name : string;
+  descr : descr;
+  attr : term option;
+  loc : location option;
+}
+(** The type of statements. Statements have optional location and attributes (or annotations).
+    Additionally the each have a name (which mainly comes from tptp statements), that can
+    very well be the empty string (and so it is likely {b not} unique). *)
+
+
+include Stmt_intf.Logic with type location := location and type term := term and type t := t
+

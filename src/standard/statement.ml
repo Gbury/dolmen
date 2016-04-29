@@ -1,19 +1,18 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(** Statement for Smtlib *)
-
-(** Terms *)
+(* Type definitions *)
 type term = Term.t
+type location = ParseLocation.t
 
 type inductive = {
   name : string;
   vars : term list;
   cstrs : (string * term list) list;
-  loc : ParseLocation.t option;
+  loc : location option;
 }
 
-(** Description of statements. *)
+(* Description of statements. *)
 type descr =
   | Pack of t list
 
@@ -45,22 +44,20 @@ type descr =
 
   | Exit
 
-(** Statements are wrapped in a record to have a location. *)
+(* Statements are wrapped in a record to have a location. *)
 and t = {
   name : string;
   descr : descr;
   attr : term option;
-  loc : ParseLocation.t option;
+  loc : location option;
 }
 
-(** Attributes *)
+(* Attributes *)
 let attr = Term.const
-
-let default_attr = attr ""
 
 let annot = Term.apply
 
-(** Internal shortcut. *)
+(* Internal shortcut. *)
 let mk ?(name="") ?loc ?attr descr = { name; descr; loc; attr; }
 
 (* Push/Pop *)
@@ -105,7 +102,8 @@ let get_assertions ?loc () = mk ?loc Get_assertions
 (* End statement *)
 let exit ?loc () = mk ?loc Exit
 
-(** The following functions should be moved to a functor... *)
+
+
 
 (* Dimacs wrapper *)
 let clause ?loc l =
