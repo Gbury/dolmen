@@ -39,6 +39,14 @@
 </div>
 <h1>Module <a href="type_Location_intf.html">Location_intf</a></h1>
 
-<pre><span class="keyword">module</span> Location_intf: <code class="code">sig</code> <a href="Location_intf.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<pre><span class="keyword">module</span> Location_intf: <code class="code">sig</code> <a href="Location_intf.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Interface for file locations.
+    This module defines an interface to store locations in files. These locations
+    are used by the parsers to specify the locations of all parsed expressions
+    whenever it is possible.
+    This interface also requires some exceptions to be defined. These exceptions
+    make use of locations to specify at which point in the file the parsing went wrong.<br>
+</div>
+<hr width="100%">
 
 <pre><span class="keyword">module type</span> <a href="Location_intf.S.html">S</a> = <code class="code">sig</code> <a href="Location_intf.S.html">..</a> <code class="code">end</code></pre></body></html>

@@ -28,7 +28,9 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><title>Parse_intf.S</title>
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Main interface" rel="Section" href="#2_Maininterface">
+<link title="Menhir incremental interface" rel="Section" href="#2_Menhirincrementalinterface">
+<title>Parse_intf.S</title>
 </head>
 <body>
 <div class="navbar">&nbsp;<a class="up" href="Parse_intf.html" title="Parse_intf">Up</a>
@@ -36,16 +38,37 @@
 <h1>Module type <a href="type_Parse_intf.S.html">Parse_intf.S</a></h1>
 
 <pre><span class="keyword">module type</span> S = <code class="code">sig</code> <a href="Parse_intf.S.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<br>
+<h2 id="2_Maininterface">Main interface</h2><br>
 
 <pre><span id="TYPEtoken"><span class="keyword">type</span> <code class="type"></code>token</span> </pre>
+<div class="info ">
+The type of token consumed by the parser.<br>
+</div>
 
 
 <pre><span id="TYPEstatement"><span class="keyword">type</span> <code class="type"></code>statement</span> </pre>
+<div class="info ">
+The type of top-level declarations returned by the parser.<br>
+</div>
 
 
 <pre><span id="EXCEPTIONError"><span class="keyword">exception</span> Error</span></pre>
+<div class="info ">
+Exception raised by the parser when it encounters an error.<br>
+</div>
 
-<pre><span id="VALfile"><span class="keyword">val</span> file</span> : <code class="type">(Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEtoken">token</a>) -><br>       Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEstatement">statement</a> list</code></pre>
-<pre><span id="VALinput"><span class="keyword">val</span> input</span> : <code class="type">(Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEtoken">token</a>) -><br>       Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEstatement">statement</a> option</code></pre>
+<pre><span id="VALfile"><span class="keyword">val</span> file</span> : <code class="type">(Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEtoken">token</a>) -><br>       Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEstatement">statement</a> list</code></pre><div class="info ">
+A function that parses an entire file, i.e until the end-of-file token,
+      and return the list of parsed statements.<br>
+</div>
+
+<pre><span id="VALinput"><span class="keyword">val</span> input</span> : <code class="type">(Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEtoken">token</a>) -><br>       Lexing.lexbuf -> <a href="Parse_intf.S.html#TYPEstatement">statement</a> option</code></pre><div class="info ">
+A function to parse a single statement. Reutnrs <code class="code">None</code> if it encounters
+      the end-of-file token. Used for incremental parsing.<br>
+</div>
+<br>
+<h2 id="2_Menhirincrementalinterface">Menhir incremental interface</h2><br>
+
 <pre><span class="keyword">module</span> <a href="Parse_intf.S.MenhirInterpreter.html">MenhirInterpreter</a>: <code class="code">sig</code> <a href="Parse_intf.S.MenhirInterpreter.html">..</a> <code class="code">end</code></pre>
 <pre><span class="keyword">module</span> <a href="Parse_intf.S.Incremental.html">Incremental</a>: <code class="code">sig</code> <a href="Parse_intf.S.Incremental.html">..</a> <code class="code">end</code></pre></body></html>

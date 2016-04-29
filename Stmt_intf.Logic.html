@@ -28,7 +28,7 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><link title="Optional nfos for statements" rel="Section" href="#2_Optionalnfosforstatements">
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Optional infos for statements" rel="Section" href="#2_Optionalinfosforstatements">
 <link title="Generic statements" rel="Section" href="#2_Genericstatements">
 <link title="Dimacs Statements" rel="Section" href="#2_DimacsStatements">
 <link title="Smtlib statements" rel="Section" href="#2_Smtlibstatements">
@@ -57,7 +57,7 @@ The type of terms used in statements.<br>
 </div>
 
 <br>
-<h2 id="2_Optionalnfosforstatements">Optional nfos for statements</h2><br>
+<h2 id="2_Optionalinfosforstatements">Optional infos for statements</h2><br>
 
 <pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:location -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre>
 <pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:location -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre><div class="info ">
@@ -173,12 +173,15 @@ TPTP directives. <code class="code">tptp name role t</code> instructs the prover
         as new assertions/declartions</li>
 <li><code class="code">"assumption", "conjecture"</code> are proposition that need to be proved,
         and then can be used to prove other propositions. They are equivalent
-        to the following sequence of smtlib statements:</li>
+        to the following sequence of smtlib statements:
+        <ul>
 <li><code class="code">push 1</code></li>
 <li><code class="code">assert (not t)</code></li>
 <li><code class="code">check_sat</code></li>
 <li><code class="code">pop 1</code></li>
 <li><code class="code">assert t</code></li>
+</ul>
+</li>
 <li><code class="code">"negated_conjecture"</code> is the same as <code class="code">"conjecture"</code>, but the given proposition
         is false (i.e its negation is the proposition to prove).</li>
 <li><code class="code">"type"</code> declares a new symbol and its type</li>

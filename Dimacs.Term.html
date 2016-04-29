@@ -40,9 +40,20 @@
 <pre><span class="keyword">module type</span> Term = <code class="type"><a href="Ast_dimacs.Term.html">Ast_dimacs.Term</a></code></pre><hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of terms.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations.<br>
+</div>
 
 
-<pre><span id="VALatom"><span class="keyword">val</span> atom</span> : <code class="type">?loc:<a href="Ast_dimacs.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_dimacs.Term.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALatom"><span class="keyword">val</span> atom</span> : <code class="type">?loc:<a href="Ast_dimacs.Term.html#TYPElocation">location</a> -> int -> <a href="Ast_dimacs.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make an atom from an non-zero integer. Positive integers denotes variables,
+      and negative integers denote the negation of the variable corresponding to
+      their absolute value.<br>
+</div>
+</body></html>

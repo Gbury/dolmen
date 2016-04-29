@@ -35,7 +35,10 @@
 &nbsp;</div>
 <h1>Functor <a href="type_Smtlib.Make.html">Smtlib.Make</a></h1>
 
-<pre><span class="keyword">module</span> Make: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Smtlib.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Smtlib.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><table border="0" cellpadding="3" width="100%">
+<pre><span class="keyword">module</span> Make: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Smtlib.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Smtlib.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><div class="info module top">
+Functor to generate a parser for the Smtlib format.<br>
+</div>
+<table border="0" cellpadding="3" width="100%">
 <tr>
 <td align="left" valign="top" width="1%%"><b>Parameters: </b></td>
 <td>
@@ -62,15 +65,36 @@
 <hr width="100%">
 
 <pre><span id="TYPEtoken"><span class="keyword">type</span> <code class="type"></code>token</span> </pre>
+<div class="info ">
+The type of tokens produced by the language lexer.<br>
+</div>
 
 
 <pre><span id="TYPEstatement"><span class="keyword">type</span> <code class="type"></code>statement</span> </pre>
+<div class="info ">
+The type of top-level directives recognised by the parser.<br>
+</div>
 
 
 <pre><span class="keyword">module</span> <a href="Language_intf.S.Lexer.html">Lexer</a>: <code class="type"><a href="Lex_intf.S.html">Lex_intf.S</a></code><code class="type"> 
-    with type token := token</code></pre>
+    with type token := token</code></pre><div class="info">
+The Lexer module for the language.
+</div>
+
 <pre><span class="keyword">module</span> <a href="Language_intf.S.Parser.html">Parser</a>: <code class="type"><a href="Parse_intf.S.html">Parse_intf.S</a></code><code class="type"> 
     with type token := token
-     and type statement := statement</code></pre>
-<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Language_intf.S.html#TYPEstatement">statement</a> list</code></pre>
-<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin ] -> unit -> <a href="Language_intf.S.html#TYPEstatement">statement</a> option</code></pre></body></html>
+     and type statement := statement</code></pre><div class="info">
+The Parser module for the language.
+</div>
+
+<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Language_intf.S.html#TYPEstatement">statement</a> list</code></pre><div class="info ">
+Parse the given file<br>
+</div>
+
+<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin ] -> unit -> <a href="Language_intf.S.html#TYPEstatement">statement</a> option</code></pre><div class="info ">
+incremental parsing. Given an input to read (either a file, or stdin),
+      returns a generator that will incrementally parse the statements.
+      Useful to process input from <code class="code">stdin</code>, or even large files where it would
+      be impractical to parse the entire file before processing it.<br>
+</div>
+</body></html>

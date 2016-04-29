@@ -37,15 +37,30 @@
 &nbsp;</div>
 <h1>Module type <a href="type_Dimacs.Statement.html">Dimacs.Statement</a></h1>
 
-<pre><span class="keyword">module type</span> Statement = <code class="type"><a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a></code></pre><hr width="100%">
+<pre><span class="keyword">module type</span> Statement = <code class="type"><a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a></code></pre><div class="info modtype top">
+Implementation requirement for the Dimacs format.<br>
+</div>
+<hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of statements for dimacs.<br>
+</div>
 
 
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
+<div class="info ">
+The type of dimacs terms.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations.<br>
+</div>
 
 
-<pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="Ast_dimacs.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_dimacs.Statement.html#TYPEterm">term</a> list -> <a href="Ast_dimacs.Statement.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="Ast_dimacs.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_dimacs.Statement.html#TYPEterm">term</a> list -> <a href="Ast_dimacs.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+Make a clause from a list of literals.<br>
+</div>
+</body></html>

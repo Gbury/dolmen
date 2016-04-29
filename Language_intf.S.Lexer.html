@@ -38,11 +38,23 @@
 <h1>Module <a href="type_Language_intf.S.Lexer.html">Language_intf.S.Lexer</a></h1>
 
 <pre><span class="keyword">module</span> Lexer: <code class="type"><a href="Lex_intf.S.html">Lex_intf.S</a></code><code class="type"> 
-    with type token := token</code></pre><hr width="100%">
+    with type token := token</code></pre><div class="info module top">
+The Lexer module for the language.<br>
+</div>
+<hr width="100%">
 
 <pre><span id="TYPEtoken"><span class="keyword">type</span> <code class="type"></code>token</span> </pre>
+<div class="info ">
+The type of token produced by the lexer.<br>
+</div>
 
 
 <pre><span id="EXCEPTIONError"><span class="keyword">exception</span> Error</span></pre>
+<div class="info ">
+The exception raised by the lexer when it cannot produce a token.<br>
+</div>
 
-<pre><span id="VALtoken"><span class="keyword">val</span> token</span> : <code class="type">Lexing.lexbuf -> <a href="Lex_intf.S.html#TYPEtoken">token</a></code></pre></body></html>
+<pre><span id="VALtoken"><span class="keyword">val</span> token</span> : <code class="type">Lexing.lexbuf -> <a href="Lex_intf.S.html#TYPEtoken">token</a></code></pre><div class="info ">
+The function producing token from a lexbuf.<br>
+</div>
+</body></html>

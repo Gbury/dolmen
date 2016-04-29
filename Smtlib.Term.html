@@ -40,19 +40,58 @@
 <pre><span class="keyword">module type</span> Term = <code class="type"><a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a></code></pre><hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of terms.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations.<br>
+</div>
 
 
-<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Constants, i.e non predefined symbols. This includes both constants
+      defined by theories, defined locally in a problem, and also quantified variables.<br>
+</div>
+
 <pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALsexpr"><span class="keyword">val</span> sexpr</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Constants lexically recognised as numbers in different formats. According to the smtlib
+      manual, these should not always be interpreted as numbers since their interpretation
+      is actually dependent on the theory set by the problem.<br>
+</div>
+
+<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Juxtaposition of terms, used to annotate terms with their type.<br>
+</div>
+
+<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Application.<br>
+</div>
+
+<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Local bindings. The bindings are a list of terms built using the <code class="code">colon</code> function.<br>
+</div>
+
+<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Universal quantification.<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Existencial quantification.<br>
+</div>
+
+<pre><span id="VALsexpr"><span class="keyword">val</span> sexpr</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+S-expressions. Used in smtlib's annotations,<br>
+</div>
+
+<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:<a href="Ast_smtlib.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Term.html#TYPEt">t</a> -> <a href="Ast_smtlib.Term.html#TYPEt">t</a> list -> <a href="Ast_smtlib.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Attach a list of attributes (also called annotations) to a term. As written
+      in the smtlib manual, "Term attributes have no logical meaning --
+      semantically, <code class="code">attr t l</code> is equivalent to <code class="code">t</code>"<br>
+</div>
+</body></html>

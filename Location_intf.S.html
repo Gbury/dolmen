@@ -38,13 +38,31 @@
 <pre><span class="keyword">module type</span> S = <code class="code">sig</code> <a href="Location_intf.S.html">..</a> <code class="code">end</code></pre><hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of locations.<br>
+</div>
 
 
 <pre><span id="EXCEPTIONUncaught"><span class="keyword">exception</span> Uncaught</span> <span class="keyword">of</span> <code class="type"><a href="Location_intf.S.html#TYPEt">t</a> * exn</code></pre>
+<div class="info ">
+The exception to be raised whenever an unexpected exception is raised during parsing.<br>
+</div>
 
 <pre><span id="EXCEPTIONLexing_error"><span class="keyword">exception</span> Lexing_error</span> <span class="keyword">of</span> <code class="type"><a href="Location_intf.S.html#TYPEt">t</a> * string</code></pre>
+<div class="info ">
+The exception to be raised when the lexer cannot parse the input.<br>
+</div>
 
 <pre><span id="EXCEPTIONSyntax_error"><span class="keyword">exception</span> Syntax_error</span> <span class="keyword">of</span> <code class="type"><a href="Location_intf.S.html#TYPEt">t</a> * string</code></pre>
+<div class="info ">
+The exception to be raised whenever a syntax error is encountered by the parser.<br>
+</div>
 
-<pre><span id="VALmk_pos"><span class="keyword">val</span> mk_pos</span> : <code class="type">Lexing.position -> Lexing.position -> <a href="Location_intf.S.html#TYPEt">t</a></code></pre>
-<pre><span id="VALof_lexbuf"><span class="keyword">val</span> of_lexbuf</span> : <code class="type">Lexing.lexbuf -> <a href="Location_intf.S.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALof_lexbuf"><span class="keyword">val</span> of_lexbuf</span> : <code class="type">Lexing.lexbuf -> <a href="Location_intf.S.html#TYPEt">t</a></code></pre><div class="info ">
+Make a position using a lexbuf directly.<br>
+</div>
+
+<pre><span id="VALmk_pos"><span class="keyword">val</span> mk_pos</span> : <code class="type">Lexing.position -> Lexing.position -> <a href="Location_intf.S.html#TYPEt">t</a></code></pre><div class="info ">
+Make a position from two lewing positions.<br>
+</div>
+</body></html>

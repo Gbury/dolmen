@@ -39,8 +39,17 @@
 </div>
 <h1>Module <a href="type_Smtlib.html">Smtlib</a></h1>
 
-<pre><span class="keyword">module</span> Smtlib: <code class="code">sig</code> <a href="Smtlib.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<pre><span class="keyword">module</span> Smtlib: <code class="code">sig</code> <a href="Smtlib.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Implementation requirement for the Smtlib format.<br>
+</div>
+<hr width="100%">
 
 <pre><span class="keyword">module type</span> <a href="Smtlib.Term.html">Term</a> = <code class="type"><a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a></code></pre>
-<pre><span class="keyword">module type</span> <a href="Smtlib.Statement.html">Statement</a> = <code class="type"><a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a></code></pre>
-<pre><span class="keyword">module</span> <a href="Smtlib.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Smtlib.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Smtlib.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre></body></html>
+<pre><span class="keyword">module type</span> <a href="Smtlib.Statement.html">Statement</a> = <code class="type"><a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a></code></pre><div class="info">
+Implementation requirement for the Smtlib format.
+</div>
+
+<pre><span class="keyword">module</span> <a href="Smtlib.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Smtlib.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Smtlib.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><div class="info">
+Functor to generate a parser for the Smtlib format.
+</div>
+</body></html>

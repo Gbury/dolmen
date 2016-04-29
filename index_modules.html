@@ -35,9 +35,15 @@
 <table>
 <tr><td align="left"><br>A</td></tr>
 <tr><td><a href="Ast_dimacs.html">Ast_dimacs</a> </td>
-<td></td></tr>
+<td><div class="info">
+AST requirements for the Dimacs format.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.html">Ast_smtlib</a> </td>
-<td></td></tr>
+<td><div class="info">
+AST requirement for the Smtlib format.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.html">Ast_tptp</a> </td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.html">Ast_zf</a> </td>
@@ -60,18 +66,24 @@ Dimacs language input
 <tr><td align="left"><br>L</td></tr>
 <tr><td><a href="Language_intf.html">Language_intf</a> </td>
 <td><div class="info">
-Generic type for language modules
+Interface for Dolmen languages modules
 </div>
 </td></tr>
 <tr><td><a href="Lex_intf.html">Lex_intf</a> </td>
 <td><div class="info">
-Generic type for lexers
+Interface for Dolmen lexers.
 </div>
 </td></tr>
 <tr><td><a href="Language_intf.S.Lexer.html">Lexer</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The Lexer module for the language.
+</div>
+</td></tr>
 <tr><td><a href="Location_intf.html">Location_intf</a> </td>
-<td></td></tr>
+<td><div class="info">
+Interface for file locations.
+</div>
+</td></tr>
 <tr><td><a href="Logic.html">Logic</a> </td>
 <td></td></tr>
 <tr><td align="left"><br>M</td></tr>
@@ -82,27 +94,39 @@ Generic type for lexers
 <tr><td><a href="Zf.Make.html">Make</a> [<a href="Zf.html">Zf</a>]</td>
 <td></td></tr>
 <tr><td><a href="Smtlib.Make.html">Make</a> [<a href="Smtlib.html">Smtlib</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Functor to generate a parser for the Smtlib format.
+</div>
+</td></tr>
 <tr><td><a href="Dimacs.Make.html">Make</a> [<a href="Dimacs.html">Dimacs</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Functor to generate a parser for the dimacs format.
+</div>
+</td></tr>
 <tr><td><a href="Parse_intf.S.MenhirInterpreter.html">MenhirInterpreter</a> [<a href="Parse_intf.S.html">Parse_intf.S</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>P</td></tr>
 <tr><td><a href="ParseLocation.html">ParseLocation</a> </td>
 <td><div class="info">
-Location in a file
+Standard implementation of file locations.
 </div>
 </td></tr>
 <tr><td><a href="Parse_intf.html">Parse_intf</a> </td>
 <td><div class="info">
-Generic type for parsers
+Interface for Dolmen parsers.
 </div>
 </td></tr>
 <tr><td><a href="Language_intf.S.Parser.html">Parser</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The Parser module for the language.
+</div>
+</td></tr>
 <tr><td align="left"><br>S</td></tr>
 <tr><td><a href="Smtlib.html">Smtlib</a> </td>
-<td></td></tr>
+<td><div class="info">
+Implementation requirement for the Smtlib format.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html">Statement</a> </td>
 <td><div class="info">
 Standard imlplementation of statements.
@@ -121,10 +145,7 @@ Standard implementation of terms
 </td></tr>
 <tr><td><a href="Term_intf.html">Term_intf</a> </td>
 <td><div class="info">
-Interfaces for Terms
-    This module defines Interfaces that implementation of terms must
-    respect in order to be used to instantiated the corresponding
-    language classes.
+Interfaces for Terms.
 </div>
 </td></tr>
 <tr><td><a href="Tptp.html">Tptp</a> </td>

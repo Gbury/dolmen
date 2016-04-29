@@ -39,7 +39,19 @@
 </div>
 <h1>Module <a href="type_Ast_smtlib.html">Ast_smtlib</a></h1>
 
-<pre><span class="keyword">module</span> Ast_smtlib: <code class="code">sig</code> <a href="Ast_smtlib.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<pre><span class="keyword">module</span> Ast_smtlib: <code class="code">sig</code> <a href="Ast_smtlib.html">..</a> <code class="code">end</code></pre><div class="info module top">
+AST requirement for the Smtlib format.
+    The smtlib format is widely used among SMT solvers, and is the language
+    of the smtlib benchmark library. Terms are expressed as s-expressions,
+    and top-level directives include everything needed to use a prover
+    in an interactive loop (so it includes directive for getting and setting options,
+    getting information about the solver's internal model, etc...)<br>
+</div>
+<hr width="100%">
 
-<pre><span class="keyword">module type</span> <a href="Ast_smtlib.Term.html">Term</a> = <code class="code">sig</code> <a href="Ast_smtlib.Term.html">..</a> <code class="code">end</code></pre>
-<pre><span class="keyword">module type</span> <a href="Ast_smtlib.Statement.html">Statement</a> = <code class="code">sig</code> <a href="Ast_smtlib.Statement.html">..</a> <code class="code">end</code></pre></body></html>
+<pre><span class="keyword">module type</span> <a href="Ast_smtlib.Term.html">Term</a> = <code class="code">sig</code> <a href="Ast_smtlib.Term.html">..</a> <code class="code">end</code></pre><br>
+Implementation requirements for Smtlib terms.<br>
+
+<pre><span class="keyword">module type</span> <a href="Ast_smtlib.Statement.html">Statement</a> = <code class="code">sig</code> <a href="Ast_smtlib.Statement.html">..</a> <code class="code">end</code></pre><br>
+implementation requirement for smtlib statements.<br>
+</body></html>
