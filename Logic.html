@@ -37,6 +37,9 @@
 &nbsp;</div>
 <h1>Module <a href="type_Logic.html">Logic</a></h1>
 
-<pre><span class="keyword">module</span> Logic: <code class="code">sig</code> <a href="Logic.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<pre><span class="keyword">module</span> Logic: <code class="code">sig</code> <a href="Logic.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Logic languages for formal proofs<br>
+</div>
+<hr width="100%">
 
 <pre><span class="keyword">module</span> <a href="Logic.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Term_intf.Logic.html">Term_intf.Logic</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="code">sig</code> <a href="Logic.Make.html">..</a> <code class="code">end</code></div></div></div></pre></body></html>

@@ -39,8 +39,17 @@
 </div>
 <h1>Module <a href="type_Tptp.html">Tptp</a></h1>
 
-<pre><span class="keyword">module</span> Tptp: <code class="code">sig</code> <a href="Tptp.html">..</a> <code class="code">end</code></pre><hr width="100%">
+<pre><span class="keyword">module</span> Tptp: <code class="code">sig</code> <a href="Tptp.html">..</a> <code class="code">end</code></pre><div class="info module top">
+TPTP language input<br>
+</div>
+<hr width="100%">
 
 <pre><span class="keyword">module type</span> <a href="Tptp.Term.html">Term</a> = <code class="type"><a href="Ast_tptp.Term.html">Ast_tptp.Term</a></code></pre>
-<pre><span class="keyword">module type</span> <a href="Tptp.Statement.html">Statement</a> = <code class="type"><a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a></code></pre>
-<pre><span class="keyword">module</span> <a href="Tptp.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre></body></html>
+<pre><span class="keyword">module type</span> <a href="Tptp.Statement.html">Statement</a> = <code class="type"><a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a></code></pre><div class="info">
+Implementation requirement for the TPTP format.
+</div>
+
+<pre><span class="keyword">module</span> <a href="Tptp.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><div class="info">
+Functor to generate a parser for the TPTP format.
+</div>
+</body></html>

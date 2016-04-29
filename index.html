@@ -43,8 +43,19 @@ This code is free, under the BSD license.
 <h2 id="2_Contents">Contents</h2>
 <p>
 
-Dolmen provides functor to easily create parsers for some languages, and
-standard implementation of the required arguments for the functors.
+Dolmen is a parser library, intended to considerably reduce the burden of having
+to parse different input languages. The main idea of dolmen
+is to provide an easy way to obtain a structured representation
+of an input, but not to completely abstract over the different input languages.
+Indeed, most languages are different enough that completeley abstracting over many
+of them would require specific encodings that would be detrimental to keeping
+the original structure of the input. Instead, the idea is to identify the
+core requirements of each language and provide easy way to obtain parsers
+for these languages when provided with an implementation that meets the requirements.
+<p>
+
+To that effect, dolmen mainly provides functors that take an adequate implementation
+of terms and top-level directives, and then return parsers for various languages.
 <p>
 
 <h4 id="4_Languageclasses">Language classes</h4>
@@ -57,7 +68,10 @@ languages used in formal proof.
 
 <br>
 <table class="indextable">
-<tr><td class="module"><a href="Logic.html">Logic</a></td><td></td></tr>
+<tr><td class="module"><a href="Logic.html">Logic</a></td><td><div class="info">
+Logic languages for formal proofs
+</div>
+</td></tr>
 </table>
 
 <p>
@@ -124,11 +138,17 @@ Dimacs language input
 </div>
 </td></tr>
 <tr><td class="module"><a href="Smtlib.html">Smtlib</a></td><td><div class="info">
-Implementation requirement for the Smtlib format.
+Smtlib language input
 </div>
 </td></tr>
-<tr><td class="module"><a href="Tptp.html">Tptp</a></td><td></td></tr>
-<tr><td class="module"><a href="Zf.html">Zf</a></td><td></td></tr>
+<tr><td class="module"><a href="Tptp.html">Tptp</a></td><td><div class="info">
+TPTP language input
+</div>
+</td></tr>
+<tr><td class="module"><a href="Zf.html">Zf</a></td><td><div class="info">
+Zipperposition format input
+</div>
+</td></tr>
 </table>
 
 <p>

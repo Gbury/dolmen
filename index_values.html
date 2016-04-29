@@ -551,7 +551,11 @@ The terms representing equality and disequality, respectively.
 <td></td></tr>
 <tr><td align="left"><br>O</td></tr>
 <tr><td><a href="Logic.Make.html#VALof_extension">of_extension</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
-<td></td></tr>
+<td><div class="info">
+These function take as argument either a language, or a filename,
+      and return a triple: language, language file extension (starting with a dot), appropriate parsing module
+</div>
+</td></tr>
 <tr><td><a href="Logic.Make.html#VALof_language">of_language</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
 <td></td></tr>
 <tr><td><a href="Location_intf.S.html#VALof_lexbuf">of_lexbuf</a> [<a href="Location_intf.S.html">Location_intf.S</a>]</td>
@@ -574,14 +578,21 @@ Recover a position from a lexbuf
 <td></td></tr>
 <tr><td align="left"><br>P</td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_file">parse_file</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Given a filename, parse the file, and return the detected language
+      together with the list of statements parsed.
+</div>
+</td></tr>
 <tr><td><a href="Language_intf.S.html#VALparse_file">parse_file</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
 <td><div class="info">
 Parse the given file
 </div>
 </td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_input">parse_input</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Incremental parsing of either a file, or stdin.
+</div>
+</td></tr>
 <tr><td><a href="Language_intf.S.html#VALparse_input">parse_input</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
 <td><div class="info">
 incremental parsing.

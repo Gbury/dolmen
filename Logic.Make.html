@@ -28,7 +28,10 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Logic.Make</title>
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Supported languages" rel="Section" href="#2_Supportedlanguages">
+<link title="High-level parsing" rel="Section" href="#2_Highlevelparsing">
+<link title="Mid-level parsing" rel="Section" href="#2_Midlevelparsing">
+<title>Dolmen doc : Logic.Make</title>
 </head>
 <body>
 <div class="navbar">&nbsp;<a class="up" href="Logic.html" title="Logic">Up</a>
@@ -60,6 +63,8 @@
 </tr>
 </table>
 <hr width="100%">
+<br>
+<h2 id="2_Supportedlanguages">Supported languages</h2><br>
 
 <pre><code><span id="TYPElanguage"><span class="keyword">type</span> <code class="type"></code>language</span> = </code></pre><table class="typetable">
 <tr>
@@ -67,34 +72,72 @@
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTlanguage.Dimacs"><span class="constructor">Dimacs</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Dimacs CNF format<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTlanguage.Smtlib"><span class="constructor">Smtlib</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Smtlib format<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTlanguage.Tptp"><span class="constructor">Tptp</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+TPTP format (including THF)<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTlanguage.Zf"><span class="constructor">Zf</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Zipperposition format<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr></table>
 
+<div class="info ">
+The languages supported by the Logic class.<br>
+</div>
 
+<br>
+<h2 id="2_Highlevelparsing">High-level parsing</h2><br>
 
-<pre><span class="keyword">module type</span> <a href="Logic.Make.S.html">S</a> = <code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement := S.t</code></pre>
+<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Logic.Make.html#TYPElanguage">language</a> * S.t list</code></pre><div class="info ">
+Given a filename, parse the file, and return the detected language
+      together with the list of statements parsed.<br>
+</div>
+
+<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre><div class="info ">
+Incremental parsing of either a file, or stdin.<br>
+</div>
+<br>
+<h2 id="2_Midlevelparsing">Mid-level parsing</h2><br>
+
+<pre><span class="keyword">module type</span> <a href="Logic.Make.S.html">S</a> = <code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement := S.t</code></pre><div class="info">
+The type of language modules.
+</div>
+
 <pre><span id="VALof_language"><span class="keyword">val</span> of_language</span> : <code class="type"><a href="Logic.Make.html#TYPElanguage">language</a> -> <a href="Logic.Make.html#TYPElanguage">language</a> * string * (module Logic.Make.S)</code></pre>
-<pre><span id="VALof_extension"><span class="keyword">val</span> of_extension</span> : <code class="type">string -> <a href="Logic.Make.html#TYPElanguage">language</a> * string * (module Logic.Make.S)</code></pre>
-<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Logic.Make.html#TYPElanguage">language</a> * S.t list</code></pre>
-<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre></body></html>
+<pre><span id="VALof_extension"><span class="keyword">val</span> of_extension</span> : <code class="type">string -> <a href="Logic.Make.html#TYPElanguage">language</a> * string * (module Logic.Make.S)</code></pre><div class="info ">
+These function take as argument either a language, or a filename,
+      and return a triple:<ul>
+<li>language</li>
+<li>language file extension (starting with a dot)</li>
+<li>appropriate parsing module</li>
+</ul>
+<br>
+</div>
+</body></html>
