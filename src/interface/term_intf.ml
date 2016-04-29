@@ -10,7 +10,7 @@
 
 module type Logic = sig
 
-  (** Signature used by the Logic classes, which parse languages
+  (** Signature used by the Logic class, which parses languages
       such as tptp, smtlib, etc...
       Mainly used to parse first-order terms, it is also used to
       parse tptp's THF language, which uses higher order terms, so

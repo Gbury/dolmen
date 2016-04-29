@@ -35,7 +35,7 @@ type descr =
 
   | Def of string * term
   | Decl of string * term
-  | Inductive of inductive list
+  | Inductive of inductive
 
   | Get_proof
   | Get_unsat_core
@@ -91,14 +91,9 @@ let def ?loc s t = mk ?loc (Def (s, t))
 (* Inductive types, i.e polymorphic variables, and
    a list of constructors. *)
 let inductive ?loc name vars cstrs =
-  mk ?loc (Inductive [{name; vars; cstrs; loc; }])
+  mk ?loc (Inductive {name; vars; cstrs; loc; })
 
-let data ?loc l =
-  let aux = function
-    | { descr = Inductive [ d ] } -> d
-    | _ -> raise (Invalid_argument "Statement.data")
-  in
-  mk ?loc (Inductive (List.map aux l))
+let data ?loc l = mk ?loc (Pack l)
 
 (* Return values *)
 let get_proof ?loc () = mk ?loc Get_proof
@@ -121,15 +116,15 @@ let clause ?loc l =
 let check_sat = prove
 let assert_ ?loc t = antecedent ?loc t
 
-let new_type ?loc s n =
+let type_decl ?loc s n =
   let ty = Term.fun_ty ?loc (Misc.replicate n Term.tType) Term.tType in
   decl ?loc s ty
 
-let type_cstr ?loc s l t' =
+let fun_decl ?loc s l t' =
   let ty = Term.fun_ty ?loc l t' in
   decl ?loc s ty
 
-let type_alias ?loc s args body =
+let type_def ?loc s args body =
   let t = Term.lambda args body in
   def ?loc s t
 

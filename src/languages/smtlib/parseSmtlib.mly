@@ -142,11 +142,11 @@ command:
     { let loc = L.mk_pos $startpos $endpos in S.set_option ~loc $3 }
 
   | OPEN DECLARE_SORT SYMBOL NUMERAL CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.new_type ~loc $3 (int_of_string $4) }
+    { let loc = L.mk_pos $startpos $endpos in S.type_decl ~loc $3 (int_of_string $4) }
   | OPEN DEFINE_SORT SYMBOL OPEN symbol* CLOSE sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.type_alias ~loc $3 $5 $7 }
+    { let loc = L.mk_pos $startpos $endpos in S.type_def ~loc $3 $5 $7 }
   | OPEN DECLARE_FUN SYMBOL OPEN sort* CLOSE sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.type_cstr ~loc $3 $5 $7 }
+    { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc $3 $5 $7 }
   | OPEN DEFINE_FUN SYMBOL OPEN sorted_var* CLOSE sort term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_def ~loc $3 $5 $7 $8 }
 

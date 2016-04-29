@@ -46,10 +46,10 @@ module type Statement = sig
   val get_option : ?loc:location -> string -> t
   val set_option : ?loc:location -> string * term option -> t
 
-  val new_type : ?loc:location -> string -> int -> t
-  val type_alias : ?loc:location -> string -> term list -> term -> t
-  val type_cstr : ?loc:location -> string -> term list -> term -> t
-  val fun_def : ?loc:location -> string -> term list -> term -> term -> t
+  val type_decl : ?loc:location -> string -> int -> t
+  val type_def  : ?loc:location -> string -> term list -> term -> t
+  val fun_decl  : ?loc:location -> string -> term list -> term -> t
+  val fun_def   : ?loc:location -> string -> term list -> term -> term -> t
 
   val get_proof : ?loc:location -> unit -> t
   val get_unsat_core : ?loc:location -> unit -> t
