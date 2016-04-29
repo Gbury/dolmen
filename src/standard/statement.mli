@@ -99,6 +99,7 @@ and t = {
     Additionally the each have a name (which mainly comes from tptp statements), that can
     very well be the empty string (and so it is likely {b not} unique). *)
 
+(** {2 Implemented interfaces} *)
 
 include Stmt_intf.Logic with type location := location and type term := term and type t := t
 

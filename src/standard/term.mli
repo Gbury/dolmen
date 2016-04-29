@@ -103,7 +103,6 @@ and t = {
 
 include Term_intf.Logic with type location := location and type t := t
 
-
 (** {2 Additional functions} *)
 
 val fun_ty : ?loc:location -> t list -> t -> t
