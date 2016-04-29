@@ -1,4 +1,4 @@
-# dolmen
+# Dolmen
 
 A library providing parsers for languages such as dimacs, tptp and smtlib.
 
