@@ -74,7 +74,7 @@ let _ = P.parse_file "~/example.smt2"
 
 ## Future work
 
-Besides implementing new languages, there is a plan to add interactive
-parsing to the provided parsers (i.e parse top-level directives and/or
-terms) so that they can be used in interactive programs.
+In addition to considering new languages, there are plans to improveme
+incremental parsing error reporting, and possibly auto-detection of
+input language on stdin.
 
