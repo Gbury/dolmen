@@ -30,7 +30,8 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><title>Statement</title>
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Type definitions" rel="Section" href="#2_Typedefinitions">
+<title>Statement</title>
 </head>
 <body>
 <div class="navbar"><a class="pre" href="Term.html" title="Term">Previous</a>
@@ -40,13 +41,24 @@
 <h1>Module <a href="type_Statement.html">Statement</a></h1>
 
 <pre><span class="keyword">module</span> Statement: <code class="code">sig</code> <a href="Statement.html">..</a> <code class="code">end</code></pre><div class="info module top">
-Statement for Smtlib<br>
+Standard imlplementation of statements.
+    This module provides a reasonable and standard implementation of statements,
+    that can directly be used to instantiated the various functors of the dolmen library.
+    These statements are closer to smtlib statements than to other languages statements
+    because it is easier to express other languages statements using smtlib's than the
+    other way around. Still, a generalisation of smtlib statements was needed so as not
+    to lose some important distinctions between conjectures and assertions for instance.<br>
 </div>
 <hr width="100%">
+<br>
+<h2 id="2_Typedefinitions">Type definitions</h2><br>
 
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> = <code class="type"><a href="Term.html#TYPEt">Term.t</a></code> </pre>
+
+
+<pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> = <code class="type"><a href="ParseLocation.html#TYPEt">ParseLocation.t</a></code> </pre>
 <div class="info ">
-Terms<br>
+Type aliases for readability.<br>
 </div>
 
 
@@ -76,11 +88,23 @@ Terms<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTinductive.loc">loc</span>&nbsp;: <code class="type"><a href="ParseLocation.html#TYPEt">ParseLocation.t</a> option</code>;</code></td>
+<code><span id="TYPEELTinductive.loc">loc</span>&nbsp;: <code class="type"><a href="Statement.html#TYPElocation">location</a> option</code>;</code></td>
 
 </tr></table>
 }
 
+<div class="info ">
+The type for inductive type declarations. The "vars" field if used
+    to store polymorphic variables of the inductive type. For instance,
+    a polymorphic type for lists would have a single variable "a".
+    The constructors each have a name and a list of concrete arguments types
+    (they all implicitly take as many type arguments as there are variables).
+    So, for instance, the polymorphic list type would have two constructors:<ul>
+<li><code class="code">"Nil", []</code></li>
+<li><code class="code">"Cons", [var "a"]</code></li>
+</ul>
+<br>
+</div>
 
 
 <pre><code><span id="TYPEdescr"><span class="keyword">type</span> <code class="type"></code>descr</span> = </code></pre><table class="typetable">
@@ -89,152 +113,214 @@ Terms<br>
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Pack"><span class="constructor">Pack</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEt">t</a> list</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Pack a list of statements that have a semantic meaning (for instance
+      a list of mutually recursive inductive definitions, or the translation
+      of a statement such as tptp's theorem).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Pop"><span class="constructor">Pop</span></span> <span class="keyword">of</span> <code class="type">int</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Pop the stack of assertions as many times as specified.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Push"><span class="constructor">Push</span></span> <span class="keyword">of</span> <code class="type">int</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Push as many new levels on the stack of assertions as specified.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Prove"><span class="constructor">Prove</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Try and prove the current sequent.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Consequent"><span class="constructor">Consequent</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEterm">term</a></code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Add the given proposition on the left of the current sequent.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Antecedent"><span class="constructor">Antecedent</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEterm">term</a></code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Add the given proposition on the right of the current sequent.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Include"><span class="constructor">Include</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+File include, qualified include paths, if any, are stored in the attribute.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Set_logic"><span class="constructor">Set_logic</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Set the logic to use for proving.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_info"><span class="constructor">Get_info</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get required information.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Set_info"><span class="constructor">Set_info</span></span> <span class="keyword">of</span> <code class="type">string * <a href="Statement.html#TYPEterm">term</a> option</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Set the information value.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_option"><span class="constructor">Get_option</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the required option value.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Set_option"><span class="constructor">Set_option</span></span> <span class="keyword">of</span> <code class="type">string * <a href="Statement.html#TYPEterm">term</a> option</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Set the option value.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Def"><span class="constructor">Def</span></span> <span class="keyword">of</span> <code class="type">string * <a href="Statement.html#TYPEterm">term</a></code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Symbol definition, i.e the symbol is equal to the given term.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Decl"><span class="constructor">Decl</span></span> <span class="keyword">of</span> <code class="type">string * <a href="Statement.html#TYPEterm">term</a></code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Symbol declaration, i.e the symbol has the given term as its type.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Inductive"><span class="constructor">Inductive</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEinductive">inductive</a></code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Inductive type definition, see the <code class="code">inductive</code> type.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_proof"><span class="constructor">Get_proof</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the proof of the last sequent (if it was proved).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_unsat_core"><span class="constructor">Get_unsat_core</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the unsat core of the last sequent.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_value"><span class="constructor">Get_value</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEterm">term</a> list</code></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the value of some temrs in the current model of the prover.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_assignment"><span class="constructor">Get_assignment</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the assignment of labbeled formulas (see smtlib manual).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Get_assertions"><span class="constructor">Get_assertions</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Get the current set of assertions.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Exit"><span class="constructor">Exit</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Exit the interactive loop.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr></table>
 
-<div class="info ">
-Description of statements.<br>
-</div>
 
 
 <pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
@@ -263,61 +349,17 @@ Description of statements.<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTt.loc">loc</span>&nbsp;: <code class="type"><a href="ParseLocation.html#TYPEt">ParseLocation.t</a> option</code>;</code></td>
+<code><span id="TYPEELTt.loc">loc</span>&nbsp;: <code class="type"><a href="Statement.html#TYPElocation">location</a> option</code>;</code></td>
 
 </tr></table>
 }
 
 <div class="info ">
-Statements are wrapped in a record to have a location.<br>
+The type of statements. Statements have optional location and attributes (or annotations).
+    Additionally the each have a name (which mainly comes from tptp statements), that can
+    very well be the empty string (and so it is likely <b>not</b> unique).<br>
 </div>
 
 
-<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a></code></pre><div class="info ">
-Attributes<br>
-</div>
-
-<pre><span id="VALdefault_attr"><span class="keyword">val</span> default_attr</span> : <code class="type"><a href="Term.html#TYPEt">Term.t</a></code></pre>
-<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a></code></pre>
-<pre><span id="VALmk"><span class="keyword">val</span> mk</span> : <code class="type">?name:string -><br>       ?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEdescr">descr</a> -> <a href="Statement.html#TYPEt">t</a></code></pre><div class="info ">
-Internal shortcut.<br>
-</div>
-
-<pre><span id="VALpop"><span class="keyword">val</span> pop</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> int -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALpush"><span class="keyword">val</span> push</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> int -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALprove"><span class="keyword">val</span> prove</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALantecedent"><span class="keyword">val</span> antecedent</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALconsequent"><span class="keyword">val</span> consequent</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALset_logic"><span class="keyword">val</span> set_logic</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_info"><span class="keyword">val</span> get_info</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALset_info"><span class="keyword">val</span> set_info</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string * <a href="Statement.html#TYPEterm">term</a> option -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_option"><span class="keyword">val</span> get_option</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALset_option"><span class="keyword">val</span> set_option</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string * <a href="Statement.html#TYPEterm">term</a> option -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdef"><span class="keyword">val</span> def</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       string -><br>       <a href="Statement.html#TYPEterm">term</a> list -> (string * <a href="Statement.html#TYPEterm">term</a> list) list -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Statement.html#TYPEt">t</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_proof"><span class="keyword">val</span> get_proof</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_unsat_core"><span class="keyword">val</span> get_unsat_core</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_value"><span class="keyword">val</span> get_value</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Statement.html#TYPEterm">term</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_assignment"><span class="keyword">val</span> get_assignment</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALget_assertions"><span class="keyword">val</span> get_assertions</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALexit"><span class="keyword">val</span> exit</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcheck_sat"><span class="keyword">val</span> check_sat</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALassert_"><span class="keyword">val</span> assert_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> int -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -> string -> <a href="Term.html#TYPEt">Term.t</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtptp"><span class="keyword">val</span> tptp</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="ParseLocation.html#TYPEt">ParseLocation.t</a> -><br>       ?annot:<a href="Term.html#TYPEt">Term.t</a> -> <a href="Term.html#TYPEt">Term.t</a> -> string -> <a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a></code></pre></body></html>
+<pre><span class="keyword">include</span> <a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a></pre>
+</body></html>
