@@ -93,6 +93,7 @@ type descr =
 
 and t = {
   term : descr;
+  attr : t list;
   loc : location option;
 }
 (** The type of terms. A record containing an optional location,

@@ -37,6 +37,7 @@ naked_clause:
     { let loc = L.mk_pos $startpos $endpos in S.clause ~loc c }
 
 atom:
-  | i=INT
-    { let loc = L.mk_pos $startpos $endpos in T.atom ~loc i }
+  | s=INT
+    { let i =int_of_string s in
+      let loc = L.mk_pos $startpos $endpos in T.atom ~loc i }
 

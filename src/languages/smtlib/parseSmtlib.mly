@@ -105,7 +105,7 @@ term:
   | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc l t }
   | OPEN ATTRIBUTE f=term args=attribute+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+    { let loc = L.mk_pos $startpos $endpos in T.attr ~loc f args }
 ;
 
 command_option:

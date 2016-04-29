@@ -19,7 +19,7 @@ module type Logic = sig
   type term
   (** The type of terms used in statements. *)
 
-  (** {2 Optional nfos for statements} *)
+  (** {2 Optional infos for statements} *)
 
   val attr  : ?loc:location -> string -> term
   val annot : ?loc:location -> term -> term list -> term
@@ -117,11 +117,13 @@ module type Logic = sig
       - ["assumption", "conjecture"] are proposition that need to be proved,
         and then can be used to prove other propositions. They are equivalent
         to the following sequence of smtlib statements:
-        - [push 1]
-        - [assert (not t)]
-        - [check_sat]
-        - [pop 1]
-        - [assert t]
+        {ul
+          {- [push 1]}
+          {- [assert (not t)]}
+          {- [check_sat]}
+          {- [pop 1]}
+          {- [assert t]}
+        }
       - ["negated_conjecture"] is the same as ["conjecture"], but the given proposition
         is false (i.e its negation is the proposition to prove).
       - ["type"] declares a new symbol and its type

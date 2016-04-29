@@ -34,17 +34,21 @@ type descr =
 
 and t = {
   term : descr;
+  attr : t list;
   loc : location option;
 }
 
 
 (* Make a term from its description *)
-let make ?loc term = { loc; term; }
+let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
 (* Internal shortcut to make a formula with bound variables. *)
 let mk_bind binder ?loc vars t =
   make ?loc (Binder (binder, vars, t))
 
+(* Attach an attribute list to a term *)
+let attr ?loc t l =
+  { t with attr = t.attr @ l }
 
 (* Create a constant and/or variable, that is a leaf
    of the term AST. *)
@@ -117,8 +121,8 @@ let description = mk_bind Description
 
 (* {2 Wrappers for dimacs} *)
 
-let atom ?loc s =
-  let i = int_of_string s in
+let atom ?loc i =
+  let s = Printf.sprintf "#%d" i in
   if i >= 0 then const ?loc s
   else not_ ?loc (const ?loc (string_of_int (-i)))
 

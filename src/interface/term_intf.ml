@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-(** Interfaces for Terms
+(** Interfaces for Terms.
     This module defines Interfaces that implementation of terms must
     respect in order to be used to instantiated the corresponding
     language classes. *)
@@ -78,17 +78,18 @@ module type Logic = sig
       so terms parsed from an smtlib file will have all variables
       parsed as constants. *)
 
-  val atom     : ?loc:location -> string -> t
+  val atom     : ?loc:location -> int -> t
+  (** Atoms are used for dimacs cnf parsing. Positive integers denotes variables,
+      and negative integers denote the negation of the variable corresponding to
+      their absolute value. *)
+
   val distinct : ?loc:location -> string -> t
-  (** These functions are similar to constant building. Atoms are used
-      for dimacs cnf parsing. [distinct] is used in tptp to specify
-      constants different from other constants, for instance the
+  (** Used in tptp to specify constants different from other constants, for instance the
       'distinct' "Apple" should be syntactically different from the "Apple"
       constant. Can be safely aliased to the [const] function as the
-      [distinct] function is given strings already enclosed with quotes,
+      [distinct] function is always given strings already enclosed with quotes,
       so in the example above, [const] would be called with ["Apple"] as
-      string argument, while [distinct] would be called with the following
-      string ["\"Apple\""] *)
+      string argument, while [distinct] would be called with the string ["\"Apple\""] *)
 
   val int      : ?loc:location -> string -> t
   val rat      : ?loc:location -> string -> t
@@ -173,6 +174,11 @@ module type Logic = sig
 
   val sequent : ?loc:location -> t list -> t list -> t
   (** Sequents as terms *)
+
+  val attr    : ?loc:location -> t -> t list -> t
+  (** Attach a list of attributes (also called annotations) to a term. Attributes
+      have no logical meaning (they can be safely ignored), but may serve to give
+      hints or meta-information. *)
 
   val sexpr   : ?loc:location -> t list -> t
   (** S-expressions (for smtlib attributes), should probably be related
