@@ -1,0 +1,57 @@
+{1 Dolmen}
+
+{2 License}
+
+This code is free, under the BSD license.
+
+{2 Contents}
+
+Dolmen provides functor to easily create parsers for some languages, and
+standard implementation of the required arguments for the functors.
+
+{4 Language classes}
+
+Some languages have enough similarities in either synatx or purpose to be packed
+into classes. Currently, the only class available is the {!Logic} class that regroup
+languages used in formal proof.
+
+{!modules:
+Logic
+}
+
+{4 Standard implementations}
+
+The following modules define standard implementations that can be used to directly
+instantiate the parser functors.
+
+{!modules:
+Term
+Statement
+ParseLocation
+}
+
+{4 Interfaces}
+
+The following modules synthesize the implementationr equirements for language classes:
+
+{!modules:
+Term_intf
+Stmt_intf
+Location_intf
+}
+
+{4 Language parsers}
+
+Individual language parsers are available through the following modules:
+
+{!modules:
+Dimacs
+Smtlib
+Tptp
+Zf
+}
+
+
+{2 Index}
+
+{!indexlist}
