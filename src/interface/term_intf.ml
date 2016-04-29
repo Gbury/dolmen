@@ -24,7 +24,7 @@ module type Logic = sig
 
   val eq_t      : t
   val neq_t     : t
-  (** The terms representing equality and diequality, respectively. *)
+  (** The terms representing equality and disequality, respectively. *)
 
   val wildcard  : t
   (** The wildcard term, usually used in place of type arguments
@@ -44,7 +44,7 @@ module type Logic = sig
 
   val true_     : t
   val false_    : t
-  (** The constants for the true and fals propositional constants. Again defined
+  (** The constants for the true and false propositional constants. Again defined
       as lexical token in the Zipperposition format, while treated as a constant
       in other languages ("$true" in tptp). *)
 
@@ -58,8 +58,8 @@ module type Logic = sig
   val implied_t : t
   val implies_t : t
   (** Standard logical connectives viewed as terms. [implies_t] is usual
-      right implication, i.e [apply implies_t \[p; q\] ] is "p imples q",
-      while [apply impled_t \[p; q \]] means "p is implied by q" or
+      right implication, i.e [apply implies_t \[p; q\] ] is "p implies q",
+      while [apply implied_t \[p; q \]] means "p is implied by q" or
       "q implies p". *)
 
   val data_t    : t
@@ -73,7 +73,7 @@ module type Logic = sig
   val var      : ?loc:location -> string -> t
   val const    : ?loc:location -> string -> t
   (** Variable and constant constructors. While in some languages
-      they can distinguished at the laxical level (in tptp for instance),
+      they can distinguished at the lexical level (in tptp for instance),
       in most languages, it is an issue dependant on scoping rules,
       so terms parsed from an smtlib file will have all variables
       parsed as constants. *)
@@ -102,7 +102,7 @@ module type Logic = sig
   (** {3 Term constructors} *)
 
   val colon : ?loc:location -> t -> t -> t
-  (** Representes juxtaposition of two terms, usually denoted "t : t'"
+  (** Represents juxtaposition of two terms, usually denoted "t : t'"
       in most languages, and mainly used to annotated terms with their
       supposed, or defined, type. *)
 
@@ -126,7 +126,6 @@ module type Logic = sig
   (** Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: [ite condition then_branch else_branch]. *)
 
-  (** Binders constructors *)
   val pi     : ?loc:location -> t list -> t -> t
   val letin  : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
@@ -142,7 +141,7 @@ module type Logic = sig
       - Letin is local binding, takes a list of equality of equivalences
         whose left hand-side is a variable.
       - Forall is universal quantification
-      - Exists is existencial quantification
+      - Exists is existential quantification
       - Lambda is used for function construction
       - Choice is the choice operator, also called indefinite description, or
         also epsilon terms, i.e "Choice x. p(x)" is one "x" such that "p(x)"
