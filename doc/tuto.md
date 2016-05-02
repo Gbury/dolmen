@@ -14,17 +14,25 @@ the following code will give you a quick start:
 ```ocaml
 
 open Dolmen
+
+(* Instantiate a module for parsing logic languages *)
 module M = Logic.Make(ParseLocation)(Term)(Statement)
 
+(* An arbitrary file *)
 let file = "/home/foo/bar.smt2"
 
+(* Parse the file, and we get a tuple:
+  - format: the guessed format (according to the file extension)
+  - statements: the list of top-level firectives found in the file *)
 let format, statements = M.parse_file file
 
+(* You can match on the detected format of the input *)
 let () = match format with
 | M.Dimacs -> Format.printf "Hurray for CNF !@."
 | M.Smtlib | M.Tptp | M.Zf ->
   Format.printf "First order formulas ! Yay !@."
 
+(* Now you can analyse the statements, and prove the needed theorems *)
 let () = List.iter ignore statements
 ```
 
