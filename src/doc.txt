@@ -29,6 +29,14 @@ languages used in formal proof.
 Logic
 }
 
+The following modules synthesize the implementation requirements for language classes:
+
+{!modules:
+Term_intf
+Stmt_intf
+Location_intf
+}
+
 {4 Standard implementations}
 
 The following modules define standard implementations that can be used to directly
@@ -38,16 +46,6 @@ instantiate the parser functors.
 Term
 Statement
 ParseLocation
-}
-
-{4 Interfaces}
-
-The following modules synthesize the implementationr equirements for language classes:
-
-{!modules:
-Term_intf
-Stmt_intf
-Location_intf
 }
 
 {4 Language parsers}

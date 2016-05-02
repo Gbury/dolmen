@@ -31,7 +31,7 @@ let () = List.iter ignore statements
 ## Global architecture
 
 In order to stay flexible, Dolmen does not provide parsers, but rather functors
-that generate parsers. The functors are there to abstracty over the
+that generate parsers. The functors are there to abstract over the
 implementation of the input language. For instance, in the context of languages
 for theorem proving, the parsers abstract over the representation of terms
 and formulas, so that programmers can use their own AST rather than being forced
@@ -39,7 +39,7 @@ to use the library's.
 
 ## Parsing a single language
 
-Let's say you want a parser for a specifis language, for instance TPTP.
+Let's say you want a parser for a specific language, for instance TPTP.
 The ```Tptp``` module provides the functor to generate tptp parsers.
 It provides a functor of the following type:
 
@@ -59,8 +59,8 @@ The functor takes three arguments:
   - reporting errors during parsing
 - ```Ast_tptp.Term```: An implementation of terms (and formulas).
   It provides an abstract type ```t``` for expressions as well as functions
-  to build these expressions such as a function to build conjunctions,
-  universal quantification, etc...
+  to build these expressions (conjunction of formulas, universal quantification,
+  etc...)
 - ```Ast_tptp.Statement```: An implementation of top-level directives
   found in tptp files.
 
@@ -121,14 +121,15 @@ instantiate any functor.
 
 ## The Logic class
 
-Having parsers for languages i nice and all, but most of the time you'd like
+Having parsers for languages is a good start, but most of the time you'd like
 to parse all languages that make sens for your use-case, for instance in the
 case of an automated theorem prover, you might want to parse all languages
 that describe logic formulas.
 
 That is precisely the goal of the ```Logic``` module that parses the languages
 suited to be input for theorem proving. It provides a functor, which basically
-takes the same argument as the single-language parsers:
+takes the same arguments as the single-language parsers, but with richer
+interfaces:
 
 ```ocaml
 (** file: src/classes/logic.mli *)
