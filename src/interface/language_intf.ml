@@ -25,7 +25,7 @@ module type S = sig
 
   val parse_input :
     [ `Stdin | `File of string ] -> (unit -> statement option)
-  (** incremental parsing. Given an input to read (either a file, or stdin),
+  (** Incremental parsing. Given an input to read (either a file, or stdin),
       returns a generator that will incrementally parse the statements.
       Useful to process input from [stdin], or even large files where it would
       be impractical to parse the entire file before processing it. *)

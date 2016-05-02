@@ -1,6 +1,6 @@
 # Dolmen
 
-A library providing parsers for languages such as dimacs, tptp and smtlib.
+A library providing flexible parsers for input languages.
 
 ## LICENSE
 
@@ -8,7 +8,8 @@ BSD2, see file LICENSE.
 
 ## Documentation
 
-Online documentation for the dev version can be found at <http://gbury.github.io/dolmen>
+Online documentation for the dev version can be found at <http://gbury.github.io/dolmen>.
+A tutorial is available at <https://github.com/Gbury/dolmen/tree/master/doc/tuto.md>.
 
 ## Current state
 
