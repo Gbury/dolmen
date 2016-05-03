@@ -48,7 +48,7 @@ to use the library's.
 ## Parsing a single language
 
 Let's say you want a parser for a specific language, for instance TPTP.
-The ```Tptp``` module provides the functor to generate tptp parsers.
+The `Tptp` module provides the functor to generate tptp parsers.
 It provides a functor of the following type:
 
 ```ocaml
@@ -61,15 +61,15 @@ module Make
 ```
 
 The functor takes three arguments:
-- ```ParseLocation.s```: An implementation of locations in files,
+- `ParseLocation.s`: An implementation of locations in files,
   the locations are used for two things:
   - attaching locations to terms and formulas
   - reporting errors during parsing
-- ```Ast_tptp.Term```: An implementation of terms (and formulas).
-  It provides an abstract type ```t``` for expressions as well as functions
+- `Ast_tptp.Term`: An implementation of terms (and formulas).
+  It provides an abstract type `t` for expressions as well as functions
   to build these expressions (conjunction of formulas, universal quantification,
   etc...)
-- ```Ast_tptp.Statement```: An implementation of top-level directives
+- `Ast_tptp.Statement`: An implementation of top-level directives
   found in tptp files.
 
 Once provided with the required modules, the functor will return a module
@@ -123,7 +123,7 @@ While great care is taken to document the interface requirements of each languag
 for users to have to implement all the required functions, so Dolmen provides
 default implementation of functor arguments.
 
-The modules ```ParseLocation```, ```Term```, ```Statement``` implement all
+The modules `ParseLocation`, `Term`, `Statement` implement all
 interfaces required by the functors in the library, and can be used to
 instantiate any functor.
 
@@ -134,7 +134,7 @@ to parse all languages that make sens for your use-case, for instance in the
 case of an automated theorem prover, you might want to parse all languages
 that describe logic formulas.
 
-That is precisely the goal of the ```Logic``` module that parses the languages
+That is precisely the goal of the `Logic` module that parses the languages
 suited to be input for theorem proving. It provides a functor, which basically
 takes the same arguments as the single-language parsers, but with richer
 interfaces:
