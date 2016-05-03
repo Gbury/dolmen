@@ -11,7 +11,7 @@ true: use_menhir, explain
 <languages/smtlib>: include
 
 # Dependencies
-<main.*>: package(cmdliner), package(menhirLib)
+<main.*>: package(menhirLib)
 <languages/**/*>: package(menhirLib)
 <interface/**/*>: package(menhirLib)
 
