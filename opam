@@ -1,0 +1,23 @@
+opam-version: "1.2"
+name: "dolmen"
+version: "0.1"
+author: "Guillaume Bury"
+maintainer: "guillaume.bury@inria.fr"
+license: "BSD-2-clauses"
+build: [
+    [make "-C" "src"]
+]
+install: [make "-C" "src" "install"]
+remove: [
+    ["ocamlfind" "remove" "dolmen"]
+]
+depends: [
+  "ocamlfind"
+  "menhir"
+  "ocamlbuild" {build}
+]
+tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
+homepage: "https://github.com/Gbury/dolmen"
+doc: "http://gbury.github.io/dolmen"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+dev-repo: "https://github.com/Gbury/dolmen.git"

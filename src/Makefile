@@ -7,7 +7,7 @@ DOC=dolmen.docdir/index.html
 BIN=main.native
 NAME=dolmen
 
-LIB=$(addprefix $(NAME), .cma .cmxa .cmxs)
+LIB=$(addprefix $(NAME), .cma .cmxa .cmxs .a)
 
 all: lib bin
 
@@ -27,7 +27,8 @@ test: bin
 clean:
 	$(COMP) -clean && rm -f $(NAME)
 
-TO_INSTALL=META $(addprefix _build/,$(LIB) $(NAME).a $(NAME).cmi)
+TO_INSTALL=META $(addprefix _build/,$(LIB) $(NAME).a $(NAME).cmi) \
+	   $(shell find _build -name '*.cmi' -or -name '*.cmx')
 
 install: lib
 	ocamlfind install $(NAME) $(TO_INSTALL)
