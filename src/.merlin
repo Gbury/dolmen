@@ -3,6 +3,7 @@ S standard
 S interface
 S languages
 S languages/zf
+S languages/line
 S languages/tptp
 S languages/dimacs
 S languages/smtlib
@@ -13,6 +14,7 @@ B _build/standard
 B _build/interface
 B _build/languages
 B _build/languages/zf
+B _build/languages/line
 B _build/languages/tptp
 B _build/languages/dimacs
 B _build/languages/smtlib

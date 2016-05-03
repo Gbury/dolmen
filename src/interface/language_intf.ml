@@ -27,6 +27,8 @@ module type S = sig
     [ `Stdin | `File of string ] -> (unit -> statement option)
   (** Incremental parsing. Given an input to read (either a file, or stdin),
       returns a generator that will incrementally parse the statements.
+      In case of a syntax error, the current line will be completely
+      consumed and parsing will restart at the beginning of the next line.
       Useful to process input from [stdin], or even large files where it would
       be impractical to parse the entire file before processing it. *)
 

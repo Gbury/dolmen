@@ -29,19 +29,27 @@ module Make
 
   let parse_input i =
     let lexbuf = ParseLocation.mk_lexbuf i in
-    fun () ->
-      try
-        Parser.input Lexer.token lexbuf
-      with
-      | Parser.Error ->
-        let pos = Loc.of_lexbuf lexbuf in
-        raise (Loc.Syntax_error (pos, ""))
-      | Lexer.Error ->
-        let pos = Loc.of_lexbuf lexbuf in
-        raise (Loc.Lexing_error (pos, Lexing.lexeme lexbuf))
-      | _ as e ->
-        let pos = Loc.of_lexbuf lexbuf in
-        raise (Loc.Uncaught (pos, e))
+    let supplier = Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
+        Lexer.token lexbuf in
+    let loop = Parse.MenhirInterpreter.loop supplier in
+    let aux () =
+      begin match loop (Parse.Incremental.input Lexing.(lexbuf.lex_curr_p)) with
+        | res -> res
+        | exception Parser.Error ->
+          let pos = Loc.of_lexbuf lexbuf in
+          Line.consume lexbuf;
+          raise (Loc.Syntax_error (pos, ""))
+        | exception Lexer.Error ->
+          let pos = Loc.of_lexbuf lexbuf in
+          Line.consume lexbuf;
+          raise (Loc.Lexing_error (pos, Lexing.lexeme lexbuf))
+        | exception e ->
+          let pos = Loc.of_lexbuf lexbuf in
+          Line.consume lexbuf;
+          raise (Loc.Uncaught (pos, e))
+      end
+    in
+    aux
 
 end
 
