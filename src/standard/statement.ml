@@ -52,6 +52,117 @@ and t = {
   loc : location option;
 }
 
+(* Debug printing *)
+
+let rec pp_descr b = function
+  | Pack l ->
+    Printf.bprintf b "pack(%d):\n" (List.length l);
+    Misc.pp_list ~pp_sep:Buffer.add_char ~sep:'\n' ~pp b l
+
+  | Pop i -> Printf.bprintf b "pop: %d" i
+  | Push i -> Printf.bprintf b "push: %d" i
+
+  | Prove -> Printf.bprintf b "Prove"
+  | Consequent t -> Printf.bprintf b "consequent: %a" Term.pp t
+  | Antecedent t -> Printf.bprintf b "antecedent: %a" Term.pp t
+
+  | Include f -> Printf.bprintf b "include: %s" f
+  | Set_logic s -> Printf.bprintf b "set-logic: %s" s
+
+  | Get_info s -> Printf.bprintf b "get-info: %s" s
+  | Set_info (s, o) ->
+    Printf.bprintf b "set-info: %s <- %a" s (Misc.pp_opt Term.pp) o
+
+  | Get_option s -> Printf.bprintf b "get-option: %s" s
+  | Set_option (s, o) ->
+    Printf.bprintf b "set-option: %s <- %a" s (Misc.pp_opt Term.pp) o
+
+  | Def (s, t) -> Printf.bprintf b "def: %s = %a" s Term.pp t
+  | Decl (s, t) -> Printf.bprintf b "decl: %s : %a" s Term.pp t
+  | Inductive i ->
+    Printf.bprintf b "Inductive(%d): %s, %a\n"
+      (List.length i.cstrs) i.name
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
+    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
+      ~pp:(fun b (cstr, l) -> Printf.bprintf b "%s: %a" cstr (
+          Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp
+        ) l) b i.cstrs
+
+  | Get_proof -> Printf.bprintf b "get-proof"
+  | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
+  | Get_value l ->
+    Printf.bprintf b "get-value(%d):\n" (List.length l);
+    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:Term.pp b l
+  | Get_assignment -> Printf.bprintf b "get-assignment"
+  | Get_assertions -> Printf.bprintf b "get-assertions"
+
+  | Exit -> Printf.bprintf b "exit"
+
+and pp b = function { descr } ->
+  Printf.bprintf b "%a" pp_descr descr
+
+(* Pretty printing *)
+
+let rec print_descr fmt = function
+  | Pack l ->
+    Format.fprintf fmt "@[<hov 2>pack(%d):@ %a@]" (List.length l)
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
+
+  | Pop i -> Format.fprintf fmt "pop: %d" i
+  | Push i -> Format.fprintf fmt "push: %d" i
+
+  | Prove ->
+    Format.fprintf fmt "Prove"
+  | Consequent t ->
+    Format.fprintf fmt "@[<hov 2>consequent:@ %a@]" Term.print t
+  | Antecedent t ->
+    Format.fprintf fmt "@[<hov 2>antecedent:@ %a@]" Term.print t
+
+  | Include f ->
+    Format.fprintf fmt "@[<hov 2>include:@ %s@]" f
+  | Set_logic s ->
+    Format.fprintf fmt "@[<hov 2>set-logic:@ %s@]" s
+
+  | Get_info s ->
+    Format.fprintf fmt "@[<hov 2>get-info:@ %s@]" s
+  | Set_info (s, o) ->
+    Format.fprintf fmt "@[<hov 2>set-info:@ %s <-@ %a@]"
+      s (Misc.print_opt Term.print) o
+
+  | Get_option s ->
+    Format.fprintf fmt "@[<hov 2>get-option:@ %s@]" s
+  | Set_option (s, o) ->
+    Format.fprintf fmt "@[<hov 2>set-option:@ %s <-@ %a@]"
+      s (Misc.print_opt Term.print) o
+
+  | Def (s, t) ->
+    Format.fprintf fmt "@[<hov 2>def:@ %s =@ %a@]" s Term.print t
+  | Decl (s, t) ->
+    Format.fprintf fmt "@[<hov 2>decl:@ %s :@ %a@]" s Term.print t
+  | Inductive i ->
+    Format.fprintf fmt "@[<hov 2>Inductive(%d) %s@ %a@\n%a@]"
+      (List.length i.cstrs) i.name
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) i.vars
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@\n"
+         ~print:(fun fmt (cstr, l) ->
+             Format.fprintf fmt "%s: %a" cstr (
+               Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
+           ) l)) i.cstrs
+
+  | Get_proof -> Format.fprintf fmt "get-proof"
+  | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
+  | Get_value l ->
+    Format.fprintf fmt "@[<hov 2>get-value(%d):@ %a@]" (List.length l)
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) l
+  | Get_assignment -> Format.fprintf fmt "get-assignment"
+  | Get_assertions -> Format.fprintf fmt "get-assertions"
+
+  | Exit -> Format.fprintf fmt "exit"
+
+and print fmt = function { descr } ->
+  Format.fprintf fmt "%a" print_descr descr
+
+
 (* Attributes *)
 let attr = Term.const
 

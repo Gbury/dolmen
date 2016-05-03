@@ -38,6 +38,121 @@ and t = {
   loc : location option;
 }
 
+(* Printing info *)
+
+let is_infix = function
+  | Eq | And | Or
+  | Nand | Xor | Nor
+  | Imply | Implied | Equiv
+  | Arrow | Product | Union
+  | Sequent | Subtype
+    -> true
+  | _ -> false
+
+(* Debug printing *)
+
+let pp_builtin b = function
+  | Wildcard -> Printf.bprintf b "_"
+  | True -> Printf.bprintf b "⊤"
+  | False -> Printf.bprintf b "⊥"
+  | Eq -> Printf.bprintf b "=="
+  | Distinct -> Printf.bprintf b "!="
+  | Ite -> Printf.bprintf b "#ite"
+  | Sequent -> Printf.bprintf b "⊢"
+  | Arrow -> Printf.bprintf b "→"
+  | Subtype -> Printf.bprintf b "⊂"
+  | Product -> Printf.bprintf b "*"
+  | Union -> Printf.bprintf b "∪"
+  | Not -> Printf.bprintf b "¬"
+  | And -> Printf.bprintf b "∧"
+  | Or -> Printf.bprintf b "∨"
+  | Nand -> Printf.bprintf b "⊼"
+  | Xor -> Printf.bprintf b "⊻"
+  | Nor -> Printf.bprintf b "V"
+  | Imply -> Printf.bprintf b "⇒"
+  | Implied -> Printf.bprintf b "⇐"
+  | Equiv -> Printf.bprintf b "⇔"
+
+let pp_binder b = function
+  | All -> Printf.bprintf b "∀"
+  | Ex -> Printf.bprintf b "∃"
+  | Pi -> Printf.bprintf b "Π"
+  | Let -> Printf.bprintf b "let"
+  | Fun -> Printf.bprintf b "λ"
+  | Choice -> Printf.bprintf b "ε"
+  | Description -> Printf.bprintf b "@"
+
+let rec pp_descr b = function
+  | Symbol s -> Printf.bprintf b "%s" s
+  | Builtin s -> pp_builtin b s
+  | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
+  | App ({ term = Builtin sep}, l) when is_infix sep ->
+    Misc.pp_list ~pp_sep:pp_builtin ~sep ~pp b l
+  | App (f, l) ->
+    Printf.bprintf b "%a(%a)" pp f
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l
+  | Binder (q, l, e) ->
+    Printf.bprintf b "%a %a. %a" pp_binder q
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l pp e
+
+and pp b = function
+  | { term = (Symbol _) as d }
+  | { term = (Builtin _) as d } -> pp_descr b d
+  | e -> Printf.bprintf b "(%a)" pp_descr e.term
+
+(* Pretty-printing *)
+
+let print_builtin fmt = function
+  | Wildcard -> Format.fprintf fmt "_"
+  | True -> Format.fprintf fmt "⊤"
+  | False -> Format.fprintf fmt "⊥"
+  | Eq -> Format.fprintf fmt "=="
+  | Distinct -> Format.fprintf fmt "!="
+  | Ite -> Format.fprintf fmt "#ite"
+  | Sequent -> Format.fprintf fmt "⊢"
+  | Arrow -> Format.fprintf fmt "→"
+  | Subtype -> Format.fprintf fmt "⊂"
+  | Product -> Format.fprintf fmt "*"
+  | Union -> Format.fprintf fmt "∪"
+  | Not -> Format.fprintf fmt "¬"
+  | And -> Format.fprintf fmt "∧"
+  | Or -> Format.fprintf fmt "∨"
+  | Nand -> Format.fprintf fmt "⊼"
+  | Xor -> Format.fprintf fmt "⊻"
+  | Nor -> Format.fprintf fmt "V"
+  | Imply -> Format.fprintf fmt "⇒"
+  | Implied -> Format.fprintf fmt "⇐"
+  | Equiv -> Format.fprintf fmt "⇔"
+
+let print_binder fmt = function
+  | All -> Format.fprintf fmt "∀"
+  | Ex -> Format.fprintf fmt "∃"
+  | Pi -> Format.fprintf fmt "Π"
+  | Let -> Format.fprintf fmt "let"
+  | Fun -> Format.fprintf fmt "λ"
+  | Choice -> Format.fprintf fmt "ε"
+  | Description -> Format.fprintf fmt "@"
+
+let rec print_descr fmt = function
+  | Symbol s -> Format.fprintf fmt "%s" s
+  | Builtin s -> print_builtin fmt s
+  | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
+  | App ({ term = Builtin sep}, l) when is_infix sep ->
+    Misc.print_list ~print_sep:print_builtin ~sep ~print fmt l
+  | App (f, []) ->
+    Format.fprintf fmt "%a" print f
+  | App (f, l) ->
+    Format.fprintf fmt "%a@ %a" print f
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
+  | Binder (q, l, e) ->
+    Format.fprintf fmt "%a@ %a.@ %a" print_binder q
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l print e
+
+and print fmt = function
+  | { term = (Symbol _) as d }
+  | { term = (Builtin _) as d } -> print_descr fmt d
+  | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
+
 
 (* Make a term from its description *)
 let make ?loc ?(attr=[]) term = { term; attr; loc; }

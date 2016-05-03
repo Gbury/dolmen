@@ -24,34 +24,45 @@ let parse_opts () =
   Arg.parse opts set_file help_msg;
   !input, !print
 
-let rec iter gen f =
+let handle_exn = function
+  | ParseLocation.Lexing_error (pos, lexeme) ->
+    Format.printf "%a@\nLexing error, unrecognised lexeme: '%s'@."
+      ParseLocation.fmt pos lexeme
+  | ParseLocation.Syntax_error (pos, "") ->
+    Format.printf "%a@\nSyntax error.@." ParseLocation.fmt pos
+  | ParseLocation.Syntax_error (pos, msg) ->
+    Format.printf "%a@\nSyntax error: %s@." ParseLocation.fmt pos msg
+  | ParseLocation.Uncaught (pos, e) ->
+    Format.printf "%a@\n%s@." ParseLocation.fmt pos (Printexc.to_string e)
+  | e ->
+    Format.printf "Unexpect exception (really bad!):@\n%s@."
+      (Printexc.to_string e)
+
+let rec fold gen f acc =
   match gen () with
-  | None | Some { Statement.descr = Statement.Exit } -> ()
+  | None | Some { Statement.descr = Statement.Exit } ->
+    acc
+  | exception e ->
+    let () = handle_exn e in
+    fold gen f false
   | Some s ->
-    f s; iter gen f
+    let () = f s in
+    fold gen f acc
 
 let () =
   let input, print = parse_opts () in
-  try
-    let lang, stmts = M.parse_input input in
-    begin match input with
-      | `File f -> Format.printf "%s: ok@." f
-      | `Stdin _ -> Format.printf "reading stdin@."
-    end;
-    if print then
-      Format.printf "guessed format : %s@." (M.string_of_language lang);
-    iter stmts (fun _s ->
-        if print then Format.printf "<opaque>@."
-      );
-  with
-    | ParseLocation.Lexing_error (pos, lexeme) ->
-      Format.printf "%a@\nLexing error, unrecognised lexeme: '%s'@." ParseLocation.fmt pos lexeme;
-      exit 2
-    | ParseLocation.Syntax_error (pos, msg) ->
-      Format.printf "%a@\nSyntax error: %s@." ParseLocation.fmt pos msg;
-      exit 3
-    | ParseLocation.Uncaught (pos, e) ->
-      Format.printf "%a@\n%s@." ParseLocation.fmt pos (Printexc.to_string e);
-      exit 4
+  let lang, stmts = M.parse_input input in
+  begin match input with
+    | `File f -> Format.printf "reading: %s@." f
+    | `Stdin _ -> Format.printf "reading: stdin@."
+  end;
+  if print then
+    Format.printf "guessed format : %s@." (M.string_of_language lang);
+  let ok = fold stmts (fun s ->
+      if print then
+        Format.fprintf Format.std_formatter "%a@." Statement.print s
+    ) true in
+  if not ok then
+    exit 2
 
 

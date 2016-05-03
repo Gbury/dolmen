@@ -103,3 +103,9 @@ and t = {
 
 include Stmt_intf.Logic with type location := location and type term := term and type t := t
 
+(** {2 Additional functions} *)
+
+val pp : Buffer.t -> t -> unit
+val print : Format.formatter -> t -> unit
+(** Printing functions for statements. *)
+

@@ -108,3 +108,9 @@ include Term_intf.Logic with type location := location and type t := t
 val fun_ty : ?loc:location -> t list -> t -> t
 (** Multi-arguments function type constructor. *)
 
+val pp : Buffer.t -> t -> unit
+val print : Format.formatter -> t -> unit
+(** Printing functionson buffer and formatters. *)
+
+
+
