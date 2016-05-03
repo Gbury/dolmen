@@ -9,7 +9,17 @@ BSD2, see file LICENSE.
 ## Documentation
 
 Online documentation for the dev version can be found at <http://gbury.github.io/dolmen>.
-A tutorial is available at <https://github.com/Gbury/dolmen/tree/master/doc/tuto.md>.
+There is also [a tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).
+
+## Build
+
+With opam:
+
+    opam pin add dolmen https://github.com/Gbury/dolmen.git
+
+Manually:
+
+    make -C src
 
 ## Current state
 
