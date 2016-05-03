@@ -15,6 +15,12 @@ module Make
     | Tptp
     | Zf
 
+  let string_of_language = function
+    | Dimacs -> "dimacs"
+    | Smtlib -> "smt2"
+    | Tptp -> "tptp"
+    | Zf -> "zf"
+
   let assoc = [
     Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S) : S);
     Smtlib, ".smt2", (module Smtlib.Make(L)(T)(S) : S);

@@ -21,6 +21,9 @@ module Make
     (** Zipperposition format *)
   (** The languages supported by the Logic class. *)
 
+  val string_of_language : language -> string
+  (** String representation of the variant *)
+
   (** {2 High-level parsing} *)
 
   val parse_file : string -> language * S.t list
