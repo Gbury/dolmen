@@ -7,6 +7,8 @@ module Make
     (S : Stmt_intf.Logic with type location := L.t and type term := T.t)
 = struct
 
+  exception Extension_not_found of string
+
   module type S = Language_intf.S with type statement := S.t
 
   type language =
@@ -32,18 +34,26 @@ module Make
     List.find (fun (l', _, _) -> l = l') assoc
 
   let of_extension ext =
-    List.find (fun (_, ext', _) -> ext = ext') assoc
+    try
+      List.find (fun (_, ext', _) -> ext = ext') assoc
+    with Not_found ->
+      raise (Extension_not_found ext)
 
   let parse_file file =
     let l, _, (module P : S) = of_extension (Misc.get_extension file) in
     l, P.parse_file file
 
-  let parse_input = function
+  let parse_input ?language = function
     | `File file ->
-      let l, _, (module P : S) = of_extension (Misc.get_extension file) in
+      let l, _, (module P : S) =
+        match language with
+        | Some l -> of_language l
+        | None -> of_extension (Misc.get_extension file)
+      in
       l, P.parse_input (`File file)
     | `Stdin l ->
-      let _, _, (module P : S) = of_language l in
+      let _, _, (module P : S) = of_language
+          (match language with | Some l' -> l' | None -> l) in
       l, P.parse_input `Stdin
 
 end
