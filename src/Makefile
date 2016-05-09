@@ -40,4 +40,4 @@ reinstall: all
 	ocamlfind remove $(NAME) || true
 	ocamlfind install $(NAME) $(TO_INSTALL)
 
-.PHONY: clean doc all bench install uninstall reinstall enable_log disable_log bin test
+.PHONY: clean doc all bench install uninstall reinstall bin test
