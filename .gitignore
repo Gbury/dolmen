@@ -1,7 +1,10 @@
 # Source directory (doc, build dir and bin)
-src/dolmen.docdir
 src/_build/
+
+# Generated files
 src/dolmen
+src/dolmen.docdir
+doc/index.html
 
 # ocamlbuild targets
 *.byte

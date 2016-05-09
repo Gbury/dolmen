@@ -1,0 +1,27 @@
+#!/bin/bash -e
+
+# Enssure we are on master branch
+git checkout master
+
+# Generate documentation
+cd src && make doc
+cd doc && asciidoc index.txt
+
+# Checkout gh-pages
+git checkout gh-pages
+
+# Copy doc to the right locations
+cp doc/index.html ./
+cp src/dolmen.docdir/* ./dev/
+
+# Add potentially new pages
+git add ./dev/*
+git add index.html
+
+# Commit it all & push
+git commit -m 'Doc update'
+git push
+
+# Get back to master branch
+git checkout master
+
