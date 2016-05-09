@@ -8,10 +8,10 @@ BSD2, see file LICENSE.
 
 ## Documentation
 
-Online documentation for the dev version can be found at <http://gbury.github.io/dolmen>.
+Online documentation can be found at <http://gbury.github.io/dolmen>.
 There is also [a tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).
 
-## Build
+## Build & Install
 
 With opam:
 
@@ -20,6 +20,7 @@ With opam:
 Manually:
 
     make -C src
+    make -C src install
 
 ## Current state
 
@@ -65,7 +66,7 @@ three module arguments:
 Some simple implementation of theses modules are provided in this library.
 See the next section for more information.
 
-## Examples
+## Example
 
 Examples of how to use the parsers can be found in src/main.ml . As mentionned
 in the previous section, default implementation for the required functor arguments
@@ -82,6 +83,8 @@ module P = Smtlib.Make(ParseLocation)(Term)(Statement)
 let _ = P.parse_file "~/example.smt2"
 
 ```
+
+For more examples, see the [tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).
 
 ## Future work
 
