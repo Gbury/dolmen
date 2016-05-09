@@ -554,6 +554,7 @@ The terms representing equality and disequality, respectively.
 <td><div class="info">
 These function take as argument either a language, or a filename,
       and return a triple: language, language file extension (starting with a dot), appropriate parsing module
+      Extensions should start with a dot (for instance : <code class="code">".smt2"</code>)
 </div>
 </td></tr>
 <tr><td><a href="Logic.Make.html#VALof_language">of_language</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
@@ -590,7 +591,8 @@ Parse the given file
 </td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_input">parse_input</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
 <td><div class="info">
-Incremental parsing of either a file, or stdin.
+Incremental parsing of either a file (see ), or stdin
+      (with given language).
 </div>
 </td></tr>
 <tr><td><a href="Language_intf.S.html#VALparse_input">parse_input</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
@@ -613,6 +615,20 @@ Pop the given number of level on the stack of assertions.
 <td></td></tr>
 <tr><td><a href="ParseLocation.html#VALpp">pp</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td></td></tr>
+<tr><td><a href="Statement.html#VALpp">pp</a> [<a href="Statement.html">Statement</a>]</td>
+<td></td></tr>
+<tr><td><a href="Term.html#VALpp">pp</a> [<a href="Term.html">Term</a>]</td>
+<td></td></tr>
+<tr><td><a href="Statement.html#VALprint">print</a> [<a href="Statement.html">Statement</a>]</td>
+<td><div class="info">
+Printing functions for statements.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#VALprint">print</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Printing functionson buffer and formatters.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALproduct">product</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALproduct">product</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -715,6 +731,11 @@ S-expressions (for smtlib attributes), should probably be related
 <td><div class="info">
 <code class="code">smaller p1 p2</code> is true if <code class="code">p1</code> is included in <code class="code">p2</code>, ie
     <code class="code">p1</code> is a sub-location of <code class="code">p2</code> (interval inclusion)
+</div>
+</td></tr>
+<tr><td><a href="Logic.Make.html#VALstring_of_language">string_of_language</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
+<td><div class="info">
+String representation of the variant
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALsubtype">subtype</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>

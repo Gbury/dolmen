@@ -63,6 +63,11 @@
 </tr>
 </table>
 <hr width="100%">
+
+<pre><span id="EXCEPTIONExtension_not_found"><span class="keyword">exception</span> Extension_not_found</span> <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info ">
+Raised when trying to find a language given a file extension.<br>
+</div>
 <br>
 <h2 id="2_Supportedlanguages">Supported languages</h2><br>
 
@@ -112,6 +117,10 @@ Zipperposition format<br>
 The languages supported by the Logic class.<br>
 </div>
 
+
+<pre><span id="VALstring_of_language"><span class="keyword">val</span> string_of_language</span> : <code class="type"><a href="Logic.Make.html#TYPElanguage">language</a> -> string</code></pre><div class="info ">
+String representation of the variant<br>
+</div>
 <br>
 <h2 id="2_Highlevelparsing">High-level parsing</h2><br>
 
@@ -120,9 +129,12 @@ Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.<br>
 </div>
 
-<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre><div class="info ">
-Incremental parsing of either a file, or stdin.<br>
+<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -><br>       [ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre><div class="info ">
+Incremental parsing of either a file (see ), or stdin
+      (with given language).<br>
 </div>
+<div class="param_info"><code class="code">language</code> : specify a language for parsing, overrides auto-detection
+      and stdin specification.</div>
 <br>
 <h2 id="2_Midlevelparsing">Mid-level parsing</h2><br>
 
@@ -138,6 +150,8 @@ These function take as argument either a language, or a filename,
 <li>language file extension (starting with a dot)</li>
 <li>appropriate parsing module</li>
 </ul>
-<br>
+
+      Extensions should start with a dot (for instance : <code class="code">".smt2"</code>)<br>
+<b>Raises</b> <code>Extension_not_found</code> when the extension is not recognized.<br>
 </div>
 </body></html>

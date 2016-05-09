@@ -32,6 +32,7 @@
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
 <link title="Logic" rel="Chapter" href="Logic.html"><link title="Type definitions" rel="Section" href="#2_Typedefinitions">
 <link title="Implemented interfaces" rel="Section" href="#2_Implementedinterfaces">
+<link title="Additional functions" rel="Section" href="#2_Additionalfunctions">
 <title>Dolmen doc : Statement</title>
 </head>
 <body>
@@ -365,4 +366,11 @@ The type of statements. Statements have optional location and attributes (or ann
 <h2 id="2_Implementedinterfaces">Implemented interfaces</h2><br>
 
 <pre><span class="keyword">include</span> <a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a></pre>
+<br>
+<h2 id="2_Additionalfunctions">Additional functions</h2><br>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Statement.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Statement.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Printing functions for statements.<br>
+</div>
 </body></html>
