@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Term" rel="Chapter" href="Term.html">
+<link title="Statement" rel="Chapter" href="Statement.html">
+<link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
+<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Term_intf" rel="Chapter" href="Term_intf.html">
+<link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
+<link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
+<link title="Parse_intf" rel="Chapter" href="Parse_intf.html">
+<link title="Location_intf" rel="Chapter" href="Location_intf.html">
+<link title="Language_intf" rel="Chapter" href="Language_intf.html">
+<link title="Dimacs" rel="Chapter" href="Dimacs.html">
+<link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="Smtlib" rel="Chapter" href="Smtlib.html">
+<link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
+<link title="Zf" rel="Chapter" href="Zf.html">
+<link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
+<link title="Tptp" rel="Chapter" href="Tptp.html">
+<link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
+<link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc</title>
+</head>
+<body>
+<h1>Dolmen doc</h1>
+<h1 id="1_Dolmen">Dolmen</h1>
+<p>
+
+<h2 id="2_License">License</h2>
+<p>
+
+This code is free, under the BSD license.
+<p>
+
+<h2 id="2_Contents">Contents</h2>
+<p>
+
+Dolmen is a parser library, intended to considerably reduce the burden of having
+to parse different input languages. The main idea of dolmen
+is to provide an easy way to obtain a structured representation
+of an input, but not to completely abstract over the different input languages.
+Indeed, most languages are different enough that completeley abstracting over many
+of them would require specific encodings that would be detrimental to keeping
+the original structure of the input. Instead, the idea is to identify the
+core requirements of each language and provide easy way to obtain parsers
+for these languages when provided with an implementation that meets the requirements.
+<p>
+
+To that effect, dolmen mainly provides functors that take an adequate implementation
+of terms and top-level directives, and then return parsers for various languages.
+<p>
+
+<h4 id="4_Languageclasses">Language classes</h4>
+<p>
+
+Some languages have enough similarities in either synatx or purpose to be packed
+into classes. Currently, the only class available is the <a href="Logic.html"><code class="code">Logic</code></a> class that regroup
+languages used in formal proof.
+<p>
+
+<br>
+<table class="indextable">
+<tr><td class="module"><a href="Logic.html">Logic</a></td><td><div class="info">
+Logic languages for formal proofs
+</div>
+</td></tr>
+</table>
+
+<p>
+
+The following modules synthesize the implementation requirements for language classes:
+<p>
+
+<br>
+<table class="indextable">
+<tr><td class="module"><a href="Term_intf.html">Term_intf</a></td><td><div class="info">
+Interfaces for Terms.
+</div>
+</td></tr>
+<tr><td class="module"><a href="Stmt_intf.html">Stmt_intf</a></td><td><div class="info">
+Interfaces for statements.
+</div>
+</td></tr>
+<tr><td class="module"><a href="Location_intf.html">Location_intf</a></td><td><div class="info">
+Interface for file locations.
+</div>
+</td></tr>
+</table>
+
+<p>
+
+<h4 id="4_Standardimplementations">Standard implementations</h4>
+<p>
+
+The following modules define standard implementations that can be used to directly
+instantiate the parser functors.
+<p>
+
+<br>
+<table class="indextable">
+<tr><td class="module"><a href="Term.html">Term</a></td><td><div class="info">
+Standard implementation of terms
+</div>
+</td></tr>
+<tr><td class="module"><a href="Statement.html">Statement</a></td><td><div class="info">
+Standard imlplementation of statements.
+</div>
+</td></tr>
+<tr><td class="module"><a href="ParseLocation.html">ParseLocation</a></td><td><div class="info">
+Standard implementation of file locations.
+</div>
+</td></tr>
+</table>
+
+<p>
+
+<h4 id="4_Languageparsers">Language parsers</h4>
+<p>
+
+Individual language parsers are available through the following modules:
+<p>
+
+<br>
+<table class="indextable">
+<tr><td class="module"><a href="Dimacs.html">Dimacs</a></td><td><div class="info">
+Dimacs language input
+</div>
+</td></tr>
+<tr><td class="module"><a href="Smtlib.html">Smtlib</a></td><td><div class="info">
+Smtlib language input
+</div>
+</td></tr>
+<tr><td class="module"><a href="Tptp.html">Tptp</a></td><td><div class="info">
+TPTP language input
+</div>
+</td></tr>
+<tr><td class="module"><a href="Zf.html">Zf</a></td><td><div class="info">
+Zipperposition format input
+</div>
+</td></tr>
+</table>
+
+<p>
+
+<h2 id="2_Index">Index</h2>
+<p>
+
+<ul class="indexlist">
+<li><a href="index_types.html">Index of types</a></li>
+<li><a href="index_exceptions.html">Index of exceptions</a></li>
+<li><a href="index_values.html">Index of values</a></li>
+<li><a href="index_modules.html">Index of modules</a></li>
+<li><a href="index_module_types.html">Index of module types</a></li>
+</ul>
+<br>
+</body>
+</html>
