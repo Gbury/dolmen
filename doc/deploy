@@ -4,8 +4,8 @@
 git checkout master
 
 # Generate documentation
-cd src && make doc
-cd doc && asciidoc index.txt
+(cd src && make doc)
+(cd doc && asciidoc index.txt)
 
 # Checkout gh-pages
 git checkout gh-pages
