@@ -24,14 +24,22 @@ module Make
     (** Zipperposition format *)
   (** The languages supported by the Logic class. *)
 
+  val enum : (string * language) list
+  (** Enumeration of languages together with an appropriate
+      name. Can be used for command-line arguments (for instance,
+      with cmdliner). *)
+
   val string_of_language : language -> string
   (** String representation of the variant *)
 
   (** {2 High-level parsing} *)
 
-  val parse_file : string -> language * S.t list
+  val parse_file :
+    ?language:language ->
+    string -> language * S.t list
   (** Given a filename, parse the file, and return the detected language
-      together with the list of statements parsed. *)
+      together with the list of statements parsed.
+      @param language specify a language; overrides auto-detection. *)
 
   val parse_input :
     ?language:language ->

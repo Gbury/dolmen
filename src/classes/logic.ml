@@ -17,17 +17,21 @@ module Make
     | Tptp
     | Zf
 
-  let string_of_language = function
-    | Dimacs -> "dimacs"
-    | Smtlib -> "smt2"
-    | Tptp -> "tptp"
-    | Zf -> "zf"
+  let enum = [
+    "dimacs", Dimacs;
+    "smt2", Smtlib;
+    "tptp", Tptp;
+    "zf", Zf;
+  ]
+
+  let string_of_language l =
+    fst (List.find (fun (_, l') -> l = l') enum)
 
   let assoc = [
     Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S) : S);
     Smtlib, ".smt2", (module Smtlib.Make(L)(T)(S) : S);
-    Tptp,   ".p",    (module Tptp.Make(L)(T)(S) : S);
-    Zf,     ".zf",   (module Zf.Make(L)(T)(S) : S);
+    Tptp,   ".p",    (module Tptp.Make(L)(T)(S)   : S);
+    Zf,     ".zf",   (module Zf.Make(L)(T)(S)     : S);
   ]
 
   let of_language l =
@@ -39,8 +43,11 @@ module Make
     with Not_found ->
       raise (Extension_not_found ext)
 
-  let parse_file file =
-    let l, _, (module P : S) = of_extension (Misc.get_extension file) in
+  let parse_file ?language file =
+    let l, _, (module P : S) = match language with
+      | None -> of_extension (Misc.get_extension file)
+      | Some l -> of_language l
+    in
     l, P.parse_file file
 
   let parse_input ?language = function

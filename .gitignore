@@ -1,4 +1,5 @@
-# ocamlbuild working directory
+# Source directory (doc, build dir and bin)
+src/dolmen.docdir
 src/_build/
 src/dolmen
 
@@ -6,5 +7,5 @@ src/dolmen
 *.byte
 *.native
 
-# swpa files
+# swap files
 *.swp
