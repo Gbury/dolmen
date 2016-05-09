@@ -118,16 +118,23 @@ The languages supported by the Logic class.<br>
 </div>
 
 
+<pre><span id="VALenum"><span class="keyword">val</span> enum</span> : <code class="type">(string * <a href="Logic.Make.html#TYPElanguage">language</a>) list</code></pre><div class="info ">
+Enumeration of languages together with an appropriate
+      name. Can be used for command-line arguments (for instance,
+      with cmdliner).<br>
+</div>
+
 <pre><span id="VALstring_of_language"><span class="keyword">val</span> string_of_language</span> : <code class="type"><a href="Logic.Make.html#TYPElanguage">language</a> -> string</code></pre><div class="info ">
 String representation of the variant<br>
 </div>
 <br>
 <h2 id="2_Highlevelparsing">High-level parsing</h2><br>
 
-<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Logic.Make.html#TYPElanguage">language</a> * S.t list</code></pre><div class="info ">
+<pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -> string -> <a href="Logic.Make.html#TYPElanguage">language</a> * S.t list</code></pre><div class="info ">
 Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.<br>
 </div>
+<div class="param_info"><code class="code">language</code> : specify a language; overrides auto-detection.</div>
 
 <pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -><br>       [ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre><div class="info ">
 Incremental parsing of either a file (see ), or stdin

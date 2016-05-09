@@ -172,8 +172,11 @@
 &nbsp;&nbsp;<span class="keyword">sig</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">exception</span>&nbsp;<span class="constructor">Extension_not_found</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;language&nbsp;=&nbsp;<span class="constructor">Dimacs</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Smtlib</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Tptp</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Zf</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;enum&nbsp;:&nbsp;(string&nbsp;*&nbsp;<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language)&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;string_of_language&nbsp;:&nbsp;<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;parse_file&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;*&nbsp;<span class="constructor">S</span>.t&nbsp;list<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;parse_file&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;?language:<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;*&nbsp;<span class="constructor">S</span>.t&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;parse_input&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;?language:<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;<span class="keywordsign">`</span><span class="constructor">File</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Stdin</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Logic</span>.<span class="constructor">Make</span>.language&nbsp;]&nbsp;<span class="keywordsign">-&gt;</span><br>
