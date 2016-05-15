@@ -17,6 +17,7 @@ true: use_menhir, explain
 <interface/**/*>: package(menhirLib)
 
 # Pack information
+<main.cmx>: for-pack(Dolmen)
 <classes/*.cmx>: for-pack(Dolmen)
 <standard/*.cmx>: for-pack(Dolmen)
 <interface/**/*.cmx>: for-pack(Dolmen)

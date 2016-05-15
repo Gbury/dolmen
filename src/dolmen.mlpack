@@ -1,12 +1,8 @@
 
-# Util modules
-Misc
-Transformer
-ParseLocation
-
 # Standard implementation
 Term
 Statement
+ParseLocation
 
 # Dimacs language
 Dimacs
@@ -30,5 +26,9 @@ ParseTptp
 
 # Languages classes
 Logic
+
+# Helper modules
+Misc
+Transformer
 
 

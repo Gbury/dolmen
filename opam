@@ -5,7 +5,7 @@ author: "Guillaume Bury"
 maintainer: "guillaume.bury@gmail.com"
 license: "BSD-2-clauses"
 build: [
-    [make "-C" "src"]
+    [make "-C" "src" "lib"]
 ]
 install: [make "-C" "src" "install"]
 remove: [
@@ -13,7 +13,7 @@ remove: [
 ]
 depends: [
   "ocamlfind"
-  "menhir" {build, >= "20151005"}
+  "menhir" {>= "20151005"}
   "ocamlbuild" {build}
 ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
