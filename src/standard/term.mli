@@ -27,9 +27,6 @@ type builtin =
   (** Sequent as term, usually takes two argument (left side, and right side of the sequent),
       which are respectively a conjunction and a disjunction of propositional formulas. *)
 
-  | Arrow
-  (** The arrow constructor, i.e function type constructor. First argument is the return type,
-      followed by the argument types. *)
   | Subtype
   (** Subtyping relation *)
   | Product
@@ -67,6 +64,8 @@ type binder =
   (** Existencial quantification *)
   | Pi
   (** Polymorphic type quantification in function type *)
+  | Arrow
+  (** The arrow binder, for function types *)
   | Let
   (** Let bindings (either propositional or for terms *)
   | Fun

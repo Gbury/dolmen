@@ -11,7 +11,7 @@ type builtin =
   | Ite                 (* Condional *)
   | Sequent             (* Is the given sequent provable ? *)
 
-  | Arrow | Subtype     (* Function type constructor and subtyping relation *)
+  | Subtype             (* Function type constructor and subtyping relation *)
   | Product | Union     (* Product and union of types (not set theory) *)
 
   | Not                 (* Propositional negation *)
@@ -21,9 +21,11 @@ type builtin =
   | Equiv               (* Equivalence *)
 
 type binder =
-  | All | Ex | Pi | Let | Fun   (* Standard binders *)
-  | Choice                      (* Indefinite description, or epsilon terms *)
-  | Description                 (* Definite description *)
+  | All | Ex
+  | Pi | Arrow
+  | Let | Fun           (* Standard binders *)
+  | Choice              (* Indefinite description, or epsilon terms *)
+  | Description         (* Definite description *)
 
 type descr =
   | Symbol of string
@@ -40,11 +42,11 @@ and t = {
 
 (* Printing info *)
 
-let is_infix = function
+let infix_builtin = function
   | Eq | And | Or
   | Nand | Xor | Nor
   | Imply | Implied | Equiv
-  | Arrow | Product | Union
+  | Product | Union
   | Sequent | Subtype
     -> true
   | _ -> false
@@ -59,7 +61,6 @@ let pp_builtin b = function
   | Distinct -> Printf.bprintf b "!="
   | Ite -> Printf.bprintf b "#ite"
   | Sequent -> Printf.bprintf b "⊢"
-  | Arrow -> Printf.bprintf b "→"
   | Subtype -> Printf.bprintf b "⊂"
   | Product -> Printf.bprintf b "*"
   | Union -> Printf.bprintf b "∪"
@@ -77,6 +78,7 @@ let pp_binder b = function
   | All -> Printf.bprintf b "∀"
   | Ex -> Printf.bprintf b "∃"
   | Pi -> Printf.bprintf b "Π"
+  | Arrow -> Printf.bprintf b "→"
   | Let -> Printf.bprintf b "let"
   | Fun -> Printf.bprintf b "λ"
   | Choice -> Printf.bprintf b "ε"
@@ -86,11 +88,14 @@ let rec pp_descr b = function
   | Symbol s -> Printf.bprintf b "%s" s
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
-  | App ({ term = Builtin sep}, l) when is_infix sep ->
+  | App ({ term = Builtin sep}, l) when infix_builtin sep ->
     Misc.pp_list ~pp_sep:pp_builtin ~sep ~pp b l
   | App (f, l) ->
     Printf.bprintf b "%a(%a)" pp f
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l
+  | Binder (Arrow as q, l, e) ->
+    Printf.bprintf b "%a %a %a"
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" → " ~pp) l pp_binder q pp e
   | Binder (q, l, e) ->
     Printf.bprintf b "%a %a. %a" pp_binder q
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l pp e
@@ -110,7 +115,6 @@ let print_builtin fmt = function
   | Distinct -> Format.fprintf fmt "!="
   | Ite -> Format.fprintf fmt "#ite"
   | Sequent -> Format.fprintf fmt "⊢"
-  | Arrow -> Format.fprintf fmt "→"
   | Subtype -> Format.fprintf fmt "⊂"
   | Product -> Format.fprintf fmt "*"
   | Union -> Format.fprintf fmt "∪"
@@ -128,6 +132,7 @@ let print_binder fmt = function
   | All -> Format.fprintf fmt "∀"
   | Ex -> Format.fprintf fmt "∃"
   | Pi -> Format.fprintf fmt "Π"
+  | Arrow -> Format.fprintf fmt "→"
   | Let -> Format.fprintf fmt "let"
   | Fun -> Format.fprintf fmt "λ"
   | Choice -> Format.fprintf fmt "ε"
@@ -137,13 +142,17 @@ let rec print_descr fmt = function
   | Symbol s -> Format.fprintf fmt "%s" s
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
-  | App ({ term = Builtin sep}, l) when is_infix sep ->
+  | App ({ term = Builtin sep}, l) when infix_builtin sep ->
     Misc.print_list ~print_sep:print_builtin ~sep ~print fmt l
   | App (f, []) ->
     Format.fprintf fmt "%a" print f
   | App (f, l) ->
     Format.fprintf fmt "%a@ %a" print f
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
+  | Binder (Arrow as q, l, e) ->
+    Format.fprintf fmt "%a %a@ %a"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"→@ " ~print) l
+      print_binder q print e
   | Binder (q, l, e) ->
     Format.fprintf fmt "%a@ %a.@ %a" print_binder q
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l print e
@@ -196,7 +205,6 @@ let wildcard    = make (Builtin Wildcard)
 let ite_t       = make (Builtin Ite)
 let sequent_t   = make (Builtin Sequent)
 
-let arrow_t     = make (Builtin Arrow)
 let union_t     = make (Builtin Union)
 let product_t   = make (Builtin Product)
 let subtype_t   = make (Builtin Subtype)
@@ -207,9 +215,6 @@ let data_t      = make (Symbol "$data")
 
 
 (* {2 Usual functions} *)
-
-let arrow ?loc arg ret = apply ?loc arrow_t [ret; arg]
-let fun_ty ?loc args ret = apply ?loc arrow_t (ret :: args)
 
 let eq ?loc a b = apply ?loc eq_t [a; b]
 
@@ -233,6 +238,8 @@ let lambda = mk_bind Fun
 let choice = mk_bind Choice
 let description = mk_bind Description
 
+let fun_ty = mk_bind Arrow
+let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 
 (* {2 Wrappers for dimacs} *)
 
