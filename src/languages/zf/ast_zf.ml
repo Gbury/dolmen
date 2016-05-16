@@ -5,6 +5,9 @@ module type Term = sig
 
   type t
   type location
+  type namespace
+
+  val term : namespace
 
   val tType     : t
   val wildcard  : t
@@ -12,7 +15,7 @@ module type Term = sig
   val true_     : t
   val false_    : t
 
-  val const   : ?loc:location -> string -> t
+  val const   : ?loc:location -> ns:namespace -> string -> t
 
   val apply   : ?loc:location -> t -> t list -> t
   val colon   : ?loc:location -> t -> t -> t

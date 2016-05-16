@@ -6,6 +6,12 @@ module type Term = sig
   type t
   type location
 
+  type namespace
+
+  val term : namespace
+  val system : namespace
+  val defined : namespace
+
   val eq_t      : t
   val neq_t     : t
   val not_t     : t
@@ -21,12 +27,12 @@ module type Term = sig
 
   val colon : ?loc:location -> t -> t -> t
 
-  val var      : ?loc:location -> string -> t
-  val const    : ?loc:location -> string -> t
-  val distinct : ?loc:location -> string -> t
-  val int      : ?loc:location -> string -> t
-  val rat      : ?loc:location -> string -> t
-  val real     : ?loc:location -> string -> t
+  val var      : ?loc:location -> ns:namespace -> string -> t
+  val const    : ?loc:location -> ns:namespace -> string -> t
+  val distinct : ?loc:location -> ns:namespace -> string -> t
+  val int      : ?loc:location -> ns:namespace -> string -> t
+  val rat      : ?loc:location -> ns:namespace -> string -> t
+  val real     : ?loc:location -> ns:namespace -> string -> t
 
   val ite   : ?loc:location -> t -> t -> t -> t
   val apply : ?loc:location -> t -> t list -> t

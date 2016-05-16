@@ -5,6 +5,8 @@
 %parameter <T : Ast_smtlib.Term with type location := L.t>
 %parameter <S : Ast_smtlib.Statement with type location := L.t and type term := T.t>
 
+%type <T.namespace -> T.t> spec_constant symbol identifier
+
 %start <T.t> term
 %start <S.t list> file
 %start <S.t option> input
@@ -19,45 +21,52 @@ numeral_plus:
 ;
 
 symbol:
-  | s=SYMBOL { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+  | s=SYMBOL
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns s }
 ;
 
 spec_constant:
-  | s=NUMERAL        { let loc = L.mk_pos $startpos $endpos in T.int ~loc s }
-  | s=DECIMAL        { let loc = L.mk_pos $startpos $endpos in T.real ~loc s }
-  | s=HEXADECIMAL    { let loc = L.mk_pos $startpos $endpos in T.hexa ~loc s }
-  | s=BINARY         { let loc = L.mk_pos $startpos $endpos in T.binary ~loc s }
-  | s=STRING         { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+  | s=NUMERAL
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.int ~loc ~ns s }
+  | s=DECIMAL
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.real ~loc ~ns s }
+  | s=HEXADECIMAL
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.hexa ~loc ~ns s }
+  | s=BINARY
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.binary ~loc ~ns s }
+  | s=STRING
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns s }
 ;
 
 s_expr:
   | c=spec_constant
-    { c }
+    { c T.term }
   | s=symbol
-    { s }
+    { s T.term }
   | s=KEYWORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term s }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
 
 identifier:
-  | symbol { $1 }
+  | c=symbol
+    { c }
   | OPEN UNDERSCORE s=SYMBOL n=numeral_plus CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc (s ^ "_" ^ n) }
+    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns (s ^ "_" ^ n) }
 ;
 
 sort:
   | s=identifier
-    { s }
+    { s T.sort }
   | OPEN f=identifier args=sort+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc (f T.sort) args }
 ;
 
 attribute_value:
   | v=symbol
   | v=spec_constant
-    { v }
+    { v T.attr }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
@@ -65,7 +74,8 @@ attribute_value:
 attribute:
   | s=KEYWORD a=attribute_value?
     {
-      let t = let loc = L.mk_pos $startpos(s) $endpos(s) in T.const ~loc s in
+      let loc = L.mk_pos $startpos(s) $endpos(s) in
+      let t = T.const ~loc ~ns:T.attr s in
       match a with
       | None -> t
       | Some t' ->
@@ -76,24 +86,24 @@ attribute:
 
 qual_identifier:
   | s=identifier
-    { s }
+    { s T.term }
   | OPEN AS s=identifier ty=sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s ty }
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc (s T.term) ty }
 ;
 
 var_binding:
   | OPEN s=symbol t=term CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s t }
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc (s T.term) t }
 ;
 
 sorted_var:
   | OPEN s=symbol ty=sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc s ty }
+    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc (s T.sort) ty }
 ;
 
 term:
   | c=spec_constant
-    { c }
+    { c T.term }
   | s=qual_identifier
     { let loc = L.mk_pos $startpos $endpos in T.apply ~loc s [] }
   | OPEN f=qual_identifier args=term+ CLOSE
@@ -105,7 +115,7 @@ term:
   | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc l t }
   | OPEN ATTRIBUTE f=term args=attribute+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.attr ~loc f args }
+    { let loc = L.mk_pos $startpos $endpos in T.annot ~loc f args }
 ;
 
 command_option:
@@ -144,7 +154,8 @@ command:
   | OPEN DECLARE_SORT SYMBOL NUMERAL CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.type_decl ~loc $3 (int_of_string $4) }
   | OPEN DEFINE_SORT SYMBOL OPEN symbol* CLOSE sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.type_def ~loc $3 $5 $7 }
+    { let l = List.map ((|>) T.term) $5 in
+      let loc = L.mk_pos $startpos $endpos in S.type_def ~loc $3 l $7 }
   | OPEN DECLARE_FUN SYMBOL OPEN sort* CLOSE sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc $3 $5 $7 }
   | OPEN DEFINE_FUN SYMBOL OPEN sorted_var* CLOSE sort term CLOSE

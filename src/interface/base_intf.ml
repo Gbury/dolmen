@@ -10,12 +10,6 @@ module type S = sig
 
   (** Signature common to all other signatures *)
 
-  type t
-  (** The type of elements of this module. *)
-
-  type location
-  (** The type of locations attached to elements. *)
-
 end
 
 

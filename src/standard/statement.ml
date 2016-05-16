@@ -164,7 +164,7 @@ and print fmt = function { descr } ->
 
 
 (* Attributes *)
-let attr = Term.const
+let attr = Term.const ~ns:Term.Attr
 
 let annot = Term.apply
 
@@ -269,10 +269,10 @@ let tptp ?loc ?annot name_t role t =
     | None -> t
     | Some t' -> Term.colon t t'
   in
-  let attr = aux (Term.const role) in
+  let attr = aux (Term.const ~ns:Term.Attr role) in
   let name =
     match name_t with
-    | { Term.term = Term.Symbol s } -> Some s
+    | { Term.term = Term.Symbol s } -> Some s.Term.name
     | _ -> None
   in
   let descr = match role with
@@ -302,7 +302,7 @@ let tptp ?loc ?annot name_t role t =
     | "type"
       -> begin match t with
           | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
-            Decl (s, ty)
+            Decl (s.Term.name, ty)
           | _ ->
             Format.eprintf "WARNING: unexpected type declaration@.";
             Pack []

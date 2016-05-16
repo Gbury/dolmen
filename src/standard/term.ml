@@ -3,8 +3,21 @@
 
 type location = ParseLocation.t
 
+type namespace =
+  | Sort
+  | Term
+  | Attr
+  | Defined
+  | System
+
+type id = {
+  ns : namespace;
+  name : string;
+}
+
 type builtin =
   | Wildcard
+  | Ttype | Prop
   | True | False
   | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
 
@@ -28,7 +41,7 @@ type binder =
   | Description         (* Definite description *)
 
 type descr =
-  | Symbol of string
+  | Symbol of id
   | Builtin of builtin
   | Colon of t * t
   | App of t * t list
@@ -55,6 +68,8 @@ let infix_builtin = function
 
 let pp_builtin b = function
   | Wildcard -> Printf.bprintf b "_"
+  | Ttype -> Printf.bprintf b "$tType"
+  | Prop -> Printf.bprintf b "$o"
   | True -> Printf.bprintf b "⊤"
   | False -> Printf.bprintf b "⊥"
   | Eq -> Printf.bprintf b "=="
@@ -85,7 +100,7 @@ let pp_binder b = function
   | Description -> Printf.bprintf b "@"
 
 let rec pp_descr b = function
-  | Symbol s -> Printf.bprintf b "%s" s
+  | Symbol id -> Printf.bprintf b "%s" id.name
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
   | App ({ term = Builtin sep}, l) when infix_builtin sep ->
@@ -109,6 +124,8 @@ and pp b = function
 
 let print_builtin fmt = function
   | Wildcard -> Format.fprintf fmt "_"
+  | Ttype -> Format.fprintf fmt "$tType"
+  | Prop -> Format.fprintf fmt "$o"
   | True -> Format.fprintf fmt "⊤"
   | False -> Format.fprintf fmt "⊥"
   | Eq -> Format.fprintf fmt "=="
@@ -139,7 +156,7 @@ let print_binder fmt = function
   | Description -> Format.fprintf fmt "@"
 
 let rec print_descr fmt = function
-  | Symbol s -> Format.fprintf fmt "%s" s
+  | Symbol id -> Format.fprintf fmt "%s" id.name
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
   | App ({ term = Builtin sep}, l) when infix_builtin sep ->
@@ -162,8 +179,15 @@ and print fmt = function
   | { term = (Builtin _) as d } -> print_descr fmt d
   | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
 
+(* Namespaces *)
+let sort = Sort
+let term = Term
+let attr = Attr
+let defined = Defined
+let system = System
 
 (* Make a term from its description *)
+let id ns name = { ns; name; }
 let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
 (* Internal shortcut to make a formula with bound variables. *)
@@ -171,12 +195,12 @@ let mk_bind binder ?loc vars t =
   make ?loc (Binder (binder, vars, t))
 
 (* Attach an attribute list to a term *)
-let attr ?loc t l =
+let annot ?loc t l =
   { t with attr = t.attr @ l }
 
 (* Create a constant and/or variable, that is a leaf
    of the term AST. *)
-let const ?loc s = make ?loc (Symbol s)
+let const ?loc ~ns s = make ?loc (Symbol (id ns s))
 
 (* Apply a term to a list of terms. *)
 let apply ?loc f args = make ?loc (App (f, args))
@@ -209,9 +233,9 @@ let union_t     = make (Builtin Union)
 let product_t   = make (Builtin Product)
 let subtype_t   = make (Builtin Subtype)
 
-let tType       = make (Symbol "$tType")
-let prop        = make (Symbol "$o")
-let data_t      = make (Symbol "$data")
+let tType       = make (Builtin Ttype)
+let prop        = make (Builtin Prop)
+let data_t      = const ~ns:Attr "$data"
 
 
 (* {2 Usual functions} *)
@@ -245,8 +269,8 @@ let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 
 let atom ?loc i =
   let s = Printf.sprintf "#%d" i in
-  if i >= 0 then const ?loc s
-  else not_ ?loc (const ?loc (string_of_int (-i)))
+  if i >= 0 then const ?loc ~ns:Term s
+  else not_ ?loc (const ?loc ~ns:Term (string_of_int (-i)))
 
 
 (* {2 Wrappers for smtlib} *)
@@ -256,7 +280,7 @@ let real = const
 let hexa = const
 let binary = const
 
-let sexpr ?loc l = apply ?loc (make ?loc (Symbol "")) l
+let sexpr ?loc l = apply ?loc data_t l
 
 (* {2 Wrappers for tptp} *)
 

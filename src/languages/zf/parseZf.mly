@@ -17,7 +17,7 @@ name:
   | w=UPPER_WORD { w }
 
 raw_var:
-  | s=name { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+  | s=name { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term s }
 
 tType:
   | TYPE

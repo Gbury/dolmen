@@ -16,14 +16,23 @@ module type Term = sig
   type location
   (** The type of locations. *)
 
-  val const   : ?loc:location -> string -> t
+  type namespace
+  (** Namespace for identifiers *)
+
+  val sort : namespace
+  val term : namespace
+  val attr : namespace
+  (** The namespace for sorts (also called typee), terms
+      and attributes, respectively. *)
+
+  val const   : ?loc:location -> ns:namespace -> string -> t
   (** Constants, i.e non predefined symbols. This includes both constants
       defined by theories, defined locally in a problem, and also quantified variables. *)
 
-  val int     : ?loc:location -> string -> t
-  val real    : ?loc:location -> string -> t
-  val hexa    : ?loc:location -> string -> t
-  val binary  : ?loc:location -> string -> t
+  val int     : ?loc:location -> ns:namespace -> string -> t
+  val real    : ?loc:location -> ns:namespace -> string -> t
+  val hexa    : ?loc:location -> ns:namespace -> string -> t
+  val binary  : ?loc:location -> ns:namespace -> string -> t
   (** Constants lexically recognised as numbers in different formats. According to the smtlib
       manual, these should not always be interpreted as numbers since their interpretation
       is actually dependent on the theory set by the problem. *)
@@ -46,7 +55,7 @@ module type Term = sig
   val sexpr   : ?loc:location -> t list -> t
   (** S-expressions. Used in smtlib's annotations, *)
 
-  val attr    : ?loc:location -> t -> t list -> t
+  val annot   : ?loc:location -> t -> t list -> t
   (** Attach a list of attributes (also called annotations) to a term. As written
       in the smtlib manual, "Term attributes have no logical meaning --
       semantically, [attr t l] is equivalent to [t]" *)

@@ -548,9 +548,9 @@ thf_unary_connective:
   /* These two quantifiers have been removed from THF0, and will come back in THF1
   when it is released, so it doesn't really matter how we handle them right now*/
   | PI
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc "$pi" }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term "$pi" }
   | SIGMA
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc "$sigma" }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term "$sigma" }
 
 subtype_sign:
   | LESS LESS { () }
@@ -707,7 +707,7 @@ system_functor:
 
 variable:
   | s=UPPER_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.var ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.var ~loc ~ns:T.term s }
 
 arguments:
   | t=term
@@ -809,15 +809,15 @@ name:
 atomic_word:
   | s=LOWER_WORD
   | s=SINGLE_QUOTED
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term s }
 
 atomic_defined_word:
   | s=DOLLAR_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.defined s }
 
 atomic_system_word:
   | s=DOLLAR_DOLLAR_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.system s }
 
 number:
   | n=integer
@@ -833,18 +833,18 @@ file_name:
 
 distinct_object:
   | s=DISTINCT_OBJECT
-    { let loc = L.mk_pos $startpos $endpos in T.distinct ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.distinct ~loc ~ns:T.term s }
 
 integer:
   | n=INTEGER
-    { let loc = L.mk_pos $startpos $endpos in T.int ~loc n }
+    { let loc = L.mk_pos $startpos $endpos in T.int ~loc ~ns:T.term n }
 
 rational:
   | n=RATIONAL
-    { let loc = L.mk_pos $startpos $endpos in T.rat ~loc n }
+    { let loc = L.mk_pos $startpos $endpos in T.rat ~loc ~ns:T.term n }
 
 real:
   | n=REAL
-    { let loc = L.mk_pos $startpos $endpos in T.real ~loc n }
+    { let loc = L.mk_pos $startpos $endpos in T.real ~loc ~ns:T.term n }
 
 

@@ -14,10 +14,14 @@ module type Logic = sig
       of different logical framework directives than it should.
   *)
 
-  include Base_intf.S
+  type t
+  (** The type of statements. *)
 
   type term
   (** The type of terms used in statements. *)
+
+  type location
+  (** The type of locations attached to statements. *)
 
   (** {2 Optional infos for statements} *)
 
