@@ -128,6 +128,9 @@ include Term_intf.Logic
 
 (** {2 Additional functions} *)
 
+val id : namespace -> string -> id
+(** Create an id. *)
+
 val fun_ty : ?loc:location -> t list -> t -> t
 (** Multi-arguments function type constructor. *)
 

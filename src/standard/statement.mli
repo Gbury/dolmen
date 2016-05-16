@@ -68,9 +68,9 @@ type descr =
   | Set_option of string * term option
   (** Set the option value. *)
 
-  | Def of string * term
+  | Def of Term.id * term
   (** Symbol definition, i.e the symbol is equal to the given term. *)
-  | Decl of string * term
+  | Decl of Term.id * term
   (** Symbol declaration, i.e the symbol has the given term as its type. *)
   | Inductive of inductive
   (** Inductive type definition, see the [inductive] type. *)

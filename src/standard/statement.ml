@@ -32,8 +32,8 @@ type descr =
   | Get_option of string
   | Set_option of string * term option
 
-  | Def of string * term
-  | Decl of string * term
+  | Def of Term.id * term
+  | Decl of Term.id * term
   | Inductive of inductive
 
   | Get_proof
@@ -77,8 +77,8 @@ let rec pp_descr b = function
   | Set_option (s, o) ->
     Printf.bprintf b "set-option: %s <- %a" s (Misc.pp_opt Term.pp) o
 
-  | Def (s, t) -> Printf.bprintf b "def: %s = %a" s Term.pp t
-  | Decl (s, t) -> Printf.bprintf b "decl: %s : %a" s Term.pp t
+  | Def (s, t) -> Printf.bprintf b "def: %s = %a" s.Term.name Term.pp t
+  | Decl (s, t) -> Printf.bprintf b "decl: %s : %a" s.Term.name Term.pp t
   | Inductive i ->
     Printf.bprintf b "Inductive(%d): %s, %a\n"
       (List.length i.cstrs) i.name
@@ -136,9 +136,9 @@ let rec print_descr fmt = function
       s (Misc.print_opt Term.print) o
 
   | Def (s, t) ->
-    Format.fprintf fmt "@[<hov 2>def:@ %s =@ %a@]" s Term.print t
+    Format.fprintf fmt "@[<hov 2>def:@ %s =@ %a@]" s.Term.name Term.print t
   | Decl (s, t) ->
-    Format.fprintf fmt "@[<hov 2>decl:@ %s :@ %a@]" s Term.print t
+    Format.fprintf fmt "@[<hov 2>decl:@ %s :@ %a@]" s.Term.name Term.print t
   | Inductive i ->
     Format.fprintf fmt "@[<hov 2>Inductive(%d) %s@ %a@\n%a@]"
       (List.length i.cstrs) i.name
@@ -190,11 +190,11 @@ let get_option ?loc s = mk ?loc (Get_option s)
 let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
 
 (* Declarations, i.e given identifier has given type *)
-let decl ?loc s ty = mk ?loc (Decl (s, ty))
+let decl ?loc s ty = mk ?loc (Decl (Term.id Term.Term s, ty))
 
 (* Definitions, i.e given identifier, with arguments,
    is equal to given term *)
-let def ?loc s t = mk ?loc (Def (s, t))
+let def ?loc s t = mk ?loc (Def (Term.id Term.Term s, t))
 
 (* Inductive types, i.e polymorphic variables, and
    a list of constructors. *)
@@ -227,19 +227,19 @@ let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc s n =
   let ty = Term.fun_ty ?loc (Misc.replicate n Term.tType) Term.tType in
-  decl ?loc s ty
+  mk ?loc (Decl (Term.id Term.Sort s, ty))
 
 let fun_decl ?loc s l t' =
   let ty = Term.fun_ty ?loc l t' in
-  decl ?loc s ty
+  mk ?loc (Decl (Term.id Term.Term s, ty))
 
 let type_def ?loc s args body =
   let t = Term.lambda args body in
-  def ?loc s t
+  mk ?loc (Def (Term.id Term.Sort s, t))
 
 let fun_def ?loc s args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
-  def ?loc s t
+  mk ?loc (Def (Term.id Term.Term s, t))
 
 
 (* Wrappers for Zf *)
@@ -302,7 +302,7 @@ let tptp ?loc ?annot name_t role t =
     | "type"
       -> begin match t with
           | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
-            Decl (s.Term.name, ty)
+            Decl (s, ty)
           | _ ->
             Format.eprintf "WARNING: unexpected type declaration@.";
             Pack []
