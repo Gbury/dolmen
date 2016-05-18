@@ -48,7 +48,7 @@ module type Term = sig
 
   val distinct : ?loc:location -> ns:namespace -> string -> t
   (** Make a constant whose name possibly contain special characters
-      (All {distinct} constants name are enclosed in quotes). *)
+      (All 'distinct' constants name are enclosed in quotes). *)
 
   val int      : ?loc:location -> ns:namespace -> string -> t
   val rat      : ?loc:location -> ns:namespace -> string -> t
