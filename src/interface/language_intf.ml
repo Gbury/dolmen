@@ -20,8 +20,14 @@ module type S = sig
      and type statement := statement
   (** The Parser module for the language. *)
 
+  val find : ?dir:string -> string -> string option
+  (** Helper function to find a file using a language specification.
+      Separates directory and file because most include directives in languages
+      are relative to the directory of the original file being processed. *)
+
   val parse_file : string -> statement list
-  (** Parse the given file *)
+  (** Parse the given file.
+      @param dir: optional directory to use if the file path is relative. *)
 
   val parse_input :
     [ `Stdin | `File of string ] -> (unit -> statement option)

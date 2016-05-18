@@ -11,5 +11,6 @@ module Make
   Transformer.Make(L)(struct
     type token = Tokens_dimacs.token
     type statement = S.t
+    let env = []
   end)(LexDimacs)(ParseDimacs.Make(L)(T)(S))
 

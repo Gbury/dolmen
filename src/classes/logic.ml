@@ -43,6 +43,19 @@ module Make
     with Not_found ->
       raise (Extension_not_found ext)
 
+  let find ?language ?(dir="") file =
+    match language with
+    | None ->
+      let f =
+        if Filename.is_relative file then
+          Filename.concat dir file
+        else file
+      in
+      if Sys.file_exists f then Some f else None
+    | Some l ->
+      let _, _, (module P : S) = of_language l in
+      P.find ~dir file
+
   let parse_file ?language file =
     let l, _, (module P : S) = match language with
       | None -> of_extension (Misc.get_extension file)

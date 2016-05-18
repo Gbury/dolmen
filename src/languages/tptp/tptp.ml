@@ -11,4 +11,5 @@ module Make
   Transformer.Make(L)(struct
     type token = Tokens_tptp.token
     type statement = S.t
+    let env = ["TPTP"]
   end)(LexTptp)(ParseTptp.Make(L)(T)(S))

@@ -11,5 +11,6 @@ module Make
   Transformer.Make(L)(struct
     type token = Tokens_zf.token
     type statement = S.t
+    let env = []
   end)(LexZf)(ParseZf.Make(L)(T)(S))
 

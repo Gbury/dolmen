@@ -34,6 +34,11 @@ module Make
 
   (** {2 High-level parsing} *)
 
+  val find :
+    ?language:language ->
+    ?dir:string -> string -> string option
+  (** Tries and find the given file, using the language specification. *)
+
   val parse_file :
     ?language:language ->
     string -> language * S.t list

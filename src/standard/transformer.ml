@@ -3,7 +3,7 @@
 
 module Make
     (Loc : ParseLocation.S)
-    (Ty : sig type token type statement end)
+    (Ty : sig type token type statement val env : string list end)
     (Lex : Lex_intf.S with type token := Ty.token)
     (Parse : Parse_intf.S with type token := Ty.token and type statement := Ty.statement) = struct
 
@@ -11,6 +11,30 @@ module Make
 
   module Lexer = Lex
   module Parser = Parse
+
+  let rec find_env file = function
+    | [] -> None
+    | var :: r ->
+      begin match Sys.getenv var with
+        | dir ->
+          let f = Filename.concat dir file in
+          if Sys.file_exists f then Some f
+          else find_env file r
+        | exception Not_found ->
+          find_env file r
+      end
+
+  let find ?(dir="") file =
+    if Filename.is_relative file then begin
+      let f = Filename.concat dir file in
+      if Sys.file_exists f then
+        Some f
+      else
+          find_env file Ty.env
+    end else if Sys.file_exists file then
+      Some file
+    else
+      None
 
   let parse_file file =
     let lexbuf = ParseLocation.mk_lexbuf (`File file) in

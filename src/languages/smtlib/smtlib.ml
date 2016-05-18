@@ -11,4 +11,5 @@ module Make
   Transformer.Make(L)(struct
     type token = Tokens_smtlib.token
     type statement = S.t
+    let env = []
   end)(LexSmtlib)(ParseSmtlib.Make(L)(T)(S))
