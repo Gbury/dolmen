@@ -16,7 +16,7 @@ cp src/dolmen.docdir/* ./dev/
 
 # Add potentially new pages
 git add ./dev/*
-git add index.html
+git add ./index.html
 
 # Commit it all & push
 git commit -m 'Doc update'
