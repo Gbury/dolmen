@@ -130,6 +130,10 @@ String representation of the variant<br>
 <br>
 <h2 id="2_Highlevelparsing">High-level parsing</h2><br>
 
+<pre><span id="VALfind"><span class="keyword">val</span> find</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -> ?dir:string -> string -> string option</code></pre><div class="info ">
+Tries and find the given file, using the language specification.<br>
+</div>
+
 <pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -> string -> <a href="Logic.Make.html#TYPElanguage">language</a> * S.t list</code></pre><div class="info ">
 Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.<br>

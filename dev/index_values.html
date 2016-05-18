@@ -43,16 +43,35 @@
 <tr><td><a href="Term_intf.Logic.html#VALand_t">and_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALannot">annot</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Terms as annotations for statements.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Term.html#VALannot">annot</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<td><div class="info">
+Attach a list of attributes (also called annotations) to a term.
+</div>
+</td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALannot">annot</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 Constructors for attribute/annotations.
 </div>
 </td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALannot">annot</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Attach a list of attributes (also called annotations) to a term.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALapply">apply</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Application.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALapply">apply</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Application of terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALapply">apply</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Application.
@@ -67,9 +86,15 @@ Application constructor, seen as higher order application
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALarrow">arrow</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Function type constructor.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALarrow">arrow</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Arow, i.e function type constructor, currifyed.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALarrow">arrow</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Function type constructor, for curryfied functions.
@@ -103,17 +128,21 @@ Atoms are used for dimacs cnf parsing.
 </div>
 </td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALattr">attr</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Attributes for statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALattr">attr</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
-Attach a list of attributes (also called annotations) to a term.
+The namespace for sorts (also called typee), terms
+      and attributes, respectively.
 </div>
 </td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALattr">attr</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALattr">attr</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
-Attach a list of attributes (also called annotations) to a term.
+Namespace used for attributes (also called annotations) in smtlib.
 </div>
 </td></tr>
 <tr><td align="left"><br>B</td></tr>
@@ -140,7 +169,10 @@ Directive that instructs the prover to solve the current set of assertions.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALchoice">choice</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Indefinite description, also called choice operator.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALchoice">choice</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_dimacs.Statement.html#VALclause">clause</a> [<a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a>]</td>
@@ -154,16 +186,25 @@ Add to the current set of assertions the given list of terms as a clause.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALcnf">cnf</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+TPTP statements, used for instance as <code class="code">tff ~loc ~annot name role t</code>.
+</div>
+</td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALcnf">cnf</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 TPTP directives.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALcolon">colon</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Juxtaposition of terms, usually used for annotating terms with their type.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALcolon">colon</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Juxtaposition of terms, usually used for annotating terms with types.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALcolon">colon</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Juxtaposition of terms, used to annotate terms with their type.
@@ -187,9 +228,15 @@ N-ary version of <a href="ParseLocation.html#VALcombine"><code class="code">Pars
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALconst">const</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Make a constant.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALconst">const</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Create a new constant.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALconst">const</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Constants, i.e non predefined symbols.
@@ -209,7 +256,10 @@ Packs a list of mutually recursive inductive type declarations.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdata_t">data_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Predefined symbols in tptp.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALdata_t">data_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Term without semantic meaning, used for creating "data" terms.
@@ -222,6 +272,16 @@ Term without semantic meaning, used for creating "data" terms.
 Symbol declaration.
 </div>
 </td></tr>
+<tr><td><a href="Ast_tptp.Term.html#VALdefined">defined</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<td><div class="info">
+The namespace for defined words, i.e words starting with "$".
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALdefined">defined</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Namespace for defined words in tptp, i.e words starting with a $ sign.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALdefinition">definition</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdefinition">definition</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
@@ -230,14 +290,21 @@ Symbol definition.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdescription">description</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Definite description.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALdescription">description</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Binders for variables.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdistinct">distinct</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Make a constant whose name possibly contain special characters
+      (All 'distinct' constants name are enclosed in quotes).
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALdistinct">distinct</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Used in tptp to specify constants different from other constants, for instance the
@@ -253,7 +320,10 @@ Enumeration of languages together with an appropriate
 </div>
 </td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALeq">eq</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Make an equality between terms.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALeq">eq</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="ParseLocation.html#VALeq">eq</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
@@ -266,7 +336,10 @@ Hash and equality
 <tr><td><a href="Term_intf.Logic.html#VALeq_t">eq_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALequiv">equiv</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Usual propositional functions.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALequiv">equiv</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Proposition construction functions.
@@ -277,9 +350,15 @@ Proposition construction functions.
 <tr><td><a href="Term_intf.Logic.html#VALequiv_t">equiv_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALexists">exists</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Existencial porpositional quantification.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALexists">exists</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Existencial porpositional qantification.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALexists">exists</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Existencial quantification.
@@ -299,7 +378,10 @@ Exit directive (used in interactive mode).
 </td></tr>
 <tr><td align="left"><br>F</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALfalse_">false_</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Standard pre-defined constants.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALfalse_">false_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 The constants for the true and false propositional constants.
@@ -309,6 +391,16 @@ The constants for the true and false propositional constants.
 <td><div class="info">
 A function that parses an entire file, i.e until the end-of-file token,
       and return the list of parsed statements.
+</div>
+</td></tr>
+<tr><td><a href="Logic.Make.html#VALfind">find</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
+<td><div class="info">
+Tries and find the given file, using the language specification.
+</div>
+</td></tr>
+<tr><td><a href="Language_intf.S.html#VALfind">find</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
+<td><div class="info">
+Helper function to find a file using a language specification.
 </div>
 </td></tr>
 <tr><td><a href="ParseLocation.html#VALfmt">fmt</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
@@ -323,9 +415,15 @@ Printing functions
 <tr><td><a href="Stmt_intf.Logic.html#VALfof">fof</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALforall">forall</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Universal propositional quantification.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALforall">forall</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Universal propositional quantification.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALforall">forall</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Universal quantification.
@@ -445,6 +543,11 @@ The goal, i.e the propositional formula to prove.
 <tr><td><a href="Term_intf.Logic.html#VALhexa">hexa</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>I</td></tr>
+<tr><td><a href="Term.html#VALid">id</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Create an id.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALimplied_t">implied_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALimplied_t">implied_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -461,7 +564,10 @@ Standard logical connectives viewed as terms.
 <tr><td><a href="Term_intf.Logic.html#VALimply">imply</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALinclude_">include_</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Include directive.
+</div>
+</td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALinclude_">include_</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 Inlcude directive.
@@ -488,7 +594,10 @@ A function to parse a single statement.
 <tr><td><a href="Term_intf.Logic.html#VALint">int</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALite">ite</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Conditional, of the form <code class="code">ite condition then_branch els_branch</code>.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALite">ite</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Conditional constructor, both for first-order terms and propositions.
@@ -496,13 +605,22 @@ Conditional constructor, both for first-order terms and propositions.
 </td></tr>
 <tr><td align="left"><br>L</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALlambda">lambda</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Function construction.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALlambda">lambda</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALletin">letin</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Local binding for terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALletin">letin</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Local term binding.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALletin">letin</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 Local bindings.
@@ -592,7 +710,7 @@ Given a filename, parse the file, and return the detected language
 </td></tr>
 <tr><td><a href="Language_intf.S.html#VALparse_file">parse_file</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
 <td><div class="info">
-Parse the given file
+Parse the given file.
 </div>
 </td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_input">parse_input</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
@@ -607,9 +725,15 @@ Incremental parsing.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALpi">pi</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Dependant type constructor, used for polymorphic function types.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALpi">pi</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Dependant product, or polymorphic type quantification.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALpi">pi</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALpop">pop</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
@@ -636,7 +760,10 @@ Printing functionson buffer and formatters.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALproduct">product</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Product of types, used for function types with more than one argument.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALproduct">product</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Product type constructor, used for instance in the types of
@@ -666,7 +793,10 @@ Directives for manipulating the set of assertions.
 <tr><td><a href="Term_intf.Logic.html#VALrat">rat</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALreal">real</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Constants that are syntaxically recognised as numbers.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALreal">real</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALreal">real</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -681,7 +811,10 @@ Declare a rewrite rule, i.e a universally quantified equality or equivalence tha
 </td></tr>
 <tr><td align="left"><br>S</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALsequent">sequent</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Sequents as terms, used as <code class="code">sequents hyps goals</code>.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALsequent">sequent</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Sequents as terms
@@ -739,16 +872,36 @@ S-expressions (for smtlib attributes), should probably be related
     <code class="code">p1</code> is a sub-location of <code class="code">p2</code> (interval inclusion)
 </div>
 </td></tr>
+<tr><td><a href="Ast_smtlib.Term.html#VALsort">sort</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<td></td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALsort">sort</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The namespace for sorts (also called types).
+</div>
+</td></tr>
 <tr><td><a href="Logic.Make.html#VALstring_of_language">string_of_language</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
 <td><div class="info">
 String representation of the variant
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALsubtype">subtype</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Comparison of type (used in tptp's THF).
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALsubtype">subtype</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Subtype relation for types.
+</div>
+</td></tr>
+<tr><td><a href="Ast_tptp.Term.html#VALsystem">system</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<td><div class="info">
+The namespace for system words, i.e words starting with "$$".
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALsystem">system</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Namespace for system words in tptp, i.e words starting with "$$".
 </div>
 </td></tr>
 <tr><td align="left"><br>T</td></tr>
@@ -759,6 +912,23 @@ Subtype relation for types.
 The type of types, defined as specific token by the Zipperposition format;
       in other languages, will be represented as a constant (the "$tType" constant
       in tptp for instance).
+</div>
+</td></tr>
+<tr><td><a href="Ast_tptp.Term.html#VALterm">term</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<td><div class="info">
+Usual namespace, used for temrs, types and propositions.
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALterm">term</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+The only namespace used in Zf.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Term.html#VALterm">term</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<td></td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALterm">term</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The usual namespace for terms.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALtff">tff</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
@@ -804,7 +974,10 @@ Type definition.
 </td></tr>
 <tr><td align="left"><br>U</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALunion">union</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Union of types.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALunion">union</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
 Union type constructor, currently used in tptp's THF format.
@@ -812,7 +985,10 @@ Union type constructor, currently used in tptp's THF format.
 </td></tr>
 <tr><td align="left"><br>V</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALvar">var</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+Make a variable (in tptp, variable are syntaxically different from constants).
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALvar">var</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>W</td></tr>

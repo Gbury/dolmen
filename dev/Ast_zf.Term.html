@@ -40,27 +40,78 @@
 <pre><span class="keyword">module type</span> Term = <code class="code">sig</code> <a href="Ast_zf.Term.html">..</a> <code class="code">end</code></pre><hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of terms.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations attached to terms.<br>
+</div>
 
+
+<pre><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> </pre>
+<div class="info ">
+The type of namespaces attached to constants.<br>
+</div>
+
+
+<pre><span id="VALterm"><span class="keyword">val</span> term</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+The only namespace used in Zf.<br>
+</div>
 
 <pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type"><a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Standard pre-defined constants.<br>
+</div>
+
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_zf.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Create a new constant.<br>
+</div>
+
+<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Application of terms.<br>
+</div>
+
+<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Juxtaposition of terms, usually used for annotating terms with types.<br>
+</div>
+
+<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Arow, i.e function type constructor, currifyed.<br>
+</div>
+
+<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make an equality between terms.<br>
+</div>
+
 <pre><span id="VALnot_"><span class="keyword">val</span> not_</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALor_"><span class="keyword">val</span> or_</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALand_"><span class="keyword">val</span> and_</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALimply"><span class="keyword">val</span> imply</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALequiv"><span class="keyword">val</span> equiv</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALequiv"><span class="keyword">val</span> equiv</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Usual propositional functions.<br>
+</div>
+
+<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Dependant product, or polymorphic type quantification.
+      Used to build polymorphic function types such as,
+      <code class="code">Pi [a] (Arrow a a)</code>.<br>
+</div>
+
+<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Local term binding.<br>
+</div>
+
+<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Universal propositional quantification.<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_zf.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Term.html#TYPEt">t</a> list -> <a href="Ast_zf.Term.html#TYPEt">t</a> -> <a href="Ast_zf.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Existencial porpositional qantification.<br>
+</div>
+</body></html>

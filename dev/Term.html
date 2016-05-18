@@ -50,6 +50,79 @@ Standard implementation of terms<br>
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> = <code class="type"><a href="ParseLocation.html#TYPEt">ParseLocation.t</a></code> </pre>
 
 
+<pre><code><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.Sort"><span class="constructor">Sort</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Namepsace for sorts and types (only used in smtlib)<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.Term"><span class="constructor">Term</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Most used namespace, used for terms in general (and types outside smtlib).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.Attr"><span class="constructor">Attr</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Namespace for attributes (also called annotations).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.Defined"><span class="constructor">Defined</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Namespace for tptp's defined words (i.e words starting with a "$").<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.System"><span class="constructor">System</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Namespace for tptp's system wods (i.e words starting with a "$$").<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+
+
+
+<pre><code><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTid.ns">ns</span>&nbsp;: <code class="type"><a href="Term.html#TYPEnamespace">namespace</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTid.name">name</span>&nbsp;: <code class="type">string</code>;</code></td>
+
+</tr></table>
+}
+
+
+
 <pre><code><span id="TYPEbuiltin"><span class="keyword">type</span> <code class="type"></code>builtin</span> = </code></pre><table class="typetable">
 <tr>
 <td align="left" valign="top" >
@@ -59,6 +132,26 @@ Standard implementation of terms<br>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Wildcard symbol, i.e placeholder for an expression to be inferred, typically
       during type-checking.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Ttype"><span class="constructor">Ttype</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Builtin symbol for the type of Types.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Prop"><span class="constructor">Prop</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Builtin symbol for the type of propositions.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -120,17 +213,6 @@ Condional, usually applied to 3 terms (the condition, the then branch and the el
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Sequent as term, usually takes two argument (left side, and right side of the sequent),
       which are respectively a conjunction and a disjunction of propositional formulas.<br>
-</div>
-</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
-</tr>
-<tr>
-<td align="left" valign="top" >
-<code><span class="keyword">|</span></code></td>
-<td align="left" valign="top" >
-<code><span id="TYPEELTbuiltin.Arrow"><span class="constructor">Arrow</span></span></code></td>
-<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-The arrow constructor, i.e function type constructor. First argument is the return type,
-      followed by the argument types.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -298,6 +380,16 @@ Polymorphic type quantification in function type<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
+<code><span id="TYPEELTbinder.Arrow"><span class="constructor">Arrow</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+The arrow binder, for function types<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Let"><span class="constructor">Let</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Let bindings (either propositional or for terms<br>
@@ -335,7 +427,7 @@ The type of binders, these are pretty much always builtin in all languages.<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTdescr.Symbol"><span class="constructor">Symbol</span></span> <span class="keyword">of</span> <code class="type">string</code></code></td>
+<code><span id="TYPEELTdescr.Symbol"><span class="constructor">Symbol</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEid">id</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Constants, variables, etc... any string-identified non-builtin atomic term.<br>
 </div>
@@ -423,6 +515,10 @@ The type of terms. A record containing an optional location,
 <pre><span class="keyword">include</span> <a href="Term_intf.Logic.html">Term_intf.Logic</a></pre>
 <br>
 <h2 id="2_Additionalfunctions">Additional functions</h2><br>
+
+<pre><span id="VALid"><span class="keyword">val</span> id</span> : <code class="type"><a href="Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Term.html#TYPEid">id</a></code></pre><div class="info ">
+Create an id.<br>
+</div>
 
 <pre><span id="VALfun_ty"><span class="keyword">val</span> fun_ty</span> : <code class="type">?loc:<a href="Term.html#TYPElocation">location</a> -> <a href="Term.html#TYPEt">t</a> list -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
 Multi-arguments function type constructor.<br>

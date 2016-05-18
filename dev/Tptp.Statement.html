@@ -43,18 +43,60 @@ Implementation requirement for the TPTP format.<br>
 <hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of statements.<br>
+</div>
 
 
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
+<div class="info ">
+The type of terms used in statements.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations attached to statements.<br>
+</div>
 
 
-<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> list -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a></code></pre>
-<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> list -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> list -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a></code></pre><div class="info ">
+Terms as annotations for statements.<br>
+</div>
+
+<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> list -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+Include directive. Given the filename, and a list of
+      names to import (an empty list means import everything).<br>
+</div>
+
 <pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+TPTP statements, used for instance as <code class="code">tff ~loc ~annot name role t</code>.
+      Instructs the prover to register a new directive with the given name,
+      role and term. Current tptp roles are:<ul>
+<li><code class="code">"axiom", "hypothesis", "definition", "lemma", "theorem"</code> acts
+        as new assertions/declartions</li>
+<li><code class="code">"assumption", "conjecture"</code> are proposition that need to be proved,
+        and then can be used to prove other propositions. They are equivalent
+        to the following sequence of smtlib statements:
+        <ul>
+<li><code class="code">push 1</code></li>
+<li><code class="code">assert (not t)</code></li>
+<li><code class="code">check_sat</code></li>
+<li><code class="code">pop 1</code></li>
+<li><code class="code">assert t</code></li>
+</ul>
+</li>
+<li><code class="code">"negated_conjecture"</code> is the same as <code class="code">"conjecture"</code>, but the given proposition
+        is false (i.e its negation is the proposition to prove).</li>
+<li><code class="code">"type"</code> declares a new symbol and its type</li>
+<li><code class="code">"plain", "unknown", "fi_domain", "fi_functors", "fi_predicates"</code> are valid
+        roles with no specified semantics</li>
+<li>any other role is an error</li>
+</ul>
+<br>
+</div>
+</body></html>

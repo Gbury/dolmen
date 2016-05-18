@@ -31,12 +31,16 @@
 <code class="code"><span class="keyword">sig</span><br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;term&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.namespace<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tType&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;wildcard&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;prop&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;true_&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;false_&nbsp;:&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;const&nbsp;:&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;const&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;ns:<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.namespace&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;apply&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Term</span>.t<br>

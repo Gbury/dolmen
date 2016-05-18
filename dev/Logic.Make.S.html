@@ -63,8 +63,14 @@ The Lexer module for the language.
 The Parser module for the language.
 </div>
 
+<pre><span id="VALfind"><span class="keyword">val</span> find</span> : <code class="type">?dir:string -> string -> string option</code></pre><div class="info ">
+Helper function to find a file using a language specification.
+      Separates directory and file because most include directives in languages
+      are relative to the directory of the original file being processed.<br>
+</div>
+
 <pre><span id="VALparse_file"><span class="keyword">val</span> parse_file</span> : <code class="type">string -> <a href="Language_intf.S.html#TYPEstatement">statement</a> list</code></pre><div class="info ">
-Parse the given file<br>
+Parse the given file.<br>
 </div>
 
 <pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin ] -> unit -> <a href="Language_intf.S.html#TYPEstatement">statement</a> option</code></pre><div class="info ">

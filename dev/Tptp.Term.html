@@ -40,10 +40,34 @@
 <pre><span class="keyword">module type</span> Term = <code class="type"><a href="Ast_tptp.Term.html">Ast_tptp.Term</a></code></pre><hr width="100%">
 
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of terms.<br>
+</div>
 
 
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations attached to terms.<br>
+</div>
 
+
+<pre><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> </pre>
+<div class="info ">
+The type for namespaces.<br>
+</div>
+
+
+<pre><span id="VALterm"><span class="keyword">val</span> term</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+Usual namespace, used for temrs, types and propositions.<br>
+</div>
+
+<pre><span id="VALdefined"><span class="keyword">val</span> defined</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+The namespace for defined words, i.e words starting with "$".<br>
+</div>
+
+<pre><span id="VALsystem"><span class="keyword">val</span> system</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+The namespace for system words, i.e words starting with "$$".<br>
+</div>
 
 <pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
@@ -56,25 +80,88 @@
 <pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
 <pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALite"><span class="keyword">val</span> ite</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALsubtype"><span class="keyword">val</span> subtype</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALlambda"><span class="keyword">val</span> lambda</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdescription"><span class="keyword">val</span> description</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre></body></html>
+<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Predefined symbols in tptp. Symbols as standalon terms are necessary
+      for parsing tptp's THF.  is reverse implication, and
+       is used in tptp's annotations.<br>
+</div>
+
+<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Juxtaposition of terms, usually used for annotating terms with their type.<br>
+</div>
+
+<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make a variable (in tptp, variable are syntaxically different from constants).<br>
+</div>
+
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make a constant.<br>
+</div>
+
+<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Make a constant whose name possibly contain special characters
+      (All 'distinct' constants name are enclosed in quotes).<br>
+</div>
+
+<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       ns:<a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> -> string -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Constants that are syntaxically recognised as numbers.<br>
+</div>
+
+<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Application.<br>
+</div>
+
+<pre><span id="VALite"><span class="keyword">val</span> ite</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Conditional, of the form <code class="code">ite condition then_branch els_branch</code>.<br>
+</div>
+
+<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Union of types.<br>
+</div>
+
+<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Product of types, used for function types with more than one argument.<br>
+</div>
+
+<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Function type constructor.<br>
+</div>
+
+<pre><span id="VALsubtype"><span class="keyword">val</span> subtype</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Comparison of type (used in tptp's THF).<br>
+</div>
+
+<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Dependant type constructor, used for polymorphic function types.<br>
+</div>
+
+<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Local binding for terms.<br>
+</div>
+
+<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Universal propositional quantification.<br>
+</div>
+
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Existencial porpositional quantification.<br>
+</div>
+
+<pre><span id="VALlambda"><span class="keyword">val</span> lambda</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Function construction.<br>
+</div>
+
+<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Indefinite description, also called choice operator.<br>
+</div>
+
+<pre><span id="VALdescription"><span class="keyword">val</span> description</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Definite description.<br>
+</div>
+
+<pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -><br>       <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a> list -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+Sequents as terms, used as <code class="code">sequents hyps goals</code>.<br>
+</div>
+</body></html>

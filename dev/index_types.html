@@ -50,6 +50,8 @@ The AST for terms
 </div>
 </td></tr>
 <tr><td align="left"><br>I</td></tr>
+<tr><td><a href="Term.html#TYPEid">id</a> [<a href="Term.html">Term</a>]</td>
+<td></td></tr>
 <tr><td><a href="Statement.html#TYPEinductive">inductive</a> [<a href="Statement.html">Statement</a>]</td>
 <td><div class="info">
 The type for inductive type declarations.
@@ -62,13 +64,25 @@ The languages supported by the Logic class.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#TYPElocation">location</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of locations attached to statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#TYPElocation">location</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of locations attached to terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#TYPElocation">location</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of locations attached to statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#TYPElocation">location</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of locations attached to terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#TYPElocation">location</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 The type of locations.
@@ -89,9 +103,14 @@ The type of locations.
 The type of locations.
 </div>
 </td></tr>
-<tr><td><a href="Base_intf.S.html#TYPElocation">location</a> [<a href="Base_intf.S.html">Base_intf.S</a>]</td>
+<tr><td><a href="Stmt_intf.Logic.html#TYPElocation">location</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
-The type of locations attached to elements.
+The type of locations attached to statements.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#TYPElocation">location</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The type of locations attached to terms.
 </div>
 </td></tr>
 <tr><td><a href="Statement.html#TYPElocation">location</a> [<a href="Statement.html">Statement</a>]</td>
@@ -100,6 +119,29 @@ Type aliases for readability.
 </div>
 </td></tr>
 <tr><td><a href="Term.html#TYPElocation">location</a> [<a href="Term.html">Term</a>]</td>
+<td></td></tr>
+<tr><td align="left"><br>N</td></tr>
+<tr><td><a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<td><div class="info">
+The type for namespaces.
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+The type of namespaces attached to constants.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<td><div class="info">
+Namespace for identifiers
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The type of namespaces.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#TYPEnamespace">namespace</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>S</td></tr>
 <tr><td><a href="Language_intf.S.html#TYPEstatement">statement</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
@@ -114,13 +156,25 @@ The type of top-level declarations returned by the parser.
 </td></tr>
 <tr><td align="left"><br>T</td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#TYPEt">t</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#TYPEt">t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#TYPEt">t</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#TYPEt">t</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of terms.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#TYPEt">t</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 The type of statements.
@@ -141,9 +195,14 @@ The type of statements for dimacs.
 The type of terms.
 </div>
 </td></tr>
-<tr><td><a href="Base_intf.S.html#TYPEt">t</a> [<a href="Base_intf.S.html">Base_intf.S</a>]</td>
+<tr><td><a href="Stmt_intf.Logic.html#TYPEt">t</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
-The type of elements of this module.
+The type of statements.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#TYPEt">t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The type of terms.
 </div>
 </td></tr>
 <tr><td><a href="Location_intf.S.html#TYPEt">t</a> [<a href="Location_intf.S.html">Location_intf.S</a>]</td>
@@ -164,9 +223,15 @@ The type of terms.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#TYPEterm">term</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of terms used in statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#TYPEterm">term</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
-<td></td></tr>
+<td><div class="info">
+The type of terms used in statements.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#TYPEterm">term</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 The type of terms.

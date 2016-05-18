@@ -28,7 +28,8 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><link title="Predefined terms" rel="Section" href="#3_Predefinedterms">
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Namespaces" rel="Section" href="#3_Namespaces">
+<link title="Predefined terms" rel="Section" href="#3_Predefinedterms">
 <link title="Terms leaf constructors" rel="Section" href="#3_Termsleafconstructors">
 <link title="Term constructors" rel="Section" href="#3_Termconstructors">
 <link title="Type constructors" rel="Section" href="#3_Typeconstructors">
@@ -49,57 +50,100 @@ Signature used by the Logic class, which parses languages
       some first-order constructs such as conjunction, equality, etc...
       also need to be represented by standalone terms.<br>
 
-<pre><span class="keyword">include</span> <a href="Base_intf.S.html">Base_intf.S</a></pre>
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
+<div class="info ">
+The type of terms.<br>
+</div>
+
+
+<pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
+<div class="info ">
+The type of locations attached to terms.<br>
+</div>
+
+
+<pre><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> </pre>
+<div class="info ">
+The type of namespaces. Namespaces are used to distinguish
+      identifiers with the same name, but that occur in different
+      contexts. For instance, in smtlib, sorts and terms live in
+      different namespaces; so a constant can have the same name
+      as a sort.<br>
+</div>
+
+<br>
+<h3 id="3_Namespaces">Namespaces</h3><br>
+
+<pre><span id="VALsort"><span class="keyword">val</span> sort</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+The namespace for sorts (also called types). Currently only used
+      for smtlib.<br>
+</div>
+
+<pre><span id="VALterm"><span class="keyword">val</span> term</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+The usual namespace for terms.<br>
+</div>
+
+<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+Namespace used for attributes (also called annotations) in smtlib.<br>
+</div>
+
+<pre><span id="VALdefined"><span class="keyword">val</span> defined</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+Namespace for defined words in tptp, i.e words starting with a $ sign.<br>
+</div>
+
+<pre><span id="VALsystem"><span class="keyword">val</span> system</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
+Namespace for system words in tptp, i.e words starting with "$$".<br>
+</div>
 <br>
 <h3 id="3_Predefinedterms">Predefined terms</h3><br>
 
-<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The terms representing equality and disequality, respectively.<br>
 </div>
 
-<pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The wildcard term, usually used in place of type arguments
       to explicit polymorphic functions to not explicit types that
       can be inferred by the type-checker.<br>
 </div>
 
-<pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The type of types, defined as specific token by the Zipperposition format;
       in other languages, will be represented as a constant (the "$tType" constant
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism.<br>
 </div>
 
-<pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The type of propositions. Also defined as a lexical token by the Zipperposition
       format. Will be defined as a constant in most other languages (for instance,
       "$o" in tptp).<br>
 </div>
 
-<pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type">t</code></pre>
-<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The constants for the true and false propositional constants. Again defined
       as lexical token in the Zipperposition format, while treated as a constant
       in other languages ("$true" in tptp).<br>
 </div>
 
-<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type">t</code></pre>
-<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Standard logical connectives viewed as terms. <code class="code">implies_t</code> is usual
       right implication, i.e <code class="code">apply implies_t [p; q] </code> is "p implies q",
       while <code class="code">apply implied_t [p; q ]</code> means "p is implied by q" or
       "q implies p".<br>
 </div>
 
-<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type">t</code></pre><div class="info ">
+<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Term without semantic meaning, used for creating "data" terms.
       Used in tptp's annotations, and with similar meaning as smtlib's
       s-expressions (as used in the <code class="code">sexpr</code> function defined later).<br>
@@ -107,8 +151,8 @@ Term without semantic meaning, used for creating "data" terms.
 <br>
 <h3 id="3_Termsleafconstructors">Terms leaf constructors</h3><br>
 
-<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:location -> string -> t</code></pre><div class="info ">
+<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Variable and constant constructors. While in some languages
       they can distinguished at the lexical level (in tptp for instance),
       in most languages, it is an issue dependant on scoping rules,
@@ -116,13 +160,13 @@ Variable and constant constructors. While in some languages
       parsed as constants.<br>
 </div>
 
-<pre><span id="VALatom"><span class="keyword">val</span> atom</span> : <code class="type">?loc:location -> int -> t</code></pre><div class="info ">
+<pre><span id="VALatom"><span class="keyword">val</span> atom</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> int -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Atoms are used for dimacs cnf parsing. Positive integers denotes variables,
       and negative integers denote the negation of the variable corresponding to
       their absolute value.<br>
 </div>
 
-<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:location -> string -> t</code></pre><div class="info ">
+<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Used in tptp to specify constants different from other constants, for instance the
       'distinct' "Apple" should be syntactically different from the "Apple"
       constant. Can be safely aliased to the <code class="code">const</code> function as the
@@ -131,53 +175,53 @@ Used in tptp to specify constants different from other constants, for instance t
       string argument, while <code class="code">distinct</code> would be called with the string <code class="code">"\"Apple\""</code><br>
 </div>
 
-<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:location -> string -> t</code></pre>
-<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:location -> string -> t</code></pre><div class="info ">
+<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Constructors for words defined as numeric formats by the languages
       specifications. These also can be safely aliased to <code class="code">const</code>.<br>
 </div>
 <br>
 <h3 id="3_Termconstructors">Term constructors</h3><br>
 
-<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALcolon"><span class="keyword">val</span> colon</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Represents juxtaposition of two terms, usually denoted "t : t'"
       in most languages, and mainly used to annotated terms with their
       supposed, or defined, type.<br>
 </div>
 
-<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type">?loc:location -> t -> t -> t</code></pre>
-<pre><span id="VALnot_"><span class="keyword">val</span> not_</span> : <code class="type">?loc:location -> t -> t</code></pre>
-<pre><span id="VALor_"><span class="keyword">val</span> or_</span> : <code class="type">?loc:location -> t list -> t</code></pre>
-<pre><span id="VALand_"><span class="keyword">val</span> and_</span> : <code class="type">?loc:location -> t list -> t</code></pre>
-<pre><span id="VALimply"><span class="keyword">val</span> imply</span> : <code class="type">?loc:location -> t -> t -> t</code></pre>
-<pre><span id="VALequiv"><span class="keyword">val</span> equiv</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALeq"><span class="keyword">val</span> eq</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnot_"><span class="keyword">val</span> not_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_"><span class="keyword">val</span> or_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_"><span class="keyword">val</span> and_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimply"><span class="keyword">val</span> imply</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv"><span class="keyword">val</span> equiv</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Proposition construction functions. The conjunction and disjunction
       are n-ary instead of binary mostly because they are in smtlib (and
       that is subsumes the binary case).<br>
 </div>
 
-<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:location -> t -> t list -> t</code></pre><div class="info ">
+<pre><span id="VALapply"><span class="keyword">val</span> apply</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Application constructor, seen as higher order application
       rather than first-order application for the following reasons:
       being able to parse tptp's THF, having location attached
       to function symbols.<br>
 </div>
 
-<pre><span id="VALite"><span class="keyword">val</span> ite</span> : <code class="type">?loc:location -> t -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALite"><span class="keyword">val</span> ite</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: <code class="code">ite condition then_branch else_branch</code>.<br>
 </div>
 
-<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALlambda"><span class="keyword">val</span> lambda</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre>
-<pre><span id="VALdescription"><span class="keyword">val</span> description</span> : <code class="type">?loc:location -> t list -> t -> t</code></pre><div class="info ">
+<pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALexists"><span class="keyword">val</span> exists</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALlambda"><span class="keyword">val</span> lambda</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALchoice"><span class="keyword">val</span> choice</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdescription"><span class="keyword">val</span> description</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Binders for variables. Takes a list of terms as first argument
       for simplicity, the lists will almost always be a list of variables,
       optionally typed using the <code class="code">colon</code> term constructor.<ul>
@@ -199,39 +243,39 @@ Binders for variables. Takes a list of terms as first argument
 <br>
 <h3 id="3_Typeconstructors">Type constructors</h3><br>
 
-<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALarrow"><span class="keyword">val</span> arrow</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Function type constructor, for curryfied functions. Functions
       that takes multiple arguments in first-order terms (and so
       naturally not curryfied) will take a product as only argument
       (see the following <code class="code">product</code> function).<br>
 </div>
 
-<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALproduct"><span class="keyword">val</span> product</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Product type constructor, used for instance in the types of
       functions that takes multiple arguments in a non-curry way.<br>
 </div>
 
-<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALunion"><span class="keyword">val</span> union</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Union type constructor, currently used in tptp's THF format.<br>
 </div>
 
-<pre><span id="VALsubtype"><span class="keyword">val</span> subtype</span> : <code class="type">?loc:location -> t -> t -> t</code></pre><div class="info ">
+<pre><span id="VALsubtype"><span class="keyword">val</span> subtype</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Subtype relation for types.<br>
 </div>
 <br>
 <h3 id="3_Specialconstructions">Special constructions</h3><br>
 
-<pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:location -> t list -> t list -> t</code></pre><div class="info ">
+<pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Sequents as terms<br>
 </div>
 
-<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:location -> t -> t list -> t</code></pre><div class="info ">
+<pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Attach a list of attributes (also called annotations) to a term. Attributes
       have no logical meaning (they can be safely ignored), but may serve to give
       hints or meta-information.<br>
 </div>
 
-<pre><span id="VALsexpr"><span class="keyword">val</span> sexpr</span> : <code class="type">?loc:location -> t list -> t</code></pre><div class="info ">
+<pre><span id="VALsexpr"><span class="keyword">val</span> sexpr</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 S-expressions (for smtlib attributes), should probably be related
       to the <code class="code">data_t</code> term.<br>
 </div>
