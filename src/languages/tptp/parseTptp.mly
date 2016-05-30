@@ -827,7 +827,7 @@ number:
 
 file_name:
   | s=SINGLE_QUOTED
-    { s }
+    { let n = String.length s in String.sub s 1 (n - 2) }
 
 /* Wrapper around some lexical definitions */
 
