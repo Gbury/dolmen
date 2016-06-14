@@ -77,7 +77,7 @@ module type Logic = sig
 
   val fun_decl    : ?loc:location -> string -> term list -> term -> t
   (** Symbol declaration. [fun_decl f args ret] defines [f] as a function
-      which takes arguemnts of type as described in [args] and which returns
+      which takes arguments of type as described in [args] and which returns
       a value of type [ret]. *)
 
   val fun_def     : ?loc:location -> string -> term list -> term -> term -> t

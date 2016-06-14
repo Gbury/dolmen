@@ -25,14 +25,14 @@
                 String.sub s (n+2) (l-(n+2))
             ] in
             iter_escape s n
-	      | '\\', '\\' ->
+        | '\\', '\\' ->
             let s =
               String.concat "\\" [
                 String.sub s 0 n;
                 String.sub s (n+2) (l-(n+2))
               ] in
-	          iter_escape s n
-	      | _, _ -> iter_escape s (n+1)
+            iter_escape s n
+        | _, _ -> iter_escape s (n+1)
       else s in
         iter_escape s 0
 }
