@@ -4,8 +4,11 @@
 (** {1 Parser for Zipperposition Formulas} *)
 
 %parameter <L : ParseLocation.S>
-%parameter <T : Ast_zf.Term with type location := L.t>
-%parameter <S : Ast_zf.Statement with type location := L.t and type term := T.t>
+%parameter <I : Ast_zf.Id>
+%parameter <T : Ast_zf.Term
+  with type location := L.t and type id := I.t>
+%parameter <S : Ast_zf.Statement
+  with type location := L.t and type id := I.t and type term := T.t>
 
 %start <S.t list> file
 %start <S.t option> input
@@ -13,11 +16,13 @@
 %%
 
 name:
-  | w=LOWER_WORD { w }
-  | w=UPPER_WORD { w }
+  | w=LOWER_WORD
+  | w=UPPER_WORD
+    { I.mk I.term w }
 
 raw_var:
-  | s=name { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term s }
+  | s=name
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
 
 tType:
   | TYPE
@@ -108,10 +113,12 @@ term:
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected term")) }
 
 constructor:
-  | v=name l=atomic_term* { v, l }
+  | v=name l=atomic_term*
+    { v, l }
 
 constructors:
-  | VERTICAL_BAR? l=separated_nonempty_list(VERTICAL_BAR, constructor) { l }
+  | VERTICAL_BAR? l=separated_nonempty_list(VERTICAL_BAR, constructor)
+    { l }
 
 type_def:
   | t=name vars=raw_var* EQDEF l=constructors
@@ -122,7 +129,7 @@ mutual_types:
 
 attr:
   | LEFT_BRACKET s=name RIGHT_BRACKET
-    { let loc = L.mk_pos $startpos $endpos in Some (S.attr ~loc s) }
+    { let loc = L.mk_pos $startpos $endpos in Some (T.const ~loc s) }
   | { None }
 
 statement:

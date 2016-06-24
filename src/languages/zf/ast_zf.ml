@@ -1,19 +1,32 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+module type Id = sig
+
+  type t
+  (** The type of identifiers *)
+
+  type namespace
+  (** The type of namespaces for identifiers *)
+
+  val term : namespace
+  (** The naemspace for terms, types, and pretty much everything *)
+
+  val mk : namespace -> string -> t
+  (** Make identifiers from a namespace and a string. *)
+
+end
+
 module type Term = sig
 
   type t
   (** The type of terms. *)
 
+  type id
+  (** The type of identifiers *)
+
   type location
   (** The type of locations attached to terms. *)
-
-  type namespace
-  (** The type of namespaces attached to constants. *)
-
-  val term : namespace
-  (** The only namespace used in Zf. *)
 
   val tType     : t
   val wildcard  : t
@@ -22,7 +35,7 @@ module type Term = sig
   val false_    : t
   (** Standard pre-defined constants. *)
 
-  val const   : ?loc:location -> ns:namespace -> string -> t
+  val const   : ?loc:location -> id -> t
   (** Create a new constant. *)
 
   val apply   : ?loc:location -> t -> t list -> t
@@ -65,19 +78,19 @@ module type Statement = sig
   type t
   (** The type of statements. *)
 
+  type id
+  (** The type of identifiers *)
+
   type term
   (** The type of terms used in statements. *)
 
   type location
   (** The type of locations attached to statements. *)
 
-  val attr : ?loc:location -> string -> term
-  (** Attributes for statements. *)
-
   val data        : ?loc:location -> t list -> t
-  val decl        : ?loc:location -> string -> term -> t
-  val definition  : ?loc:location -> string -> term -> term -> t
-  val inductive   : ?loc:location -> string -> term list -> (string * term list) list -> t
+  val decl        : ?loc:location -> id -> term -> t
+  val definition  : ?loc:location -> id -> term -> term -> t
+  val inductive   : ?loc:location -> id -> term list -> (id * term list) list -> t
 
   val rewrite     : ?loc:location -> ?attr:term -> term -> t
   val goal        : ?loc:location -> ?attr:term -> term -> t

@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module M = Logic.Make(ParseLocation)(Term)(Statement)
+module M = Logic.Make(ParseLocation)(Id)(Term)(Statement)
 
 let help_msg =
   "Small utility to parse various file formats.

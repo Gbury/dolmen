@@ -7,23 +7,6 @@
 
 type location = ParseLocation.t
 
-type namespace =
-  | Sort
-    (** Namepsace for sorts and types (only used in smtlib) *)
-  | Term
-    (** Most used namespace, used for terms in general (and types outside smtlib). *)
-  | Attr
-    (** Namespace for attributes (also called annotations). *)
-  | Defined
-    (** Namespace for tptp's defined words (i.e words starting with a "$"). *)
-  | System
-    (** Namespace for tptp's system wods (i.e words starting with a "$$"). *)
-
-type id = {
-  ns : namespace;
-  name : string;
-}
-
 type builtin =
   | Wildcard
   (** Wildcard symbol, i.e placeholder for an expression to be inferred, typically
@@ -98,7 +81,7 @@ type binder =
 (** The type of binders, these are pretty much always builtin in all languages. *)
 
 type descr =
-  | Symbol of id
+  | Symbol of Id.t
   (** Constants, variables, etc... any string-identified non-builtin atomic term. *)
   | Builtin of builtin
   (** Predefined builtins, i.e constants with lexical or syntaxic defintion in the source language. *)
@@ -123,13 +106,10 @@ and t = {
 
 include Term_intf.Logic
   with type t := t
+   and type id := Id.t
    and type location := location
-   and type namespace := namespace
 
 (** {2 Additional functions} *)
-
-val id : namespace -> string -> id
-(** Create an id. *)
 
 val fun_ty : ?loc:location -> t list -> t -> t
 (** Multi-arguments function type constructor. *)

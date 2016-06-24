@@ -2,8 +2,11 @@
 (* This file is free software, part of dolmem. See file "LICENSE" for more information *)
 
 %parameter <L : ParseLocation.S>
-%parameter <T : Ast_tptp.Term with type location := L.t>
-%parameter <S : Ast_tptp.Statement with type location := L.t  and type term := T.t>
+%parameter <I : Ast_tptp.Id>
+%parameter <T : Ast_tptp.Term
+  with type location := L.t and type id := I.t>
+%parameter <S : Ast_tptp.Statement
+  with type location := L.t  and type id := I.t and type term := T.t>
 
 %start <S.t list> file
 %start <S.t option> input
@@ -548,9 +551,9 @@ thf_unary_connective:
   /* These two quantifiers have been removed from THF0, and will come back in THF1
   when it is released, so it doesn't really matter how we handle them right now*/
   | PI
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term "$pi" }
+    { let loc = L.mk_pos $startpos $endpos in T.const (I.mk I.term "$pi") }
   | SIGMA
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term "$sigma" }
+    { let loc = L.mk_pos $startpos $endpos in T.const (I.mk I.term "$sigma") }
 
 subtype_sign:
   | LESS LESS { () }
@@ -707,7 +710,8 @@ system_functor:
 
 variable:
   | s=UPPER_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.var ~loc ~ns:T.term s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.var ~loc (I.mk I.term s) }
 
 arguments:
   | t=term
@@ -801,23 +805,33 @@ general_terms:
 
 /* General purposes */
 
+/*
+  name: atomic_word | integer
+
+  this porduction has been expanded to
+  produce ids instead of terms
+*/
 name:
-  | s=atomic_word
-  | s=integer
-    { s }
+  | s=LOWER_WORD
+  | s=SINGLE_QUOTED
+  | s=INTEGER
+    { I.mk I.decl s }
 
 atomic_word:
   | s=LOWER_WORD
   | s=SINGLE_QUOTED
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.term s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (I.mk I.term s) }
 
 atomic_defined_word:
   | s=DOLLAR_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.defined s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (I.mk I.term s) }
 
 atomic_system_word:
   | s=DOLLAR_DOLLAR_WORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc ~ns:T.system s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (I.mk I.term s) }
 
 number:
   | n=integer
@@ -833,18 +847,19 @@ file_name:
 
 distinct_object:
   | s=DISTINCT_OBJECT
-    { let loc = L.mk_pos $startpos $endpos in T.distinct ~loc ~ns:T.term s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.distinct ~loc (I.mk I.term s) }
 
 integer:
   | n=INTEGER
-    { let loc = L.mk_pos $startpos $endpos in T.int ~loc ~ns:T.term n }
+    { let loc = L.mk_pos $startpos $endpos in T.int ~loc n }
 
 rational:
   | n=RATIONAL
-    { let loc = L.mk_pos $startpos $endpos in T.rat ~loc ~ns:T.term n }
+    { let loc = L.mk_pos $startpos $endpos in T.rat ~loc n }
 
 real:
   | n=REAL
-    { let loc = L.mk_pos $startpos $endpos in T.real ~loc ~ns:T.term n }
+    { let loc = L.mk_pos $startpos $endpos in T.real ~loc n }
 
 

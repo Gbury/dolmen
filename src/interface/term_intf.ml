@@ -21,33 +21,11 @@ module type Logic = sig
   type t
   (** The type of terms. *)
 
+  type id
+  (** The type of identifiers used for constants. *)
+
   type location
   (** The type of locations attached to terms. *)
-
-  type namespace
-  (** The type of namespaces. Namespaces are used to distinguish
-      identifiers with the same name, but that occur in different
-      contexts. For instance, in smtlib, sorts and terms live in
-      different namespaces; so a constant can have the same name
-      as a sort. *)
-
-  (** {3 Namespaces} *)
-
-  val sort : namespace
-  (** The namespace for sorts (also called types). Currently only used
-      for smtlib. *)
-
-  val term : namespace
-  (** The usual namespace for terms. *)
-
-  val attr : namespace
-  (** Namespace used for attributes (also called annotations) in smtlib. *)
-
-  val defined : namespace
-  (** Namespace for defined words in tptp, i.e words starting with a $ sign. *)
-
-  val system : namespace
-  (** Namespace for system words in tptp, i.e words starting with "$$". *)
 
   (** {3 Predefined terms} *)
 
@@ -99,8 +77,8 @@ module type Logic = sig
 
   (** {3 Terms leaf constructors} *)
 
-  val var      : ?loc:location -> ns:namespace -> string -> t
-  val const    : ?loc:location -> ns:namespace -> string -> t
+  val var      : ?loc:location -> id -> t
+  val const    : ?loc:location -> id -> t
   (** Variable and constant constructors. While in some languages
       they can distinguished at the lexical level (in tptp for instance),
       in most languages, it is an issue dependant on scoping rules,
@@ -112,7 +90,7 @@ module type Logic = sig
       and negative integers denote the negation of the variable corresponding to
       their absolute value. *)
 
-  val distinct : ?loc:location -> ns:namespace -> string -> t
+  val distinct : ?loc:location -> id -> t
   (** Used in tptp to specify constants different from other constants, for instance the
       'distinct' "Apple" should be syntactically different from the "Apple"
       constant. Can be safely aliased to the [const] function as the
@@ -120,11 +98,11 @@ module type Logic = sig
       so in the example above, [const] would be called with ["Apple"] as
       string argument, while [distinct] would be called with the string ["\"Apple\""] *)
 
-  val int      : ?loc:location -> ns:namespace -> string -> t
-  val rat      : ?loc:location -> ns:namespace -> string -> t
-  val real     : ?loc:location -> ns:namespace -> string -> t
-  val hexa     : ?loc:location -> ns:namespace -> string -> t
-  val binary   : ?loc:location -> ns:namespace -> string -> t
+  val int      : ?loc:location -> string -> t
+  val rat      : ?loc:location -> string -> t
+  val real     : ?loc:location -> string -> t
+  val hexa     : ?loc:location -> string -> t
+  val binary   : ?loc:location -> string -> t
   (** Constructors for words defined as numeric formats by the languages
       specifications. These also can be safely aliased to [const]. *)
 

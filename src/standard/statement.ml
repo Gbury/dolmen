@@ -6,9 +6,9 @@ type term = Term.t
 type location = ParseLocation.t
 
 type inductive = {
-  name : string;
+  id : Id.t;
   vars : term list;
-  cstrs : (string * term list) list;
+  cstrs : (Id.t * term list) list;
   loc : location option;
 }
 
@@ -32,8 +32,8 @@ type descr =
   | Get_option of string
   | Set_option of string * term option
 
-  | Def of Term.id * term
-  | Decl of Term.id * term
+  | Def of Id.t * term
+  | Decl of Id.t * term
   | Inductive of inductive
 
   | Get_proof
@@ -46,7 +46,7 @@ type descr =
 
 (* Statements are wrapped in a record to have a location. *)
 and t = {
-  name : string;
+  id : Id.t;
   descr : descr;
   attr : term option;
   loc : location option;
@@ -77,16 +77,17 @@ let rec pp_descr b = function
   | Set_option (s, o) ->
     Printf.bprintf b "set-option: %s <- %a" s (Misc.pp_opt Term.pp) o
 
-  | Def (s, t) -> Printf.bprintf b "def: %s = %a" s.Term.name Term.pp t
-  | Decl (s, t) -> Printf.bprintf b "decl: %s : %a" s.Term.name Term.pp t
+  | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
+  | Decl (id, t) -> Printf.bprintf b "decl: %a : %a" Id.pp id Term.pp t
   | Inductive i ->
-    Printf.bprintf b "Inductive(%d): %s, %a\n"
-      (List.length i.cstrs) i.name
+    Printf.bprintf b "Inductive(%d): %a, %a\n"
+      (List.length i.cstrs) Id.pp i.id
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
     Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
-      ~pp:(fun b (cstr, l) -> Printf.bprintf b "%s: %a" cstr (
-          Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp
-        ) l) b i.cstrs
+      ~pp:(fun b (cstr, l) -> Printf.bprintf b "%a: %a"
+              Id.pp cstr
+              (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) l
+          ) b i.cstrs
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
@@ -135,17 +136,17 @@ let rec print_descr fmt = function
     Format.fprintf fmt "@[<hov 2>set-option:@ %s <-@ %a@]"
       s (Misc.print_opt Term.print) o
 
-  | Def (s, t) ->
-    Format.fprintf fmt "@[<hov 2>def:@ %s =@ %a@]" s.Term.name Term.print t
-  | Decl (s, t) ->
-    Format.fprintf fmt "@[<hov 2>decl:@ %s :@ %a@]" s.Term.name Term.print t
+  | Def (id, t) ->
+    Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
+  | Decl (id, t) ->
+    Format.fprintf fmt "@[<hov 2>decl:@ %a :@ %a@]" Id.print id Term.print t
   | Inductive i ->
-    Format.fprintf fmt "@[<hov 2>Inductive(%d) %s@ %a@\n%a@]"
-      (List.length i.cstrs) i.name
+    Format.fprintf fmt "@[<hov 2>Inductive(%d) %a@ %a@\n%a@]"
+      (List.length i.cstrs) Id.print i.id
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) i.vars
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@\n"
          ~print:(fun fmt (cstr, l) ->
-             Format.fprintf fmt "%s: %a" cstr (
+             Format.fprintf fmt "%a: %a" Id.print cstr (
                Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
            ) l)) i.cstrs
 
@@ -164,12 +165,13 @@ and print fmt = function { descr } ->
 
 
 (* Attributes *)
-let attr = Term.const ~ns:Term.Attr
+let attr ?loc s = Term.const ?loc Id.(mk Attr s)
 
 let annot = Term.apply
 
 (* Internal shortcut. *)
-let mk ?(name="") ?loc ?attr descr = { name; descr; loc; attr; }
+let mk ?(id=Id.(mk (mod_name "") "")) ?loc ?attr descr =
+  { id; descr; loc; attr; }
 
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
@@ -190,16 +192,16 @@ let get_option ?loc s = mk ?loc (Get_option s)
 let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
 
 (* Declarations, i.e given identifier has given type *)
-let decl ?loc s ty = mk ?loc (Decl (Term.id Term.Term s, ty))
+let decl ?loc id ty = mk ?loc (Decl (id, ty))
 
 (* Definitions, i.e given identifier, with arguments,
    is equal to given term *)
-let def ?loc s t = mk ?loc (Def (Term.id Term.Term s, t))
+let def ?loc id t = mk ?loc (Def (id, t))
 
 (* Inductive types, i.e polymorphic variables, and
    a list of constructors. *)
-let inductive ?loc name vars cstrs =
-  mk ?loc (Inductive {name; vars; cstrs; loc; })
+let inductive ?loc id vars cstrs =
+  mk ?loc (Inductive {id; vars; cstrs; loc; })
 
 let data ?loc l = mk ?loc (Pack l)
 
@@ -225,21 +227,22 @@ let clause ?loc l =
 let check_sat = prove
 let assert_ ?loc t = antecedent ?loc t
 
-let type_decl ?loc s n =
+let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n Term.tType) Term.tType in
-  mk ?loc (Decl (Term.id Term.Sort s, ty))
+  mk ?loc (Decl (id, ty))
 
-let fun_decl ?loc s l t' =
+let fun_decl ?loc id l t' =
   let ty = Term.fun_ty ?loc l t' in
-  mk ?loc (Decl (Term.id Term.Term s, ty))
+  mk ?loc (Decl (id, ty))
 
-let type_def ?loc s args body =
-  let t = Term.lambda args body in
-  mk ?loc (Def (Term.id Term.Sort s, t))
+let type_def ?loc id args body =
+  let l = List.map (fun id -> Term.colon (Term.const id) Term.tType) args in
+  let t = Term.lambda l body in
+  mk ?loc (Def (id, t))
 
-let fun_def ?loc s args ty_ret body =
+let fun_def ?loc id args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
-  mk ?loc (Def (Term.id Term.Term s, t))
+  mk ?loc (Def (id, t))
 
 
 (* Wrappers for Zf *)
@@ -260,21 +263,17 @@ let goal ?loc ?attr t =
 
 (* Wrappers for tptp *)
 let include_ ?loc s l =
-  let attr = Term.apply ?loc Term.and_t l in
+  let attr = Term.apply ?loc Term.and_t
+      (List.map Term.const l) in
   mk ?loc ~attr (Include s)
 
-let tptp ?loc ?annot name_t role t =
+let tptp ?loc ?annot id role t =
   let aux t =
     match annot with
     | None -> t
     | Some t' -> Term.colon t t'
   in
-  let attr = aux (Term.const ~ns:Term.Attr role) in
-  let name =
-    match name_t with
-    | { Term.term = Term.Symbol s } -> Some s.Term.name
-    | _ -> None
-  in
+  let attr = aux (Term.const Id.(mk Attr role)) in
   let descr = match role with
     | "axiom"
     | "hypothesis"
@@ -317,7 +316,7 @@ let tptp ?loc ?annot name_t role t =
       Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role;
       Pack []
   in
-  mk ?name ?loc ~attr descr
+  mk ~id ?loc ~attr descr
 
 let tpi = tptp
 let thf = tptp

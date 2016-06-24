@@ -5,8 +5,9 @@
 
 module Make
     (L : ParseLocation.S)
-    (T : Term_intf.Logic with type location := L.t)
-    (S : Stmt_intf.Logic with type location := L.t and type term := T.t): sig
+    (I : Id_intf.Logic)
+    (T : Term_intf.Logic with type location := L.t and type id := I.t)
+    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t): sig
 
   exception Extension_not_found of string
   (** Raised when trying to find a language given a file extension. *)

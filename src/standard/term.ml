@@ -3,18 +3,6 @@
 
 type location = ParseLocation.t
 
-type namespace =
-  | Sort
-  | Term
-  | Attr
-  | Defined
-  | System
-
-type id = {
-  ns : namespace;
-  name : string;
-}
-
 type builtin =
   | Wildcard
   | Ttype | Prop
@@ -41,7 +29,7 @@ type binder =
   | Description         (* Definite description *)
 
 type descr =
-  | Symbol of id
+  | Symbol of Id.t
   | Builtin of builtin
   | Colon of t * t
   | App of t * t list
@@ -100,7 +88,7 @@ let pp_binder b = function
   | Description -> Printf.bprintf b "@"
 
 let rec pp_descr b = function
-  | Symbol id -> Printf.bprintf b "%s" id.name
+  | Symbol id -> Id.pp b id
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
   | App ({ term = Builtin sep}, l) when infix_builtin sep ->
@@ -156,7 +144,7 @@ let print_binder fmt = function
   | Description -> Format.fprintf fmt "@"
 
 let rec print_descr fmt = function
-  | Symbol id -> Format.fprintf fmt "%s" id.name
+  | Symbol id -> Id.print fmt id
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
   | App ({ term = Builtin sep}, l) when infix_builtin sep ->
@@ -179,15 +167,7 @@ and print fmt = function
   | { term = (Builtin _) as d } -> print_descr fmt d
   | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
 
-(* Namespaces *)
-let sort = Sort
-let term = Term
-let attr = Attr
-let defined = Defined
-let system = System
-
 (* Make a term from its description *)
-let id ns name = { ns; name; }
 let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
 (* Internal shortcut to make a formula with bound variables. *)
@@ -200,7 +180,7 @@ let annot ?loc t l =
 
 (* Create a constant and/or variable, that is a leaf
    of the term AST. *)
-let const ?loc ~ns s = make ?loc (Symbol (id ns s))
+let const ?loc id = make ?loc (Symbol id)
 
 (* Apply a term to a list of terms. *)
 let apply ?loc f args = make ?loc (App (f, args))
@@ -235,7 +215,7 @@ let subtype_t   = make (Builtin Subtype)
 
 let tType       = make (Builtin Ttype)
 let prop        = make (Builtin Prop)
-let data_t      = const ~ns:Attr "$data"
+let data_t      = const Id.(mk Attr "$data")
 
 
 (* {2 Usual functions} *)
@@ -269,23 +249,23 @@ let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 
 let atom ?loc i =
   let s = Printf.sprintf "#%d" i in
-  if i >= 0 then const ?loc ~ns:Term s
-  else not_ ?loc (const ?loc ~ns:Term (string_of_int (-i)))
+  if i >= 0 then const ?loc Id.(mk Term s)
+  else not_ ?loc (const ?loc Id.(mk Term (string_of_int (-i))))
 
 
 (* {2 Wrappers for smtlib} *)
 
-let int = const
-let real = const
-let hexa = const
-let binary = const
+let int ?loc s = const ?loc Id.(mk Term s)
+let real = int
+let hexa = int
+let binary = int
 
 let sexpr ?loc l = apply ?loc data_t l
 
 (* {2 Wrappers for tptp} *)
 
+let rat = int
 let var = const
-let rat = const
 let distinct = const
 
 let ite ?loc a b c = apply ?loc ite_t [a; b; c]

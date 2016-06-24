@@ -3,8 +3,9 @@
 
 module Make
     (L : ParseLocation.S)
-    (T : Term_intf.Logic with type location := L.t)
-    (S : Stmt_intf.Logic with type location := L.t and type term := T.t)
+    (I : Id_intf.Logic)
+    (T : Term_intf.Logic with type location := L.t and type id := I.t)
+    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t)
 = struct
 
   exception Extension_not_found of string
@@ -28,10 +29,10 @@ module Make
     fst (List.find (fun (_, l') -> l = l') enum)
 
   let assoc = [
-    Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S) : S);
-    Smtlib, ".smt2", (module Smtlib.Make(L)(T)(S) : S);
-    Tptp,   ".p",    (module Tptp.Make(L)(T)(S)   : S);
-    Zf,     ".zf",   (module Zf.Make(L)(T)(S)     : S);
+    Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S)     : S);
+    Smtlib, ".smt2", (module Smtlib.Make(L)(I)(T)(S)  : S);
+    Tptp,   ".p",    (module Tptp.Make(L)(I)(T)(S)    : S);
+    Zf,     ".zf",   (module Zf.Make(L)(I)(T)(S)      : S);
   ]
 
   let of_language l =

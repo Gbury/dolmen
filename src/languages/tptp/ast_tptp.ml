@@ -1,13 +1,10 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module type Term = sig
+module type Id = sig
 
   type t
-  (** The type of terms. *)
-
-  type location
-  (** The type of locations attached to terms. *)
+  (** The type of identifiers *)
 
   type namespace
   (** The type for namespaces. *)
@@ -15,11 +12,25 @@ module type Term = sig
   val term : namespace
   (** Usual namespace, used for temrs, types and propositions. *)
 
-  val defined : namespace
-  (** The namespace for defined words, i.e words starting with "$". *)
+  val decl : namespace
+  (** Names used to refer to tptp phrases. These are used
+      in declarations and include statement. *)
 
-  val system : namespace
-  (** The namespace for system words, i.e words starting with "$$". *)
+  val mk : namespace -> string -> t
+  (** Make an identifier *)
+
+end
+
+module type Term = sig
+
+  type t
+  (** The type of terms. *)
+
+  type id
+  (** The type of identifiers *)
+
+  type location
+  (** The type of locations attached to terms. *)
 
   val eq_t      : t
   val neq_t     : t
@@ -33,26 +44,26 @@ module type Term = sig
   val implies_t : t
   val implied_t : t
   val data_t    : t
-  (** Predefined symbols in tptp. Symbols as standalon terms are necessary
+  (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {implied_t} is reverse implication, and
       {data_t} is used in tptp's annotations. *)
 
   val colon : ?loc:location -> t -> t -> t
   (** Juxtaposition of terms, usually used for annotating terms with their type. *)
 
-  val var      : ?loc:location -> ns:namespace -> string -> t
+  val var      : ?loc:location -> id -> t
   (** Make a variable (in tptp, variable are syntaxically different from constants). *)
 
-  val const    : ?loc:location -> ns:namespace -> string -> t
+  val const    : ?loc:location -> id -> t
   (** Make a constant. *)
 
-  val distinct : ?loc:location -> ns:namespace -> string -> t
+  val distinct : ?loc:location -> id -> t
   (** Make a constant whose name possibly contain special characters
       (All 'distinct' constants name are enclosed in quotes). *)
 
-  val int      : ?loc:location -> ns:namespace -> string -> t
-  val rat      : ?loc:location -> ns:namespace -> string -> t
-  val real     : ?loc:location -> ns:namespace -> string -> t
+  val int      : ?loc:location -> string -> t
+  val rat      : ?loc:location -> string -> t
+  val real     : ?loc:location -> string -> t
   (** Constants that are syntaxically recognised as numbers. *)
 
   val apply : ?loc:location -> t -> t list -> t
@@ -104,6 +115,9 @@ module type Statement = sig
   type t
   (** The type of statements. *)
 
+  type id
+  (** The type of identifiers *)
+
   type term
   (** The type of terms used in statements. *)
 
@@ -113,15 +127,15 @@ module type Statement = sig
   val annot : ?loc:location -> term -> term list -> term
   (** Terms as annotations for statements. *)
 
-  val include_ : ?loc:location -> string -> term list -> t
+  val include_ : ?loc:location -> string -> id list -> t
   (** Include directive. Given the filename, and a list of
       names to import (an empty list means import everything). *)
 
-  val tpi : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val thf : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val tff : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val fof : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val cnf : ?loc:location -> ?annot:term -> term -> string -> term -> t
+  val tpi : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val thf : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tff : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val fof : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val cnf : ?loc:location -> ?annot:term -> id -> string -> term -> t
   (** TPTP statements, used for instance as [tff ~loc ~annot name role t].
       Instructs the prover to register a new directive with the given name,
       role and term. Current tptp roles are:

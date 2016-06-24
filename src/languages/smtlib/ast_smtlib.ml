@@ -8,13 +8,10 @@
     in an interactive loop (so it includes directive for getting and setting options,
     getting information about the solver's internal model, etc...) *)
 
-module type Term = sig
+module type Id = sig
 
   type t
-  (** The type of terms. *)
-
-  type location
-  (** The type of locations. *)
+  (** The type of identifiers *)
 
   type namespace
   (** Namespace for identifiers *)
@@ -25,14 +22,30 @@ module type Term = sig
   (** The namespace for sorts (also called typee), terms
       and attributes, respectively. *)
 
-  val const   : ?loc:location -> ns:namespace -> string -> t
+  val mk : namespace -> string -> t
+  (** Make an identifier from a name and namespace. *)
+
+end
+
+module type Term = sig
+
+  type t
+  (** The type of terms. *)
+
+  type id
+  (** The type of identifiers for constants. *)
+
+  type location
+  (** The type of locations. *)
+
+  val const   : ?loc:location -> id -> t
   (** Constants, i.e non predefined symbols. This includes both constants
       defined by theories, defined locally in a problem, and also quantified variables. *)
 
-  val int     : ?loc:location -> ns:namespace -> string -> t
-  val real    : ?loc:location -> ns:namespace -> string -> t
-  val hexa    : ?loc:location -> ns:namespace -> string -> t
-  val binary  : ?loc:location -> ns:namespace -> string -> t
+  val int     : ?loc:location -> string -> t
+  val real    : ?loc:location -> string -> t
+  val hexa    : ?loc:location -> string -> t
+  val binary  : ?loc:location -> string -> t
   (** Constants lexically recognised as numbers in different formats. According to the smtlib
       manual, these should not always be interpreted as numbers since their interpretation
       is actually dependent on the theory set by the problem. *)
@@ -68,6 +81,9 @@ module type Statement = sig
   type t
   (** The type of statements. *)
 
+  type id
+  (** The type of identifiers. *)
+
   type term
   (** The type of terms. *)
 
@@ -101,21 +117,21 @@ module type Statement = sig
   val set_option : ?loc:location -> string * term option -> t
   (** Set the value of a prover option. *)
 
-  val type_decl : ?loc:location -> string -> int -> t
+  val type_decl : ?loc:location -> id -> int -> t
   (** Declares a new type constructor with given arity. *)
 
-  val type_def  : ?loc:location -> string -> term list -> term -> t
+  val type_def  : ?loc:location -> id -> id list -> term -> t
   (** Defines an alias for types. [type_def f args body] is such that
       later occurences of [f] applied to a list of arguments [l] should
-      be replaced by [body] where ther [args] have been substituted by
+      be replaced by [body] where the [args] have been substituted by
       their value in [l]. *)
 
-  val fun_decl  : ?loc:location -> string -> term list -> term -> t
+  val fun_decl  : ?loc:location -> id -> term list -> term -> t
   (** Declares a new term symbol, and its type. [fun_decl f args ret]
       declares [f] as a new function symbol which takes arguments of types
       described in [args], and with return type [ret]. *)
 
-  val fun_def   : ?loc:location -> string -> term list -> term -> term -> t
+  val fun_def   : ?loc:location -> id -> term list -> term -> term -> t
   (** Defines a new function. [fun_def f args ret body] is such that
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)

@@ -13,9 +13,13 @@ prelude:
   | s=NAME DOT
     { let loc = L.mk_pos $startpos $endpos in S.mk_module ~loc s }
 
-line            : ID COLON term DOT
-                { mk_declaration (fst $1) (snd $1) (scope_term [] $3) }
-                | ID COLON term DEF term DOT
+line:
+  | id=ID COLON t=term DOT
+    { let mod_name, name = id in
+      let loc = L.mk_pos $startpos $endpos in
+      decl ~loc
+      mk_declaration (fst $1) (snd $1) (scope_term [] $3) }
+  | ID COLON term DEF term DOT
                 { mk_definition (fst $1) (snd $1) (Some (scope_term [] $3)) (scope_term [] $5) }
                 | ID DEF term DOT
                 { mk_definition (fst $1) (snd $1)  None (scope_term [] $3) }

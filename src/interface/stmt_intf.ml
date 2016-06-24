@@ -17,6 +17,9 @@ module type Logic = sig
   type t
   (** The type of statements. *)
 
+  type id
+  (** The type of identifiers. *)
+
   type term
   (** The type of terms used in statements. *)
 
@@ -25,14 +28,12 @@ module type Logic = sig
 
   (** {2 Optional infos for statements} *)
 
-  val attr  : ?loc:location -> string -> term
   val annot : ?loc:location -> term -> term list -> term
-  (** Constructors for attribute/annotations. Annotations are used in TPTP, and
-      attributes in the Zipperposition format. *)
+  (** Constructors for annotations. Annotations are mainly used in TPTP. *)
 
   (** {2 Generic statements} *)
 
-  val include_ : ?loc:location -> string -> term list -> t
+  val include_ : ?loc:location -> string -> id list -> t
   (** Inlcude directive. [include file l] means to include in the current scope
       the directives from file [file] that appear in [l]. If [l] is the empty list,
       all directives should be imported. *)
@@ -66,21 +67,21 @@ module type Logic = sig
   val set_option  : ?loc:location -> string * term option -> t
   (** Getter and setter for prover options (see smtlib manual). *)
 
-  val type_decl   : ?loc:location -> string -> int -> t
+  val type_decl   : ?loc:location -> id -> int -> t
   (** Type declaration. [type_decl s n] declare [s] as a type constructor with
       arity [n]. *)
 
-  val type_def    : ?loc:location -> string -> term list -> term -> t
+  val type_def    : ?loc:location -> id -> id list -> term -> t
   (** Type definition. [type_def f args body] declare that [f(args) = body],
       i.e any occurence of "f(l)" should be replaced by [body] where the "args" have been
       substituted by their corresponding value in [l]. *)
 
-  val fun_decl    : ?loc:location -> string -> term list -> term -> t
+  val fun_decl    : ?loc:location -> id -> term list -> term -> t
   (** Symbol declaration. [fun_decl f args ret] defines [f] as a function
       which takes arguments of type as described in [args] and which returns
       a value of type [ret]. *)
 
-  val fun_def     : ?loc:location -> string -> term list -> term -> term -> t
+  val fun_def     : ?loc:location -> id -> term list -> term -> term -> t
   (** Symbol definition. [fun_def f args ret body] means that "f(args) = (body : ret)",
       i.e f is a function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
@@ -109,11 +110,11 @@ module type Logic = sig
 
   (** {2 TPTP Statements} *)
 
-  val tpi : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val thf : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val tff : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val fof : ?loc:location -> ?annot:term -> term -> string -> term -> t
-  val cnf : ?loc:location -> ?annot:term -> term -> string -> term -> t
+  val tpi : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val thf : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tff : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val fof : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val cnf : ?loc:location -> ?annot:term -> id -> string -> term -> t
   (** TPTP directives. [tptp name role t] instructs the prover to register
       a new directive with the given name, role and term. Current tptp roles are:
       - ["axiom", "hypothesis", "definition", "lemma", "theorem"] acts
@@ -138,17 +139,17 @@ module type Logic = sig
 
   (** {2 Zipperposition statements} *)
 
-  val inductive   : ?loc:location -> string -> term list -> (string * term list) list -> t
+  val inductive   : ?loc:location -> id -> term list -> (id * term list) list -> t
   (** Inductive type definitions. [inductive name vars l] defines aan inductive type [name],
       with polymorphic variables [vars], and with a list of inductive constructors [l]. *)
 
   val data        : ?loc:location -> t list -> t
   (** Packs a list of mutually recursive inductive type declarations. into a single declaration. *)
 
-  val decl        : ?loc:location -> string -> term -> t
+  val decl        : ?loc:location -> id -> term -> t
   (** Symbol declaration. [decl name ty] declares a new symbol [name] with type [ty]. *)
 
-  val definition  : ?loc:location -> string -> term -> term -> t
+  val definition  : ?loc:location -> id -> term -> term -> t
   (** Symbol definition. [def name ty term] defines a new symbol [name] of type [ty]
       which is equal to [term]. *)
 

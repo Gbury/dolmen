@@ -1,11 +1,13 @@
 
 # Common modules
+standard/Id
 standard/Term
 standard/Statement
 standard/ParseLocation
 
 # Interfaces
-interface/base_intf
+interface/id_intf
+#interface/base_intf
 interface/term_intf
 interface/stmt_intf
 interface/lex_intf

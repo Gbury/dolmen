@@ -18,9 +18,9 @@ type location = ParseLocation.t
 (** Type aliases for readability. *)
 
 type inductive = {
-  name : string;
+  id : Id.t;
   vars : term list;
-  cstrs : (string * term list) list;
+  cstrs : (Id.t * term list) list;
   loc : location option;
 }
 (** The type for inductive type declarations. The "vars" field if used
@@ -68,9 +68,9 @@ type descr =
   | Set_option of string * term option
   (** Set the option value. *)
 
-  | Def of Term.id * term
+  | Def of Id.t * term
   (** Symbol definition, i.e the symbol is equal to the given term. *)
-  | Decl of Term.id * term
+  | Decl of Id.t * term
   (** Symbol declaration, i.e the symbol has the given term as its type. *)
   | Inductive of inductive
   (** Inductive type definition, see the [inductive] type. *)
@@ -90,7 +90,7 @@ type descr =
   (** Exit the interactive loop. *)
 
 and t = {
-  name : string;
+  id : Id.t;
   descr : descr;
   attr : term option;
   loc : location option;
@@ -101,7 +101,11 @@ and t = {
 
 (** {2 Implemented interfaces} *)
 
-include Stmt_intf.Logic with type location := location and type term := term and type t := t
+include Stmt_intf.Logic
+  with type t := t
+   and type id := Id.t
+   and type term := term
+   and type location := location
 
 (** {2 Additional functions} *)
 
