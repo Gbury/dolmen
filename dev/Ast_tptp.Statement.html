@@ -11,10 +11,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -45,6 +46,12 @@ The type of statements.<br>
 </div>
 
 
+<pre><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> </pre>
+<div class="info ">
+The type of identifiers<br>
+</div>
+
+
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
 <div class="info ">
 The type of terms used in statements.<br>
@@ -61,16 +68,16 @@ The type of locations attached to statements.<br>
 Terms as annotations for statements.<br>
 </div>
 
-<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> list -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEid">id</a> list -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Include directive. Given the filename, and a list of
       names to import (an empty list means import everything).<br>
 </div>
 
-<pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEid">id</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEid">id</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEid">id</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEid">id</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Ast_tptp.Statement.html#TYPElocation">location</a> -><br>       ?annot:<a href="Ast_tptp.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_tptp.Statement.html#TYPEid">id</a> -><br>       string -> <a href="Ast_tptp.Statement.html#TYPEterm">term</a> -> <a href="Ast_tptp.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 TPTP statements, used for instance as <code class="code">tff ~loc ~annot name role t</code>.
       Instructs the prover to register a new directive with the given name,
       role and term. Current tptp roles are:<ul>

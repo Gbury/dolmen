@@ -7,10 +7,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -30,6 +31,7 @@
 <body>
 <code class="code"><span class="keyword">sig</span><br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;annot&nbsp;:<br>
@@ -38,30 +40,30 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;include_&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tpi&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;thf&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tff&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fof&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;cnf&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;?annot:<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_tptp</span>.<span class="constructor">Statement</span>.t<br>
 <span class="keyword">end</span></code></body></html>

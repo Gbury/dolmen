@@ -8,10 +8,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -46,18 +47,12 @@ AST requirement for the Smtlib format.
 </td></tr>
 <tr><td><a href="Ast_tptp.html">Ast_tptp</a> </td>
 <td><div class="info">
-The type of terms.
+The type of identifiers
 </div>
 </td></tr>
 <tr><td><a href="Ast_zf.html">Ast_zf</a> </td>
 <td><div class="info">
-The type of terms.
-</div>
-</td></tr>
-<tr><td align="left"><br>B</td></tr>
-<tr><td><a href="Base_intf.html">Base_intf</a> </td>
-<td><div class="info">
-Base interface.
+The type of identifiers
 </div>
 </td></tr>
 <tr><td align="left"><br>D</td></tr>
@@ -67,6 +62,19 @@ Dimacs language input
 </div>
 </td></tr>
 <tr><td align="left"><br>I</td></tr>
+<tr><td><a href="Id.html">Id</a> </td>
+<td><div class="info">
+Standard implementation of identifiers
+</div>
+</td></tr>
+<tr><td><a href="Id_intf.html">Id_intf</a> </td>
+<td><div class="info">
+Interfaces for Identifiers
+    This module defines Interfaces that implementation of identifiers must
+    respect in order to be used to instantiated the corresponding
+    language classes.
+</div>
+</td></tr>
 <tr><td><a href="Parse_intf.S.Incremental.html">Incremental</a> [<a href="Parse_intf.S.html">Parse_intf.S</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>L</td></tr>

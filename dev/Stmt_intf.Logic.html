@@ -10,10 +10,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -55,6 +56,12 @@ The type of statements.<br>
 </div>
 
 
+<pre><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> </pre>
+<div class="info ">
+The type of identifiers.<br>
+</div>
+
+
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
 <div class="info ">
 The type of terms used in statements.<br>
@@ -69,15 +76,13 @@ The type of locations attached to statements.<br>
 <br>
 <h2 id="2_Optionalinfosforstatements">Optional infos for statements</h2><br>
 
-<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre>
 <pre><span id="VALannot"><span class="keyword">val</span> annot</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a></code></pre><div class="info ">
-Constructors for attribute/annotations. Annotations are used in TPTP, and
-      attributes in the Zipperposition format.<br>
+Constructors for annotations. Annotations are mainly used in TPTP.<br>
 </div>
 <br>
 <h2 id="2_Genericstatements">Generic statements</h2><br>
 
-<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEid">id</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Inlcude directive. <code class="code">include file l</code> means to include in the current scope
       the directives from file <code class="code">file</code> that appear in <code class="code">l</code>. If <code class="code">l</code> is the empty list,
       all directives should be imported.<br>
@@ -119,24 +124,24 @@ Getter and setter for various informations (see smtlib manual).<br>
 Getter and setter for prover options (see smtlib manual).<br>
 </div>
 
-<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -> string -> int -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> int -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Type declaration. <code class="code">type_decl s n</code> declare <code class="code">s</code> as a type constructor with
       arity <code class="code">n</code>.<br>
 </div>
 
-<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Type definition. <code class="code">type_def f args body</code> declare that <code class="code">f(args) = body</code>,
       i.e any occurence of "f(l)" should be replaced by <code class="code">body</code> where the "args" have been
       substituted by their corresponding value in <code class="code">l</code>.<br>
 </div>
 
-<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol declaration. <code class="code">fun_decl f args ret</code> defines <code class="code">f</code> as a function
-      which takes arguemnts of type as described in <code class="code">args</code> and which returns
+      which takes arguments of type as described in <code class="code">args</code> and which returns
       a value of type <code class="code">ret</code>.<br>
 </div>
 
-<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol definition. <code class="code">fun_def f args ret body</code> means that "f(args) = (body : ret)",
       i.e f is a function symbol with arguments <code class="code">args</code>, and which returns the value
       <code class="code">body</code> which is of type <code class="code">ret</code>.<br>
@@ -172,11 +177,11 @@ Exit directive (used in interactive mode).<br>
 <br>
 <h2 id="2_TPTPStatements">TPTP Statements</h2><br>
 
-<pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtpi"><span class="keyword">val</span> tpi</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALthf"><span class="keyword">val</span> thf</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALtff"><span class="keyword">val</span> tff</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfof"><span class="keyword">val</span> fof</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALcnf"><span class="keyword">val</span> cnf</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?annot:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 TPTP directives. <code class="code">tptp name role t</code> instructs the prover to register
       a new directive with the given name, role and term. Current tptp roles are:<ul>
 <li><code class="code">"axiom", "hypothesis", "definition", "lemma", "theorem"</code> acts
@@ -204,7 +209,7 @@ TPTP directives. <code class="code">tptp name role t</code> instructs the prover
 <br>
 <h2 id="2_Zipperpositionstatements">Zipperposition statements</h2><br>
 
-<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       (string * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       (<a href="Stmt_intf.Logic.html#TYPEid">id</a> * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Inductive type definitions. <code class="code">inductive name vars l</code> defines aan inductive type <code class="code">name</code>,
       with polymorphic variables <code class="code">vars</code>, and with a list of inductive constructors <code class="code">l</code>.<br>
 </div>
@@ -213,11 +218,11 @@ Inductive type definitions. <code class="code">inductive name vars l</code> defi
 Packs a list of mutually recursive inductive type declarations. into a single declaration.<br>
 </div>
 
-<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol declaration. <code class="code">decl name ty</code> declares a new symbol <code class="code">name</code> with type <code class="code">ty</code>.<br>
 </div>
 
-<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol definition. <code class="code">def name ty term</code> defines a new symbol <code class="code">name</code> of type <code class="code">ty</code>
       which is equal to <code class="code">term</code>.<br>
 </div>

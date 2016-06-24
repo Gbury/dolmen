@@ -12,10 +12,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -69,7 +70,7 @@ Type aliases for readability.<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTinductive.name">name</span>&nbsp;: <code class="type">string</code>;</code></td>
+<code><span id="TYPEELTinductive.id">id</span>&nbsp;: <code class="type"><a href="Id.html#TYPEt">Id.t</a></code>;</code></td>
 
 </tr>
 <tr>
@@ -83,7 +84,7 @@ Type aliases for readability.<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTinductive.cstrs">cstrs</span>&nbsp;: <code class="type">(string * <a href="Statement.html#TYPEterm">term</a> list) list</code>;</code></td>
+<code><span id="TYPEELTinductive.cstrs">cstrs</span>&nbsp;: <code class="type">(<a href="Id.html#TYPEt">Id.t</a> * <a href="Statement.html#TYPEterm">term</a> list) list</code>;</code></td>
 
 </tr>
 <tr>
@@ -236,7 +237,7 @@ Set the option value.<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTdescr.Def"><span class="constructor">Def</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEid">Term.id</a> * <a href="Statement.html#TYPEterm">term</a></code></code></td>
+<code><span id="TYPEELTdescr.Def"><span class="constructor">Def</span></span> <span class="keyword">of</span> <code class="type"><a href="Id.html#TYPEt">Id.t</a> * <a href="Statement.html#TYPEterm">term</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Symbol definition, i.e the symbol is equal to the given term.<br>
 </div>
@@ -246,7 +247,7 @@ Symbol definition, i.e the symbol is equal to the given term.<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTdescr.Decl"><span class="constructor">Decl</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEid">Term.id</a> * <a href="Statement.html#TYPEterm">term</a></code></code></td>
+<code><span id="TYPEELTdescr.Decl"><span class="constructor">Decl</span></span> <span class="keyword">of</span> <code class="type"><a href="Id.html#TYPEt">Id.t</a> * <a href="Statement.html#TYPEterm">term</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Symbol declaration, i.e the symbol has the given term as its type.<br>
 </div>
@@ -330,7 +331,7 @@ Exit the interactive loop.<br>
 <td align="left" valign="top" >
 <code>&nbsp;&nbsp;</code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTt.name">name</span>&nbsp;: <code class="type">string</code>;</code></td>
+<code><span id="TYPEELTt.id">id</span>&nbsp;: <code class="type"><a href="Id.html#TYPEt">Id.t</a></code>;</code></td>
 
 </tr>
 <tr>

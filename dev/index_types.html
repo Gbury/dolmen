@@ -8,10 +8,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -50,8 +51,46 @@ The AST for terms
 </div>
 </td></tr>
 <tr><td align="left"><br>I</td></tr>
-<tr><td><a href="Term.html#TYPEid">id</a> [<a href="Term.html">Term</a>]</td>
-<td></td></tr>
+<tr><td><a href="Ast_tptp.Statement.html#TYPEid">id</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
+<tr><td><a href="Ast_tptp.Term.html#TYPEid">id</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Statement.html#TYPEid">id</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Term.html#TYPEid">id</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Statement.html#TYPEid">id</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
+<td><div class="info">
+The type of identifiers.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Term.html#TYPEid">id</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<td><div class="info">
+The type of identifiers for constants.
+</div>
+</td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#TYPEid">id</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+The type of identifiers.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#TYPEid">id</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The type of identifiers used for constants.
+</div>
+</td></tr>
 <tr><td><a href="Statement.html#TYPEinductive">inductive</a> [<a href="Statement.html">Statement</a>]</td>
 <td><div class="info">
 The type for inductive type declarations.
@@ -121,27 +160,27 @@ Type aliases for readability.
 <tr><td><a href="Term.html#TYPElocation">location</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>N</td></tr>
-<tr><td><a href="Ast_tptp.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<tr><td><a href="Ast_tptp.Id.html#TYPEnamespace">namespace</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
 <td><div class="info">
 The type for namespaces.
 </div>
 </td></tr>
-<tr><td><a href="Ast_zf.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<tr><td><a href="Ast_zf.Id.html#TYPEnamespace">namespace</a> [<a href="Ast_zf.Id.html">Ast_zf.Id</a>]</td>
 <td><div class="info">
-The type of namespaces attached to constants.
+The type of namespaces for identifiers
 </div>
 </td></tr>
-<tr><td><a href="Ast_smtlib.Term.html#TYPEnamespace">namespace</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<tr><td><a href="Ast_smtlib.Id.html#TYPEnamespace">namespace</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
 <td><div class="info">
 Namespace for identifiers
 </div>
 </td></tr>
-<tr><td><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<tr><td><a href="Id_intf.Logic.html#TYPEnamespace">namespace</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
 <td><div class="info">
 The type of namespaces.
 </div>
 </td></tr>
-<tr><td><a href="Term.html#TYPEnamespace">namespace</a> [<a href="Term.html">Term</a>]</td>
+<tr><td><a href="Id.html#TYPEnamespace">namespace</a> [<a href="Id.html">Id</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>S</td></tr>
 <tr><td><a href="Language_intf.S.html#TYPEstatement">statement</a> [<a href="Language_intf.S.html">Language_intf.S</a>]</td>
@@ -165,6 +204,11 @@ The type of statements.
 The type of terms.
 </div>
 </td></tr>
+<tr><td><a href="Ast_tptp.Id.html#TYPEt">t</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#TYPEt">t</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td><div class="info">
 The type of statements.
@@ -175,6 +219,11 @@ The type of statements.
 The type of terms.
 </div>
 </td></tr>
+<tr><td><a href="Ast_zf.Id.html#TYPEt">t</a> [<a href="Ast_zf.Id.html">Ast_zf.Id</a>]</td>
+<td><div class="info">
+The type of identifiers
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#TYPEt">t</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 The type of statements.
@@ -183,6 +232,11 @@ The type of statements.
 <tr><td><a href="Ast_smtlib.Term.html#TYPEt">t</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td><div class="info">
 The type of terms.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Id.html#TYPEt">t</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
+<td><div class="info">
+The type of identifiers
 </div>
 </td></tr>
 <tr><td><a href="Ast_dimacs.Statement.html#TYPEt">t</a> [<a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a>]</td>
@@ -205,6 +259,11 @@ The type of statements.
 The type of terms.
 </div>
 </td></tr>
+<tr><td><a href="Id_intf.Logic.html#TYPEt">t</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
+<td><div class="info">
+The type of identifiers.
+</div>
+</td></tr>
 <tr><td><a href="Location_intf.S.html#TYPEt">t</a> [<a href="Location_intf.S.html">Location_intf.S</a>]</td>
 <td><div class="info">
 The type of locations.
@@ -220,6 +279,11 @@ The type of statements.
 <tr><td><a href="Term.html#TYPEt">t</a> [<a href="Term.html">Term</a>]</td>
 <td><div class="info">
 The type of terms.
+</div>
+</td></tr>
+<tr><td><a href="Id.html#TYPEt">t</a> [<a href="Id.html">Id</a>]</td>
+<td><div class="info">
+The type of identifiers, basically a name together with a namespace.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#TYPEterm">term</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>

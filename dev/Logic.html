@@ -11,10 +11,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -42,4 +43,4 @@ Logic languages for formal proofs<br>
 </div>
 <hr width="100%">
 
-<pre><span class="keyword">module</span> <a href="Logic.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Term_intf.Logic.html">Term_intf.Logic</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="code">sig</code> <a href="Logic.Make.html">..</a> <code class="code">end</code></div></div></div></pre></body></html>
+<pre><span class="keyword">module</span> <a href="Logic.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">I</code><code class="code"> : </code><code class="type"><a href="Id_intf.Logic.html">Id_intf.Logic</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Term_intf.Logic.html">Term_intf.Logic</a></code><code class="type">  with type location := L.t and type id := I.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a></code><code class="type">  with type location := L.t and type id := I.t and type term := T.t</code><code class="code">) -&gt; </code><code class="code">sig</code> <a href="Logic.Make.html">..</a> <code class="code">end</code></div></div></div></div></pre></body></html>

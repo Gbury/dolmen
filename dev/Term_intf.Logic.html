@@ -10,10 +10,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -28,8 +29,7 @@
 <link title="Ast_zf" rel="Chapter" href="Ast_zf.html">
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
-<link title="Logic" rel="Chapter" href="Logic.html"><link title="Namespaces" rel="Section" href="#3_Namespaces">
-<link title="Predefined terms" rel="Section" href="#3_Predefinedterms">
+<link title="Logic" rel="Chapter" href="Logic.html"><link title="Predefined terms" rel="Section" href="#3_Predefinedterms">
 <link title="Terms leaf constructors" rel="Section" href="#3_Termsleafconstructors">
 <link title="Term constructors" rel="Section" href="#3_Termconstructors">
 <link title="Type constructors" rel="Section" href="#3_Typeconstructors">
@@ -56,44 +56,17 @@ The type of terms.<br>
 </div>
 
 
+<pre><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> </pre>
+<div class="info ">
+The type of identifiers used for constants.<br>
+</div>
+
+
 <pre><span id="TYPElocation"><span class="keyword">type</span> <code class="type"></code>location</span> </pre>
 <div class="info ">
 The type of locations attached to terms.<br>
 </div>
 
-
-<pre><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> </pre>
-<div class="info ">
-The type of namespaces. Namespaces are used to distinguish
-      identifiers with the same name, but that occur in different
-      contexts. For instance, in smtlib, sorts and terms live in
-      different namespaces; so a constant can have the same name
-      as a sort.<br>
-</div>
-
-<br>
-<h3 id="3_Namespaces">Namespaces</h3><br>
-
-<pre><span id="VALsort"><span class="keyword">val</span> sort</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
-The namespace for sorts (also called types). Currently only used
-      for smtlib.<br>
-</div>
-
-<pre><span id="VALterm"><span class="keyword">val</span> term</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
-The usual namespace for terms.<br>
-</div>
-
-<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
-Namespace used for attributes (also called annotations) in smtlib.<br>
-</div>
-
-<pre><span id="VALdefined"><span class="keyword">val</span> defined</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
-Namespace for defined words in tptp, i.e words starting with a $ sign.<br>
-</div>
-
-<pre><span id="VALsystem"><span class="keyword">val</span> system</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEnamespace">namespace</a></code></pre><div class="info ">
-Namespace for system words in tptp, i.e words starting with "$$".<br>
-</div>
 <br>
 <h3 id="3_Predefinedterms">Predefined terms</h3><br>
 
@@ -151,8 +124,8 @@ Term without semantic meaning, used for creating "data" terms.
 <br>
 <h3 id="3_Termsleafconstructors">Terms leaf constructors</h3><br>
 
-<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALvar"><span class="keyword">val</span> var</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEid">id</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALconst"><span class="keyword">val</span> const</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEid">id</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Variable and constant constructors. While in some languages
       they can distinguished at the lexical level (in tptp for instance),
       in most languages, it is an issue dependant on scoping rules,
@@ -166,7 +139,7 @@ Atoms are used for dimacs cnf parsing. Positive integers denotes variables,
       their absolute value.<br>
 </div>
 
-<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALdistinct"><span class="keyword">val</span> distinct</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEid">id</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Used in tptp to specify constants different from other constants, for instance the
       'distinct' "Apple" should be syntactically different from the "Apple"
       constant. Can be safely aliased to the <code class="code">const</code> function as the
@@ -175,11 +148,11 @@ Used in tptp to specify constants different from other constants, for instance t
       string argument, while <code class="code">distinct</code> would be called with the string <code class="code">"\"Apple\""</code><br>
 </div>
 
-<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       ns:<a href="Term_intf.Logic.html#TYPEnamespace">namespace</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALint"><span class="keyword">val</span> int</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALrat"><span class="keyword">val</span> rat</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALreal"><span class="keyword">val</span> real</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALhexa"><span class="keyword">val</span> hexa</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALbinary"><span class="keyword">val</span> binary</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Constructors for words defined as numeric formats by the languages
       specifications. These also can be safely aliased to <code class="code">const</code>.<br>
 </div>

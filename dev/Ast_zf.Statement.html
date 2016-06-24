@@ -11,10 +11,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -45,6 +46,12 @@ The type of statements.<br>
 </div>
 
 
+<pre><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> </pre>
+<div class="info ">
+The type of identifiers<br>
+</div>
+
+
 <pre><span id="TYPEterm"><span class="keyword">type</span> <code class="type"></code>term</span> </pre>
 <div class="info ">
 The type of terms used in statements.<br>
@@ -57,14 +64,10 @@ The type of locations attached to statements.<br>
 </div>
 
 
-<pre><span id="VALattr"><span class="keyword">val</span> attr</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -> string -> <a href="Ast_zf.Statement.html#TYPEterm">term</a></code></pre><div class="info ">
-Attributes for statements.<br>
-</div>
-
 <pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Statement.html#TYPEt">t</a> list -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       string -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
-<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_zf.Statement.html#TYPEterm">term</a> list -><br>       (string * <a href="Ast_zf.Statement.html#TYPEterm">term</a> list) list -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Statement.html#TYPEid">id</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Statement.html#TYPEid">id</a> -><br>       <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
+<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_zf.Statement.html#TYPEid">id</a> -><br>       <a href="Ast_zf.Statement.html#TYPEterm">term</a> list -><br>       (<a href="Ast_zf.Statement.html#TYPEid">id</a> * <a href="Ast_zf.Statement.html#TYPEterm">term</a> list) list -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       ?attr:<a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       ?attr:<a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre>
 <pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:<a href="Ast_zf.Statement.html#TYPElocation">location</a> -><br>       ?attr:<a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEterm">term</a> -> <a href="Ast_zf.Statement.html#TYPEt">t</a></code></pre></body></html>

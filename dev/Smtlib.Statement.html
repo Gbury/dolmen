@@ -11,10 +11,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -45,6 +46,12 @@ Implementation requirement for the Smtlib format.<br>
 <pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> </pre>
 <div class="info ">
 The type of statements.<br>
+</div>
+
+
+<pre><span id="TYPEid"><span class="keyword">type</span> <code class="type"></code>id</span> </pre>
+<div class="info ">
+The type of identifiers.<br>
 </div>
 
 
@@ -96,24 +103,24 @@ Get the value of a prover option.<br>
 Set the value of a prover option.<br>
 </div>
 
-<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -> string -> int -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtype_decl"><span class="keyword">val</span> type_decl</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEid">id</a> -> int -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Declares a new type constructor with given arity.<br>
 </div>
 
-<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtype_def"><span class="keyword">val</span> type_def</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEid">id</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEid">id</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Defines an alias for types. <code class="code">type_def f args body</code> is such that
       later occurences of <code class="code">f</code> applied to a list of arguments <code class="code">l</code> should
-      be replaced by <code class="code">body</code> where ther <code class="code">args</code> have been substituted by
+      be replaced by <code class="code">body</code> where the <code class="code">args</code> have been substituted by
       their value in <code class="code">l</code>.<br>
 </div>
 
-<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALfun_decl"><span class="keyword">val</span> fun_decl</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEid">id</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Declares a new term symbol, and its type. <code class="code">fun_decl f args ret</code>
       declares <code class="code">f</code> as a new function symbol which takes arguments of types
       described in <code class="code">args</code>, and with return type <code class="code">ret</code>.<br>
 </div>
 
-<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       string -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALfun_def"><span class="keyword">val</span> fun_def</span> : <code class="type">?loc:<a href="Ast_smtlib.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEid">id</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> list -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -><br>       <a href="Ast_smtlib.Statement.html#TYPEterm">term</a> -> <a href="Ast_smtlib.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Defines a new function. <code class="code">fun_def f args ret body</code> is such that
       applications of <code class="code">f</code> are equal to <code class="code">body</code> (module substitution of the arguments),
       which should be of type <code class="code">ret</code>.<br>

@@ -10,10 +10,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -35,7 +36,7 @@
 &nbsp;</div>
 <h1>Functor <a href="type_Tptp.Make.html">Tptp.Make</a></h1>
 
-<pre><span class="keyword">module</span> Make: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><div class="info module top">
+<pre><span class="keyword">module</span> Make: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">I</code><code class="code"> : </code><code class="type"><a href="Tptp.Id.html">Id</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t and type id := I.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type id := I.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></div></pre><div class="info module top">
 Functor to generate a parser for the TPTP format.<br>
 </div>
 <table border="0" cellpadding="3" width="100%">
@@ -50,14 +51,19 @@ Functor to generate a parser for the TPTP format.<br>
 <td><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code>
 <tr>
 <td align="center" valign="top" width="15%">
+<code>I</code></td>
+<td align="center" valign="top">:</td>
+<td><code class="type"><a href="Tptp.Id.html">Id</a></code>
+<tr>
+<td align="center" valign="top" width="15%">
 <code>T</code></td>
 <td align="center" valign="top">:</td>
-<td><code class="type"><a href="Term.html">Term</a> with type location := L.t</code>
+<td><code class="type"><a href="Term.html">Term</a> with type location := L.t and type id := I.t</code>
 <tr>
 <td align="center" valign="top" width="15%">
 <code>S</code></td>
 <td align="center" valign="top">:</td>
-<td><code class="type"><a href="Statement.html">Statement</a> with type location := L.t and type term := T.t</code>
+<td><code class="type"><a href="Statement.html">Statement</a> with type location := L.t and type id := I.t and type term := T.t</code>
 </table>
 </td>
 </tr>

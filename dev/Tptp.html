@@ -12,10 +12,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -44,12 +45,13 @@ TPTP language input<br>
 </div>
 <hr width="100%">
 
+<pre><span class="keyword">module type</span> <a href="Tptp.Id.html">Id</a> = <code class="type"><a href="Ast_tptp.Id.html">Ast_tptp.Id</a></code></pre>
 <pre><span class="keyword">module type</span> <a href="Tptp.Term.html">Term</a> = <code class="type"><a href="Ast_tptp.Term.html">Ast_tptp.Term</a></code></pre>
 <pre><span class="keyword">module type</span> <a href="Tptp.Statement.html">Statement</a> = <code class="type"><a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a></code></pre><div class="info">
 Implementation requirement for the TPTP format.
 </div>
 
-<pre><span class="keyword">module</span> <a href="Tptp.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></pre><div class="info">
+<pre><span class="keyword">module</span> <a href="Tptp.Make.html">Make</a>: <div class="sig_block"><code class="code">functor (</code><code class="code">L</code><code class="code"> : </code><code class="type"><a href="ParseLocation.S.html">ParseLocation.S</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">I</code><code class="code"> : </code><code class="type"><a href="Tptp.Id.html">Id</a></code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">T</code><code class="code"> : </code><code class="type"><a href="Tptp.Term.html">Term</a></code><code class="type">  with type location := L.t and type id := I.t</code><code class="code">) -&gt; </code><div class="sig_block"><code class="code">functor (</code><code class="code">S</code><code class="code"> : </code><code class="type"><a href="Tptp.Statement.html">Statement</a></code><code class="type">  with type location := L.t and type id := I.t and type term := T.t</code><code class="code">) -&gt; </code><code class="type"><a href="Language_intf.S.html">Language_intf.S</a></code><code class="type">  with type statement = S.t</code></div></div></div></div></pre><div class="info">
 Functor to generate a parser for the TPTP format.
 </div>
 </body></html>

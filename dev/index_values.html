@@ -8,10 +8,11 @@
 <link title="Index of values" rel=Appendix href="index_values.html">
 <link title="Index of modules" rel=Appendix href="index_modules.html">
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
-<link title="Base_intf" rel="Chapter" href="Base_intf.html">
+<link title="Id_intf" rel="Chapter" href="Id_intf.html">
 <link title="Term_intf" rel="Chapter" href="Term_intf.html">
 <link title="Stmt_intf" rel="Chapter" href="Stmt_intf.html">
 <link title="Lex_intf" rel="Chapter" href="Lex_intf.html">
@@ -54,7 +55,7 @@ Attach a list of attributes (also called annotations) to a term.
 </td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALannot">annot</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
-Constructors for attribute/annotations.
+Constructors for annotations.
 </div>
 </td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALannot">annot</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -127,20 +128,13 @@ Make an atom from an non-zero integer.
 Atoms are used for dimacs cnf parsing.
 </div>
 </td></tr>
-<tr><td><a href="Ast_zf.Statement.html#VALattr">attr</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
-<td><div class="info">
-Attributes for statements.
-</div>
-</td></tr>
-<tr><td><a href="Ast_smtlib.Term.html#VALattr">attr</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<tr><td><a href="Ast_smtlib.Id.html#VALattr">attr</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
 <td><div class="info">
 The namespace for sorts (also called typee), terms
       and attributes, respectively.
 </div>
 </td></tr>
-<tr><td><a href="Stmt_intf.Logic.html#VALattr">attr</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
-<td></td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALattr">attr</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<tr><td><a href="Id_intf.Logic.html#VALattr">attr</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
 <td><div class="info">
 Namespace used for attributes (also called annotations) in smtlib.
 </div>
@@ -265,6 +259,11 @@ Predefined symbols in tptp.
 Term without semantic meaning, used for creating "data" terms.
 </div>
 </td></tr>
+<tr><td><a href="Ast_tptp.Id.html#VALdecl">decl</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
+<td><div class="info">
+Names used to refer to tptp phrases.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALdecl">decl</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdecl">decl</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
@@ -272,14 +271,10 @@ Term without semantic meaning, used for creating "data" terms.
 Symbol declaration.
 </div>
 </td></tr>
-<tr><td><a href="Ast_tptp.Term.html#VALdefined">defined</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<tr><td><a href="Id_intf.Logic.html#VALdecl">decl</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
 <td><div class="info">
-The namespace for defined words, i.e words starting with "$".
-</div>
-</td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALdefined">defined</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
-<td><div class="info">
-Namespace for defined words in tptp, i.e words starting with a $ sign.
+Namespace used for declaration identifiers (for instance used
+      to filter declarations during includes)
 </div>
 </td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALdefinition">definition</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
@@ -543,11 +538,6 @@ The goal, i.e the propositional formula to prove.
 <tr><td><a href="Term_intf.Logic.html#VALhexa">hexa</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>I</td></tr>
-<tr><td><a href="Term.html#VALid">id</a> [<a href="Term.html">Term</a>]</td>
-<td><div class="info">
-Create an id.
-</div>
-</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALimplied_t">implied_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALimplied_t">implied_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -629,8 +619,33 @@ Local bindings.
 <tr><td><a href="Term_intf.Logic.html#VALletin">letin</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>M</td></tr>
+<tr><td><a href="Ast_tptp.Id.html#VALmk">mk</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
+<td><div class="info">
+Make an identifier
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Id.html#VALmk">mk</a> [<a href="Ast_zf.Id.html">Ast_zf.Id</a>]</td>
+<td><div class="info">
+Make identifiers from a namespace and a string.
+</div>
+</td></tr>
+<tr><td><a href="Ast_smtlib.Id.html#VALmk">mk</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
+<td><div class="info">
+Make an identifier from a name and namespace.
+</div>
+</td></tr>
+<tr><td><a href="Id_intf.Logic.html#VALmk">mk</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
+<td><div class="info">
+Make an identifier from its namespace and name.
+</div>
+</td></tr>
 <tr><td><a href="ParseLocation.html#VALmk">mk</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td></td></tr>
+<tr><td><a href="Id.html#VALmk">mk</a> [<a href="Id.html">Id</a>]</td>
+<td><div class="info">
+Create an identifier.
+</div>
+</td></tr>
 <tr><td><a href="ParseLocation.html#VALmk_lexbuf">mk_lexbuf</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td><div class="info">
 Reutnrs the lexbuf associetd with the given file or stdin,
@@ -647,6 +662,11 @@ Make a position from two lewing positions.
 <tr><td><a href="ParseLocation.html#VALmk_pos">mk_pos</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td><div class="info">
 Construction functions
+</div>
+</td></tr>
+<tr><td><a href="Id_intf.Logic.html#VALmod_name">mod_name</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
+<td><div class="info">
+Namespace used by modules (for instance in dedulkti).
 </div>
 </td></tr>
 <tr><td align="left"><br>N</td></tr>
@@ -749,6 +769,8 @@ Pop the given number of level on the stack of assertions.
 <td></td></tr>
 <tr><td><a href="Term.html#VALpp">pp</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
+<tr><td><a href="Id.html#VALpp">pp</a> [<a href="Id.html">Id</a>]</td>
+<td></td></tr>
 <tr><td><a href="Statement.html#VALprint">print</a> [<a href="Statement.html">Statement</a>]</td>
 <td><div class="info">
 Printing functions for statements.
@@ -757,6 +779,11 @@ Printing functions for statements.
 <tr><td><a href="Term.html#VALprint">print</a> [<a href="Term.html">Term</a>]</td>
 <td><div class="info">
 Printing functionson buffer and formatters.
+</div>
+</td></tr>
+<tr><td><a href="Id.html#VALprint">print</a> [<a href="Id.html">Id</a>]</td>
+<td><div class="info">
+Printing functions.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALproduct">product</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -872,9 +899,9 @@ S-expressions (for smtlib attributes), should probably be related
     <code class="code">p1</code> is a sub-location of <code class="code">p2</code> (interval inclusion)
 </div>
 </td></tr>
-<tr><td><a href="Ast_smtlib.Term.html#VALsort">sort</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<tr><td><a href="Ast_smtlib.Id.html#VALsort">sort</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
 <td></td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALsort">sort</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<tr><td><a href="Id_intf.Logic.html#VALsort">sort</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
 <td><div class="info">
 The namespace for sorts (also called types).
 </div>
@@ -894,16 +921,6 @@ Comparison of type (used in tptp's THF).
 Subtype relation for types.
 </div>
 </td></tr>
-<tr><td><a href="Ast_tptp.Term.html#VALsystem">system</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
-<td><div class="info">
-The namespace for system words, i.e words starting with "$$".
-</div>
-</td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALsystem">system</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
-<td><div class="info">
-Namespace for system words in tptp, i.e words starting with "$$".
-</div>
-</td></tr>
 <tr><td align="left"><br>T</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALtType">tType</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td></td></tr>
@@ -914,19 +931,19 @@ The type of types, defined as specific token by the Zipperposition format;
       in tptp for instance).
 </div>
 </td></tr>
-<tr><td><a href="Ast_tptp.Term.html#VALterm">term</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
+<tr><td><a href="Ast_tptp.Id.html#VALterm">term</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
 <td><div class="info">
 Usual namespace, used for temrs, types and propositions.
 </div>
 </td></tr>
-<tr><td><a href="Ast_zf.Term.html#VALterm">term</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<tr><td><a href="Ast_zf.Id.html#VALterm">term</a> [<a href="Ast_zf.Id.html">Ast_zf.Id</a>]</td>
 <td><div class="info">
-The only namespace used in Zf.
+The naemspace for terms, types, and pretty much everything
 </div>
 </td></tr>
-<tr><td><a href="Ast_smtlib.Term.html#VALterm">term</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
+<tr><td><a href="Ast_smtlib.Id.html#VALterm">term</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
 <td></td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALterm">term</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<tr><td><a href="Id_intf.Logic.html#VALterm">term</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
 <td><div class="info">
 The usual namespace for terms.
 </div>
