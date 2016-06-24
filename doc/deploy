@@ -9,6 +9,7 @@ git checkout master
 
 # Checkout gh-pages
 git checkout gh-pages
+git pull
 
 # Copy doc to the right locations
 cp doc/index.html ./
