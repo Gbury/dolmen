@@ -50,6 +50,10 @@ three module arguments:
 - A representation of locations in files. This is used for reporting
   parsing and lexing errors, but also to attach to each expression parsed
   its location.
+- A representation of identifiers. In some languages, there are syntactic
+  scopes, which are handled using namespaces for variable names. In order
+  to not pollute the Term module with it, the namespaces are dealt with
+  in this module separately.
 - A representation of terms. The functions in this module are used by the
   parser to build the various types, terms and formulas corresponding
   to the grammar of the input language. All functions of this module
@@ -78,7 +82,7 @@ and try to parse a file named "example.smt2" in the home of the current user:
 ```ocaml
 
 open Dolmen
-module P = Smtlib.Make(ParseLocation)(Term)(Statement)
+module P = Smtlib.Make(ParseLocation)(Id)(Term)(Statement)
 
 let _ = P.parse_file "~/example.smt2"
 

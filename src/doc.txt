@@ -32,6 +32,7 @@ Logic
 The following modules synthesize the implementation requirements for language classes:
 
 {!modules:
+Id_intf
 Term_intf
 Stmt_intf
 Location_intf
@@ -43,6 +44,7 @@ The following modules define standard implementations that can be used to direct
 instantiate the parser functors.
 
 {!modules:
+Id
 Term
 Statement
 ParseLocation

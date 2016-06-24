@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-(** Interfaces for Identifiers
+(** Interfaces for Identifiers.
     This module defines Interfaces that implementation of identifiers must
     respect in order to be used to instantiated the corresponding
     language classes. *)

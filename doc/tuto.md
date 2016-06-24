@@ -16,7 +16,7 @@ the following code will give you a quick start:
 open Dolmen
 
 (* Instantiate a module for parsing logic languages *)
-module M = Logic.Make(ParseLocation)(Term)(Statement)
+module M = Logic.Make(ParseLocation)(Id)(Term)(Statement)
 
 (* An arbitrary file *)
 let file = "/home/foo/bar.smt2"
@@ -55,16 +55,20 @@ It provides a functor of the following type:
 (** file: src/languages/tptp/tptp.mli *)
 module Make
     (L : ParseLocation.S)
-    (T : Ast_tptp.Term with type location := L.t)
-    (S : Ast_tptp.Statement with type location := L.t and type term := T.t) :
+    (I : Ast_tptp.Id)
+    (T : Ast_tptp.Term with type location := L.t and type id := I.t)
+    (S : Ast_tptp.Statement with type location := L.t and type id := I.t and type term := T.t) :
   Language_intf.S with type statement = S.t
 ```
 
-The functor takes three arguments:
+The functor takes four arguments:
 - `ParseLocation.s`: An implementation of locations in files,
   the locations are used for two things:
   - attaching locations to terms and formulas
   - reporting errors during parsing
+- `Ast_tptp.Id`: An implementation of identifiers. Identifiers are
+  used to distinguish lexical scopes, for instance the scope of terms
+  constants and the scope of declaration names in tptp.
 - `Ast_tptp.Term`: An implementation of terms (and formulas).
   It provides an abstract type `t` for expressions as well as functions
   to build these expressions (conjunction of formulas, universal quantification,
@@ -114,7 +118,7 @@ input file, or the standard input.
 ## Terms and Statements
 
 Given the broad scope of some languages, the requirements for terms implementation
-can sometimes be not trivial; for instance, the tptp language specification includes
+can sometimes be far from trivial; for instance, the tptp language specification includes
 THF, which describes higher-order terms, and comes with quite a lot of builtin
 quantifiers such as definite and indefinite description.
 
@@ -123,7 +127,7 @@ While great care is taken to document the interface requirements of each languag
 for users to have to implement all the required functions, so Dolmen provides
 default implementation of functor arguments.
 
-The modules `ParseLocation`, `Term`, `Statement` implement all
+The modules `ParseLocation`, `Id`, `Term`, `Statement` implement all
 interfaces required by the functors in the library, and can be used to
 instantiate any functor.
 
@@ -143,8 +147,9 @@ interfaces:
 (** file: src/classes/logic.mli *)
 module Make
     (L : ParseLocation.S)
-    (T : Term_intf.Logic with type location := L.t)
-    (S : Stmt_intf.Logic with type location := L.t and type term := T.t): sig
+    (I : Id_intf.Logic)
+    (T : Term_intf.Logic with type location := L.t and type id := I.t)
+    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t): sig
 
   (** {2 Supported languages} *)
 
@@ -193,7 +198,7 @@ instantiate the new functors in one's project.
 
 ## Documentation
 
-Now that you have a grasp on how Dolmen works, take a look at the documenttion
+Now that you have a grasp on how Dolmen works, take a look at the documentation at
 <http://gbury.github.io/dolmen>
 
 
