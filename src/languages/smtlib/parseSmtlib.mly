@@ -65,7 +65,7 @@ attribute_value:
   | v=spec_constant
     { v I.attr }
   | v=SYMBOL
-    { let loc = L.mk_pos $startpos $endpos in T.const I.(mk attr v) }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk attr v) }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
@@ -87,7 +87,7 @@ attribute:
 
 qual_identifier:
   | s=identifier
-    { let loc = L.mk_pos $startpos $endpos in T.const I.(mk term s) }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
   | OPEN AS s=identifier ty=sort CLOSE
     { let c =
         let loc = L.mk_pos $startpos(s) $endpos(s) in

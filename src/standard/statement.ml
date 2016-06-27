@@ -163,10 +163,7 @@ let rec print_descr fmt = function
 and print fmt = function { descr } ->
   Format.fprintf fmt "%a" print_descr descr
 
-
-(* Attributes *)
-let attr ?loc s = Term.const ?loc Id.(mk Attr s)
-
+(** Annotations *)
 let annot = Term.apply
 
 (* Internal shortcut. *)
