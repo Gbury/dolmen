@@ -29,6 +29,13 @@ include Id_intf.Logic
   with type t := t
    and type namespace := namespace
 
+(** {2 Usual comparison functions} *)
+
+val hash    : t -> int
+val equal   : t -> t -> bool
+val compare : t -> t -> int
+(** Usual functions for hashing, comparisons, equality. *)
+
 (** {2 Additional functions} *)
 
 val mk : namespace -> string -> t

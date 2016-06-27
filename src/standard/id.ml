@@ -13,6 +13,10 @@ type t = {
   name : string;
 }
 
+let hash = Hashtbl.hash
+let compare = Pervasives.compare
+let equal = Pervasives.(=)
+
 let pp b { ns; name } =
   Printf.bprintf b "%s" name
 
