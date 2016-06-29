@@ -1,5 +1,5 @@
 # Menhir options
-true: use_menhir, explain
+true: use_menhir, explain, color(always)
 
 # Include paths
 <classes>: include

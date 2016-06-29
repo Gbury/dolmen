@@ -41,6 +41,11 @@ val compare : t -> t -> int
 val mk : namespace -> string -> t
 (** Create an identifier. *)
 
+val full_name : t -> string
+(** Returns a full name for the identifier.
+    NOTE: full names may not be unique and therefor not
+          suitable for comparison of identifiers. *)
+
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions. *)

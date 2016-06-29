@@ -33,3 +33,9 @@ let mod_name s = Module s
 (* Identifiers *)
 let mk ns name = { ns; name; }
 
+let full_name =function
+  | { name; ns = Module m; } ->
+    Printf.sprintf "%s.%s" m name
+  | { name; _ } ->
+    name
+
