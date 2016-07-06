@@ -3,16 +3,34 @@
 
 (** AST requirement for the Deduki format. *)
 
+module type Id = sig
+
+  type t
+  (** The type of terms. *)
+
+  type namespace
+  (** Namespace for identifiers *)
+
+  val mod_name : string -> namespace
+  (** Create a namespace from a module name. *)
+
+  val mk : namespace -> string -> t
+
+end
+
 module type Term = sig
 
   type t
   (** The type of terms. *)
 
+  type id
+  (** The type of identifiers. *)
+
   type location
   (** The type of locations. *)
 
-  type namespace
-  (** Namespace for identifiers *)
+  val mk : ?loc:location -> id -> t
+  (** Make a term from an identifier. *)
 
 end
 (** Implementation requirements for Dedukti terms. *)
@@ -28,7 +46,7 @@ module type Statement = sig
   type location
   (** The type of locations. *)
 
-  val mk_module : string -> t
+  val module_start : string -> t
   (** Gives the name of a module. Typically this will be the first statement
       of a file.*)
 
