@@ -32,6 +32,7 @@
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
 <link title="Logic" rel="Chapter" href="Logic.html"><link title="Type definitions" rel="Section" href="#2_Typedefinitions">
 <link title="Implemented interfaces" rel="Section" href="#2_Implementedinterfaces">
+<link title="Usual comparison functions" rel="Section" href="#2_Usualcomparisonfunctions">
 <link title="Additional functions" rel="Section" href="#2_Additionalfunctions">
 <title>Dolmen doc : Id</title>
 </head>
@@ -128,10 +129,24 @@ The type of identifiers, basically a name together with a namespace.<br>
 
 <pre><span class="keyword">include</span> <a href="Id_intf.Logic.html">Id_intf.Logic</a></pre>
 <br>
+<h2 id="2_Usualcomparisonfunctions">Usual comparison functions</h2><br>
+
+<pre><span id="VALhash"><span class="keyword">val</span> hash</span> : <code class="type"><a href="Id.html#TYPEt">t</a> -> int</code></pre>
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type"><a href="Id.html#TYPEt">t</a> -> <a href="Id.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type"><a href="Id.html#TYPEt">t</a> -> <a href="Id.html#TYPEt">t</a> -> int</code></pre><div class="info ">
+Usual functions for hashing, comparisons, equality.<br>
+</div>
+<br>
 <h2 id="2_Additionalfunctions">Additional functions</h2><br>
 
 <pre><span id="VALmk"><span class="keyword">val</span> mk</span> : <code class="type"><a href="Id.html#TYPEnamespace">namespace</a> -> string -> <a href="Id.html#TYPEt">t</a></code></pre><div class="info ">
 Create an identifier.<br>
+</div>
+
+<pre><span id="VALfull_name"><span class="keyword">val</span> full_name</span> : <code class="type"><a href="Id.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+Returns a full name for the identifier.
+    NOTE: full names may not be unique and therefor not
+          suitable for comparison of identifiers.<br>
 </div>
 
 <pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Id.html#TYPEt">t</a> -> unit</code></pre>

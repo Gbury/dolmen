@@ -29,78 +29,78 @@
 <link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Statement</title>
 </head>
 <body>
-<code class="code"><span class="keyword">sig</span><br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term&nbsp;=&nbsp;<span class="constructor">Term</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location&nbsp;=&nbsp;<span class="constructor">ParseLocation</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;inductive&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;:&nbsp;<span class="constructor">Id</span>.t;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;vars&nbsp;:&nbsp;<span class="constructor">Statement</span>.term&nbsp;list;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;cstrs&nbsp;:&nbsp;(<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;list)&nbsp;list;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;:&nbsp;<span class="constructor">Statement</span>.location&nbsp;option;<br>
-&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;descr&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Pack</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;list<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Pop</span>&nbsp;<span class="keyword">of</span>&nbsp;int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Push</span>&nbsp;<span class="keyword">of</span>&nbsp;int<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Prove</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Consequent</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Antecedent</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Include</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_logic</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_info</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_info</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;option<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_option</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_option</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;option<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Def</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Decl</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Inductive</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.inductive<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_proof</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_unsat_core</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_value</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term&nbsp;list<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_assignment</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_assertions</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Exit</span><br>
-&nbsp;&nbsp;<span class="keyword">and</span>&nbsp;t&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;:&nbsp;<span class="constructor">Id</span>.t;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;descr&nbsp;:&nbsp;<span class="constructor">Statement</span>.descr;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;attr&nbsp;:&nbsp;<span class="constructor">Statement</span>.term&nbsp;option;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;:&nbsp;<span class="constructor">Statement</span>.location&nbsp;option;<br>
-&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;annot&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;include_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;clause&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pop&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;push&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assert_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;check_sat&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_logic&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_info&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_info&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_def&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_proof&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_unsat_core&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_value&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assignment&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assertions&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exit&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tpi&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;thf&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tff&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fof&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;cnf&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;inductive&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Id</span>.t&nbsp;*&nbsp;term&nbsp;list)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;definition&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;goal&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assume&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;rewrite&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pp&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
+<code class="code"><span class="keyword">sig</span>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term&nbsp;=&nbsp;<span class="constructor">Term</span>.t
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location&nbsp;=&nbsp;<span class="constructor">ParseLocation</span>.t
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;inductive&nbsp;=&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;:&nbsp;<span class="constructor">Id</span>.t;
+&nbsp;&nbsp;&nbsp;&nbsp;vars&nbsp;:&nbsp;<span class="constructor">Statement</span>.term&nbsp;list;
+&nbsp;&nbsp;&nbsp;&nbsp;cstrs&nbsp;:&nbsp;(<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;list)&nbsp;list;
+&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;:&nbsp;<span class="constructor">Statement</span>.location&nbsp;option;
+&nbsp;&nbsp;}
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;descr&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Pack</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;list
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Pop</span>&nbsp;<span class="keyword">of</span>&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Push</span>&nbsp;<span class="keyword">of</span>&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Prove</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Consequent</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Antecedent</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Include</span>&nbsp;<span class="keyword">of</span>&nbsp;string
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_logic</span>&nbsp;<span class="keyword">of</span>&nbsp;string
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_info</span>&nbsp;<span class="keyword">of</span>&nbsp;string
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_info</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;option
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_option</span>&nbsp;<span class="keyword">of</span>&nbsp;string
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Set_option</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;*&nbsp;<span class="constructor">Statement</span>.term&nbsp;option
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Def</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Decl</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;*&nbsp;<span class="constructor">Statement</span>.term
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Inductive</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.inductive
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_proof</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_unsat_core</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_value</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="constructor">Statement</span>.term&nbsp;list
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_assignment</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Get_assertions</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Exit</span>
+&nbsp;&nbsp;<span class="keyword">and</span>&nbsp;t&nbsp;=&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;:&nbsp;<span class="constructor">Id</span>.t;
+&nbsp;&nbsp;&nbsp;&nbsp;descr&nbsp;:&nbsp;<span class="constructor">Statement</span>.descr;
+&nbsp;&nbsp;&nbsp;&nbsp;attr&nbsp;:&nbsp;<span class="constructor">Statement</span>.term&nbsp;option;
+&nbsp;&nbsp;&nbsp;&nbsp;loc&nbsp;:&nbsp;<span class="constructor">Statement</span>.location&nbsp;option;
+&nbsp;&nbsp;}
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;annot&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;include_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;clause&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pop&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;push&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assert_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;check_sat&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_logic&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_info&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_info&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;*&nbsp;term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_def&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_proof&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_unsat_core&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_value&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assignment&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assertions&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exit&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tpi&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;thf&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tff&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fof&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;cnf&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?annot:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;inductive&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Id</span>.t&nbsp;*&nbsp;term&nbsp;list)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;definition&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;goal&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assume&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;rewrite&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;?attr:term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pp&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Statement</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
 <span class="keyword">end</span></code></body></html>

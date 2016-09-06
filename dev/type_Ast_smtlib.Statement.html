@@ -29,62 +29,62 @@
 <link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Ast_smtlib.Statement</title>
 </head>
 <body>
-<code class="code"><span class="keyword">sig</span><br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pop&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;push&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assert_&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;check_sat&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_logic&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_info&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_info&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;*&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_option&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;*&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_def&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_proof&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_unsat_core&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_value&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assignment&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assertions&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exit&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t<br>
+<code class="code"><span class="keyword">sig</span>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pop&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;push&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assert_&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;check_sat&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_logic&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_info&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_info&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;*&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_option&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_option&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;*&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;option&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_decl&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;type_def&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_decl&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_def&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_proof&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_unsat_core&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_value&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assignment&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get_assertions&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exit&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Statement</span>.t
 <span class="keyword">end</span></code></body></html>

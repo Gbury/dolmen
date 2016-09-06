@@ -29,41 +29,41 @@
 <link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Parse_intf.S.MenhirInterpreter</title>
 </head>
 <body>
-<code class="code"><span class="keyword">sig</span><br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;token&nbsp;=&nbsp;token<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;env<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;production<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;=&nbsp;<span class="keyword">private</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">InputNeeded</span>&nbsp;<span class="keyword">of</span>&nbsp;env<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Shifting</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;env&nbsp;*&nbsp;bool<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">AboutToReduce</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;production<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">HandlingError</span>&nbsp;<span class="keyword">of</span>&nbsp;env<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Accepted</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="keywordsign">'</span>a<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Rejected</span><br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;offer&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;resume&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;supplier&nbsp;=&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;lexer_lexbuf_to_supplier&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop&nbsp;:&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle_undo&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_test&nbsp;:&nbsp;(env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;acceptable&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;number&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;element&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Element</span>&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;*&nbsp;<span class="keywordsign">'</span>a&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;element<br>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;stack&nbsp;=&nbsp;element&nbsp;<span class="constructor">MenhirLib</span>.<span class="constructor">General</span>.stream<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;stack&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;stack<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;positions&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;has_default_reduction&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+<code class="code"><span class="keyword">sig</span>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;token&nbsp;=&nbsp;token
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;env
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;production
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;=&nbsp;<span class="keyword">private</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">InputNeeded</span>&nbsp;<span class="keyword">of</span>&nbsp;env
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Shifting</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;env&nbsp;*&nbsp;bool
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">AboutToReduce</span>&nbsp;<span class="keyword">of</span>&nbsp;env&nbsp;*&nbsp;production
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">HandlingError</span>&nbsp;<span class="keyword">of</span>&nbsp;env
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Accepted</span>&nbsp;<span class="keyword">of</span>&nbsp;<span class="keywordsign">'</span>a
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Rejected</span>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;offer&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;resume&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;supplier&nbsp;=&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;lexer_lexbuf_to_supplier&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop&nbsp;:&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_handle_undo&nbsp;:
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer)&nbsp;<span class="keywordsign">-&gt;</span>
+&nbsp;&nbsp;&nbsp;&nbsp;supplier&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>answer
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;loop_test&nbsp;:&nbsp;(env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="keywordsign">'</span>accu
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;acceptable&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;checkpoint&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;token&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;number&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;element&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Element</span>&nbsp;:&nbsp;<span class="keywordsign">'</span>a&nbsp;lr1state&nbsp;*&nbsp;<span class="keywordsign">'</span>a&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Lexing</span>.position&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;element
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;stack&nbsp;=&nbsp;element&nbsp;<span class="constructor">MenhirLib</span>.<span class="constructor">General</span>.stream
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;stack&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;stack
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;positions&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.position&nbsp;*&nbsp;<span class="constructor">Lexing</span>.position
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;has_default_reduction&nbsp;:&nbsp;env&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool
 <span class="keyword">end</span></code></body></html>
