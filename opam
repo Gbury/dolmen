@@ -1,6 +1,6 @@
 opam-version: "1.2"
 name: "dolmen"
-version: "0.1"
+version: "dev"
 author: "Guillaume Bury"
 maintainer: "guillaume.bury@gmail.com"
 license: "BSD-2-clauses"
@@ -12,8 +12,8 @@ remove: [
     ["ocamlfind" "remove" "dolmen"]
 ]
 depends: [
-  "ocamlfind"
   "menhir" {>= "20151005"}
+  "ocamlfind" {build}
   "ocamlbuild" {build}
 ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
