@@ -15,24 +15,31 @@
 %%
 
 input:
-  | start? c=clause
+  | start i=input
+  | NEWLINE i=input
+    { i }
+  | c=clause
     { Some c }
   | EOF
     { None }
 
 file:
-  | NEWLINE* start l=clause* EOF
+  | NEWLINE* start l=cnf
     { l }
 
 start:
   | P CNF INT INT NEWLINE
     { () }
 
-clause:
-  | NEWLINE* c=naked_clause
-    { c }
+cnf:
+  | EOF
+    { [] }
+  | NEWLINE l=cnf
+    { l }
+  | c=clause l=cnf
+    { c :: l }
 
-naked_clause:
+clause:
   | c=nonempty_list(atom) ZERO NEWLINE
     { let loc = L.mk_pos $startpos $endpos in S.clause ~loc c }
 
