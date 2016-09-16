@@ -92,7 +92,7 @@ For more examples, see the [tutorial](https://github.com/Gbury/dolmen/tree/maste
 
 ## Future work
 
-In addition to considering new languages, there are plans to improveme
-incremental parsing error reporting, and possibly auto-detection of
-input language on stdin.
+- Adding new languages
+- Improve error reporting
+- Dynamic detection of input language
 
