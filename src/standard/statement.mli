@@ -48,10 +48,10 @@ type descr =
   | Prove
   (** Try and prove the current sequent. *)
 
-  | Consequent of term
-  (** Add the given proposition on the left of the current sequent.*)
   | Antecedent of term
-  (** Add the given proposition on the right of the current sequent. *)
+  (** Add the given proposition on the left of the current sequent. *)
+  | Consequent of term
+  (** Add the given proposition on the right of the current sequent.*)
 
   | Include of string
   (** File include, qualified include paths, if any, are stored in the attribute. *)

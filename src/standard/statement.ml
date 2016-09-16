@@ -20,8 +20,8 @@ type descr =
   | Push of int
 
   | Prove
-  | Consequent of term
   | Antecedent of term
+  | Consequent of term
 
   | Include of string
   | Set_logic of string
@@ -63,8 +63,8 @@ let rec pp_descr b = function
   | Push i -> Printf.bprintf b "push: %d" i
 
   | Prove -> Printf.bprintf b "Prove"
-  | Consequent t -> Printf.bprintf b "consequent: %a" Term.pp t
   | Antecedent t -> Printf.bprintf b "antecedent: %a" Term.pp t
+  | Consequent t -> Printf.bprintf b "consequent: %a" Term.pp t
 
   | Include f -> Printf.bprintf b "include: %s" f
   | Set_logic s -> Printf.bprintf b "set-logic: %s" s
@@ -114,10 +114,10 @@ let rec print_descr fmt = function
 
   | Prove ->
     Format.fprintf fmt "Prove"
-  | Consequent t ->
-    Format.fprintf fmt "@[<hov 2>consequent:@ %a@]" Term.print t
   | Antecedent t ->
     Format.fprintf fmt "@[<hov 2>antecedent:@ %a@]" Term.print t
+  | Consequent t ->
+    Format.fprintf fmt "@[<hov 2>consequent:@ %a@]" Term.print t
 
   | Include f ->
     Format.fprintf fmt "@[<hov 2>include:@ %s@]" f
@@ -176,8 +176,8 @@ let push ?loc i = mk ?loc (Push i)
 
 (* Assumptions and fact checking *)
 let prove ?loc () = mk ?loc Prove
-let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
 let consequent ?loc ?attr t = mk ?loc ?attr (Consequent t)
+let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
 
 (* Options statements *)
 let set_logic ?loc s = mk ?loc (Set_logic s)
