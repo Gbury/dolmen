@@ -248,9 +248,9 @@ let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 (* {2 Wrappers for dimacs} *)
 
 let atom ?loc i =
-  let s = Printf.sprintf "#%d" i in
+  let s = Printf.sprintf "#%d" (abs i) in
   if i >= 0 then const ?loc Id.(mk Term s)
-  else not_ ?loc (const ?loc Id.(mk Term (string_of_int (-i))))
+  else not_ ?loc (const ?loc Id.(mk Term s))
 
 
 (* {2 Wrappers for smtlib} *)
