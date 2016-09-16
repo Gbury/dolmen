@@ -4,25 +4,28 @@
 module M = Logic.Make(ParseLocation)(Id)(Term)(Statement)
 
 let help_msg =
-  "Small utility to parse various file formats.
+"Small utility to parse various file formats.
 
-   Usage: `dolmen [options] file`
-   The file format is guessed based on the extension of the file name."
+Usage: `dolmen [options] file`
+The file format is guessed based on the extension of the file name."
 
 let parse_opts () =
   let input = ref (`Stdin M.Smtlib) in
   let print = ref false in
+  let mode = ref `Regular in
   let set_file f = match !input with
     | `Stdin _ -> input := `File f
     | `File _ -> failwith "can only parse one file"
   in
   let opts =
-    Arg.align
-      [ "--print", Arg.Set print, " print the parsed statements and format"
-      ]
+    Arg.align [
+      "--print", Arg.Set print, " print the parsed statements and format";
+      "--interactive", Arg.Unit (fun () -> mode := `Interactive),
+        " parse the file in interactive mode";
+    ]
   in
   Arg.parse opts set_file help_msg;
-  !input, !print
+  !input, !print, !mode
 
 let handle_exn = function
   | ParseLocation.Lexing_error (pos, lexeme) ->
@@ -50,19 +53,38 @@ let rec fold gen f acc =
     fold gen f acc
 
 let () =
-  let input, print = parse_opts () in
-  let lang, stmts = M.parse_input input in
-  begin match input with
-    | `File f -> Format.printf "reading: %s@." f
-    | `Stdin _ -> Format.printf "reading: stdin@."
-  end;
+  let input, print, mode = parse_opts () in
+  let lang, stmts =
+    match mode with
+    | `Regular ->
+      begin match input with
+        | `Stdin _ ->
+          Format.printf "Reading stdin requires interactive mode@.";
+          exit 3
+        | `File f ->
+          let lang, stmts = M.parse_file f in
+          let l = ref stmts in
+          lang, (fun () -> match !l with
+              | [] -> None
+              | s :: r -> l := r; Some s)
+      end
+    | `Interactive ->
+      M.parse_input input
+  in
+  if print then
+    begin match input with
+      | `File f -> Format.printf "reading: %s@." f
+      | `Stdin _ -> Format.printf "reading: stdin@."
+    end;
   if print then
     Format.printf "guessed format : %s@." (M.string_of_language lang);
   let ok = fold stmts (fun s ->
       if print then
         Format.fprintf Format.std_formatter "%a@." Statement.print s
     ) true in
-  if not ok then
+  if ok then
+    Format.printf "ok@."
+  else
     exit 2
 
 
