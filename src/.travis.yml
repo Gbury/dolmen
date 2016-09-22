@@ -1,0 +1,22 @@
+language: c
+env:
+  - OCAML_VERSION=4.02.3
+  - OCAML_VERSION=4.03.0
+  - OCAML_VERSION=4.03.0+flambda
+addons:
+  apt:
+    sources:
+      - avsm
+    packages:
+      - opam
+before_install:
+  - export OPAMYES=1
+  - export OPAMVERBOSE=1
+  - opam init
+  - opam switch ${OCAML_VERSION}
+  - eval `opam config env`
+install:
+  - opam install ocamlfind ocamlbuild
+  - make -C src
+script:
+  - make -C src test
