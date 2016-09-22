@@ -33,6 +33,10 @@ module type Statement = sig
   type location
   (** The type of locations. *)
 
+  val p_cnf : ?loc:location -> int -> int -> t
+  (** Header of a dimacs file. First argument is the number of variables,
+      second is the number of clauses. *)
+
   val clause : ?loc:location -> term list -> t
   (** Make a clause from a list of literals. *)
 

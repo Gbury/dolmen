@@ -15,21 +15,23 @@
 %%
 
 input:
-  | start i=input
   | NEWLINE i=input
     { i }
+  | p=start
+    { Some p }
   | c=clause
     { Some c }
   | EOF
     { None }
 
 file:
-  | NEWLINE* start l=cnf
-    { l }
+  | NEWLINE* h=start l=cnf
+    { h :: l }
 
 start:
-  | P CNF INT INT NEWLINE
-    { () }
+  | P CNF nbvar=INT nbclause=INT NEWLINE
+    { let loc = L.mk_pos $startpos $endpos in
+      S.p_cnf ~loc nbvar nbclause }
 
 cnf:
   | EOF
@@ -44,7 +46,6 @@ clause:
     { let loc = L.mk_pos $startpos $endpos in S.clause ~loc c }
 
 atom:
-  | s=INT
-    { let i =int_of_string s in
-      let loc = L.mk_pos $startpos $endpos in T.atom ~loc i }
+  | i=INT
+    { let loc = L.mk_pos $startpos $endpos in T.atom ~loc i }
 

@@ -7,7 +7,7 @@
 %token ZERO
 %token P CNF
 %token NEWLINE
-%token <string> INT
+%token <int> INT
 
 %%
 

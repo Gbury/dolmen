@@ -40,6 +40,10 @@ module type Logic = sig
 
   (** {2 Dimacs Statements} *)
 
+  val p_cnf       : ?loc:location -> int -> int -> t
+  (** Header of dimacs files. First argument is the number of variables,
+      second is the number of clauses. *)
+
   val clause      : ?loc:location -> term list -> t
   (** Add to the current set of assertions the given list of terms as a clause. *)
 

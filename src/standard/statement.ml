@@ -214,8 +214,13 @@ let exit ?loc () = mk ?loc Exit
 
 
 
+(* Dimacs wrappers *)
+let p_cnf ?loc nbvar nbclause =
+  let i = Term.int ?loc (string_of_int nbvar) in
+  let j = Term.int ?loc (string_of_int nbclause) in
+  let attr = Term.colon ?loc i j in
+  mk ?loc ~attr (Set_logic "dimacs")
 
-(* Dimacs wrapper *)
 let clause ?loc l =
   let t = Term.or_ ?loc l in
   antecedent ?loc t
@@ -320,6 +325,4 @@ let thf = tptp
 let tff = tptp
 let fof = tptp
 let cnf = tptp
-
-
 

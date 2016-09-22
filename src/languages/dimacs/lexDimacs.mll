@@ -25,7 +25,7 @@ rule token = parse
   | eof             { EOF }
   | zero_numeric    { ZERO }
   | [' ' '\t' '\r'] { token lexbuf }
-  | number          { INT (Lexing.lexeme lexbuf) }
+  | number          { INT (int_of_string @@ Lexing.lexeme lexbuf) }
   | '\n'            { Lexing.new_line lexbuf; NEWLINE }
   | _               { raise Error }
 
