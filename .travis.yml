@@ -16,7 +16,7 @@ before_install:
   - opam switch ${OCAML_VERSION}
   - eval `opam config env`
 install:
-  - opam install ocamlfind ocamlbuild
+  - opam install ocamlfind ocamlbuild menhir>=20151005
   - make -C src
 script:
   - make -C src test
