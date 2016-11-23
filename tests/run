@@ -25,6 +25,7 @@ function do_test {
 }
 
 # Test every language
+do_test icnf
 do_test dimacs
 do_test smtlib
 do_test tptp

@@ -19,6 +19,10 @@ interface/language_intf
 languages/dimacs/Dimacs
 languages/dimacs/Ast_dimacs
 
+# iCNF language
+languages/icnf/ICNF
+languages/icnf/Ast_iCNF
+
 # Smtlib language
 languages/smtlib/Smtlib
 languages/smtlib/Ast_smtlib

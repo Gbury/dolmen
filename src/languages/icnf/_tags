@@ -1,0 +1,3 @@
+<tokens_iCNF.mlypack>: only_tokens
+<parseiCNF.mlypack>: explain, external_tokens(Tokens_iCNF)
+

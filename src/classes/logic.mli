@@ -17,6 +17,8 @@ module Make
   type language =
     | Dimacs
     (** Dimacs CNF format *)
+    | ICNF
+    (** iCNF format *)
     | Smtlib
     (** Smtlib format *)
     | Tptp

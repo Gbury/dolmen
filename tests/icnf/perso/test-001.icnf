@@ -1,0 +1,12 @@
+c First test (with additional newlines)
+p inccnf
+a 0
+
+1 0
+a 0
+-1 2 0
+
+-1 -2 0
+
+a 5 0
+

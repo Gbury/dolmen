@@ -8,6 +8,7 @@ true: use_menhir, explain, color(always)
 <languages/zf>: include
 <languages/line>: include
 <languages/tptp>: include
+<languages/icnf>: include
 <languages/dimacs>: include
 <languages/smtlib>: include
 

@@ -14,15 +14,17 @@ module Make
 
   type language =
     | Dimacs
+    | ICNF
     | Smtlib
     | Tptp
     | Zf
 
   let enum = [
     "dimacs", Dimacs;
-    "smt2", Smtlib;
-    "tptp", Tptp;
-    "zf", Zf;
+    "iCNF",   ICNF;
+    "smt2",   Smtlib;
+    "tptp",   Tptp;
+    "zf",     Zf;
   ]
 
   let string_of_language l =
@@ -30,6 +32,7 @@ module Make
 
   let assoc = [
     Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S)     : S);
+    ICNF,   ".icnf", (module ICNF.Make(L)(T)(S)       : S);
     Smtlib, ".smt2", (module Smtlib.Make(L)(I)(T)(S)  : S);
     Tptp,   ".p",    (module Tptp.Make(L)(I)(T)(S)    : S);
     Zf,     ".zf",   (module Zf.Make(L)(I)(T)(S)      : S);

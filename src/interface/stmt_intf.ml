@@ -38,7 +38,7 @@ module type Logic = sig
       the directives from file [file] that appear in [l]. If [l] is the empty list,
       all directives should be imported. *)
 
-  (** {2 Dimacs Statements} *)
+  (** {2 Dimacs&iCNF Statements} *)
 
   val p_cnf       : ?loc:location -> int -> int -> t
   (** Header of dimacs files. First argument is the number of variables,
@@ -46,6 +46,9 @@ module type Logic = sig
 
   val clause      : ?loc:location -> term list -> t
   (** Add to the current set of assertions the given list of terms as a clause. *)
+
+  val assumption  : ?loc:location -> term list -> t
+  (** Solve the current set of assertions, with the given assumptions. *)
 
   (** {2 Smtlib statements} *)
 

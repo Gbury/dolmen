@@ -214,7 +214,7 @@ let exit ?loc () = mk ?loc Exit
 
 
 
-(* Dimacs wrappers *)
+(* Dimacs&iCNF wrappers *)
 let p_cnf ?loc nbvar nbclause =
   let i = Term.int ?loc (string_of_int nbvar) in
   let j = Term.int ?loc (string_of_int nbclause) in
@@ -224,6 +224,13 @@ let p_cnf ?loc nbvar nbclause =
 let clause ?loc l =
   let t = Term.or_ ?loc l in
   antecedent ?loc t
+
+let assumption ?loc l =
+  let t = Term.and_ ?loc l in
+  mk ?loc (Pack [
+      antecedent ?loc t;
+      prove ?loc ();
+    ])
 
 (* Smtlib wrappers *)
 let check_sat = prove
