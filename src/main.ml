@@ -52,6 +52,22 @@ let rec fold gen f acc =
     let () = f s in
     fold gen f acc
 
+let parse f =
+  let tmp = ref None in
+  let rec aux () =
+    match !tmp with
+    | None ->
+      tmp := Some [];
+      let _, l = M.parse_file f in
+      tmp := Some l;
+      aux ()
+    | Some [] -> None
+    | Some (s :: r) ->
+      tmp := Some r;
+      Some s
+  in
+  aux
+
 let () =
   let input, print, mode = parse_opts () in
   let lang, stmts =
@@ -62,11 +78,8 @@ let () =
           Format.printf "Reading stdin requires interactive mode@.";
           exit 3
         | `File f ->
-          let lang, stmts = M.parse_file f in
-          let l = ref stmts in
-          lang, (fun () -> match !l with
-              | [] -> None
-              | s :: r -> l := r; Some s)
+          let lang, _, _ = M.of_extension (Misc.get_extension f) in
+          (lang, (parse f))
       end
     | `Interactive ->
       M.parse_input input
