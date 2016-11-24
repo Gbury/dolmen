@@ -27,10 +27,10 @@ end
 module type Statement = sig
 
   type t
-  (** The type of statements for dimacs. *)
+  (** The type of statements for iCNF. *)
 
   type term
-  (** The type of dimacs terms. *)
+  (** The type of iCNF terms. *)
 
   type location
   (** The type of locations. *)
