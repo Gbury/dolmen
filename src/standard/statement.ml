@@ -259,7 +259,7 @@ let assume ?loc ?attr t = antecedent ?loc ?attr t
 let goal ?loc ?attr t =
   mk ?loc ?attr (Pack [
       consequent t;
-      prove ();
+      prove ?loc ();
     ])
 
 
@@ -288,7 +288,7 @@ let tptp ?loc ?annot id role t =
       -> Pack [
           push 1;
           consequent ~attr:(Term.false_) t;
-          prove ();
+          prove ?loc ();
           pop 1;
           antecedent ~attr:(Term.true_) t;
          ]
@@ -296,7 +296,7 @@ let tptp ?loc ?annot id role t =
       -> Pack [
           push 1;
           antecedent ~attr:(Term.false_) t;
-          prove ();
+          prove ?loc ();
           pop 1;
           antecedent ~attr:(Term.true_) (Term.not_ t);
         ]
