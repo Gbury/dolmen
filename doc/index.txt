@@ -5,5 +5,5 @@ Guillaume Bury <guillaume.bury@gmail.com>
 
 * link:dev[]
 * link:0.1[]
-
+* link:0.2[]
 
