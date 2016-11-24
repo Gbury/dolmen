@@ -28,7 +28,7 @@ let format, statements = M.parse_file file
 
 (* You can match on the detected format of the input *)
 let () = match format with
-| M.Dimacs -> Format.printf "Hurray for CNF !@."
+| M.Dimacs | M.ICNF -> Format.printf "Hurray for CNF !@."
 | M.Smtlib | M.Tptp | M.Zf ->
   Format.printf "First order formulas ! Yay !@."
 
@@ -156,6 +156,8 @@ module Make
   type language =
     | Dimacs
     (** Dimacs CNF format *)
+    | ICNF
+    (** iCNF format *)
     | Smtlib
     (** Smtlib format *)
     | Tptp
