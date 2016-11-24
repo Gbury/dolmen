@@ -21,6 +21,8 @@
 <link title="Language_intf" rel="Chapter" href="Language_intf.html">
 <link title="Dimacs" rel="Chapter" href="Dimacs.html">
 <link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="ICNF" rel="Chapter" href="ICNF.html">
+<link title="Ast_iCNF" rel="Chapter" href="Ast_iCNF.html">
 <link title="Smtlib" rel="Chapter" href="Smtlib.html">
 <link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
 <link title="Zf" rel="Chapter" href="Zf.html">
@@ -118,6 +120,21 @@ Add an assertion to the current set of assertions.
 Adds an hypothesis.
 </div>
 </td></tr>
+<tr><td><a href="Ast_iCNF.Statement.html#VALassumption">assumption</a> [<a href="Ast_iCNF.Statement.html">Ast_iCNF.Statement</a>]</td>
+<td><div class="info">
+Generate a solve instruction with the given list of assumptions.
+</div>
+</td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALassumption">assumption</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Solve the current set of assertions, with the given assumptions.
+</div>
+</td></tr>
+<tr><td><a href="Ast_iCNF.Term.html#VALatom">atom</a> [<a href="Ast_iCNF.Term.html">Ast_iCNF.Term</a>]</td>
+<td><div class="info">
+Make an atom from an non-zero integer.
+</div>
+</td></tr>
 <tr><td><a href="Ast_dimacs.Term.html#VALatom">atom</a> [<a href="Ast_dimacs.Term.html">Ast_dimacs.Term</a>]</td>
 <td><div class="info">
 Make an atom from an non-zero integer.
@@ -169,6 +186,11 @@ Indefinite description, also called choice operator.
 </td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALchoice">choice</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_iCNF.Statement.html#VALclause">clause</a> [<a href="Ast_iCNF.Statement.html">Ast_iCNF.Statement</a>]</td>
+<td><div class="info">
+Make a clause from a list of literals.
+</div>
+</td></tr>
 <tr><td><a href="Ast_dimacs.Statement.html#VALclause">clause</a> [<a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a>]</td>
 <td><div class="info">
 Make a clause from a list of literals.
@@ -736,6 +758,16 @@ Recover a position from a lexbuf
 <tr><td><a href="Term_intf.Logic.html#VALor_t">or_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td align="left"><br>P</td></tr>
+<tr><td><a href="Ast_dimacs.Statement.html#VALp_cnf">p_cnf</a> [<a href="Ast_dimacs.Statement.html">Ast_dimacs.Statement</a>]</td>
+<td><div class="info">
+Header of a dimacs file.
+</div>
+</td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALp_cnf">p_cnf</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Header of dimacs files.
+</div>
+</td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_file">parse_file</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
 <td><div class="info">
 Given a filename, parse the file, and return the detected language

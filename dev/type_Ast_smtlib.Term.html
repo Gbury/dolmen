@@ -20,6 +20,8 @@
 <link title="Language_intf" rel="Chapter" href="Language_intf.html">
 <link title="Dimacs" rel="Chapter" href="Dimacs.html">
 <link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="ICNF" rel="Chapter" href="ICNF.html">
+<link title="Ast_iCNF" rel="Chapter" href="Ast_iCNF.html">
 <link title="Smtlib" rel="Chapter" href="Smtlib.html">
 <link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
 <link title="Zf" rel="Chapter" href="Zf.html">
@@ -29,35 +31,35 @@
 <link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Ast_smtlib.Term</title>
 </head>
 <body>
-<code class="code"><span class="keyword">sig</span>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;const&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;int&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;real&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;hexa&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;binary&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;colon&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;apply&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;letin&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;forall&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exists&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexpr&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;annot&nbsp;:
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;const&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;int&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;real&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;hexa&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;binary&nbsp;:&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;colon&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;apply&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;letin&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;forall&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;exists&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexpr&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;annot&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_smtlib</span>.<span class="constructor">Term</span>.t<br>
 <span class="keyword">end</span></code></body></html>

@@ -24,6 +24,8 @@
 <link title="Language_intf" rel="Chapter" href="Language_intf.html">
 <link title="Dimacs" rel="Chapter" href="Dimacs.html">
 <link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="ICNF" rel="Chapter" href="ICNF.html">
+<link title="Ast_iCNF" rel="Chapter" href="Ast_iCNF.html">
 <link title="Smtlib" rel="Chapter" href="Smtlib.html">
 <link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
 <link title="Zf" rel="Chapter" href="Zf.html">
@@ -57,6 +59,11 @@ The type of dimacs terms.<br>
 The type of locations.<br>
 </div>
 
+
+<pre><span id="VALp_cnf"><span class="keyword">val</span> p_cnf</span> : <code class="type">?loc:<a href="Ast_dimacs.Statement.html#TYPElocation">location</a> -> int -> int -> <a href="Ast_dimacs.Statement.html#TYPEt">t</a></code></pre><div class="info ">
+Header of a dimacs file. First argument is the number of variables,
+      second is the number of clauses.<br>
+</div>
 
 <pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="Ast_dimacs.Statement.html#TYPElocation">location</a> -><br>       <a href="Ast_dimacs.Statement.html#TYPEterm">term</a> list -> <a href="Ast_dimacs.Statement.html#TYPEt">t</a></code></pre><div class="info ">
 Make a clause from a list of literals.<br>

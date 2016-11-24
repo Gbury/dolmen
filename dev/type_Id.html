@@ -20,6 +20,8 @@
 <link title="Language_intf" rel="Chapter" href="Language_intf.html">
 <link title="Dimacs" rel="Chapter" href="Dimacs.html">
 <link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="ICNF" rel="Chapter" href="ICNF.html">
+<link title="Ast_iCNF" rel="Chapter" href="Ast_iCNF.html">
 <link title="Smtlib" rel="Chapter" href="Smtlib.html">
 <link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
 <link title="Zf" rel="Chapter" href="Zf.html">
@@ -29,19 +31,19 @@
 <link title="Logic" rel="Chapter" href="Logic.html"><title>Dolmen doc : Id</title>
 </head>
 <body>
-<code class="code"><span class="keyword">sig</span>
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;namespace&nbsp;=&nbsp;<span class="constructor">Sort</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Term</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Attr</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Decl</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Module</span>&nbsp;<span class="keyword">of</span>&nbsp;string
-&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t&nbsp;=&nbsp;{&nbsp;ns&nbsp;:&nbsp;<span class="constructor">Id</span>.namespace;&nbsp;name&nbsp;:&nbsp;string;&nbsp;}
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sort&nbsp;:&nbsp;namespace
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;term&nbsp;:&nbsp;namespace
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;attr&nbsp;:&nbsp;namespace
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;namespace
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mod_name&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;namespace
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;hash&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;equal&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;compare&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mk&nbsp;:&nbsp;<span class="constructor">Id</span>.namespace&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;full_name&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pp&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;namespace&nbsp;=&nbsp;<span class="constructor">Sort</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Term</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Attr</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Decl</span>&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="constructor">Module</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t&nbsp;=&nbsp;{&nbsp;ns&nbsp;:&nbsp;<span class="constructor">Id</span>.namespace;&nbsp;name&nbsp;:&nbsp;string;&nbsp;}<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sort&nbsp;:&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;term&nbsp;:&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;attr&nbsp;:&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mod_name&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;namespace<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;hash&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;equal&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;compare&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mk&nbsp;:&nbsp;<span class="constructor">Id</span>.namespace&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;full_name&nbsp;:&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pp&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
 <span class="keyword">end</span></code></body></html>

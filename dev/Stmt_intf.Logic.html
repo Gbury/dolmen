@@ -23,6 +23,8 @@
 <link title="Language_intf" rel="Chapter" href="Language_intf.html">
 <link title="Dimacs" rel="Chapter" href="Dimacs.html">
 <link title="Ast_dimacs" rel="Chapter" href="Ast_dimacs.html">
+<link title="ICNF" rel="Chapter" href="ICNF.html">
+<link title="Ast_iCNF" rel="Chapter" href="Ast_iCNF.html">
 <link title="Smtlib" rel="Chapter" href="Smtlib.html">
 <link title="Ast_smtlib" rel="Chapter" href="Ast_smtlib.html">
 <link title="Zf" rel="Chapter" href="Zf.html">
@@ -31,7 +33,7 @@
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
 <link title="Logic" rel="Chapter" href="Logic.html"><link title="Optional infos for statements" rel="Section" href="#2_Optionalinfosforstatements">
 <link title="Generic statements" rel="Section" href="#2_Genericstatements">
-<link title="Dimacs Statements" rel="Section" href="#2_DimacsStatements">
+<link title="Dimacs&iCNF Statements" rel="Section" href="#2_DimacsiCNFStatements">
 <link title="Smtlib statements" rel="Section" href="#2_Smtlibstatements">
 <link title="TPTP Statements" rel="Section" href="#2_TPTPStatements">
 <link title="Zipperposition statements" rel="Section" href="#2_Zipperpositionstatements">
@@ -88,10 +90,19 @@ Inlcude directive. <code class="code">include file l</code> means to include in 
       all directives should be imported.<br>
 </div>
 <br>
-<h2 id="2_DimacsStatements">Dimacs Statements</h2><br>
+<h2 id="2_DimacsiCNFStatements">Dimacs&amp;iCNF Statements</h2><br>
+
+<pre><span id="VALp_cnf"><span class="keyword">val</span> p_cnf</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -> int -> int -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Header of dimacs files. First argument is the number of variables,
+      second is the number of clauses.<br>
+</div>
 
 <pre><span id="VALclause"><span class="keyword">val</span> clause</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Add to the current set of assertions the given list of terms as a clause.<br>
+</div>
+
+<pre><span id="VALassumption"><span class="keyword">val</span> assumption</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Solve the current set of assertions, with the given assumptions.<br>
 </div>
 <br>
 <h2 id="2_Smtlibstatements">Smtlib statements</h2><br>
