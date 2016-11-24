@@ -27,6 +27,7 @@ Manually:
 Currently the following parsers are working:
 
 - dimacs
+- iCNF
 - smtlib
 - tptp
 - zf (zipperposition format)
@@ -45,7 +46,7 @@ directly outputs temrs in the desired form, without needing to
 translate the parser output into the specific AST used in a project.
 
 Parsers (actually, the functors which generates parsers) typically takes
-three module arguments:
+four module arguments:
 
 - A representation of locations in files. This is used for reporting
   parsing and lexing errors, but also to attach to each expression parsed
