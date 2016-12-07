@@ -36,8 +36,7 @@ type inductive = {
 type descr =
   | Pack of t list
   (** Pack a list of statements that have a semantic meaning (for instance
-      a list of mutually recursive inductive definitions, or the translation
-      of a statement such as tptp's theorem). *)
+      a list of mutually recursive inductive definitions). *)
 
   | Pop of int
   (** Pop the stack of assertions as many times as specified. *)

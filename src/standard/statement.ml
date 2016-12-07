@@ -289,32 +289,17 @@ let tptp ?loc ?annot id role t =
     | "definition"
     | "lemma"
     | "theorem"
-      -> Antecedent t
-    | "assumption"
-    | "conjecture"
-      -> Pack [
-          push 1;
-          consequent ~attr:(Term.false_) t;
-          prove ?loc ();
-          pop 1;
-          antecedent ~attr:(Term.true_) t;
-         ]
-    | "negated_conjecture"
-      -> Pack [
-          push 1;
-          antecedent ~attr:(Term.false_) t;
-          prove ?loc ();
-          pop 1;
-          antecedent ~attr:(Term.true_) (Term.not_ t);
-        ]
-    | "type"
-      -> begin match t with
-          | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
-            Decl (s, ty)
-          | _ ->
-            Format.eprintf "WARNING: unexpected type declaration@.";
-            Pack []
-        end
+    | "assumption" -> Antecedent t
+    | "conjecture" -> Consequent t
+    | "negated_conjecture" -> Consequent (Term.not_ t)
+    | "type" ->
+      begin match t with
+        | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
+          Decl (s, ty)
+        | _ ->
+          Format.eprintf "WARNING: unexpected type declaration@.";
+          Pack []
+      end
     | "plain"
     | "unknown"
     | "fi_domain"
