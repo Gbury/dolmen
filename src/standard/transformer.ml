@@ -41,6 +41,9 @@ module Make
     try
       Parser.file Lexer.token lexbuf
     with
+    | ((Loc.Syntax_error _) as e)
+    | ((Loc.Lexing_error _) as e) ->
+      raise e
     | Parser.Error ->
       let pos = Loc.of_lexbuf lexbuf in
       raise (Loc.Syntax_error (pos, ""))
@@ -59,14 +62,18 @@ module Make
     let aux () =
       begin match loop (Parse.Incremental.input Lexing.(lexbuf.lex_curr_p)) with
         | res -> res
-        | exception Parser.Error ->
-          let pos = Loc.of_lexbuf lexbuf in
-          Line.consume lexbuf;
-          raise (Loc.Syntax_error (pos, ""))
+        | exception ((Loc.Syntax_error _) as e) ->
+          raise e
+        | exception ((Loc.Lexing_error _) as e) ->
+          raise e
         | exception Lexer.Error ->
           let pos = Loc.of_lexbuf lexbuf in
           Line.consume lexbuf;
           raise (Loc.Lexing_error (pos, Lexing.lexeme lexbuf))
+        | exception Parser.Error ->
+          let pos = Loc.of_lexbuf lexbuf in
+          Line.consume lexbuf;
+          raise (Loc.Syntax_error (pos, ""))
         | exception e ->
           let pos = Loc.of_lexbuf lexbuf in
           Line.consume lexbuf;
