@@ -36,7 +36,7 @@ install: lib
 uninstall:
 	ocamlfind remove $(NAME)
 
-reinstall: all
+reinstall: lib
 	ocamlfind remove $(NAME) || true
 	ocamlfind install $(NAME) $(TO_INSTALL)
 

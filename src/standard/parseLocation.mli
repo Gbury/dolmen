@@ -63,7 +63,7 @@ val fmt_hint : Format.formatter -> t -> unit
 (** Printing functions *)
 
 val combine : t -> t -> t
-(** LogtkPosition that spans the two given positions. The file is assumed to be
+(** Location that spans the two given positions. The file is assumed to be
     the same in both case, and is chosen from one of the two positions. *)
 
 val combine_list : t list -> t

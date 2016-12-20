@@ -170,6 +170,10 @@ let annot = Term.apply
 let mk ?(id=Id.(mk (mod_name "") "")) ?loc ?attr descr =
   { id; descr; loc; attr; }
 
+(* Pack *)
+let pack ?id ?loc ?attr l =
+  mk ?id ?loc ?attr (Pack l)
+
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
 let push ?loc i = mk ?loc (Push i)

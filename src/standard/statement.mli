@@ -112,3 +112,9 @@ val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions for statements. *)
 
+val prove : ?loc:location -> unit -> t
+(** Emit a [Prove] statement. *)
+
+val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
+(** Pack a list of statements into a single one. *)
+
