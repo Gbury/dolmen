@@ -192,19 +192,8 @@ let set_info ?loc (s, t) = mk ?loc (Set_info (s, t))
 let get_option ?loc s = mk ?loc (Get_option s)
 let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
 
-(* Declarations, i.e given identifier has given type *)
-let decl ?loc id ty = mk ?loc (Decl (id, ty))
-
 (* Definitions, i.e given identifier, with arguments,
    is equal to given term *)
-let def ?loc id t = mk ?loc (Def (id, t))
-
-(* Inductive types, i.e polymorphic variables, and
-   a list of constructors. *)
-let inductive ?loc id vars cstrs =
-  mk ?loc (Inductive {id; vars; cstrs; loc; })
-
-let data ?loc l = mk ?loc (Pack l)
 
 (* Return values *)
 let get_proof ?loc () = mk ?loc Get_proof
@@ -259,19 +248,54 @@ let fun_def ?loc id args ty_ret body =
 
 
 (* Wrappers for Zf *)
-let definition ?loc s ty term =
-  let t = Term.colon term ty in
-  def ?loc s t
+let zf_attr ?loc = function
+  | None | Some [] -> None
+  | Some l -> Some (Term.apply ?loc Term.and_t l)
 
-let rewrite ?loc ?attr t = antecedent ?loc ?attr t
+let import ?loc s = mk ?loc (Include s)
 
-let assume ?loc ?attr t = antecedent ?loc ?attr t
+let data ?loc ?attrs l =
+  let attr = zf_attr ?loc attrs in
+  mk ?loc ?attr (Pack l)
 
-let goal ?loc ?attr t =
+let defs ?loc ?attrs l =
+  let attr = zf_attr ?loc attrs in
+  mk ?loc ?attr (Pack l)
+
+let rewrite ?loc ?attrs t =
+  let attr = zf_attr ?loc attrs in
+  antecedent ?loc ?attr t
+
+let goal ?loc ?attrs t =
+  let attr = zf_attr ?loc attrs in
   mk ?loc ?attr (Pack [
       consequent t;
       prove ?loc ();
     ])
+
+let assume ?loc ?attrs t =
+  let attr = zf_attr ?loc attrs in
+  antecedent ?loc ?attr t
+
+let lemma ?loc ?attrs t =
+  let attr = zf_attr ?loc attrs in
+  antecedent ?loc ?attr t
+
+let decl ?loc ?attrs id ty =
+  let attr = zf_attr ?loc attrs in
+  mk ?loc ?attr (Decl (id, ty))
+
+let definition ?loc ?attrs s ty l =
+  let attr = zf_attr ?loc attrs in
+  mk ?loc ?attr (Pack (
+      decl ?loc s ty ::
+      List.map (assume ?loc) l
+    ))
+
+let inductive ?loc ?attrs id vars cstrs =
+  let attr = zf_attr ?loc attrs in
+  mk ?loc ?attr (Inductive {id; vars; cstrs; loc; })
+
 
 
 (* Wrappers for tptp *)

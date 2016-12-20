@@ -28,12 +28,19 @@ module type Term = sig
   type location
   (** The type of locations attached to terms. *)
 
+  val ac : t
+  (** Pre-defined constant to specify associative/commutative
+      symbols in attributes. *)
+
   val tType     : t
   val wildcard  : t
   val prop      : t
   val true_     : t
   val false_    : t
   (** Standard pre-defined constants. *)
+
+  val name    : ?loc:location -> id -> t
+  (** Create a name for a statement. *)
 
   val const   : ?loc:location -> id -> t
   (** Create a new constant. *)
@@ -87,14 +94,22 @@ module type Statement = sig
   type location
   (** The type of locations attached to statements. *)
 
-  val data        : ?loc:location -> t list -> t
-  val decl        : ?loc:location -> id -> term -> t
-  val definition  : ?loc:location -> id -> term -> term -> t
-  val inductive   : ?loc:location -> id -> term list -> (id * term list) list -> t
+  val import      : ?loc:location -> string -> t
 
-  val rewrite     : ?loc:location -> ?attr:term -> term -> t
-  val goal        : ?loc:location -> ?attr:term -> term -> t
-  val assume      : ?loc:location -> ?attr:term -> term -> t
+  val data        : ?loc:location -> ?attrs:term list -> t list -> t
+  val defs        : ?loc:location -> ?attrs:term list -> t list -> t
+
+  val rewrite     : ?loc:location -> ?attrs:term list -> term -> t
+  val goal        : ?loc:location -> ?attrs:term list -> term -> t
+  val assume      : ?loc:location -> ?attrs:term list -> term -> t
+  val lemma       : ?loc:location -> ?attrs:term list -> term -> t
+
+  val decl        : ?loc:location -> ?attrs:term list ->
+                      id -> term -> t
+  val definition  : ?loc:location -> ?attrs:term list ->
+                      id -> term -> term list -> t
+  val inductive   : ?loc:location -> ?attrs:term list ->
+                      id -> term list -> (id * term list) list -> t
 
 end
 

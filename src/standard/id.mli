@@ -43,7 +43,7 @@ val mk : namespace -> string -> t
 
 val full_name : t -> string
 (** Returns a full name for the identifier.
-    NOTE: full names may not be unique and therefor not
+    NOTE: full names may not be unique and therefore not
           suitable for comparison of identifiers. *)
 
 val pp : Buffer.t -> t -> unit

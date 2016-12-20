@@ -25,6 +25,9 @@ type builtin =
   | Distinct
   (** Should all arguments be pairwise distinct ? *)
 
+  | AC
+  (** Attributes to denote symbols that are associative and commutative. *)
+
   | Ite
   (** Condional, usually applied to 3 terms (the condition, the then branch and the else branch). *)
   | Sequent

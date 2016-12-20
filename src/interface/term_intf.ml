@@ -179,6 +179,13 @@ module type Logic = sig
 
   (** {3 Special constructions} *)
 
+  val ac      : t
+  (** A Term used in attributes to denote symbols that are
+      associative and commutative. *)
+
+  val name    : ?loc:location -> id -> t
+  (** Create a name for a statement (in Zf). *)
+
   val sequent : ?loc:location -> t list -> t list -> t
   (** Sequents as terms *)
 

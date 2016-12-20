@@ -33,6 +33,10 @@ module type Logic = sig
 
   (** {2 Generic statements} *)
 
+  val import   : ?loc:location -> string -> t
+  (** Import directive. Same as [include_] but without filtering on the
+      statements to import. *)
+
   val include_ : ?loc:location -> string -> id list -> t
   (** Inlcude directive. [include file l] means to include in the current scope
       the directives from file [file] that appear in [l]. If [l] is the empty list,
@@ -146,28 +150,36 @@ module type Logic = sig
 
   (** {2 Zipperposition statements} *)
 
-  val inductive   : ?loc:location -> id -> term list -> (id * term list) list -> t
-  (** Inductive type definitions. [inductive name vars l] defines aan inductive type [name],
-      with polymorphic variables [vars], and with a list of inductive constructors [l]. *)
+  val data        : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Packs a list of mutually recursive inductive type declarations into a
+      single statement. *)
 
-  val data        : ?loc:location -> t list -> t
-  (** Packs a list of mutually recursive inductive type declarations. into a single declaration. *)
+  val defs        : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Packs a list of mutually recursive definitions into a single statement. *)
 
-  val decl        : ?loc:location -> id -> term -> t
+  val rewrite     : ?loc:location -> ?attrs:term list -> term -> t
+  (** Declare a rewrite rule, i.e a universally quantified equality or equivalence that
+      can be oriented according to a specific ordering. *)
+
+  val goal        : ?loc:location -> ?attrs:term list -> term -> t
+  (** The goal, i.e the propositional formula to prove. *)
+
+  val assume      : ?loc:location -> ?attrs:term list -> term -> t
+  (** Adds an hypothesis. *)
+
+  val lemma       : ?loc:location -> ?attrs:term list -> term -> t
+  (** Lemmas. *)
+
+  val decl        : ?loc:location -> ?attrs:term list -> id -> term -> t
   (** Symbol declaration. [decl name ty] declares a new symbol [name] with type [ty]. *)
 
-  val definition  : ?loc:location -> id -> term -> term -> t
+  val definition  : ?loc:location -> ?attrs:term list -> id -> term -> term list -> t
   (** Symbol definition. [def name ty term] defines a new symbol [name] of type [ty]
       which is equal to [term]. *)
 
-  val goal        : ?loc:location -> ?attr:term -> term -> t
-  (** The goal, i.e the propositional formula to prove. *)
-
-  val assume      : ?loc:location -> ?attr:term -> term -> t
-  (** Adds an hypothesis. *)
-
-  val rewrite     : ?loc:location -> ?attr:term -> term -> t
-  (** Declare a rewrite rule, i.e a universally quantified equality or equivalence that
-      can be oriented according to a specific ordering. *)
+  val inductive   :
+    ?loc:location -> ?attrs:term list -> id -> term list -> (id * term list) list -> t
+  (** Inductive type definitions. [inductive name vars l] defines aan inductive type [name],
+      with polymorphic variables [vars], and with a list of inductive constructors [l]. *)
 
 end

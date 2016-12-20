@@ -9,6 +9,8 @@ type builtin =
   | True | False
   | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
 
+  | AC                  (* Attribute for associative/commutative symbols. *)
+
   | Ite                 (* Condional *)
   | Sequent             (* Is the given sequent provable ? *)
 
@@ -62,6 +64,7 @@ let pp_builtin b = function
   | False -> Printf.bprintf b "⊥"
   | Eq -> Printf.bprintf b "=="
   | Distinct -> Printf.bprintf b "!="
+  | AC -> Printf.bprintf b "ac"
   | Ite -> Printf.bprintf b "#ite"
   | Sequent -> Printf.bprintf b "⊢"
   | Subtype -> Printf.bprintf b "⊂"
@@ -118,6 +121,7 @@ let print_builtin fmt = function
   | False -> Format.fprintf fmt "⊥"
   | Eq -> Format.fprintf fmt "=="
   | Distinct -> Format.fprintf fmt "!="
+  | AC -> Format.fprintf fmt "ac"
   | Ite -> Format.fprintf fmt "#ite"
   | Sequent -> Format.fprintf fmt "⊢"
   | Subtype -> Format.fprintf fmt "⊂"
@@ -189,6 +193,7 @@ let apply ?loc f args = make ?loc (App (f, args))
    Used mainly for typed variables, or type annotations. *)
 let colon ?loc t t' = make ?loc (Colon (t, t'))
 
+let ac          = make (Builtin AC)
 
 let eq_t        = make (Builtin Eq)
 let neq_t       = make (Builtin Distinct)
@@ -277,4 +282,10 @@ let sequent ?loc hyps goals =
 let union ?loc a b = apply ?loc union_t [a; b]
 let product ?loc a b = apply ?loc product_t [a; b]
 let subtype ?loc a b = apply ?loc subtype_t [a; b]
+
+(* {2 Wrappers for Zf} *)
+
+let name ?loc id =
+  const ?loc Id.({ id with ns = Decl})
+
 

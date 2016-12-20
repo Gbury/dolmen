@@ -11,9 +11,12 @@
 %token RIGHT_BRACKET
 
 %token WILDCARD
+%token COMMA
 %token DOT
 %token COLON
+%token SEMI_COLON
 %token EQDEF
+%token WHERE
 %token AND
 
 %token LOGIC_TRUE
@@ -37,13 +40,19 @@
 %token VAL
 %token GOAL
 %token REWRITE
+%token LEMMA
+%token INCLUDE
 
 %token ARROW
 %token PI
 %token VERTICAL_BAR
 
+%token AC
+%token NAME
+
 %token <string> LOWER_WORD
 %token <string> UPPER_WORD
+%token <string> QUOTED
 
 %%
 

@@ -14,7 +14,6 @@
 %start <S.t option> input
 
 %%
-
 name:
   | w=LOWER_WORD
   | w=UPPER_WORD
@@ -24,23 +23,35 @@ raw_var:
   | s=name
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
 
-tType:
-  | TYPE
-    { T.tType }
-
-typed_var:
+typed_var_block:
   | v=raw_var
-    { v }
-  | LEFT_PAREN v=raw_var COLON t=term RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
+    { [ v ] }
+  | WILDCARD
+    { [ T.wildcard ] }
+  | LEFT_PAREN l=raw_var+ COLON t=term RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in
+      List.map (fun x -> T.colon ~loc x t) l }
 
-typed_ty_var:
+typed_var_list:
+  | l=typed_var_block
+    { l }
+  | l=typed_var_block l2=typed_var_list
+    { l @ l2 }
+
+typed_ty_var_block:
   | v=raw_var
-    { v }
-  | v=raw_var COLON t=tType
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
-  | LEFT_PAREN v=raw_var COLON t=tType RIGHT_PAREN
-    { let loc = L.mk_pos $startpos $endpos in T.colon ~loc v t }
+    { [ v ] }
+  | v=raw_var COLON TYPE
+    { let loc = L.mk_pos $startpos $endpos in [ T.colon ~loc v T.tType ] }
+  | LEFT_PAREN l=raw_var+ COLON TYPE RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in
+      List.map (fun x -> T.colon ~loc x T.tType) l }
+
+typed_ty_var_list:
+  | l=typed_ty_var_block
+    { l }
+  | l=typed_ty_var_block l2=typed_ty_var_list
+    { l @ l2 }
 
 var:
   | v=raw_var
@@ -49,8 +60,8 @@ var:
     { T.wildcard }
 
 const:
-  | t=tType
-    { t }
+  | TYPE
+    { T.tType }
   | PROP
     { T.prop }
   | LOGIC_TRUE
@@ -103,11 +114,11 @@ term:
     { t }
   | t=apply_term ARROW u=term
     { let loc = L.mk_pos $startpos $endpos in T.arrow ~loc t u }
-  | PI vars=typed_ty_var+ DOT t=term
+  | PI vars=typed_ty_var_list DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.pi ~loc vars t }
-  | LOGIC_FORALL vars=typed_var+ DOT t=term
+  | LOGIC_FORALL vars=typed_var_list DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc vars t }
-  | LOGIC_EXISTS vars=typed_var+ DOT t=term
+  | LOGIC_EXISTS vars=typed_var_list DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc vars t }
   | error
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected term")) }
@@ -128,23 +139,47 @@ mutual_types:
   | l=separated_nonempty_list(AND, type_def) { l }
 
 attr:
-  | LEFT_BRACKET s=name RIGHT_BRACKET
-    { let loc = L.mk_pos $startpos $endpos in Some (T.const ~loc s) }
-  | { None }
+  | AC
+    { T.ac }
+  | NAME COLON v=name
+    { let loc = L.mk_pos $startpos $endpos in
+      T.name ~loc v }
+
+attrs:
+  | LEFT_BRACKET l=separated_nonempty_list(COMMA, attr) RIGHT_BRACKET
+    { l }
+  | { [] }
+
+def:
+  | id=name COLON ty=term EQDEF t=term
+    { let v =
+        let loc = L.mk_pos $startpos $endpos in
+        T.const ~loc id
+      in
+      let loc = L.mk_pos $startpos $endpos in
+      let eq = T.eq ~loc v t in
+      S.definition ~loc id ty [eq] }
+  | id=name COLON ty=term WHERE rules=separated_nonempty_list(SEMI_COLON, term)
+    { let loc = L.mk_pos $startpos $endpos in
+      S.definition ~loc id ty rules }
 
 statement:
-  | VAL v=name COLON t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.decl ~loc v t }
-  | DEF v=name COLON t=term EQDEF u=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.definition ~loc v t u }
-  | REWRITE attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ?attr t }
-  | ASSERT attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ?attr t }
-  | GOAL attr=attr t=term DOT
-    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ?attr t }
-  | DATA l=mutual_types DOT
-    { let loc = L.mk_pos $startpos $endpos in S.data ~loc l }
+  | INCLUDE s=QUOTED DOT
+    { let loc = L.mk_pos $startpos $endpos in S.import ~loc s }
+  | VAL attrs=attrs v=name COLON t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.decl ~loc ~attrs v t }
+  | REWRITE attrs=attrs t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ~attrs t }
+  | ASSERT attrs=attrs t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.assume ~loc ~attrs t }
+  | LEMMA attrs=attrs t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.lemma ~loc ~attrs t }
+  | GOAL attrs=attrs t=term DOT
+    { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attrs t }
+  | DEF attrs=attrs l=separated_nonempty_list(AND,def) DOT
+    { let loc = L.mk_pos $startpos $endpos in S.defs ~loc ~attrs l }
+  | DATA attrs=attrs l=mutual_types DOT
+    { let loc = L.mk_pos $startpos $endpos in S.data ~loc ~attrs l }
   | error
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected statement")) }
 

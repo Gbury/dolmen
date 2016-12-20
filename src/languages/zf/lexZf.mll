@@ -20,7 +20,7 @@ let alpha_numeric = lower_alpha | upper_alpha | numeric | '_'
 let upper_word = upper_alpha alpha_numeric*
 let lower_word = lower_alpha alpha_numeric*
 
-let filepath = '"' ([^ '"'] | '\\' '"')* '"'
+let quoted = '"' ([^ '"'] | '\\' '"')* '"'
 
 let zero_numeric = '0'
 let non_zero_numeric = ['1' - '9']
@@ -44,17 +44,21 @@ rule token = parse
   | '[' { LEFT_BRACKET }
   | ']' { RIGHT_BRACKET }
   | '.' { DOT }
+  | ',' { COMMA }
   | '_' { WILDCARD }
   | ':' { COLON }
+  | ';' { SEMI_COLON }
   | "=" { LOGIC_EQ }
   | "!=" { LOGIC_NEQ }
   | ":=" { EQDEF }
   | "->" { ARROW }
   | "val" { VAL }
   | "def" { DEF }
+  | "where" { WHERE }
   | "type" { TYPE }
   | "prop" { PROP }
   | "assert" { ASSERT }
+  | "lemma" { LEMMA }
   | "goal" { GOAL }
   | "and" { AND }
   | "rewrite" { REWRITE }
@@ -70,7 +74,16 @@ rule token = parse
   | "exists" { LOGIC_EXISTS }
   | "=>" { LOGIC_IMPLY }
   | "<=>" { LOGIC_EQUIV }
+  | "AC" { AC }
+  | "name" { NAME }
+  | "include" { INCLUDE }
   | lower_word { LOWER_WORD(Lexing.lexeme lexbuf) }
   | upper_word { UPPER_WORD(Lexing.lexeme lexbuf) }
+  | '"' { quoted (Buffer.create 42) lexbuf }
   | _ { raise Error }
+
+and quoted b = parse
+  | '"' { QUOTED(Buffer.contents b) }
+  | '\\' '"' { Buffer.add_char b '"'; quoted b lexbuf }
+  | _ as c   { Buffer.add_char b c; quoted b lexbuf }
 
