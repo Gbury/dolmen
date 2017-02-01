@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000_2 : TPTP v6.1.0. Bugfixed v5.5.1.
+% File     : SYN000_2 : TPTP v6.4.0. Bugfixed v5.5.1.
 % Domain   : Syntactic
 % Problem  : Advanced TPTP TF0 syntax without arithmetic
 % Version  : Biased.
@@ -11,8 +11,8 @@
 
 % Status   : Satisfiable
 % Rating   : 1.00 v6.0.0
-% Syntax   : Number of formulae    :   26 (  18 unit;   7 type)
-%            Number of atoms       :   42 (   2 equality)
+% Syntax   : Number of formulae    :   26 (  16 unit;   7 type)
+%            Number of atoms       :   26 (   2 equality)
 %            Maximal formula depth :    5 (   2 average)
 %            Number of connectives :    6 (   2   ~;   0   |;   1   &)
 %                                         (   1 <=>;   0  =>;   0  <=;   0 <~>)
@@ -21,6 +21,7 @@
 %            Number of predicates  :   14 (  11 propositional; 0-2 arity)
 %            Number of functors    :    6 (   4 constant; 0-2 arity)
 %            Number of variables   :   18 (   0 sgn;  13   !;   1   ?)
+%                                         (  14   :;   0  !>;   0  ?*)
 %            Maximal term depth    :    2 (   1 average)
 % SPC      : TF0_SAT_EQU_NAR
 

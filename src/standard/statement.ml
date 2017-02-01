@@ -342,7 +342,9 @@ let tptp ?loc ?annot id role t =
 
 let tpi = tptp
 let thf = tptp
+let tfx = tptp
 let tff = tptp
+let tcf = tptp
 let fof = tptp
 let cnf = tptp
 

@@ -32,18 +32,24 @@ module type Term = sig
   type location
   (** The type of locations attached to terms. *)
 
-  val eq_t      : t
-  val neq_t     : t
-  val not_t     : t
-  val or_t      : t
-  val and_t     : t
-  val xor_t     : t
-  val nor_t     : t
-  val nand_t    : t
-  val equiv_t   : t
-  val implies_t : t
-  val implied_t : t
-  val data_t    : t
+  val eq_t          : t
+  val poly_eq_t     : t
+  val neq_t         : t
+  val not_t         : t
+  val or_t          : t
+  val and_t         : t
+  val xor_t         : t
+  val nor_t         : t
+  val nand_t        : t
+  val equiv_t       : t
+  val implies_t     : t
+  val implied_t     : t
+  val pi_t          : t
+  val sigma_t       : t
+  val choice_t      : t
+  val description_t : t
+  val assignment_t  : t
+  val data_t        : t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {implied_t} is reverse implication, and
       {data_t} is used in tptp's annotations. *)
@@ -69,6 +75,9 @@ module type Term = sig
   val apply : ?loc:location -> t -> t list -> t
   (** Application. *)
 
+  val tuple : ?loc:location -> t list -> t
+  (** Create a tuple. Used in THF. *)
+
   val ite   : ?loc:location -> t -> t -> t -> t
   (** Conditional, of the form [ite condition then_branch els_branch]. *)
 
@@ -84,11 +93,11 @@ module type Term = sig
   val subtype : ?loc:location -> t -> t -> t
   (** Comparison of type (used in tptp's THF). *)
 
-  val pi     : ?loc:location -> t list -> t -> t
-  (** Dependant type constructor, used for polymorphic function types. *)
-
   val letin  : ?loc:location -> t list -> t -> t
   (** Local binding for terms. *)
+
+  val pi     : ?loc:location -> t list -> t -> t
+  (** Universal quantification in TH1 *)
 
   val forall : ?loc:location -> t list -> t -> t
   (** Universal propositional quantification. *)
@@ -133,7 +142,9 @@ module type Statement = sig
 
   val tpi : ?loc:location -> ?annot:term -> id -> string -> term -> t
   val thf : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tfx : ?loc:location -> ?annot:term -> id -> string -> term -> t
   val tff : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tcf : ?loc:location -> ?annot:term -> id -> string -> term -> t
   val fof : ?loc:location -> ?annot:term -> id -> string -> term -> t
   val cnf : ?loc:location -> ?annot:term -> id -> string -> term -> t
   (** TPTP statements, used for instance as [tff ~loc ~annot name role t].

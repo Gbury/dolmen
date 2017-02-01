@@ -8,7 +8,8 @@ type builtin =
   | Ttype | Prop
   | True | False
   | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
-
+  | Poly_eq             (* Polymorphic equality, should take three arguments:
+                           the type of elements, then the two elements to compare. *)
   | AC                  (* Attribute for associative/commutative symbols. *)
 
   | Ite                 (* Condional *)
@@ -16,12 +17,18 @@ type builtin =
 
   | Subtype             (* Function type constructor and subtyping relation *)
   | Product | Union     (* Product and union of types (not set theory) *)
+  | Tuple               (* Constructor for tuples *)
 
   | Not                 (* Propositional negation *)
   | And | Or            (* Conjunction and disjunction *)
   | Nand | Xor | Nor    (* Advanced propositional connectives *)
   | Imply | Implied     (* Implication and left implication *)
   | Equiv               (* Equivalence *)
+
+  | Pi | Sigma          (* universal/existencial quantification as a term *)
+  | Choice              (* Indefinite description as a term *)
+  | Description         (* Definite description as a term *)
+  | Assignment          (* Assignment *)
 
 type binder =
   | All | Ex
@@ -64,12 +71,14 @@ let pp_builtin b = function
   | False -> Printf.bprintf b "⊥"
   | Eq -> Printf.bprintf b "=="
   | Distinct -> Printf.bprintf b "!="
+  | Poly_eq -> Printf.bprintf b "@="
   | AC -> Printf.bprintf b "ac"
   | Ite -> Printf.bprintf b "#ite"
   | Sequent -> Printf.bprintf b "⊢"
   | Subtype -> Printf.bprintf b "⊂"
   | Product -> Printf.bprintf b "*"
   | Union -> Printf.bprintf b "∪"
+  | Tuple -> Printf.bprintf b "tuple"
   | Not -> Printf.bprintf b "¬"
   | And -> Printf.bprintf b "∧"
   | Or -> Printf.bprintf b "∨"
@@ -79,6 +88,11 @@ let pp_builtin b = function
   | Imply -> Printf.bprintf b "⇒"
   | Implied -> Printf.bprintf b "⇐"
   | Equiv -> Printf.bprintf b "⇔"
+  | Pi -> Printf.bprintf b "Π"
+  | Sigma -> Printf.bprintf b "Σ"
+  | Choice -> Printf.bprintf b "@+"
+  | Description -> Printf.bprintf b "@-"
+  | Assignment -> Printf.bprintf b "->"
 
 let pp_binder b = function
   | All -> Printf.bprintf b "∀"
@@ -120,6 +134,7 @@ let print_builtin fmt = function
   | True -> Format.fprintf fmt "⊤"
   | False -> Format.fprintf fmt "⊥"
   | Eq -> Format.fprintf fmt "=="
+  | Poly_eq -> Format.fprintf fmt "@="
   | Distinct -> Format.fprintf fmt "!="
   | AC -> Format.fprintf fmt "ac"
   | Ite -> Format.fprintf fmt "#ite"
@@ -127,6 +142,7 @@ let print_builtin fmt = function
   | Subtype -> Format.fprintf fmt "⊂"
   | Product -> Format.fprintf fmt "*"
   | Union -> Format.fprintf fmt "∪"
+  | Tuple -> Format.fprintf fmt "tuple"
   | Not -> Format.fprintf fmt "¬"
   | And -> Format.fprintf fmt "∧"
   | Or -> Format.fprintf fmt "∨"
@@ -136,6 +152,11 @@ let print_builtin fmt = function
   | Imply -> Format.fprintf fmt "⇒"
   | Implied -> Format.fprintf fmt "⇐"
   | Equiv -> Format.fprintf fmt "⇔"
+  | Pi -> Format.fprintf fmt "Π"
+  | Sigma -> Format.fprintf fmt "Σ"
+  | Choice -> Format.fprintf fmt "@+"
+  | Description -> Format.fprintf fmt "@-"
+  | Assignment -> Format.fprintf fmt "->"
 
 let print_binder fmt = function
   | All -> Format.fprintf fmt "∀"
@@ -207,6 +228,14 @@ let equiv_t     = make (Builtin Equiv)
 let implies_t   = make (Builtin Imply)
 let implied_t   = make (Builtin Implied)
 
+let poly_eq_t     = make (Builtin Poly_eq)
+let assignment_t  = make (Builtin Assignment)
+
+let pi_t          = make (Builtin Pi)
+let sigma_t       = make (Builtin Sigma)
+let choice_t      = make (Builtin Choice)
+let description_t = make (Builtin Description)
+
 let true_       = make (Builtin True)
 let false_      = make (Builtin False)
 let wildcard    = make (Builtin Wildcard)
@@ -217,6 +246,7 @@ let sequent_t   = make (Builtin Sequent)
 let union_t     = make (Builtin Union)
 let product_t   = make (Builtin Product)
 let subtype_t   = make (Builtin Subtype)
+let tuple_t     = make (Builtin Tuple)
 
 let tType       = make (Builtin Ttype)
 let prop        = make (Builtin Prop)
@@ -282,6 +312,7 @@ let sequent ?loc hyps goals =
 let union ?loc a b = apply ?loc union_t [a; b]
 let product ?loc a b = apply ?loc product_t [a; b]
 let subtype ?loc a b = apply ?loc subtype_t [a; b]
+let tuple ?loc l = apply ?loc tuple_t l
 
 (* {2 Wrappers for Zf} *)
 

@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000^2 : TPTP v6.1.0. Bugfixed v5.5.0.
+% File     : SYN000^2 : TPTP v6.4.0. Bugfixed v5.5.0.
 % Domain   : Syntactic
 % Problem  : Advanced TPTP 
 % Version  : Biased.
@@ -11,19 +11,19 @@
 
 % Status   : Satisfiable
 % Rating   : 1.00 v5.5.0
-% Syntax   : Number of formulae    :   38 (   6 unit;  12 type;   1 defn)
-%            Number of atoms       :  151 (  10 equality;  36 variable)
+% Syntax   : Number of formulae    :   38 (   2 unit;  12 type;   1 defn)
+%            Number of atoms       :  127 (  10 equality;  36 variable)
 %            Maximal formula depth :    8 (   4 average)
 %            Number of connectives :   83 (   2   ~;   9   |;   3   &;  62   @)
 %                                         (   1 <=>;   2  =>;   0  <=;   0 <~>)
-%                                         (   1  ~|;   1  ~&;   1  !!;   1  ??)
+%                                         (   1  ~|;   1  ~&)
 %            Number of type conns  :   12 (   9   >;   3   *;   0   +;   0  <<)
-%            Number of symbols     :   38 (  12   :)
+%            Number of symbols     :   35 (  12   :;   2   =)
 %            Number of variables   :   25 (   1 sgn;  20   !;   3   ?;   0   ^)
 %                                         (  25   :;   0  !>;   0  ?*)
 %                                         (   1  @-;   1  @+)
-%            Arithmetic symbols    :    3 (   3 pred;    0 func;    0 numbers)
-% SPC      : TH0_SAT_EQU
+%            Arithmetic symbols    :    6 (   0 prd;   0 fun;   6 num;   0 var)
+% SPC      : TH0_SAT_EQU_ARI
 
 % Comments : 
 % Bugfixes : v4.0.1 - Fixed connective_terms and pi_sigma_operators so they're
@@ -59,11 +59,11 @@ thf(rationals,axiom,
 thf(reals,axiom,
     ( ( p_real @ 123.456 )
     | ( p_real @ -123.456 )
-    | ( p_real @ 123.456E789 )
-    | ( p_real @ 123.456e789 )
-    | ( p_real @ -123.456E789 )
-    | ( p_real @ 123.456E-789 )
-    | ( p_real @ -123.456E-789 ) )).
+    | ( p_real @ 123.456E78 )
+    | ( p_real @ 123.456e78 )
+    | ( p_real @ -123.456E78 )
+    | ( p_real @ 123.456E-78 )
+    | ( p_real @ -123.456E-78 ) )).
 
 %----Types for stuff below
 thf(a_type,type,(

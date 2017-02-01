@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000+1 : TPTP v6.1.0. Released v4.0.0.
+% File     : SYN000+1 : TPTP v6.4.0. Released v4.0.0.
 % Domain   : Syntactic
 % Problem  : Basic TPTP FOF syntax
 % Version  : Biased.
@@ -10,7 +10,7 @@
 % Names    :
 
 % Status   : Theorem
-% Rating   : 0.28 v6.1.0, 0.33 v6.0.0, 0.43 v5.5.0, 0.48 v5.4.0, 0.46 v5.3.0, 0.52 v5.2.0, 0.40 v5.1.0, 0.43 v5.0.0, 0.54 v4.1.0, 0.57 v4.0.1, 0.78 v4.0.0
+% Rating   : 0.20 v6.4.0, 0.19 v6.3.0, 0.25 v6.2.0, 0.28 v6.1.0, 0.33 v6.0.0, 0.43 v5.5.0, 0.48 v5.4.0, 0.46 v5.3.0, 0.52 v5.2.0, 0.40 v5.1.0, 0.43 v5.0.0, 0.54 v4.1.0, 0.57 v4.0.1, 0.78 v4.0.0
 % Syntax   : Number of formulae    :   12 (   5 unit)
 %            Number of atoms       :   31 (   3 equality)
 %            Maximal formula depth :    7 (   4 average)

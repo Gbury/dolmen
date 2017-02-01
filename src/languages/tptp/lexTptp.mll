@@ -91,8 +91,11 @@ rule token = parse
 
   | '^'   { LAMBDA }
   | '@'   { APPLY }
-  | "@+"  { INDEFINITE_DESCRIPTION }
-  | "@-"  { DEFINITE_DESCRIPTION }
+  | "@="  { TH1_EQUALITY }
+  | "@+"  { TH0_INDEFINITE_DESCRIPTION }
+  | "@@+" { TH1_INDEFINITE_DESCRIPTION }
+  | "@-"  { TH0_DEFINITE_DESCRIPTION }
+  | "@@-" { TH1_DEFINITE_DESCRIPTION }
   | "!>"  { FORALL_TY }
   | '!'   { FORALL }
   | "?*"  { EXISTS_TY }
@@ -121,7 +124,7 @@ rule token = parse
   | '='   { EQUAL }
   | "!="  { NOT_EQUAL }
   | "-->" { GENTZEN_ARROW }
-
+  | ":="  { ASSIGNMENT }
 
   | lower_word {
     match Lexing.lexeme lexbuf with
@@ -130,6 +133,8 @@ rule token = parse
     | "tff" -> TFF
     | "thf" -> THF
     | "tpi" -> TPI
+    | "tfx" -> TFX
+    | "tcf" -> TCF
     | "include" -> INCLUDE
     | s -> LOWER_WORD(s)
   }
@@ -140,8 +145,10 @@ rule token = parse
     | "$tff" -> DOLLAR_TFF
     | "$thf" -> DOLLAR_THF
     | "$fot" -> DOLLAR_FOT
+    | "$ite" -> ITE
     | "$ite_f" -> ITE_F
     | "$ite_t" -> ITE_T
+    | "$let" -> LET
     | "$let_tf" -> LET_TF
     | "$let_ft" -> LET_FT
     | "$let_ff" -> LET_FF

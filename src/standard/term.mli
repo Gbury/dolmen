@@ -24,6 +24,9 @@ type builtin =
   (** Should all arguments be pariwise equal ? *)
   | Distinct
   (** Should all arguments be pairwise distinct ? *)
+  | Poly_eq
+  (** Polymorphic equality, should take three arguments: the type of elements,
+      then the two elements to compare. *)
 
   | AC
   (** Attributes to denote symbols that are associative and commutative. *)
@@ -40,6 +43,8 @@ type builtin =
   (** Product type constructor *)
   | Union
   (** Union type constructor *)
+  | Tuple
+  (** Tuple constuctor *)
 
   | Not
   (** Propositional negation *)
@@ -59,6 +64,17 @@ type builtin =
   (** Propositional left implication (i.e implication with reversed arguments). *)
   | Equiv
   (** Propositional equivalence *)
+  | Pi
+  (** Universal quantification as a term *)
+  | Sigma
+  (** Existencial quantification as a term *)
+  | Choice
+  (** Indefinite description as a term *)
+  | Description
+  (** Definite description as a term *)
+
+  | Assignment
+  (** Assignment *)
 (** The type of builtins symbols for terms.
     Some languages have specific syntax for logical connectives
     (tptp's'&&' or '||' for isntance) whereas some (smtlib for instance)

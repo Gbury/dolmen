@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000+2 : TPTP v6.1.0. Bugfixed v4.1.1.
+% File     : SYN000+2 : TPTP v6.4.0. Bugfixed v4.1.1.
 % Domain   : Syntactic
 % Problem  : Advanced TPTP FOF syntax
 % Version  : Biased.
@@ -10,7 +10,7 @@
 % Names    :
 
 % Status   : Satisfiable
-% Rating   : 0.50 v6.1.0, 0.40 v6.0.0, 0.50 v5.5.0, 0.67 v5.2.0, 1.00 v5.0.0
+% Rating   : 0.33 v6.4.0, 0.60 v6.3.0, 0.40 v6.2.0, 0.50 v6.1.0, 0.40 v6.0.0, 0.50 v5.5.0, 0.67 v5.2.0, 1.00 v5.0.0
 % Syntax   : Number of formulae    :   20 (  16 unit)
 %            Number of atoms       :   31 (   2 equality)
 %            Maximal formula depth :    7 (   2 average)
@@ -45,11 +45,11 @@ fof(rationals,axiom,
 fof(reals,axiom,
     ( p(123.456 )
     | p(-123.456 )
-    | p(123.456E789 )
-    | p(123.456e789 )
-    | p(-123.456E789 )
-    | p(123.456E-789 )
-    | p(-123.456E-789 ) )).
+    | p(123.456E78 )
+    | p(123.456e78 )
+    | p(-123.456E78 )
+    | p(123.456E-78 )
+    | p(-123.456E-78 ) )).
 
 %----Connectives - seen |, &, =>, ~ already
 fof(never_used_connectives,axiom,(

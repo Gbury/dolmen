@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000_1 : TPTP v6.1.0. Released v5.0.0.
+% File     : SYN000_1 : TPTP v6.4.0. Released v5.0.0.
 % Domain   : Syntactic
 % Problem  : Basic TPTP TF0 syntax without arithmetic
 % Version  : Biased.
@@ -11,8 +11,8 @@
 
 % Status   : Theorem
 % Rating   : 0.00 v6.0.0, 0.40 v5.5.0, 0.25 v5.4.0, 0.33 v5.2.0, 0.67 v5.0.0
-% Syntax   : Number of formulae    :   38 (  21 unit;  25 type)
-%            Number of atoms       :   74 (   3 equality)
+% Syntax   : Number of formulae    :   38 (   6 unit;  25 type)
+%            Number of atoms       :   32 (   3 equality)
 %            Maximal formula depth :    7 (   3 average)
 %            Number of connectives :   28 (   9   ~;  10   |;   3   &)
 %                                         (   1 <=>;   3  =>;   1  <=;   1 <~>)
@@ -21,6 +21,7 @@
 %            Number of predicates  :   37 (  30 propositional; 0-3 arity)
 %            Number of functors    :   10 (   6 constant; 0-3 arity)
 %            Number of variables   :   14 (   1 sgn;   6   !;   8   ?)
+%                                         (  14   :;   0  !>;   0  ?*)
 %            Maximal term depth    :    4 (   2 average)
 % SPC      : TF0_THM_EQU_NAR
 

@@ -28,7 +28,7 @@ clean:
 	$(COMP) -clean && rm -f $(NAME)
 
 TO_INSTALL=META $(addprefix _build/,$(LIB) $(NAME).a $(NAME).cmi) \
-	   $(shell find _build -name '*.cmi' -or -name '*.cmx')
+	   $(shell find _build -name '*.cmi' -or -name '*.cmx' -or -name '*.cmt' -or -name '*.cmti')
 
 install: lib
 	ocamlfind install $(NAME) $(TO_INSTALL)

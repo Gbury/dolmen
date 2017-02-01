@@ -19,12 +19,17 @@
 %token TFF
 %token THF
 %token TPI
+%token TFX
+%token TCF
 %token INCLUDE
 
 %token LAMBDA
 %token APPLY
-%token DEFINITE_DESCRIPTION
-%token INDEFINITE_DESCRIPTION
+%token TH1_EQUALITY
+%token TH0_DEFINITE_DESCRIPTION
+%token TH1_DEFINITE_DESCRIPTION
+%token TH0_INDEFINITE_DESCRIPTION
+%token TH1_INDEFINITE_DESCRIPTION
 %token FORALL_TY
 %token FORALL
 %token EXISTS_TY
@@ -53,9 +58,12 @@
 %token EQUAL
 %token NOT_EQUAL
 %token GENTZEN_ARROW
+%token ASSIGNMENT
 
+%token ITE
 %token ITE_F
 %token ITE_T
+%token LET
 %token LET_TF
 %token LET_FF
 %token LET_FT

@@ -33,6 +33,10 @@ module type Logic = sig
   val neq_t     : t
   (** The terms representing equality and disequality, respectively. *)
 
+  val poly_eq_t : t
+  (** Explicit polymorphic equality. Takes three arguments: a type,
+      then two terms of that type to compare. *)
+
   val wildcard  : t
   (** The wildcard term, usually used in place of type arguments
       to explicit polymorphic functions to not explicit types that
@@ -68,6 +72,15 @@ module type Logic = sig
       right implication, i.e [apply implies_t \[p; q\] ] is "p implies q",
       while [apply implied_t \[p; q \]] means "p is implied by q" or
       "q implies p". *)
+
+  val pi_t            : t
+  val sigma_t         : t
+  val choice_t        : t
+  val description_t   : t
+  (** Connectives for tptp's TH1. *)
+
+  val assignment_t    : t
+  (** Assignment operator as term (used in tptp's TH1). *)
 
   val data_t    : t
   (** Term without semantic meaning, used for creating "data" terms.
@@ -133,6 +146,9 @@ module type Logic = sig
   val ite   : ?loc:location -> t -> t -> t -> t
   (** Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: [ite condition then_branch else_branch]. *)
+
+  val tuple  : ?loc:location -> t list -> t
+  (** Create a tuple out of a list of terms. *)
 
   val pi     : ?loc:location -> t list -> t -> t
   val letin  : ?loc:location -> t list -> t -> t

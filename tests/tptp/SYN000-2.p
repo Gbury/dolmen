@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000-2 : TPTP v6.1.0. Bugfixed v4.1.1.
+% File     : SYN000-2 : TPTP v6.4.0. Bugfixed v4.1.1.
 % Domain   : Syntactic
 % Problem  : Advanced TPTP CNF syntax
 % Version  : Biased.
@@ -10,7 +10,7 @@
 % Names    :
 
 % Status   : Satisfiable
-% Rating   : 0.70 v6.1.0, 0.78 v6.0.0, 1.00 v5.4.0, 0.90 v5.3.0, 0.89 v5.2.0, 0.90 v5.0.0
+% Rating   : 0.43 v6.4.0, 0.71 v6.3.0, 0.62 v6.2.0, 0.70 v6.1.0, 0.78 v6.0.0, 1.00 v5.4.0, 0.90 v5.3.0, 0.89 v5.2.0, 0.90 v5.0.0
 % Syntax   : Number of clauses     :   19 (   3 non-Horn;  16 unit;  12 RR)
 %            Number of atoms       :   28 (   2 equality)
 %            Maximal clause size   :    7 (   1 average)
@@ -42,11 +42,11 @@ cnf(rationals,axiom,
 cnf(reals,axiom,
     ( p(123.456 )
     | p(-123.456 )
-    | p(123.456E789 )
-    | p(123.456e789 )
-    | p(-123.456E789 )
-    | p(123.456E-789 )
-    | p(-123.456E-789 ) )).
+    | p(123.456E78 )
+    | p(123.456e78 )
+    | p(-123.456E78 )
+    | p(123.456E-78 )
+    | p(-123.456E-78 ) )).
 
 %----Roles - seen axiom already
 cnf(role_definition,definition,

@@ -1,5 +1,5 @@
 %------------------------------------------------------------------------------
-% File     : SYN000-1 : TPTP v6.1.0. Released v4.0.0.
+% File     : SYN000-1 : TPTP v6.4.0. Released v4.0.0.
 % Domain   : Syntactic
 % Problem  : Basic TPTP CNF syntax
 % Version  : Biased.
@@ -10,7 +10,7 @@
 % Names    :
 
 % Status   : Unsatisfiable
-% Rating   : 0.40 v6.1.0, 0.36 v6.0.0, 0.50 v5.4.0, 0.55 v5.3.0, 0.56 v5.2.0, 0.62 v5.1.0, 0.65 v5.0.0, 0.64 v4.1.0, 0.62 v4.0.1, 0.64 v4.0.0
+% Rating   : 0.27 v6.2.0, 0.40 v6.1.0, 0.36 v6.0.0, 0.50 v5.4.0, 0.55 v5.3.0, 0.56 v5.2.0, 0.62 v5.1.0, 0.65 v5.0.0, 0.64 v4.1.0, 0.62 v4.0.1, 0.64 v4.0.0
 % Syntax   : Number of clauses     :   11 (   6 non-Horn;   5 unit;   7 RR)
 %            Number of atoms       :   27 (   3 equality)
 %            Maximal clause size   :    5 (   2 average)
