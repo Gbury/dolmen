@@ -264,7 +264,7 @@ let defs ?loc ?attrs l =
 
 let rewrite ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in
-  antecedent ?loc ?attr t
+  antecedent ?loc ?attr (Term.add_attr Term.rwrt_rule t)
 
 let goal ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in

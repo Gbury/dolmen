@@ -171,6 +171,49 @@ and print fmt = function
   | { term = (Builtin _) as d } -> print_descr fmt d
   | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
 
+(* Comparison *)
+let _descr = function
+  | Symbol _  -> 1
+  | Builtin _ -> 2
+  | Colon _   -> 3
+  | App _     -> 4
+  | Binder _  -> 5
+
+let rec compare t t' =
+  match t.term, t'.term with
+  | Symbol s, Symbol s' -> Id.compare s s'
+  | Builtin b, Builtin b' -> Pervasives.compare b b'
+  | Colon (t1, t2), Colon (t1', t2') ->
+    compare_list [t1; t2] [t1'; t2']
+  | App (f, l), App(f', l') ->
+    compare_list (f :: l) (f' :: l')
+  | Binder (b, vars, t), Binder (b', vars', t') ->
+    begin match Pervasives.compare b b' with
+      | 0 ->
+        begin match compare_list vars vars' with
+          | 0 -> compare t t'
+          | x -> x
+        end
+      | x -> x
+    end
+  | u, v -> (_descr u) - (_descr v)
+
+and compare_list l l' =
+  match l, l' with
+  | [], [] -> 0
+  | _ :: _, [] -> 1
+  | [], _ :: _ -> -1
+  | t :: r, t' :: r' ->
+    begin match compare t t' with
+      | 0 -> compare_list r r'
+      | x -> x
+    end
+
+let equal t t' = compare t t' = 0
+
+(* Add an attribute *)
+let add_attr a t = { t with attr = a :: t.attr }
+
 (* Make a term from its description *)
 let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
@@ -288,4 +331,7 @@ let subtype ?loc a b = apply ?loc subtype_t [a; b]
 let name ?loc id =
   const ?loc Id.({ id with ns = Decl})
 
+(* {2 Standard Attributes} *)
+let rwrt_rule =
+  const @@ Id.mk Id.Decl "rewrite_rule"
 

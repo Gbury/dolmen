@@ -105,6 +105,16 @@ and t = {
 (** The type of terms. A record containing an optional location,
     and a description of the term. *)
 
+(** {2 Standard functions} *)
+
+val equal : t -> t -> bool
+val compare : t -> t -> int
+(** Equality and comparison *)
+
+val pp : Buffer.t -> t -> unit
+val print : Format.formatter -> t -> unit
+(** Printing functionson buffer and formatters. *)
+
 (** {2 Implemented interfaces} *)
 
 include Term_intf.Logic
@@ -117,9 +127,12 @@ include Term_intf.Logic
 val fun_ty : ?loc:location -> t list -> t -> t
 (** Multi-arguments function type constructor. *)
 
-val pp : Buffer.t -> t -> unit
-val print : Format.formatter -> t -> unit
-(** Printing functionson buffer and formatters. *)
+val add_attr : t -> t -> t
+(** [add_attr attr term] rturns a term [t] equal to [term], but with
+    [attr] added to the list of attributes. *)
 
+(** {2 Standard attributes} *)
 
+val rwrt_rule : t
+(** The tagged term is (or at least should be) a rewrite rule. *)
 
