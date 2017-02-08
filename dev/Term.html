@@ -34,8 +34,10 @@
 <link title="Tptp" rel="Chapter" href="Tptp.html">
 <link title="Ast_tptp" rel="Chapter" href="Ast_tptp.html">
 <link title="Logic" rel="Chapter" href="Logic.html"><link title="Type definitions" rel="Section" href="#2_Typedefinitions">
+<link title="Standard functions" rel="Section" href="#2_Standardfunctions">
 <link title="Implemented interfaces" rel="Section" href="#2_Implementedinterfaces">
 <link title="Additional functions" rel="Section" href="#2_Additionalfunctions">
+<link title="Standard attributes" rel="Section" href="#2_Standardattributes">
 <title>Dolmen doc : Term</title>
 </head>
 <body>
@@ -124,6 +126,16 @@ Should all arguments be pariwise equal ?<br>
 <code><span id="TYPEELTbuiltin.Distinct"><span class="constructor">Distinct</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Should all arguments be pairwise distinct ?<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.AC"><span class="constructor">AC</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Attributes to denote symbols that are associative and commutative.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -442,6 +454,18 @@ The type of terms. A record containing an optional location,
 </div>
 
 <br>
+<h2 id="2_Standardfunctions">Standard functions</h2><br>
+
+<pre><span id="VALequal"><span class="keyword">val</span> equal</span> : <code class="type"><a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALcompare"><span class="keyword">val</span> compare</span> : <code class="type"><a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> int</code></pre><div class="info ">
+Equality and comparison<br>
+</div>
+
+<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+Printing functionson buffer and formatters.<br>
+</div>
+<br>
 <h2 id="2_Implementedinterfaces">Implemented interfaces</h2><br>
 
 <pre><span class="keyword">include</span> <a href="Term_intf.Logic.html">Term_intf.Logic</a></pre>
@@ -452,8 +476,14 @@ The type of terms. A record containing an optional location,
 Multi-arguments function type constructor.<br>
 </div>
 
-<pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre>
-<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
-Printing functionson buffer and formatters.<br>
+<pre><span id="VALadd_attr"><span class="keyword">val</span> add_attr</span> : <code class="type"><a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">add_attr attr term</code> rturns a term <code class="code">t</code> equal to <code class="code">term</code>, but with
+    <code class="code">attr</code> added to the list of attributes.<br>
+</div>
+<br>
+<h2 id="2_Standardattributes">Standard attributes</h2><br>
+
+<pre><span id="VALrwrt_rule"><span class="keyword">val</span> rwrt_rule</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+The tagged term is (or at least should be) a rewrite rule.<br>
 </div>
 </body></html>

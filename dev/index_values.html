@@ -37,6 +37,24 @@
 <h1>Index of values</h1>
 <table>
 <tr><td align="left"><br>A</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALac">ac</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Pre-defined constant to specify associative/commutative
+      symbols in attributes.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALac">ac</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+A Term used in attributes to denote symbols that are
+      associative and commutative.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#VALadd_attr">add_attr</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+<code class="code">add_attr attr term</code> rturns a term <code class="code">t</code> equal to <code class="code">term</code>, but with
+    <code class="code">attr</code> added to the list of attributes.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALand_">and_</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALand_">and_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -235,12 +253,17 @@ Represents juxtaposition of two terms, usually denoted "t : t'"
 </td></tr>
 <tr><td><a href="ParseLocation.html#VALcombine">combine</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td><div class="info">
-LogtkPosition that spans the two given positions.
+Location that spans the two given positions.
 </div>
 </td></tr>
 <tr><td><a href="ParseLocation.html#VALcombine_list">combine_list</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td><div class="info">
 N-ary version of <a href="ParseLocation.html#VALcombine"><code class="code">ParseLocation.combine</code></a>.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#VALcompare">compare</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Equality and comparison
 </div>
 </td></tr>
 <tr><td><a href="Id.html#VALcompare">compare</a> [<a href="Id.html">Id</a>]</td>
@@ -273,7 +296,8 @@ Variable and constant constructors.
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALdata">data</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
-Packs a list of mutually recursive inductive type declarations.
+Packs a list of mutually recursive inductive type declarations into a
+      single statement.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdata_t">data_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -309,6 +333,13 @@ Namespace used for declaration identifiers (for instance used
 <tr><td><a href="Stmt_intf.Logic.html#VALdefinition">definition</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 Symbol definition.
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Statement.html#VALdefs">defs</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
+<td></td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALdefs">defs</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Packs a list of mutually recursive definitions into a single statement.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALdescription">description</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -356,6 +387,8 @@ Hash and equality
 <tr><td><a href="Ast_tptp.Term.html#VALeq_t">eq_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALeq_t">eq_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td></td></tr>
+<tr><td><a href="Term.html#VALequal">equal</a> [<a href="Term.html">Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Id.html#VALequal">equal</a> [<a href="Id.html">Id</a>]</td>
 <td></td></tr>
@@ -589,6 +622,13 @@ Standard logical connectives viewed as terms.
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALimply">imply</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_zf.Statement.html#VALimport">import</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
+<td></td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALimport">import</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Import directive.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Statement.html#VALinclude_">include_</a> [<a href="Ast_tptp.Statement.html">Ast_tptp.Statement</a>]</td>
 <td><div class="info">
 Include directive.
@@ -637,6 +677,13 @@ Function construction.
 </td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALlambda">lambda</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_zf.Statement.html#VALlemma">lemma</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
+<td></td></tr>
+<tr><td><a href="Stmt_intf.Logic.html#VALlemma">lemma</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
+<td><div class="info">
+Lemmas.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALletin">letin</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td><div class="info">
 Local binding for terms.
@@ -706,6 +753,16 @@ Namespace used by modules (for instance in dedulkti).
 </div>
 </td></tr>
 <tr><td align="left"><br>N</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALname">name</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Create a name for a statement.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALname">name</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Create a name for a statement (in Zf).
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALnand_t">nand_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALnand_t">nand_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -766,6 +823,11 @@ Header of a dimacs file.
 <tr><td><a href="Stmt_intf.Logic.html#VALp_cnf">p_cnf</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 Header of dimacs files.
+</div>
+</td></tr>
+<tr><td><a href="Statement.html#VALpack">pack</a> [<a href="Statement.html">Statement</a>]</td>
+<td><div class="info">
+Pack a list of statements into a single one.
 </div>
 </td></tr>
 <tr><td><a href="Logic.Make.html#VALparse_file">parse_file</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
@@ -850,6 +912,11 @@ Product type constructor, used for instance in the types of
 The type of propositions.
 </div>
 </td></tr>
+<tr><td><a href="Statement.html#VALprove">prove</a> [<a href="Statement.html">Statement</a>]</td>
+<td><div class="info">
+Emit a <code class="code">Prove</code> statement.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALpush">push</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 Push the given number of new level on the stack of assertions.
@@ -880,6 +947,11 @@ Constants that are syntaxically recognised as numbers.
 <td><div class="info">
 Declare a rewrite rule, i.e a universally quantified equality or equivalence that
       can be oriented according to a specific ordering.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#VALrwrt_rule">rwrt_rule</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+The tagged term is (or at least should be) a rewrite rule.
 </div>
 </td></tr>
 <tr><td align="left"><br>S</td></tr>

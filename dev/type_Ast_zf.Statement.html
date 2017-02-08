@@ -36,32 +36,45 @@
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;id<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;term<br>
 &nbsp;&nbsp;<span class="keyword">type</span>&nbsp;location<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;import&nbsp;:&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;defs&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;rewrite&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;goal&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assume&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;lemma&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;decl&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;definition&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;inductive&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?attrs:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.id&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.id&nbsp;*&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;list)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;rewrite&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?attr:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;goal&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?attr:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;assume&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;?attr:<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.term&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Ast_zf</span>.<span class="constructor">Statement</span>.t<br>
 <span class="keyword">end</span></code></body></html>

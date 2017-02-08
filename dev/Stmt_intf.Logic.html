@@ -84,6 +84,11 @@ Constructors for annotations. Annotations are mainly used in TPTP.<br>
 <br>
 <h2 id="2_Genericstatements">Generic statements</h2><br>
 
+<pre><span id="VALimport"><span class="keyword">val</span> import</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Import directive. Same as <code class="code">include_</code> but without filtering on the
+      statements to import.<br>
+</div>
+
 <pre><span id="VALinclude_"><span class="keyword">val</span> include_</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       string -> <a href="Stmt_intf.Logic.html#TYPEid">id</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Inlcude directive. <code class="code">include file l</code> means to include in the current scope
       the directives from file <code class="code">file</code> that appear in <code class="code">l</code>. If <code class="code">l</code> is the empty list,
@@ -220,34 +225,43 @@ TPTP directives. <code class="code">tptp name role t</code> instructs the prover
 <br>
 <h2 id="2_Zipperpositionstatements">Zipperposition statements</h2><br>
 
-<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       (<a href="Stmt_intf.Logic.html#TYPEid">id</a> * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-Inductive type definitions. <code class="code">inductive name vars l</code> defines aan inductive type <code class="code">name</code>,
-      with polymorphic variables <code class="code">vars</code>, and with a list of inductive constructors <code class="code">l</code>.<br>
+<pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEt">t</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Packs a list of mutually recursive inductive type declarations into a
+      single statement.<br>
 </div>
 
-<pre><span id="VALdata"><span class="keyword">val</span> data</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-Packs a list of mutually recursive inductive type declarations. into a single declaration.<br>
+<pre><span id="VALdefs"><span class="keyword">val</span> defs</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEt">t</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Packs a list of mutually recursive definitions into a single statement.<br>
 </div>
 
-<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Declare a rewrite rule, i.e a universally quantified equality or equivalence that
+      can be oriented according to a specific ordering.<br>
+</div>
+
+<pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+The goal, i.e the propositional formula to prove.<br>
+</div>
+
+<pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Adds an hypothesis.<br>
+</div>
+
+<pre><span id="VALlemma"><span class="keyword">val</span> lemma</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Lemmas.<br>
+</div>
+
+<pre><span id="VALdecl"><span class="keyword">val</span> decl</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol declaration. <code class="code">decl name ty</code> declares a new symbol <code class="code">name</code> with type <code class="code">ty</code>.<br>
 </div>
 
-<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALdefinition"><span class="keyword">val</span> definition</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Symbol definition. <code class="code">def name ty term</code> defines a new symbol <code class="code">name</code> of type <code class="code">ty</code>
       which is equal to <code class="code">term</code>.<br>
 </div>
 
-<pre><span id="VALgoal"><span class="keyword">val</span> goal</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-The goal, i.e the propositional formula to prove.<br>
-</div>
-
-<pre><span id="VALassume"><span class="keyword">val</span> assume</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-Adds an hypothesis.<br>
-</div>
-
-<pre><span id="VALrewrite"><span class="keyword">val</span> rewrite</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attr:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEterm">term</a> -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-Declare a rewrite rule, i.e a universally quantified equality or equivalence that
-      can be oriented according to a specific ordering.<br>
+<pre><span id="VALinductive"><span class="keyword">val</span> inductive</span> : <code class="type">?loc:<a href="Stmt_intf.Logic.html#TYPElocation">location</a> -><br>       ?attrs:<a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       <a href="Stmt_intf.Logic.html#TYPEid">id</a> -><br>       <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list -><br>       (<a href="Stmt_intf.Logic.html#TYPEid">id</a> * <a href="Stmt_intf.Logic.html#TYPEterm">term</a> list) list -> <a href="Stmt_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Inductive type definitions. <code class="code">inductive name vars l</code> defines aan inductive type <code class="code">name</code>,
+      with polymorphic variables <code class="code">vars</code>, and with a list of inductive constructors <code class="code">l</code>.<br>
 </div>
 </body></html>

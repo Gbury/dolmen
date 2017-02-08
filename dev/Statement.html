@@ -120,8 +120,7 @@ The type for inductive type declarations. The "vars" field if used
 <code><span id="TYPEELTdescr.Pack"><span class="constructor">Pack</span></span> <span class="keyword">of</span> <code class="type"><a href="Statement.html#TYPEt">t</a> list</code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Pack a list of statements that have a semantic meaning (for instance
-      a list of mutually recursive inductive definitions, or the translation
-      of a statement such as tptp's theorem).<br>
+      a list of mutually recursive inductive definitions).<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -375,5 +374,13 @@ The type of statements. Statements have optional location and attributes (or ann
 <pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Statement.html#TYPEt">t</a> -> unit</code></pre>
 <pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Statement.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
 Printing functions for statements.<br>
+</div>
+
+<pre><span id="VALprove"><span class="keyword">val</span> prove</span> : <code class="type">?loc:<a href="Statement.html#TYPElocation">location</a> -> unit -> <a href="Statement.html#TYPEt">t</a></code></pre><div class="info ">
+Emit a <code class="code">Prove</code> statement.<br>
+</div>
+
+<pre><span id="VALpack"><span class="keyword">val</span> pack</span> : <code class="type">?id:<a href="Id.html#TYPEt">Id.t</a> -><br>       ?loc:<a href="Statement.html#TYPElocation">location</a> -><br>       ?attr:<a href="Statement.html#TYPEterm">term</a> -> <a href="Statement.html#TYPEt">t</a> list -> <a href="Statement.html#TYPEt">t</a></code></pre><div class="info ">
+Pack a list of statements into a single one.<br>
 </div>
 </body></html>
