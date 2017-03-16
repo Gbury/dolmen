@@ -68,8 +68,9 @@ module Make
           raise e
         | exception Lexer.Error ->
           let pos = Loc.of_lexbuf lexbuf in
+          let err = Lexing.lexeme lexbuf in
           Line.consume lexbuf;
-          raise (Loc.Lexing_error (pos, Lexing.lexeme lexbuf))
+          raise (Loc.Lexing_error (pos, err))
         | exception Parser.Error ->
           let pos = Loc.of_lexbuf lexbuf in
           Line.consume lexbuf;
