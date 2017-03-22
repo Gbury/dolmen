@@ -315,7 +315,7 @@ let sexpr ?loc l = apply ?loc data_t l
 let rat = int
 let distinct = const
 
-let var ?loc id = const ?loc { id with ns = Id.Var }
+let var ?loc id = const ?loc { id with Id.ns = Id.Var }
 
 let ite ?loc a b c = apply ?loc ite_t [a; b; c]
 let sequent ?loc hyps goals =

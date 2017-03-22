@@ -25,7 +25,7 @@ let print fmt { ns; name } =
   Format.fprintf fmt "%s" name
 
 (* Namespaces *)
-let var = Var
+(* let var = Var *)
 let sort = Sort
 let term = Term
 let attr = Attr
