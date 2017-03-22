@@ -2,6 +2,7 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
 type namespace =
+  | Var
   | Sort
   | Term
   | Attr
@@ -24,6 +25,7 @@ let print fmt { ns; name } =
   Format.fprintf fmt "%s" name
 
 (* Namespaces *)
+let var = Var
 let sort = Sort
 let term = Term
 let attr = Attr

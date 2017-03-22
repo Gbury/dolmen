@@ -6,6 +6,9 @@
 (** {2 Type definitions} *)
 
 type namespace =
+  | Var
+  (** Namespace for variables. Not all variables are necessarily in
+      this namespace, but ids in this namespace must be variables. *)
   | Sort
   (** Namepsace for sorts and types (only used in smtlib) *)
   | Term
