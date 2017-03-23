@@ -344,5 +344,11 @@ let tpi = tptp
 let thf = tptp
 let tff = tptp
 let fof = tptp
-let cnf = tptp
+
+(* We want to generalize the variables in cnf formulas. *)
+let cnf ?loc ?annot id role t =
+  let loc = t.Term.loc in
+  let vars = List.map (Term.const ?loc) (Term.fv t) in
+  let t' = Term.forall ?loc vars t in
+  tptp ?loc ?annot id role t'
 

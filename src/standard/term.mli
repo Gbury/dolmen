@@ -131,6 +131,12 @@ val add_attr : t -> t -> t
 (** [add_attr attr term] rturns a term [t] equal to [term], but with
     [attr] added to the list of attributes. *)
 
+(** {2 Free variables} *)
+
+val fv : t -> Id.t list
+(** Return the list of free variables (i.e currently, Ids that are in
+    the [Var]namespace). *)
+
 (** {2 Standard attributes} *)
 
 val rwrt_rule : t

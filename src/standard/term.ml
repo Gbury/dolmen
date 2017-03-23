@@ -293,6 +293,26 @@ let description = mk_bind Description
 let fun_ty = mk_bind Arrow
 let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 
+(* {2 Free variables} *)
+
+module S = Set.Make(Id)
+
+let rec free_vars acc t =
+  match t.term with
+  | Builtin _ -> acc
+  | Colon (t, t') -> free_vars (free_vars acc t) t'
+  | Symbol i -> if i.Id.ns = Id.Var then S.add i acc else acc
+  | App (t, l) ->
+    List.fold_left free_vars (free_vars acc t) l
+  | Binder (_, l, t) ->
+    let s = free_vars S.empty t in
+    let bound = List.fold_left free_vars S.empty l in
+    let s' = S.filter (fun x -> not (S.mem x bound)) s in
+    S.union acc s'
+
+let fv t =
+  S.elements (free_vars S.empty t)
+
 (* {2 Wrappers for dimacs} *)
 
 let atom ?loc i =
