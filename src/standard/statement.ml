@@ -221,8 +221,10 @@ let clause ?loc l =
 let assumption ?loc l =
   let t = Term.and_ ?loc l in
   mk ?loc (Pack [
+      push ?loc 1;
       antecedent ?loc t;
       prove ?loc ();
+      pop ?loc 1;
     ])
 
 (* Smtlib wrappers *)
