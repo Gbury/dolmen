@@ -63,10 +63,11 @@ module Make
   module type S = Language_intf.S with type statement := S.t
   (** The type of language modules. *)
 
-  val of_language : language -> language * string * (module S)
-  val of_extension : string -> language * string * (module S)
-  (** These function take as argument either a language, or a filename,
-      and return a triple:
+  val of_language   : language  -> language * string * (module S)
+  val of_extension  : string    -> language * string * (module S)
+  val of_filename   : string    -> language * string * (module S)
+  (** These function take as argument either a language, a filename,
+      or an extension, and return a triple:
       - language
       - language file extension (starting with a dot)
       - appropriate parsing module

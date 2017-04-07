@@ -47,6 +47,8 @@ module Make
     with Not_found ->
       raise (Extension_not_found ext)
 
+  let of_filename s = of_extension (Misc.get_extension s)
+
   let find ?language ?(dir="") file =
     match language with
     | None ->
@@ -62,7 +64,7 @@ module Make
 
   let parse_file ?language file =
     let l, _, (module P : S) = match language with
-      | None -> of_extension (Misc.get_extension file)
+      | None -> of_filename file
       | Some l -> of_language l
     in
     l, P.parse_file file
