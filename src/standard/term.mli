@@ -32,7 +32,7 @@ type builtin =
       which are respectively a conjunction and a disjunction of propositional formulas. *)
 
   | Int
-  (** Builtin integer type. Currently specifi to Zipperposition format; other languages
+  (** Builtin integer type. Currently specific to Zipperposition format; other languages
       might use constants with pre-defined name, such as tptp's "$int". *)
   | Minus
   (** Arithmetic unary minus. *)
