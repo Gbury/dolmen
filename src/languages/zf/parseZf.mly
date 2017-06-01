@@ -23,6 +23,12 @@ raw_var:
   | s=name
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
 
+var_or_wildcard:
+  | v=raw_var
+    { v }
+  | WILDCARD
+    { T.wildcard }
+
 typed_var_block:
   | v=raw_var
     { [ v ] }
@@ -54,43 +60,97 @@ typed_ty_var_list:
     { l @ l2 }
 
 var:
-  | v=raw_var
-    { v }
   | WILDCARD
     { T.wildcard }
+  | v=raw_var
+    { v }
 
 const:
   | TYPE
     { T.tType }
   | PROP
     { T.prop }
+  | INT
+    { T.ty_int }
   | LOGIC_TRUE
     { T.true_ }
   | LOGIC_FALSE
     { T.false_ }
+
+match_branch:
+  | VERTICAL_BAR c=raw_var vars=var_or_wildcard* ARROW rhs=term
+    { let pattern =
+        let loc = L.mk_pos $startpos(c) $endpos(vars) in
+        T.apply ~loc c vars
+      in
+      (pattern,rhs) }
 
 atomic_term:
   | v=var
     { v }
   | t=const
     { t }
+  | i=INTEGER
+    { let loc = L.mk_pos $startpos $endpos in T.int ~loc i }
   | LEFT_PAREN t=term RIGHT_PAREN
     { t }
+  | MATCH t=term WITH l=match_branch+ END
+    { let loc = L.mk_pos $startpos $endpos in T.match_ ~loc t l }
 
 apply_term:
   | t=atomic_term
     { t }
   | t=atomic_term u=atomic_term+
     { let loc = L.mk_pos $startpos $endpos in T.apply ~loc t u }
-  | LOGIC_NOT t=apply_term
+  | ARITH_MINUS t=apply_term
+    { let loc = L.mk_pos $startpos $endpos in T.uminus ~loc t }
+
+mult_term:
+  | t=apply_term
+    { t }
+  | a=apply_term ARITH_PRODUCT b=mult_term
+    { let loc = L.mk_pos $startpos $endpos in T.mult ~loc a b }
+
+%inline PLUS_OP:
+  | ARITH_PLUS
+    { T.add }
+  | ARITH_MINUS
+    { T.sub }
+
+plus_term:
+  | t=mult_term
+    { t }
+  | a=mult_term o=PLUS_OP b=plus_term
+    { let loc = Some (L.mk_pos $startpos $endpos) in o ?loc a b }
+
+%inline ARITH_OP:
+  | ARITH_LT
+    { T.lt }
+  | ARITH_LEQ
+    { T.leq }
+  | ARITH_GT
+    { T.gt }
+  | ARITH_GEQ
+    { T.geq }
+
+arith_op_term:
+  | t=plus_term
+    { t }
+  | a=plus_term o=ARITH_OP b=plus_term
+    { let loc = Some (L.mk_pos $startpos $endpos) in o ?loc a b }
+
+not_term:
+  | t=arith_op_term
+    { t }
+  | LOGIC_NOT t=arith_op_term
     { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc t }
 
 eq_term:
-  | t=apply_term
+  | t=not_term
     { t }
-  | t=apply_term LOGIC_EQ u=apply_term
+  | t=not_term LOGIC_EQ u=not_term
     { let loc = L.mk_pos $startpos $endpos in T.eq ~loc t u }
-  | t=apply_term LOGIC_NEQ u=apply_term
+  | t=not_term LOGIC_NEQ u=not_term
     { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc (T.eq ~loc t u) }
 
 and_term:
@@ -112,14 +172,18 @@ or_term:
 term:
   | t=or_term
     { t }
-  | t=apply_term ARROW u=term
-    { let loc = L.mk_pos $startpos $endpos in T.arrow ~loc t u }
-  | PI vars=typed_ty_var_list DOT t=term
-    { let loc = L.mk_pos $startpos $endpos in T.pi ~loc vars t }
   | LOGIC_FORALL vars=typed_var_list DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc vars t }
   | LOGIC_EXISTS vars=typed_var_list DOT t=term
     { let loc = L.mk_pos $startpos $endpos in T.exists ~loc vars t }
+  | FUN vars=typed_var_list DOT t=term
+    { let loc = L.mk_pos $startpos $endpos in T.lambda ~loc vars t }
+  | t=apply_term ARROW u=term
+    { let loc = L.mk_pos $startpos $endpos in T.arrow ~loc t u }
+  | PI vars=typed_ty_var_list DOT t=term
+    { let loc = L.mk_pos $startpos $endpos in T.pi ~loc vars t }
+  | IF a=term THEN b=term ELSE c=term
+    { let loc = L.mk_pos $startpos $endpos in T.ite ~loc a b c }
   | error
     { let loc = L.mk_pos $startpos $endpos in raise (L.Syntax_error (loc, "expected term")) }
 
@@ -136,14 +200,22 @@ type_def:
     { let loc = L.mk_pos $startpos $endpos in S.inductive ~loc t vars l }
 
 mutual_types:
-  | l=separated_nonempty_list(AND, type_def) { l }
+  | l=separated_nonempty_list(AND, type_def)
+    { l }
 
 attr:
-  | AC
-    { T.ac }
-  | NAME COLON v=name
-    { let loc = L.mk_pos $startpos $endpos in
-      T.name ~loc v }
+  | a=atomic_attr
+    { a }
+  | s=raw_var l=atomic_attr+
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc s l }
+
+atomic_attr:
+  | s=raw_var
+    { s }
+  | s=QUOTED
+    { let loc = L.mk_pos $startpos $endpos in T.quoted ~loc s }
+  | LEFT_PAREN a=attr RIGHT_PAREN
+    { a }
 
 attrs:
   | LEFT_BRACKET l=separated_nonempty_list(COMMA, attr) RIGHT_BRACKET
@@ -168,6 +240,8 @@ statement:
     { let loc = L.mk_pos $startpos $endpos in S.import ~loc s }
   | VAL attrs=attrs v=name COLON t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.decl ~loc ~attrs v t }
+  | DEF attrs=attrs l=separated_nonempty_list(AND,def) DOT
+    { let loc = L.mk_pos $startpos $endpos in S.defs ~loc ~attrs l }
   | REWRITE attrs=attrs t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.rewrite ~loc ~attrs t }
   | ASSERT attrs=attrs t=term DOT
@@ -176,8 +250,6 @@ statement:
     { let loc = L.mk_pos $startpos $endpos in S.lemma ~loc ~attrs t }
   | GOAL attrs=attrs t=term DOT
     { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attrs t }
-  | DEF attrs=attrs l=separated_nonempty_list(AND,def) DOT
-    { let loc = L.mk_pos $startpos $endpos in S.defs ~loc ~attrs l }
   | DATA attrs=attrs l=mutual_types DOT
     { let loc = L.mk_pos $startpos $endpos in S.data ~loc ~attrs l }
   | error

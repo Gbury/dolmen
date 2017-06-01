@@ -44,6 +44,11 @@ module type Logic = sig
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism. *)
 
+  val ty_int    : t
+  (** The type of integers, defined as a specific token by the Zipperposition format;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, tptp's "$int") .*)
+
   val prop      : t
   (** The type of propositions. Also defined as a lexical token by the Zipperposition
       format. Will be defined as a constant in most other languages (for instance,
@@ -134,6 +139,11 @@ module type Logic = sig
   (** Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: [ite condition then_branch else_branch]. *)
 
+  val match_ : ?loc:location -> t -> (t * t) list -> t
+  (** Pattern matching. The first term is the term to match,
+      and each tuple in the list is a match case, which is a pair
+      of a pattern and a match branch. *)
+
   val pi     : ?loc:location -> t list -> t -> t
   val letin  : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
@@ -176,15 +186,37 @@ module type Logic = sig
   val subtype : ?loc:location -> t -> t -> t
   (** Subtype relation for types. *)
 
+  (** {3 Arithmetic constructors} *)
+
+  val uminus : ?loc:location -> t -> t
+  (** Arithmetic unary minus. *)
+
+  val add    : ?loc:location -> t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub    : ?loc:location -> t -> t -> t
+  (** Arithmetic substraction. *)
+
+  val mult   : ?loc:location -> t -> t -> t
+  (** Arithmetic multiplication. *)
+
+  val lt     : ?loc:location -> t -> t -> t
+  (** Arithmetic "lesser than" comparison (strict). *)
+
+  val leq    : ?loc:location -> t -> t -> t
+  (** Arithmetic "lesser or equal" comparison. *)
+
+  val gt     : ?loc:location -> t -> t -> t
+  (** Arithmetic "greater than" comparison (strict). *)
+
+  val geq    : ?loc:location -> t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
+
 
   (** {3 Special constructions} *)
 
-  val ac      : t
-  (** A Term used in attributes to denote symbols that are
-      associative and commutative. *)
-
-  val name    : ?loc:location -> id -> t
-  (** Create a name for a statement (in Zf). *)
+  val quoted  : ?loc:location -> string -> t
+  (** Create an attribute from a quoted string (in Zf). *)
 
   val sequent : ?loc:location -> t list -> t list -> t
   (** Sequents as terms *)

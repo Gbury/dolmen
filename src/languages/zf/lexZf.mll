@@ -20,7 +20,7 @@ let alpha_numeric = lower_alpha | upper_alpha | numeric | '_'
 let upper_word = upper_alpha alpha_numeric*
 let lower_word = lower_alpha alpha_numeric*
 
-let quoted = '"' ([^ '"'] | '\\' '"')* '"'
+(* let quoted = '"' ([^ '"'] | '\\' '"')* '"' *)
 
 let zero_numeric = '0'
 let non_zero_numeric = ['1' - '9']
@@ -57,6 +57,7 @@ rule token = parse
   | "where" { WHERE }
   | "type" { TYPE }
   | "prop" { PROP }
+  | "int" { INT }
   | "assert" { ASSERT }
   | "lemma" { LEMMA }
   | "goal" { GOAL }
@@ -65,25 +66,39 @@ rule token = parse
   | "true" { LOGIC_TRUE }
   | "false" { LOGIC_FALSE }
   | "pi" { PI }
+  | "if" { IF }
+  | "then" { THEN }
+  | "else" { ELSE }
+  | "match" { MATCH }
+  | "with" { WITH }
+  | "end" { END }
   | "data" { DATA }
+  | "fun" { FUN }
   | "&&" { LOGIC_AND }
   | "||" { LOGIC_OR }
   | "|" { VERTICAL_BAR }
   | "~" { LOGIC_NOT }
+  | "*" { ARITH_PRODUCT }
+  | "+" { ARITH_PLUS }
+  | "-" { ARITH_MINUS }
+  | "<" { ARITH_LT }
+  | "<=" { ARITH_LEQ }
+  | ">" { ARITH_GT }
+  | ">=" { ARITH_GEQ }
   | "forall" { LOGIC_FORALL }
   | "exists" { LOGIC_EXISTS }
   | "=>" { LOGIC_IMPLY }
   | "<=>" { LOGIC_EQUIV }
-  | "AC" { AC }
-  | "name" { NAME }
   | "include" { INCLUDE }
   | lower_word { LOWER_WORD(Lexing.lexeme lexbuf) }
   | upper_word { UPPER_WORD(Lexing.lexeme lexbuf) }
+  | integer { INTEGER(Lexing.lexeme lexbuf) }
   | '"' { quoted (Buffer.create 42) lexbuf }
   | _ { raise Error }
 
+(* we unquote during lexing rather then during the parsing *)
 and quoted b = parse
-  | '"' { QUOTED(Buffer.contents b) }
-  | '\\' '"' { Buffer.add_char b '"'; quoted b lexbuf }
-  | _ as c   { Buffer.add_char b c; quoted b lexbuf }
+  | '"'       { QUOTED(Buffer.contents b) }
+  | '\\' '"'  { Buffer.add_char b '"'; quoted b lexbuf }
+  | _ as c    { Buffer.add_char b c; quoted b lexbuf }
 

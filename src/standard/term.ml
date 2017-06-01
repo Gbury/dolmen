@@ -9,10 +9,14 @@ type builtin =
   | True | False
   | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
 
-  | AC                  (* Attribute for associative/commutative symbols. *)
-
   | Ite                 (* Condional *)
   | Sequent             (* Is the given sequent provable ? *)
+
+  | Int                 (* Arithmetic type for integers *)
+  | Minus               (* arithmetic unary minus *)
+  | Add | Sub | Mult    (* arithmetic operators *)
+  | Lt | Leq            (* arithmetic comparisons *)
+  | Gt | Geq            (* arithmetic comparisons *)
 
   | Subtype             (* Function type constructor and subtyping relation *)
   | Product | Union     (* Product and union of types (not set theory) *)
@@ -36,6 +40,7 @@ type descr =
   | Colon of t * t
   | App of t * t list
   | Binder of binder * t list * t
+  | Match of t * (t * t) list
 
 and t = {
   term : descr;
@@ -46,6 +51,9 @@ and t = {
 (* Printing info *)
 
 let infix_builtin = function
+  | Add | Sub
+  | Lt | Leq
+  | Gt | Geq
   | Eq | And | Or
   | Nand | Xor | Nor
   | Imply | Implied | Equiv
@@ -54,41 +62,55 @@ let infix_builtin = function
     -> true
   | _ -> false
 
+let builtin_to_string = function
+  | Wildcard -> "_"
+  | Ttype -> "$tType"
+  | Prop -> "$o"
+  | True -> "⊤"
+  | False -> "⊥"
+  | Eq -> "=="
+  | Distinct -> "!="
+  | Ite -> "#ite"
+  | Sequent -> "⊢"
+  | Int -> "$int"
+  | Minus -> "-"
+  | Add -> "+"
+  | Sub -> "-"
+  | Mult -> "×"
+  | Lt -> "<"
+  | Leq -> "≤"
+  | Gt -> ">"
+  | Geq -> "≥"
+  | Subtype -> "⊂"
+  | Product -> "*"
+  | Union -> "∪"
+  | Not -> "¬"
+  | And -> "∧"
+  | Or -> "∨"
+  | Nand -> "⊼"
+  | Xor -> "⊻"
+  | Nor -> "V"
+  | Imply -> "⇒"
+  | Implied -> "⇐"
+  | Equiv -> "⇔"
+
+let binder_to_string = function
+  | All -> "∀"
+  | Ex -> "∃"
+  | Pi -> "Π"
+  | Arrow -> "→"
+  | Let -> "let"
+  | Fun -> "λ"
+  | Choice -> "ε"
+  | Description -> "@"
+
 (* Debug printing *)
 
-let pp_builtin b = function
-  | Wildcard -> Printf.bprintf b "_"
-  | Ttype -> Printf.bprintf b "$tType"
-  | Prop -> Printf.bprintf b "$o"
-  | True -> Printf.bprintf b "⊤"
-  | False -> Printf.bprintf b "⊥"
-  | Eq -> Printf.bprintf b "=="
-  | Distinct -> Printf.bprintf b "!="
-  | AC -> Printf.bprintf b "ac"
-  | Ite -> Printf.bprintf b "#ite"
-  | Sequent -> Printf.bprintf b "⊢"
-  | Subtype -> Printf.bprintf b "⊂"
-  | Product -> Printf.bprintf b "*"
-  | Union -> Printf.bprintf b "∪"
-  | Not -> Printf.bprintf b "¬"
-  | And -> Printf.bprintf b "∧"
-  | Or -> Printf.bprintf b "∨"
-  | Nand -> Printf.bprintf b "⊼"
-  | Xor -> Printf.bprintf b "⊻"
-  | Nor -> Printf.bprintf b "V"
-  | Imply -> Printf.bprintf b "⇒"
-  | Implied -> Printf.bprintf b "⇐"
-  | Equiv -> Printf.bprintf b "⇔"
+let pp_builtin b builtin =
+  Printf.bprintf b "%s" (builtin_to_string builtin)
 
-let pp_binder b = function
-  | All -> Printf.bprintf b "∀"
-  | Ex -> Printf.bprintf b "∃"
-  | Pi -> Printf.bprintf b "Π"
-  | Arrow -> Printf.bprintf b "→"
-  | Let -> Printf.bprintf b "let"
-  | Fun -> Printf.bprintf b "λ"
-  | Choice -> Printf.bprintf b "ε"
-  | Description -> Printf.bprintf b "@"
+let pp_binder b binder =
+  Printf.bprintf b "%s" (binder_to_string binder)
 
 let rec pp_descr b = function
   | Symbol id -> Id.pp b id
@@ -105,6 +127,12 @@ let rec pp_descr b = function
   | Binder (q, l, e) ->
     Printf.bprintf b "%a %a. %a" pp_binder q
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l pp e
+  | Match (t, l) ->
+    Printf.bprintf b "match %a with %a"
+      pp t (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" | " ~pp:pp_match_case) l
+
+and pp_match_case b (pattern, branch) =
+  Printf.bprintf b "%a => %a" pp pattern pp branch
 
 and pp b = function
   | { term = (Symbol _) as d }
@@ -113,39 +141,11 @@ and pp b = function
 
 (* Pretty-printing *)
 
-let print_builtin fmt = function
-  | Wildcard -> Format.fprintf fmt "_"
-  | Ttype -> Format.fprintf fmt "$tType"
-  | Prop -> Format.fprintf fmt "$o"
-  | True -> Format.fprintf fmt "⊤"
-  | False -> Format.fprintf fmt "⊥"
-  | Eq -> Format.fprintf fmt "=="
-  | Distinct -> Format.fprintf fmt "!="
-  | AC -> Format.fprintf fmt "ac"
-  | Ite -> Format.fprintf fmt "#ite"
-  | Sequent -> Format.fprintf fmt "⊢"
-  | Subtype -> Format.fprintf fmt "⊂"
-  | Product -> Format.fprintf fmt "*"
-  | Union -> Format.fprintf fmt "∪"
-  | Not -> Format.fprintf fmt "¬"
-  | And -> Format.fprintf fmt "∧"
-  | Or -> Format.fprintf fmt "∨"
-  | Nand -> Format.fprintf fmt "⊼"
-  | Xor -> Format.fprintf fmt "⊻"
-  | Nor -> Format.fprintf fmt "V"
-  | Imply -> Format.fprintf fmt "⇒"
-  | Implied -> Format.fprintf fmt "⇐"
-  | Equiv -> Format.fprintf fmt "⇔"
+let print_builtin fmt builtin =
+  Format.fprintf fmt "%s" (builtin_to_string builtin)
 
-let print_binder fmt = function
-  | All -> Format.fprintf fmt "∀"
-  | Ex -> Format.fprintf fmt "∃"
-  | Pi -> Format.fprintf fmt "Π"
-  | Arrow -> Format.fprintf fmt "→"
-  | Let -> Format.fprintf fmt "let"
-  | Fun -> Format.fprintf fmt "λ"
-  | Choice -> Format.fprintf fmt "ε"
-  | Description -> Format.fprintf fmt "@"
+let print_binder fmt binder =
+  Format.fprintf fmt "%s" (binder_to_string binder)
 
 let rec print_descr fmt = function
   | Symbol id -> Id.print fmt id
@@ -165,6 +165,12 @@ let rec print_descr fmt = function
   | Binder (q, l, e) ->
     Format.fprintf fmt "%a@ %a.@ %a" print_binder q
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l print e
+  | Match (t, l) ->
+    Format.fprintf fmt "match %a with %a" print t
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" | " ~print:print_match_case) l
+
+and print_match_case fmt (pattern, branch) =
+  Format.fprintf fmt "%a => %a" print pattern print branch
 
 and print fmt = function
   | { term = (Symbol _) as d }
@@ -178,36 +184,48 @@ let _descr = function
   | Colon _   -> 3
   | App _     -> 4
   | Binder _  -> 5
+  | Match _   -> 6
+
+let rec compare_list cmp l l' =
+  match l, l' with
+  | [], [] -> 0
+  | _ :: _, [] -> 1
+  | [], _ :: _ -> -1
+  | t :: r, t' :: r' ->
+    begin match cmp t t' with
+      | 0 -> compare_list cmp r r'
+      | x -> x
+    end
 
 let rec compare t t' =
   match t.term, t'.term with
   | Symbol s, Symbol s' -> Id.compare s s'
   | Builtin b, Builtin b' -> Pervasives.compare b b'
   | Colon (t1, t2), Colon (t1', t2') ->
-    compare_list [t1; t2] [t1'; t2']
+    compare_list compare [t1; t2] [t1'; t2']
   | App (f, l), App(f', l') ->
-    compare_list (f :: l) (f' :: l')
+    compare_list compare (f :: l) (f' :: l')
   | Binder (b, vars, t), Binder (b', vars', t') ->
     begin match Pervasives.compare b b' with
       | 0 ->
-        begin match compare_list vars vars' with
+        begin match compare_list compare vars vars' with
           | 0 -> compare t t'
           | x -> x
         end
       | x -> x
     end
-  | u, v -> (_descr u) - (_descr v)
-
-and compare_list l l' =
-  match l, l' with
-  | [], [] -> 0
-  | _ :: _, [] -> 1
-  | [], _ :: _ -> -1
-  | t :: r, t' :: r' ->
+  | Match (t, l), Match (t', l') ->
     begin match compare t t' with
-      | 0 -> compare_list r r'
+      | 0 -> compare_list compare_pair l l'
       | x -> x
     end
+  | u, v -> (_descr u) - (_descr v)
+
+and compare_pair (a, b) (c, d) =
+  match compare a c with
+  | 0 -> compare b d
+  | x -> x
+
 
 let equal t t' = compare t t' = 0
 
@@ -232,11 +250,11 @@ let const ?loc id = make ?loc (Symbol id)
 (* Apply a term to a list of terms. *)
 let apply ?loc f args = make ?loc (App (f, args))
 
+let match_ ?loc t l = make ?loc (Match (t, l))
+
 (* Juxtapose two terms, usually a term and its type.
    Used mainly for typed variables, or type annotations. *)
 let colon ?loc t t' = make ?loc (Colon (t, t'))
-
-let ac          = make (Builtin AC)
 
 let eq_t        = make (Builtin Eq)
 let neq_t       = make (Builtin Distinct)
@@ -265,20 +283,42 @@ let tType       = make (Builtin Ttype)
 let prop        = make (Builtin Prop)
 let data_t      = const Id.(mk Attr "$data")
 
+let ty_int      = make (Builtin Int)
+let uminus_t    = make (Builtin Minus)
+let add_t       = make (Builtin Add)
+let sub_t       = make (Builtin Sub)
+let mult_t      = make (Builtin Mult)
+let lt_t        = make (Builtin Lt)
+let leq_t       = make (Builtin Leq)
+let gt_t        = make (Builtin Gt)
+let geq_t       = make (Builtin Geq)
+
+let nary t = (fun ?loc l -> apply ?loc t l)
+let unary t = (fun ?loc x -> apply ?loc t [x])
+let binary t = (fun ?loc x y -> apply ?loc t [x; y])
 
 (* {2 Usual functions} *)
 
-let eq ?loc a b = apply ?loc eq_t [a; b]
-
+let eq = binary eq_t
 
 (* {2 Logical connectives} *)
 
-let not_ ?loc t = apply ?loc not_t [t]
-let or_ ?loc l  = apply ?loc or_t l
-let and_ ?loc l = apply ?loc and_t l
-let imply ?loc p q = apply ?loc implies_t [p; q]
-let equiv ?loc p q = apply ?loc equiv_t [p; q]
+let not_  = unary not_t
+let or_   = nary or_t
+let and_  = nary and_t
+let imply = binary implies_t
+let equiv = binary equiv_t
 
+(** {2 Arithmetic} *)
+
+let uminus  = unary uminus_t
+let add     = binary add_t
+let sub     = binary sub_t
+let mult    = binary mult_t
+let lt      = binary lt_t
+let leq     = binary leq_t
+let gt      = binary gt_t
+let geq     = binary geq_t
 
 (* {2 Binders} *)
 
@@ -309,6 +349,14 @@ let rec free_vars acc t =
     let bound = List.fold_left free_vars S.empty l in
     let s' = S.filter (fun x -> not (S.mem x bound)) s in
     S.union acc s'
+  | Match (t, l) ->
+    let acc = List.fold_left (fun acc (pattern, branch) ->
+        let s = free_vars S.empty branch in
+        let bound = free_vars S.empty pattern in
+        let s' = S.filter (fun x -> not (S.mem x bound)) s in
+        S.union s' acc
+      ) acc l in
+    free_vars acc t
 
 let fv t =
   S.elements (free_vars S.empty t)
@@ -349,8 +397,8 @@ let subtype ?loc a b = apply ?loc subtype_t [a; b]
 
 (* {2 Wrappers for Zf} *)
 
-let name ?loc id =
-  const ?loc Id.({ id with ns = Decl})
+let quoted ?loc name =
+  const ?loc Id.({ name; ns = Attr})
 
 (* {2 Standard Attributes} *)
 let rwrt_rule =

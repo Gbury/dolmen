@@ -13,8 +13,8 @@
 %token WILDCARD
 %token COMMA
 %token DOT
-%token COLON
 %token SEMI_COLON
+%token COLON
 %token EQDEF
 %token WHERE
 %token AND
@@ -31,6 +31,24 @@
 %token LOGIC_NEQ
 %token LOGIC_EQUIV
 
+%token ARITH_PLUS
+%token ARITH_MINUS
+%token ARITH_PRODUCT
+%token ARITH_LT
+%token ARITH_LEQ
+%token ARITH_GT
+%token ARITH_GEQ
+
+%token IF
+%token THEN
+%token ELSE
+
+%token MATCH
+%token WITH
+%token END
+%token FUN
+
+%token INT
 %token PROP
 %token TYPE
 
@@ -47,12 +65,10 @@
 %token PI
 %token VERTICAL_BAR
 
-%token AC
-%token NAME
-
 %token <string> LOWER_WORD
 %token <string> UPPER_WORD
 %token <string> QUOTED
+%token <string> INTEGER
 
 %%
 

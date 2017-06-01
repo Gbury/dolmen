@@ -28,22 +28,22 @@ module type Term = sig
   type location
   (** The type of locations attached to terms. *)
 
-  val ac : t
-  (** Pre-defined constant to specify associative/commutative
-      symbols in attributes. *)
-
   val tType     : t
-  val wildcard  : t
   val prop      : t
+  val ty_int    : t
+  val wildcard  : t
   val true_     : t
   val false_    : t
   (** Standard pre-defined constants. *)
 
-  val name    : ?loc:location -> id -> t
-  (** Create a name for a statement. *)
+  val quoted  : ?loc:location -> string -> t
+  (** Create an attribute from a quoted string. *)
 
   val const   : ?loc:location -> id -> t
   (** Create a new constant. *)
+
+  val int     : ?loc:location -> string -> t
+  (** Create an integer constant from a string. *)
 
   val apply   : ?loc:location -> t -> t list -> t
   (** Application of terms. *)
@@ -64,6 +64,9 @@ module type Term = sig
   val equiv : ?loc:location -> t -> t -> t
   (** Usual propositional functions. *)
 
+  val ite    : ?loc:location -> t -> t -> t -> t
+  (** Conditional construction. *)
+
   val pi     : ?loc:location -> t list -> t -> t
   (** Dependant product, or polymorphic type quantification.
       Used to build polymorphic function types such as,
@@ -76,7 +79,39 @@ module type Term = sig
   (** Universal propositional quantification. *)
 
   val exists : ?loc:location -> t list -> t -> t
-  (** Existencial porpositional qantification. *)
+  (** Existencial propositional qantification. *)
+
+  val match_ : ?loc:location -> t -> (t * t) list -> t
+  (** Pattern matching. The first term is the term to match,
+      and each tuple in the list is a match case, which is a pair
+      of a pattern and a match branch. *)
+
+  val lambda : ?loc:location -> t list -> t -> t
+  (** Create a lambda. *)
+
+  val uminus : ?loc:location -> t -> t
+  (** Arithmetic unary minus. *)
+
+  val add    : ?loc:location -> t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub    : ?loc:location -> t -> t -> t
+  (** Arithmetic substraction. *)
+
+  val mult   : ?loc:location -> t -> t -> t
+  (** Arithmetic multiplication. *)
+
+  val lt     : ?loc:location -> t -> t -> t
+  (** Arithmetic "lesser than" comparison (strict). *)
+
+  val leq    : ?loc:location -> t -> t -> t
+  (** Arithmetic "lesser or equal" comparison. *)
+
+  val gt     : ?loc:location -> t -> t -> t
+  (** Arithmetic "greater than" comparison (strict). *)
+
+  val geq    : ?loc:location -> t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
 
 end
 

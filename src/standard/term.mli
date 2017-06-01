@@ -25,14 +25,31 @@ type builtin =
   | Distinct
   (** Should all arguments be pairwise distinct ? *)
 
-  | AC
-  (** Attributes to denote symbols that are associative and commutative. *)
-
   | Ite
   (** Condional, usually applied to 3 terms (the condition, the then branch and the else branch). *)
   | Sequent
   (** Sequent as term, usually takes two argument (left side, and right side of the sequent),
       which are respectively a conjunction and a disjunction of propositional formulas. *)
+
+  | Int
+  (** Builtin integer type. Currently specifi to Zipperposition format; other languages
+      might use constants with pre-defined name, such as tptp's "$int". *)
+  | Minus
+  (** Arithmetic unary minus. *)
+  | Add
+  (** Arithmetic addition. *)
+  | Sub
+  (** Arithmetic substraction. *)
+  | Mult
+  (** Arithmetic multiplication. *)
+  | Lt
+  (** Arithmetic "less than" comparison (strict). *)
+  | Leq
+  (** Arithmetic "lesser or equal" comparison. *)
+  | Gt
+  (** Arithmetic "greater than" comparison. *)
+  | Geq
+  (** Arithmetic "greater or equal" comparison. *)
 
   | Subtype
   (** Subtyping relation *)
@@ -95,6 +112,8 @@ type descr =
   (** Higher-order application *)
   | Binder of binder * t list * t
   (** Binder (quantifiers, local functions, ...) *)
+  | Match of t * (t * t) list
+  (** Pattern matching, the list contains tuples of the form [(pattern,branch)]. *)
 (** The AST for terms *)
 
 and t = {
