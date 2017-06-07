@@ -16,6 +16,7 @@ depends: [
   "ocamlfind" {build}
   "ocamlbuild" {build}
 ]
+available: [ ocaml-version >= "4.02.3" ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
 homepage: "https://github.com/Gbury/dolmen"
 doc: "http://gbury.github.io/dolmen"
