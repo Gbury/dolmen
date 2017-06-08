@@ -19,6 +19,8 @@ type descr =
   | Pop of int
   | Push of int
 
+  | Plain of term
+
   | Prove
   | Antecedent of term
   | Consequent of term
@@ -61,6 +63,8 @@ let rec pp_descr b = function
 
   | Pop i -> Printf.bprintf b "pop: %d" i
   | Push i -> Printf.bprintf b "push: %d" i
+
+  | Plain t -> Printf.bprintf b "plain: %a" Term.pp t
 
   | Prove -> Printf.bprintf b "Prove"
   | Antecedent t -> Printf.bprintf b "antecedent: %a" Term.pp t
@@ -111,6 +115,8 @@ let rec print_descr fmt = function
 
   | Pop i -> Format.fprintf fmt "pop: %d" i
   | Push i -> Format.fprintf fmt "push: %d" i
+
+  | Plain t -> Format.fprintf fmt "@[<hov 2>plain: %a@]" Term.print t
 
   | Prove ->
     Format.fprintf fmt "Prove"
@@ -330,7 +336,7 @@ let tptp ?loc ?annot id role t =
           Format.eprintf "WARNING: unexpected type declaration@.";
           Pack []
       end
-    | "plain"
+    | "plain" -> Plain t
     | "unknown"
     | "fi_domain"
     | "fi_functors"

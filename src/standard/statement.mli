@@ -44,6 +44,9 @@ type descr =
   (** Push as many new levels on the stack of assertions as specified. *)
 
 
+  | Plain of term
+  (** A plain statement ontaining a term with no defined semantics. *)
+
   | Prove
   (** Try and prove the current sequent. *)
 
