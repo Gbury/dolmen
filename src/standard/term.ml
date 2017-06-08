@@ -50,7 +50,7 @@ and t = {
 
 (* Printing info *)
 
-let infix_builtin = function
+let infix_builtin n = function
   | Add | Sub
   | Lt | Leq
   | Gt | Geq
@@ -59,6 +59,8 @@ let infix_builtin = function
   | Imply | Implied | Equiv
   | Product | Union
   | Sequent | Subtype
+    -> true
+  | Distinct when n = 2
     -> true
   | _ -> false
 
@@ -116,7 +118,7 @@ let rec pp_descr b = function
   | Symbol id -> Id.pp b id
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
-  | App ({ term = Builtin sep}, l) when infix_builtin sep ->
+  | App ({ term = Builtin sep}, l) when infix_builtin (List.length l) sep ->
     Misc.pp_list ~pp_sep:pp_builtin ~sep ~pp b l
   | App (f, l) ->
     Printf.bprintf b "%a(%a)" pp f
@@ -151,7 +153,7 @@ let rec print_descr fmt = function
   | Symbol id -> Id.print fmt id
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
-  | App ({ term = Builtin sep}, l) when infix_builtin sep ->
+  | App ({ term = Builtin sep}, l) when infix_builtin (List.length l) sep ->
     Misc.print_list ~print_sep:print_builtin ~sep ~print fmt l
   | App (f, []) ->
     Format.fprintf fmt "%a" print f
