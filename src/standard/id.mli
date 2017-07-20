@@ -16,7 +16,7 @@ type namespace =
   | Attr
   (** Namespace for attributes (also called annotations). *)
   | Decl
-  (** Namespace used for naming declarations *)
+  (** Namespace used for naming declarations/definitions/statements... *)
   | Module of string
   (** Namespaces defined by modules (used for instance in dedukti). *)
 

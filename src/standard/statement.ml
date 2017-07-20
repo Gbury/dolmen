@@ -173,7 +173,7 @@ and print fmt = function { descr } ->
 let annot = Term.apply
 
 (* Internal shortcut. *)
-let mk ?(id=Id.(mk (mod_name "") "")) ?loc ?attr descr =
+let mk ?(id=Id.(mk decl "")) ?loc ?attr descr =
   { id; descr; loc; attr; }
 
 (* Pack *)
