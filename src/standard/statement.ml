@@ -272,7 +272,7 @@ let defs ?loc ?attrs l =
 
 let rewrite ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in
-  antecedent ?loc ?attr (Term.add_attr Term.rwrt_rule t)
+  antecedent ?loc ?attr (Term.add_attr (Term.const Id.rwrt_rule) t)
 
 let goal ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in
@@ -318,7 +318,10 @@ let tptp ?loc ?annot id role t =
     | None -> t
     | Some t' -> Term.colon t t'
   in
-  let attr = aux (Term.const Id.(mk Attr role)) in
+  let attr = aux (Term.apply
+                    (Term.const Id.tptp_role)
+                    [Term.const Id.(mk Attr role)])
+  in
   let descr = match role with
     | "axiom"
     | "hypothesis"

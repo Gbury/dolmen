@@ -402,7 +402,3 @@ let subtype ?loc a b = apply ?loc subtype_t [a; b]
 let quoted ?loc name =
   const ?loc Id.({ name; ns = Attr})
 
-(* {2 Standard Attributes} *)
-let rwrt_rule =
-  const @@ Id.mk Id.Decl "rewrite_rule"
-

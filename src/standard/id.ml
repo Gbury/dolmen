@@ -41,3 +41,7 @@ let full_name =function
   | { name; _ } ->
     name
 
+(* Standard attributes *)
+let rwrt_rule = mk Decl "rewrite_rule"
+let tptp_role = mk Decl "tptp_role"
+

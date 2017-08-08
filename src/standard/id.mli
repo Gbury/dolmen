@@ -52,3 +52,15 @@ val full_name : t -> string
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions. *)
+
+
+(** {2 Standard attributes} *)
+
+val rwrt_rule : t
+(** The tagged term is (or at least should be) a rewrite rule. *)
+
+val tptp_role : t
+(** The tagged statement has a tptp role. Should be used as a function
+    symbol applied to the actual tptp role. *)
+
+

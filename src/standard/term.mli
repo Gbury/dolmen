@@ -156,8 +156,3 @@ val fv : t -> Id.t list
 (** Return the list of free variables (i.e currently, Ids that are in
     the [Var]namespace). *)
 
-(** {2 Standard attributes} *)
-
-val rwrt_rule : t
-(** The tagged term is (or at least should be) a rewrite rule. *)
-
