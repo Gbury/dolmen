@@ -22,6 +22,7 @@ type descr =
   | Plain of term
 
   | Prove
+  | Clause of term list
   | Antecedent of term
   | Consequent of term
 
@@ -67,6 +68,9 @@ let rec pp_descr b = function
   | Plain t -> Printf.bprintf b "plain: %a" Term.pp t
 
   | Prove -> Printf.bprintf b "Prove"
+  | Clause l ->
+    Printf.bprintf b "clause: %a"
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" || " ~pp:Term.pp) l
   | Antecedent t -> Printf.bprintf b "antecedent: %a" Term.pp t
   | Consequent t -> Printf.bprintf b "consequent: %a" Term.pp t
 
@@ -120,6 +124,9 @@ let rec print_descr fmt = function
 
   | Prove ->
     Format.fprintf fmt "Prove"
+  | Clause l ->
+    Format.fprintf fmt "@[<hov 2>clause:@ %a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) l
   | Antecedent t ->
     Format.fprintf fmt "@[<hov 2>antecedent:@ %a@]" Term.print t
   | Consequent t ->
@@ -186,6 +193,7 @@ let push ?loc i = mk ?loc (Push i)
 
 (* Assumptions and fact checking *)
 let prove ?loc () = mk ?loc Prove
+let mk_clause ?loc ?attr l = mk ?loc ?attr (Clause l)
 let consequent ?loc ?attr t = mk ?loc ?attr (Consequent t)
 let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
 
@@ -220,9 +228,7 @@ let p_cnf ?loc nbvar nbclause =
   let attr = Term.colon ?loc i j in
   mk ?loc ~attr (Set_logic "dimacs")
 
-let clause ?loc l =
-  let t = Term.or_ ?loc l in
-  antecedent ?loc t
+let clause ?loc l = mk_clause ?loc l
 
 let assumption ?loc l =
   let t = Term.and_ ?loc l in
@@ -312,7 +318,7 @@ let include_ ?loc s l =
       (List.map Term.const l) in
   mk ?loc ~attr (Include s)
 
-let tptp ?loc ?annot id role t =
+let tptp ?loc ?annot id role body =
   let aux t =
     match annot with
     | None -> t
@@ -328,38 +334,54 @@ let tptp ?loc ?annot id role t =
     | "definition"
     | "lemma"
     | "theorem"
-    | "assumption" -> Antecedent t
-    | "conjecture" -> Consequent t
-    | "negated_conjecture" -> Consequent (Term.not_ t)
+    | "assumption"
+    | "negated_conjecture" ->
+      begin match body with
+        | `Term t -> Antecedent t
+        | `Clause (_, l) -> Clause l
+      end
+    | "conjecture" ->
+      begin match body with
+        | `Term t -> Consequent t
+        | `Clause _ ->
+          Format.eprintf "WARNING: conjecture in a cnf context";
+          Pack []
+      end
     | "type" ->
-      begin match t with
-        | { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
+      begin match body with
+        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
           Decl (s, ty)
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
           Pack []
       end
-    | "plain" -> Plain t
+    | "plain" ->
+      begin match body with
+        | `Term t | `Clause (t, _) -> Plain t
+      end
     | "unknown"
     | "fi_domain"
     | "fi_functors"
-    | "fi_predicates"
-      -> Pack []
+    | "fi_predicates" -> Pack []
     | _ ->
       Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role;
       Pack []
   in
   mk ~id ?loc ~attr descr
 
-let tpi = tptp
-let thf = tptp
-let tff = tptp
-let fof = tptp
+let tpi ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
+let thf ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
+let tff ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
+let fof ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 
 (* We want to generalize the variables in cnf formulas. *)
 let cnf ?loc ?annot id role t =
   let loc = t.Term.loc in
-  let vars = List.map (Term.const ?loc) (Term.fv t) in
-  let t' = Term.forall ?loc vars t in
-  tptp ?loc ?annot id role t'
+  let l =
+    match t with
+    | { Term.term = Term.App
+            ({ Term.term = Term.Builtin Term.Or; _ }, l) } -> l
+    | _ -> [t]
+  in
+  tptp ?loc ?annot id role (`Clause (t, l))
 

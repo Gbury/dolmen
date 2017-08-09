@@ -50,6 +50,8 @@ type descr =
   | Prove
   (** Try and prove the current sequent. *)
 
+  | Clause of term list
+  (** Add the given clause on the left side of the current sequent. *)
   | Antecedent of term
   (** Add the given proposition on the left of the current sequent. *)
   | Consequent of term
