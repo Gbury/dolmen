@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="next" href="Term.html">
 <link rel="Up" href="index.html">
@@ -36,6 +37,7 @@
 <link title="Implemented interfaces" rel="Section" href="#2_Implementedinterfaces">
 <link title="Usual comparison functions" rel="Section" href="#2_Usualcomparisonfunctions">
 <link title="Additional functions" rel="Section" href="#2_Additionalfunctions">
+<link title="Standard attributes" rel="Section" href="#2_Standardattributes">
 <title>Dolmen doc : Id</title>
 </head>
 <body>
@@ -52,6 +54,17 @@ Standard implementation of identifiers<br>
 <h2 id="2_Typedefinitions">Type definitions</h2><br>
 
 <pre><code><span id="TYPEnamespace"><span class="keyword">type</span> <code class="type"></code>namespace</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTnamespace.Var"><span class="constructor">Var</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Namespace for variables. Not all variables are necessarily in
+      this namespace, but ids in this namespace must be variables.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
@@ -88,7 +101,7 @@ Namespace for attributes (also called annotations).<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTnamespace.Decl"><span class="constructor">Decl</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Namespace used for naming declarations<br>
+Namespace used for naming declarations/definitions/statements...<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -154,5 +167,16 @@ Returns a full name for the identifier.
 <pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Id.html#TYPEt">t</a> -> unit</code></pre>
 <pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Id.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
 Printing functions.<br>
+</div>
+<br>
+<h2 id="2_Standardattributes">Standard attributes</h2><br>
+
+<pre><span id="VALrwrt_rule"><span class="keyword">val</span> rwrt_rule</span> : <code class="type"><a href="Id.html#TYPEt">t</a></code></pre><div class="info ">
+The tagged term is (or at least should be) a rewrite rule.<br>
+</div>
+
+<pre><span id="VALtptp_role"><span class="keyword">val</span> tptp_role</span> : <code class="type"><a href="Id.html#TYPEt">t</a></code></pre><div class="info ">
+The tagged statement has a tptp role. Should be used as a function
+    symbol applied to the actual tptp role.<br>
 </div>
 </body></html>

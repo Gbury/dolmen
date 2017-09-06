@@ -1,6 +1,7 @@
 <html><head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
 <link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
@@ -39,6 +40,7 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;neq_t&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;wildcard&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tType&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;ty_int&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;prop&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;true_&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;false_&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
@@ -91,6 +93,10 @@
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;match_&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;*&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pi&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
@@ -124,9 +130,30 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;subtype&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;ac&nbsp;:&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;name&nbsp;:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.id&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;uminus&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;add&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sub&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mult&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;lt&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;leq&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;gt&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;geq&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;quoted&nbsp;:&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sequent&nbsp;:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;?loc:<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.location&nbsp;<span class="keywordsign">-&gt;</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term_intf</span>.<span class="constructor">Logic</span>.t<br>

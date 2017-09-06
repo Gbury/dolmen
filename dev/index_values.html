@@ -2,6 +2,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
 <link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
@@ -37,16 +38,14 @@
 <h1>Index of values</h1>
 <table>
 <tr><td align="left"><br>A</td></tr>
-<tr><td><a href="Ast_zf.Term.html#VALac">ac</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<tr><td><a href="Ast_zf.Term.html#VALadd">add</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td><div class="info">
-Pre-defined constant to specify associative/commutative
-      symbols in attributes.
+Arithmetic addition.
 </div>
 </td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALac">ac</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<tr><td><a href="Term_intf.Logic.html#VALadd">add</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td><div class="info">
-A Term used in attributes to denote symbols that are
-      associative and commutative.
+Arithmetic addition.
 </div>
 </td></tr>
 <tr><td><a href="Term.html#VALadd_attr">add_attr</a> [<a href="Term.html">Term</a>]</td>
@@ -413,7 +412,7 @@ Existencial porpositional quantification.
 </td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALexists">exists</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td><div class="info">
-Existencial porpositional qantification.
+Existencial propositional qantification.
 </div>
 </td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALexists">exists</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
@@ -518,7 +517,23 @@ Symbol definition.
 Multi-arguments function type constructor.
 </div>
 </td></tr>
+<tr><td><a href="Term.html#VALfv">fv</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Return the list of free variables (i.e currently, Ids that are in
+    the <code class="code">Var</code>namespace).
+</div>
+</td></tr>
 <tr><td align="left"><br>G</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALgeq">geq</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic "greater or equal" comparison.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALgeq">geq</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic "greater or equal" comparison.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALget_assertions">get_assertions</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 Return the current set of assertions.
@@ -597,6 +612,16 @@ Instructs the prover to return the values of the given closed quantifier-free te
 The goal, i.e the propositional formula to prove.
 </div>
 </td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALgt">gt</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic "greater than" comparison (strict).
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALgt">gt</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic "greater than" comparison (strict).
+</div>
+</td></tr>
 <tr><td align="left"><br>H</td></tr>
 <tr><td><a href="ParseLocation.html#VALhash">hash</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td></td></tr>
@@ -655,6 +680,11 @@ A function to parse a single statement.
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALint">int</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALint">int</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Create an integer constant from a string.
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Term.html#VALint">int</a> [<a href="Ast_smtlib.Term.html">Ast_smtlib.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALint">int</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -662,6 +692,11 @@ A function to parse a single statement.
 <tr><td><a href="Ast_tptp.Term.html#VALite">ite</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td><div class="info">
 Conditional, of the form <code class="code">ite condition then_branch els_branch</code>.
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALite">ite</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Conditional construction.
 </div>
 </td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALite">ite</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -675,6 +710,11 @@ Conditional constructor, both for first-order terms and propositions.
 Function construction.
 </div>
 </td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALlambda">lambda</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Create a lambda.
+</div>
+</td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALlambda">lambda</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
 <tr><td><a href="Ast_zf.Statement.html#VALlemma">lemma</a> [<a href="Ast_zf.Statement.html">Ast_zf.Statement</a>]</td>
@@ -682,6 +722,16 @@ Function construction.
 <tr><td><a href="Stmt_intf.Logic.html#VALlemma">lemma</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td><div class="info">
 Lemmas.
+</div>
+</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALleq">leq</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic "lesser or equal" comparison.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALleq">leq</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic "lesser or equal" comparison.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALletin">letin</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -701,7 +751,27 @@ Local bindings.
 </td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALletin">letin</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALlt">lt</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic "lesser than" comparison (strict).
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALlt">lt</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic "lesser than" comparison (strict).
+</div>
+</td></tr>
 <tr><td align="left"><br>M</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALmatch_">match_</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Pattern matching.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALmatch_">match_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Pattern matching.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Id.html#VALmk">mk</a> [<a href="Ast_tptp.Id.html">Ast_tptp.Id</a>]</td>
 <td><div class="info">
 Make an identifier
@@ -752,17 +822,17 @@ Construction functions
 Namespace used by modules (for instance in dedulkti).
 </div>
 </td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALmult">mult</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic multiplication.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALmult">mult</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic multiplication.
+</div>
+</td></tr>
 <tr><td align="left"><br>N</td></tr>
-<tr><td><a href="Ast_zf.Term.html#VALname">name</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
-<td><div class="info">
-Create a name for a statement.
-</div>
-</td></tr>
-<tr><td><a href="Term_intf.Logic.html#VALname">name</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
-<td><div class="info">
-Create a name for a statement (in Zf).
-</div>
-</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALnand_t">nand_t</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALnand_t">nand_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -788,9 +858,11 @@ The terms representing equality and disequality, respectively.
 <td></td></tr>
 <tr><td align="left"><br>O</td></tr>
 <tr><td><a href="Logic.Make.html#VALof_extension">of_extension</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
+<td></td></tr>
+<tr><td><a href="Logic.Make.html#VALof_filename">of_filename</a> [<a href="Logic.Make.html">Logic.Make</a>]</td>
 <td><div class="info">
-These function take as argument either a language, or a filename,
-      and return a triple: language, language file extension (starting with a dot), appropriate parsing module
+These function take as argument either a language, a filename,
+      or an extension, and return a triple: language, language file extension (starting with a dot), appropriate parsing module
       Extensions should start with a dot (for instance : <code class="code">".smt2"</code>)
 </div>
 </td></tr>
@@ -927,6 +999,17 @@ Push the given number of new level on the stack of assertions.
 Directives for manipulating the set of assertions.
 </div>
 </td></tr>
+<tr><td align="left"><br>Q</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALquoted">quoted</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Create an attribute from a quoted string.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALquoted">quoted</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Create an attribute from a quoted string (in Zf).
+</div>
+</td></tr>
 <tr><td align="left"><br>R</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALrat">rat</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td></td></tr>
@@ -949,7 +1032,7 @@ Declare a rewrite rule, i.e a universally quantified equality or equivalence tha
       can be oriented according to a specific ordering.
 </div>
 </td></tr>
-<tr><td><a href="Term.html#VALrwrt_rule">rwrt_rule</a> [<a href="Term.html">Term</a>]</td>
+<tr><td><a href="Id.html#VALrwrt_rule">rwrt_rule</a> [<a href="Id.html">Id</a>]</td>
 <td><div class="info">
 The tagged term is (or at least should be) a rewrite rule.
 </div>
@@ -1029,6 +1112,16 @@ The namespace for sorts (also called types).
 String representation of the variant
 </div>
 </td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALsub">sub</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic substraction.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALsub">sub</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic substraction.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALsubtype">subtype</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td><div class="info">
 Comparison of type (used in tptp's THF).
@@ -1083,10 +1176,24 @@ The function producing token from a lexbuf.
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALtpi">tpi</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Id.html#VALtptp_role">tptp_role</a> [<a href="Id.html">Id</a>]</td>
+<td><div class="info">
+The tagged statement has a tptp role.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALtrue_">true_</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALtrue_">true_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALty_int">ty_int</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td></td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALty_int">ty_int</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+The type of integers, defined as a specific token by the Zipperposition format;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, tptp's "$int") .
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Statement.html#VALtype_decl">type_decl</a> [<a href="Ast_smtlib.Statement.html">Ast_smtlib.Statement</a>]</td>
 <td><div class="info">
 Declares a new type constructor with given arity.
@@ -1108,6 +1215,16 @@ Type definition.
 </div>
 </td></tr>
 <tr><td align="left"><br>U</td></tr>
+<tr><td><a href="Ast_zf.Term.html#VALuminus">uminus</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
+<td><div class="info">
+Arithmetic unary minus.
+</div>
+</td></tr>
+<tr><td><a href="Term_intf.Logic.html#VALuminus">uminus</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
+<td><div class="info">
+Arithmetic unary minus.
+</div>
+</td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALunion">union</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
 <td><div class="info">
 Union of types.

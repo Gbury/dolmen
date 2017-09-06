@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="Id.html">
 <link rel="next" href="Statement.html">
@@ -37,7 +38,7 @@
 <link title="Standard functions" rel="Section" href="#2_Standardfunctions">
 <link title="Implemented interfaces" rel="Section" href="#2_Implementedinterfaces">
 <link title="Additional functions" rel="Section" href="#2_Additionalfunctions">
-<link title="Standard attributes" rel="Section" href="#2_Standardattributes">
+<link title="Free variables" rel="Section" href="#2_Freevariables">
 <title>Dolmen doc : Term</title>
 </head>
 <body>
@@ -133,16 +134,6 @@ Should all arguments be pairwise distinct ?<br>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
-<code><span id="TYPEELTbuiltin.AC"><span class="constructor">AC</span></span></code></td>
-<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Attributes to denote symbols that are associative and commutative.<br>
-</div>
-</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
-</tr>
-<tr>
-<td align="left" valign="top" >
-<code><span class="keyword">|</span></code></td>
-<td align="left" valign="top" >
 <code><span id="TYPEELTbuiltin.Ite"><span class="constructor">Ite</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Condional, usually applied to 3 terms (the condition, the then branch and the else branch).<br>
@@ -157,6 +148,97 @@ Condional, usually applied to 3 terms (the condition, the then branch and the el
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
 Sequent as term, usually takes two argument (left side, and right side of the sequent),
       which are respectively a conjunction and a disjunction of propositional formulas.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Int"><span class="constructor">Int</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Builtin integer type. Currently specific to Zipperposition format; other languages
+      might use constants with pre-defined name, such as tptp's "$int".<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Minus"><span class="constructor">Minus</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic unary minus.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Add"><span class="constructor">Add</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic addition.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Sub"><span class="constructor">Sub</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic substraction.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Mult"><span class="constructor">Mult</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic multiplication.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Lt"><span class="constructor">Lt</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic "less than" comparison (strict).<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Leq"><span class="constructor">Leq</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic "lesser or equal" comparison.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Gt"><span class="constructor">Gt</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic "greater than" comparison.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTbuiltin.Geq"><span class="constructor">Geq</span></span></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Arithmetic "greater or equal" comparison.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -417,6 +499,16 @@ Higher-order application<br>
 Binder (quantifiers, local functions, ...)<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTdescr.Match"><span class="constructor">Match</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEt">t</a> * (<a href="Term.html#TYPEt">t</a> * <a href="Term.html#TYPEt">t</a>) list</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Pattern matching, the list contains tuples of the form <code class="code">(pattern,branch)</code>.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr></table>
 
 <div class="info ">
@@ -481,9 +573,10 @@ Multi-arguments function type constructor.<br>
     <code class="code">attr</code> added to the list of attributes.<br>
 </div>
 <br>
-<h2 id="2_Standardattributes">Standard attributes</h2><br>
+<h2 id="2_Freevariables">Free variables</h2><br>
 
-<pre><span id="VALrwrt_rule"><span class="keyword">val</span> rwrt_rule</span> : <code class="type"><a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
-The tagged term is (or at least should be) a rewrite rule.<br>
+<pre><span id="VALfv"><span class="keyword">val</span> fv</span> : <code class="type"><a href="Term.html#TYPEt">t</a> -> <a href="Id.html#TYPEt">Id.t</a> list</code></pre><div class="info ">
+Return the list of free variables (i.e currently, Ids that are in
+    the <code class="code">Var</code>namespace).<br>
 </div>
 </body></html>

@@ -3,6 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css" type="text/css">
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="Up" href="Term_intf.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
@@ -35,6 +36,7 @@
 <link title="Terms leaf constructors" rel="Section" href="#3_Termsleafconstructors">
 <link title="Term constructors" rel="Section" href="#3_Termconstructors">
 <link title="Type constructors" rel="Section" href="#3_Typeconstructors">
+<link title="Arithmetic constructors" rel="Section" href="#3_Arithmeticconstructors">
 <link title="Special constructions" rel="Section" href="#3_Specialconstructions">
 <title>Dolmen doc : Term_intf.Logic</title>
 </head>
@@ -88,6 +90,12 @@ The type of types, defined as specific token by the Zipperposition format;
       in other languages, will be represented as a constant (the "$tType" constant
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism.<br>
+</div>
+
+<pre><span id="VALty_int"><span class="keyword">val</span> ty_int</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+The type of integers, defined as a specific token by the Zipperposition format;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, tptp's "$int") .<br>
 </div>
 
 <pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
@@ -190,6 +198,12 @@ Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: <code class="code">ite condition then_branch else_branch</code>.<br>
 </div>
 
+<pre><span id="VALmatch_"><span class="keyword">val</span> match_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -><br>       (<a href="Term_intf.Logic.html#TYPEt">t</a> * <a href="Term_intf.Logic.html#TYPEt">t</a>) list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Pattern matching. The first term is the term to match,
+      and each tuple in the list is a match case, which is a pair
+      of a pattern and a match branch.<br>
+</div>
+
 <pre><span id="VALpi"><span class="keyword">val</span> pi</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
 <pre><span id="VALletin"><span class="keyword">val</span> letin</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
 <pre><span id="VALforall"><span class="keyword">val</span> forall</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
@@ -238,15 +252,44 @@ Union type constructor, currently used in tptp's THF format.<br>
 Subtype relation for types.<br>
 </div>
 <br>
-<h3 id="3_Specialconstructions">Special constructions</h3><br>
+<h3 id="3_Arithmeticconstructors">Arithmetic constructors</h3><br>
 
-<pre><span id="VALac"><span class="keyword">val</span> ac</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-A Term used in attributes to denote symbols that are
-      associative and commutative.<br>
+<pre><span id="VALuminus"><span class="keyword">val</span> uminus</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic unary minus.<br>
 </div>
 
-<pre><span id="VALname"><span class="keyword">val</span> name</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> <a href="Term_intf.Logic.html#TYPEid">id</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
-Create a name for a statement (in Zf).<br>
+<pre><span id="VALadd"><span class="keyword">val</span> add</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic addition.<br>
+</div>
+
+<pre><span id="VALsub"><span class="keyword">val</span> sub</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic substraction.<br>
+</div>
+
+<pre><span id="VALmult"><span class="keyword">val</span> mult</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic multiplication.<br>
+</div>
+
+<pre><span id="VALlt"><span class="keyword">val</span> lt</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic "lesser than" comparison (strict).<br>
+</div>
+
+<pre><span id="VALleq"><span class="keyword">val</span> leq</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic "lesser or equal" comparison.<br>
+</div>
+
+<pre><span id="VALgt"><span class="keyword">val</span> gt</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic "greater than" comparison (strict).<br>
+</div>
+
+<pre><span id="VALgeq"><span class="keyword">val</span> geq</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a> -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Arithmetic "greater or equal" comparison.<br>
+</div>
+<br>
+<h3 id="3_Specialconstructions">Special constructions</h3><br>
+
+<pre><span id="VALquoted"><span class="keyword">val</span> quoted</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> string -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+Create an attribute from a quoted string (in Zf).<br>
 </div>
 
 <pre><span id="VALsequent"><span class="keyword">val</span> sequent</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -><br>       <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a> list -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
