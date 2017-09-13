@@ -12,9 +12,9 @@ type builtin =
   (** Wildcard symbol, i.e placeholder for an expression to be inferred, typically
       during type-checking. *)
   | Ttype
-    (** Builtin symbol for the type of Types. *)
+  (** Builtin symbol for the type of Types. *)
   | Prop
-    (** Builtin symbol for the type of propositions. *)
+  (** Builtin symbol for the type of propositions. *)
   | True
   (** The [true] propositional constant. *)
   | False
@@ -124,6 +124,7 @@ and t = {
 (** The type of terms. A record containing an optional location,
     and a description of the term. *)
 
+
 (** {2 Standard functions} *)
 
 val equal : t -> t -> bool
@@ -134,12 +135,14 @@ val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functionson buffer and formatters. *)
 
+
 (** {2 Implemented interfaces} *)
 
 include Term_intf.Logic
   with type t := t
    and type id := Id.t
    and type location := location
+
 
 (** {2 Additional functions} *)
 
@@ -149,6 +152,10 @@ val fun_ty : ?loc:location -> t list -> t -> t
 val add_attr : t -> t -> t
 (** [add_attr attr term] rturns a term [t] equal to [term], but with
     [attr] added to the list of attributes. *)
+
+val normalize : (Id.t -> descr) -> t -> t
+(** Normalize the given term using the function to translate all symbols. *)
+
 
 (** {2 Free variables} *)
 

@@ -2,6 +2,7 @@
 # Standard implementation
 Id
 Term
+Normalize
 Statement
 ParseLocation
 
