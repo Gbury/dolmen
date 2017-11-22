@@ -93,11 +93,11 @@ type binder =
   | Let
   (** Let bindings (either propositional or for terms *)
   | Fun
-  (* Lambda, i.e function abstraction binder *)
+  (** Lambda, i.e function abstraction binder *)
   | Choice
-  (* Indefinite description, or epsilon terms *)
+  (** Indefinite description, or epsilon terms *)
   | Description
-  (* Definite description *)
+  (** Definite description *)
 (** The type of binders, these are pretty much always builtin in all languages. *)
 
 type descr =
