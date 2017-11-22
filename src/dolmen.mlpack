@@ -6,6 +6,17 @@ Normalize
 Statement
 ParseLocation
 
+# Interfaces
+Lex_intf
+Parse_intf
+Location_intf
+
+Id_intf
+Term_intf
+Stmt_intf
+Language_intf
+
+
 # Dimacs language
 Dimacs
 LexDimacs
