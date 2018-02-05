@@ -46,6 +46,7 @@ instantiate the parser functors.
 {!modules:
 Id
 Term
+Normalize
 Statement
 ParseLocation
 }

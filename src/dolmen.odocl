@@ -2,6 +2,7 @@
 # Common modules
 standard/Id
 standard/Term
+standard/Normalize
 standard/Statement
 standard/ParseLocation
 

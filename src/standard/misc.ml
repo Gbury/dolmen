@@ -2,17 +2,14 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
 let get_extension s =
-  let rec aux s i j =
-    if j >= String.length s then
-      if i < 0 then ""
-      else String.sub s i (String.length s - i)
-    else begin
-      match s.[j] with
-      | '.' -> aux s j (j + 1)
-      | _ -> aux s i (j + 1)
-    end
+  let rec aux s i =
+    if i <= 0 then ""
+    else
+      match s.[i] with
+      | '.' -> String.sub s i (String.length s - i)
+      | _ -> aux s (i - 1)
   in
-  aux s (-1) 0
+  aux s (String.length s - 1)
 
 let replicate n x =
   let rec aux x acc i =

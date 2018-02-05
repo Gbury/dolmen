@@ -363,6 +363,26 @@ let rec free_vars acc t =
 let fv t =
   S.elements (free_vars S.empty t)
 
+(* {2 Term normalization} *)
+
+let rec normalize_descr symbol = function
+  | Symbol id -> symbol id
+  | Builtin b -> Builtin b
+  | Colon (x, y) ->
+    Colon (normalize symbol x, normalize symbol y)
+  | App (f, l) ->
+    App (normalize symbol f, List.map (normalize symbol) l)
+  | Binder (b, l, body) ->
+    Binder (b, List.map (normalize symbol) l, normalize symbol body)
+  | Match (f, l) ->
+    Match (f, List.map (fun (x, y) -> (normalize symbol x, normalize symbol y)) l)
+
+and normalize symbol t =
+  let d = normalize_descr symbol t.term in
+  let a = List.map (normalize symbol) t.attr in
+  { term = d; attr = a; loc = t.loc; }
+
+
 (* {2 Wrappers for dimacs} *)
 
 let atom ?loc i =

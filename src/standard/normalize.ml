@@ -1,0 +1,37 @@
+
+(* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
+
+let tptp = Term.normalize (function
+    (* Base builtins *)
+    | { Id.name =  "$_"; ns = Id.Term } -> Term.(Builtin Wildcard)
+    | { Id.name = "$tType" ; ns = Id.Term } -> Term.(Builtin Ttype)
+    | { Id.name = "$o"; ns = Id.Term } -> Term.(Builtin Prop)
+    | { Id.name = "$true"; ns = Id.Term } -> Term.(Builtin True)
+    | { Id.name = "$false"; ns = Id.Term } -> Term.(Builtin False)
+    (* Arithmetic builtins *)
+    | { Id.name = "$int"; ns = Id.Term } -> Term.(Builtin Int)
+    | { Id.name = "$less"; ns = Id.Term } -> Term.(Builtin Lt)
+    | { Id.name = "$lesseq"; ns = Id.Term } -> Term.(Builtin Leq)
+    | { Id.name = "$greater"; ns = Id.Term } -> Term.(Builtin Gt)
+    | { Id.name = "$greatereq"; ns = Id.Term } -> Term.(Builtin Geq)
+    | { Id.name = "$uminus"; ns = Id.Term } -> Term.(Builtin Minus)
+    | { Id.name = "$sum"; ns = Id.Term } -> Term.(Builtin Add)
+    | { Id.name = "$difference"; ns = Id.Term } -> Term.(Builtin Sub)
+    | { Id.name = "$product"; ns = Id.Term } -> Term.(Builtin Mult)
+    | id -> Term.(Symbol id)
+  )
+
+let smtlib = Term.normalize (function
+    | { Id.name = "Bool"; ns = Id.Sort } -> Term.(Builtin Prop)
+    | { Id.name = "true"; ns = Id.Term } -> Term.(Builtin True)
+    | { Id.name = "false"; ns = Id.Term } -> Term.(Builtin False)
+    | { Id.name = "not"; ns = Id.Term } -> Term.(Builtin Not)
+    | { Id.name = "and"; ns = Id.Term } -> Term.(Builtin And)
+    | { Id.name = "or"; ns = Id.Term } -> Term.(Builtin Or)
+    | { Id.name = "xor"; ns = Id.Term } -> Term.(Builtin Xor)
+    | { Id.name = "=>"; ns = Id.Term } -> Term.(Builtin Imply)
+    | { Id.name = "="; ns = Id.Term } -> Term.(Builtin Eq)
+    | { Id.name = "distinct"; ns = Id.Term } -> Term.(Builtin Distinct)
+    | id -> Term.(Symbol id)
+  )
+
