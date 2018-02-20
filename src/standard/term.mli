@@ -155,6 +155,7 @@ val compare : t -> t -> int
 
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
+val print_builtin : Format.formatter -> builtin -> unit
 (** Printing functionson buffer and formatters. *)
 
 
