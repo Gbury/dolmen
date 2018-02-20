@@ -244,7 +244,7 @@ let check_sat = prove
 let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
-  let ty = Term.fun_ty ?loc (Misc.replicate n Term.tType) Term.tType in
+  let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
   mk ?loc (Decl (id, ty))
 
 let fun_decl ?loc id l t' =
@@ -252,7 +252,7 @@ let fun_decl ?loc id l t' =
   mk ?loc (Decl (id, ty))
 
 let type_def ?loc id args body =
-  let l = List.map (fun id -> Term.colon (Term.const id) Term.tType) args in
+  let l = List.map (fun id -> Term.colon (Term.const id) @@ Term.tType ()) args in
   let t = Term.lambda l body in
   mk ?loc (Def (id, t))
 
@@ -264,7 +264,7 @@ let fun_def ?loc id args ty_ret body =
 (* Wrappers for Zf *)
 let zf_attr ?loc = function
   | None | Some [] -> None
-  | Some l -> Some (Term.apply ?loc Term.and_t l)
+  | Some l -> Some (Term.apply ?loc (Term.and_t ()) l)
 
 let import ?loc s = mk ?loc (Include s)
 
@@ -314,8 +314,7 @@ let inductive ?loc ?attrs id vars cstrs =
 
 (* Wrappers for tptp *)
 let include_ ?loc s l =
-  let attr = Term.apply ?loc Term.and_t
-      (List.map Term.const l) in
+  let attr = Term.apply ?loc (Term.and_t ()) (List.map Term.const l) in
   mk ?loc ~attr (Include s)
 
 let tptp ?loc ?annot id role body =

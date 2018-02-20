@@ -28,12 +28,12 @@ module type Term = sig
   type location
   (** The type of locations attached to terms. *)
 
-  val tType     : t
-  val prop      : t
-  val ty_int    : t
-  val wildcard  : t
-  val true_     : t
-  val false_    : t
+  val tType     : ?loc:location -> unit -> t
+  val prop      : ?loc:location -> unit -> t
+  val ty_int    : ?loc:location -> unit -> t
+  val wildcard  : ?loc:location -> unit -> t
+  val true_     : ?loc:location -> unit -> t
+  val false_    : ?loc:location -> unit -> t
   (** Standard pre-defined constants. *)
 
   val quoted  : ?loc:location -> string -> t

@@ -237,6 +237,8 @@ let add_attr a t = { t with attr = a :: t.attr }
 (* Make a term from its description *)
 let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
+let builtin b ?loc () = make ?loc (Builtin b)
+
 (* Internal shortcut to make a formula with bound variables. *)
 let mk_bind binder ?loc vars t =
   make ?loc (Binder (binder, vars, t))
@@ -258,42 +260,42 @@ let match_ ?loc t l = make ?loc (Match (t, l))
    Used mainly for typed variables, or type annotations. *)
 let colon ?loc t t' = make ?loc (Colon (t, t'))
 
-let eq_t        = make (Builtin Eq)
-let neq_t       = make (Builtin Distinct)
-let not_t       = make (Builtin Not)
-let or_t        = make (Builtin Or)
-let and_t       = make (Builtin And)
-let xor_t       = make (Builtin Xor)
-let nor_t       = make (Builtin Nor)
-let nand_t      = make (Builtin Nand)
-let equiv_t     = make (Builtin Equiv)
-let implies_t   = make (Builtin Imply)
-let implied_t   = make (Builtin Implied)
+let eq_t        = builtin Eq
+let neq_t       = builtin Distinct
+let not_t       = builtin Not
+let or_t        = builtin Or
+let and_t       = builtin And
+let xor_t       = builtin Xor
+let nor_t       = builtin Nor
+let nand_t      = builtin Nand
+let equiv_t     = builtin Equiv
+let implies_t   = builtin Imply
+let implied_t   = builtin Implied
 
-let true_       = make (Builtin True)
-let false_      = make (Builtin False)
-let wildcard    = make (Builtin Wildcard)
+let true_       = builtin True
+let false_      = builtin False
+let wildcard    = builtin Wildcard
 
-let ite_t       = make (Builtin Ite)
-let sequent_t   = make (Builtin Sequent)
+let ite_t       = builtin Ite
+let sequent_t   = builtin Sequent
 
-let union_t     = make (Builtin Union)
-let product_t   = make (Builtin Product)
-let subtype_t   = make (Builtin Subtype)
+let union_t     = builtin Union
+let product_t   = builtin Product
+let subtype_t   = builtin Subtype
 
-let tType       = make (Builtin Ttype)
-let prop        = make (Builtin Prop)
-let data_t      = const Id.(mk Attr "$data")
+let tType       = builtin Ttype
+let prop        = builtin Prop
+let data_t ?loc () = const ?loc Id.(mk Attr "$data")
 
-let ty_int      = make (Builtin Int)
-let uminus_t    = make (Builtin Minus)
-let add_t       = make (Builtin Add)
-let sub_t       = make (Builtin Sub)
-let mult_t      = make (Builtin Mult)
-let lt_t        = make (Builtin Lt)
-let leq_t       = make (Builtin Leq)
-let gt_t        = make (Builtin Gt)
-let geq_t       = make (Builtin Geq)
+let ty_int      = builtin Int
+let uminus_t    = builtin Minus
+let add_t       = builtin Add
+let sub_t       = builtin Sub
+let mult_t      = builtin Mult
+let lt_t        = builtin Lt
+let leq_t       = builtin Leq
+let gt_t        = builtin Gt
+let geq_t       = builtin Geq
 
 let nary t = (fun ?loc l -> apply ?loc t l)
 let unary t = (fun ?loc x -> apply ?loc t [x])
@@ -301,26 +303,26 @@ let binary t = (fun ?loc x y -> apply ?loc t [x; y])
 
 (* {2 Usual functions} *)
 
-let eq = binary eq_t
+let eq = binary (eq_t ())
 
 (* {2 Logical connectives} *)
 
-let not_  = unary not_t
-let or_   = nary or_t
-let and_  = nary and_t
-let imply = binary implies_t
-let equiv = binary equiv_t
+let not_  = unary (not_t ())
+let or_   = nary (or_t ())
+let and_  = nary (and_t ())
+let imply = binary (implies_t ())
+let equiv = binary (equiv_t ())
 
 (** {2 Arithmetic} *)
 
-let uminus  = unary uminus_t
-let add     = binary add_t
-let sub     = binary sub_t
-let mult    = binary mult_t
-let lt      = binary lt_t
-let leq     = binary leq_t
-let gt      = binary gt_t
-let geq     = binary geq_t
+let uminus  = unary (uminus_t ())
+let add     = binary (add_t ())
+let sub     = binary (sub_t ())
+let mult    = binary (mult_t ())
+let lt      = binary (lt_t ())
+let leq     = binary (leq_t ())
+let gt      = binary (gt_t ())
+let geq     = binary (geq_t ())
 
 (* {2 Binders} *)
 
@@ -398,7 +400,7 @@ let real = int
 let hexa = int
 let binary = int
 
-let sexpr ?loc l = apply ?loc data_t l
+let sexpr ?loc l = apply ?loc (const Id.(mk Attr "$data")) l
 
 (* {2 Wrappers for tptp} *)
 
@@ -407,15 +409,16 @@ let distinct = const
 
 let var ?loc id = const ?loc { id with Id.ns = Id.Var }
 
-let ite ?loc a b c = apply ?loc ite_t [a; b; c]
-let sequent ?loc hyps goals =
-  let hyps_t = apply ?loc or_t hyps in
-  let goals_t = apply ?loc and_t goals in
-  apply ?loc sequent_t [hyps_t; goals_t]
+let ite ?loc a b c = apply ?loc (ite_t ?loc ()) [a; b; c]
 
-let union ?loc a b = apply ?loc union_t [a; b]
-let product ?loc a b = apply ?loc product_t [a; b]
-let subtype ?loc a b = apply ?loc subtype_t [a; b]
+let sequent ?loc hyps goals =
+  let hyps_t = apply ?loc (or_t ?loc ()) hyps in
+  let goals_t = apply ?loc (and_t ?loc ()) goals in
+  apply ?loc (sequent_t ?loc ()) [hyps_t; goals_t]
+
+let union ?loc a b = apply ?loc (union_t ?loc ()) [a; b]
+let product ?loc a b = apply ?loc (product_t ?loc ()) [a; b]
+let subtype ?loc a b = apply ?loc (subtype_t ?loc ()) [a; b]
 
 (* {2 Wrappers for Zf} *)
 

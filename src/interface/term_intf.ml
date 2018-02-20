@@ -29,52 +29,52 @@ module type Logic = sig
 
   (** {3 Predefined terms} *)
 
-  val eq_t      : t
-  val neq_t     : t
+  val eq_t      : ?loc:location -> unit -> t
+  val neq_t     : ?loc:location -> unit -> t
   (** The terms representing equality and disequality, respectively. *)
 
-  val wildcard  : t
+  val wildcard  : ?loc:location -> unit -> t
   (** The wildcard term, usually used in place of type arguments
       to explicit polymorphic functions to not explicit types that
       can be inferred by the type-checker. *)
 
-  val tType     : t
+  val tType     : ?loc:location -> unit -> t
   (** The type of types, defined as specific token by the Zipperposition format;
       in other languages, will be represented as a constant (the "$tType" constant
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism. *)
 
-  val ty_int    : t
+  val ty_int    : ?loc:location -> unit -> t
   (** The type of integers, defined as a specific token by the Zipperposition format;
       in other languages, it might be represented as a constant with a specific name
       (for isntance, tptp's "$int") .*)
 
-  val prop      : t
+  val prop      : ?loc:location -> unit -> t
   (** The type of propositions. Also defined as a lexical token by the Zipperposition
       format. Will be defined as a constant in most other languages (for instance,
       "$o" in tptp). *)
 
-  val true_     : t
-  val false_    : t
+  val true_     : ?loc:location -> unit -> t
+  val false_    : ?loc:location -> unit -> t
   (** The constants for the true and false propositional constants. Again defined
       as lexical token in the Zipperposition format, while treated as a constant
       in other languages ("$true" in tptp). *)
 
-  val not_t     : t
-  val or_t      : t
-  val and_t     : t
-  val xor_t     : t
-  val nor_t     : t
-  val nand_t    : t
-  val equiv_t   : t
-  val implied_t : t
-  val implies_t : t
+  val not_t     : ?loc:location -> unit -> t
+  val or_t      : ?loc:location -> unit -> t
+  val and_t     : ?loc:location -> unit -> t
+  val xor_t     : ?loc:location -> unit -> t
+  val nor_t     : ?loc:location -> unit -> t
+  val nand_t    : ?loc:location -> unit -> t
+  val equiv_t   : ?loc:location -> unit -> t
+  val implied_t : ?loc:location -> unit -> t
+  val implies_t : ?loc:location -> unit -> t
   (** Standard logical connectives viewed as terms. [implies_t] is usual
       right implication, i.e [apply implies_t \[p; q\] ] is "p implies q",
       while [apply implied_t \[p; q \]] means "p is implied by q" or
       "q implies p". *)
 
-  val data_t    : t
+  val data_t    : ?loc:location -> unit -> t
   (** Term without semantic meaning, used for creating "data" terms.
       Used in tptp's annotations, and with similar meaning as smtlib's
       s-expressions (as used in the [sexpr] function defined later). *)

@@ -111,12 +111,14 @@ thf_binary_tuple:
 thf_or_formula:
   | f=thf_unitary_formula VLINE g=thf_unitary_formula
   | f=thf_or_formula VLINE g=thf_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.or_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 thf_and_formula:
   | f=thf_unitary_formula AND g=thf_unitary_formula
   | f=thf_and_formula AND g=thf_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.and_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.and_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 thf_apply_formula:
   | f=thf_unitary_formula APPLY g=thf_unitary_formula
@@ -265,12 +267,14 @@ tff_binary_assoc:
 tff_or_formula:
   | f=tff_unitary_formula VLINE g=tff_unitary_formula
   | f=tff_or_formula VLINE g=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.or_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 tff_and_formula:
   | f=tff_unitary_formula AND g=tff_unitary_formula
   | f=tff_and_formula AND g=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.and_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.and_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 tff_unitary_formula:
   | f=tff_quantified_formula
@@ -324,7 +328,8 @@ tff_let_term_defn:
 
 tff_let_term_binding:
   | t=term EQUAL u=term
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.eq_t [t; u] }
+    { let f = let loc = L.mk_pos $startpos($2) $endpos($2) in T.eq_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
   | LEFT_PAREN t=tff_let_term_binding RIGHT_PAREN
     { t }
 
@@ -336,7 +341,8 @@ tff_let_formula_defn:
 
 tff_let_formula_binding:
   | t=atomic_formula EQUIV u=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.equiv_t [t; u] }
+    { let f = let loc = L.mk_pos $startpos($2) $endpos($2) in T.equiv_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
   | LEFT_PAREN t=tff_let_formula_binding RIGHT_PAREN
     { t }
 
@@ -443,12 +449,14 @@ fof_binary_assoc:
 fof_or_formula:
   | f=fof_unitary_formula VLINE g=fof_unitary_formula
   | f=fof_or_formula VLINE g=fof_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.or_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 fof_and_formula:
   | f=fof_unitary_formula AND g=fof_unitary_formula
   | f=fof_and_formula AND g=fof_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.and_t [f; g] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.and_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 fof_unitary_formula:
   | f=fof_quantified_formula
@@ -499,7 +507,8 @@ disjunction:
   | x=literal
     { x }
   | f=disjunction VLINE x=literal
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.or_t [f; x] }
+    { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; x] }
 
 literal:
   | f=atomic_formula
@@ -566,23 +575,23 @@ fol_quantifier:
 
 binary_connective:
   | EQUIV
-    { T.equiv_t }
+    { let loc = L.mk_pos $startpos $endpos in T.equiv_t ~loc () }
   | IMPLY
-    { T.implies_t }
+    { let loc = L.mk_pos $startpos $endpos in T.implies_t ~loc () }
   | LEFT_IMPLY
-    { T.implied_t }
+    { let loc = L.mk_pos $startpos $endpos in T.implied_t ~loc () }
   | XOR
-    { T.xor_t }
+    { let loc = L.mk_pos $startpos $endpos in T.xor_t ~loc () }
   | NOTVLINE
-    { T.nor_t }
+    { let loc = L.mk_pos $startpos $endpos in T.nor_t ~loc () }
   | NOTAND
-    { T.nand_t }
+    { let loc = L.mk_pos $startpos $endpos in T.nand_t ~loc () }
 
 assoc_connective:
   | VLINE
-    { T.or_t }
+    { let loc = L.mk_pos $startpos $endpos in T.or_t ~loc () }
   | AND
-    { T.and_t }
+    { let loc = L.mk_pos $startpos $endpos in T.and_t ~loc () }
 
 unary_connective:
   | c=unary_negation
@@ -590,7 +599,7 @@ unary_connective:
 
 unary_negation:
   | NOT
-    { T.not_t }
+    { let loc = L.mk_pos $startpos $endpos in T.not_t ~loc () }
 
 defined_type:
   | t=atomic_defined_word
@@ -627,11 +636,11 @@ defined_infix_pred:
 
 infix_equality:
   | EQUAL
-    { T.eq_t }
+    { let loc = L.mk_pos $startpos $endpos in T.eq_t ~loc () }
 
 infix_inequality:
   | NOT_EQUAL
-    { T.neq_t }
+    { let loc = L.mk_pos $startpos $endpos in T.neq_t ~loc () }
 
 system_atomic_formula:
   | t=system_term
@@ -766,7 +775,8 @@ general_term:
   | d=general_data
     { d }
   | l=general_list
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc T.data_t l }
+    { let f = let loc = L.mk_pos $startpos $endpos in T.data_t ~loc () in
+      let loc = L.mk_pos $startpos $endpos in T.apply ~loc f l }
   | d=general_data COLON t=general_term
     { let loc = L.mk_pos $startpos $endpos in T.colon ~loc d t }
 

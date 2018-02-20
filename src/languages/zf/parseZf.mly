@@ -23,17 +23,23 @@ raw_var:
   | s=name
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc s }
 
+wildcard:
+  | WILDCARD
+    { let loc = L.mk_pos $startpos $endpos in T.wildcard ~loc () }
+
+t_type:
+  | TYPE
+    { let loc = L.mk_pos $startpos $endpos in T.tType ~loc () }
+
 var_or_wildcard:
   | v=raw_var
+  | v=wildcard
     { v }
-  | WILDCARD
-    { T.wildcard }
 
 typed_var_block:
   | v=raw_var
+  | v=wildcard
     { [ v ] }
-  | WILDCARD
-    { [ T.wildcard ] }
   | LEFT_PAREN l=raw_var+ COLON t=term RIGHT_PAREN
     { let loc = L.mk_pos $startpos $endpos in
       List.map (fun x -> T.colon ~loc x t) l }
@@ -47,11 +53,14 @@ typed_var_list:
 typed_ty_var_block:
   | v=raw_var
     { [ v ] }
-  | v=raw_var COLON TYPE
-    { let loc = L.mk_pos $startpos $endpos in [ T.colon ~loc v T.tType ] }
-  | LEFT_PAREN l=raw_var+ COLON TYPE RIGHT_PAREN
+  | v=raw_var COLON ty=t_type
     { let loc = L.mk_pos $startpos $endpos in
-      List.map (fun x -> T.colon ~loc x T.tType) l }
+      [ T.colon ~loc v ty ]
+    }
+  | LEFT_PAREN l=raw_var+ COLON ty=t_type RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in
+      List.map (fun x -> T.colon ~loc x ty) l
+    }
 
 typed_ty_var_list:
   | l=typed_ty_var_block
@@ -60,22 +69,21 @@ typed_ty_var_list:
     { l @ l2 }
 
 var:
-  | WILDCARD
-    { T.wildcard }
   | v=raw_var
+  | v=wildcard
     { v }
 
 const:
   | TYPE
-    { T.tType }
+    { let loc = L.mk_pos $startpos $endpos in T.tType ~loc () }
   | PROP
-    { T.prop }
+    { let loc = L.mk_pos $startpos $endpos in T.prop ~loc () }
   | INT
-    { T.ty_int }
+    { let loc = L.mk_pos $startpos $endpos in T.ty_int ~loc () }
   | LOGIC_TRUE
-    { T.true_ }
+    { let loc = L.mk_pos $startpos $endpos in T.true_ ~loc () }
   | LOGIC_FALSE
-    { T.false_ }
+    { let loc = L.mk_pos $startpos $endpos in T.false_ ~loc () }
 
 match_branch:
   | VERTICAL_BAR c=raw_var vars=var_or_wildcard* ARROW rhs=term

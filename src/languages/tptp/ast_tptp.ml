@@ -32,18 +32,18 @@ module type Term = sig
   type location
   (** The type of locations attached to terms. *)
 
-  val eq_t      : t
-  val neq_t     : t
-  val not_t     : t
-  val or_t      : t
-  val and_t     : t
-  val xor_t     : t
-  val nor_t     : t
-  val nand_t    : t
-  val equiv_t   : t
-  val implies_t : t
-  val implied_t : t
-  val data_t    : t
+  val eq_t      : ?loc:location -> unit -> t
+  val neq_t     : ?loc:location -> unit -> t
+  val not_t     : ?loc:location -> unit -> t
+  val or_t      : ?loc:location -> unit -> t
+  val and_t     : ?loc:location -> unit -> t
+  val xor_t     : ?loc:location -> unit -> t
+  val nor_t     : ?loc:location -> unit -> t
+  val nand_t    : ?loc:location -> unit -> t
+  val equiv_t   : ?loc:location -> unit -> t
+  val implies_t : ?loc:location -> unit -> t
+  val implied_t : ?loc:location -> unit -> t
+  val data_t    : ?loc:location -> unit -> t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {implied_t} is reverse implication, and
       {data_t} is used in tptp's annotations. *)
