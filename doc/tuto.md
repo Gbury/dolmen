@@ -30,7 +30,7 @@ let format, statements = M.parse_file file
 let () = match format with
 | M.Dimacs | M.ICNF -> Format.printf "Hurray for CNF !@."
 | M.Smtlib | M.Tptp | M.Zf ->
-  Format.printf "First order formulas ! Yay !@."
+  Format.printf "First (or higher) order formulas ! Yay !@."
 
 (* Now you can analyse the statements, and prove the needed theorems *)
 let () = List.iter ignore statements
