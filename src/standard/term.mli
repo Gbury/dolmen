@@ -85,33 +85,33 @@ type binder =
   | All
   (** Universal quantification.
       Each term in the list of quantified terms should represent
-      a variable (optionnally typed using the {Colon} constructor. *)
+      a variable (optionnally typed using the {!Colon} constructor. *)
   | Ex
   (** Existencial quantification
       Each term in the list of quantified terms should represent
-      a variable (optionnally typed using the {Colon} constructor. *)
+      a variable (optionnally typed using the {!Colon} constructor. *)
   | Pi
   (** Polymorphic type quantification in function type
       Each term in the list of quantified terms should represent
-      a variable (optionnally typed using the {Colon} constructor. *)
+      a variable (optionnally typed using the {!Colon} constructor. *)
   | Arrow
   (** The arrow binder, for function types. Allows for curified types, if wanted. *)
   | Let
   (** Let bindings (either propositional or for terms).
       Term boud by a let can have many forms depending on the language, but usual
       shapes are:
-      - an equality (using the builtin {Eq}) between a variable
-        (optionnally typed using the {Colon} constructor),
+      - an equality (using the builtin {!Eq}) between a variable
+        (optionnally typed using the {!Colon} constructor),
         and a term (e.g. in tptp)
-      - an equivalence (using the builtin {Equiv}) between a variable
-        (optionnally typed using the {Colon} constructor),
+      - an equivalence (using the builtin {!Equiv}) between a variable
+        (optionnally typed using the {!Colon} constructor),
         and a term/proposition (e.g. in tptp)
-      - a variable and a term juxtaposed using the {Colon} constructor (e.g. in smtlib)
+      - a variable and a term juxtaposed using the {!Colon} constructor (e.g. in smtlib)
   *)
   | Fun
   (** Lambda, i.e function abstraction binder.
       Boud terms are the variables bound by the lambda, optionnally typed
-      using the {Colon} constructor. *)
+      using the {!Colon} constructor. *)
   | Choice
   (** Indefinite description, or epsilon terms.
       Likely to have its usual shape change fllowing tptp's recent changes. *)
