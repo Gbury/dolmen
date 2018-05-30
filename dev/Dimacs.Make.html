@@ -13,6 +13,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -101,9 +102,10 @@ Helper function to find a file using a language specification.
 Parse the given file.<br>
 </div>
 
-<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin ] -> unit -> <a href="Language_intf.S.html#TYPEstatement">statement</a> option</code></pre><div class="info ">
+<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">[ `File of string | `Stdin ] -><br>       (unit -> <a href="Language_intf.S.html#TYPEstatement">statement</a> option) * (unit -> unit)</code></pre><div class="info ">
 Incremental parsing. Given an input to read (either a file, or stdin),
-      returns a generator that will incrementally parse the statements.
+      returns a generator that will incrementally parse the statements,
+      together with a cleanup function to close file descriptors.
       In case of a syntax error, the current line will be completely
       consumed and parsing will restart at the beginning of the next line.
       Useful to process input from <code class="code">stdin</code>, or even large files where it would

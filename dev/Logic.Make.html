@@ -13,6 +13,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -159,9 +160,11 @@ Given a filename, parse the file, and return the detected language
 </div>
 <div class="param_info"><code class="code">language</code> : specify a language; overrides auto-detection.</div>
 
-<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -><br>       [ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option)</code></pre><div class="info ">
+<pre><span id="VALparse_input"><span class="keyword">val</span> parse_input</span> : <code class="type">?language:<a href="Logic.Make.html#TYPElanguage">language</a> -><br>       [ `File of string | `Stdin of <a href="Logic.Make.html#TYPElanguage">language</a> ] -><br>       <a href="Logic.Make.html#TYPElanguage">language</a> * (unit -> S.t option) * (unit -> unit)</code></pre><div class="info ">
 Incremental parsing of either a file (see ), or stdin
-      (with given language).<br>
+      (with given language). Returns a triplet <code class="code">(lan, gen, cl)</code>, containing
+      the language detexted <code class="code">lan</code>, a genratro function <code class="code">gen</code> for parsing the input,
+      and a cleanup function <code class="code">cl</code> to call in order to cleanup the file descriptors.<br>
 </div>
 <div class="param_info"><code class="code">language</code> : specify a language for parsing, overrides auto-detection
       and stdin specification.</div>

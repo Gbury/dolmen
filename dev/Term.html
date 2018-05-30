@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="Start" href="index.html">
 <link rel="previous" href="Id.html">
-<link rel="next" href="Statement.html">
+<link rel="next" href="Normalize.html">
 <link rel="Up" href="index.html">
 <link title="Index of types" rel=Appendix href="index_types.html">
 <link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
@@ -15,6 +15,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -44,7 +45,7 @@
 <body>
 <div class="navbar"><a class="pre" href="Id.html" title="Id">Previous</a>
 &nbsp;<a class="up" href="index.html" title="Index">Up</a>
-&nbsp;<a class="post" href="Statement.html" title="Statement">Next</a>
+&nbsp;<a class="post" href="Normalize.html" title="Normalize">Next</a>
 </div>
 <h1>Module <a href="type_Term.html">Term</a></h1>
 
@@ -378,7 +379,9 @@ The type of builtins symbols for terms.
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.All"><span class="constructor">All</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Universal quantification<br>
+Universal quantification.
+      Each term in the list of quantified terms should represent
+      a variable (optionnally typed using the <code class="code">Colon</code> constructor.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -388,7 +391,9 @@ Universal quantification<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Ex"><span class="constructor">Ex</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Existencial quantification<br>
+Existencial quantification
+      Each term in the list of quantified terms should represent
+      a variable (optionnally typed using the <code class="code">Colon</code> constructor.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -398,7 +403,9 @@ Existencial quantification<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Pi"><span class="constructor">Pi</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Polymorphic type quantification in function type<br>
+Polymorphic type quantification in function type
+      Each term in the list of quantified terms should represent
+      a variable (optionnally typed using the <code class="code">Colon</code> constructor.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -408,7 +415,7 @@ Polymorphic type quantification in function type<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Arrow"><span class="constructor">Arrow</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-The arrow binder, for function types<br>
+The arrow binder, for function types. Allows for curified types, if wanted.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -418,7 +425,18 @@ The arrow binder, for function types<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Let"><span class="constructor">Let</span></span></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Let bindings (either propositional or for terms<br>
+Let bindings (either propositional or for terms).
+      Term boud by a let can have many forms depending on the language, but usual
+      shapes are:<ul>
+<li>an equality (using the builtin <code class="code">Eq</code>) between a variable
+        (optionnally typed using the <code class="code">Colon</code> constructor),
+        and a term (e.g. in tptp)</li>
+<li>an equivalence (using the builtin <code class="code">Equiv</code>) between a variable
+        (optionnally typed using the <code class="code">Colon</code> constructor),
+        and a term/proposition (e.g. in tptp)</li>
+<li>a variable and a term juxtaposed using the <code class="code">Colon</code> constructor (e.g. in smtlib)</li>
+</ul>
+<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -427,26 +445,40 @@ Let bindings (either propositional or for terms<br>
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Fun"><span class="constructor">Fun</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Lambda, i.e function abstraction binder.
+      Boud terms are the variables bound by the lambda, optionnally typed
+      using the <code class="code">Colon</code> constructor.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Choice"><span class="constructor">Choice</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Indefinite description, or epsilon terms.
+      Likely to have its usual shape change fllowing tptp's recent changes.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
 <tr>
 <td align="left" valign="top" >
 <code><span class="keyword">|</span></code></td>
 <td align="left" valign="top" >
 <code><span id="TYPEELTbinder.Description"><span class="constructor">Description</span></span></code></td>
-
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Definite description.
+      Likely to have its usual shape change fllowing tptp's recent changes.<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr></table>
 
-
-<br>
+<div class="info ">
 The type of binders, these are pretty much always builtin in all languages.<br>
+</div>
+
 
 <pre><code><span id="TYPEdescr"><span class="keyword">type</span> <code class="type"></code>descr</span> = </code></pre><table class="typetable">
 <tr>
@@ -465,7 +497,8 @@ Constants, variables, etc... any string-identified non-builtin atomic term.<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Builtin"><span class="constructor">Builtin</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEbuiltin">builtin</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Predefined builtins, i.e constants with lexical or syntaxic defintion in the source language.<br>
+Predefined builtins, i.e constants with lexical or syntaxic defintion
+      in the source language.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -475,8 +508,8 @@ Predefined builtins, i.e constants with lexical or syntaxic defintion in the sou
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Colon"><span class="constructor">Colon</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEt">t</a> * <a href="Term.html#TYPEt">t</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Juxtaposition of terms, usually used to annotate a term with its type (for quantified variables,
-      functions arguments, etc...<br>
+Juxtaposition of terms, usually used to annotate a term with its type
+      (for quantified variables, functions arguments, etc...).<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -496,7 +529,8 @@ Higher-order application<br>
 <td align="left" valign="top" >
 <code><span id="TYPEELTdescr.Binder"><span class="constructor">Binder</span></span> <span class="keyword">of</span> <code class="type"><a href="Term.html#TYPEbinder">binder</a> * <a href="Term.html#TYPEt">t</a> list * <a href="Term.html#TYPEt">t</a></code></code></td>
 <td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
-Binder (quantifiers, local functions, ...)<br>
+Binder (quantifiers, local functions, ...), see the <a href="Term.html#TYPEbinder"><code class="code">Term.binder</code></a> type for more
+      information.<br>
 </div>
 </td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
 </tr>
@@ -554,7 +588,8 @@ Equality and comparison<br>
 </div>
 
 <pre><span id="VALpp"><span class="keyword">val</span> pp</span> : <code class="type">Buffer.t -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre>
-<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre><div class="info ">
+<pre><span id="VALprint"><span class="keyword">val</span> print</span> : <code class="type">Format.formatter -> <a href="Term.html#TYPEt">t</a> -> unit</code></pre>
+<pre><span id="VALprint_builtin"><span class="keyword">val</span> print_builtin</span> : <code class="type">Format.formatter -> <a href="Term.html#TYPEbuiltin">builtin</a> -> unit</code></pre><div class="info ">
 Printing functionson buffer and formatters.<br>
 </div>
 <br>
@@ -571,6 +606,10 @@ Multi-arguments function type constructor.<br>
 <pre><span id="VALadd_attr"><span class="keyword">val</span> add_attr</span> : <code class="type"><a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
 <code class="code">add_attr attr term</code> rturns a term <code class="code">t</code> equal to <code class="code">term</code>, but with
     <code class="code">attr</code> added to the list of attributes.<br>
+</div>
+
+<pre><span id="VALnormalize"><span class="keyword">val</span> normalize</span> : <code class="type">(<a href="Id.html#TYPEt">Id.t</a> -> <a href="Term.html#TYPEdescr">descr</a>) -> <a href="Term.html#TYPEt">t</a> -> <a href="Term.html#TYPEt">t</a></code></pre><div class="info ">
+Normalize the given term using the function to translate all symbols.<br>
 </div>
 <br>
 <h2 id="2_Freevariables">Free variables</h2><br>

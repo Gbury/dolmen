@@ -10,6 +10,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -82,24 +83,25 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;compare&nbsp;:&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;pp&nbsp;:&nbsp;<span class="constructor">Buffer</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;eq_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;neq_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;wildcard&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tType&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;ty_int&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;prop&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;true_&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;false_&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;not_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;or_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;and_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;xor_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;nor_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;nand_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;equiv_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;implied_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;implies_t&nbsp;:&nbsp;t<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_t&nbsp;:&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;print_builtin&nbsp;:&nbsp;<span class="constructor">Format</span>.formatter&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.builtin&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;eq_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;neq_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;wildcard&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;tType&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;ty_int&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;prop&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;true_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;false_&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;not_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;or_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;and_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;xor_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;nor_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;nand_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;equiv_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;implied_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;implies_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;data_t&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;var&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;const&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;atom&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;int&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
@@ -144,5 +146,6 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexpr&nbsp;:&nbsp;?loc:location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fun_ty&nbsp;:&nbsp;?loc:<span class="constructor">Term</span>.location&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;add_attr&nbsp;:&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;normalize&nbsp;:&nbsp;(<span class="constructor">Id</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.descr)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Term</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;fv&nbsp;:&nbsp;<span class="constructor">Term</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Id</span>.t&nbsp;list<br>
 <span class="keyword">end</span></code></body></html>

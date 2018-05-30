@@ -15,6 +15,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -146,9 +147,10 @@ N-ary version of <a href="ParseLocation.html#VALcombine"><code class="code">Pars
 Change the file name used for positions in this lexbuf<br>
 </div>
 
-<pre><span id="VALmk_lexbuf"><span class="keyword">val</span> mk_lexbuf</span> : <code class="type">[ `File of string | `Stdin ] -> Lexing.lexbuf</code></pre><div class="info ">
-Reutnrs the lexbuf associetd with the given file or stdin,
-    with the correct filename.<br>
+<pre><span id="VALmk_lexbuf"><span class="keyword">val</span> mk_lexbuf</span> : <code class="type">[ `File of string | `Stdin ] -> Lexing.lexbuf * (unit -> unit)</code></pre><div class="info ">
+Returns the lexbuf associetd with the given file or stdin,
+    with the correct filename, together with a function to close
+    the associated file descriptor.<br>
 </div>
 
 <pre><span id="VALof_lexbuf"><span class="keyword">val</span> of_lexbuf</span> : <code class="type">Lexing.lexbuf -> <a href="ParseLocation.html#TYPEt">t</a></code></pre><div class="info ">

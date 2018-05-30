@@ -15,6 +15,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -63,18 +64,18 @@ The type of locations attached to terms.<br>
 </div>
 
 
-<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
-<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre>
+<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type">?loc:<a href="Ast_tptp.Term.html#TYPElocation">location</a> -> unit -> <a href="Ast_tptp.Term.html#TYPEt">t</a></code></pre><div class="info ">
 Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF.  is reverse implication, and
        is used in tptp's annotations.<br>

@@ -10,6 +10,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -56,6 +57,7 @@
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;combine_list&nbsp;:&nbsp;<span class="constructor">ParseLocation</span>.t&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">ParseLocation</span>.t<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;smaller&nbsp;:&nbsp;<span class="constructor">ParseLocation</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">ParseLocation</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;set_file&nbsp;:&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
-&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mk_lexbuf&nbsp;:&nbsp;[&nbsp;<span class="keywordsign">`</span><span class="constructor">File</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Stdin</span>&nbsp;]&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.lexbuf<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;mk_lexbuf&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;<span class="keywordsign">`</span><span class="constructor">File</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Stdin</span>&nbsp;]&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;*&nbsp;(unit&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit)<br>
 &nbsp;&nbsp;<span class="keyword">val</span>&nbsp;of_lexbuf&nbsp;:&nbsp;<span class="constructor">Lexing</span>.lexbuf&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">ParseLocation</span>.t<br>
 <span class="keyword">end</span></code></body></html>

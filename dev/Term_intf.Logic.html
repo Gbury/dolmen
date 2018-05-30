@@ -13,6 +13,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -74,59 +75,59 @@ The type of locations attached to terms.<br>
 <br>
 <h3 id="3_Predefinedterms">Predefined terms</h3><br>
 
-<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALeq_t"><span class="keyword">val</span> eq_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALneq_t"><span class="keyword">val</span> neq_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The terms representing equality and disequality, respectively.<br>
 </div>
 
-<pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALwildcard"><span class="keyword">val</span> wildcard</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The wildcard term, usually used in place of type arguments
       to explicit polymorphic functions to not explicit types that
       can be inferred by the type-checker.<br>
 </div>
 
-<pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtType"><span class="keyword">val</span> tType</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The type of types, defined as specific token by the Zipperposition format;
       in other languages, will be represented as a constant (the "$tType" constant
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism.<br>
 </div>
 
-<pre><span id="VALty_int"><span class="keyword">val</span> ty_int</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALty_int"><span class="keyword">val</span> ty_int</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The type of integers, defined as a specific token by the Zipperposition format;
       in other languages, it might be represented as a constant with a specific name
       (for isntance, tptp's "$int") .<br>
 </div>
 
-<pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALprop"><span class="keyword">val</span> prop</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The type of propositions. Also defined as a lexical token by the Zipperposition
       format. Will be defined as a constant in most other languages (for instance,
       "$o" in tptp).<br>
 </div>
 
-<pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALtrue_"><span class="keyword">val</span> true_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALfalse_"><span class="keyword">val</span> false_</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 The constants for the true and false propositional constants. Again defined
       as lexical token in the Zipperposition format, while treated as a constant
       in other languages ("$true" in tptp).<br>
 </div>
 
-<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
-<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALnot_t"><span class="keyword">val</span> not_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALor_t"><span class="keyword">val</span> or_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALand_t"><span class="keyword">val</span> and_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALxor_t"><span class="keyword">val</span> xor_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnor_t"><span class="keyword">val</span> nor_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALnand_t"><span class="keyword">val</span> nand_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALequiv_t"><span class="keyword">val</span> equiv_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplied_t"><span class="keyword">val</span> implied_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre>
+<pre><span id="VALimplies_t"><span class="keyword">val</span> implies_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Standard logical connectives viewed as terms. <code class="code">implies_t</code> is usual
       right implication, i.e <code class="code">apply implies_t [p; q] </code> is "p implies q",
       while <code class="code">apply implied_t [p; q ]</code> means "p is implied by q" or
       "q implies p".<br>
 </div>
 
-<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type"><a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
+<pre><span id="VALdata_t"><span class="keyword">val</span> data_t</span> : <code class="type">?loc:<a href="Term_intf.Logic.html#TYPElocation">location</a> -> unit -> <a href="Term_intf.Logic.html#TYPEt">t</a></code></pre><div class="info ">
 Term without semantic meaning, used for creating "data" terms.
       Used in tptp's annotations, and with similar meaning as smtlib's
       s-expressions (as used in the <code class="code">sexpr</code> function defined later).<br>

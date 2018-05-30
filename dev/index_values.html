@@ -11,6 +11,7 @@
 <link title="Index of module types" rel=Appendix href="index_module_types.html">
 <link title="Id" rel="Chapter" href="Id.html">
 <link title="Term" rel="Chapter" href="Term.html">
+<link title="Normalize" rel="Chapter" href="Normalize.html">
 <link title="Statement" rel="Chapter" href="Statement.html">
 <link title="ParseLocation" rel="Chapter" href="ParseLocation.html">
 <link title="Id_intf" rel="Chapter" href="Id_intf.html">
@@ -801,8 +802,9 @@ Create an identifier.
 </td></tr>
 <tr><td><a href="ParseLocation.html#VALmk_lexbuf">mk_lexbuf</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
 <td><div class="info">
-Reutnrs the lexbuf associetd with the given file or stdin,
-    with the correct filename.
+Returns the lexbuf associetd with the given file or stdin,
+    with the correct filename, together with a function to close
+    the associated file descriptor.
 </div>
 </td></tr>
 <tr><td><a href="ParseLocation.html#VALmk_pair">mk_pair</a> [<a href="ParseLocation.html">ParseLocation</a>]</td>
@@ -848,6 +850,11 @@ The terms representing equality and disequality, respectively.
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALnor_t">nor_t</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Term.html#VALnormalize">normalize</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Normalize the given term using the function to translate all symbols.
+</div>
+</td></tr>
 <tr><td><a href="Ast_zf.Term.html#VALnot_">not_</a> [<a href="Ast_zf.Term.html">Ast_zf.Term</a>]</td>
 <td></td></tr>
 <tr><td><a href="Term_intf.Logic.html#VALnot_">not_</a> [<a href="Term_intf.Logic.html">Term_intf.Logic</a>]</td>
@@ -957,13 +964,15 @@ Printing functions for statements.
 </div>
 </td></tr>
 <tr><td><a href="Term.html#VALprint">print</a> [<a href="Term.html">Term</a>]</td>
-<td><div class="info">
-Printing functionson buffer and formatters.
-</div>
-</td></tr>
+<td></td></tr>
 <tr><td><a href="Id.html#VALprint">print</a> [<a href="Id.html">Id</a>]</td>
 <td><div class="info">
 Printing functions.
+</div>
+</td></tr>
+<tr><td><a href="Term.html#VALprint_builtin">print_builtin</a> [<a href="Term.html">Term</a>]</td>
+<td><div class="info">
+Printing functionson buffer and formatters.
 </div>
 </td></tr>
 <tr><td><a href="Ast_tptp.Term.html#VALproduct">product</a> [<a href="Ast_tptp.Term.html">Ast_tptp.Term</a>]</td>
@@ -1100,6 +1109,11 @@ S-expressions (for smtlib attributes), should probably be related
     <code class="code">p1</code> is a sub-location of <code class="code">p2</code> (interval inclusion)
 </div>
 </td></tr>
+<tr><td><a href="Normalize.html#VALsmtlib">smtlib</a> [<a href="Normalize.html">Normalize</a>]</td>
+<td><div class="info">
+Normalizer for smtlib terms
+</div>
+</td></tr>
 <tr><td><a href="Ast_smtlib.Id.html#VALsort">sort</a> [<a href="Ast_smtlib.Id.html">Ast_smtlib.Id</a>]</td>
 <td></td></tr>
 <tr><td><a href="Id_intf.Logic.html#VALsort">sort</a> [<a href="Id_intf.Logic.html">Id_intf.Logic</a>]</td>
@@ -1176,6 +1190,11 @@ The function producing token from a lexbuf.
 <td></td></tr>
 <tr><td><a href="Stmt_intf.Logic.html#VALtpi">tpi</a> [<a href="Stmt_intf.Logic.html">Stmt_intf.Logic</a>]</td>
 <td></td></tr>
+<tr><td><a href="Normalize.html#VALtptp">tptp</a> [<a href="Normalize.html">Normalize</a>]</td>
+<td><div class="info">
+Normalizer for tptp terms
+</div>
+</td></tr>
 <tr><td><a href="Id.html#VALtptp_role">tptp_role</a> [<a href="Id.html">Id</a>]</td>
 <td><div class="info">
 The tagged statement has a tptp role.
