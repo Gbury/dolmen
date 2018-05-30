@@ -76,11 +76,13 @@ module Make
         | Some l -> of_language l
         | None -> of_extension (Misc.get_extension file)
       in
-      l, P.parse_input (`File file)
+      let gen, cl = P.parse_input (`File file) in
+      l, gen, cl
     | `Stdin l ->
       let _, _, (module P : S) = of_language
           (match language with | Some l' -> l' | None -> l) in
-      l, P.parse_input `Stdin
+      let gen, cl = P.parse_input `Stdin in
+      l, gen, cl
 
 end
 

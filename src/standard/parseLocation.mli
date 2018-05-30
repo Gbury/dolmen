@@ -80,9 +80,11 @@ val smaller : t -> t -> bool
 val set_file : Lexing.lexbuf -> string -> unit
 (** Change the file name used for positions in this lexbuf *)
 
-val mk_lexbuf : [ `Stdin | `File of string ] -> Lexing.lexbuf
-(** Reutnrs the lexbuf associetd with the given file or stdin,
-    with the correct filename. *)
+val mk_lexbuf :
+  [ `Stdin | `File of string ] -> Lexing.lexbuf * (unit -> unit)
+(** Returns the lexbuf associetd with the given file or stdin,
+    with the correct filename, together with a function to close
+    the associated file descriptor. *)
 
 val of_lexbuf : Lexing.lexbuf -> t
 (** Recover a position from a lexbuf *)

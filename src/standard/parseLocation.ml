@@ -134,13 +134,16 @@ let set_file buf filename =
   ()
 
 let mk_lexbuf i =
-  let s, ch = match i with
-    | `Stdin -> "<stdin>", stdin
-    | `File s -> s, open_in s
+  let s, ch, cl = match i with
+    | `Stdin ->
+      "<stdin>", stdin, (fun () -> ())
+    | `File s ->
+      let ch = open_in s in
+      s, ch, (fun () -> close_in ch)
   in
   let buf = Lexing.from_channel ch in
   set_file buf s;
-  buf
+  buf, cl
 
 let of_lexbuf lexbuf =
   let start = Lexing.lexeme_start_p lexbuf in
@@ -151,3 +154,4 @@ let of_lexbuf lexbuf =
   let e_c = end_.Lexing.pos_cnum - end_.Lexing.pos_bol in
   let file = start.Lexing.pos_fname in
   mk file s_l s_c e_l e_c
+

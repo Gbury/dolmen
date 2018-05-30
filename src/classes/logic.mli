@@ -52,9 +52,11 @@ module Make
   val parse_input :
     ?language:language ->
     [ `File of string | `Stdin of language ] ->
-    language * (unit -> S.t option)
+    language * (unit -> S.t option) * (unit -> unit)
   (** Incremental parsing of either a file (see {parse_file}), or stdin
-      (with given language).
+      (with given language). Returns a triplet [(lan, gen, cl)], containing
+      the language detexted [lan], a genratro function [gen] for parsing the input,
+      and a cleanup function [cl] to call in order to cleanup the file descriptors.
       @param language specify a language for parsing, overrides auto-detection
       and stdin specification. *)
 

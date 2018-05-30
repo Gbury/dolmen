@@ -82,7 +82,9 @@ let () =
           (lang, (parse f))
       end
     | `Interactive ->
-      M.parse_input input
+      let l, gen, _ = M.parse_input input in
+      l, gen (* Cleanup fuction is ignored because it will be automatically cleaned up
+                upon exit (it's ok since we only deal with a single file) *)
   in
   if print then
     begin match input with

@@ -37,25 +37,31 @@ module Make
       None
 
   let parse_file file =
-    let lexbuf = ParseLocation.mk_lexbuf (`File file) in
+    let lexbuf, cleanup = ParseLocation.mk_lexbuf (`File file) in
     try
-      Parser.file Lexer.token lexbuf
+      let res = Parser.file Lexer.token lexbuf in
+      cleanup ();
+      res
     with
     | ((Loc.Syntax_error _) as e)
     | ((Loc.Lexing_error _) as e) ->
+      let () = cleanup () in
       raise e
     | Parser.Error ->
       let pos = Loc.of_lexbuf lexbuf in
+      let () = cleanup () in
       raise (Loc.Syntax_error (pos, ""))
     | Lexer.Error ->
       let pos = Loc.of_lexbuf lexbuf in
+      let () = cleanup () in
       raise (Loc.Lexing_error (pos, Lexing.lexeme lexbuf))
     | _ as e ->
       let pos = Loc.of_lexbuf lexbuf in
+      let () = cleanup () in
       raise (Loc.Uncaught (pos, e))
 
   let parse_input i =
-    let lexbuf = ParseLocation.mk_lexbuf i in
+    let lexbuf, cleanup = ParseLocation.mk_lexbuf i in
     let supplier = Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
         Lexer.token lexbuf in
     let loop = Parse.MenhirInterpreter.loop supplier in
@@ -81,7 +87,7 @@ module Make
           raise (Loc.Uncaught (pos, e))
       end
     in
-    aux
+    aux, cleanup
 
 end
 
