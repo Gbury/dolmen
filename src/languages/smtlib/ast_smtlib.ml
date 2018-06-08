@@ -117,6 +117,9 @@ module type Statement = sig
   val set_option : ?loc:location -> string * term option -> t
   (** Set the value of a prover option. *)
 
+  val dtype_decl : ?loc:location -> id -> id list -> (id * term list) list -> t
+  (** Declares a new datatype *)
+
   val type_decl : ?loc:location -> id -> int -> t
   (** Declares a new type constructor with given arity. *)
 
@@ -135,6 +138,16 @@ module type Statement = sig
   (** Defines a new function. [fun_def f args ret body] is such that
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)
+
+  val data : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Pack datatype definitions. *)
+
+  val defs        : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Pack recursive functions definitions. *)
+
+  val get_model : ?loc:location -> unit -> t
+  (** Return the model of the lastest [check_sat] if it returned sat, else
+      is undefined. *)
 
   val get_proof : ?loc:location -> unit -> t
   (** Return the proof of the lastest [check_sat] if it returned unsat, else

@@ -87,6 +87,10 @@ module type Logic = sig
       i.e any occurence of "f(l)" should be replaced by [body] where the "args" have been
       substituted by their corresponding value in [l]. *)
 
+  val dtype_decl  : ?loc:location -> id -> id list -> (id * term list) list -> t
+  (** Datatype definition. [dtype_decl t args clist] declares that [t(args) = clist],
+      i.e. "t(args)" is a datatype of constructors in [clist]. *)
+
   val fun_decl    : ?loc:location -> id -> term list -> term -> t
   (** Symbol declaration. [fun_decl f args ret] defines [f] as a function
       which takes arguments of type as described in [args] and which returns
@@ -96,6 +100,10 @@ module type Logic = sig
   (** Symbol definition. [fun_def f args ret body] means that "f(args) = (body : ret)",
       i.e f is a function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
+
+  val get_model       : ?loc:location -> unit -> t
+  (** If the last call to [check_sat] returned SAT, then instruct the prover to return 
+      a model. *)
 
   val get_proof       : ?loc:location -> unit -> t
   (** If the last call to [check_sat] returned UNSAT, then instruct the prover to return

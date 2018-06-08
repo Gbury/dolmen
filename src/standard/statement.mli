@@ -79,6 +79,8 @@ type descr =
   | Inductive of inductive
   (** Inductive type definition, see the [inductive] type. *)
 
+  | Get_model
+  (** Get the model of the full assertions (see smtlib manual). *)
   | Get_proof
   (** Get the proof of the last sequent (if it was proved). *)
   | Get_unsat_core
