@@ -283,7 +283,7 @@ let rewrite ?loc ?attrs t =
 let goal ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in
   mk ?loc ?attr (Pack [
-      consequent t;
+      consequent ?loc t;
       prove ?loc ();
     ])
 
