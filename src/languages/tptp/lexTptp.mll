@@ -73,8 +73,12 @@ let dollar_word = '$' lower_word
 let dollar_dollar_word = "$$" lower_word
 
 rule token = parse
-  | comment { token lexbuf }
-  | comment_block { token lexbuf }  (* TODO: count new lines in lexeme lexbuf *)
+  | comment
+    { String.iter (function
+        | '\n' -> Lexing.new_line lexbuf
+        | _ -> ()
+      ) (Lexing.lexeme lexbuf);
+      token lexbuf }
 
   | '\n' { Lexing.new_line lexbuf; token lexbuf }
   | [' ' '\t' '\r'] { token lexbuf }
