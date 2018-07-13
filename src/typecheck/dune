@@ -1,0 +1,6 @@
+(library
+  (name           dolmen_typecheck)
+  (public_name    dolmen.typecheck)
+  (libraries      dolmen spelll)
+  (modules        Tff_intf Tff Base)
+)

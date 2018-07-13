@@ -6,7 +6,7 @@
     respect in order to be used to instantiated the corresponding
     language classes. *)
 
-(** {2 Signature for Logic languages} *)
+(** {2 Signature for Parsing Logic languages} *)
 
 module type Logic = sig
 
@@ -15,8 +15,7 @@ module type Logic = sig
       Mainly used to parse first-order terms, it is also used to
       parse tptp's THF language, which uses higher order terms, so
       some first-order constructs such as conjunction, equality, etc...
-      also need to be represented by standalone terms.
-  *)
+      also need to be represented by standalone terms. *)
 
   type t
   (** The type of terms. *)
@@ -231,3 +230,141 @@ module type Logic = sig
       to the [data_t] term. *)
 
 end
+
+
+(** {2 Signature for Typechecked terms} *)
+
+module type Tff = sig
+
+  (** Signature required by terms for typing first-order
+      polymorphic terms. *)
+
+  type t
+  type var
+  (** The type of terms and term variables. *)
+
+  type ty
+  type ty_var
+  (** The representation of term types and type variables. *)
+
+  type formula
+  (** The type of formulas. *)
+
+  type 'a tag
+  (** The type of tags used to annotate arbitrary terms. *)
+
+  val ty : t -> ty
+  (** Returns the type of a term. *)
+
+  (** A module for variables that occur in terms. *)
+  module Var : sig
+
+    type t = var
+    (** The type of variables the can occur in terms *)
+
+    val hash : t -> int
+    (** A hash function for term variables, should be suitable to create hashtables. *)
+
+    val equal : t -> t -> bool
+    (** An equality function on term variables. Should be compatible with the hash function. *)
+
+    val compare : t -> t -> int
+    (** Comparison function on variables. *)
+
+    val mk : string -> ty -> t
+    (** Create a new typed variable. *)
+
+    val ty : t -> ty
+    (** Return the type of the variable. *)
+
+  end
+
+  (** A module for constant symbols that occur in terms. *)
+  module Const : sig
+
+    type t
+    (** The type of constant symbols that can occur in terms *)
+
+    val hash : t -> int
+    (** A hash function for term constants, should be suitable to create hashtables. *)
+
+    val equal : t -> t -> bool
+    (** An equality function on term constants. Should be compatible with the hash function. *)
+
+    val arity : t -> int * int
+    (** Returns the arity of *)
+
+    val mk : string -> ty_var list -> ty list -> ty -> t
+    (** Create a polymorphic constant symbol. *)
+
+    val tag : t -> 'a tag -> 'a -> unit
+    (** Tag a constant. *)
+
+  end
+
+  exception Wrong_type of t * ty
+  (** Exception raised in case of typing error during term construction.
+      [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
+      is expected to have type [ty], but does not have that type. *)
+
+  val of_var : var -> t
+  (** Create a term from a variable *)
+
+  val apply : Const.t -> ty list -> t list -> t
+  (** Polymorphic application. *)
+
+  val _true : t
+  val _false : t
+  (** Some usual formulas. *)
+
+  val eq : t -> t -> t
+  (** Build the equality of two terms. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
+
+  val neg : t -> t
+  (** Negation. *)
+
+  val _and : t list -> t
+  (** Conjunction of formulas *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val imply : t -> t -> t
+  (** Implication *)
+
+  val equiv : t -> t -> t
+  (** Equivalence *)
+
+  val xor : t -> t -> t
+  (** Exclusive disjunction. *)
+
+  val all :
+    ty_var list * var list ->
+    ty_var list * var list ->
+    t -> t
+  (** Universally quantify the given formula over the type and terms variables.
+      The first pair of arguments are the variables that are free in the resulting
+      quantified formula, and the second pair are the variables bound. *)
+
+  val ex :
+    ty_var list * var list ->
+    ty_var list * var list ->
+    t -> t
+  (** Existencially quantify the given formula over the type and terms variables.
+      The first pair of arguments are the variables that are free in the resulting
+      quantified formula, and the second pair are the variables bound. *)
+
+  val letin : (var * t) list -> t -> t
+  (** Let-binding. Variabels can be bound to either terms or formulas. *)
+
+  val tag : t -> 'a tag -> 'a -> unit
+  (** Annotate the given formula wiht the tag and value. *)
+
+  val fv : t -> ty_var list * var list
+  (** Returns the list of free variables in the formula. *)
+
+end
+

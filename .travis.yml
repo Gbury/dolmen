@@ -5,7 +5,6 @@ env:
   - TO_TEST=install OPAMBUILDTEST=true OCAML_VERSION=4.03.0
   # Check build and unit tests
   # NOTE: testing needs OPAMBUILDTEST=true so that test deps are installed
-  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.02.3
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.03.0
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.03.0+flambda
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.04.2
@@ -36,11 +35,11 @@ before_install:
   - export OPAMVERBOSE=1
 install:
   # Install dependencies
-  - ${HOME}/opam pin add --no-action dolmen .
-  - ${HOME}/opam install --deps-only dolmen.dev
+  - ${HOME}/opam pin add --no-action .
+  - ${HOME}/opam install --deps-only dolmen.dev dolmen_typecheck.dev
 script:
   # Build and launch the tests
-  - if [ "$TO_TEST" = "tests" ]; then make bin && make test; fi
+  - if [ "$TO_TEST" = "tests" ]; then make && make test; fi
   # Try and install the package with opam
   - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev; fi
 
