@@ -39,6 +39,7 @@ type descr =
   | Decl of Id.t * term
   | Inductive of inductive
 
+  | Get_model
   | Get_proof
   | Get_unsat_core
   | Get_value of term list
@@ -98,6 +99,7 @@ let rec pp_descr b = function
           ) b i.cstrs
 
   | Get_proof -> Printf.bprintf b "get-proof"
+  | Get_model -> Printf.bprintf b "get-model"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
   | Get_value l ->
     Printf.bprintf b "get-value(%d):\n" (List.length l);
@@ -164,6 +166,7 @@ let rec print_descr fmt = function
            ) l)) i.cstrs
 
   | Get_proof -> Format.fprintf fmt "get-proof"
+  | Get_model -> Format.fprintf fmt "get-model"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
   | Get_value l ->
     Format.fprintf fmt "@[<hov 2>get-value(%d):@ %a@]" (List.length l)
@@ -210,6 +213,7 @@ let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
    is equal to given term *)
 
 (* Return values *)
+let get_model ?loc () = mk ?loc Get_model
 let get_proof ?loc () = mk ?loc Get_proof
 let get_unsat_core ?loc () = mk ?loc Get_unsat_core
 let get_value ?loc l = mk ?loc (Get_value l)
@@ -242,6 +246,10 @@ let assumption ?loc l =
 (* Smtlib wrappers *)
 let check_sat = prove
 let assert_ ?loc t = antecedent ?loc t
+
+let dtype_decl ?loc id pl cstrs =
+  let vars = List.map (fun id -> Term.const id) pl in
+  mk ?loc (Inductive {id; vars; cstrs; loc; })
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in

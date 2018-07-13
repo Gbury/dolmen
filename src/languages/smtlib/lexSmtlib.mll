@@ -42,35 +42,53 @@ rule token = parse
   | [' ' '\t' '\r']+    { token lexbuf }
   | '\n'                { Lexing.new_line lexbuf; token lexbuf }
   | ';' (_ # '\n')*     { token lexbuf }
+
   | '_'                 { UNDERSCORE }
+  | '!'                 { ATTRIBUTE }
   | "as"                { AS }
   | "let"               { LET }
-  | "forall"            { FORALL }
   | "exists"            { EXISTS }
-  | '!'                 { ATTRIBUTE }
-  | "par"               { raise Error }
+  | "forall"            { FORALL }
+  | "match"             { raise Error }
+  | "par"               { PAR }
+
   | "NUMERAL"           { raise Error }
   | "DECIMAL"           { raise Error }
   | "STRING"            { raise Error }
-  | "set-logic"         { SET_LOGIC }
-  | "set-option"        { SET_OPTION }
-  | "set-info"          { SET_INFO }
-  | "declare-sort"      { DECLARE_SORT }
-  | "define-sort"       { DEFINE_SORT }
-  | "declare-fun"       { DECLARE_FUN }
-  | "define-fun"        { DEFINE_FUN }
-  | "push"              { PUSH }
-  | "pop"               { POP }
+
+  | "not"               { NOT }
+
   | "assert"            { ASSERT }
+  | "check-sat-assuming"        { raise Error }
   | "check-sat"         { CHECK_SAT }
+  | "declare-const"     { DECLARE_CONST }
+  | "declare-datatypes" { DECLARE_DATATYPES }
+  | "declare-datatype"  { DECLARE_DATATYPE }
+  | "declare-fun"       { DECLARE_FUN }
+  | "declare-heap"      { DECLARE_HEAP }
+  | "declare-sort"      { DECLARE_SORT }
+  | "define-fun-rec"    { DEFINE_FUN_REC }
+  | "define-funs-rec"   { DEFINE_FUNS_REC }
+  | "define-fun"        { DEFINE_FUN }
+  | "define-sort"       { DEFINE_SORT }
+  | "echo"              { raise Error }
+  | "exit"              { EXIT }
   | "get-assertions"    { GET_ASSERTIONS }
+  | "get-assignment"    { GET_ASSIGNMENT }
+  | "get-info"          { GET_INFO }
+  | "get-option"        { GET_OPTION }
+  | "get-model"         { GET_MODEL }
   | "get-proof"         { GET_PROOF }
+  | "get-unsat-assumptions"    { raise Error }
   | "get-unsat-core"    { GET_UNSAT_CORE }
   | "get-value"         { GET_VALUE }
-  | "get-assignment"    { GET_ASSIGNMENT }
-  | "get-option"        { GET_OPTION }
-  | "get-info"          { GET_INFO }
-  | "exit"              { EXIT }
+  | "pop"               { POP }
+  | "push"              { PUSH }
+  | "reset-assertions"  { raise Error }
+  | "reset"             { raise Error }
+  | "set-info"          { SET_INFO }
+  | "set-logic"         { SET_LOGIC }
+  | "set-option"        { SET_OPTION }
   | '('                 { OPEN }
   | ')'                 { CLOSE }
   | ('0' | ['1'-'9'] ['0'-'9']*) as s
