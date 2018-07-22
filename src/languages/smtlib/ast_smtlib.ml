@@ -23,7 +23,11 @@ module type Id = sig
       and attributes, respectively. *)
 
   val mk : namespace -> string -> t
-  (** Make an identifier from a name and namespace. *)
+  (** Make an identifier from a name and namespace.
+      Indexed identifiers (which are a list of names),
+      are encoded into a single string with the ['\000']
+      character as separator (since it cannot appear in any
+      symbol from smtlib). *)
 
 end
 
@@ -65,6 +69,11 @@ module type Term = sig
   val exists  : ?loc:location -> t list -> t -> t
   (** Existencial quantification. *)
 
+  val match_ : ?loc:location -> t -> (t * t) list -> t
+  (** Pattern matching. The first term is the term to match,
+      and each tuple in the list is a match case, which is a pair
+      of a pattern and a match branch. *)
+
   val sexpr   : ?loc:location -> t list -> t
   (** S-expressions. Used in smtlib's annotations, *)
 
@@ -90,32 +99,34 @@ module type Statement = sig
   type location
   (** The type of locations. *)
 
-  val pop : ?loc:location -> int -> t
-  (** Pop the given number of level on the stack of assertions. *)
+  (** (Re)starting and terminating *)
 
-  val push : ?loc:location -> int -> t
-  (** Push the given number of new level on the stack of assertions. *)
-
-  val assert_ : ?loc:location -> term -> t
-  (** Add a proposition to the current set of assertions. *)
-
-  val check_sat : ?loc:location -> unit -> t
-  (** Solve the current set of assertions for satisfiability. *)
+  val reset : ?loc:location -> unit -> t
+  (** Full reset of the prover state. *)
 
   val set_logic : ?loc:location -> string -> t
   (** Set the problem logic. *)
 
-  val get_info : ?loc:location -> string -> t
-  (** Get information (see smtlib manual). *)
-
-  val set_info : ?loc:location -> string * term option -> t
-  (** Set information (see smtlib manual). *)
-
-  val get_option : ?loc:location -> string -> t
-  (** Get the value of a prover option. *)
-
-  val set_option : ?loc:location -> string * term option -> t
+  val set_option : ?loc:location -> term -> t
   (** Set the value of a prover option. *)
+
+  val exit : ?loc:location -> unit -> t
+  (** Exit the interactive loop. *)
+
+
+  (** Modifying the assertion stack *)
+
+  val push : ?loc:location -> int -> t
+  (** Push the given number of new level on the stack of assertions. *)
+
+  val pop : ?loc:location -> int -> t
+  (** Pop the given number of level on the stack of assertions. *)
+
+  val reset_assertions : ?loc:location -> unit -> t
+  (** Reset assumed assertions. *)
+
+
+  (** Introducing new symbols *)
 
   val type_decl : ?loc:location -> id -> int -> t
   (** Declares a new type constructor with given arity. *)
@@ -125,6 +136,9 @@ module type Statement = sig
       later occurences of [f] applied to a list of arguments [l] should
       be replaced by [body] where the [args] have been substituted by
       their value in [l]. *)
+
+  val datatypes : ?loc:location -> (id * term list * (id * term list) list) list -> t
+  (** Inductive type definitions. *)
 
   val fun_decl  : ?loc:location -> id -> term list -> term -> t
   (** Declares a new term symbol, and its type. [fun_decl f args ret]
@@ -136,13 +150,30 @@ module type Statement = sig
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)
 
-  val get_proof : ?loc:location -> unit -> t
-  (** Return the proof of the lastest [check_sat] if it returned unsat, else
-      is undefined. *)
+  val funs_def_rec : ?loc:location -> (id * term list * term * term) list -> t
+  (** Declare a list of mutually recursive functions. *)
 
-  val get_unsat_core : ?loc:location -> unit -> t
-  (** Return the unsat core of the latest [check_sat] if it returned unsat,
-      else is undefined. *)
+
+  (** Asserting and inspecting formulas *)
+
+  val assert_ : ?loc:location -> term -> t
+  (** Add a proposition to the current set of assertions. *)
+
+  val get_assertions : ?loc:location -> unit -> t
+  (** Return the current set of assertions. *)
+
+
+  (** Checking for satisfiablity *)
+
+  val check_sat : ?loc:location -> term list -> t
+  (** Solve the current set of assertions for satisfiability,
+      under the local assumptions specified. *)
+
+
+  (** Models *)
+
+  val get_model : ?loc:location -> unit -> t
+  (** Return the model found. *)
 
   val get_value : ?loc:location -> term list -> t
   (** Return the value of the given terms in the current model of the solver. *)
@@ -151,11 +182,35 @@ module type Statement = sig
   (** Return the values of asserted propositions which have been labelled using
       the ":named" attribute. *)
 
-  val get_assertions : ?loc:location -> unit -> t
-  (** Return the current set of assertions. *)
+  (** Proofs *)
 
-  val exit : ?loc:location -> unit -> t
-  (** Exit the interactive loop. *)
+  val get_proof : ?loc:location -> unit -> t
+  (** Return the proof of the lastest [check_sat] if it returned unsat, else
+      is undefined. *)
+
+  val get_unsat_core : ?loc:location -> unit -> t
+  (** Return the unsat core of the latest [check_sat] if it returned unsat,
+      else is undefined. *)
+
+  val get_unsat_assumptions : ?loc:location -> unit -> t
+  (** Return a list of local assumptions (as givne in {!check_sat},
+      that is enough to deduce unsat. *)
+
+  (** Inspecting settings *)
+
+  val get_info : ?loc:location -> string -> t
+  (** Get information (see smtlib manual). *)
+
+  val get_option : ?loc:location -> string -> t
+  (** Get the value of a prover option. *)
+
+  (** Scripts commands *)
+
+  val echo : ?loc:location -> string -> t
+  (** Print back as-is, including the double quotes. *)
+
+  val set_info : ?loc:location -> term -> t
+  (** Set information (see smtlib manual). *)
 
 end
 (** implementation requirement for smtlib statements. *)

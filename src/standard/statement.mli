@@ -42,13 +42,14 @@ type descr =
   (** Pop the stack of assertions as many times as specified. *)
   | Push of int
   (** Push as many new levels on the stack of assertions as specified. *)
-
+  | Reset_assertions
+  (** Reset all assertions. *)
 
   | Plain of term
   (** A plain statement ontaining a term with no defined semantics. *)
 
-  | Prove
-  (** Try and prove the current sequent. *)
+  | Prove of term list
+  (** Try and prove the current sequent, under some local assumptions. *)
 
   | Clause of term list
   (** Add the given clause on the left side of the current sequent. *)
@@ -64,12 +65,12 @@ type descr =
 
   | Get_info of string
   (** Get required information. *)
-  | Set_info of string * term option
+  | Set_info of term
   (** Set the information value. *)
 
   | Get_option of string
   (** Get the required option value. *)
-  | Set_option of string * term option
+  | Set_option of term
   (** Set the option value. *)
 
   | Def of Id.t * term
@@ -83,13 +84,22 @@ type descr =
   (** Get the proof of the last sequent (if it was proved). *)
   | Get_unsat_core
   (** Get the unsat core of the last sequent. *)
+  | Get_unsat_assumptions
+  (** Get the local assumptions in the unsat core of the last sequent. *)
+  | Get_model
+  (** Get the current model of the prover. *)
   | Get_value of term list
-  (** Get the value of some temrs in the current model of the prover. *)
+  (** Get the value of some terms in the current model of the prover. *)
   | Get_assignment
   (** Get the assignment of labbeled formulas (see smtlib manual). *)
+
   | Get_assertions
   (** Get the current set of assertions. *)
 
+  | Echo of string
+  (** Prints the string. *)
+  | Reset
+  (** Full reset of the prove to initial state. *)
   | Exit
   (** Exit the interactive loop. *)
 

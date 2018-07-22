@@ -18,10 +18,11 @@ type descr =
 
   | Pop of int
   | Push of int
+  | Reset_assertions
 
   | Plain of term
 
-  | Prove
+  | Prove of term list
   | Clause of term list
   | Antecedent of term
   | Consequent of term
@@ -30,10 +31,10 @@ type descr =
   | Set_logic of string
 
   | Get_info of string
-  | Set_info of string * term option
+  | Set_info of term
 
   | Get_option of string
-  | Set_option of string * term option
+  | Set_option of term
 
   | Def of Id.t * term
   | Decl of Id.t * term
@@ -41,10 +42,15 @@ type descr =
 
   | Get_proof
   | Get_unsat_core
+  | Get_unsat_assumptions
+  | Get_model
   | Get_value of term list
   | Get_assignment
+
   | Get_assertions
 
+  | Echo of string
+  | Reset
   | Exit
 
 (* Statements are wrapped in a record to have a location. *)
@@ -64,10 +70,15 @@ let rec pp_descr b = function
 
   | Pop i -> Printf.bprintf b "pop: %d" i
   | Push i -> Printf.bprintf b "push: %d" i
+  | Reset_assertions -> Printf.bprintf b "reset assertions"
 
   | Plain t -> Printf.bprintf b "plain: %a" Term.pp t
 
-  | Prove -> Printf.bprintf b "Prove"
+  | Prove [] -> Printf.bprintf b "Prove"
+  | Prove l ->
+    Printf.bprintf b "Prove assuming: %a"
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" && " ~pp:Term.pp) l
+
   | Clause l ->
     Printf.bprintf b "clause: %a"
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" || " ~pp:Term.pp) l
@@ -78,12 +89,12 @@ let rec pp_descr b = function
   | Set_logic s -> Printf.bprintf b "set-logic: %s" s
 
   | Get_info s -> Printf.bprintf b "get-info: %s" s
-  | Set_info (s, o) ->
-    Printf.bprintf b "set-info: %s <- %a" s (Misc.pp_opt Term.pp) o
+  | Set_info t ->
+    Printf.bprintf b "set-info: %a" Term.pp t
 
   | Get_option s -> Printf.bprintf b "get-option: %s" s
-  | Set_option (s, o) ->
-    Printf.bprintf b "set-option: %s <- %a" s (Misc.pp_opt Term.pp) o
+  | Set_option t ->
+    Printf.bprintf b "set-option: %a" Term.pp t
 
   | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
   | Decl (id, t) -> Printf.bprintf b "decl: %a : %a" Id.pp id Term.pp t
@@ -99,12 +110,16 @@ let rec pp_descr b = function
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
+  | Get_unsat_assumptions -> Printf.bprintf b "get-unsat-assumptions"
+  | Get_model -> Printf.bprintf b "get-model"
   | Get_value l ->
     Printf.bprintf b "get-value(%d):\n" (List.length l);
     Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:Term.pp b l
   | Get_assignment -> Printf.bprintf b "get-assignment"
   | Get_assertions -> Printf.bprintf b "get-assertions"
 
+  | Echo s -> Printf.bprintf b "echo: %s" s
+  | Reset -> Printf.bprintf b "reset"
   | Exit -> Printf.bprintf b "exit"
 
 and pp b = function { descr } ->
@@ -119,11 +134,15 @@ let rec print_descr fmt = function
 
   | Pop i -> Format.fprintf fmt "pop: %d" i
   | Push i -> Format.fprintf fmt "push: %d" i
+  | Reset_assertions -> Format.fprintf fmt "reset assertions"
 
   | Plain t -> Format.fprintf fmt "@[<hov 2>plain: %a@]" Term.print t
 
-  | Prove ->
-    Format.fprintf fmt "Prove"
+  | Prove [] -> Format.fprintf fmt "Prove"
+  | Prove l ->
+    Format.fprintf fmt "Prove assuming: %a"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) l
+
   | Clause l ->
     Format.fprintf fmt "@[<hov 2>clause:@ %a@]"
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) l
@@ -139,15 +158,13 @@ let rec print_descr fmt = function
 
   | Get_info s ->
     Format.fprintf fmt "@[<hov 2>get-info:@ %s@]" s
-  | Set_info (s, o) ->
-    Format.fprintf fmt "@[<hov 2>set-info:@ %s <-@ %a@]"
-      s (Misc.print_opt Term.print) o
+  | Set_info t ->
+    Format.fprintf fmt "@[<hov 2>set-info:@ %a@]" Term.print t
 
   | Get_option s ->
     Format.fprintf fmt "@[<hov 2>get-option:@ %s@]" s
-  | Set_option (s, o) ->
-    Format.fprintf fmt "@[<hov 2>set-option:@ %s <-@ %a@]"
-      s (Misc.print_opt Term.print) o
+  | Set_option t ->
+    Format.fprintf fmt "@[<hov 2>set-option:@ %a@]" Term.print t
 
   | Def (id, t) ->
     Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
@@ -165,12 +182,16 @@ let rec print_descr fmt = function
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
+  | Get_unsat_assumptions -> Format.fprintf fmt "get-unsat-assumptions"
+  | Get_model -> Format.fprintf fmt "get-model"
   | Get_value l ->
     Format.fprintf fmt "@[<hov 2>get-value(%d):@ %a@]" (List.length l)
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) l
   | Get_assignment -> Format.fprintf fmt "get-assignment"
   | Get_assertions -> Format.fprintf fmt "get-assertions"
 
+  | Echo s -> Format.fprintf fmt "echo: %s" s
+  | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
 and print fmt = function { descr } ->
@@ -190,9 +211,10 @@ let pack ?id ?loc ?attr l =
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
 let push ?loc i = mk ?loc (Push i)
+let reset_assertions ?loc () = mk ?loc Reset_assertions
 
 (* Assumptions and fact checking *)
-let prove ?loc () = mk ?loc Prove
+let prove ?loc () = mk ?loc (Prove [])
 let mk_clause ?loc ?attr l = mk ?loc ?attr (Clause l)
 let consequent ?loc ?attr t = mk ?loc ?attr (Consequent t)
 let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
@@ -201,10 +223,10 @@ let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
 let set_logic ?loc s = mk ?loc (Set_logic s)
 
 let get_info ?loc s = mk ?loc (Get_info s)
-let set_info ?loc (s, t) = mk ?loc (Set_info (s, t))
+let set_info ?loc t = mk ?loc (Set_info t)
 
 let get_option ?loc s = mk ?loc (Get_option s)
-let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
+let set_option ?loc t = mk ?loc (Set_option t)
 
 (* Definitions, i.e given identifier, with arguments,
    is equal to given term *)
@@ -212,11 +234,15 @@ let set_option ?loc (s, t) = mk ?loc (Set_option (s, t))
 (* Return values *)
 let get_proof ?loc () = mk ?loc Get_proof
 let get_unsat_core ?loc () = mk ?loc Get_unsat_core
+let get_unsat_assumptions ?loc () = mk ?loc Get_unsat_assumptions
+let get_model ?loc () = mk ?loc Get_model
 let get_value ?loc l = mk ?loc (Get_value l)
 let get_assignment ?loc () = mk ?loc Get_assignment
 let get_assertions ?loc () = mk ?loc Get_assertions
 
-(* End statement *)
+(* Scripts statement *)
+let echo ?loc s = mk ?loc (Echo s)
+let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
 
 
@@ -240,7 +266,7 @@ let assumption ?loc l =
     ])
 
 (* Smtlib wrappers *)
-let check_sat = prove
+let check_sat ?loc l = mk ?loc (Prove l)
 let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
@@ -256,10 +282,21 @@ let type_def ?loc id args body =
   let t = Term.lambda l body in
   mk ?loc (Def (id, t))
 
+let datatypes ?loc l =
+  let l' = List.map (fun (id, vars, cstrs) ->
+      mk ?loc (Inductive {id; vars; cstrs; loc; })
+    ) l in
+  pack ?loc l'
+
 let fun_def ?loc id args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
   mk ?loc (Def (id, t))
 
+let funs_def_rec ?loc l =
+  let l' = List.map (fun (id, args, ty_ret, body) ->
+      fun_def ?loc id args ty_ret body
+    ) l in
+  pack ?loc l'
 
 (* Wrappers for Zf *)
 let zf_attr ?loc = function

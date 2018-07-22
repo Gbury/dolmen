@@ -61,21 +61,25 @@ module type Logic = sig
   (** Directives for manipulating the set of assertions. Push directives
       creates backtrack point that can be reached using Pop directives. *)
 
+  val reset_assertions : ?loc:location -> unit -> t
+  (** Reset all assertions that hase been pushed. *)
+
   val assert_     : ?loc:location -> term -> t
   (** Add an assertion to the current set of assertions. *)
 
-  val check_sat   : ?loc:location -> unit -> t
-  (** Directive that instructs the prover to solve the current set of assertions. *)
+  val check_sat   : ?loc:location -> term list -> t
+  (** Directive that instructs the prover to solve the current set of assertions,
+      undr some local assumptions. *)
 
   val set_logic   : ?loc:location -> string -> t
   (** Set the logic to be used for solving. *)
 
   val get_info    : ?loc:location -> string -> t
-  val set_info    : ?loc:location -> string * term option -> t
+  val set_info    : ?loc:location -> term -> t
   (** Getter and setter for various informations (see smtlib manual). *)
 
   val get_option  : ?loc:location -> string -> t
-  val set_option  : ?loc:location -> string * term option -> t
+  val set_option  : ?loc:location -> term -> t
   (** Getter and setter for prover options (see smtlib manual). *)
 
   val type_decl   : ?loc:location -> id -> int -> t
@@ -87,6 +91,10 @@ module type Logic = sig
       i.e any occurence of "f(l)" should be replaced by [body] where the "args" have been
       substituted by their corresponding value in [l]. *)
 
+  val datatypes   : ?loc:location -> (id * term list * (id * term list) list) list -> t
+  (** Inductive type definitions.
+      TODO: some more documentation. *)
+
   val fun_decl    : ?loc:location -> id -> term list -> term -> t
   (** Symbol declaration. [fun_decl f args ret] defines [f] as a function
       which takes arguments of type as described in [args] and which returns
@@ -97,6 +105,10 @@ module type Logic = sig
       i.e f is a function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
 
+  val funs_def_rec : ?loc:location -> (id * term list * term * term) list -> t
+(** Define a list of mutually recursive functions. Each functions has the same
+    definition as in [fun_def] *)
+
   val get_proof       : ?loc:location -> unit -> t
   (** If the last call to [check_sat] returned UNSAT, then instruct the prover to return
       the proof of unsat. *)
@@ -105,6 +117,13 @@ module type Logic = sig
   (** If the last call to [check_sat] returned UNSAT, then instruct the prover to return
       the unsat core of the unsatisfiability proof, i.e the smallest set of assertions
       needed to prove [false]. *)
+
+  val get_unsat_assumptions : ?loc:location -> unit -> t
+  (** If the last call to [check_sat] returned UNSAT, then instruct the prover to
+      return a subset of the local assumptions that is sufficient to deduce UNSAT. *)
+
+  val get_model       : ?loc:location -> unit -> t
+  (** If the last call to [check_sat] returned SAT, then return the associated model. *)
 
   val get_value       : ?loc:location -> term list -> t
   (** Instructs the prover to return the values of the given closed quantifier-free terms. *)
@@ -115,6 +134,12 @@ module type Logic = sig
 
   val get_assertions  : ?loc:location -> unit -> t
   (** Instructs the prover to print all current assertions. *)
+
+  val echo : ?loc:location -> string -> t
+  (** Print the given sting. *)
+
+  val reset : ?loc:location -> unit -> t
+  (** Full reset of the prover state. *)
 
   val exit : ?loc:location -> unit -> t
   (** Exit directive (used in interactive mode). *)
@@ -179,7 +204,7 @@ module type Logic = sig
 
   val inductive   :
     ?loc:location -> ?attrs:term list -> id -> term list -> (id * term list) list -> t
-  (** Inductive type definitions. [inductive name vars l] defines aan inductive type [name],
+  (** Inductive type definitions. [inductive name vars l] defines an inductive type [name],
       with polymorphic variables [vars], and with a list of inductive constructors [l]. *)
 
 end
