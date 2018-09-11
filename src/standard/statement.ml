@@ -257,13 +257,7 @@ let p_cnf ?loc nbvar nbclause =
 let clause ?loc l = mk_clause ?loc l
 
 let assumption ?loc l =
-  let t = Term.and_ ?loc l in
-  mk ?loc (Pack [
-      push ?loc 1;
-      antecedent ?loc t;
-      prove ?loc ();
-      pop ?loc 1;
-    ])
+  mk ?loc (Prove l)
 
 (* Smtlib wrappers *)
 let check_sat ?loc l = mk ?loc (Prove l)
