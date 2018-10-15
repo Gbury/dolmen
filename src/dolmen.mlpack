@@ -21,26 +21,31 @@ Language_intf
 Dimacs
 LexDimacs
 ParseDimacs
+Ast_dimacs
 
 # iCNF language
 ICNF
 LexiCNF
 ParseiCNF
+Ast_iCNF
 
 # Smtlib language
 Smtlib
 LexSmtlib
 ParseSmtlib
+Ast_smtlib
 
 # Zf language
 Zf
 LexZf
 ParseZf
+Ast_zf
 
 # Tptp language
 Tptp
 LexTptp
 ParseTptp
+Ast_tptp
 
 # Languages classes
 Logic

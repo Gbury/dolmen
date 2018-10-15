@@ -27,7 +27,7 @@ test: bin
 clean:
 	$(COMP) -clean && rm -f $(NAME)
 
-TO_INSTALL_LIB=$(addsuffix .a, $(NAME)) $(addsuffix .cmi, $(NAME))
+TO_INSTALL_LIB=$(addsuffix .a, $(NAME)) $(addsuffix .cmi, $(NAME)) $(addsuffix .cmx, $(NAME))
 TO_INSTALL=META $(addprefix _build/,$(LIB) $(TO_INSTALL_LIB))
 
 install: lib
