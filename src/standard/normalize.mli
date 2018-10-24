@@ -1,11 +1,31 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(** Normalizing functions for supported languages *)
+(** Normalizing functions
 
-val tptp : Term.t -> Term.t
-(** Normalizer for tptp terms *)
+    Functions in this module are meant to help normalize terms, that is, for a given
+    language, map the semantic pre-defined builtins of that language to the builtins
+    symbols defined by Dolmen Terms.
 
-val smtlib : Term.t -> Term.t
-(** Normalizer for smtlib terms *)
+    For instance, the tptp language has a specific syntaxic construction
+    for equality (that is, there is a reduction used to parse equality), thus
+    equalities in tptp are parsed using the builtin equality symbol for terms.
+    On the other hand, smtlib has no syntax rules for equality, which is seen
+    as a regular application of the symbol name "=". Thus, equalities in smtlib files
+    will be parsed as applications of a symbol named "=". Normalization maps
+    that application to the builtin notion of equality defined for terms.
+*)
 
+module Tptp : sig
+
+  val mapper : Term.t Term.mapper
+  (** A mapper suitable to normalize terms parsed from a tptp problem file. *)
+
+end
+
+module Smtlib : sig
+
+  val mapper : Term.t Term.mapper
+  (** A mapper suitable to normalize terms parsed from a tptp problem file. *)
+
+end
