@@ -241,7 +241,7 @@ function_dec:
     { I.(mk term s), args, ret }
 
 function_def:
-  | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
+  | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), args, ret, body }
 
 /* Additional rule for prop_literals symbols, to have lighter
