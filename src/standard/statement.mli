@@ -133,3 +133,6 @@ val prove : ?loc:location -> unit -> t
 val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
 (** Pack a list of statements into a single one. *)
 
+val normalize : (Term.t -> Term.t) -> t -> t
+(** Normalize statements with regards to a normalization function on terms. *)
+
