@@ -415,3 +415,36 @@ let cnf ?loc ?annot id role t =
   in
   tptp ?loc ?annot id role (`Clause (t, l))
 
+(* normalization *)
+let normalize_inductive f i =
+  { i with cstrs = List.map (fun (x, l) -> (x, List.map f l)) i.cstrs; }
+
+let rec normalize_descr f = function
+  | Pack l -> Pack (List.map (normalize f) l)
+
+  | Plain t -> Plain (f t)
+
+  | Prove l -> Prove (List.map f l)
+  | Clause l -> Clause (List.map f l)
+  | Antecedent t -> Antecedent (f t)
+  | Consequent t -> Consequent (f t)
+
+  | Set_info t -> Set_info (f t)
+
+  | Set_option t -> Set_option (f t)
+
+  | Def (id, t) -> Def (id, f t)
+  | Decl (id, t) -> Decl (id, f t)
+  | Inductive i -> Inductive (normalize_inductive f i)
+
+  | Get_value l -> Get_value (List.map f l)
+
+  | descr -> descr
+
+and normalize f s =
+  { s with
+    attr = (match s.attr with
+        | None -> None | Some t -> Some (f t));
+    descr = normalize_descr f s.descr; }
+
+
