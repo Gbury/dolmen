@@ -234,6 +234,12 @@ let equal t t' = compare t t' = 0
 (* Add an attribute *)
 let add_attr a t = { t with attr = a :: t.attr }
 
+let add_attrs l t = { t with attr = l @ t.attr }
+
+let set_attrs l t =
+  assert (t.attr = []);
+  { t with attr = l }
+
 (* Make a term from its description *)
 let make ?loc ?(attr=[]) term = { term; attr; loc; }
 
@@ -365,26 +371,6 @@ let rec free_vars acc t =
 let fv t =
   S.elements (free_vars S.empty t)
 
-(* {2 Term normalization} *)
-
-let rec normalize_descr symbol = function
-  | Symbol id -> symbol id
-  | Builtin b -> Builtin b
-  | Colon (x, y) ->
-    Colon (normalize symbol x, normalize symbol y)
-  | App (f, l) ->
-    App (normalize symbol f, List.map (normalize symbol) l)
-  | Binder (b, l, body) ->
-    Binder (b, List.map (normalize symbol) l, normalize symbol body)
-  | Match (f, l) ->
-    Match (f, List.map (fun (x, y) -> (normalize symbol x, normalize symbol y)) l)
-
-and normalize symbol t =
-  let d = normalize_descr symbol t.term in
-  let a = List.map (normalize symbol) t.attr in
-  { term = d; attr = a; loc = t.loc; }
-
-
 (* {2 Wrappers for dimacs} *)
 
 let atom ?loc i =
@@ -424,4 +410,40 @@ let subtype ?loc a b = apply ?loc (subtype_t ?loc ()) [a; b]
 
 let quoted ?loc name =
   const ?loc Id.({ name; ns = Attr})
+
+(* {2 Term traversal} *)
+
+type 'a mapper = {
+  symbol    : 'a mapper -> attr:t list -> loc:location option -> Id.t -> 'a;
+  builtin   : 'a mapper -> attr:t list -> loc:location option -> builtin -> 'a;
+  colon     : 'a mapper -> attr:t list -> loc:location option -> t -> t -> 'a;
+  app       : 'a mapper -> attr:t list -> loc:location option -> t -> t list -> 'a;
+  binder    : 'a mapper -> attr:t list -> loc:location option -> binder -> t list -> t -> 'a;
+  pmatch    : 'a mapper -> attr:t list -> loc:location option -> t -> (t * t) list -> 'a;
+}
+
+let map mapper t =
+  let wrap f = f mapper ~attr:t.attr ~loc:t.loc in
+  match t.term with
+  | Symbol id -> wrap mapper.symbol id
+  | Builtin b -> wrap mapper.builtin b
+  | Colon (u, v) -> wrap mapper.colon u v
+  | App (f, args) -> wrap mapper.app f args
+  | Binder (b, vars, body) -> wrap mapper.binder b vars body
+  | Match (e, l) -> wrap mapper.pmatch e l
+
+let id_mapper = {
+  symbol = (fun m ~attr ~loc id -> set_attrs (List.map (map m) attr) @@ const ?loc id);
+  builtin = (fun m ~attr ~loc b -> set_attrs (List.map (map m) attr) @@ builtin ?loc b ());
+  colon = (fun m ~attr ~loc u v ->
+      set_attrs (List.map (map m) attr) @@ colon ?loc (map m u) (map m v));
+  app = (fun m ~attr ~loc f args ->
+      set_attrs (List.map (map m) attr) @@ apply ?loc (map m f) (List.map (map m) args));
+  binder = (fun m ~attr ~loc b vars body ->
+      set_attrs (List.map (map m) attr) @@ mk_bind ?loc b vars (map m body));
+  pmatch = (fun m ~attr ~loc e l ->
+      set_attrs (List.map (map m) attr) @@ match_ ?loc (map m e)
+        (List.map (fun (pat, body) -> (map m pat, map m body)) l));
+}
+
 
