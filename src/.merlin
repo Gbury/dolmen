@@ -21,3 +21,6 @@ B _build/languages/smtlib
 
 PKG cmdliner
 PKG menhirLib
+
+PKG uutf
+PKG uucp
