@@ -23,7 +23,7 @@ type inductive = {
   cstrs : (Id.t * term list) list;
   loc : location option;
 }
-(** The type for inductive type declarations. The "vars" field if used
+(** The type for inductive type declarations. The "vars" field is used
     to store polymorphic variables of the inductive type. For instance,
     a polymorphic type for lists would have a single variable "a".
     The constructors each have a name and a list of concrete arguments types
