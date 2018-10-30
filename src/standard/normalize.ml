@@ -45,6 +45,7 @@ module Smtlib = struct
       | { Id.name = "=>"; ns = Id.Term }    -> Term.(builtin ?loc Imply ())
       | { Id.name = "="; ns = Id.Term }     -> Term.(builtin ?loc Eq ())
       | { Id.name = "distinct"; ns = Id.Term } -> Term.(builtin ?loc Distinct ())
+      | { Id.name = "ite"; ns = Id.Term }   -> Term.(builtin ?loc Ite ())
       | _ -> Term.(const ?loc id)
     in
     let attrs = List.map (Term.map m) attr in

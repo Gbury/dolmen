@@ -14,6 +14,11 @@
     as a regular application of the symbol name "=". Thus, equalities in smtlib files
     will be parsed as applications of a symbol named "=". Normalization maps
     that application to the builtin notion of equality defined for terms.
+
+    WARNING: this normalization process is a best effort, but cannot be
+    complete in general. Some constructions such as tptp's "$i" (pre-existing type
+    for terms), have no clear builtin notion in other languages. For a general
+    and complete translation, the ast should be typechecked.
 *)
 
 module Tptp : sig
