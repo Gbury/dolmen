@@ -11,4 +11,12 @@ type assoc =
   | Right (**)
 (** Associativity of operators. *)
 
+type t = {
+  name  : string;
+  pos   : pos;
+  assoc : assoc option;
+}
+
+let mk ?assoc name pos =
+  { name; pos; assoc; }
 
