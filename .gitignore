@@ -1,4 +1,5 @@
 # Source directory (doc, build dir and bin)
+_build/
 src/_build/
 
 # Generated files
