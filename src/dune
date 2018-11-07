@@ -1,12 +1,73 @@
 (include_subdirs unqualified)
 
-(ocamllex
- (modules lexiCNF lexZf lexTptp lexSmtlib lexDimacs)
+(rule
+  (targets lexiCNF.ml)
+  (deps    src/languages/icnf/lexiCNF.mll)
+  (action  (chdir %{workspace_root}
+            (run %{bin:ocamllex} -q -o %{targets} %{deps})))
 )
 
-(menhir
- (flags (--explain))
- (modules parseiCNF parseZf parseTptp parseSmtlib parseDimacs)
+(rule
+  (targets lexZf.ml)
+  (deps    src/languages/zf/lexZf.mll)
+  (action  (chdir %{workspace_root}
+            (run %{bin:ocamllex} -q -o %{targets} %{deps})))
+)
+
+(rule
+  (targets lexTptp.ml)
+  (deps    src/languages/tptp/lexTptp.mll)
+  (action  (chdir %{workspace_root}
+            (run %{bin:ocamllex} -q -o %{targets} %{deps})))
+)
+
+(rule
+  (targets lexSmtlib.ml)
+  (deps    src/languages/smtlib/lexSmtlib.mll)
+  (action  (chdir %{workspace_root}
+            (run %{bin:ocamllex} -q -o %{targets} %{deps})))
+)
+
+(rule
+  (targets lexDimacs.ml)
+  (deps    src/languages/dimacs/lexDimacs.mll)
+  (action  (chdir %{workspace_root}
+            (run %{bin:ocamllex} -q -o %{targets} %{deps})))
+)
+
+(rule
+  (targets parseiCNF.ml)
+  (deps    src/languages/icnf/parseiCNF.mly  src/languages/icnf/tokens_iCNF.mly)
+  (action  (chdir %{workspace_root}
+            (run %{bin:menhir} --explain %{deps} --base parseiCNF)))
+)
+
+(rule
+  (targets parseZf.ml)
+  (deps    src/languages/zf/parseZf.mly  src/languages/zf/tokens_zf.mly)
+  (action  (chdir %{workspace_root}
+            (run %{bin:menhir} --explain %{deps} --base parseZf)))
+)
+
+(rule
+  (targets parseTptp.ml)
+  (deps    src/languages/tptp/parseTptp.mly  src/languages/tptp/tokens_tptp.mly)
+  (action  (chdir %{workspace_root}
+            (run %{bin:menhir} --explain %{deps} --base parseTptp)))
+)
+
+(rule
+  (targets parseSmtlib.ml)
+  (deps    src/languages/smtlib/parseSmtlib.mly  src/languages/smtlib/tokens_smtlib.mly)
+  (action  (chdir %{workspace_root}
+            (run %{bin:menhir} --explain %{deps} --base parseSmtlib)))
+)
+
+(rule
+  (targets parseDimacs.ml)
+  (deps    src/languages/dimacs/parseDimacs.mly  src/languages/dimacs/tokens_dimacs.mly)
+  (action  (chdir %{workspace_root}
+            (run %{bin:menhir} --explain %{deps} --base parseDimacs)))
 )
 
 (library

@@ -122,7 +122,7 @@ let rec pp_descr b = function
   | Reset -> Printf.bprintf b "reset"
   | Exit -> Printf.bprintf b "exit"
 
-and pp b = function { descr } ->
+and pp b = function { descr; _ } ->
   Printf.bprintf b "%a" pp_descr descr
 
 (* Pretty printing *)
@@ -194,7 +194,7 @@ let rec print_descr fmt = function
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print fmt = function { descr } ->
+and print fmt = function { descr; _ } ->
   Format.fprintf fmt "%a" print_descr descr
 
 (** Annotations *)
@@ -379,7 +379,7 @@ let tptp ?loc ?annot id role body =
       end
     | "type" ->
       begin match body with
-        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
+        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
           Decl (s, ty)
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
@@ -404,13 +404,11 @@ let thf ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 let tff ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 let fof ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 
-(* We want to generalize the variables in cnf formulas. *)
 let cnf ?loc ?annot id role t =
-  let loc = t.Term.loc in
   let l =
     match t with
     | { Term.term = Term.App
-            ({ Term.term = Term.Builtin Term.Or; _ }, l) } -> l
+            ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } -> l
     | _ -> [t]
   in
   tptp ?loc ?annot id role (`Clause (t, l))

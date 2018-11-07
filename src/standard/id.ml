@@ -18,10 +18,10 @@ let hash = Hashtbl.hash
 let compare = Pervasives.compare
 let equal = Pervasives.(=)
 
-let pp b { ns; name } =
+let pp b { name ; _ } =
   Printf.bprintf b "%s" name
 
-let print fmt { ns; name } =
+let print fmt { name ; _ } =
   Format.fprintf fmt "%s" name
 
 (* Namespaces *)

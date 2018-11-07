@@ -118,7 +118,7 @@ let rec pp_descr b = function
   | Symbol id -> Id.pp b id
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
-  | App ({ term = Builtin sep}, l) when infix_builtin (List.length l) sep ->
+  | App ({ term = Builtin sep ; _ }, l) when infix_builtin (List.length l) sep ->
     Misc.pp_list ~pp_sep:pp_builtin ~sep ~pp b l
   | App (f, l) ->
     Printf.bprintf b "%a(%a)" pp f
@@ -137,8 +137,8 @@ and pp_match_case b (pattern, branch) =
   Printf.bprintf b "%a => %a" pp pattern pp branch
 
 and pp b = function
-  | { term = (Symbol _) as d }
-  | { term = (Builtin _) as d } -> pp_descr b d
+  | { term = (Symbol _) as d; _ }
+  | { term = (Builtin _) as d; _ } -> pp_descr b d
   | e -> Printf.bprintf b "(%a)" pp_descr e.term
 
 (* Pretty-printing *)
@@ -153,7 +153,7 @@ let rec print_descr fmt = function
   | Symbol id -> Id.print fmt id
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
-  | App ({ term = Builtin sep}, l) when infix_builtin (List.length l) sep ->
+  | App ({ term = Builtin sep ; _ }, l) when infix_builtin (List.length l) sep ->
     Misc.print_list ~print_sep:print_builtin ~sep ~print fmt l
   | App (f, []) ->
     Format.fprintf fmt "%a" print f
@@ -175,8 +175,8 @@ and print_match_case fmt (pattern, branch) =
   Format.fprintf fmt "%a => %a" print pattern print branch
 
 and print fmt = function
-  | { term = (Symbol _) as d }
-  | { term = (Builtin _) as d } -> print_descr fmt d
+  | { term = (Symbol _) as d ; _ }
+  | { term = (Builtin _) as d ; _ } -> print_descr fmt d
   | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
 
 (* Comparison *)
@@ -251,7 +251,7 @@ let mk_bind binder ?loc vars t =
 
 (* Attach an attribute list to a term *)
 let annot ?loc t l =
-  { t with attr = t.attr @ l }
+  { t with attr = t.attr @ l; loc }
 
 (* Create a constant and/or variable, that is a leaf
    of the term AST. *)
