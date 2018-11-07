@@ -1,0 +1,32 @@
+
+(ocamllex
+ (modules lexDimacs)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_dimacs tokens_dimacs.mly))
+ (modules parseDimacs)
+)
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_dimacs)
+)
+
+(library
+  (name            dolmendimacs)
+  (public_name     dolmendimacs)
+  (libraries       dolmenstandard menhirLib)
+  (modules
+
+Tokens_dimacs
+
+; Dimacs language
+Dimacs
+LexDimacs
+ParseDimacs
+Ast_dimacs
+
+  )
+  (wrapped false)
+)

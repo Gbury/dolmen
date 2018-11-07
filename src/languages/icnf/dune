@@ -1,0 +1,32 @@
+
+(ocamllex
+ (modules lexiCNF)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_iCNF tokens_iCNF.mly))
+ (modules parseiCNF)
+)
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_iCNF)
+)
+
+(library
+  (name            dolmenicnf)
+  (public_name     dolmenicnf)
+  (libraries       dolmenstandard menhirLib)
+  (modules
+
+Tokens_iCNF
+
+; iCNF language
+ICNF
+LexiCNF
+ParseiCNF
+Ast_iCNF
+
+  )
+  (wrapped false)
+)

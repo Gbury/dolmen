@@ -1,0 +1,32 @@
+
+(ocamllex
+ (modules lexZf)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_zf tokens_zf.mly))
+ (modules parseZf)
+)
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_zf)
+)
+
+(library
+  (name            dolmenzf)
+  (public_name     dolmenzf)
+  (libraries       dolmenstandard menhirLib)
+  (modules
+
+Tokens_zf
+
+; Zf language
+Zf
+LexZf
+ParseZf
+Ast_zf
+
+  )
+  (wrapped false)
+)
