@@ -3,6 +3,7 @@ _build/
 src/_build/
 
 # Generated files
+.merlin
 src/dolmen
 src/dolmen.docdir
 doc/index.html
