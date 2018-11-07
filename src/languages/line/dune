@@ -1,0 +1,18 @@
+ 
+(ocamllex 
+	(modules lexLine)
+)  
+
+
+(library
+  (name            dolmenline)
+  (public_name     dolmenline)
+  (libraries       )
+  (modules
+
+LexLine
+Line
+
+  )
+  (wrapped false)
+)

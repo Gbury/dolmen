@@ -1,0 +1,21 @@
+
+(library
+  (name            dolmenstandard)
+  (public_name     dolmenstandard)
+  (libraries       dolmeninterface dolmenline)
+  (modules
+
+; Standard implementation
+Id
+Term
+Normalize
+Statement
+ParseLocation
+
+; Helper modules
+Misc
+Transformer
+
+  )
+  (wrapped false)
+)

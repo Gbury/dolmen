@@ -12,7 +12,8 @@ LIB=$(addprefix $(NAME), .cma .cmxa .cmxs .a)
 all: lib bin
 
 lib:
-	$(COMP) $(FLAGS) $(LIB)
+	dune build --profile release
+#	$(COMP) $(FLAGS) $(LIB)
 
 doc:
 	$(COMP) $(FLAGS) $(DOC)

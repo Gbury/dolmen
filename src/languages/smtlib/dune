@@ -1,0 +1,32 @@
+
+(ocamllex
+ (modules lexSmtlib)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_smtlib tokens_smtlib.mly))
+ (modules parseSmtlib)
+)
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_smtlib)
+)
+
+(library
+  (name            dolmensmtlib)
+  (public_name     dolmensmtlib)
+  (libraries       dolmenstandard menhirLib)
+  (modules
+
+Tokens_smtlib
+
+; Smtlib language
+Smtlib
+LexSmtlib
+ParseSmtlib
+Ast_smtlib
+
+  )
+  (wrapped false)
+)
