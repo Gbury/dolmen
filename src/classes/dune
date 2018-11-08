@@ -1,0 +1,13 @@
+
+(library
+  (name            dolmenclasses)
+  (public_name     dolmenclasses)
+  (libraries       dolmeninterface dolmenstandard dolmendimacs dolmenicnf dolmensmtlib dolmentptp dolmenzf menhirLib)
+  (modules
+
+; Languages classes
+Logic
+
+  )
+  (wrapped false)
+)

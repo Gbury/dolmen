@@ -1,0 +1,7 @@
+
+(executable
+  (name            main)
+  (public_name     main)
+  (libraries       dolmenclasses menhirLib)
+  (modules         Main)
+)
