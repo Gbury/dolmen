@@ -29,7 +29,7 @@ doc:
 
 bin:
 	$(COMP) build $(FLAGS)
-	mv $(BINDIR)/$(BIN).* $(BINDIR)/$(NAME)
+	mv $(BINDIR)/$(BIN)* $(BINDIR)/$(NAME)
 	cp $(BINDIR)/$(NAME) $(NAME)
 
 test: bin

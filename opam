@@ -15,6 +15,7 @@ depends: [
   "menhir" {>= "20151005"}
   "ocamlfind" {build}
   "ocamlbuild" {build}
+  "dune" {build}
 ]
 available: [ ocaml-version >= "4.02.3" ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]

@@ -36,11 +36,11 @@ before_install:
   - export OPAMVERBOSE=1
 install:
   # Install dependencies
-  - ${HOME}/opam pin add --no-action msat .
-  - ${HOME}/opam install --deps-only msat.dev
+  - ${HOME}/opam pin add --no-action dolmen .
+  - ${HOME}/opam install --deps-only dolmen.dev
 script:
   # Build and launch the tests
   - if [ "$TO_TEST" = "tests" ]; then make -C src && make -C src test; fi
   # Try and install the package with opam
-  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install msat.dev; fi
+  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev; fi
 
