@@ -1,35 +1,44 @@
 # copyright (c) 2014, guillaume bury
 
 LOG=build.log
-COMP=ocamlbuild
-FLAGS=-use-ocamlfind -yaccflag '--table'
+COMP=dune
+FLAGS=--profile release
 DOC=dolmen.docdir/index.html
-BIN=main.native
+BIN=main
 NAME=dolmen
+BINDIR=_build/install/default/bin
+LIBDIR=_build/install/default/lib
 
-LIB=$(addprefix $(NAME), .cma .cmxa .cmxs .a)
+libnames=dolmenclasses \
+dolmendimacs \
+dolmenicnf \
+dolmeninterface \
+dolmenline \
+dolmensmtlib \
+dolmenstandard \
+dolmentptp \
+dolmenzf
 
 all: lib bin
 
 lib:
-	dune build --profile release
-#	$(COMP) $(FLAGS) $(LIB)
+	$(COMP) build $(FLAGS)
 
 doc:
-	$(COMP) $(FLAGS) $(DOC)
+	ocamlbuild -use-ocamlfind -yaccflag '--table' $(DOC)
 
 bin:
-	$(COMP) $(FLAGS) $(BIN)
-	cp $(BIN) $(NAME) && rm $(BIN)
+	$(COMP) build $(FLAGS)
+	mv $(BINDIR)/$(BIN).* $(BINDIR)/$(NAME)
+	cp $(BINDIR)/$(NAME) $(NAME)
 
 test: bin
 	cd ../tests && ./run
 
 clean:
-	$(COMP) -clean && rm -f $(NAME)
+	$(COMP) clean && rm -f $(NAME)
 
-TO_INSTALL_LIB=$(addsuffix .a, $(NAME)) $(addsuffix .cmi, $(NAME)) $(addsuffix .cmx, $(NAME))
-TO_INSTALL=META $(addprefix _build/,$(LIB) $(TO_INSTALL_LIB))
+TO_INSTALL=META $(foreach var,$(libnames),$(addprefix $(LIBDIR)/$(var)/$(var), .cma .cmxa .cmxs .a) )
 
 install: lib
 	ocamlfind install $(NAME) $(TO_INSTALL)
