@@ -28,5 +28,6 @@ ParseSmtlib
 Ast_smtlib
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

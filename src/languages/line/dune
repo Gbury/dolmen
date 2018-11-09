@@ -14,5 +14,6 @@ LexLine
 Line
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

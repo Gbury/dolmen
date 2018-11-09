@@ -29,5 +29,6 @@ ParseTptp
 Ast_tptp
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

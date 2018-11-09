@@ -16,5 +16,6 @@ Stmt_intf
 Language_intf
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

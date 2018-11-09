@@ -38,7 +38,8 @@ test: bin
 clean:
 	$(COMP) clean && rm -f $(NAME)
 
-TO_INSTALL=META $(foreach var,$(libnames),$(addprefix $(LIBDIR)/$(var)/$(var), .cma .cmxa .cmxs .a) )
+TO_INSTALL=META $(foreach var,$(libnames),$(addprefix $(LIBDIR)/$(var)/$(var), .cma .cmxa .cmi .cmx .cmxs .a) )
+TO_INSTALL+=$(shell find $(LIBDIR) -name '*.cmi') $(shell find $(LIBDIR) -name '*.cmx')
 
 install: lib
 	ocamlfind install $(NAME) $(TO_INSTALL)

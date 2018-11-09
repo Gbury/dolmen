@@ -28,5 +28,6 @@ ParseZf
 Ast_zf
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

@@ -9,5 +9,6 @@
 Logic
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

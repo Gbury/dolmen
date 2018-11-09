@@ -28,5 +28,6 @@ ParseDimacs
 Ast_dimacs
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )

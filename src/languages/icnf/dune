@@ -28,5 +28,6 @@ ParseiCNF
 Ast_iCNF
 
   )
-  (wrapped false)
+  ;(wrapped false)
+  (wrapped (transition "Warning"))
 )
