@@ -5,6 +5,10 @@
 
     This modules defines a pretty-printer for terms in the tptp syntax. *)
 
+
+(* Pretty printing information for builtins *)
+(* ************************************************************************ *)
+
 let pretty_builtin = function
   | Term.Wildcard         -> Pretty.mk "$_" Pretty.Prefix
   | Term.Ttype            -> Pretty.mk "Type" Pretty.Prefix
@@ -41,5 +45,81 @@ let pretty_builtin = function
   | Term.Implied          -> Pretty.mk "<=" Pretty.Infix
   | Term.Equiv            -> Pretty.mk "<=>" Pretty.Infix
 
+(* Variables and constants escaping *)
+(* ************************************************************************ *)
+
+let is_dollar c = Uchar.equal c (Uchar.of_char '$')
+let is_underscore c = Uchar.equal c (Uchar.of_char '_')
+
+let is_alpha c = Uucp.Alpha.is_alphabetic c
+let is_num c = Uucp.Num.numeric_type c <> `None
+
+(** Alphanumeric characters as defined by tptp (yes, it includes underscores, :p ) *)
+let is_alphanum c = is_alpha c || is_num c || is_underscore c
+
+let var_escape =
+  let name id = Pretty.Normal (Dolmen.Id.full_name id) in
+  let rename = Escape.rename ~sep:'_' in
+  let escape = Escape.umap (fun i -> function
+      | None -> [ Uchar.of_char '_' ]
+      | Some c ->
+        begin match Uucp.Block.block c with
+          | `ASCII when i = 1 && is_underscore c ->
+            [Uchar.of_char 'V'; c]
+          | `ASCII when i = 1 && Uucp.Case.is_lower c ->
+            begin match Uucp.Case.Map.to_upper c with
+              | `Self -> [ c ]
+              | `Uchars l -> l
+            end
+          | `ASCII when (i = 1 && is_dollar c) || is_alphanum c ->
+            [ c ]
+          | _ -> [ Uchar.of_char 'V'; Uchar.of_char '_' ]
+        end) in
+  Escape.mk ~lang:"tptp" ~name ~escape ~rename
+
+let cst_escape =
+  let name id = Pretty.Normal (Dolmen.Id.full_name id) in
+  let rename = Escape.rename ~sep:'_' in
+  let escape = Escape.umap (fun i -> function
+      | None -> [ Uchar.of_char '_' ]
+      | Some c ->
+        begin match Uucp.Block.block c with
+          | `ASCII when i = 1 && is_underscore c ->
+            [Uchar.of_char 'V'; c]
+          | `ASCII when i = 1 && Uucp.Case.is_upper c ->
+            begin match Uucp.Case.Map.to_lower c with
+              | `Self -> [ c ]
+              | `Uchars l -> l @ [Uchar.of_char '_']
+            end
+          | `ASCII when (i = 1 && is_dollar c) || is_alphanum c ->
+            [ c ]
+          | _ -> [ Uchar.of_char '_' ]
+        end) in
+  Escape.mk ~lang:"tptp" ~name ~escape ~rename
+
+(* Printing functions for terms *)
+(* ************************************************************************ *)
+
+let var fmt v = Escape.id var_escape fmt v
+let cst fmt c = Escape.id cst_escape fmt c
+
+let id fmt id = assert false (* match on the id namespace *)
+
+let builtins fmt b = assert false
+
+and binder fmt b = assert false
+
+and colon fmt (u, v) = assert false
+
+and app fmt (f, args) = assert false
+
+and _match fmt (e, branches) = assert false
+
+and term_descr fmt d = assert false
+
+and term fmt t = assert false
+
+(* Printing functions for formulas *)
+(* ************************************************************************ *)
 
 
