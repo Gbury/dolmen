@@ -9,16 +9,6 @@ NAME=dolmen
 BINDIR=_build/install/default/bin
 LIBDIR=_build/install/default/lib
 
-libnames=dolmenclasses \
-dolmendimacs \
-dolmenicnf \
-dolmeninterface \
-dolmenline \
-dolmensmtlib \
-dolmenstandard \
-dolmentptp \
-dolmenzf
-
 all: lib bin
 
 lib:
@@ -38,11 +28,9 @@ test: bin
 clean:
 	$(COMP) clean && rm -f $(NAME)
 
-TO_INSTALL=META $(foreach var,$(libnames),$(addprefix $(LIBDIR)/$(var)/$(var), .cma .cmxa .cmi .cmx .cmxs .a) )
-TO_INSTALL+=$(shell find $(LIBDIR) -name '*.cmi') $(shell find $(LIBDIR) -name '*.cmx')
-
 install: lib
-	ocamlfind install $(NAME) $(TO_INSTALL)
+	dune install --libdir `ocamlfind printconf destdir`/dolmen
+	ocamlfind install $(NAME) META
 
 uninstall:
 	ocamlfind remove $(NAME)

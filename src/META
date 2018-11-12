@@ -1,23 +1,21 @@
-version = "1.2"
-description = "A library providing flexible parsers for input languages"
-requires = "menhirLib"
-
-archive(byte) = "dolmeninterface.cma"
-archive(byte, plugin) = "dolmeninterface.cma"
-archive(native) = "dolmeninterface.cmxa"
-archive(native, plugin) = "dolmeninterface.cmxs"
-exists_if = "dolmeninterface.cma"
+package "interface" (
+  directory = "dolmeninterface"
+  description = "Interface dolmen"
+  requires = ""
+  archive(byte) = "dolmeninterface.cma"
+  archive(native) = "dolmeninterface.cmxa"
+)
 
 package "standard" (
-  exists_if = "dolmenstandard.cma"
+  directory = "dolmenstandard"
   description = "Standard dolmen"
-  requires = "dolmen dolmen.line"
+  requires = "dolmen.interface dolmen.line"
   archive(byte) = "dolmenstandard.cma"
   archive(native) = "dolmenstandard.cmxa"
 )
 
 package "smtlib" (
-  exists_if = "dolmensmtlib.cma"
+  directory = "dolmensmtlib"
   description = "Smtlib parser for dolmen"
   requires = "dolmen dolmen.standard"
   archive(byte) = "dolmensmtlib.cma"
@@ -25,10 +23,9 @@ package "smtlib" (
 )
 
 package "line" (
-  exists_if = "dolmenline.cma"
+  directory = "dolmenline"
   description = "Line"
   requires = "dolmen"
   archive(byte) = "dolmenline.cma"
   archive(native) = "dolmenline.cmxa"
 )
-
