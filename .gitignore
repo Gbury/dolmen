@@ -4,6 +4,7 @@ src/_build/
 
 # Generated files
 .merlin
+*.install
 src/dolmen
 src/dolmen.docdir
 doc/index.html
