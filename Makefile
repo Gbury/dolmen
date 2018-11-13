@@ -2,9 +2,7 @@
 
 COMP=dune
 FLAGS=--profile release
-BIN=main
-NAME=dolmen
-BINDIR=_build/src/install/default/bin
+BINDIR=_build/install/default/bin
 
 all: dune
 
@@ -12,10 +10,10 @@ dune:
 	dune build --profile release
 
 bin: dune
-	cp $(BINDIR)/$(BIN)* $(NAME)
+	cp $(BINDIR)/dolmen ./
 
 test: bin
-	cd ../tests && ./run
+	cd tests && ./run
 
 doc:
 	dune build @doc

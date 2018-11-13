@@ -40,7 +40,7 @@ install:
   - ${HOME}/opam install --deps-only dolmen.dev
 script:
   # Build and launch the tests
-  - if [ "$TO_TEST" = "tests" ]; then make -C src && make -C src test; fi
+  - if [ "$TO_TEST" = "tests" ]; then make bin && make test; fi
   # Try and install the package with opam
   - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev; fi
 
