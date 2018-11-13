@@ -8,8 +8,8 @@ module type Statement = Ast_iCNF.Statement
 (** Implementation requirement for the iCNF format. *)
 
 module Make
-    (L : ParseLocation.S)
+    (L : Dolmen_intf.Location.S)
     (T : Term with type location := L.t)
     (S : Statement with type location := L.t and type term := T.t) :
-  Language_intf.S with type statement = S.t
+  Dolmen_intf.Language.S with type statement = S.t
 (** Functor to generate a parser for the iCNF format. *)

@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmem. See file "LICENSE" for more information *)
 
-%parameter <L : ParseLocation.S>
+%parameter <L : Dolmen_intf.Location.S>
 %parameter <I : Ast_tptp.Id>
 %parameter <T : Ast_tptp.Term
   with type location := L.t and type id := I.t>

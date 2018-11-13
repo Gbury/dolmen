@@ -3,7 +3,7 @@
 
 /* Functor parameters */
 
-%parameter <L : ParseLocation.S>
+%parameter <L : Dolmen_intf.Location.S>
 %parameter <T : Ast_iCNF.Term with type location := L.t>
 %parameter <S : Ast_iCNF.Statement with type location := L.t and type term := T.t>
 

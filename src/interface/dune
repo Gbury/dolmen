@@ -2,6 +2,6 @@
   (name           dolmen_intf)
   (public_name    dolmen.intf)
   (libraries      menhirLib)
-  (modules        Lex_intf Parse_intf Location_intf
-                  Id_intf Term_intf Stmt_intf Language_intf)
+  (modules        Lex Parse Location
+                  Id Term Stmt Language)
 )

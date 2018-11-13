@@ -16,5 +16,5 @@
   (name           dolmen_tptp)
   (public_name    dolmen.tptp)
   (libraries      dolmen_std menhirLib)
-  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Tptp)
+  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Dolmen_tptp)
 )

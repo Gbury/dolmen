@@ -2,15 +2,17 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
 module Make
-    (L : ParseLocation.S)
-    (I : Id_intf.Logic)
-    (T : Term_intf.Logic with type location := L.t and type id := I.t)
-    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t)
-= struct
+    (L : Dolmen_intf.Location.S)
+    (I : Dolmen_intf.Id.Logic)
+    (T : Dolmen_intf.Term.Logic with type location := L.t
+                                 and type id := I.t)
+    (S : Dolmen_intf.Stmt.Logic with type location := L.t
+                                 and type id := I.t
+                                 and type term := T.t) = struct
 
   exception Extension_not_found of string
 
-  module type S = Language_intf.S with type statement := S.t
+  module type S = Dolmen_intf.Language.S with type statement := S.t
 
   type language =
     | Dimacs
@@ -31,11 +33,11 @@ module Make
     fst (List.find (fun (_, l') -> l = l') enum)
 
   let assoc = [
-    Dimacs, ".cnf",  (module Dimacs.Make(L)(T)(S)     : S);
-    ICNF,   ".icnf", (module ICNF.Make(L)(T)(S)       : S);
-    Smtlib, ".smt2", (module Smtlib.Make(L)(I)(T)(S)  : S);
-    Tptp,   ".p",    (module Tptp.Make(L)(I)(T)(S)    : S);
-    Zf,     ".zf",   (module Zf.Make(L)(I)(T)(S)      : S);
+    Dimacs, ".cnf",  (module Dolmen_dimacs.Make(L)(T)(S)     : S);
+    ICNF,   ".icnf", (module Dolmen_icnf.Make(L)(T)(S)       : S);
+    Smtlib, ".smt2", (module Dolmen_smtlib.Make(L)(I)(T)(S)  : S);
+    Tptp,   ".p",    (module Dolmen_tptp.Make(L)(I)(T)(S)    : S);
+    Zf,     ".zf",   (module Dolmen_zf.Make(L)(I)(T)(S)      : S);
   ]
 
   let of_language l =
@@ -47,7 +49,7 @@ module Make
     with Not_found ->
       raise (Extension_not_found ext)
 
-  let of_filename s = of_extension (Misc.get_extension s)
+  let of_filename s = of_extension (Dolmen_std.Misc.get_extension s)
 
   let find ?language ?(dir="") file =
     match language with
@@ -74,7 +76,7 @@ module Make
       let l, _, (module P : S) =
         match language with
         | Some l -> of_language l
-        | None -> of_extension (Misc.get_extension file)
+        | None -> of_extension (Dolmen_std.Misc.get_extension file)
       in
       let gen, cl = P.parse_input (`File file) in
       l, gen, cl

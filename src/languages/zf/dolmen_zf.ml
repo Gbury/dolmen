@@ -6,11 +6,11 @@ module type Term = Ast_zf.Term
 module type Statement = Ast_zf.Statement
 
 module Make
-    (L : ParseLocation.S)
+    (L : Dolmen_intf.Location.S)
     (I : Id)
     (T : Term with type location := L.t and type id := I.t)
     (S : Statement with type location := L.t and type id := I.t and type term := T.t) =
-  Transformer.Make(L)(struct
+  Dolmen_std.Transformer.Make(L)(struct
     type token = Tokens_zf.token
     type statement = S.t
     let env = []
