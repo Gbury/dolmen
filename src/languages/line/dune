@@ -1,19 +1,9 @@
- 
-(ocamllex 
-	(modules lexLine)
-)  
 
+(ocamllex (modules lexLine))
 
 (library
-  (name            dolmenline)
-  (public_name     dolmenline)
-  (libraries       )
-  (modules
-
-LexLine
-Line
-
-  )
-  ;(wrapped false)
-  (wrapped (transition "Warning"))
+  (name           dolmen_line)
+  (public_name    dolmen.line)
+  ;(libraries     ())
+  (modules        LexLine Line)
 )

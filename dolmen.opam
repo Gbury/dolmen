@@ -5,11 +5,8 @@ author: "Guillaume Bury"
 maintainer: "guillaume.bury@gmail.com"
 license: "BSD-2-clauses"
 build: [
-    [make "-C" "src" "lib"]
-]
-install: [make "-C" "src" "install"]
-remove: [
-    ["ocamlfind" "remove" "dolmen"]
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "menhir" {>= "20151005"}

@@ -1,7 +1,5 @@
 
-(ocamllex
- (modules lexTptp)
-)
+(ocamllex (modules lexTptp))
 
 (menhir
  (infer true)
@@ -15,20 +13,8 @@
 )
 
 (library
-  (name            dolmentptp)
-  (public_name     dolmentptp)
-  (libraries       dolmenstandard menhirLib)
-  (modules
-
-Tokens_tptp
-
-; Tptp language
-Tptp
-LexTptp
-ParseTptp
-Ast_tptp
-
-  )
-  ;(wrapped false)
-  (wrapped (transition "Warning"))
+  (name           dolmen_tptp)
+  (public_name    dolmen.tptp)
+  (libraries      dolmen_std menhirLib)
+  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Tptp)
 )
