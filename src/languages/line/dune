@@ -5,5 +5,5 @@
   (name           dolmen_line)
   (public_name    dolmen.line)
   ;(libraries     ())
-  (modules        LexLine Line)
+  (modules        LexLine Dolmen_line)
 )

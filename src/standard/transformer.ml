@@ -80,15 +80,15 @@ module Make
         | exception Lexer.Error ->
           let pos = Loc.of_lexbuf lexbuf in
           let err = Lexing.lexeme lexbuf in
-          Dolmen_line.Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Lexing_error (pos, err))
         | exception Parser.Error ->
           let pos = Loc.of_lexbuf lexbuf in
-          Dolmen_line.Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Syntax_error (pos, ""))
         | exception e ->
           let pos = Loc.of_lexbuf lexbuf in
-          Dolmen_line.Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Uncaught (pos, e))
       end
     in
