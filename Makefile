@@ -4,16 +4,23 @@ COMP=dune
 FLAGS=--profile release
 BIN=main
 NAME=dolmen
-BINDIR=_build/install/default/bin
+BINDIR=_build/src/install/default/bin
 
-all:
-	$(COMP) build $(FLAGS)
+all: dune
+
+dune:
+	dune build --profile release
+
+bin: dune
 	cp $(BINDIR)/$(BIN)* $(NAME)
 
-test: all
+test: bin
 	cd ../tests && ./run
+
+doc:
+	dune build @doc
 
 clean:
 	$(COMP) clean && rm -f $(NAME)
 
-.PHONY: clean doc all bench install uninstall reinstall bin test
+.PHONY: all dune bin test doc clean
