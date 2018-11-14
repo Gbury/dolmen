@@ -115,7 +115,7 @@ and t = {
 
 (** {2 Implemented interfaces} *)
 
-include Stmt_intf.Logic
+include Dolmen_intf.Stmt.Logic
   with type t := t
    and type id := Id.t
    and type term := term

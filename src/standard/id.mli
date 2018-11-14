@@ -28,7 +28,7 @@ type t = {
 
 (** {2 Implemented interfaces} *)
 
-include Id_intf.Logic
+include Dolmen_intf.Id.Logic
   with type t := t
    and type namespace := namespace
 

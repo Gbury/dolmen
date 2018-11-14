@@ -3,7 +3,7 @@
 
 (** {1 Parser for Zipperposition Formulas} *)
 
-%parameter <L : ParseLocation.S>
+%parameter <L : Dolmen_intf.Location.S>
 %parameter <I : Ast_zf.Id>
 %parameter <T : Ast_zf.Term
   with type location := L.t and type id := I.t>

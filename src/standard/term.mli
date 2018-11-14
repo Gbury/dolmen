@@ -161,7 +161,7 @@ val print_builtin : Format.formatter -> builtin -> unit
 
 (** {2 Implemented interfaces} *)
 
-include Term_intf.Logic
+include Dolmen_intf.Term.Logic
   with type t := t
    and type id := Id.t
    and type location := location

@@ -1,6 +1,8 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+open Dolmen
+
 module M = Logic.Make(ParseLocation)(Id)(Term)(Statement)
 
 let help_msg =

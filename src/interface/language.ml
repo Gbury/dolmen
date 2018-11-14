@@ -11,11 +11,11 @@ module type S = sig
   type statement
   (** The type of top-level directives recognised by the parser. *)
 
-  module Lexer : Lex_intf.S
+  module Lexer : Lex.S
     with type token := token
   (** The Lexer module for the language. *)
 
-  module Parser : Parse_intf.S
+  module Parser : Parse.S
     with type token := token
      and type statement := statement
   (** The Parser module for the language. *)

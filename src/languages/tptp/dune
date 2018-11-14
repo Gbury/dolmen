@@ -1,0 +1,20 @@
+
+(ocamllex (modules lexTptp))
+
+(menhir
+ (infer true)
+ (flags (--explain --table --external-tokens Tokens_tptp tokens_tptp.mly))
+ (modules parseTptp)
+)
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_tptp)
+)
+
+(library
+  (name           dolmen_tptp)
+  (public_name    dolmen.tptp)
+  (libraries      dolmen_std menhirLib)
+  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Dolmen_tptp)
+)

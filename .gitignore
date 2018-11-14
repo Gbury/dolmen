@@ -1,9 +1,11 @@
 # Source directory (doc, build dir and bin)
+_build/
 src/_build/
 
 # Generated files
-src/dolmen
-src/dolmen.docdir
+.merlin
+*.install
+dolmen
 doc/index.html
 
 # ocamlbuild targets

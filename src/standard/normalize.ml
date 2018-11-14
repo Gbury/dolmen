@@ -53,7 +53,7 @@ module Smtlib = struct
 
   let binder_let_eq m t =
     match t with
-    | { Term.term = Term.Colon (u, v) } ->
+    | { Term.term = Term.Colon (u, v) ; _ } ->
       Term.eq ?loc:t.Term.loc (Term.map m u) (Term.map m v)
     | _ -> assert false
 
