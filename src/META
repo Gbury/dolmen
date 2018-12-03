@@ -1,8 +1,0 @@
-version = "0.1"
-description = "A library providing flexible parsers for input languages"
-requires = "menhirLib"
-archive(byte) = "dolmen.cma"
-archive(byte, plugin) = "dolmen.cma"
-archive(native) = "dolmen.cmxa"
-archive(native, plugin) = "dolmen.cmxs"
-exists_if = "dolmen.cma"

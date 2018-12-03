@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {1 Location in a file} *)
 
-module type S = Location_intf.S
+module type S = Dolmen_intf.Location.S
 
 type t = {
   file : string;

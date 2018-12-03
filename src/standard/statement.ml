@@ -122,7 +122,7 @@ let rec pp_descr b = function
   | Reset -> Printf.bprintf b "reset"
   | Exit -> Printf.bprintf b "exit"
 
-and pp b = function { descr } ->
+and pp b = function { descr; _ } ->
   Printf.bprintf b "%a" pp_descr descr
 
 (* Pretty printing *)
@@ -194,7 +194,7 @@ let rec print_descr fmt = function
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print fmt = function { descr } ->
+and print fmt = function { descr; _ } ->
   Format.fprintf fmt "%a" print_descr descr
 
 (** Annotations *)
@@ -379,7 +379,7 @@ let tptp ?loc ?annot id role body =
       end
     | "type" ->
       begin match body with
-        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s }, ty )} ->
+        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
           Decl (s, ty)
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
@@ -404,14 +404,45 @@ let thf ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 let tff ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 let fof ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
 
-(* We want to generalize the variables in cnf formulas. *)
 let cnf ?loc ?annot id role t =
-  let loc = t.Term.loc in
   let l =
     match t with
     | { Term.term = Term.App
-            ({ Term.term = Term.Builtin Term.Or; _ }, l) } -> l
+            ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } -> l
     | _ -> [t]
   in
   tptp ?loc ?annot id role (`Clause (t, l))
+
+(* normalization *)
+let normalize_inductive f i =
+  { i with cstrs = List.map (fun (x, l) -> (x, List.map f l)) i.cstrs; }
+
+let rec normalize_descr f = function
+  | Pack l -> Pack (List.map (normalize f) l)
+
+  | Plain t -> Plain (f t)
+
+  | Prove l -> Prove (List.map f l)
+  | Clause l -> Clause (List.map f l)
+  | Antecedent t -> Antecedent (f t)
+  | Consequent t -> Consequent (f t)
+
+  | Set_info t -> Set_info (f t)
+
+  | Set_option t -> Set_option (f t)
+
+  | Def (id, t) -> Def (id, f t)
+  | Decl (id, t) -> Decl (id, f t)
+  | Inductive i -> Inductive (normalize_inductive f i)
+
+  | Get_value l -> Get_value (List.map f l)
+
+  | descr -> descr
+
+and normalize f s =
+  { s with
+    attr = (match s.attr with
+        | None -> None | Some t -> Some (f t));
+    descr = normalize_descr f s.descr; }
+
 

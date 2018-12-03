@@ -4,10 +4,13 @@
 (** Logic languages for formal proofs *)
 
 module Make
-    (L : ParseLocation.S)
-    (I : Id_intf.Logic)
-    (T : Term_intf.Logic with type location := L.t and type id := I.t)
-    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t): sig
+    (L : Dolmen_intf.Location.S)
+    (I : Dolmen_intf.Id.Logic)
+    (T : Dolmen_intf.Term.Logic with type location := L.t
+                                 and type id := I.t)
+    (S : Dolmen_intf.Stmt.Logic with type location := L.t
+                                 and type id := I.t
+                                 and type term := T.t): sig
 
   exception Extension_not_found of string
   (** Raised when trying to find a language given a file extension. *)
@@ -53,7 +56,7 @@ module Make
     ?language:language ->
     [ `File of string | `Stdin of language ] ->
     language * (unit -> S.t option) * (unit -> unit)
-  (** Incremental parsing of either a file (see {parse_file}), or stdin
+  (** Incremental parsing of either a file (see {!parse_file}), or stdin
       (with given language). Returns a triplet [(lan, gen, cl)], containing
       the language detexted [lan], a genratro function [gen] for parsing the input,
       and a cleanup function [cl] to call in order to cleanup the file descriptors.
@@ -62,7 +65,7 @@ module Make
 
   (** {2 Mid-level parsing} *)
 
-  module type S = Language_intf.S with type statement := S.t
+  module type S = Dolmen_intf.Language.S with type statement := S.t
   (** The type of language modules. *)
 
   val of_language   : language  -> language * string * (module S)

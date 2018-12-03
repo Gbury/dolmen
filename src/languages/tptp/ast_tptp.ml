@@ -45,8 +45,8 @@ module type Term = sig
   val implied_t : ?loc:location -> unit -> t
   val data_t    : ?loc:location -> unit -> t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
-      for parsing tptp's THF. {implied_t} is reverse implication, and
-      {data_t} is used in tptp's annotations. *)
+      for parsing tptp's THF. {!implied_t} is reverse implication, and
+      {!data_t} is used in tptp's annotations. *)
 
   val colon : ?loc:location -> t -> t -> t
   (** Juxtaposition of terms, usually used for annotating terms with their type. *)

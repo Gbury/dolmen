@@ -9,10 +9,10 @@ module type Statement = Ast_zf.Statement
 (** Implementation requirements for the Zipperposition format. *)
 
 module Make
-    (L : ParseLocation.S)
+    (L : Dolmen_intf.Location.S)
     (I : Id)
     (T : Term with type location := L.t and type id := I.t)
     (S : Statement with type location := L.t and type id := I.t and type term := T.t) :
-  Language_intf.S with type statement = S.t
+  Dolmen_intf.Language.S with type statement = S.t
 (** Functor to generate a parser for the Zipperposition format. *)
 

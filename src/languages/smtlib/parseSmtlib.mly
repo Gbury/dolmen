@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmem. See file "LICENSE" for more information *)
 
-%parameter <L : ParseLocation.S>
+%parameter <L : Dolmen_intf.Location.S>
 %parameter <I : Ast_smtlib.Id>
 %parameter <T : Ast_smtlib.Term with type location := L.t and type id := I.t>
 %parameter <S : Ast_smtlib.Statement with type location := L.t and type id := I.t and type term := T.t>
@@ -241,7 +241,7 @@ function_dec:
     { I.(mk term s), args, ret }
 
 function_def:
-  | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
+  | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), args, ret, body }
 
 /* Additional rule for prop_literals symbols, to have lighter

@@ -1,0 +1,20 @@
+
+(documentation)
+
+(library
+  (name           dolmen)
+  (public_name    dolmen)
+  (libraries      dolmen_intf dolmen_std dolmen_line
+                  dolmen_dimacs dolmen_icnf
+                  dolmen_tptp dolmen_smtlib dolmen_zf
+                  dolmen_class)
+  (modules        Dolmen)
+)
+
+(executable
+  (name            main)
+  (public_name     dolmen)
+  (libraries       dolmen)
+  (modules         Main)
+)
+

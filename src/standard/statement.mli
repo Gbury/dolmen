@@ -115,7 +115,7 @@ and t = {
 
 (** {2 Implemented interfaces} *)
 
-include Stmt_intf.Logic
+include Dolmen_intf.Stmt.Logic
   with type t := t
    and type id := Id.t
    and type term := term
@@ -132,4 +132,7 @@ val prove : ?loc:location -> unit -> t
 
 val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
 (** Pack a list of statements into a single one. *)
+
+val normalize : (Term.t -> Term.t) -> t -> t
+(** Normalize statements with regards to a normalization function on terms. *)
 

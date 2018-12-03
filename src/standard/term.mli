@@ -161,13 +161,25 @@ val print_builtin : Format.formatter -> builtin -> unit
 
 (** {2 Implemented interfaces} *)
 
-include Term_intf.Logic
+include Dolmen_intf.Term.Logic
   with type t := t
    and type id := Id.t
    and type location := location
+(** Include the Logic interface. This interface defines almost all term building
+    functions that you may want to use. *)
+
+
+(** {2 Term inspection} *)
+
+val fv : t -> Id.t list
+(** Return the list of free variables (i.e currently, Ids that are in
+    the [Var] namespace). *)
 
 
 (** {2 Additional functions} *)
+
+val builtin : builtin -> ?loc:location -> unit -> t
+(** Make a builtin. *)
 
 val fun_ty : ?loc:location -> t list -> t -> t
 (** Multi-arguments function type constructor. *)
@@ -176,13 +188,37 @@ val add_attr : t -> t -> t
 (** [add_attr attr term] rturns a term [t] equal to [term], but with
     [attr] added to the list of attributes. *)
 
-val normalize : (Id.t -> descr) -> t -> t
-(** Normalize the given term using the function to translate all symbols. *)
+val add_attrs : t list -> t -> t
+(** Same as [add_attr] but adds a list of attributes. *)
+
+val set_attrs : t list -> t -> t
+(** Set the given list of terms as th attributes of the given term.
+    Will fail (with an assertion) if the given term already have some assertion.
+    In such cases, use add_attr instead. *)
 
 
-(** {2 Free variables} *)
+(** {2 Term mapping}
 
-val fv : t -> Id.t list
-(** Return the list of free variables (i.e currently, Ids that are in
-    the [Var]namespace). *)
+    The main use of terms mapper is to map fuctions over some terms.
+    Traditionally, a mapping will usually only care about a few syntax cases
+    and leav all other untouched. In these cases, it is useful to override
+    the identity mapper, redefining only the fields needed.
+*)
+
+type 'a mapper = {
+  symbol    : 'a mapper -> attr:t list -> loc:location option -> Id.t -> 'a;
+  builtin   : 'a mapper -> attr:t list -> loc:location option -> builtin -> 'a;
+  colon     : 'a mapper -> attr:t list -> loc:location option -> t -> t -> 'a;
+  app       : 'a mapper -> attr:t list -> loc:location option -> t -> t list -> 'a;
+  binder    : 'a mapper -> attr:t list -> loc:location option -> binder -> t list -> t -> 'a;
+  pmatch    : 'a mapper -> attr:t list -> loc:location option -> t -> (t * t) list -> 'a;
+}
+(** The type of a mapper on terms. *)
+
+val id_mapper : t mapper
+(** The identity mapper: maps any term to itself. *)
+
+val map : 'a mapper -> t -> 'a
+(** Apply a mapper to a term. *)
+
 

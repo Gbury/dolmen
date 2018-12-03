@@ -2,10 +2,15 @@
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
 module Make
-    (Loc : ParseLocation.S)
-    (Ty : sig type token type statement val env : string list end)
-    (Lex : Lex_intf.S with type token := Ty.token)
-    (Parse : Parse_intf.S with type token := Ty.token and type statement := Ty.statement) = struct
+    (Loc    : ParseLocation.S)
+    (Ty     : sig
+       type token
+       type statement
+       val env : string list
+     end)
+    (Lex    : Dolmen_intf.Lex.S with type token := Ty.token)
+    (Parse  : Dolmen_intf.Parse.S with type token := Ty.token
+                                   and type statement := Ty.statement) = struct
 
   include Ty
 
@@ -75,15 +80,15 @@ module Make
         | exception Lexer.Error ->
           let pos = Loc.of_lexbuf lexbuf in
           let err = Lexing.lexeme lexbuf in
-          Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Lexing_error (pos, err))
         | exception Parser.Error ->
           let pos = Loc.of_lexbuf lexbuf in
-          Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Syntax_error (pos, ""))
         | exception e ->
           let pos = Loc.of_lexbuf lexbuf in
-          Line.consume lexbuf;
+          Dolmen_line.consume lexbuf;
           raise (Loc.Uncaught (pos, e))
       end
     in

@@ -5,16 +5,14 @@ author: "Guillaume Bury"
 maintainer: "guillaume.bury@gmail.com"
 license: "BSD-2-clauses"
 build: [
-    [make "-C" "src" "lib"]
-]
-install: [make "-C" "src" "install"]
-remove: [
-    ["ocamlfind" "remove" "dolmen"]
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "menhir" {>= "20151005"}
   "ocamlfind" {build}
   "ocamlbuild" {build}
+  "dune" {build}
 ]
 available: [ ocaml-version >= "4.02.3" ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]

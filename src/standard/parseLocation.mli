@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (** {2 Interface definition} *)
 
-module type S = Location_intf.S
+module type S = Dolmen_intf.Location.S
 (** An anstract module type for providing locations. Used
     as argumentby much of the functors provided in Dolmen.
     This module ([ParseLocation]) implements this specification. *)

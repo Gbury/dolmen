@@ -1,0 +1,9 @@
+
+(ocamllex (modules lexLine))
+
+(library
+  (name           dolmen_line)
+  (public_name    dolmen.line)
+  ;(libraries     ())
+  (modules        LexLine Dolmen_line)
+)
