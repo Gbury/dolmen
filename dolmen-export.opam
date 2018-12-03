@@ -9,9 +9,10 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "dolmen" {build}
-  "uutf" {build}
-  "uucp" {build}
+  "dune" {build}
+  "dolmen"
+  "uutf"
+  "uucp"
 ]
 available: [ ocaml-version >= "4.02.3" ]
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]

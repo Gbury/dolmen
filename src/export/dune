@@ -1,6 +1,6 @@
 (library
   (name           dolmen_export)
   (public_name    dolmen-export)
-  (libraries      Uutf Uucp dolmen.std)
+  (libraries      uutf uucp dolmen.std)
   (modules        Escape Pretty Tptp Smtlib)
 )
