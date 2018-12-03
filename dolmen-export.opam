@@ -1,0 +1,21 @@
+opam-version: "1.2"
+name: "dolmen-export"
+version: "dev"
+author: "Guillaume Bury"
+maintainer: "guillaume.bury@gmail.com"
+license: "BSD-2-clauses"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "dolmen" {build}
+  "uutf" {build}
+  "uucp" {build}
+]
+available: [ ocaml-version >= "4.02.3" ]
+tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
+homepage: "https://github.com/Gbury/dolmen"
+doc: "http://gbury.github.io/dolmen"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+dev-repo: "https://github.com/Gbury/dolmen.git"

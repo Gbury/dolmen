@@ -1,5 +1,5 @@
 
-(documentation)
+(documentation (package dolmen))
 
 (library
   (name           dolmen)
@@ -12,6 +12,7 @@
 )
 
 (executable
+  (package         dolmen)
   (name            main)
   (public_name     dolmen)
   (libraries       dolmen)
