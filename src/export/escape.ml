@@ -8,6 +8,8 @@
     identifiers.
 *)
 
+open Dolmen_std
+
 module H = Hashtbl.Make(Id)
 
 (* Printing wrappers for escapped sequences *)

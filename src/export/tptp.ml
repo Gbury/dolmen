@@ -5,6 +5,7 @@
 
     This modules defines a pretty-printer for terms in the tptp syntax. *)
 
+open Dolmen_std
 
 (* Pretty printing information for builtins *)
 (* ************************************************************************ *)
@@ -58,7 +59,7 @@ let is_num c = Uucp.Num.numeric_type c <> `None
 let is_alphanum c = is_alpha c || is_num c || is_underscore c
 
 let var_escape =
-  let name id = Pretty.Normal (Dolmen.Id.full_name id) in
+  let name id = Escape.Normal (Dolmen_std.Id.full_name id) in
   let rename = Escape.rename ~sep:'_' in
   let escape = Escape.umap (fun i -> function
       | None -> [ Uchar.of_char '_' ]
@@ -78,7 +79,7 @@ let var_escape =
   Escape.mk ~lang:"tptp" ~name ~escape ~rename
 
 let cst_escape =
-  let name id = Pretty.Normal (Dolmen.Id.full_name id) in
+  let name id = Escape.Normal (Dolmen_std.Id.full_name id) in
   let rename = Escape.rename ~sep:'_' in
   let escape = Escape.umap (fun i -> function
       | None -> [ Uchar.of_char '_' ]

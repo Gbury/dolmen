@@ -16,7 +16,7 @@ type t
     its actual printed string recorded, in order to avoid future conflicts
     with other escaped identifiers. *)
 
-val id : t -> Format.formatter -> Id.t -> unit
+val id : t -> Format.formatter -> Dolmen_std.Id.t -> unit
 (** Printer for archsat identifiers. *)
 
 (** {3 Identifier names} *)
@@ -33,7 +33,7 @@ type name =
 
 val mk :
   lang:string ->
-  name:(Id.t -> name) ->
+  name:(Dolmen_std.Id.t -> name) ->
   escape:(string -> string) ->
   rename:(string -> string) -> t
 (** Create an escaper from scratch. The name function is called to determine
