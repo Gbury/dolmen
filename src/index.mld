@@ -26,16 +26,16 @@ into classes. Currently, the only class available is the {!Logic} class that reg
 languages used in formal proof.
 
 {!modules:
-Logic
+Dolmen.class.Logic
 }
 
 The following modules synthesize the implementation requirements for language classes:
 
 {!modules:
-Id_intf
-Term_intf
-Stmt_intf
-Location_intf
+Dolmen.intf.Id
+Dolmen.intf.Term
+Dolmen.intf.Stmt
+Dolmen.intf.Location
 }
 
 {4 Standard implementations}
@@ -44,11 +44,11 @@ The following modules define standard implementations that can be used to direct
 instantiate the parser functors.
 
 {!modules:
-Id
-Term
-Normalize
-Statement
-ParseLocation
+Dolmen.std.Id
+Dolmen.std.Term
+Dolmen.std.Normalize
+Dolmen.std.Statement
+Dolmen.std.ParseLocation
 }
 
 {4 Language parsers}
@@ -56,18 +56,19 @@ ParseLocation
 Individual language parsers are available through the following modules:
 
 {!modules:
-Dimacs
-ICNF
-Smtlib
-Tptp
-Zf
+Dolmen.dimacs
+Dolmen.ICNF
+Dolmen.Smtlib
+Dolmen.Tptp
+Dolmen.Zf
 }
 
 These parsers all create modules with the following interface:
 
- {!modules:
- Language_intf
- }
+{!modules:
+Dolmen.intf.Language
+}
+
 
 {2 Index}
 
