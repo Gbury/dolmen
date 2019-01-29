@@ -44,7 +44,7 @@ let print_binder = function
   | All -> "forall"
   | Ex -> "exists"
   | Pi -> assert false
-  | Arrow -> "->"
+  | Arrow -> ""
   | Let -> assert false
   | Fun -> ""
   | Choice -> assert false
@@ -59,12 +59,18 @@ let rec print_descr fmt = function
       Format.fprintf fmt "(%a %a)" print term
         (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:print_term)
         term_list
-  | Binder (binder, term_list, term) when term_list <> [] ->
+  | Binder (Fun, [], {term= Colon (u, v) as d; _}) ->
+      Format.fprintf fmt "() @ %a @ %a" print_term v print_term u
+  | Binder (Fun, term_list, {term= Colon (u, v) as d; _}) ->
+      Format.fprintf fmt "((%a)) @ %a @ %a"
+        (Misc.print_list ~print_sep:Format.fprintf ~sep:") (" ~print:print_term)
+        term_list print_term v print_term u
+  | Binder (binder, [], term) ->
+      Format.fprintf fmt "%s () @ %a" (print_binder binder) print_term term
+  | Binder (binder, term_list, term) ->
       Format.fprintf fmt "%s ((%a)) @ %a" (print_binder binder)
         (Misc.print_list ~print_sep:Format.fprintf ~sep:") (" ~print:print_term)
         term_list print_term term
-  | Binder (binder, term_list, term) when term_list = [] ->
-      Format.fprintf fmt "%s () @ %a" (print_binder binder) print_term term
   | Match (term, term_pair_list) -> assert false
 
 and print_variables v = assert false
@@ -88,16 +94,18 @@ let rec print_statement fmt = function
         (Misc.print_list ~print_sep:Format.fprintf ~sep:" @ " ~print:print_term)
         term_list
   | Clause term_list -> assert false
+  | Antecedent ({term= App (_,_); _} as term) ->
+      Format.fprintf fmt "@[<hov 2>(assert@ %a )@] @." print_term term
   | Antecedent term ->
-      Format.fprintf fmt "@[<hov 2>(assert@ %a)@] @." print_term term
+      Format.fprintf fmt "@[<hov 2>(assert@ (%a) )@] @." print_term term
   | Consequent term -> assert false
   | Include str -> assert false
   | Set_logic str -> Format.fprintf fmt "(set-logic %s) @." str
   | Get_info str -> Format.fprintf fmt "@[<hov 2>(get-info@ %s)@]" str
   | Set_info term -> Format.fprintf fmt "(set-info %a) @." print_term term
   | Get_option str -> assert false
-  | Set_option term -> assert false
-  | Def (id, ({term= Binder (binder, _, _)} as term)) ->
+  | Set_option term -> Format.fprintf fmt "(set-option %a) @." print_term term
+  | Def (id, ({term= Binder (binder, _, _); _} as term)) ->
       Format.fprintf fmt "@[<hov 2>(define-%s @ %s @ %a)@] @."
         ( match id.ns with
         | Sort -> "sort"
@@ -106,12 +114,18 @@ let rec print_statement fmt = function
         (* way to detect a sort or a binded term *)
         id.name print_term term
   | Def (id, _) -> assert false
+  | Decl (id, ({term= Binder (binder, _, _); _} as term)) -> (
+    match binder with
+    | Arrow ->
+        Format.fprintf fmt "@[<hov 2>(declare-fun @ %a @ %a)@] @." Id.print id
+          print_term term
+    | _ -> assert false )
   | Decl (id, term) ->
-      Format.fprintf fmt "@[<hov 2>(declare-fun @ %a @ %a)@] @." Id.print id
+      Format.fprintf fmt "@[<hov 2>(declare-const @ %a @ %a)@] @." Id.print id
         print_term term
   | Inductive i ->
       let induct fmt =
-        let x =
+        let f =
           Misc.print_list ~print_sep:Format.fprintf ~sep:" "
             ~print:(fun fmt (cstr, l) ->
               match l with
@@ -123,12 +137,12 @@ let rec print_statement fmt = function
                     l )
         in
         function
-        | 0 -> Format.fprintf fmt "(%a)" x i.cstrs
+        | 0 -> Format.fprintf fmt "(%a)" f i.cstrs
         | _ ->
             Format.fprintf fmt "(par (%a) (%a) )"
               (Misc.print_list ~print_sep:Format.fprintf ~sep:" "
                  ~print:print_term)
-              i.vars x i.cstrs
+              i.vars f i.cstrs
       in
       Format.fprintf fmt
         "@[<hov 2>(declare-datatypes @ ((%a %s)) @ (%a) ) @] @." Id.print i.id
