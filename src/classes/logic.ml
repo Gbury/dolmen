@@ -85,6 +85,11 @@ module Make
           (match language with | Some l' -> l' | None -> l) in
       let gen, cl = P.parse_input `Stdin in
       l, gen, cl
+    | `Raw (filename, l, s) ->
+      let _, _, (module P : S) = of_language
+          (match language with | Some l' -> l' | None -> l) in
+      let gen, cl = P.parse_input (`Contents (filename, s)) in
+      l, gen, cl
 
 end
 
