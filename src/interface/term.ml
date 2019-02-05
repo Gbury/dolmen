@@ -246,9 +246,6 @@ module type Tff = sig
   type ty_var
   (** The representation of term types and type variables. *)
 
-  type formula
-  (** The type of formulas. *)
-
   type 'a tag
   (** The type of tags used to annotate arbitrary terms. *)
 
