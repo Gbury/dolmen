@@ -240,7 +240,6 @@ module type Tff = sig
       polymorphic terms. *)
 
   type t
-  type var
   (** The type of terms and term variables. *)
 
   type ty
@@ -259,7 +258,7 @@ module type Tff = sig
   (** A module for variables that occur in terms. *)
   module Var : sig
 
-    type t = var
+    type t
     (** The type of variables the can occur in terms *)
 
     val hash : t -> int
@@ -307,7 +306,7 @@ module type Tff = sig
       [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
       is expected to have type [ty], but does not have that type. *)
 
-  val of_var : var -> t
+  val of_var : Var.t -> t
   (** Create a term from a variable *)
 
   val apply : Const.t -> ty list -> t list -> t
@@ -342,28 +341,28 @@ module type Tff = sig
   (** Exclusive disjunction. *)
 
   val all :
-    ty_var list * var list ->
-    ty_var list * var list ->
+    ty_var list * Var.t list ->
+    ty_var list * Var.t list ->
     t -> t
   (** Universally quantify the given formula over the type and terms variables.
       The first pair of arguments are the variables that are free in the resulting
       quantified formula, and the second pair are the variables bound. *)
 
   val ex :
-    ty_var list * var list ->
-    ty_var list * var list ->
+    ty_var list * Var.t list ->
+    ty_var list * Var.t list ->
     t -> t
   (** Existencially quantify the given formula over the type and terms variables.
       The first pair of arguments are the variables that are free in the resulting
       quantified formula, and the second pair are the variables bound. *)
 
-  val letin : (var * t) list -> t -> t
+  val letin : (Var.t * t) list -> t -> t
   (** Let-binding. Variabels can be bound to either terms or formulas. *)
 
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given formula wiht the tag and value. *)
 
-  val fv : t -> ty_var list * var list
+  val fv : t -> ty_var list * Var.t list
   (** Returns the list of free variables in the formula. *)
 
 end
