@@ -66,47 +66,30 @@ end
 module Smtlib = struct
 
   module type Tag = sig
-
     type 'a t
-
     val rwrt : unit t
-
   end
 
   module type Ty = sig
-
-    module Const : sig
-
-      type t
-
-      val prop : t
-
-    end
-
+    type t
+    val prop : t
   end
 
   module type T = sig
-
     type t
-
     val eqs : t list -> t
 
     module Const : sig
-
       type t
-
       val _true : t
-
       val _false : t
-
     end
-
   end
 
   module Tff
       (Type : Tff_intf.S)
       (Tag : Tag with type 'a t = 'a Type.Tag.t)
-      (Ty : Ty with type Const.t = Type.Ty.Const.t)
+      (Ty : Ty with type t = Type.Ty.t)
       (T : T with type t = Type.T.t
               and type Const.t = Type.T.Const.t) = struct
 
@@ -119,7 +102,12 @@ module Smtlib = struct
       match s with
       (* Boolean operators *)
       | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->
-        Some (Type.parse_app_ty env ast Ty.Const.prop args)
+        begin match args with
+          | [] -> Some (Type.Ty Ty.prop)
+          | _ ->
+            let err = Type.Bad_op_arity ("Bool", 0, List.length args) in
+            raise (Type.Typing_error (err, env, ast))
+        end
       | Type.Id { Id.name = "true"; ns = Id.Term } ->
         Some (Type.parse_app_term env ast T.Const._true args)
       | Type.Id { Id.name = "false"; ns = Id.Term } ->
