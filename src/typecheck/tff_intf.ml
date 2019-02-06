@@ -51,7 +51,6 @@ module type S = sig
     | Infer_type_variable
     | Expected of string * res option
     | Bad_op_arity of string * int * int
-    | Bad_id_arity of Dolmen.Id.t * int
     | Bad_ty_arity of Ty.Const.t * int
     | Bad_term_arity of T.Const.t * int * int
     | Var_application of T.Var.t

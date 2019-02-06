@@ -368,7 +368,6 @@ module Make
     | Infer_type_variable
     | Expected of string * res option
     | Bad_op_arity of string * int * int
-    | Bad_id_arity of Id.t * int
     | Bad_ty_arity of Ty.Const.t * int
     | Bad_term_arity of T.Const.t * int * int
     | Var_application of T.Var.t
@@ -405,9 +404,6 @@ module Make
 
   let _bad_op_arity env s n m t =
     raise (Typing_error (Bad_op_arity (s, n, m), env, t))
-
-  let _bad_id_arity env id n t =
-    raise (Typing_error (Bad_id_arity (id, n), env, t))
 
   let _bad_ty_arity env f n t =
     raise (Typing_error (Bad_ty_arity (f, n), env, t))

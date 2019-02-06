@@ -8,36 +8,27 @@ module Tptp = struct
 
   (** Type constants required to typecheck tptp builtins *)
   module type Ty = sig
+    type t
+    val prop : t
 
     module Const : sig
-
       type t
-
-      val prop : t
-
       val base : t
-
     end
-
   end
 
   module type T = sig
-
     module Const : sig
-
       type t
-
       val _true : t
-
       val _false : t
-
     end
-
   end
 
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Ty with type Const.t = Type.Ty.Const.t)
+      (Ty : Ty with type t = Type.Ty.t
+                and type Const.t = Type.Ty.Const.t)
       (T : T with type Const.t = Type.T.Const.t) = struct
 
     let parse env ast s args =
@@ -49,7 +40,12 @@ module Tptp = struct
       | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
         Some Type.Ttype
       | Type.Id { Id.name = "$o"; ns = Id.Term } ->
-        Some (Type.parse_app_ty env ast Ty.Const.prop args)
+        begin match args with
+          | [] -> Some (Type.Ty Ty.prop)
+          | _ ->
+            let err = Type.Bad_op_arity ("$o", 0, List.length args) in
+            raise (Type.Typing_error (err, env, ast))
+        end
       | Type.Id { Id.name = "$i"; ns = Id.Term } ->
         Some (Type.parse_app_ty env ast Ty.Const.base args)
       | Type.Id { Id.name = "$true"; ns = Id.Term } ->
