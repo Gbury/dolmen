@@ -89,8 +89,6 @@ module Smtlib : sig
               and type Const.t = Type.T.Const.t) : sig
 
     val parse : Type.builtin_symbols
-
   end
-
 end
 

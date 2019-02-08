@@ -682,14 +682,15 @@ module Make
       end
     | x :: r ->
       begin match x with
-        | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ }, e); _ }
+        | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ } as w, e); _ }
         | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _}, [
-                { Ast.term = Ast.Symbol s; _ }; e]); _ }
+                { Ast.term = Ast.Symbol s; _ } as w; e]); _ }
         | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, [
-                { Ast.term = Ast.Symbol s; _ }; e]); _ } ->
+                { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
-          parse_let env ((v, t) :: acc) f r
+          let v', env' = add_term_var env s v (get_loc w) in
+          parse_let env' ((v', t) :: acc) f r
         | t -> _expected env "let-binding" t None
       end
 
