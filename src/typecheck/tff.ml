@@ -690,9 +690,8 @@ module Make
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
           let v', env' = add_term_var env s v (get_loc w) in
-          Format.eprintf "added %a in env@." Id.print s;
           parse_let env' ((v', t) :: acc) f r
-        | t -> _expected env "let-binding" t None
+        | t -> _expected env "variable binding" t None
       end
 
   and parse_app env ast s args =

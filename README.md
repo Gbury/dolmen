@@ -19,8 +19,7 @@ With opam:
 
 Manually:
 
-    make -C src
-    make -C src install
+    make
 
 ## Current state
 
