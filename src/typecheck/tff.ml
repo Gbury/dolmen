@@ -432,6 +432,21 @@ module Make
   let _unknown_builtin env ast b =
     raise (Typing_error (Unhandled_builtin b, env, ast))
 
+  let _wrap env ast f arg =
+    try f arg
+    with T.Wrong_type (t, ty) ->
+      _type_mismatch env t ty ast
+
+  let _wrap2 env ast f a b =
+    try f a b
+    with T.Wrong_type (t, ty) ->
+      _type_mismatch env t ty ast
+
+  let _wrap3 env ast f a b c =
+    try f a b c
+    with T.Wrong_type (t, ty) ->
+      _type_mismatch env t ty ast
+
   (* Wrappers for expression building *)
   (* ************************************************************************ *)
 
@@ -445,19 +460,14 @@ module Make
     let n1, n2 = T.Const.arity f in
     if n1 = List.length ty_args &&
        n2 = List.length t_args then
-      try
-        T.apply f ty_args t_args
-      with
-      | T.Wrong_type (t, ty) -> _type_mismatch env t ty ast
+      _wrap3 env ast T.apply f ty_args t_args
     else
       _bad_term_arity env f (n1, n2) ast
 
   let make_eq env ast_term a b =
-    try T.eq a b
-    with T.Wrong_type (t, ty) ->
-      _type_mismatch env t ty ast_term
+    _wrap2 env ast_term T.eq a b
 
-  let mk_quant env mk (ty_vars, t_vars) body =
+  let mk_quant env ast mk (ty_vars, t_vars) body =
     let fv_ty, fv_t = T.fv body in
     (* Check that all quantified variables are actually used *)
     List.iter (fun v ->
@@ -472,7 +482,7 @@ module Make
     let fv_t = List.filter (fun v ->
         List.exists (T.Var.equal v) t_vars) fv_t in
     (* Create the quantified formula *)
-    mk (fv_ty, fv_t) (ty_vars, t_vars) body
+    _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
 
   let infer env ast s args loc =
     if Id.(s.ns = Var) then _infer_var env ast;
@@ -530,17 +540,17 @@ module Make
         Term T._false
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.And; _ }, l); _ } ->
-        Term (T._and (List.map (parse_term env) l))
+        Term (_wrap env t T._and (List.map (parse_term env) l))
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Or; _ }, l); _ } ->
-        Term (T._or (List.map (parse_term env) l))
+        Term (_wrap env t T._or (List.map (parse_term env) l))
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Xor; _}, l); _ } as t ->
         begin match l with
           | [p; q] ->
             let f = parse_term env p in
             let g = parse_term env q in
-            Term (T.xor f g)
+            Term (_wrap2 env t T.xor f g)
           | _ -> _bad_op_arity env "xor" 2 (List.length l) t
         end
 
@@ -549,7 +559,7 @@ module Make
           | [p; q] ->
             let f = parse_term env p in
             let g = parse_term env q in
-            Term (T.imply f g)
+            Term (_wrap2 env t T.imply f g)
           | _ -> _bad_op_arity env "=>" 2 (List.length l) t
         end
 
@@ -558,14 +568,14 @@ module Make
           | [p; q] ->
             let f = parse_term env p in
             let g = parse_term env q in
-            Term (T.equiv f g)
+            Term (_wrap2 env t T.equiv f g)
           | _ -> _bad_op_arity env "<=>" 2 (List.length l) t
         end
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Not; _}, l); _ } as t ->
         begin match l with
           | [p] ->
-            Term (T.neg (parse_term env p))
+            Term (_wrap env t T.neg (parse_term env p))
           | _ -> _bad_op_arity env "not" 1 (List.length l) t
         end
 
@@ -589,7 +599,7 @@ module Make
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Distinct; _}, args); _ } ->
         let l' = List.map (parse_term env) args in
-        Term (T.distinct l')
+        Term (_wrap env t T.distinct l')
 
       (* General case: application *)
       | { Ast.term = Ast.Symbol s; _ } as ast ->
@@ -671,7 +681,7 @@ module Make
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
       let ttype_vars, ty_vars, env' = parse_quant_vars (expect_base env) vars in
       parse_quant mk b env' (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
-    | ast -> Term (mk_quant env mk (ttype_acc, ty_acc) (parse_term env ast))
+    | ast -> Term (mk_quant env ast mk (ttype_acc, ty_acc) (parse_term env ast))
 
   and parse_let env acc f = function
     | [] ->
