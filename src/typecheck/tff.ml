@@ -521,6 +521,9 @@ module Make
     | None -> env
     | Some ty -> expect env (Typed ty)
 
+  let expect_prop env =
+    expect env (Typed Ty.prop)
+
   let rec parse_expr (env : env) t =
     let res = match t with
 
@@ -540,16 +543,16 @@ module Make
         Term T._false
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.And; _ }, l); _ } ->
-        Term (_wrap env t T._and (List.map (parse_term env) l))
+        Term (_wrap env t T._and (List.map (parse_prop env) l))
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Or; _ }, l); _ } ->
-        Term (_wrap env t T._or (List.map (parse_term env) l))
+        Term (_wrap env t T._or (List.map (parse_prop env) l))
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Xor; _}, l); _ } as t ->
         begin match l with
           | [p; q] ->
-            let f = parse_term env p in
-            let g = parse_term env q in
+            let f = parse_prop env p in
+            let g = parse_prop env q in
             Term (_wrap2 env t T.xor f g)
           | _ -> _bad_op_arity env "xor" 2 (List.length l) t
         end
@@ -557,8 +560,8 @@ module Make
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Imply; _ }, l); _ } as t ->
         begin match l with
           | [p; q] ->
-            let f = parse_term env p in
-            let g = parse_term env q in
+            let f = parse_prop env p in
+            let g = parse_prop env q in
             Term (_wrap2 env t T.imply f g)
           | _ -> _bad_op_arity env "=>" 2 (List.length l) t
         end
@@ -566,8 +569,8 @@ module Make
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, l); _ } as t ->
         begin match l with
           | [p; q] ->
-            let f = parse_term env p in
-            let g = parse_term env q in
+            let f = parse_prop env p in
+            let g = parse_prop env q in
             Term (_wrap2 env t T.equiv f g)
           | _ -> _bad_op_arity env "<=>" 2 (List.length l) t
         end
@@ -575,7 +578,7 @@ module Make
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Not; _}, l); _ } as t ->
         begin match l with
           | [p] ->
-            Term (_wrap env t T.neg (parse_term env p))
+            Term (_wrap env t T.neg (parse_prop env p))
           | _ -> _bad_op_arity env "not" 1 (List.length l) t
         end
 
@@ -590,6 +593,7 @@ module Make
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _ }, l); _ } as t ->
         begin match l with
           | [a; b] ->
+            let env = expect_base env in
             begin match parse_expr env a, parse_expr env b with
             | Term t1, Term t2 -> Term (make_eq env t t1 t2)
             | _ -> _expected env "two terms" t None
@@ -598,6 +602,7 @@ module Make
         end
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Distinct; _}, args); _ } ->
+        let env = expect_base env in
         let l' = List.map (parse_term env) args in
         Term (_wrap env t T.distinct l')
 
@@ -681,7 +686,10 @@ module Make
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
       let ttype_vars, ty_vars, env' = parse_quant_vars (expect_base env) vars in
       parse_quant mk b env' (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
-    | ast -> Term (mk_quant env ast mk (ttype_acc, ty_acc) (parse_term env ast))
+    | ast ->
+      let body = parse_prop env ast in
+      let f = mk_quant env ast mk (ttype_acc, ty_acc) body in
+      Term f
 
   and parse_let env acc f = function
     | [] ->
@@ -761,6 +769,11 @@ module Make
     match parse_expr (expect_base env) ast with
     | Term t -> t
     | res -> _expected env "term" ast (Some res)
+
+  and parse_prop env ast =
+    match parse_expr (expect_prop env) ast with
+    | Term t -> t
+    | res -> _expected env "term/prop" ast (Some res)
 
   let parse_ttype_var env t =
     match parse_var (expect ~force:true env Type) t with
@@ -867,6 +880,6 @@ module Make
     | `Term (ty_args, t_args, body) ->
       `Term_def (id, tags, ty_args, t_args, body)
 
-  let parse = parse_term
+  let parse = parse_prop
 
 end
