@@ -92,3 +92,39 @@ module Smtlib : sig
   end
 end
 
+(** Zf builtins *)
+module Zf : sig
+
+  (** Tags *)
+  module type Tag = sig
+    type 'a t
+    (** Polymorphic tags *)
+    val rwrt : unit t
+    (** A flag (i.e. unit tag), indicatgin that the tagged term/formula
+        is to be considered as a rewrite rule. *)
+
+    type name
+    (** A type used to specify a name for printing identifiers *)
+    val name : name t
+    (** A tag used to specify what to print when printing an identifier *)
+    val exact : string -> name
+    (** Print the identifier with this exact string. *)
+
+    type pos
+    (** A type to indicate how to print identifiers *)
+    val pos : pos t
+    (** A tag to specify how to print identifiers*)
+    val infix : pos
+    (** The tagged identifier is an infix symbol *)
+    val prefix : pos
+    (** The tagged identifier is a prefix symbol *)
+  end
+
+  (** Builtins for smtlib's core theory *)
+  module Tff
+      (Type : Tff_intf.S)
+      (Tag : Tag with type 'a t = 'a Type.Tag.t) : sig
+
+    val parse : Type.builtin_symbols
+  end
+end

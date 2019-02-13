@@ -1,7 +1,7 @@
 
 open Dolmen
 
-(** TPTP builtins ($i, $o, etc..) *)
+(* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 
 module Tptp = struct
@@ -60,7 +60,7 @@ module Tptp = struct
 
 end
 
-(** Smtlib builtins ($i, $o, etc..) *)
+(* Smtlib builtins (bool, =, etc...) *)
 (* ************************************************************************ *)
 
 module Smtlib = struct
@@ -149,3 +149,55 @@ module Smtlib = struct
   end
 
 end
+
+(* Zipperposition builtins *)
+(* ************************************************************************ *)
+
+module Zf = struct
+
+  module type Tag = sig
+    type 'a t
+    val rwrt : unit t
+
+    type name
+    val name : name t
+    val exact : string -> name
+
+    type pos
+    val pos : pos t
+    val infix : pos
+    val prefix : pos
+  end
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Tag : Tag with type 'a t = 'a Type.Tag.t) = struct
+
+    let parse env ast s args =
+      match s with
+      | Type.Id id when Id.equal id Id.rwrt_rule ->
+        Some (Type.Tags [Type.Any (Tag.rwrt, ())])
+      | Type.Id { Id.name = "infix"; ns = Id.Term } ->
+        begin match args with
+          | [ { Term.term = Term.Symbol { Id.name; _ } } ] ->
+            Some (Type.Tags [
+                Type.Any (Tag.name, Tag.exact name);
+                Type.Any (Tag.pos, Tag.infix);
+              ])
+          | _ -> assert false
+        end
+      | Type.Id { Id.name = "prefix"; ns = Id.Term } ->
+        begin match args with
+          | [ { Term.term = Term.Symbol { Id.name; _ } } ] ->
+            Some (Type.Tags [
+                Type.Any (Tag.name, Tag.exact name);
+                Type.Any (Tag.pos, Tag.prefix);
+              ])
+          | _ -> assert false
+        end
+      | _ -> None
+
+  end
+
+end
+
