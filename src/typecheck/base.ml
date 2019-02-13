@@ -1,6 +1,76 @@
 
 open Dolmen
 
+(* Some helpers *)
+(* ************************************************************************ *)
+
+(* merging builtin parser functions *)
+
+let rec merge l env ast s args =
+  match l with
+  | [] -> None
+  | f :: r ->
+    begin match f env ast s args with
+      | (Some _) as ret -> ret
+      | None -> merge r env ast s args
+    end
+
+(* Building builtins parser functions *)
+
+type ('env, 'args, 'ret) helper =
+  (module Tff_intf.S with type env = 'env) ->
+  'env -> Dolmen.Term.t -> string -> Dolmen.Term.t list ->
+  ('args -> 'ret) -> 'ret option
+
+let make_op0
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  match args with
+  | [] -> Some (ret ())
+  | _ ->
+    let err = Type.Bad_op_arity (op, 0, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+
+let make_op1
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  match args with
+  | [t1] -> Some (ret t1)
+  | _ ->
+    let err = Type.Bad_op_arity (op, 1, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+
+let make_op2
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  match args with
+  | [t1; t2] -> Some (ret (t1, t2))
+  | _ ->
+    let err = Type.Bad_op_arity (op, 2, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+
+let make_op3
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  match args with
+  | [t1; t2; t3] -> Some (ret (t1, t2, t3))
+  | _ ->
+    let err = Type.Bad_op_arity (op, 3, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+
+let make_opn n
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  let l = List.length args in
+  if l = n then
+    Some (ret args)
+  else begin
+    let err = Type.Bad_op_arity (op, 1, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+  end
+
+
+
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 
@@ -40,12 +110,8 @@ module Tptp = struct
       | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
         Some Type.Ttype
       | Type.Id { Id.name = "$o"; ns = Id.Term } ->
-        begin match args with
-          | [] -> Some (Type.Ty Ty.prop)
-          | _ ->
-            let err = Type.Bad_op_arity ("$o", 0, List.length args) in
-            raise (Type.Typing_error (err, env, ast))
-        end
+        make_op0 (module Type) env ast "$o" args
+          (fun () -> (Type.Ty Ty.prop))
       | Type.Id { Id.name = "$i"; ns = Id.Term } ->
         Some (Type.parse_app_ty env ast Ty.Const.base args)
       | Type.Id { Id.name = "$true"; ns = Id.Term } ->
@@ -102,12 +168,8 @@ module Smtlib = struct
       match s with
       (* Boolean operators *)
       | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->
-        begin match args with
-          | [] -> Some (Type.Ty Ty.prop)
-          | _ ->
-            let err = Type.Bad_op_arity ("Bool", 0, List.length args) in
-            raise (Type.Typing_error (err, env, ast))
-        end
+        make_op0 (module Type) env ast "Bool" args
+          (fun () -> (Type.Ty Ty.prop))
       | Type.Id { Id.name = "true"; ns = Id.Term } ->
         Some (Type.parse_app_term env ast T.Const._true args)
       | Type.Id { Id.name = "false"; ns = Id.Term } ->
