@@ -612,6 +612,10 @@ module Make
       | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, l); _ } as ast ->
         parse_app env ast s l
 
+      (* If-then-else *)
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Ite; _}, l); _ } as ast ->
+        parse_ite env ast l
+
       (* Builtin application not treated directly, but instead
          routed to a semantic extension through builtin_symbols. *)
       | { Ast.term = Ast.Builtin b; _ } as ast ->
@@ -754,6 +758,15 @@ module Make
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
     Term (term_apply env ast f ty_args t_args)
+
+  and parse_ite env ast = function
+    | [c; a; b] ->
+      let cond = parse_prop env c in
+      let then_t = parse_term env a in
+      let else_t = parse_term env b in
+      Term (_wrap3 env ast T.ite cond then_t else_t)
+    | args ->
+      _bad_op_arity env "#ite" 3 (List.length args) ast
 
   and parse_builtin env ast b args =
     match env.builtins env ast (Builtin b) args with

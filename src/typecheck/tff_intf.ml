@@ -121,7 +121,9 @@ module type S = sig
 
   val parse_ty : Ty.t typer
   val parse_term : T.t typer
-  (** Wrappers around {parse_expr} to unwrap an expected result. *)
+  val parse_prop : T.t typer
+  (** Wrappers around {parse_expr} to set the expect field of the env,
+      and unwrap an expected return value. *)
 
   val parse_app_ty : (Ty.Const.t -> Dolmen.Term.t list -> res) typer
   val parse_app_term : (T.Const.t -> Dolmen.Term.t list -> res) typer

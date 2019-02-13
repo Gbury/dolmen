@@ -356,6 +356,9 @@ module type Tff = sig
   val letin : (Var.t * t) list -> t -> t
   (** Let-binding. Variabels can be bound to either terms or formulas. *)
 
+  val ite : t -> t -> t -> t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
+
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given formula wiht the tag and value. *)
 
