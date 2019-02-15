@@ -122,7 +122,7 @@ module Smtlib = struct
       (* sort *)
       | Type.Id { Id.ns = Id.Sort; name; } ->
         parse_id env ast name [
-          "Bitvec", 1, (function
+          "BitVec", 1, (function
               | [n_s] ->
                 Base.make_op0 (module Type) env ast "BitVec" args
                   (fun () -> Type.Ty (Ty.bitv (parse_int env ast n_s)))
