@@ -38,6 +38,18 @@ val make_opn :
     and the returning function takes a list of terms as argument.
     The list is guaranteed to have the same length as the given arity. *)
 
+val make_assoc : (_, Dolmen.Term.t list, _) helper
+(** Ensures the list of arguments is at least of size 2 (used for associative
+    symbols). *)
+
+val fold_left_assoc : ('a -> 'a -> 'a) -> 'a list -> 'a
+(** Fold application of a left-associative function on a list.
+    @raise Invalid_argument if the list is empty. *)
+
+val fold_right_assoc : ('a -> 'a -> 'a) -> 'a list -> 'a
+(** Fold application of a right-associative function on a list.
+    @raise Invalid_argument if the list is empty. *)
+
 
 (** {2 Languages base builtins} *)
 

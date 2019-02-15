@@ -69,6 +69,24 @@ let make_opn n
     raise (Type.Typing_error (err, env, ast))
   end
 
+let make_assoc
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env ast op args ret =
+  match args with
+  | [] | [_] ->
+    let err = Type.Bad_op_arity (op, 2, List.length args) in
+    raise (Type.Typing_error (err, env, ast))
+  | _ -> Some (ret args)
+
+let fold_left_assoc mk = function
+  | h :: r -> List.fold_left mk h r
+  | _ -> raise (Invalid_argument "Base.fold_left_assoc")
+
+let fold_right_assoc mk = function
+  | h :: r -> List.fold_right mk r h
+  | _ -> raise (Invalid_argument "Base.fold_right_assoc")
+
+
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 
