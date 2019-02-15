@@ -69,8 +69,6 @@ let make_opn n
     raise (Type.Typing_error (err, env, ast))
   end
 
-
-
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 

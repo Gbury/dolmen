@@ -39,7 +39,6 @@ val make_opn :
     The list is guaranteed to have the same length as the given arity. *)
 
 
-
 (** {2 Languages base builtins} *)
 
 (** TPTP builtins ($i, $o, etc..) *)
