@@ -696,7 +696,7 @@ module Make
       Term f
 
   and parse_let env acc f = function
-    | [] ->
+    | [] -> (* TODO: use continuation to avoid stack overflow on packs of let-bindings ? *)
       let l = List.rev acc in
       begin match parse_expr env f with
         | Term t -> Term (T.letin l t)

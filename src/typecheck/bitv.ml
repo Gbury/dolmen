@@ -114,11 +114,17 @@ module Smtlib = struct
       | exception Failure _ -> None
       | x ->
         let x_s = Format.asprintf "%x" x in
-        let b = Bytes.create (String.length s' * 4) in
+        let m = (String.length s' * 4) in
+        let b = Bytes.create m in
         String.iteri (fun i c ->
             Bytes.blit_string (hex_to_bin env ast c) 0 b (i * 4) 4
           ) x_s;
-        let s'' = Bytes.sub_string b 0 n in
+        let s'' =
+          if n <= m then Bytes.sub_string b 0 n
+          else
+            let b' = Bytes.extend b (n - m) 0 in
+            Bytes.to_string b'
+        in
         Some (Type.Term (T.mk_bitv s''))
 
     let split_id = Dolmen_std.Misc.split_on_char '\000'
