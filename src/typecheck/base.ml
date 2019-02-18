@@ -160,20 +160,21 @@ module Smtlib = struct
   module type T = sig
     type t
     val eqs : t list -> t
-
-    module Const : sig
-      type t
-      val _true : t
-      val _false : t
-    end
   end
 
   module Tff
       (Type : Tff_intf.S)
       (Tag : Tag with type 'a t = 'a Type.Tag.t)
       (Ty : Ty with type t = Type.Ty.t)
-      (T : T with type t = Type.T.t
-              and type Const.t = Type.T.Const.t) = struct
+      (T : T with type t = Type.T.t) = struct
+
+    let app_left env ast args name mk =
+      make_assoc (module Type) env ast name args
+        (fun l -> Type.Term (fold_left_assoc mk (List.map (Type.parse_term env) l)))
+
+    let app_right env ast args name mk =
+      make_assoc (module Type) env ast name args
+        (fun l -> Type.Term (fold_right_assoc mk (List.map (Type.parse_term env) l)))
 
     let parse_f env ast cstr args =
       let loc = Term.(ast.loc) in
@@ -182,34 +183,37 @@ module Smtlib = struct
 
     let parse env ast s args =
       match s with
-      (* Boolean operators *)
+      (* Bool sort and constants *)
       | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->
         make_op0 (module Type) env ast "Bool" args
           (fun () -> (Type.Ty Ty.prop))
       | Type.Id { Id.name = "true"; ns = Id.Term } ->
-        Some (Type.parse_app_term env ast T.Const._true args)
+        make_op0 (module Type) env ast "true" args
+          (fun () -> (Type.Term Type.T._true))
       | Type.Id { Id.name = "false"; ns = Id.Term } ->
-        Some (Type.parse_app_term env ast T.Const._false args)
+        make_op0 (module Type) env ast "false" args
+          (fun () -> (Type.Term Type.T._false))
+
+      (* Boolean operators *)
       | Type.Id { Id.name = "not"; ns = Id.Term } ->
-        Some (parse_f env ast (Term.not_t ()) args)
+        make_op1 (module Type) env ast "not" args
+          (fun t -> Type.Term (Type.T.neg (Type.parse_term env t)))
       | Type.Id { Id.name = "and"; ns = Id.Term } ->
         Some (parse_f env ast (Term.and_t ()) args)
       | Type.Id { Id.name = "or"; ns = Id.Term } ->
         Some (parse_f env ast (Term.or_t ()) args)
       | Type.Id { Id.name = "xor"; ns = Id.Term } ->
-        Some (parse_f env ast (Term.xor_t ()) args)
+        app_left env ast args "xor" Type.T.xor
       | Type.Id { Id.name = "=>"; ns = Id.Term } ->
-        Some (parse_f env ast (Term.implies_t ()) args)
+        app_right env ast args "=>" Type.T.imply
+
+      (* If-then-else *)
       | Type.Id { Id.name = "ite"; ns = Id.Term } ->
-        begin match args with
-          | [c; a; b] ->
-            let loc = ast.Term.loc in
-            let ast = Term.ite ?loc c a b in
-            Some (Type.Term (Type.parse_term env ast))
-          | _ ->
-            let err = Type.Bad_op_arity ("ite", 3, List.length args) in
-            raise (Type.Typing_error (err, env, ast))
-        end
+        make_op3 (module Type) env ast "ite" args
+        (fun (c, a, b) ->
+          let loc = ast.Term.loc in
+          let ast = Term.ite ?loc c a b in
+          Type.Term (Type.parse_term env ast))
 
       (* Equality *)
       | Type.Id { Id.name = "distinct"; ns = Id.Term } ->

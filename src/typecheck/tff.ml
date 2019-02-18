@@ -602,7 +602,6 @@ module Make
         end
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Distinct; _}, args); _ } ->
-        let env = expect_base env in
         let l' = List.map (parse_term env) args in
         Term (_wrap env t T.distinct l')
 
