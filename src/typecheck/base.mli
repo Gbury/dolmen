@@ -122,16 +122,6 @@ module Smtlib : sig
     (** The type fo terms. *)
     val eqs : t list -> t
     (** Create a chain of equalities. *)
-
-    (** Term constants, aka function symbols. *)
-    module Const : sig
-      type t
-      (** The type of function symbols *)
-      val _true : t
-      (** The smybol for [true] *)
-      val _false : t
-      (** The symbol for [false] *)
-    end
   end
 
   (** Builtins for smtlib's core theory *)
@@ -139,8 +129,7 @@ module Smtlib : sig
       (Type : Tff_intf.S)
       (Tag : Tag with type 'a t = 'a Type.Tag.t)
       (Ty : Ty with type t = Type.Ty.t)
-      (T : T with type t = Type.T.t
-              and type Const.t = Type.T.Const.t) : sig
+      (T : T with type t = Type.T.t) : sig
 
     val parse : Type.builtin_symbols
   end
