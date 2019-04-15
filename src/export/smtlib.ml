@@ -67,6 +67,10 @@ let rec print_descr fmt = function
         term_list print_term v print_term u
   | Binder (binder, [], term) ->
       Format.fprintf fmt "%s () @ %a" (print_binder binder) print_term term
+  | Binder (binder, ( {term= Symbol _; _} :: lst as term_list ), term) ->
+      Format.fprintf fmt "%s (%a) @ %a" (print_binder binder)
+        (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:print_term)
+        term_list print_term term
   | Binder (binder, term_list, term) ->
       Format.fprintf fmt "%s ((%a)) @ %a" (print_binder binder)
         (Misc.print_list ~print_sep:Format.fprintf ~sep:") (" ~print:print_term)
