@@ -123,6 +123,7 @@ module Smtlib = struct
           if n <= m then Bytes.sub_string b 0 n
           else
             let b' = Bytes.extend b (n - m) 0 in
+            Bytes.fill b' 0 (n - m) '0';
             Bytes.to_string b'
         in
         Some (Type.Term (T.mk_bitv s''))
