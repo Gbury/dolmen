@@ -86,6 +86,16 @@ let fold_right_assoc mk = function
   | h :: r -> List.fold_right mk r h
   | _ -> raise (Invalid_argument "Base.fold_right_assoc")
 
+let make_chain = make_assoc
+
+let rec map_chain
+    (type t) (module Type: Tff_intf.S with type T.t = t) mk args =
+  let rec aux mk = function
+    | [] -> assert false
+    | [_] -> []
+    | x :: ((y :: _) as r) -> mk x y :: aux mk r
+  in
+  Type.T._and (aux mk args)
 
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)

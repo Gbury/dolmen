@@ -381,16 +381,16 @@ let atom ?loc i =
 
 (* {2 Wrappers for smtlib} *)
 
-let int ?loc s = const ?loc Id.(mk Term s)
-let real = int
-let hexa = int
-let binary = int
+let int ?loc s = const ?loc Id.(mk (Value Integer) s)
+let real ?loc s = const ?loc Id.(mk (Value Real) s)
+let hexa ?loc s = const ?loc Id.(mk (Value Hexadecimal) s)
+let binary ?loc s = const ?loc Id.(mk (Value Binary) s)
 
 let sexpr ?loc l = apply ?loc (const Id.(mk Attr "$data")) l
 
 (* {2 Wrappers for tptp} *)
 
-let rat = int
+let rat ?loc s = const ?loc Id.(mk (Value Rational) s)
 let distinct = const
 
 let var ?loc id = const ?loc { id with Id.ns = Id.Var }

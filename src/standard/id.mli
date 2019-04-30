@@ -5,6 +5,19 @@
 
 (** {2 Type definitions} *)
 
+type value =
+  | Integer
+  (** Integers (in base 10 notation), e.g. ["123456789"] *)
+  | Rational
+  (** Rational (using quotient notation with '/'), e.g. ["123/456"] *)
+  | Real
+  (** Real (using decimal floating point notation with exponent),
+      e.g. ["123.456e789"] *)
+  | Binary
+  (** Bitvector in binary notation, e.g. ["0b011010111010"] *)
+  | Hexadecimal
+  (** Bitvector in hexadecimal notation, e.g. ["0x9a23e5f"] *)
+
 type namespace =
   | Var
   (** Namespace for variables. Not all variables are necessarily in
@@ -19,6 +32,12 @@ type namespace =
   (** Namespace used for naming declarations/definitions/statements... *)
   | Module of string
   (** Namespaces defined by modules (used for instance in dedukti). *)
+  | Value of value
+  (** The identifier is a value, encoded in a string. Examples include
+      arithmetic constants (e.g. ["123456", "123/456", "123.456e789"]),
+      bitvectors (i.e. binary notation), etc... *)
+(** Namespaces, used to record the lexical scop in which an identifier
+    was parsed. *)
 
 type t = {
   ns : namespace;

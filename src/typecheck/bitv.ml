@@ -65,6 +65,12 @@ module Smtlib = struct
       | Invalid_bin_char of char
       | Invalid_hex_char of char
 
+    let check_bin env ast = function
+      | '0' | '1' -> ()
+      | c ->
+        let err = Invalid_bin_char c in
+        raise (Type.Typing_error (err, env, ast))
+
     let hex_to_bin env ast = function
       | '0' -> "0000"
       | '1' -> "0001"
@@ -86,26 +92,20 @@ module Smtlib = struct
         let err = Invalid_hex_char c in
         raise (Type.Typing_error (err, env, ast))
 
-    let parse_lit env ast s =
-      if String.length s <= 2 then None
-      else match s.[0], s.[1] with
-        | '#', 'b' ->
-          let s' = String.sub s 2 (String.length s - 2) in
-          String.iter (function
-              | '0' | '1' -> ()
-              | c ->
-                let err = Invalid_bin_char c in
-                raise (Type.Typing_error (err, env, ast))
-            ) s';
-          Some (Type.Term (T.mk_bitv s'))
-        | '#', 'x' ->
-          let b = Bytes.create ((String.length s - 2) * 4) in
-          String.iteri (fun i c ->
-              Bytes.blit_string (hex_to_bin env ast c) 0 b (i * 4) 4
-            ) s;
-          let s' = Bytes.to_string b in
-          Some (Type.Term (T.mk_bitv s'))
-        | _ -> None
+    let parse_binary env ast s =
+      assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'b');
+      let s' = String.sub s 2 (String.length s - 2) in
+      String.iter (check_bin env ast) s';
+      Type.Term (T.mk_bitv s')
+
+    let parse_hexa env ast s =
+      assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'x');
+      let b = Bytes.create ((String.length s - 2) * 4) in
+      String.iteri (fun i c ->
+          Bytes.blit_string (hex_to_bin env ast c) 0 b (i * 4) 4
+        ) s;
+      let s' = Bytes.to_string b in
+      Type.Term (T.mk_bitv s')
 
     let parse_extended_lit env ast s n =
       assert (String.length s >= 2);
@@ -144,8 +144,8 @@ module Smtlib = struct
             aux h r r_l l'
       in
       match split_id id with
-        | h :: r -> aux h r (List.length r) l
-        | r -> k r
+      | h :: r -> aux h r (List.length r) l
+      | r -> k r
 
     let parse_int env ast s =
       try int_of_string s
@@ -177,6 +177,13 @@ module Smtlib = struct
                   (fun () -> Type.Ty (Ty.bitv (parse_int env ast n_s)))
               | _ -> assert false);
         ] (fun _ -> None)
+      (* values *)
+      | Type.Id { Id.ns = Id.Value Id.Binary; name; } ->
+        Base.make_op0 (module Type) env ast name args
+          (fun () -> parse_binary env ast name)
+      | Type.Id { Id.ns = Id.Value Id.Hexadecimal; name; } ->
+        Base.make_op0 (module Type) env ast name args
+          (fun () -> parse_hexa env ast name)
       (* terms *)
       | Type.Id { Id.ns = Id.Term; name; } ->
         parse_id env ast name [
@@ -262,8 +269,6 @@ module Smtlib = struct
               app2 env ast args "bvult" T.bvult
             | ["concat"] ->
               app2 env ast args "concat" T.bitv_concat
-            | [s] ->
-              parse_lit env ast s
             | _ -> None
           )
       | _ -> None

@@ -1,6 +1,13 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+type value =
+  | Integer
+  | Rational
+  | Real
+  | Binary
+  | Hexadecimal
+
 type namespace =
   | Var
   | Sort
@@ -8,6 +15,7 @@ type namespace =
   | Attr
   | Decl
   | Module of string
+  | Value of value
 
 type t = {
   ns : namespace;

@@ -50,6 +50,18 @@ val fold_right_assoc : ('a -> 'a -> 'a) -> 'a list -> 'a
 (** Fold application of a right-associative function on a list.
     @raise Invalid_argument if the list is empty. *)
 
+val make_chain : (_, Dolmen.Term.t list, _) helper
+(** Ensures the list of arguments is at least of size 2 (used for chainable
+    symbols). *)
+
+val map_chain :
+  (module Tff_intf.S with type T.t = 't) ->
+  ('t -> 't -> 't) -> 't list -> 't
+(** Map a function on succesive pairs of elements in the arguments lists,
+    and build the resulting conjunction.
+    [map_chain (module Type) mk \[t1; t2; ..; tn\]]
+    is
+    [Type.T._and \[mk t1 t2; mk t2 t3; ..\]] *)
 
 (** {2 Languages base builtins} *)
 
