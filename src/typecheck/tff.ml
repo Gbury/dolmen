@@ -114,7 +114,7 @@ module Make
 
     let get t id =
       let s = Id.(id.name) in
-      match S.klist_to_list (I.retrieve ~limit:0 t s) with
+      match List.of_seq (I.retrieve ~limit:0 t s) with
       | [l] -> l
       | [] -> []
       | _ -> assert false
@@ -136,7 +136,7 @@ module Make
     (** Return a list of suggestions for an identifier. *)
     let suggest ~limit id t =
       let s = Id.(id.name) in
-      let l = S.klist_to_list (I.retrieve ~limit t s) in
+      let l = List.of_seq (I.retrieve ~limit t s) in
       List.flatten @@ List.map (List.map fst) l
 
   end
