@@ -2,13 +2,14 @@
 (ocamllex (modules lexSmtlib))
 
 (menhir
- (flags (--explain --table --external-tokens Tokens_smtlib tokens_smtlib.mly))
- (modules parseSmtlib)
+ (flags (--only-tokens))
+ (modules tokens_smtlib)
 )
 
 (menhir
- (flags (--only-tokens))
- (modules tokens_smtlib)
+ (flags (--explain --table --external-tokens Tokens_smtlib))
+ (modules tokens_smtlib parseSmtlib)
+ (merge_into parseSmtlib)
 )
 
 (library
