@@ -2,14 +2,16 @@
 (ocamllex (modules lexiCNF))
 
 (menhir
- (flags (--explain --table --external-tokens Tokens_iCNF tokens_iCNF.mly))
- (modules parseiCNF)
-)
-
-(menhir
  (flags (--only-tokens))
  (modules tokens_iCNF)
 )
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_iCNF))
+ (modules tokens_iCNF parseiCNF)
+ (merge_into parseiCNF)
+)
+
 
 (library
   (name           dolmen_icnf)

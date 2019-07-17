@@ -2,14 +2,15 @@
 (ocamllex (modules lexTptp))
 
 (menhir
- (infer true)
- (flags (--explain --table --external-tokens Tokens_tptp tokens_tptp.mly))
- (modules parseTptp)
+ (flags (--only-tokens))
+ (modules tokens_tptp)
 )
 
 (menhir
- (flags (--only-tokens))
- (modules tokens_tptp)
+ (infer true)
+ (flags (--explain --table --external-tokens Tokens_tptp))
+ (modules tokens_tptp parseTptp)
+ (merge_into parseTptp)
 )
 
 (library

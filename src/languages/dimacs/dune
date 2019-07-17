@@ -2,13 +2,14 @@
 (ocamllex (modules lexDimacs))
 
 (menhir
- (flags (--explain --table --external-tokens Tokens_dimacs tokens_dimacs.mly))
- (modules parseDimacs)
+ (flags (--only-tokens))
+ (modules tokens_dimacs)
 )
 
 (menhir
- (flags (--only-tokens))
- (modules tokens_dimacs)
+ (flags (--explain --table --external-tokens Tokens_dimacs))
+ (modules tokens_dimacs parseDimacs)
+ (merge_into parseDimacs)
 )
 
 (library

@@ -1,8 +1,10 @@
 {1 Dolmen}
 
+
 {2 License}
 
 This code is free, under the BSD license.
+
 
 {2 Contents}
 
@@ -19,6 +21,7 @@ for these languages when provided with an implementation that meets the requirem
 To that effect, dolmen mainly provides functors that take an adequate implementation
 of terms and top-level directives, and then return parsers for various languages.
 
+
 {4 Language classes}
 
 Some languages have enough similarities in either synatx or purpose to be packed
@@ -26,17 +29,18 @@ into classes. Currently, the only class available is the {!Logic} class that reg
 languages used in formal proof.
 
 {!modules:
-Logic
+Dolmen_class.Logic
 }
 
 The following modules synthesize the implementation requirements for language classes:
 
 {!modules:
-Id_intf
-Term_intf
-Stmt_intf
-Location_intf
+Dolmen_intf.Id
+Dolmen_intf.Term
+Dolmen_intf.Stmt
+Dolmen_intf.Location
 }
+
 
 {4 Standard implementations}
 
@@ -44,30 +48,32 @@ The following modules define standard implementations that can be used to direct
 instantiate the parser functors.
 
 {!modules:
-Id
-Term
-Normalize
-Statement
-ParseLocation
+Dolmen_std.Id
+Dolmen_std.Term
+Dolmen_std.Normalize
+Dolmen_std.Statement
+Dolmen_std.ParseLocation
 }
+
 
 {4 Language parsers}
 
 Individual language parsers are available through the following modules:
 
 {!modules:
-Dimacs
-ICNF
-Smtlib
-Tptp
-Zf
+Dolmen_dimacs
+Dolmen_icnf
+Dolmen_smtlib
+Dolmen_tptp
+Dolmen_zf
 }
 
 These parsers all create modules with the following interface:
 
- {!modules:
- Language_intf
- }
+{!modules:
+Dolmen_intf.Language
+}
+
 
 {2 Index}
 
