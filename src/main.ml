@@ -47,7 +47,7 @@ let handle_exn = function
 
 let rec fold gen f acc =
   match gen () with
-  | None | Some { Statement.descr = Statement.Exit } ->
+  | None | Some { Statement.descr = Statement.Exit; _ } ->
     acc
   | exception e ->
     let () = handle_exn e in
