@@ -7,7 +7,7 @@ BINDIR=_build/install/default/bin
 all: dune
 
 dune:
-	dune build --profile release
+	dune build -p dolmen
 
 bin: dune
 	cp $(BINDIR)/dolmen ./

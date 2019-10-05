@@ -38,9 +38,11 @@ install:
   # Install dependencies
   - ${HOME}/opam pin add --no-action dolmen .
   - ${HOME}/opam install --deps-only dolmen.dev
+  - ${HOME}/opam pin add --no-action dolmen-export .
+  - ${HOME}/opam install --deps-only dolmen-export.dev
 script:
   # Build and launch the tests
   - if [ "$TO_TEST" = "tests" ]; then make bin && make test; fi
   # Try and install the package with opam
-  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev; fi
+  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev; ${HOME}/opam install dolmen-export.dev; fi
 
