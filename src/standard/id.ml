@@ -15,8 +15,8 @@ type t = {
 }
 
 let hash = Hashtbl.hash
-let compare = Pervasives.compare
-let equal = Pervasives.(=)
+let compare = Stdlib.compare
+let equal = Stdlib.(=)
 
 let pp b { name ; _ } =
   Printf.bprintf b "%s" name

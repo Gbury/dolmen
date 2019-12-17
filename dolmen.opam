@@ -1,7 +1,8 @@
 opam-version: "2.0"
 name: "dolmen"
 version: "dev"
-maintainer: "guillaume.bury@gmail.com"
+maintainer: "Guillaume Bury <guillaume.bury@gmail.com>"
+authors: "Guillaume Bury <guillaume.bury@gmail.com>"
 license: "BSD-2-clauses"
 build: [
   ["dune" "subst"] {pinned}
@@ -12,12 +13,13 @@ depends: [
   "menhir" {>= "20151005"}
   "dune" {build}
 ]
+
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
 homepage: "https://github.com/Gbury/dolmen"
-doc: "http://gbury.github.io/dolmen"
-bug-reports: "https://github.com/Gbury/dolmen/issues"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
-authors: "Guillaume Bury"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+
+doc: "http://gbury.github.io/dolmen"
 synopsis: "A parser library"
 description:
 "Dolmen is a parser library. It currently targets languages used in automated theorem provers,

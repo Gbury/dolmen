@@ -202,13 +202,13 @@ let rec compare_list cmp l l' =
 let rec compare t t' =
   match t.term, t'.term with
   | Symbol s, Symbol s' -> Id.compare s s'
-  | Builtin b, Builtin b' -> Pervasives.compare b b'
+  | Builtin b, Builtin b' -> Stdlib.compare b b'
   | Colon (t1, t2), Colon (t1', t2') ->
     compare_list compare [t1; t2] [t1'; t2']
   | App (f, l), App(f', l') ->
     compare_list compare (f :: l) (f' :: l')
   | Binder (b, vars, t), Binder (b', vars', t') ->
-    begin match Pervasives.compare b b' with
+    begin match Stdlib.compare b b' with
       | 0 ->
         begin match compare_list compare vars vars' with
           | 0 -> compare t t'
