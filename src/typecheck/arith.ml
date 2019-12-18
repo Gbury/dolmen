@@ -125,15 +125,6 @@ module Smtlib = struct
         (Ty : Ty with type t = Type.Ty.t)
         (T : T with type t = Type.T.t) = struct
 
-      let app1 env ast args name mk =
-        Base.make_op1 (module Type) env ast name args
-          (fun t -> Type.Term (mk (Type.parse_term env t)))
-
-      let app2 env ast args name mk =
-        Base.make_op2 (module Type) env ast name args
-          (fun (a, b) ->
-             Type.Term (mk (Type.parse_term env a) (Type.parse_term env b)))
-
       let app_left env ast args name mk =
         Base.make_assoc (module Type) env ast name args
           (fun l -> Type.Term (Base.fold_left_assoc mk (List.map (Type.parse_term env) l)))

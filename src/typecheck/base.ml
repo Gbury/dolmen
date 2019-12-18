@@ -88,7 +88,7 @@ let fold_right_assoc mk = function
 
 let make_chain = make_assoc
 
-let rec map_chain
+let map_chain
     (type t) (module Type: Tff_intf.S with type T.t = t) mk args =
   let rec aux mk = function
     | [] -> assert false
@@ -265,13 +265,13 @@ module Zf = struct
       (Type : Tff_intf.S)
       (Tag : Tag with type 'a t = 'a Type.Tag.t) = struct
 
-    let parse env ast s args =
+    let parse _env _ast s args =
       match s with
       | Type.Id id when Id.equal id Id.rwrt_rule ->
         Some (Type.Tags [Type.Any (Tag.rwrt, ())])
       | Type.Id { Id.name = "infix"; ns = Id.Term } ->
         begin match args with
-          | [ { Term.term = Term.Symbol { Id.name; _ } } ] ->
+          | [ { Term.term = Term.Symbol { Id.name; _ }; _ } ] ->
             Some (Type.Tags [
                 Type.Any (Tag.name, Tag.exact name);
                 Type.Any (Tag.pos, Tag.infix);
@@ -280,7 +280,7 @@ module Zf = struct
         end
       | Type.Id { Id.name = "prefix"; ns = Id.Term } ->
         begin match args with
-          | [ { Term.term = Term.Symbol { Id.name; _ } } ] ->
+          | [ { Term.term = Term.Symbol { Id.name; _ }; _ } ] ->
             Some (Type.Tags [
                 Type.Any (Tag.name, Tag.exact name);
                 Type.Any (Tag.pos, Tag.prefix);

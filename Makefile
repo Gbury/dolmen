@@ -19,6 +19,6 @@ doc:
 	dune build $(FLAGS) @doc
 
 clean:
-	$(COMP) clean && rm -f $(NAME)
+	$(COMP) clean
 
 .PHONY: all dune bin test doc clean

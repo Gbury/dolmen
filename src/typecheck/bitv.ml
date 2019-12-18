@@ -130,7 +130,7 @@ module Smtlib = struct
 
     let split_id = Dolmen_std.Misc.split_on_char '\000'
 
-    let rec parse_id env ast id l k =
+    let parse_id env ast id l k =
       let rec aux h r r_l = function
         | [] -> k (h :: r)
         | (s, n, f) :: l' ->
