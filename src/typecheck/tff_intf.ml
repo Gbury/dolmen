@@ -16,6 +16,7 @@ module type S = sig
   module T: Dolmen_intf.Term.Tff
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
+     and type ty_const := Ty.Const.t
      and type 'a tag := 'a Tag.t
 
   (** {2 Type definitions} *)
@@ -52,6 +53,7 @@ module type S = sig
     | Expected of string * res option
     | Bad_op_arity of string * int * int
     | Bad_ty_arity of Ty.Const.t * int
+    | Bad_cstr_arity of T.Cstr.t * int * int
     | Bad_term_arity of T.Const.t * int * int
     | Var_application of T.Var.t
     | Ty_var_application of Ty.Var.t
@@ -62,11 +64,16 @@ module type S = sig
     | Cannot_tag_ttype
     | Cannot_find of Dolmen.Id.t
     | Type_var_in_type_constructor
+    | Missing_destructor of Dolmen.Id.t
     | Unhandled_ast (**)
   (** The list of potential errors that can arise during typechecking. *)
 
   exception Typing_error of err * env * Dolmen.Term.t
   (** Exception raised when a typing error is encountered. *)
+
+  exception Not_well_founded_datatypes of Dolmen.Statement.inductive list
+  (** Exception raised when a list of inductive datatypes could not be proved to
+      be well-founded. *)
 
   type 'a typer = env -> Dolmen.Term.t -> 'a
   (** A general type for typers. Takes a local environment and the current untyped term,
@@ -145,6 +152,10 @@ module type S = sig
      | `Term_def of Dolmen.Id.t * tag list * Ty.Var.t list * T.Var.t list * T.t
      ]) typer
   (** Parse a definition *)
+
+  val inductives :
+    env -> ?attr:Dolmen.Term.t -> Dolmen.Statement.inductive list -> Ty.Const.t list
+  (** Typecheck a list of mutually recursive type declarations. *)
 
   val parse : T.t typer
   (** Parse a formula *)

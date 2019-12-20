@@ -8,13 +8,9 @@
 
 (** {2 Signature for Typecheked types} *)
 
+(** Signature required by types for typing first-order
+    polymorphic terms. *)
 module type Tff = sig
-
-  (** Signature required by types for typing first-order
-      polymorphic terms. *)
-
-
-  (** {4 Abstract types} *)
 
   type t
   (** The type of types. *)
@@ -71,6 +67,9 @@ module type Tff = sig
 
   end
 
+  val prop : t
+  (** The type of propositions *)
+
   val of_var : Var.t -> t
   (** Create a type from a variable. *)
 
@@ -79,48 +78,6 @@ module type Tff = sig
 
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
-
-
-  (** {4 Concrete types} *)
-
-  val prop : t
-  (** The type of propositions *)
-
-  (** Algebraic types, aka sum types, aka datatypes *)
-  module Adt : sig
-
-    type cstr
-    (** An algebraic type constructor. Note that such constructors are used to
-        build terms, and not types, e.g. consider the following:
-        [type 'a list = Nil | Cons of 'a * 'a t], then [Nil] and [Cons] are the
-        constructors, while [list] would the a constant of arity 1 used to
-        name the type. *)
-
-    val cstr : string -> cstr
-    (** Create a constructor from its name. It can later be bound to a specific
-        type when the `define` function is called. *)
-
-    type descr = (cstr * t list) list
-    (** A description of an algebraic type, which is a list of cases.
-        A case of an algebraic type in the context of a type definition. Each case
-        contain a constructors and its associated arguments' types.
-        In the exmaple of lists, we can distinguish two cases:
-        - [Nil], which is a constructor with no arguments
-        - [Cons of 'a * 'a list], which is a constructor with two arguments. These two
-          arguments can contain type variables as well as concrete types. *)
-
-  end
-
-  val define_adt : t -> Adt.descr -> unit
-  (** Define the given type with the associated defintion description.
-      TODO: specify the raised exception for multiple definitions. *)
-
-  val inspect : t -> [
-      | `Abstract
-      | `Algebraic of Adt.descr
-    ]
-  (** Inspect the definition of a given type. Useful for isntance for deciding
-      completeness of pattern matching, or legality of field access for records. *)
 
 end
 

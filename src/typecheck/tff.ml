@@ -15,11 +15,13 @@ module type Warn = sig
 
   type term
   type term_var
+  type term_cstr
   type term_const
 
   type binding = [
     | `Not_found
     | `Ty of ty_const
+    | `Cstr of term_cstr
     | `Term of term_const
   ]
 
@@ -31,6 +33,9 @@ module type Warn = sig
   val error_in_attribute : ParseLocation.t -> exn -> unit
 
   val not_found : Id.t -> (int -> Id.t list) -> unit
+
+  val superfluous_destructor :
+    ParseLocation.t -> Id.t -> Id.t -> term_const -> unit
 
 end
 
@@ -44,6 +49,7 @@ module Make
     (T: Dolmen_intf.Term.Tff
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
+      and type ty_const := Ty.Const.t
       and type 'a tag := 'a Tag.t)
     (W : Warn
      with type ty := Ty.t
@@ -51,6 +57,7 @@ module Make
       and type ty_const := Ty.Const.t
       and type term := T.t
       and type term_var := T.Var.t
+      and type term_cstr := T.Cstr.t
       and type term_const := T.Const.t
     )
 = struct
@@ -65,9 +72,14 @@ module Make
   (* Log&Module Init *)
   (* ************************************************************************ *)
 
-  let get_loc =
-    let default_loc = ParseLocation.mk "<?>" 0 0 0 0 in
-    (fun t -> match t.Term.loc with Some l -> l | None -> default_loc)
+  let default_loc = ParseLocation.mk "<?>" 0 0 0 0
+
+  let or_default_loc = function
+    | Some loc -> loc
+    | None -> default_loc
+
+  let get_loc t =
+    match t.Term.loc with Some l -> l | None -> default_loc
 
   (* Module alias to avoid confusing untyped Terms and typed terms *)
   module Ast = Term
@@ -77,6 +89,7 @@ module Make
   module F = Map.Make(T.Var)
   module R = Hashtbl.Make(Ty.Const)
   module S = Hashtbl.Make(T.Const)
+  module U = Hashtbl.Make(T.Cstr)
 
   (* Convenience functions *)
   (* ************************************************************************ *)
@@ -146,8 +159,7 @@ module Make
 
   module H = struct
 
-    (** Fuzzy hashtables are just references to fuzzy maps.
-        The reference is registered on the stack to allow backtracking. *)
+    (** Fuzzy hashtables are just references to fuzzy maps. *)
     let create () = ref M.empty
 
     let find r id = M.find id !r
@@ -223,11 +235,13 @@ module Make
   (* ************************************************************************ *)
 
   (* Global identifier table; stores declared types and aliases.
-     Ttype location table: stores reasons for typing of type constructors
+     Global env           : association between dolmen ids and types/terms constants
+     Ttype location table : stores reasons for typing of type constructors
      Const location table : stores reasons for typing of constants *)
   let global_env = H.create ()
   let ttype_locs = R.create 4013
   let const_locs = S.create 4013
+  let cstrs_locs = U.create 4013
 
   let find_global id =
     try H.find global_env id
@@ -248,6 +262,11 @@ module Make
   let decl_term id c reason =
     S.add const_locs c reason;
     add_global id (`Term c)
+
+  let decl_cstr id c reason =
+    U.add cstrs_locs c reason;
+    add_global id (`Cstr c)
+
 
   (* Local Environment *)
   (* ************************************************************************ *)
@@ -369,6 +388,7 @@ module Make
     | Expected of string * res option
     | Bad_op_arity of string * int * int
     | Bad_ty_arity of Ty.Const.t * int
+    | Bad_cstr_arity of T.Cstr.t * int * int
     | Bad_term_arity of T.Const.t * int * int
     | Var_application of T.Var.t
     | Ty_var_application of Ty.Var.t
@@ -379,10 +399,14 @@ module Make
     | Cannot_tag_ttype
     | Cannot_find of Id.t
     | Type_var_in_type_constructor
+    | Missing_destructor of Id.t
     | Unhandled_ast
 
   (* Exception for typing errors *)
   exception Typing_error of err * env * Ast.t
+
+  (* Exception for not well-dounded datatypes definitions. *)
+  exception Not_well_founded_datatypes of Dolmen.Statement.inductive list
 
     (* TOOD: uncomment this code
   (* Creating explanations *)
@@ -410,6 +434,9 @@ module Make
 
   let _bad_term_arity env f (n1, n2) t =
     raise (Typing_error (Bad_term_arity (f, n1, n2), env, t))
+
+  let _bad_cstr_arity env c (n1, n2) t =
+    raise (Typing_error (Bad_cstr_arity (c, n1, n2), env, t))
 
   let _ty_var_app env v t =
     raise (Typing_error (Ty_var_application v, env, t))
@@ -463,6 +490,14 @@ module Make
       _wrap3 env ast T.apply f ty_args t_args
     else
       _bad_term_arity env f (n1, n2) ast
+
+  let term_apply_cstr env ast c ty_args t_args =
+    let n1, n2 = T.Cstr.arity c in
+    if n1 = List.length ty_args &&
+       n2 = List.length t_args then
+      _wrap3 env ast T.apply_cstr c ty_args t_args
+    else
+      _bad_cstr_arity env c (n1, n2) ast
 
   let make_eq env ast_term a b =
     _wrap2 env ast_term T.eq a b
@@ -727,6 +762,8 @@ module Make
       begin match find_global s with
         | `Ty f ->
           parse_app_ty env ast f args
+        | `Cstr c ->
+          parse_app_cstr env ast c args
         | `Term f ->
           parse_app_term env ast f args
         | `Not_found ->
@@ -757,6 +794,17 @@ module Make
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
     Term (term_apply env ast f ty_args t_args)
+
+  and parse_app_cstr env ast c args =
+    let n_args = List.length args in
+    let n_ty, n_t = T.Cstr.arity c in
+    let ty_l, t_l =
+      if n_args = n_ty + n_t then take_drop n_ty args
+      else _bad_cstr_arity env c (n_ty, n_t) ast
+    in
+    let ty_args = List.map (parse_ty env) ty_l in
+    let t_args = List.map (parse_term env) t_l in
+    Term (term_apply_cstr env ast c ty_args t_args)
 
   and parse_ite env ast = function
     | [c; a; b] ->
@@ -860,6 +908,108 @@ module Make
         | Term body -> `Term (ty_args, t_args, body)
         | res -> _expected env "term or a type" ast (Some res)
       end
+
+  let parse_inductive_arg env = function
+    | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ }, e); _ } ->
+      let ty = parse_ty env e in
+      ty, Some s
+    | t ->
+      let ty = parse_ty env t in
+      ty, None
+
+
+  (* Typechecking mutually recursive datatypes *)
+  (* ************************************************************************ *)
+
+  let appears_in s t =
+    let mapper =
+      { Ast.unit_mapper with
+        symbol = (fun _ ~attr:_ ~loc:_ id ->
+            if Id.equal s id then raise Exit);
+      }
+    in
+    try Ast.map mapper t; false
+    with Exit -> true
+
+  let rec check_well_founded l =
+    match (l : Statement.inductive list) with
+    | [] -> ()
+    | _ ->
+      let has_progressed = ref false in
+      let l' = List.filter (fun { Statement.cstrs; _ } ->
+          let b = List.exists (fun (_, args) ->
+              List.for_all (fun t ->
+                  not (List.exists (fun (i : Statement.inductive) ->
+                      appears_in i.Statement.id t
+                    ) l)
+                ) args
+            ) cstrs in
+          if b then has_progressed := true;
+          b
+        ) l in
+      if !has_progressed then
+        check_well_founded l'
+      else
+        raise (Not_well_founded_datatypes l')
+
+  let inductive env ty_cst { Statement.id; vars; cstrs; loc; } =
+    let loc = or_default_loc loc in
+    (* Parse the type variables *)
+    let ttype_vars = List.map (parse_ttype_var env) vars in
+    let ty_vars, env = add_type_vars env ttype_vars in
+    (* Parse the constructors *)
+    let cstrs_with_ids = List.map (fun (id, args) ->
+        id, List.map (fun t ->
+            let ty, dstr = parse_inductive_arg env t in
+            t, ty, dstr
+          ) args
+      ) cstrs in
+    (* Constructors with strings for names *)
+    let cstrs_with_strings = List.map (fun (id, args) ->
+        Id.full_name id, List.map (fun (_, ty, dstr) ->
+            ty, Option.map Id.full_name dstr
+          ) args
+      ) cstrs_with_ids in
+    (* Call the T module to define the adt and get the typed constructors
+       and destructors. *)
+    let defined_cstrs = T.define_adt ty_cst ty_vars cstrs_with_strings in
+    (* Register the constructors and destructors in the global env. *)
+    List.iter2 (fun (cid, pargs) (c, targs) ->
+        let reason = Declared loc in
+        decl_cstr cid c reason;
+        List.iter2 (fun (t, _, dstr) (_, o) ->
+            match dstr, o with
+            | None, None -> ()
+            | None, Some c -> W.superfluous_destructor loc id cid c
+            | Some id, Some const -> decl_term id const reason
+            | Some id, None ->
+              raise (Typing_error (Missing_destructor id, env, t))
+          ) pargs targs
+      ) cstrs_with_ids defined_cstrs
+
+
+  let inductives env ?attr l =
+    let tags = match attr with
+      | None -> []
+      | Some a -> parse_attr_and env a
+    in
+    (* Check well-foundedness *)
+    check_well_founded l;
+    (* First create (in the global env) the type const for each adt *)
+    let tys = List.map (fun { Statement.id; vars; loc; _ } ->
+        let n = List.length vars in
+        let c = Ty.Const.mk (Id.full_name id) n in
+        List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
+        decl_ty_cstr id c (Declared (or_default_loc loc));
+        c
+      ) l in
+    (* Parse each definition
+       TODO: parse (and thus define them with T) in the topological order
+             defined by the well-founded check ? *)
+    List.iter2 (inductive env) tys l;
+    (* Return the defined types *)
+    tys
+
 
   (* High-level parsing functions *)
   (* ************************************************************************ *)

@@ -440,10 +440,22 @@ let id_mapper = {
   app = (fun m ~attr ~loc f args ->
       set_attrs (List.map (map m) attr) @@ apply ?loc (map m f) (List.map (map m) args));
   binder = (fun m ~attr ~loc b vars body ->
-      set_attrs (List.map (map m) attr) @@ mk_bind ?loc b vars (map m body));
+      set_attrs (List.map (map m) attr) @@ mk_bind ?loc b (List.map (map m) vars) (map m body));
   pmatch = (fun m ~attr ~loc e l ->
       set_attrs (List.map (map m) attr) @@ match_ ?loc (map m e)
         (List.map (fun (pat, body) -> (map m pat, map m body)) l));
 }
 
-
+let unit_mapper = {
+  symbol = (fun m ~attr ~loc:_ _ -> List.iter (map m) attr);
+  builtin = (fun m ~attr ~loc:_ _ -> List.iter (map m) attr);
+  colon = (fun m ~attr ~loc:_ u v ->
+      List.iter (map m) attr; map m u; map m v);
+  app = (fun m ~attr ~loc:_ f args ->
+      List.iter (map m) attr; map m f; List.iter (map m) args);
+  binder = (fun m ~attr ~loc:_ _ vars body ->
+      List.iter (map m) attr; List.iter (map m) vars; map m body);
+  pmatch = (fun m ~attr ~loc:_ e l ->
+      List.iter (map m) attr; map m e;
+      List.iter (fun (pat, body) -> map m pat; map m body) l);
+}

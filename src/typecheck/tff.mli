@@ -16,11 +16,13 @@ module type Warn = sig
 
   type term
   type term_var
+  type term_cstr
   type term_const
 
   type binding = [
     | `Not_found
     | `Ty of ty_const
+    | `Cstr of term_cstr
     | `Term of term_const
   ]
 
@@ -33,6 +35,9 @@ module type Warn = sig
 
   val not_found : Dolmen.Id.t -> (int -> Dolmen.Id.t list) -> unit
 
+  val superfluous_destructor :
+    Dolmen.ParseLocation.t -> Dolmen.Id.t -> Dolmen.Id.t -> term_const -> unit
+
 end
 
 module Make
@@ -42,6 +47,7 @@ module Make
     (T: Dolmen_intf.Term.Tff
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
+      and type ty_const := Ty.Const.t
       and type 'a tag := 'a Tag.t)
     (W : Warn
      with type ty := Ty.t
@@ -49,6 +55,7 @@ module Make
       and type ty_const := Ty.Const.t
       and type term := T.t
       and type term_var := T.Var.t
+      and type term_cstr := T.Cstr.t
       and type term_const := T.Const.t
     )
   : S with module Tag = Tag

@@ -218,6 +218,9 @@ type 'a mapper = {
 val id_mapper : t mapper
 (** The identity mapper: maps any term to itself. *)
 
+val unit_mapper : unit mapper
+(** The unit mapper, i.e. an iterator. *)
+
 val map : 'a mapper -> t -> 'a
 (** Apply a mapper to a term. *)
 

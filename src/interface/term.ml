@@ -244,7 +244,8 @@ module type Tff = sig
 
   type ty
   type ty_var
-  (** The representation of term types and type variables. *)
+  type ty_const
+  (** The representation of term types, type variables, and type constants. *)
 
   type 'a tag
   (** The type of tags used to annotate arbitrary terms. *)
@@ -288,7 +289,7 @@ module type Tff = sig
     (** An equality function on term constants. Should be compatible with the hash function. *)
 
     val arity : t -> int * int
-    (** Returns the arity of *)
+    (** Returns the arity of a term constant. *)
 
     val mk : string -> ty_var list -> ty list -> ty -> t
     (** Create a polymorphic constant symbol. *)
@@ -297,6 +298,56 @@ module type Tff = sig
     (** Tag a constant. *)
 
   end
+
+  (** A module for Algebraic datatype constructors. *)
+  module Cstr : sig
+
+    type t
+    (** An algebraic type constructor. Note that such constructors are used to
+        build terms, and not types, e.g. consider the following:
+        [type 'a list = Nil | Cons of 'a * 'a t], then [Nil] and [Cons] are the
+        constructors, while [list] would the a constant of arity 1 used to
+        name the type. *)
+
+    val hash : t -> int
+    (** A hash function for adt constructors, should be suitable to create hashtables. *)
+
+    val equal : t -> t -> bool
+    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+
+    val arity : t -> int * int
+    (** Returns the arity of a constructor. *)
+
+  end
+
+  val define_adt :
+    ty_const -> ty_var list ->
+    (string * (ty * string option) list) list ->
+    (Cstr.t * (ty * Const.t option) list) list
+  (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
+      the type variables [ty_vars] as defining an algebraic datatypes with constructors
+      [cstrs]. [cstrs] is a list where each elements of the form [(name, l)] defines
+      a new constructor for the algebraic datatype, with the given name. The list [l]
+      defines the arguments to said constructor, each element of the list giving the
+      type [ty] of the argument expected by the constructor (which may contain any of the type
+      variables in [vars]), as well as an optional destructor name. If the construcotr name
+      is [Some s], then the ADT definition also defines a function that acts as destructor
+      for that particular field. This polymorphic function is expected to takes as arguments
+      as many types as there are variables in [vars], an element of the algebraic datatype
+      being defined, and returns a value for the given field.
+      For instance, consider the following definition for polymorphic lists:
+      [define_adt list \[ty_var_a\] \[
+        "nil", \[\];
+        "const", \[
+          (Ty.of_var ty_var_a , Some "hd");
+          (ty_list_a          , Some "tl");
+          \];
+       \]
+      ]
+      This definition defines the usual type of polymorphic linked lists, as well as two
+      destructors "hd" and "tl". "hd" would have type [forall alpha. alpha list -> a], and
+      be the partial function returning the head of the list.
+      *)
 
   exception Wrong_type of t * ty
   (** Exception raised in case of typing error during term construction.
@@ -308,6 +359,9 @@ module type Tff = sig
 
   val apply : Const.t -> ty list -> t list -> t
   (** Polymorphic application. *)
+
+  val apply_cstr : Cstr.t -> ty list -> t list -> t
+  (** Polymorphic application of a constructor. *)
 
   val _true : t
   val _false : t
