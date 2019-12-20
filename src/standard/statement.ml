@@ -10,6 +10,7 @@ type inductive = {
   vars : term list;
   cstrs : (Id.t * term list) list;
   loc : location option;
+  attr : term option;
 }
 
 (* Description of statements. *)
@@ -38,7 +39,7 @@ type descr =
 
   | Def of Id.t * term
   | Decl of Id.t * term
-  | Inductive of inductive
+  | Inductive of inductive list
 
   | Get_proof
   | Get_unsat_core
@@ -98,15 +99,17 @@ let rec pp_descr b = function
 
   | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
   | Decl (id, t) -> Printf.bprintf b "decl: %a : %a" Id.pp id Term.pp t
-  | Inductive i ->
-    Printf.bprintf b "Inductive(%d): %a, %a\n"
-      (List.length i.cstrs) Id.pp i.id
-      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
-    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
-      ~pp:(fun b (cstr, l) -> Printf.bprintf b "%a: %a"
-              Id.pp cstr
-              (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) l
-          ) b i.cstrs
+  | Inductive l ->
+    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:(fun b i ->
+        Printf.bprintf b "Inductive(%d): %a, %a\n"
+          (List.length i.cstrs) Id.pp i.id
+          (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
+        Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
+          ~pp:(fun b (cstr, l) -> Printf.bprintf b "%a: %a"
+                  Id.pp cstr
+                  (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) l
+              ) b i.cstrs
+      ) b l
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
@@ -170,15 +173,19 @@ let rec print_descr fmt = function
     Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
   | Decl (id, t) ->
     Format.fprintf fmt "@[<hov 2>decl:@ %a :@ %a@]" Id.print id Term.print t
-  | Inductive i ->
-    Format.fprintf fmt "@[<hov 2>Inductive(%d) %a@ %a@\n%a@]"
-      (List.length i.cstrs) Id.print i.id
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) i.vars
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@\n"
-         ~print:(fun fmt (cstr, l) ->
-             Format.fprintf fmt "%a: %a" Id.print cstr (
-               Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
-           ) l)) i.cstrs
+  | Inductive l ->
+    let print fmt i =
+      Format.fprintf fmt "@[<hov 2>Inductive(%d) %a@ %a@\n%a@]"
+        (List.length i.cstrs) Id.print i.id
+        (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) i.vars
+        (Misc.print_list ~print_sep:Format.fprintf ~sep:"@\n"
+           ~print:(fun fmt (cstr, l) ->
+               Format.fprintf fmt "%a: %a" Id.print cstr (
+                 Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
+               ) l)) i.cstrs
+    in
+    Format.fprintf fmt "@[<v>%a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
@@ -277,10 +284,8 @@ let type_def ?loc id args body =
   mk ?loc (Def (id, t))
 
 let datatypes ?loc l =
-  let l' = List.map (fun (id, vars, cstrs) ->
-      mk ?loc (Inductive {id; vars; cstrs; loc; })
-    ) l in
-  pack ?loc l'
+  let l' = List.map (fun (id, vars, cstrs) -> {id; vars; cstrs; loc; attr = None;}) l in
+  mk ?loc (Inductive l')
 
 let fun_def ?loc id args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
@@ -298,10 +303,6 @@ let zf_attr ?loc = function
   | Some l -> Some (Term.apply ?loc (Term.and_t ()) l)
 
 let import ?loc s = mk ?loc (Include s)
-
-let data ?loc ?attrs l =
-  let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Pack l)
 
 let defs ?loc ?attrs l =
   let attr = zf_attr ?loc attrs in
@@ -339,8 +340,17 @@ let definition ?loc ?attrs s ty l =
 
 let inductive ?loc ?attrs id vars cstrs =
   let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Inductive {id; vars; cstrs; loc; })
+  mk ?loc (Inductive [{id; vars; cstrs; loc; attr; }])
 
+let data ?loc ?attrs l =
+  (* this is currently only used for mutually recursive datatypes *)
+  let attr = zf_attr ?loc attrs in
+  let l = List.map (function
+      | { descr = Inductive l'; _ } -> l'
+      | _ -> assert false
+    ) l in
+  let l = List.flatten l in
+  mk ?loc ?attr (Inductive l)
 
 
 (* Wrappers for tptp *)
@@ -433,7 +443,7 @@ let rec normalize_descr f = function
 
   | Def (id, t) -> Def (id, f t)
   | Decl (id, t) -> Decl (id, f t)
-  | Inductive i -> Inductive (normalize_inductive f i)
+  | Inductive l -> Inductive (List.map (normalize_inductive f) l)
 
   | Get_value l -> Get_value (List.map f l)
 

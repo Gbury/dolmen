@@ -952,7 +952,7 @@ module Make
       else
         raise (Not_well_founded_datatypes l')
 
-  let inductive env ty_cst { Statement.id; vars; cstrs; loc; } =
+  let inductive env ty_cst { Statement.id; vars; cstrs; loc; _ } =
     let loc = or_default_loc loc in
     (* Parse the type variables *)
     let ttype_vars = List.map (parse_ttype_var env) vars in

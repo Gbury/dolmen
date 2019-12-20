@@ -22,6 +22,7 @@ type inductive = {
   vars : term list;
   cstrs : (Id.t * term list) list;
   loc : location option;
+  attr : term option;
 }
 (** The type for inductive type declarations. The "vars" field if used
     to store polymorphic variables of the inductive type. For instance,
@@ -77,7 +78,7 @@ type descr =
   (** Symbol definition, i.e the symbol is equal to the given term. *)
   | Decl of Id.t * term
   (** Symbol declaration, i.e the symbol has the given term as its type. *)
-  | Inductive of inductive
+  | Inductive of inductive list
   (** Inductive type definition, see the [inductive] type. *)
 
   | Get_proof
