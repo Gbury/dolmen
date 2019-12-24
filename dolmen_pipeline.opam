@@ -1,5 +1,5 @@
 opam-version: "1.2"
-name: "dolmen_typecheck"
+name: "dolmen_pipeline"
 version: "dev"
 author: "Guillaume Bury"
 maintainer: "guillaume.bury@gmail.com"
@@ -10,11 +10,11 @@ build: [
 ]
 depends: [
   "dolmen"
-  "spelll"
+  "gen"
   "dune"
 ]
 available: [ ocaml-version >= "4.02.3" ]
-tags: [ "logic" "type" "typechecking" "first order" ]
+tags: [ "logic" "computation" "automated theorem prover" ]
 homepage: "https://github.com/Gbury/dolmen"
 doc: "http://gbury.github.io/dolmen"
 bug-reports: "https://github.com/Gbury/dolmen/issues"

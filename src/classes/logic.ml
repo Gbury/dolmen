@@ -1,6 +1,41 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+module type S = sig
+
+  type statement
+  exception Extension_not_found of string
+
+  type language =
+    | Dimacs
+    | ICNF
+    | Smtlib
+    | Tptp
+    | Zf
+
+  val enum : (string * language) list
+  val string_of_language : language -> string
+
+  val find :
+    ?language:language ->
+    ?dir:string -> string -> string option
+  val parse_file :
+    ?language:language ->
+    string -> language * statement list
+
+  val parse_input :
+    ?language:language ->
+    [< `File of string | `Stdin of language
+    | `Raw of string * language * string ] ->
+    language * (unit -> statement option) * (unit -> unit)
+
+  module type S = Dolmen_intf.Language.S with type statement := statement
+  val of_language   : language  -> language * string * (module S)
+  val of_extension  : string    -> language * string * (module S)
+  val of_filename   : string    -> language * string * (module S)
+
+end
+
 module Make
     (L : Dolmen_intf.Location.S)
     (I : Dolmen_intf.Id.Logic)

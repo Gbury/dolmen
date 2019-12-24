@@ -1,0 +1,12 @@
+(library
+  (name           dolmen_pipeline)
+  (public_name    dolmen_pipeline)
+  (libraries      dolmen gen)
+  (modules
+    ; Misc
+    Util
+    ; Interfaces
+    Callback Options Expr Typer Solver Proof Model
+    ; Implementations
+    Parse Pipeline Pipes)
+)

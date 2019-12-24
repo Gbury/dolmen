@@ -3,14 +3,10 @@
 
 (** Logic languages for formal proofs *)
 
-module Make
-    (L : Dolmen_intf.Location.S)
-    (I : Dolmen_intf.Id.Logic)
-    (T : Dolmen_intf.Term.Logic with type location := L.t
-                                 and type id := I.t)
-    (S : Dolmen_intf.Stmt.Logic with type location := L.t
-                                 and type id := I.t
-                                 and type term := T.t): sig
+module type S = sig
+
+  type statement
+  (** The type of statements. *)
 
   exception Extension_not_found of string
   (** Raised when trying to find a language given a file extension. *)
@@ -47,7 +43,7 @@ module Make
 
   val parse_file :
     ?language:language ->
-    string -> language * S.t list
+    string -> language * statement list
   (** Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
@@ -56,7 +52,7 @@ module Make
     ?language:language ->
     [< `File of string | `Stdin of language
     | `Raw of string * language * string ] ->
-    language * (unit -> S.t option) * (unit -> unit)
+    language * (unit -> statement option) * (unit -> unit)
   (** Incremental parsing of either a file (see {!parse_file}), stdin
       (with given language), or some arbitrary contents, of the form
       [`Raw (filename, language, contents)].
@@ -68,7 +64,7 @@ module Make
 
   (** {2 Mid-level parsing} *)
 
-  module type S = Dolmen_intf.Language.S with type statement := S.t
+  module type S = Dolmen_intf.Language.S with type statement := statement
   (** The type of language modules. *)
 
   val of_language   : language  -> language * string * (module S)
@@ -85,3 +81,14 @@ module Make
   *)
 
 end
+
+module Make
+    (L : Dolmen_intf.Location.S)
+    (I : Dolmen_intf.Id.Logic)
+    (T : Dolmen_intf.Term.Logic with type location := L.t
+                                 and type id := I.t)
+    (S : Dolmen_intf.Stmt.Logic with type location := L.t
+                                 and type id := I.t
+                                 and type term := T.t)
+  : S with type statement := S.t
+

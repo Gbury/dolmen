@@ -11,7 +11,7 @@ build: [
 depends: [
   "ocaml" {>= "4.02.3"}
   "menhir" {>= "20151005"}
-  "dune" {build}
+  "dune"
 ]
 
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
