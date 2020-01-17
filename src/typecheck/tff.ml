@@ -4,6 +4,21 @@
 open Dolmen
 module type S = Tff_intf.S
 
+(* Common types *)
+(* ************************************************************************ *)
+
+(* The type of reasons for constant typing *)
+type reason =
+  | Inferred of ParseLocation.t
+  | Declared of ParseLocation.t
+
+type ('ty_const, 'term_cstr, 'term_const) binding = [
+  | `Not_found
+  | `Ty of 'ty_const * reason
+  | `Cstr of 'term_cstr * reason
+  | `Term of 'term_const * reason
+]
+
 (* Warnings module signature *)
 (* ************************************************************************ *)
 
@@ -18,14 +33,10 @@ module type Warn = sig
   type term_cstr
   type term_const
 
-  type binding = [
-    | `Not_found
-    | `Ty of ty_const
-    | `Cstr of term_cstr
-    | `Term of term_const
-  ]
-
-  val shadow : Id.t -> binding -> binding -> unit
+  val shadow : Id.t ->
+    (ty_const, term_cstr, term_const) binding ->
+    (ty_const, term_cstr, term_const) binding ->
+    unit
 
   val unused_ty_var : ParseLocation.t -> ty_var -> unit
   val unused_term_var : ParseLocation.t -> term_var -> unit
@@ -174,10 +185,6 @@ module Make
   (* Types *)
   (* ************************************************************************ *)
 
-  (* The type of reasons for constant typing *)
-  type reason =
-    | Inferred of ParseLocation.t
-    | Declared of ParseLocation.t
 
   (* The type of potentially expected result type for parsing an expression *)
   type expect =
@@ -247,25 +254,46 @@ module Make
     try H.find global_env id
     with Not_found -> `Not_found
 
-  let add_global id v =
+  let find_reason v =
+    try match v with
+    | `Not_found -> assert false
+    | `Ty c -> R.find ttype_locs c
+    | `Cstr c -> U.find cstrs_locs c
+    | `Term c -> S.find const_locs c
+    with Not_found -> assert false
+
+  let with_reason reason = function
+    | `Not_found -> `Not_found
+    | `Ty c -> `Ty (c, reason)
+    | `Cstr c -> `Cstr (c, reason)
+    | `Term c -> `Term (c, reason)
+
+  let add_global id reason v =
     begin match find_global id with
       | `Not_found -> ()
-      | old -> W.shadow id old v
+      | old ->
+        W.shadow id
+          (with_reason (find_reason old) old)
+          (with_reason reason v)
     end;
     H.add global_env id v
 
   (* Symbol declarations *)
-  let decl_ty_cstr id c reason =
-    R.add ttype_locs c reason;
-    add_global id (`Ty c)
+  let decl_ty_const id c reason =
+    add_global id reason (`Ty c);
+    R.add ttype_locs c reason
 
-  let decl_term id c reason =
-    S.add const_locs c reason;
-    add_global id (`Term c)
+  let decl_term_const id c reason =
+    add_global id reason (`Term c);
+    S.add const_locs c reason
 
-  let decl_cstr id c reason =
-    U.add cstrs_locs c reason;
-    add_global id (`Cstr c)
+  let decl_term_cstr id c reason =
+    add_global id reason (`Cstr c);
+    U.add cstrs_locs c reason
+
+  (* Exported wrappers *)
+  let declare_ty_const id c loc = decl_ty_const id c (Declared loc)
+  let declare_term_const id c loc = decl_term_const id c (Declared loc)
 
 
   (* Local Environment *)
@@ -400,6 +428,8 @@ module Make
     | Cannot_find of Id.t
     | Type_var_in_type_constructor
     | Missing_destructor of Id.t
+    | Higher_order_application
+    | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
     | Unhandled_ast
 
   (* Exception for typing errors *)
@@ -528,15 +558,15 @@ module Make
       let ret = Ty.Const.mk (Id.full_name s) n in
       let res = Ty_fun ret in
       env.infer_hook env res;
-      decl_ty_cstr s ret (Inferred loc);
+      decl_ty_const s ret (Inferred loc);
       Some res
-    | Typed _, None -> assert false
+    | Typed _, None -> None
     | Typed ty, Some base ->
       let n = List.length args in
       let ret = T.Const.mk (Id.full_name s) [] (replicate n base) ty in
       let res = Term_fun ret in
       env.infer_hook env res;
-      decl_term s ret (Inferred loc);
+      decl_term_const s ret (Inferred loc);
       Some res
 
   (* Tag application *)
@@ -568,6 +598,10 @@ module Make
       | { Ast.term = Ast.Builtin Ast.Prop; _ } ->
         Ty Ty.prop
 
+      (* Wildcards should only occur in place of types *)
+      | { Ast.term = Ast.Builtin Ast.Wildcard; _ } ->
+        Ty (Ty.wildcard ())
+
       (* Basic formulas *)
       | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.True; _ }, []); _ }
       | { Ast.term = Ast.Builtin Ast.True; _ } ->
@@ -592,6 +626,24 @@ module Make
           | _ -> _bad_op_arity env "xor" 2 (List.length l) t
         end
 
+      | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Nand; _}, l); _ } as t ->
+        begin match l with
+          | [p; q] ->
+            let f = parse_prop env p in
+            let g = parse_prop env q in
+            Term (_wrap2 env t T.nand f g)
+          | _ -> _bad_op_arity env "nand" 2 (List.length l) t
+        end
+
+      | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Nor; _}, l); _ } as t ->
+        begin match l with
+          | [p; q] ->
+            let f = parse_prop env p in
+            let g = parse_prop env q in
+            Term (_wrap2 env t T.nor f g)
+          | _ -> _bad_op_arity env "nor" 2 (List.length l) t
+        end
+
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Imply; _ }, l); _ } as t ->
         begin match l with
           | [p; q] ->
@@ -599,6 +651,15 @@ module Make
             let g = parse_prop env q in
             Term (_wrap2 env t T.imply f g)
           | _ -> _bad_op_arity env "=>" 2 (List.length l) t
+        end
+
+      | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Implied; _ }, l); _ } as t ->
+        begin match l with
+          | [q; p] ->
+            let f = parse_prop env p in
+            let g = parse_prop env q in
+            Term (_wrap2 env t T.imply f g)
+          | _ -> _bad_op_arity env "<=" 2 (List.length l) t
         end
 
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, l); _ } as t ->
@@ -660,6 +721,10 @@ module Make
       (* Local bindings *)
       | { Ast.term = Ast.Binder (Ast.Let, vars, f); _ } ->
         parse_let env [] f vars
+
+      (* Explicitly catch higher-order application. *)
+      | { Ast.term = Ast.App ({ Ast.term = Ast.App _; _ }, _); _ } as ast ->
+        raise (Typing_error (Higher_order_application, env, ast))
 
       (* Other cases *)
       | ast -> raise (Typing_error (Unhandled_ast, env, ast))
@@ -777,6 +842,8 @@ module Make
                   W.not_found s (fun limit -> suggest ~limit env s);
                   raise (Typing_error (Cannot_find s, env, ast))
               end
+            | exception T.Wrong_type (t, ty) ->
+              _type_mismatch env t ty ast
           end
       end
 
@@ -945,7 +1012,7 @@ module Make
                 ) args
             ) cstrs in
           if b then has_progressed := true;
-          b
+          not b
         ) l in
       if !has_progressed then
         check_well_founded l'
@@ -976,12 +1043,12 @@ module Make
     (* Register the constructors and destructors in the global env. *)
     List.iter2 (fun (cid, pargs) (c, targs) ->
         let reason = Declared loc in
-        decl_cstr cid c reason;
+        decl_term_cstr cid c reason;
         List.iter2 (fun (t, _, dstr) (_, o) ->
             match dstr, o with
             | None, None -> ()
             | None, Some c -> W.superfluous_destructor loc id cid c
-            | Some id, Some const -> decl_term id const reason
+            | Some id, Some const -> decl_term_const id const reason
             | Some id, None ->
               raise (Typing_error (Missing_destructor id, env, t))
           ) pargs targs
@@ -1000,7 +1067,7 @@ module Make
         let n = List.length vars in
         let c = Ty.Const.mk (Id.full_name id) n in
         List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-        decl_ty_cstr id c (Declared (or_default_loc loc));
+        decl_ty_const id c (Declared (or_default_loc loc));
         c
       ) l in
     (* Parse each definition
@@ -1023,12 +1090,12 @@ module Make
     | `Ty_cstr n ->
       let c = Ty.Const.mk (Id.full_name id) n in
       List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-      decl_ty_cstr id c (Declared (get_loc t));
+      decl_ty_const id c (Declared (get_loc t));
       `Type_decl c
     | `Fun_ty (vars, args, ret) ->
       let f = T.Const.mk (Id.full_name id) vars args ret in
       List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
-      decl_term id f (Declared (get_loc t));
+      decl_term_const id f (Declared (get_loc t));
       `Term_decl f
 
   let new_def env t ?attr id =
@@ -1042,6 +1109,11 @@ module Make
     | `Term (ty_args, t_args, body) ->
       `Term_def (id, tags, ty_args, t_args, body)
 
-  let parse = parse_prop
+  let parse env ast =
+    let res = parse_prop env ast in
+    match T.fv res with
+    | [], [] -> res
+    | tys, ts ->
+      raise (Typing_error (Unbound_variables (tys, ts, res), env, ast))
 
 end

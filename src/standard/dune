@@ -1,7 +1,12 @@
 (library
   (name           dolmen_std)
   (public_name    dolmen.std)
-  (libraries      dolmen_intf dolmen_line)
-  (modules        ParseLocation Id Term Statement
-                  Normalize Misc Transformer)
+  (libraries      dolmen_intf dolmen_line fmt)
+  (modules
+    ; Parsing structures
+    ParseLocation Id Term Statement Normalize
+    ; Typing & Loop stuff
+    Tag Pretty Expr State
+    ; Helpers
+    Misc Transformer)
 )

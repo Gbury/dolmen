@@ -6,21 +6,10 @@ open Dolmen
 
 module Smtlib = struct
 
-  module type Ty = sig
-    type t
-    val array : t -> t -> t
-  end
-
-  module type T = sig
-    type t
-    val select : t -> t -> t
-    val store : t -> t -> t -> t
-  end
-
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Ty with type t = Type.Ty.t)
-      (T : T with type t = Type.T.t) = struct
+      (Ty : Dolmen.Intf.Ty.Smtlib_Array with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) = struct
 
     let parse env ast s args =
       match s with

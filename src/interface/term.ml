@@ -235,7 +235,6 @@ end
 (** {2 Signature for Typechecked terms} *)
 
 module type Tff = sig
-
   (** Signature required by terms for typing first-order
       polymorphic terms. *)
 
@@ -306,7 +305,7 @@ module type Tff = sig
     (** An algebraic type constructor. Note that such constructors are used to
         build terms, and not types, e.g. consider the following:
         [type 'a list = Nil | Cons of 'a * 'a t], then [Nil] and [Cons] are the
-        constructors, while [list] would the a constant of arity 1 used to
+        constructors, while [list] would be a type constant of arity 1 used to
         name the type. *)
 
     val hash : t -> int
@@ -382,6 +381,12 @@ module type Tff = sig
   val _or : t list -> t
   (** Disjunction of formulas *)
 
+  val nand : t -> t -> t
+  (** Not-and *)
+
+  val nor : t -> t -> t
+  (** Not-or *)
+
   val imply : t -> t -> t
   (** Implication *)
 
@@ -421,3 +426,408 @@ module type Tff = sig
 
 end
 
+(** Minimum required to type tptp's tff *)
+module type Tptp_Base = sig
+
+  type t
+  (** The type of terms *)
+
+  val _true : t
+  (** The smybol for [true] *)
+
+  val _false : t
+  (** The symbol for [false] *)
+
+end
+
+(** Common signature for tptp arithmetics *)
+module type Tptp_Arith_Common = sig
+
+  type t
+  (** The type of terms *)
+
+  val minus : t -> t
+  (** Arithmetic unary minus/negation. *)
+
+  val add : t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub : t -> t -> t
+  (** Arithmetic substraction *)
+
+  val mul : t -> t -> t
+  (** Arithmetic multiplication *)
+
+  val div_e : t -> t -> t
+  (** Euclidian division quotient *)
+
+  val div_t : t -> t -> t
+  (** Truncation of the rational/real division. *)
+
+  val div_f : t -> t -> t
+  (** Floor of the ration/real division. *)
+
+  val rem_e : t -> t -> t
+  (** Euclidian division remainder *)
+
+  val rem_t : t -> t -> t
+  (** Remainder for the truncation of the rational/real division. *)
+
+  val rem_f : t -> t -> t
+  (** Remaidner for the floor of the ration/real division. *)
+
+  val lt : t -> t -> t
+  (** Arithmetic "less than" comparison. *)
+
+  val le : t -> t -> t
+  (** Arithmetic "less or equal" comparison. *)
+
+  val gt : t -> t -> t
+  (** Arithmetic "greater than" comparison. *)
+
+  val ge : t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
+
+  val floor : t -> t
+  (** Floor function. *)
+
+  val ceiling : t -> t
+  (** Ceiling *)
+
+  val truncate : t -> t
+  (** Truncation. *)
+
+  val round : t -> t
+  (** Rounding to the nearest integer. *)
+
+  val is_int : t -> t
+  (** Integer testing *)
+
+  val is_rat : t -> t
+  (** Rationality testing. *)
+
+  val to_int : t -> t
+  (** Convesion to an integer. *)
+
+  val to_rat : t -> t
+  (** Conversion to a rational. *)
+
+  val to_real : t -> t
+  (** Conversion to a real. *)
+
+end
+
+(** Signature required by terms for typing tptp arithmetic. *)
+module type Tptp_Arith = sig
+
+  type t
+  (** The type of terms. *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Get the type of a term. *)
+
+  val int : string -> t
+  (** Integer literals *)
+
+  val rat : string -> t
+  (** Rational literals *)
+
+  val real : string -> t
+  (** Real literals *)
+
+  module Int : sig
+    include Tptp_Arith_Common with type t := t
+  end
+
+  module Rat : sig
+    include Tptp_Arith_Common with type t := t
+
+    val div : t -> t -> t
+    (** Exact division on rationals. *)
+  end
+
+  module Real : sig
+    include Tptp_Arith_Common with type t := t
+
+    val div : t -> t -> t
+    (** Exact division on reals. *)
+  end
+
+end
+
+(** Minimum required to type smtlib's core theory. *)
+module type Smtlib_Base = sig
+
+  type t
+  (** The type of terms. *)
+
+  val eqs : t list -> t
+  (** Create a chain of equalities. *)
+
+end
+
+(** Common signature for first-order arithmetic *)
+module type Smtlib_Arith_Common = sig
+
+  type t
+  (** The type of terms *)
+
+  val minus : t -> t
+  (** Arithmetic unary minus/negation. *)
+
+  val add : t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub : t -> t -> t
+  (** Arithmetic substraction *)
+
+  val mul : t -> t -> t
+  (** Arithmetic multiplication *)
+
+  val div : t -> t -> t
+  (** Division. See Smtlib theory for a full description. *)
+
+  val lt : t -> t -> t
+  (** Arithmetic "less than" comparison. *)
+
+  val le : t -> t -> t
+  (** Arithmetic "less or equal" comparison. *)
+
+  val gt : t -> t -> t
+  (** Arithmetic "greater than" comparison. *)
+
+  val ge : t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
+
+end
+
+
+
+(** Signature required by terms for typing smtlib int arithmetic. *)
+module type Smtlib_Int = sig
+
+  include Smtlib_Arith_Common
+
+  val int : string -> t
+  (** Build an integer constant. The integer is passed
+          as a string, and not an [int], to avoid overflow caused
+          by the limited precision of native intgers. *)
+
+  val rem : t -> t -> t
+  (** Integer remainder See Smtlib theory for a full description. *)
+
+  val abs : t -> t
+  (** Arithmetic absolute value. *)
+
+  val divisible : string -> t -> t
+  (** Arithmetic divisibility predicate. Indexed over
+      constant integers (represented as strings, see {!int}). *)
+
+end
+
+(** Signature required by terms for typing smtlib real arithmetic. *)
+module type Smtlib_Real = sig
+
+  include Smtlib_Arith_Common
+
+  val real : string -> t
+  (** Build a real constant. The string should respect
+      smtlib's syntax for INTEGER or DECIMAL. *)
+
+end
+
+(** Signature required by terms for typing smtlib real_int arithmetic. *)
+module type Smtlib_Real_Int = sig
+
+  type t
+  (** The type of terms. *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Get the type of a term. *)
+
+  module Int : sig
+
+    include Smtlib_Int with type t := t
+
+    val to_real : t -> t
+    (** Conversion from an integer term to a real term. *)
+
+  end
+
+  module Real : sig
+
+    include Smtlib_Real with type t := t
+
+    val is_int : t -> t
+    (** Arithmetic predicate, true on reals that are also integers. *)
+
+    val to_int : t -> t
+    (** Partial function from real to integers. Only has defined semantics
+            when {!is_int} is true. *)
+
+  end
+
+end
+
+module type Smtlib_Array = sig
+
+  type t
+  (** The type of terms *)
+
+  val select : t -> t -> t
+  (** [select arr idx] creates the get operation on functionnal
+        array [arr] for index [idx]. *)
+
+  val store : t -> t -> t -> t
+  (** [store arr idx value] creates the set operation on
+      functional array [arr] for value [value] at index [idx]. *)
+
+end
+
+module type Smtlib_Bitv = sig
+
+  type t
+  (** The type of terms *)
+
+  val mk_bitv : string -> t
+  (** Create a bitvector litteral from a string representation.
+        The string should only contain characters '0' or '1'. *)
+
+  val bitv_concat : t -> t -> t
+  (** Bitvector concatenation. *)
+
+  val bitv_extract : int -> int -> t -> t
+  (** Bitvector extraction, using in that order,
+      the end (exclusive) and then the start (inclusive)
+      position of the bitvector to extract. *)
+
+  val bitv_repeat : int -> t -> t
+  (** Repetition of a bitvector. *)
+
+  val zero_extend : int -> t -> t
+  (** Extend the given bitvector with the given numer of 0. *)
+
+  val sign_extend : int -> t -> t
+  (** Extend the given bitvector with its most significant bit
+      repeated the given number of times. *)
+
+  val rotate_right : int -> t -> t
+  (** [rotate_right i x] means rotate bits of x to the right i times. *)
+
+  val rotate_left : int -> t -> t
+  (** [rotate_left i x] means rotate bits of x to the left i times. *)
+
+  val bvnot : t -> t
+  (** Bitwise negation. *)
+
+  val bvand : t -> t -> t
+  (** Bitwise conjunction. *)
+
+  val bvor : t -> t -> t
+  (** Bitwise disjunction. *)
+
+  val bvnand : t -> t -> t
+  (** [bvnand s t] abbreviates [bvnot (bvand s t)]. *)
+
+  val bvnor : t -> t -> t
+  (** [bvnor s t] abbreviates [bvnot (bvor s t)]. *)
+
+  val bvxor : t -> t -> t
+  (** [bvxor s t] abbreviates [bvor (bvand s (bvnot t)) (bvand (bvnot s) t)]. *)
+
+  val bvxnor : t -> t -> t
+  (** [bvxnor s t] abbreviates [bvor (bvand s t) (bvand (bvnot s) (bvnot t))]. *)
+
+  val bvcomp : t -> t -> t
+  (** Bitwise comparison. [bvcomp s t] equald [#b1] iff [s] and [t]
+      are bitwise equal. *)
+
+
+  val bvneg : t -> t
+  (** Arithmetic complement on bitvectors.
+      Supposing an input bitvector of size [m] representing
+      an integer [k], the resulting term should represent
+      the integer [2^m - k]. *)
+
+  val bvadd : t -> t -> t
+  (** Arithmetic addition on bitvectors, modulo the size of
+      the bitvectors (overflows wrap around [2^m] where [m]
+      is the size of the two input bitvectors). *)
+
+  val bvsub : t -> t -> t
+  (** Arithmetic substraction on bitvectors, modulo the size
+      of the bitvectors (2's complement subtraction modulo).
+      [bvsub s t] should be equal to [bvadd s (bvneg t)]. *)
+
+  val bvmul : t -> t -> t
+  (** Arithmetic multiplication on bitvectors, modulo the size
+      of the bitvectors (see {!bvadd}). *)
+
+  val bvudiv : t -> t -> t
+  (** Arithmetic euclidian integer division on bitvectors. *)
+
+  val bvurem : t -> t -> t
+  (** Arithmetic euclidian integer remainder on bitvectors. *)
+
+  val bvsdiv : t -> t -> t
+  (** Arithmetic 2's complement signed division.
+      (see smtlib's specification for more information). *)
+
+  val bvsrem : t -> t -> t
+  (** Arithmetic 2's coplement signed remainder (sign follows dividend).
+      (see smtlib's specification for more information). *)
+
+  val bvsmod : t -> t -> t
+  (** Arithmetic 2's coplement signed remainder (sign follows divisor).
+      (see smtlib's specification for more information). *)
+
+  val bvshl : t -> t -> t
+  (** Logical shift left. [bvshl t k] return the result of
+      shifting [t] to the left [k] times. In other words,
+      this should return the bitvector representing
+      [t * 2^k] (since bitvectors represent integers using
+      the least significatn bit in cell 0). *)
+
+  val bvlshr : t -> t -> t
+  (** Logical shift right. [bvlshr t k] return the result of
+      shifting [t] to the right [k] times. In other words,
+      this should return the bitvector representing
+      [t / (2^k)]. *)
+
+  val bvashr : t -> t -> t
+  (** Arithmetic shift right, like logical shift right except that the most
+      significant bits of the result always copy the most significant
+      bit of the first argument*)
+
+  val bvult : t -> t -> t
+  (** Boolean arithmetic comparison (less than).
+      [bvult s t] should return the [true] term iff [s < t]. *)
+
+  val bvule : t -> t -> t
+  (** Boolean arithmetic comparison (less or equal than). *)
+
+  val bvugt : t -> t -> t
+  (** Boolean arithmetic comparison (greater than). *)
+
+  val bvuge : t -> t -> t
+  (** Boolean arithmetic comparison (greater or equal than). *)
+
+  val bvslt : t -> t -> t
+  (** Boolean signed arithmetic comparison (less than).
+      (See smtlib's specification for more information) *)
+
+  val bvsle : t -> t -> t
+  (** Boolean signed arithmetic comparison (less or equal than). *)
+
+  val bvsgt : t -> t -> t
+  (** Boolean signed arithmetic comparison (greater than). *)
+
+  val bvsge : t -> t -> t
+  (** Boolean signed arithmetic comparison (greater or equal than). *)
+end

@@ -3,7 +3,7 @@
 OUT1="out1"
 OUT2="out2"
 
-function do_test {
+function compare_test {
   for f in `find $1 -name *.*`; do
 
     if ! ../dolmen --print $f > $OUT1; then
@@ -18,6 +18,16 @@ function do_test {
       echo -e "\e[1;31m[KO]\e[0m $1 ($f) There is a diff between the two modes:"
       echo -e "\e[1mregular\t\t\t\t\t\t\t\tinteractive\e[0m"
       diff --suppress-common-lines -y $OUT1 $OUT2
+      return 1
+    fi
+  done
+  echo -e "\e[32m[OK]\e[0m $1"
+}
+
+function do_test {
+  for f in `find $1 -name *.*`; do
+    if ! ../dolmen $f > $OUT1; then
+      echo -e "\e[1;31m[KO]\e[0m $1 ($f)"
       return 1
     fi
   done

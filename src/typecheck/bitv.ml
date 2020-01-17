@@ -6,60 +6,10 @@ open Dolmen
 
 module Smtlib = struct
 
-  module type Ty = sig
-    type t
-    val bitv : int -> t
-  end
-
-  module type T = sig
-    type t
-    val mk_bitv : string -> t
-    val bitv_concat : t -> t -> t
-    val bitv_extract : int -> int -> t -> t
-    val bitv_repeat : int -> t -> t
-
-    val zero_extend : int -> t -> t
-    val sign_extend : int -> t -> t
-    val rotate_right : int -> t -> t
-    val rotate_left : int -> t -> t
-
-    val bvnot   : t -> t
-    val bvand   : t -> t -> t
-    val bvor    : t -> t -> t
-    val bvnand  : t -> t -> t
-    val bvnor   : t -> t -> t
-    val bvxor   : t -> t -> t
-    val bvxnor  : t -> t -> t
-    val bvcomp  : t -> t -> t
-
-    val bvneg   : t -> t
-    val bvadd   : t -> t -> t
-    val bvsub   : t -> t -> t
-    val bvmul   : t -> t -> t
-    val bvudiv  : t -> t -> t
-    val bvurem  : t -> t -> t
-    val bvsdiv  : t -> t -> t
-    val bvsrem  : t -> t -> t
-    val bvsmod  : t -> t -> t
-
-    val bvshl   : t -> t -> t
-    val bvlshr  : t -> t -> t
-    val bvashr  : t -> t -> t
-
-    val bvult   : t -> t -> t
-    val bvule   : t -> t -> t
-    val bvugt   : t -> t -> t
-    val bvuge   : t -> t -> t
-    val bvslt   : t -> t -> t
-    val bvsle   : t -> t -> t
-    val bvsgt   : t -> t -> t
-    val bvsge   : t -> t -> t
-  end
-
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Ty with type t = Type.Ty.t)
-      (T : T with type t = Type.T.t) = struct
+      (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Bitv with type t = Type.T.t) = struct
 
     type Type.err +=
       | Invalid_bin_char of char

@@ -47,7 +47,7 @@ type descr =
   (** Reset all assertions. *)
 
   | Plain of term
-  (** A plain statement ontaining a term with no defined semantics. *)
+  (** A plain statement containing a term with no defined semantics. *)
 
   | Prove of term list
   (** Try and prove the current sequent, under some local assumptions. *)
@@ -100,7 +100,7 @@ type descr =
   | Echo of string
   (** Prints the string. *)
   | Reset
-  (** Full reset of the prove to initial state. *)
+  (** Full reset of the prover to its initial state. *)
   | Exit
   (** Exit the interactive loop. *)
 

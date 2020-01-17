@@ -7,12 +7,12 @@ data nat :=
   | S nat.
 
 val plus : nat -> nat -> nat.
-rewrite forall x. plus Z x = x.
-rewrite forall x y. plus (S x) y = S (plus x y).
+rewrite forall (x : nat). plus Z x = x.
+rewrite forall (x y : nat). plus (S x) y = S (plus x y).
 
 val mult : nat -> nat -> nat.
-rewrite forall x. mult Z x = Z.
-rewrite forall x y. mult (S x) y = plus y (mult x y).
+rewrite forall (x : nat). mult Z x = Z.
+rewrite forall (x y : nat). mult (S x) y = plus y (mult x y).
 
 def two : nat := S (S Z).
 def three : nat := S two.

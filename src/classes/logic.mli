@@ -50,7 +50,8 @@ module type S = sig
 
   val parse_input :
     ?language:language ->
-    [< `File of string | `Stdin of language
+    [< `File of string
+    | `Stdin of language
     | `Raw of string * language * string ] ->
     language * (unit -> statement option) * (unit -> unit)
   (** Incremental parsing of either a file (see {!parse_file}), stdin

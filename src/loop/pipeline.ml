@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module Make(Util : Util.S) = struct
+module Make(State : State.Pipeline) = struct
 
   exception Sigint
   exception Out_of_time
@@ -10,11 +10,10 @@ module Make(Util : Util.S) = struct
   (* Default functions *)
   (* ************************************************************************ *)
 
-  let default_finally opt = function
-    | None -> opt
+  let default_finally st = function
+    | None -> st
     | Some exn ->
-      Util.error "Exception: @<hov>%s@]@." (Printexc.to_string exn);
-      opt
+      State.error st "Exception: @<hov>%s@]@." (Printexc.to_string exn)
 
   (* GC alarm for time/space limits *)
   (* ************************************************************************ *)
@@ -61,9 +60,6 @@ module Make(Util : Util.S) = struct
   (* Pipeline and execution *)
   (* ************************************************************************ *)
 
-  (* Some aliases for readibility *)
-  type opt = Util.opt
-
   type 'a gen = 'a Gen.t
   type 'a fix = [ `Ok | `Gen of bool * 'a gen ]
   type ('a, 'b) cont = [ `Continue of 'a | `Done of 'b ]
@@ -91,7 +87,7 @@ module Make(Util : Util.S) = struct
         ('a, 'b) t * ('b, 'c) t -> ('a, 'c) t
     (* Fixpoint expansion *)
     | Fix :
-        ('opt * 'a, 'opt * 'a fix) op * ('opt * 'a, 'opt) t -> ('opt * 'a, 'opt) t
+        ('st * 'a, 'st * 'a fix) op * ('st * 'a, 'st) t -> ('st * 'a, 'st) t
 
   (* Creating pipelines. *)
 
@@ -100,8 +96,8 @@ module Make(Util : Util.S) = struct
   let iter_ ?(name="") f =
     { name; f = (fun x -> f x; x); }
   let f_map ?(name="") ?(test=(fun _ -> true)) f =
-    { name; f = (fun ((opt, _) as x) ->
-          if test opt then `Continue (opt, f x) else `Done opt); }
+    { name; f = (fun ((st, _) as x) ->
+          if test st then `Continue (f x) else `Done st); }
 
   let _end = End
   let (@>>>) op t = Map(op, t)
@@ -126,42 +122,45 @@ module Make(Util : Util.S) = struct
       let y = eval t x in
       eval t' y
     | Fix (op, t) ->
-      let opt, y = x in
+      let st, y = x in
       begin match op.f x with
-        | opt', `Ok -> eval t (opt', y)
-        | opt', `Gen (flat, g) ->
-          let aux opt c = eval pipe (opt, c) in
-          let opt'' = Gen.fold aux opt' g in
-          if flat then opt'' else opt
+        | st', `Ok -> eval t (st', y)
+        | st', `Gen (flat, g) ->
+          let aux st c = eval pipe (st, c) in
+          let st'' = Gen.fold aux st' g in
+          if flat then st'' else st
       end
 
   (* Aux function to eval a pipeline on the current value of a generator. *)
-  let run_aux : type a. (opt * a, opt) t -> (opt -> a option) -> opt -> opt option =
-    fun pipe g opt ->
-    match g opt with
+  let run_aux : type a.
+    (State.t * a, State.t) t ->
+    (State.t -> a option) ->
+    State.t -> State.t option =
+    fun pipe g st ->
+    match g st with
     | None -> None
-    | Some x -> Some (eval pipe (opt, x))
+    | Some x -> Some (eval pipe (st, x))
 
   (* Effectively run a pipeline on all values that come from a generator.
      Time/size limits apply for the complete evaluation of each input
      (so all expanded values count toward the same limit). *)
   let rec run :
     type a.
-    ?finally:(opt -> exn option -> opt) ->
-    (opt -> a option) -> opt -> (opt * a, opt) t -> opt
-    = fun ?(finally=default_finally) g opt pipe ->
-      let time = Util.time_limit opt in
-      let size = Util.size_limit opt in
+    ?finally:(State.t -> exn option -> State.t) ->
+    (State.t -> a option) -> State.t -> (State.t * a, State.t) t -> State.t
+    = fun ?(finally=default_finally) g st pipe ->
+      let time = State.time_limit st in
+      let size = State.size_limit st in
       let al = setup_alarm time size in
       begin
-        match run_aux pipe g opt with
+        match run_aux pipe g st with
         | None ->
           let () = delete_alarm al in
-          opt
-        | Some opt' ->
+          st
+        | Some st' ->
           let () = delete_alarm al in
-          let opt'' = try finally opt' None with _ -> opt' in
-          run ~finally g opt'' pipe
+          let st'' = try finally st' None with _ -> st' in
+          run ~finally g st'' pipe
         | exception exn ->
           (* delete alarm *)
           let () = delete_alarm al in
@@ -172,8 +171,8 @@ module Make(Util : Util.S) = struct
           if Printexc.backtrace_status () then
             Printexc.print_backtrace stdout;
           (* Go on running the rest of the pipeline. *)
-          let opt' = try finally opt (Some exn) with _ -> opt in
-          run ~finally g opt' pipe
+          let st' = try finally st (Some exn) with _ -> st in
+          run ~finally g st' pipe
       end
 
 end

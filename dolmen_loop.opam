@@ -1,0 +1,21 @@
+opam-version: "1.2"
+name: "dolmen_loop"
+version: "dev"
+author: "Guillaume Bury"
+maintainer: "guillaume.bury@gmail.com"
+license: "BSD-2-clauses"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "dolmen"
+  "gen"
+  "dune"
+]
+available: [ ocaml-version >= "4.02.3" ]
+tags: [ "logic" "computation" "automated theorem prover" ]
+homepage: "https://github.com/Gbury/dolmen"
+doc: "http://gbury.github.io/dolmen"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+dev-repo: "https://github.com/Gbury/dolmen.git"

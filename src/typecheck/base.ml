@@ -1,10 +1,10 @@
 
 open Dolmen
 
-(* Some helpers *)
+(* Merging builtin parser functions *)
 (* ************************************************************************ *)
 
-(* merging builtin parser functions *)
+let noop _ _ _ _ = None
 
 let rec merge l env ast s args =
   match l with
@@ -15,7 +15,41 @@ let rec merge l env ast s args =
       | None -> merge r env ast s args
     end
 
+(* Smtlib logic merging *)
+
+exception Unknown_logic of string
+
+let smtlib_logic
+    ~arrays ~bv ~core ~ints ~reals ~reals_ints = function
+  | "AUFLIA"    -> merge [core; ints; arrays]
+  | "AUFLIRA"   -> merge [core; reals_ints; arrays]
+  | "AUFNIRA"   -> merge [core; reals_ints; arrays]
+  | "LIA"       -> merge [core; ints]
+  | "LRA"       -> merge [core; reals]
+  | "QF_ABV"    -> merge [core; bv; arrays]
+  | "QF_AUFBV"  -> merge [core; bv; arrays]
+  | "QF_AUFLIA" -> merge [core; ints; arrays]
+  | "QF_AX"     -> merge [core; arrays]
+  | "QF_BV"     -> merge [core; bv]
+  | "QF_IDL"    -> merge [core; ints]
+  | "QF_LIA"    -> merge [core; ints]
+  | "QF_NIA"    -> merge [core; ints]
+  | "QF_NRA"    -> merge [core; reals]
+  | "QF_RDL"    -> merge [core; reals]
+  | "QF_UF"     -> merge [core]
+  | "QF_UFBV"   -> merge [core; bv]
+  | "QF_UFIDL"  -> merge [core; ints]
+  | "QF_UFLIA"  -> merge [core; ints]
+  | "QF_UFLRA"  -> merge [core; reals]
+  | "QF_LRA"    -> merge [core; reals]
+  | "QF_UFNRA"  -> merge [core; reals]
+  | "UFLRA"     -> merge [core; reals]
+  | "UFNIA"     -> merge [core; ints]
+  | logic       -> raise (Unknown_logic logic)
+
+
 (* Building builtins parser functions *)
+(* ************************************************************************ *)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
@@ -102,30 +136,10 @@ let map_chain
 
 module Tptp = struct
 
-  (** Type constants required to typecheck tptp builtins *)
-  module type Ty = sig
-    type t
-    val prop : t
-
-    module Const : sig
-      type t
-      val base : t
-    end
-  end
-
-  module type T = sig
-    module Const : sig
-      type t
-      val _true : t
-      val _false : t
-    end
-  end
-
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Ty with type t = Type.Ty.t
-                and type Const.t = Type.Ty.Const.t)
-      (T : T with type Const.t = Type.T.Const.t) = struct
+      (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) = struct
 
     let parse env ast s args =
       match s with
@@ -139,11 +153,14 @@ module Tptp = struct
         make_op0 (module Type) env ast "$o" args
           (fun () -> (Type.Ty Ty.prop))
       | Type.Id { Id.name = "$i"; ns = Id.Term } ->
-        Some (Type.parse_app_ty env ast Ty.Const.base args)
+        make_op0 (module Type) env ast "$i" args
+          (fun () -> (Type.Ty Ty.base))
       | Type.Id { Id.name = "$true"; ns = Id.Term } ->
-        Some (Type.parse_app_term env ast T.Const._true args)
+        make_op0 (module Type) env ast "$true" args
+          (fun () -> Type.Term T._true)
       | Type.Id { Id.name = "$false"; ns = Id.Term } ->
-        Some (Type.parse_app_term env ast T.Const._false args)
+        make_op0 (module Type) env ast "$false" args
+          (fun () -> Type.Term T._false)
       | Type.Id id when Id.equal id Id.tptp_role ->
         Some (Type.Tags [])
       | _ -> None
@@ -157,26 +174,11 @@ end
 
 module Smtlib = struct
 
-  module type Tag = sig
-    type 'a t
-    val rwrt : unit t
-  end
-
-  module type Ty = sig
-    type t
-    val prop : t
-  end
-
-  module type T = sig
-    type t
-    val eqs : t list -> t
-  end
-
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Tag with type 'a t = 'a Type.Tag.t)
-      (Ty : Ty with type t = Type.Ty.t)
-      (T : T with type t = Type.T.t) = struct
+      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) = struct
 
     let app_left env ast args name mk =
       make_assoc (module Type) env ast name args
@@ -247,23 +249,9 @@ end
 
 module Zf = struct
 
-  module type Tag = sig
-    type 'a t
-    val rwrt : unit t
-
-    type name
-    val name : name t
-    val exact : string -> name
-
-    type pos
-    val pos : pos t
-    val infix : pos
-    val prefix : pos
-  end
-
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Tag with type 'a t = 'a Type.Tag.t) = struct
+      (Tag : Dolmen.Intf.Tag.Zf_Base with type 'a t = 'a Type.Tag.t) = struct
 
     let parse _env _ast s args =
       match s with

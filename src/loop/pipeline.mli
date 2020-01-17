@@ -10,9 +10,12 @@
     performing a fixpoint expansion.
 *)
 
-module Make(Util : Util.S) : sig
+module Make(State : State.Pipeline) : sig
   (** Concrete pipelines. *)
 
+  exception Sigint
+  exception Out_of_time
+  exception Out_of_space
 
   (** {2 Type definitions } *)
 
@@ -37,7 +40,7 @@ module Make(Util : Util.S) : sig
   val f_map :
     ?name:string ->
     ?test:('a -> bool) ->
-    ('a * 'b -> 'c) ->
+    ('a * 'b -> 'a * 'c) ->
     ('a * 'b, ('a * 'c, 'a) cont) op
   (** TODO: doc *)
 
@@ -70,10 +73,10 @@ module Make(Util : Util.S) : sig
   (** Evaluate a pipeline to a function. *)
 
   val run :
-    ?finally:(Util.opt -> exn option -> Util.opt) ->
-    (Util.opt -> 'a option) -> Util.opt ->
-    (Util.opt * 'a, Util.opt) t ->
-    Util.opt
+    ?finally:(State.t -> exn option -> State.t) ->
+    (State.t -> 'a option) -> State.t ->
+    (State.t * 'a, State.t) t ->
+    State.t
     (** Loop the evaluation of a pipeline over a generator, and starting options.
         @param finally a function called at the end of every iteration (even if
         an exception has been raised) *)

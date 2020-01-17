@@ -6,14 +6,11 @@ BINDIR=_build/install/default/bin
 
 all: dune
 
+watch:
+	dune build $(FLAGS) -w
+
 dune:
 	dune build $(FLAGS)
-
-bin: dune
-	cp $(BINDIR)/dolmen ./
-
-test: bin
-	cd tests && ./run
 
 doc:
 	dune build $(FLAGS) @doc
@@ -21,4 +18,4 @@ doc:
 clean:
 	$(COMP) clean
 
-.PHONY: all dune bin test doc clean
+.PHONY: all watch dune bin test doc clean

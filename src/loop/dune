@@ -1,0 +1,10 @@
+(library
+  (name           dolmen_loop)
+  (public_name    dolmen_loop)
+  (libraries      dolmen gen unix)
+  (modules
+    ; Interfaces
+    Expr Typer State
+    ; Implementations
+    Parse Pipeline Pipes)
+)

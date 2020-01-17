@@ -16,11 +16,3 @@
   (modules        Dolmen)
 )
 
-(executable
-  (name           main)
-  (public_name    dolmen)
-  (package        dolmen)
-  (libraries      dolmen)
-  (modules        Main)
-)
-

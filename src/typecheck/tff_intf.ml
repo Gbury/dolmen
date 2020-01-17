@@ -65,6 +65,8 @@ module type S = sig
     | Cannot_find of Dolmen.Id.t
     | Type_var_in_type_constructor
     | Missing_destructor of Dolmen.Id.t
+    | Higher_order_application
+    | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
     | Unhandled_ast (**)
   (** The list of potential errors that can arise during typechecking. *)
 
@@ -113,6 +115,15 @@ module type S = sig
     | `Term of T.Var.t ]
   (** Lookup a variable in an environment. *)
 
+  val declare_ty_const :
+    Dolmen.Id.t -> Ty.Const.t -> Dolmen.ParseLocation.t -> unit
+  (** Declare a new type constant. *)
+
+  val declare_term_const :
+    Dolmen.Id.t -> T.Const.t -> Dolmen.ParseLocation.t -> unit
+  (** Declare a new term constant. *)
+
+
   (** {2 Parsing helpers} *)
 
   val ty_apply :
@@ -120,6 +131,7 @@ module type S = sig
   val term_apply :
     (T.Const.t -> Ty.t list -> T.t list -> T.t) typer
   (** Wrappers for making applications, so that it raises the right exceptions. *)
+
 
   (** {2 Parsing functions} *)
 

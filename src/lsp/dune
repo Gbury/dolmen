@@ -1,0 +1,6 @@
+(executable
+  (name         main)
+  (public_name  dolmen_lsp)
+  (package      dolmen_lsp)
+  (libraries    dolmen dolmen_type lsp)
+ )
