@@ -1,0 +1,21 @@
+
+(ocamllex (modules lexAe))
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_ae)
+)
+
+(menhir
+ (infer true)
+ (flags (--explain --table --external-tokens Tokens_ae))
+ (modules tokens_ae parseAe)
+ (merge_into parseAe)
+)
+
+(library
+  (name           dolmen_ae)
+  (public_name    dolmen.ae)
+  (libraries      dolmen_std menhirLib)
+  (modules        Tokens_ae LexAe ParseAe Ast_ae Dolmen_ae)
+)
