@@ -3,7 +3,7 @@
   (name            dolmen_class)
   (public_name     dolmen.class)
   (libraries       dolmen_intf dolmen_std
-                   dolmen_dimacs dolmen_icnf
+                   dolmen_ae dolmen_dimacs dolmen_icnf
                    dolmen_smtlib dolmen_tptp dolmen_zf
                    menhirLib)
   (modules Logic)

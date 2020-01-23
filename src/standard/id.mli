@@ -17,6 +17,8 @@ type value =
   (** Bitvector in binary notation, e.g. ["0b011010111010"] *)
   | Hexadecimal
   (** Bitvector in hexadecimal notation, e.g. ["0x9a23e5f"] *)
+  | Bitvector
+  (** Bitvector litteral. *)
 
 type namespace =
   | Var
@@ -30,6 +32,8 @@ type namespace =
   (** Namespace for attributes (also called annotations). *)
   | Decl
   (** Namespace used for naming declarations/definitions/statements... *)
+  | Track
+  (** Namespace used to track specific values throughout some files. *)
   | Module of string
   (** Namespaces defined by modules (used for instance in dedukti). *)
   | Value of value
@@ -74,6 +78,16 @@ val print : Format.formatter -> t -> unit
 
 
 (** {2 Standard attributes} *)
+
+val ac_symbol : t
+(** Used to denote associative-commutative symbols. *)
+
+val case_split : t
+(** Used to annote axioms/antecedants which are case split in alt-ergo. *)
+
+val theory_decl : t
+(** Used to define theories; used primarily in alt-ergo where it affects
+    what engine is used to trigger axioms in the theory. *)
 
 val rwrt_rule : t
 (** The tagged term is (or at least should be) a rewrite rule. *)

@@ -7,6 +7,7 @@ module type S = sig
   exception Extension_not_found of string
 
   type language =
+    | Alt_ergo
     | Dimacs
     | ICNF
     | Smtlib
@@ -50,6 +51,7 @@ module Make
   module type S = Dolmen_intf.Language.S with type statement := S.t
 
   type language =
+    | Alt_ergo
     | Dimacs
     | ICNF
     | Smtlib
@@ -57,6 +59,7 @@ module Make
     | Zf
 
   let enum = [
+    "ae", Alt_ergo;
     "dimacs", Dimacs;
     "iCNF",   ICNF;
     "smt2",   Smtlib;
@@ -68,11 +71,12 @@ module Make
     fst (List.find (fun (_, l') -> l = l') enum)
 
   let assoc = [
-    Dimacs, ".cnf",  (module Dolmen_dimacs.Make(L)(T)(S)     : S);
-    ICNF,   ".icnf", (module Dolmen_icnf.Make(L)(T)(S)       : S);
-    Smtlib, ".smt2", (module Dolmen_smtlib.Make(L)(I)(T)(S)  : S);
-    Tptp,   ".p",    (module Dolmen_tptp.Make(L)(I)(T)(S)    : S);
-    Zf,     ".zf",   (module Dolmen_zf.Make(L)(I)(T)(S)      : S);
+    Alt_ergo,   ".ae",    (module Dolmen_ae.Make(L)(I)(T)(S)      : S);
+    Dimacs,     ".cnf",   (module Dolmen_dimacs.Make(L)(T)(S)     : S);
+    ICNF,       ".icnf",  (module Dolmen_icnf.Make(L)(T)(S)       : S);
+    Smtlib,     ".smt2",  (module Dolmen_smtlib.Make(L)(I)(T)(S)  : S);
+    Tptp,       ".p",     (module Dolmen_tptp.Make(L)(I)(T)(S)    : S);
+    Zf,         ".zf",    (module Dolmen_zf.Make(L)(I)(T)(S)      : S);
   ]
 
   let of_language l =

@@ -43,15 +43,38 @@ module type Logic = sig
       in tptp for instance). Used to define new types, or quantify type variables
       in languages that support polymorphism. *)
 
-  val ty_int    : ?loc:location -> unit -> t
-  (** The type of integers, defined as a specific token by the Zipperposition format;
-      in other languages, it might be represented as a constant with a specific name
-      (for isntance, tptp's "$int") .*)
-
   val prop      : ?loc:location -> unit -> t
   (** The type of propositions. Also defined as a lexical token by the Zipperposition
       format. Will be defined as a constant in most other languages (for instance,
       "$o" in tptp). *)
+
+  val bool   : ?loc:location -> unit -> t
+  (** The type of boolean, defined as a specific token by the Alt-ergo format;
+      in other languages, it might be represented as a constant with a specific name. *)
+
+  val ty_unit   : ?loc:location -> unit -> t
+  (** The type unit, defined as a specific token by the Alt-ergo format;
+      in other languages, it might be represented as a constant with a specific name. *)
+
+  val ty_int    : ?loc:location -> unit -> t
+  (** The type of integers, defined as a specific token by the Zipperposition and Alt-ergo
+      formats;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, tptp's "$int") .*)
+
+  val ty_real   : ?loc:location -> unit -> t
+  (** The type of integers, defined as a specific token by the Alt-ergo format;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, tptp's "$int") .*)
+
+  val ty_bitv   : ?loc:location -> int -> t
+  (** The type of bitvectors of the given constant length, defined as a specifi token
+      by the Alt-ergo format;
+      in other languages, it might be represented as a constant with a specific name
+      (for isntance, smtlib(s "bitv") .*)
+
+  val void      : ?loc:location -> unit -> t
+  (** The only value of type unit, defined as a specific token by the Alt-ergo format. *)
 
   val true_     : ?loc:location -> unit -> t
   val false_    : ?loc:location -> unit -> t
@@ -110,6 +133,9 @@ module type Logic = sig
   (** Constructors for words defined as numeric formats by the languages
       specifications. These also can be safely aliased to [const]. *)
 
+  val bitv     : ?loc:location -> string -> t
+  (** Bitvetor litteral, defined as a specific token in Alt-ergo;
+      Expects a decimal integer in the string to be extended as a bitvector. *)
 
   (** {3 Term constructors} *)
 
@@ -119,9 +145,13 @@ module type Logic = sig
       supposed, or defined, type. *)
 
   val eq    : ?loc:location -> t -> t -> t
+  val neq   : ?loc:location -> t list -> t
+  (** Equality and dis-equality of terms. *)
+
   val not_  : ?loc:location -> t -> t
   val or_   : ?loc:location -> t list -> t
   val and_  : ?loc:location -> t list -> t
+  val xor   : ?loc:location -> t -> t -> t
   val imply : ?loc:location -> t -> t -> t
   val equiv : ?loc:location -> t -> t -> t
   (** Proposition construction functions. The conjunction and disjunction
@@ -171,9 +201,10 @@ module type Logic = sig
 
   val arrow   : ?loc:location -> t -> t -> t
   (** Function type constructor, for curryfied functions. Functions
-      that takes multiple arguments in first-order terms (and so
-      naturally not curryfied) will take a product as only argument
-      (see the following [product] function). *)
+      that takes multiple arguments in first-order terms might take
+      a product as only argument (see the following [product] function)
+      in some languages (e.g. tptp), or be curryfied using this constructor
+      in other languages (e.g. alt-ergo). *)
 
   val product : ?loc:location -> t -> t -> t
   (** Product type constructor, used for instance in the types of
@@ -184,6 +215,44 @@ module type Logic = sig
 
   val subtype : ?loc:location -> t -> t -> t
   (** Subtype relation for types. *)
+
+  (** {3 Record constructors} *)
+
+  val record : ?loc:location -> t list -> t
+  (** Create a record expression. *)
+
+  val record_with : ?loc:location -> t -> t list -> t
+  (** Record "with" update (e.g. "{ r with ....}"). *)
+
+  val record_access : ?loc:location -> t -> id -> t
+  (** Field record access. *)
+
+  (** {3 Algebraic datatypes} *)
+
+  val adt_check : ?loc:location -> t -> id -> t
+  (** Check whether some expression matches a given adt constructor
+      (in head position). *)
+
+  val adt_project : ?loc:location -> t -> id -> t
+  (** Project a field of an adt constructor (usually unsafe except when
+      guarded by an adt_check function). *)
+
+
+  (** {3 Array constructors} *)
+
+  val array_get : ?loc:location -> t -> t -> t
+  (** Array getter. *)
+
+  val array_set : ?loc:location -> t -> t -> t -> t
+  (** Array setter. *)
+
+  (** {3 Bitvector constructors} *)
+
+  val bitv_extract : ?loc:location -> t -> int -> int -> t
+  (** Bitvector extraction. *)
+
+  val bitv_concat : ?loc:location -> t -> t -> t
+  (** Bitvector concatenation. *)
 
   (** {3 Arithmetic constructors} *)
 
@@ -199,6 +268,18 @@ module type Logic = sig
   val mult   : ?loc:location -> t -> t -> t
   (** Arithmetic multiplication. *)
 
+  val div    : ?loc:location -> t -> t -> t
+  (** Arithmetic division quotient. *)
+
+  val mod_   : ?loc:location -> t -> t -> t
+  (** Arithmetic modulo (aka division reminder). *)
+
+  val int_pow : ?loc:location -> t -> t -> t
+  (** Integer power. *)
+
+  val real_pow : ?loc:location -> t -> t -> t
+  (** Real power. *)
+
   val lt     : ?loc:location -> t -> t -> t
   (** Arithmetic "lesser than" comparison (strict). *)
 
@@ -211,14 +292,43 @@ module type Logic = sig
   val geq    : ?loc:location -> t -> t -> t
   (** Arithmetic "greater or equal" comparison. *)
 
+  (** {3 Triggers} *)
+
+  val in_interval : ?loc:location -> t -> (t * bool) -> (t * bool) -> t
+  (** Create a predicate for whether a term is within the given bounds
+      (each bound is represented by a term which is tis value and a boolean
+      which specifies whether it is strict or not). *)
+
+  val maps_to : ?loc:location -> id -> t -> t
+  (** Id mapping (see alt-ergo). *)
+
+  val trigger : ?loc:location -> t list -> t
+  (** Create a multi-trigger (i.e. all terms in the lsit must match to
+      trigger). *)
+
+  val triggers : ?loc:location -> t -> t list -> t
+  (** [triggers ~loc f l] annotates formula/term [f] with a list of triggers. *)
+
+  val filters : ?loc:location -> t -> t list -> t
+  (** [filters ~loc f l] annotates formula/term [f] with a list of filters. *)
+
 
   (** {3 Special constructions} *)
+
+  val tracked : ?loc:location -> id -> t -> t
+  (** Name a term for tracking purposes. *)
 
   val quoted  : ?loc:location -> string -> t
   (** Create an attribute from a quoted string (in Zf). *)
 
   val sequent : ?loc:location -> t list -> t list -> t
   (** Sequents as terms *)
+
+  val check   : ?loc:location -> t -> t
+  (** Check a term (see alt-ergo). *)
+
+  val cut     : ?loc:location -> t -> t
+  (** Create a cut (see alt-ergo). *)
 
   val annot   : ?loc:location -> t -> t list -> t
   (** Attach a list of attributes (also called annotations) to a term. Attributes

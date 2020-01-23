@@ -73,7 +73,7 @@ module type S = sig
   exception Typing_error of err * env * Dolmen.Term.t
   (** Exception raised when a typing error is encountered. *)
 
-  exception Not_well_founded_datatypes of Dolmen.Statement.inductive list
+  exception Not_well_founded_datatypes of Dolmen.Statement.decl list
   (** Exception raised when a list of inductive datatypes could not be proved to
       be well-founded. *)
 
@@ -151,12 +151,13 @@ module type S = sig
 
   (** {2 High-level functions} *)
 
-  val new_decl :
-    (?attr:Dolmen.Term.t -> Dolmen.Id.t ->
-     [ `Type_decl of Ty.Const.t
-     | `Term_decl of T.Const.t
-     ]) typer
-  (** Parse a declaration. *)
+  val decls :
+    env -> ?attr:Dolmen.Term.t ->
+    Dolmen.Statement.decl list ->
+    [ `Type_decl of Ty.Const.t
+    | `Term_decl of T.Const.t
+    ] list
+  (** Parse a list of potentially mutually recursive declarations. *)
 
   val new_def :
     (?attr:Dolmen.Term.t -> Dolmen.Id.t ->
@@ -164,10 +165,6 @@ module type S = sig
      | `Term_def of Dolmen.Id.t * tag list * Ty.Var.t list * T.Var.t list * T.t
      ]) typer
   (** Parse a definition *)
-
-  val inductives :
-    env -> ?attr:Dolmen.Term.t -> Dolmen.Statement.inductive list -> Ty.Const.t list
-  (** Typecheck a list of mutually recursive type declarations. *)
 
   val parse : T.t typer
   (** Parse a formula *)

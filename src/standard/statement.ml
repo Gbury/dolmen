@@ -5,6 +5,12 @@
 type term = Term.t
 type location = ParseLocation.t
 
+type abstract = {
+  id : Id.t;
+  ty : term;
+  loc : location option;
+}
+
 type inductive = {
   id : Id.t;
   vars : term list;
@@ -12,6 +18,19 @@ type inductive = {
   loc : location option;
   attr : term option;
 }
+
+type record = {
+  id : Id.t;
+  vars : term list;
+  fields : (Id.t * term) list;
+  loc : location option;
+  attr : term option;
+}
+
+type decl =
+  | Abstract of abstract
+  | Record of record
+  | Inductive of inductive
 
 (* Description of statements. *)
 type descr =
@@ -38,8 +57,7 @@ type descr =
   | Set_option of term
 
   | Def of Id.t * term
-  | Decl of Id.t * term
-  | Inductive of inductive list
+  | Decls of decl list
 
   | Get_proof
   | Get_unsat_core
@@ -63,6 +81,32 @@ and t = {
 }
 
 (* Debug printing *)
+
+let pp_abstract b (i : abstract) =
+  Printf.bprintf b "Abstract %a: %a\n" Id.pp i.id Term.pp i.ty
+
+let pp_inductive b (i : inductive) =
+  Printf.bprintf b "Inductive(%d): %a, %a\n"
+    (List.length i.cstrs) Id.pp i.id
+    (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
+  Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
+    ~pp:(fun b (cstr, l) -> Printf.bprintf b "%a: %a"
+            Id.pp cstr
+            (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) l
+        ) b i.cstrs
+
+let pp_record b (i : record) =
+  Printf.bprintf b "Record: %a, %a:\n  { %a}\n" Id.pp i.id
+    (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars
+    (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:";\n"
+       ~pp:(fun b (id, ty) ->
+           Printf.bprintf b "%a: %a" Id.pp id Term.pp ty
+         )) i.fields
+
+let pp_type_def b = function
+  | Abstract a -> pp_abstract b a
+  | Record r -> pp_record b r
+  | Inductive i -> pp_inductive b i
 
 let rec pp_descr b = function
   | Pack l ->
@@ -98,18 +142,9 @@ let rec pp_descr b = function
     Printf.bprintf b "set-option: %a" Term.pp t
 
   | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
-  | Decl (id, t) -> Printf.bprintf b "decl: %a : %a" Id.pp id Term.pp t
-  | Inductive l ->
-    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:(fun b i ->
-        Printf.bprintf b "Inductive(%d): %a, %a\n"
-          (List.length i.cstrs) Id.pp i.id
-          (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) i.vars;
-        Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n"
-          ~pp:(fun b (cstr, l) -> Printf.bprintf b "%a: %a"
-                  Id.pp cstr
-                  (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" " ~pp:Term.pp) l
-              ) b i.cstrs
-      ) b l
+  | Decls [t] -> pp_type_def b t
+  | Decls l ->
+    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:pp_type_def b l
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
@@ -129,6 +164,32 @@ and pp b = function { descr; _ } ->
   Printf.bprintf b "%a" pp_descr descr
 
 (* Pretty printing *)
+
+let print_abstract fmt (a : abstract) =
+  Format.fprintf fmt "@[<hov 2>abstract:@ %a :@ %a@]" Id.print a.id Term.print a.ty
+
+let print_inductive fmt (i : inductive) =
+  Format.fprintf fmt "@[<hv 2>Inductive(%d) %a(@[<hov>%a@]) =@ %a@]"
+    (List.length i.cstrs) Id.print i.id
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) i.vars
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ "
+       ~print:(fun fmt (cstr, l) ->
+           Format.fprintf fmt "| %a : @[<hov>%a@]" Id.print cstr (
+             Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
+           ) l)) i.cstrs
+
+let print_record fmt (r : record) =
+  Format.fprintf fmt "@[<hv 2>Record %a(%a) = {@ %a}@]"
+    Id.print r.id
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) r.vars
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:";@ " ~print:(fun fmt (f, ty) ->
+         Format.fprintf fmt "%a : %a" Id.print f Term.print ty
+       )) r.fields
+
+let print_type_def fmt = function
+  | Abstract a -> print_abstract fmt a
+  | Record r -> print_record fmt r
+  | Inductive i -> print_inductive fmt i
 
 let rec print_descr fmt = function
   | Pack l ->
@@ -171,21 +232,11 @@ let rec print_descr fmt = function
 
   | Def (id, t) ->
     Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
-  | Decl (id, t) ->
-    Format.fprintf fmt "@[<hov 2>decl:@ %a :@ %a@]" Id.print id Term.print t
-  | Inductive l ->
-    let print fmt i =
-      Format.fprintf fmt "@[<hov 2>Inductive(%d) %a@ %a@\n%a@]"
-        (List.length i.cstrs) Id.print i.id
-        (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) i.vars
-        (Misc.print_list ~print_sep:Format.fprintf ~sep:"@\n"
-           ~print:(fun fmt (cstr, l) ->
-               Format.fprintf fmt "%a: %a" Id.print cstr (
-                 Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
-               ) l)) i.cstrs
-    in
-    Format.fprintf fmt "@[<v>%a@]"
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
+  | Decls [t] ->
+    print_type_def fmt t
+  | Decls l ->
+    Format.fprintf fmt "@[<v>rec_types:@ %a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:print_type_def) l
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
@@ -252,7 +303,52 @@ let echo ?loc s = mk ?loc (Echo s)
 let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
 
+(* Alt-ergo wrappers *)
+let logic ?loc ~ac ids ty =
+  let attr = if ac then Some (Term.const ?loc Id.ac_symbol) else None in
+  let l = List.map (fun id -> Abstract { id; ty; loc; }) ids in
+  mk ?loc ?attr (Decls l)
 
+let record_type ?loc id vars fields =
+  mk ?loc (Decls [Record { id; vars; fields; loc; attr = None; }])
+
+let abstract_type ?loc id vars =
+  let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
+  mk ?loc (Decls [Abstract { id; ty; loc; }])
+
+let algebraic ?loc id vars cstrs =
+  mk ?loc (Decls [Inductive { id; vars; cstrs; loc; attr = None; }])
+
+let rec_types ?loc l =
+  let l = List.map (function
+      | { descr = Decls l'; _ } -> l'
+      | _ -> assert false
+    ) l in
+  let l = List.flatten l in
+  mk ?loc (Decls l)
+
+let axiom ?loc id t =
+  mk ~id ?loc (Antecedent t)
+
+let case_split ?loc id t =
+  let attr = Term.const ?loc Id.case_split in
+  mk ~id ?loc ~attr (Antecedent t)
+
+let prove_goal ?loc id t =
+  mk ~id ?loc @@ Pack [
+    mk ~id ?loc (Consequent t);
+    mk (Prove []);
+  ]
+
+let rewriting ?loc id l =
+  mk ~id ?loc @@ Pack (List.map (fun t ->
+      antecedent ?loc (Term.add_attr (Term.const Id.rwrt_rule) t)
+    ) l)
+
+let theory ?loc id extends l =
+  let attr = Term.colon ?loc (Term.const ?loc Id.theory_decl)
+      (Term.colon ?loc (Term.const ?loc id) (Term.const ?loc extends)) in
+  mk ?loc ~attr (Pack l)
 
 (* Dimacs&iCNF wrappers *)
 let p_cnf ?loc nbvar nbclause =
@@ -272,11 +368,11 @@ let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
-  mk ?loc (Decl (id, ty))
+  mk ?loc (Decls [ Abstract { id; ty; loc; }])
 
 let fun_decl ?loc id l t' =
   let ty = Term.fun_ty ?loc l t' in
-  mk ?loc (Decl (id, ty))
+  mk ?loc (Decls [ Abstract { id; ty; loc; }])
 
 let type_def ?loc id args body =
   let l = List.map (fun id -> Term.colon (Term.const id) @@ Term.tType ()) args in
@@ -284,8 +380,10 @@ let type_def ?loc id args body =
   mk ?loc (Def (id, t))
 
 let datatypes ?loc l =
-  let l' = List.map (fun (id, vars, cstrs) -> {id; vars; cstrs; loc; attr = None;}) l in
-  mk ?loc (Inductive l')
+  let l' = List.map (fun (id, vars, cstrs) ->
+      Inductive {id; vars; cstrs; loc; attr = None;}
+    ) l in
+  mk ?loc (Decls l')
 
 let fun_def ?loc id args ty_ret body =
   let t = Term.lambda args (Term.colon body ty_ret) in
@@ -329,7 +427,7 @@ let lemma ?loc ?attrs t =
 
 let decl ?loc ?attrs id ty =
   let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Decl (id, ty))
+  mk ?loc ?attr (Decls [Abstract { id; ty; loc; }])
 
 let definition ?loc ?attrs s ty l =
   let attr = zf_attr ?loc attrs in
@@ -340,17 +438,17 @@ let definition ?loc ?attrs s ty l =
 
 let inductive ?loc ?attrs id vars cstrs =
   let attr = zf_attr ?loc attrs in
-  mk ?loc (Inductive [{id; vars; cstrs; loc; attr; }])
+  mk ?loc (Decls [Inductive {id; vars; cstrs; loc; attr; }])
 
 let data ?loc ?attrs l =
   (* this is currently only used for mutually recursive datatypes *)
   let attr = zf_attr ?loc attrs in
   let l = List.map (function
-      | { descr = Inductive l'; _ } -> l'
+      | { descr = Decls l'; _ } -> l'
       | _ -> assert false
     ) l in
   let l = List.flatten l in
-  mk ?loc ?attr (Inductive l)
+  mk ?loc ?attr (Decls l)
 
 
 (* Wrappers for tptp *)
@@ -390,7 +488,7 @@ let tptp ?loc ?annot id role body =
     | "type" ->
       begin match body with
         | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
-          Decl (s, ty)
+          Decls [Abstract { id = s; ty; loc }]
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
           Pack []
@@ -427,6 +525,14 @@ let cnf ?loc ?annot id role t =
 let normalize_inductive f i =
   { i with cstrs = List.map (fun (x, l) -> (x, List.map f l)) i.cstrs; }
 
+let normalize_record f r =
+  { r with fields = List.map (fun (id, ty) -> (id, f ty)) r.fields; }
+
+let normalize_type_def f = function
+  | Abstract { id; ty; loc; } -> Abstract { id; ty = f ty; loc; }
+  | Record r -> Record (normalize_record f r)
+  | Inductive i -> Inductive (normalize_inductive f i)
+
 let rec normalize_descr f = function
   | Pack l -> Pack (List.map (normalize f) l)
 
@@ -442,8 +548,7 @@ let rec normalize_descr f = function
   | Set_option t -> Set_option (f t)
 
   | Def (id, t) -> Def (id, f t)
-  | Decl (id, t) -> Decl (id, f t)
-  | Inductive l -> Inductive (List.map (normalize_inductive f) l)
+  | Decls l -> Decls (List.map (normalize_type_def f) l)
 
   | Get_value l -> Get_value (List.map f l)
 

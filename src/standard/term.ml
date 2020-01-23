@@ -5,7 +5,9 @@ type location = ParseLocation.t
 
 type builtin =
   | Wildcard
-  | Ttype | Prop
+  | Ttype
+  | Unit | Void
+  | Prop | Bool
   | True | False
   | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
 
@@ -13,8 +15,11 @@ type builtin =
   | Sequent             (* Is the given sequent provable ? *)
 
   | Int                 (* Arithmetic type for integers *)
+  | Real                (* Arithmetic type for reals *)
   | Minus               (* arithmetic unary minus *)
   | Add | Sub | Mult    (* arithmetic operators *)
+  | Div | Mod           (* arithmetic division *)
+  | Int_pow | Real_pow  (* arithmetic power (it's over 9000!) *)
   | Lt | Leq            (* arithmetic comparisons *)
   | Gt | Geq            (* arithmetic comparisons *)
 
@@ -26,6 +31,24 @@ type builtin =
   | Nand | Xor | Nor    (* Advanced propositional connectives *)
   | Imply | Implied     (* Implication and left implication *)
   | Equiv               (* Equivalence *)
+
+  | Bitv of int         (* Bitvector type (with given length) *)
+  | Bitv_extract of int * int (* Bitvector extraction *)
+  | Bitv_concat         (* Bitvector concatenation *)
+
+  | Array_get
+  | Array_set           (* array operations *)
+
+  | Adt_check
+  | Adt_project         (* adt operations *)
+
+  | Record
+  | Record_with
+  | Record_access       (* record operations *)
+
+  | Maps_to
+  | In_interval of bool * bool
+  | Check | Cut         (* alt-ergo builtins *)
 
 type binder =
   | All | Ex
@@ -59,6 +82,7 @@ let infix_builtin n = function
   | Imply | Implied | Equiv
   | Product | Union
   | Sequent | Subtype
+  | Adt_check | Adt_project | Record_access
     -> true
   | Distinct when n = 2
     -> true
@@ -66,19 +90,27 @@ let infix_builtin n = function
 
 let builtin_to_string = function
   | Wildcard -> "_"
-  | Ttype -> "$tType"
-  | Prop -> "$o"
+  | Ttype -> "Ttype"
+  | Unit -> "unit"
+  | Void -> "()"
+  | Prop -> "Prop"
+  | Bool -> "Bool"
   | True -> "⊤"
   | False -> "⊥"
   | Eq -> "=="
   | Distinct -> "!="
-  | Ite -> "#ite"
+  | Ite -> "ite"
   | Sequent -> "⊢"
-  | Int -> "$int"
+  | Int -> "ℤ"
+  | Real -> "ℝ"
   | Minus -> "-"
   | Add -> "+"
   | Sub -> "-"
   | Mult -> "×"
+  | Div -> "÷"
+  | Mod -> "mod"
+  | Int_pow -> "**"
+  | Real_pow -> "**."
   | Lt -> "<"
   | Leq -> "≤"
   | Gt -> ">"
@@ -95,6 +127,22 @@ let builtin_to_string = function
   | Imply -> "⇒"
   | Implied -> "⇐"
   | Equiv -> "⇔"
+  | Bitv i -> Printf.sprintf "bitv(%d)" i
+  | Bitv_extract (i, j) -> Printf.sprintf "bitv_extract(%d;%d)" i j
+  | Bitv_concat -> "bitv_concat"
+  | Array_get -> "get"
+  | Array_set -> "set"
+  | Adt_check -> "?"
+  | Adt_project -> "#"
+  | Record -> "record"
+  | Record_with -> "record_with"
+  | Record_access -> "."
+  | Maps_to -> "↦"
+  | In_interval (b, b') ->
+    let bracket = function true -> "]" | false -> "[" in
+    Printf.sprintf "in_interval%s%s" (bracket b) (bracket (not b'))
+  | Check -> "check"
+  | Cut -> "cut"
 
 let binder_to_string = function
   | All -> "∀"
@@ -278,6 +326,7 @@ let equiv_t     = builtin Equiv
 let implies_t   = builtin Imply
 let implied_t   = builtin Implied
 
+let void        = builtin Void
 let true_       = builtin True
 let false_      = builtin False
 let wildcard    = builtin Wildcard
@@ -291,44 +340,109 @@ let subtype_t   = builtin Subtype
 
 let tType       = builtin Ttype
 let prop        = builtin Prop
+let bool        = builtin Bool
 let data_t ?loc () = const ?loc Id.(mk Attr "$data")
 
+let ty_unit     = builtin Unit
 let ty_int      = builtin Int
+let ty_real     = builtin Real
 let uminus_t    = builtin Minus
 let add_t       = builtin Add
 let sub_t       = builtin Sub
 let mult_t      = builtin Mult
+let div_t       = builtin Div
+let mod_t       = builtin Mod
+let int_pow_t   = builtin Int_pow
+let real_pow_t  = builtin Real_pow
 let lt_t        = builtin Lt
 let leq_t       = builtin Leq
 let gt_t        = builtin Gt
 let geq_t       = builtin Geq
 
-let nary t = (fun ?loc l -> apply ?loc t l)
-let unary t = (fun ?loc x -> apply ?loc t [x])
-let binary t = (fun ?loc x y -> apply ?loc t [x; y])
+let array_get_t = builtin Array_get
+let array_set_t = builtin Array_set
+
+let bitv_t i            = builtin (Bitv i)
+let bitv_concat_t       = builtin Bitv_concat
+let bitv_extract_t i j  = builtin (Bitv_extract (i, j))
+
+let adt_check_t         = builtin Adt_check
+let adt_project_t       = builtin Adt_project
+
+let record_t            = builtin Record
+let record_with_t       = builtin Record_with
+let record_access_t     = builtin Record_access
+
+let nary t = (fun ?loc l -> apply ?loc (t ?loc ()) l)
+let unary t = (fun ?loc x -> apply ?loc (t ?loc ()) [x])
+let binary t = (fun ?loc x y -> apply ?loc (t ?loc ()) [x; y])
+let tertiary t = (fun ?loc x y z -> apply ?loc (t ?loc ()) [x; y; z])
 
 (* {2 Usual functions} *)
 
-let eq = binary (eq_t ())
+let eq = binary eq_t
+let neq = nary neq_t
 
 (* {2 Logical connectives} *)
 
-let not_  = unary (not_t ())
-let or_   = nary (or_t ())
-let and_  = nary (and_t ())
-let imply = binary (implies_t ())
-let equiv = binary (equiv_t ())
+let not_  = unary not_t
+let or_   = nary or_t
+let and_  = nary and_t
+let xor   = binary xor_t
+let imply = binary implies_t
+let equiv = binary equiv_t
 
 (** {2 Arithmetic} *)
 
-let uminus  = unary (uminus_t ())
-let add     = binary (add_t ())
-let sub     = binary (sub_t ())
-let mult    = binary (mult_t ())
-let lt      = binary (lt_t ())
-let leq     = binary (leq_t ())
-let gt      = binary (gt_t ())
-let geq     = binary (geq_t ())
+let uminus  = unary uminus_t
+let add     = binary add_t
+let sub     = binary sub_t
+let mult    = binary mult_t
+let div     = binary div_t
+let mod_    = binary mod_t
+let int_pow = binary int_pow_t
+let real_pow = binary real_pow_t
+let lt      = binary lt_t
+let leq     = binary leq_t
+let gt      = binary gt_t
+let geq     = binary geq_t
+
+(* {2 Arrays} *)
+
+let array_get = binary array_get_t
+let array_set = tertiary array_set_t
+
+(* {2 Bitvectors} *)
+
+let ty_bitv ?loc i =
+  apply ?loc (bitv_t i ?loc ()) []
+
+let bitv_extract ?loc t i j =
+  apply ?loc (bitv_extract_t i j ?loc ()) [t]
+
+let bitv_concat = binary bitv_concat_t
+
+(* {2 ADTs} *)
+
+let adt_check ?loc t id =
+  let x = const ?loc id in
+  apply ?loc (adt_check_t ?loc ()) [t; x]
+
+let adt_project ?loc t id =
+  let x = const ?loc id in
+  apply ?loc (adt_project_t ?loc ()) [t; x]
+
+(** {2 Records} *)
+
+let record = nary record_t
+
+let record_with ?loc t l =
+  nary record_with_t ?loc (t :: l)
+
+let record_access ?loc t id =
+  let x = const ?loc id in
+  binary record_access_t ?loc t x
+
 
 (* {2 Binders} *)
 
@@ -370,6 +484,38 @@ let rec free_vars acc t =
 
 let fv t =
   S.elements (free_vars S.empty t)
+
+
+(* {2 Wrappers for alt-ergo} *)
+
+let bitv ?loc s = const ?loc Id.(mk (Value Bitvector) s)
+
+let cut = unary (builtin Cut)
+let check = unary (builtin Check)
+
+let trigger = and_
+
+let triggers_t = Id.(mk Attr "triggers")
+let triggers ?loc t l =
+  let a = apply ?loc (const ?loc triggers_t) l in
+  annot ?loc t [a]
+
+let filters_t = Id.(mk Attr "filters")
+let filters ?loc t l =
+  let a = apply ?loc (const ?loc filters_t) l in
+  annot ?loc t [a]
+
+let tracked ?loc id t =
+  let a = const ?loc id in
+  annot ?loc t [a]
+
+let maps_to ?loc id t =
+  let a = const ?loc id in
+  binary (builtin Maps_to) ?loc a t
+
+let in_interval ?loc t (lb, ls) (rb, rs) =
+  tertiary (builtin (In_interval (ls, rs))) ?loc t lb rb
+
 
 (* {2 Wrappers for dimacs} *)
 

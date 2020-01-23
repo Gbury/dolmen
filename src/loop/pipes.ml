@@ -40,10 +40,13 @@ module Make
     | `Term_def of Dolmen.Id.t * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
-  type decls = [
-    | `Inductives of Expr.ty_const list
+  type decl = [
     | `Type_decl of Expr.ty_const
     | `Term_decl of Expr.term_const
+  ]
+
+  type decls = [
+    | `Decls of decl list
   ]
 
   type assume = [
@@ -99,7 +102,8 @@ module Make
           match lang with
           | Parse.Zf
           | Parse.ICNF
-          | Parse.Smtlib -> s
+          | Parse.Smtlib
+          | Parse.Alt_ergo -> s
           | Parse.Dimacs
           | Parse.Tptp ->
             Dolmen.Statement.pack [s; Dolmen.Statement.prove ()]
@@ -116,7 +120,7 @@ module Make
 
   let gen_finally (gen : 'a Gen.t) cl : 'a Gen.t =
     (* Register a finaliser for the original generator in case an exception is
-       raise at some point in one of the pipes, which would prevent gen from
+       raised at some point in one of the pipes, which would prevent gen from
        reaching its end and thus prevent closing of the underlying file. *)
     let () = Gc.finalise_last cl gen in
     (* Return a new generator which wraps gen and calls the closing function
@@ -278,15 +282,10 @@ module Make
       | { S.descr = S.Def (id, t); _ } ->
         let st, ret = Typer.def st ?attr:c.S.attr id t in
         `Continue (st, (simple (def_id c) c.S.loc ret :> typechecked stmt))
-      | { S.descr = S.Decl (id, t); _ } ->
-        let st, ret = Typer.decl st ?attr:c.S.attr id t in
-        `Continue (st, (simple (decl_id c) c.S.loc ret :> typechecked stmt))
-      | { S.descr = S.Inductive l; _ } ->
-        let st, l = Typer.inductives st ?attr:c.S.attr l in
-        let stmt : typechecked stmt =
-          simple (decl_id c) c.S.loc (`Inductives l )
-        in
-        `Continue (st, stmt)
+      | { S.descr = S.Decls l; _ } ->
+        let st, l = Typer.decls st ?attr:c.S.attr l in
+        let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
+        `Continue (st, res)
 
       (* Smtlib's proof/model instructions *)
       | { S.descr = S.Get_proof; _ } ->

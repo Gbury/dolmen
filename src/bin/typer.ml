@@ -238,6 +238,7 @@ let typing_env (st : State.t) =
     | None -> assert false
     | Some Dimacs
     | Some ICNF -> Dolmen_type.Base.noop
+    | Some Alt_ergo -> Dolmen_type.Base.noop
     | Some Tptp ->
       Dolmen_type.Base.merge [
         Tptp_Base.parse;
@@ -278,13 +279,9 @@ let def st ?attr id t =
       st, `Term_def (id, vars, args, body)
   end
 
-let decl st ?attr id t =
+let decls st ?attr l =
   let env = typing_env st in
-  st, T.new_decl ?attr env t id
-
-let inductives st ?attr l =
-  let env = typing_env st in
-  st, T.inductives env ?attr l
+  st, T.decls env ?attr l
 
 let terms st ?attr:_ l =
   let env = typing_env st in

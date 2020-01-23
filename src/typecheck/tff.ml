@@ -436,7 +436,7 @@ module Make
   exception Typing_error of err * env * Ast.t
 
   (* Exception for not well-dounded datatypes definitions. *)
-  exception Not_well_founded_datatypes of Dolmen.Statement.inductive list
+  exception Not_well_founded_datatypes of Dolmen.Statement.decl list
 
     (* TOOD: uncomment this code
   (* Creating explanations *)
@@ -988,6 +988,12 @@ module Make
   (* Typechecking mutually recursive datatypes *)
   (* ************************************************************************ *)
 
+  let decl_id t =
+    match (t : Statement.decl) with
+    | Abstract { id; _ }
+    | Record { id; _ }
+    | Inductive { id; _ } -> id
+
   let appears_in s t =
     let mapper =
       { Ast.unit_mapper with
@@ -998,19 +1004,31 @@ module Make
     try Ast.map mapper t; false
     with Exit -> true
 
+  let well_founded_aux l t =
+    match (t : Statement.decl) with
+    | Abstract _ -> true
+    | Inductive { cstrs; _ } ->
+      List.exists (fun (_, args) ->
+          List.for_all (fun t ->
+              not (List.exists (fun i ->
+                  appears_in (decl_id i) t
+                ) l)
+            ) args
+        ) cstrs
+    | Record { fields; _ } ->
+      List.for_all (fun (_, t) ->
+          not (List.exists (fun i ->
+              appears_in (decl_id i) t
+            ) l)
+        ) fields
+
   let rec check_well_founded l =
-    match (l : Statement.inductive list) with
+    match (l : Statement.decl list) with
     | [] -> ()
     | _ ->
       let has_progressed = ref false in
-      let l' = List.filter (fun { Statement.cstrs; _ } ->
-          let b = List.exists (fun (_, args) ->
-              List.for_all (fun t ->
-                  not (List.exists (fun (i : Statement.inductive) ->
-                      appears_in i.Statement.id t
-                    ) l)
-                ) args
-            ) cstrs in
+      let l' = List.filter (fun t ->
+          let b = well_founded_aux l t in
           if b then has_progressed := true;
           not b
         ) l in
@@ -1054,8 +1072,15 @@ module Make
           ) pargs targs
       ) cstrs_with_ids defined_cstrs
 
+  let decl env cst t =
+    match cst, (t : Statement.decl) with
+    | _, Abstract _ -> ()
+    | `Term_decl _, Inductive _ -> assert false
+    | `Type_decl c, Inductive i -> inductive env c i
+    | `Term_decl _, Record _ -> assert false
+    | `Type_decl _, Record _ -> (* TODO *) ()
 
-  let inductives env ?attr l =
+  let decls env ?attr l =
     let tags = match attr with
       | None -> []
       | Some a -> parse_attr_and env a
@@ -1063,40 +1088,38 @@ module Make
     (* Check well-foundedness *)
     check_well_founded l;
     (* First create (in the global env) the type const for each adt *)
-    let tys = List.map (fun { Statement.id; vars; loc; _ } ->
-        let n = List.length vars in
-        let c = Ty.Const.mk (Id.full_name id) n in
-        List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-        decl_ty_const id c (Declared (or_default_loc loc));
-        c
+    let l_decl = List.map (fun (t : Statement.decl) ->
+        match t with
+        | Abstract { id; ty; loc; } ->
+          begin match parse_sig env ty with
+            | `Ty_cstr n ->
+              let c = Ty.Const.mk (Id.full_name id) n in
+              List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
+              decl_ty_const id c (Declared (or_default_loc loc));
+              `Type_decl c
+            | `Fun_ty (vars, args, ret) ->
+              let f = T.Const.mk (Id.full_name id) vars args ret in
+              List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
+              decl_term_const id f (Declared (or_default_loc loc));
+              `Term_decl f
+          end
+        | Record { id; vars; loc; _ }
+        | Inductive { id; vars; loc; _ } ->
+          let n = List.length vars in
+          let c = Ty.Const.mk (Id.full_name id) n in
+          List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
+          decl_ty_const id c (Declared (or_default_loc loc));
+          `Type_decl c
       ) l in
     (* Parse each definition
        TODO: parse (and thus define them with T) in the topological order
              defined by the well-founded check ? *)
-    List.iter2 (inductive env) tys l;
+    List.iter2 (decl env) l_decl l;
     (* Return the defined types *)
-    tys
-
+    l_decl
 
   (* High-level parsing functions *)
   (* ************************************************************************ *)
-
-  let new_decl env t ?attr id =
-    let tags = match attr with
-      | None -> []
-      | Some a -> parse_attr_and env a
-    in
-    match parse_sig env t with
-    | `Ty_cstr n ->
-      let c = Ty.Const.mk (Id.full_name id) n in
-      List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-      decl_ty_const id c (Declared (get_loc t));
-      `Type_decl c
-    | `Fun_ty (vars, args, ret) ->
-      let f = T.Const.mk (Id.full_name id) vars args ret in
-      List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
-      decl_term_const id f (Declared (get_loc t));
-      `Term_decl f
 
   let new_def env t ?attr id =
     let tags = match attr with

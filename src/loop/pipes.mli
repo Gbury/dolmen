@@ -33,12 +33,16 @@ module Make
     | `Executed
   ]
 
-  type decls = [
-    | `Inductives of Expr.ty_const list
+  type decl = [
     | `Type_decl of Expr.ty_const
     | `Term_decl of Expr.term_const
   ]
   (** The type of top-level type declarations. *)
+
+  type decls = [
+    | `Decls of decl list
+  ]
+  (** A list of type declarations. *)
 
   type defs = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty

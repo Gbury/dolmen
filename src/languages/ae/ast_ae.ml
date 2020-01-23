@@ -9,6 +9,9 @@ module type Id = sig
   type namespace
   (** The type for namespaces. *)
 
+  val var : namespace
+  (** Used for type variables. *)
+
   val term : namespace
   (** Usual namespace, used for temrs, types and propositions. *)
 
@@ -16,10 +19,13 @@ module type Id = sig
   (** Names used to refer to tptp phrases. These are used
       in declarations and include statement. *)
 
+  val track : namespace
+  (** Namespace used to tag and identify sub-terms occuring in files. *)
+
   val mk : namespace -> string -> t
   (** Make an identifier *)
 
-  val named : namespace -> string -> string -> t
+  val tracked : track:t -> namespace -> string -> t
   (** Make an identifier with an additional name. *)
 
 end
@@ -36,8 +42,8 @@ module type Term = sig
   (** The type of locations attached to terms. *)
 
   val prop    : ?loc:location -> unit -> t
+  val bool    : ?loc:location -> unit -> t
   val ty_unit : ?loc:location -> unit -> t
-  val ty_bool : ?loc:location -> unit -> t
   val ty_int  : ?loc:location -> unit -> t
   val ty_real : ?loc:location -> unit -> t
   val ty_bitv : ?loc:location -> int -> t
@@ -49,8 +55,8 @@ module type Term = sig
   (** Builtin constants.  *)
 
   val not_  : ?loc:location -> t -> t
-  val and_  : ?loc:location -> t -> t -> t
-  val or_   : ?loc:location -> t -> t -> t
+  val and_  : ?loc:location -> t list -> t
+  val or_   : ?loc:location -> t list -> t
   val xor   : ?loc:location -> t -> t -> t
   val imply : ?loc:location -> t -> t -> t
   val equiv : ?loc:location -> t -> t -> t
@@ -70,14 +76,13 @@ module type Term = sig
   val int_pow   : ?loc:location -> t -> t -> t
   val real_pow  : ?loc:location -> t -> t -> t
   val lt        : ?loc:location -> t -> t -> t
-  val le        : ?loc:location -> t -> t -> t
+  val leq       : ?loc:location -> t -> t -> t
   val gt        : ?loc:location -> t -> t -> t
-  val ge        : ?loc:location -> t -> t -> t
+  val geq       : ?loc:location -> t -> t -> t
   (** Arithmetic builtins. *)
 
   val eq        : ?loc:location -> t -> t -> t
-  val neq       : ?loc:location -> t -> t -> t
-  val distinct  : ?loc:location -> t list -> t
+  val neq       : ?loc:location -> t list -> t
   (** Equality and disequality. *)
 
   val array_get : ?loc:location -> t -> t -> t
@@ -104,7 +109,7 @@ module type Term = sig
   val apply : ?loc:location -> t -> t list -> t
   (** Application of terms (as well as types). *)
 
-  val arrows : ?loc:location -> t list -> t -> t
+  val arrow : ?loc:location -> t -> t -> t
   (** Create a function type. *)
 
   val ite : ?loc:location -> t -> t -> t -> t
@@ -126,7 +131,7 @@ module type Term = sig
   (** Create a record expression, with a list of equalities of the form
       "label = expr". *)
 
-  val with_record : ?loc:location -> t -> t list -> t
+  val record_with : ?loc:location -> t -> t list -> t
   (** Record update, of the form "s with [label = expr, ...]". *)
 
   val record_access : ?loc:location -> t -> id -> t
@@ -165,8 +170,8 @@ module type Term = sig
   val filters : ?loc:location -> t -> t list -> t
   (** Annotate a term (genrally a quantified formula) with a list of filters. *)
 
-  val named : ?loc:location -> string -> t -> t
-  (** Annotate a term with a name for tracking purposes. *)
+  val tracked : ?loc:location -> id -> t -> t
+  (** Annotate a term with an id for tracking purposes. *)
 
 end
 
@@ -184,10 +189,10 @@ module type Statement = sig
   type location
   (** The type of locations attached to statements. *)
 
-  val logic : ?loc:location -> ac:bool -> term list -> term -> t
+  val logic : ?loc:location -> ac:bool -> id list -> term -> t
   (** Function declaration. *)
 
-  val record_type : ?loc:location -> id -> term list -> term list -> t
+  val record_type : ?loc:location -> id -> term list -> (id * term) list -> t
   (** Record type definition. *)
 
   val fun_def : ?loc:location -> id -> term list -> term -> term -> t
@@ -214,7 +219,7 @@ module type Statement = sig
   val rewriting : ?loc:location -> id -> term list -> t
   (** Create a (set of ?) rewriting rule(s). *)
 
-  val goal : ?loc:location -> id -> term -> t
+  val prove_goal : ?loc:location -> id -> term -> t
   (** Goal declaration. *)
 
 end

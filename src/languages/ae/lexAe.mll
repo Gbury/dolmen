@@ -30,9 +30,9 @@ let hex = digit | ['a'-'f''A'-'F']
 let hex_exp = ['p' 'P'] signed_integer
 let real_hex = "0x" hex+ '.' hex* hex_exp
 
-rule parse_token = parse
-  | '\n'                      { Lexing.new_line lexbuf; parse_token lexbuf }
-  | [' ' '\t' '\r']+          { parse_token lexbuf }
+rule token = parse
+  | '\n'                      { Lexing.new_line lexbuf; token lexbuf }
+  | [' ' '\t' '\r']+          { token lexbuf }
   | '?'                       { QM }
   | '?' identifier as id      { QM_ID id }
   | identifier as i           { match i with
@@ -79,7 +79,7 @@ rule parse_token = parse
   | integer as s              { INTEGER s }
   | real as s                 { DECIMAL s }
   | real_hex as s             { HEXADECIMAL s }
-  | "(*"                      { parse_comment lexbuf; parse_token lexbuf }
+  | "(*"                      { parse_comment lexbuf; token lexbuf }
   | "'"                       { QUOTE }
   | ","                       { COMMA }
   | ";"                       { PV }

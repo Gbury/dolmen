@@ -39,7 +39,8 @@ raw_named_ident:
   | id=ID
     { I.mk I.term id }
   | id=ID str=STRING
-    { I.named I.term id str }
+    { let track = I.mk I.track str in
+      I.tracked ~track I.term id }
 
 named_ident:
   | id=raw_named_ident
@@ -63,8 +64,9 @@ multi_logic_binder:
 /* Type variables */
 
 type_var:
-  | QUOTE v=ident
-    { v }
+  | QUOTE v=raw_ident
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (v I.var) }
 
 type_vars:
   | { [] }
@@ -78,12 +80,12 @@ type_vars:
 /* Type Expressions */
 
 primitive_type:
+  | BOOL
+    { let loc = L.mk_pos $startpos $endpos in
+      T.bool ~loc () }
   | UNIT
     { let loc = L.mk_pos $startpos $endpos in
       T.ty_unit ~loc () }
-  | BOOL
-    { let loc = L.mk_pos $startpos $endpos in
-      T.ty_bool ~loc () }
   | INT
     { let loc = L.mk_pos $startpos $endpos in
       T.ty_int ~loc () }
@@ -129,7 +131,7 @@ logic_type:
     { ty }
   | l=separated_list(COMMA, primitive_type) RIGHTARROW ret=primitive_type_or_prop
     { let loc = L.mk_pos $startpos $endpos in
-      T.arrows ~loc l ret }
+      List.fold_right (T.arrow ~loc) l ret }
 
 
 /* Main Expression language */
@@ -174,10 +176,10 @@ lexpr:
 
   | p=lexpr AND q=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      T.and_ ~loc p q }
+      T.and_ ~loc [p; q] }
   | p=lexpr OR q=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      T.or_ ~loc p q }
+    T.or_ ~loc [p; q] }
   | p=lexpr XOR q=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       T.xor ~loc p q }
@@ -193,20 +195,20 @@ lexpr:
       T.lt ~loc a b }
   | a=lexpr LE b=lexpr %prec prec_relation
     { let loc = L.mk_pos $startpos $endpos in
-      T.le ~loc a b }
+      T.leq ~loc a b }
   | a=lexpr GT b=lexpr %prec prec_relation
     { let loc = L.mk_pos $startpos $endpos in
       T.gt ~loc a b }
   | a=lexpr GE b=lexpr %prec prec_relation
     { let loc = L.mk_pos $startpos $endpos in
-      T.ge ~loc a b }
+      T.geq ~loc a b }
 
   | a=lexpr EQUAL b=lexpr %prec prec_relation
     { let loc = L.mk_pos $startpos $endpos in
       T.eq ~loc a b }
   | a=lexpr NOTEQ b=lexpr %prec prec_relation
     { let loc = L.mk_pos $startpos $endpos in
-      T.neq ~loc a b }
+      T.neq ~loc [a; b] }
 
 
   /* Bit Vectors */
@@ -231,7 +233,7 @@ lexpr:
 
   | DISTINCT LEFTPAR l=list2_lexpr_sep_comma RIGHTPAR
     { let loc = L.mk_pos $startpos $endpos in
-      T.distinct ~loc l }
+      T.neq ~loc l }
 
   | IF cond=lexpr THEN then_t=lexpr ELSE else_t=lexpr %prec prec_ite
     { let loc = L.mk_pos $startpos $endpos in
@@ -254,7 +256,8 @@ lexpr:
 
   | name=STRING COLON e=lexpr %prec prec_named
    { let loc = L.mk_pos $startpos $endpos in
-     T.named ~loc name e }
+     let id = I.mk I.track name in
+     T.tracked ~loc id e }
 
   | LET l=separated_nonempty_list(COMMA, let_binder) IN body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
@@ -332,7 +335,7 @@ simple_expr :
       T.record ~loc l }
   | LEFTBR s=simple_expr WITH l=separated_nonempty_list(PV, label_expr) RIGHTBR
     { let loc = L.mk_pos $startpos $endpos in
-      T.with_record ~loc s l }
+      T.record_with ~loc s l }
   | s=simple_expr DOT label=raw_ident
     { let loc = L.mk_pos $startpos $endpos in
       T.record_access ~loc s (label I.term) }
@@ -451,19 +454,23 @@ label_expr:
 
 /* Type definitions */
 
-label_with_type:
+record_label_with_type:
+  | id=raw_ident COLON ty=primitive_type
+    { id I.term, ty }
+
+record_type:
+  | LEFTBR l=separated_nonempty_list(PV, record_label_with_type) RIGHTBR
+    { l }
+
+algebraic_label_with_type:
   | id=ident COLON ty=primitive_type
     { let loc = L.mk_pos $startpos $endpos in
       T.colon ~loc id ty }
 
-record_type:
-  | LEFTBR l=separated_nonempty_list(PV, label_with_type) RIGHTBR
-    { l }
-
 algebraic_args:
   | { [] }
-  | OF r=record_type
-    { r }
+  | OF LEFTBR l=separated_nonempty_list(PV, algebraic_label_with_type) RIGHTBR
+    { l }
 
 algebraic_constructor:
   | c=raw_ident l=algebraic_args
@@ -516,7 +523,7 @@ decl:
     { let loc = L.mk_pos $startpos $endpos in
       S.record_type ~loc (id I.term) vars r }
 
-  | LOGIC ac=ac_modifier args=separated_nonempty_list(COMMA, named_ident) COLON ty=logic_type
+  | LOGIC ac=ac_modifier args=separated_nonempty_list(COMMA, raw_named_ident) COLON ty=logic_type
     { let loc = L.mk_pos $startpos $endpos in
       S.logic ~loc ~ac args ty }
 
@@ -547,6 +554,6 @@ decl:
 
   | GOAL name=decl_ident COLON body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      S.goal ~loc name body }
+      S.prove_goal ~loc name body }
 
 

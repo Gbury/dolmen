@@ -14,6 +14,8 @@ module type S = sig
   (** {2 Supported languages} *)
 
   type language =
+    | Alt_ergo
+    (** Alt-ergo's format *)
     | Dimacs
     (** Dimacs CNF format *)
     | ICNF

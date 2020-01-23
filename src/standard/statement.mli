@@ -17,6 +17,13 @@ type term = Term.t
 type location = ParseLocation.t
 (** Type aliases for readability. *)
 
+type abstract = {
+  id : Id.t;
+  ty : term;
+  loc : location option;
+}
+(** The type for abstract type definitions. *)
+
 type inductive = {
   id : Id.t;
   vars : term list;
@@ -33,6 +40,21 @@ type inductive = {
     - ["Nil", \[\]]
     - ["Cons", \[var "a"\]]
 *)
+
+type record = {
+  id : Id.t;
+  vars : term list;
+  fields : (Id.t * term) list;
+  loc : location option;
+  attr : term option;
+}
+(** The type of record definitions. *)
+
+type decl =
+  | Abstract of abstract
+  | Record of record
+  | Inductive of inductive (**)
+(** Type definitions. *)
 
 type descr =
   | Pack of t list
@@ -76,10 +98,8 @@ type descr =
 
   | Def of Id.t * term
   (** Symbol definition, i.e the symbol is equal to the given term. *)
-  | Decl of Id.t * term
-  (** Symbol declaration, i.e the symbol has the given term as its type. *)
-  | Inductive of inductive list
-  (** Inductive type definition, see the [inductive] type. *)
+  | Decls of decl list
+  (** A list of potentially recursive type definitions. *)
 
   | Get_proof
   (** Get the proof of the last sequent (if it was proved). *)

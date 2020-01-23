@@ -23,6 +23,8 @@ module Transformer = Dolmen_std.Transformer
 module ParseLocation = Dolmen_std.ParseLocation
 
 module Line = Dolmen_line
+
+module Ae = Dolmen_ae
 module Dimacs = Dolmen_dimacs
 module ICNF = Dolmen_icnf
 module Smtlib = Dolmen_smtlib

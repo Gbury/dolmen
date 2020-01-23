@@ -13,8 +13,14 @@ type builtin =
       during type-checking. *)
   | Ttype
   (** Builtin symbol for the type of Types. *)
+  | Unit
+  (** Unit type. *)
+  | Void
+  (** Only inhabitant of the unit type. *)
   | Prop
   (** Builtin symbol for the type of propositions. *)
+  | Bool
+  (** The boolean type. *)
   | True
   (** The [true] propositional constant. *)
   | False
@@ -32,8 +38,11 @@ type builtin =
       which are respectively a conjunction and a disjunction of propositional formulas. *)
 
   | Int
-  (** Builtin integer type. Currently specific to Zipperposition format; other languages
-      might use constants with pre-defined name, such as tptp's "$int". *)
+  (** Builtin integer type. Currently specific to Zipperposition and alt-ergo format;
+      other languages might use constants with pre-defined name, such as tptp's "$int". *)
+  | Real
+  (** Builtin real type. Currently specific to Alt-ergo format; other languages
+      might use constants with pre-defined name, such as smtlib's "real". *)
   | Minus
   (** Arithmetic unary minus. *)
   | Add
@@ -42,6 +51,14 @@ type builtin =
   (** Arithmetic substraction. *)
   | Mult
   (** Arithmetic multiplication. *)
+  | Div
+  (** Arithmetic division quotient *)
+  | Mod
+  (** Arithmetic division modulo *)
+  | Int_pow
+  (** Integer exponentiation. *)
+  | Real_pow
+  (** Real exponentiation. *)
   | Lt
   (** Arithmetic "less than" comparison (strict). *)
   | Leq
@@ -76,6 +93,39 @@ type builtin =
   (** Propositional left implication (i.e implication with reversed arguments). *)
   | Equiv
   (** Propositional equivalence *)
+
+  | Bitv of int
+  (** Bitvector type (with given length) *)
+  | Bitv_extract of int * int
+  (** Bitvector extraction *)
+  | Bitv_concat
+  (** Bitvector concatenation *)
+
+  | Array_get
+  (** Array getter. *)
+  | Array_set
+  (** Array setter. *)
+
+  | Adt_check
+  (** Algebraic datatype head constructore checker. *)
+  | Adt_project
+  (** Algebraic datatype projection. *)
+
+  | Record
+  (** Record creation *)
+  | Record_with
+  (** Record "with" creation *)
+  | Record_access
+  (** Record field access *)
+
+  | Maps_to
+  (** Mapping; used in Alt-ergo triggers. *)
+  | In_interval of bool * bool
+  (** Interval check; used in Alt-ergo triggers *)
+  | Check
+  (** Similar to cut, but does not introduce the proved term into the axioms. *)
+  | Cut
+  (** Insert a cut of the given term. *)
 (** The type of builtins symbols for terms.
     Some languages have specific syntax for logical connectives
     (tptp's'&&' or '||' for isntance) whereas some (smtlib for instance)

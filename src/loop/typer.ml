@@ -29,17 +29,13 @@ module type S = sig
      | `Term_def of Dolmen.Id.t * ty_var list * term_var list * term
      ]
 
-  val decl :
-    state -> ?attr:Dolmen.Term.t -> Dolmen.Id.t -> Dolmen.Term.t ->
-    state *
-    [
-     | `Type_decl of ty_const
-     | `Term_decl of term_const
-     ]
-
-  val inductives :
-    state -> ?attr:Dolmen.Term.t -> Dolmen.Statement.inductive list ->
-    state * ty_const list
+  val decls :
+    state -> ?attr:Dolmen.Term.t ->
+    Dolmen.Statement.decl list ->
+    state * [
+      | `Type_decl of ty_const
+      | `Term_decl of term_const
+    ] list
 
   val terms :
     state -> ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
