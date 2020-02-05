@@ -14,5 +14,6 @@ module Make
     type token = Tokens_ae.token
     type statement = S.t
     let env = []
+    let incremental = false
   end)(LexAe)(ParseAe.Make(L)(I)(T)(S))
 

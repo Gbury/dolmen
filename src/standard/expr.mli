@@ -293,6 +293,7 @@ module Ty : sig
     | Abstract
     | Adt of {
         ty : ty_const;
+        record : bool;
         cstrs : adt_case list;
       } (** *)
   (** The various ways to define a type inside the solver. *)
@@ -548,6 +549,24 @@ module Term : sig
 
   end
 
+  (** A module for Record fields. *)
+  module Field : sig
+
+    type t = term_const
+    (** A record field. *)
+
+    val hash : t -> int
+    (** A hash function for adt constructors, should be suitable to create hashtables. *)
+
+    val equal : t -> t -> bool
+    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+
+  end
+
+  val define_record :
+    ty_const -> ty_var list -> (string * ty) list -> Field.t list
+  (** Define a new record type. *)
+
   val define_adt :
     ty_const -> ty_var list ->
     (string * (ty * string option) list) list ->
@@ -582,6 +601,20 @@ module Term : sig
       [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
       is expected to have type [ty], but does not have that type. *)
 
+  exception Wrong_record_type of Field.t * ty_const
+  (** Exception raised in case of typing error during term construction.
+      This should be raised when the returned field was expected to be a field
+      for the returned record type constant, but it was of another record type. *)
+
+  exception Field_repeated of Field.t
+  (** Field repeated in a record expression. *)
+
+  exception Field_missing of Field.t
+  (** Field missing in a record expression. *)
+
+  exception Field_expected of term_const
+  (** A field was expected but the returned term constant is not a record field. *)
+
   val of_var : Var.t -> t
   (** Create a term from a variable *)
 
@@ -590,6 +623,9 @@ module Term : sig
 
   val apply_cstr : Cstr.t -> ty list -> t list -> t
   (** Polymorphic application of a constructor. *)
+
+  val apply_field : Field.t -> t -> t
+  (** Field access for a record. *)
 
   val _true : t
   val _false : t
@@ -603,6 +639,12 @@ module Term : sig
 
   val real : string -> t
   (** Real literals *)
+
+  val record : (Field.t * t) list -> t
+  (** Create a record *)
+
+  val record_with : t -> (Field.t * t) list -> t
+  (** Record udpate *)
 
   val eq : t -> t -> t
   (** Build the equality of two terms. *)

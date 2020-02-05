@@ -132,6 +132,13 @@ module Make
     in
     aux
 
+  let gen_of_list l =
+    let l = ref l in
+    (fun () -> match !l with
+       | [] -> None
+       | x :: r -> l := r; Some x
+    )
+
   let expand (st, c) =
     State.start `Include;
     let ret = match c with
@@ -147,9 +154,17 @@ module Make
           | None ->
             State.file_not_found ?loc ~dir ~file
           | Some file ->
-            let l, gen, cl = Parse.parse_input ?language (`File file) in
-            let st = State.set_lang st l in
-            st, `Gen (true, gen_finally gen cl)
+            begin match State.input_mode st with
+              | None
+              | Some `Incremental ->
+                let lang, gen, cl = Parse.parse_input ?language (`File file) in
+                let st = State.set_lang st lang in
+                st, `Gen (true, gen_finally gen cl)
+              | Some `Full ->
+                let lang, l = Parse.parse_file ?language file in
+                let st = State.set_lang st lang in
+                st, `Gen (true, gen_of_list l)
+            end
         end
       | _ -> (st, `Ok)
     in

@@ -23,11 +23,21 @@ module type Pipeline = sig
 
 end
 
+type source = [
+  | `Stdin
+  | `File of string
+]
+
 type phase =[
   | `Parsing
   | `Include
   | `Typing
   | `Solving
+]
+
+type mode = [
+  | `Full
+  | `Incremental
 ]
 
 module type S = sig
@@ -49,13 +59,13 @@ module type S = sig
   val is_interactive : t -> bool
 
   (* Input options *)
-  val input_dir : t -> string
+  val set_mode : t -> mode -> t
   val set_lang : t -> Parse.language -> t
+
+  val input_mode : t -> mode option
   val input_lang : t -> Parse.language option
-  val input_source : t -> [
-      | `Stdin
-      | `File of string
-    ]
+  val input_dir : t -> string
+  val input_source : t -> source
   val file_not_found :
     ?loc:Dolmen.ParseLocation.t -> dir:string -> file:string -> 'a
 

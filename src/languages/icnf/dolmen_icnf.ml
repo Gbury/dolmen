@@ -12,5 +12,6 @@ module Make
     type token = Tokens_iCNF.token
     type statement = S.t
     let env = []
+    let incremental = true
   end)(LexiCNF)(ParseiCNF.Make(L)(T)(S))
 

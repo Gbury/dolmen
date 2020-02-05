@@ -414,3 +414,16 @@ module Tptp = struct
 
 end
 
+(* Ae arithmetic *)
+(* ************************************************************************ *)
+
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
+                                        and type ty := Type.Ty.t) = struct
+
+  end
+end

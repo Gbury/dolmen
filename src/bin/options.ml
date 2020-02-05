@@ -24,7 +24,7 @@ let split_input = function
 let mk_state
     gc gc_opt bt colors
     time_limit size_limit
-    input_lang input
+    input_lang input_mode input
     type_check type_infer type_shadow
   =
   (* Side-effects *)
@@ -40,7 +40,8 @@ let mk_state
   let st : State.t = {
     time_limit; size_limit;
 
-    input_dir; input_lang; input_source;
+    input_dir; input_lang;
+    input_mode; input_source;
 
     type_state = (); type_check;
     type_infer; type_shadow;
@@ -73,6 +74,12 @@ let perm_conv = Arg.enum [
     "allow", State.Allow;
     "warn", State.Warn;
     "error", State.Error;
+  ]
+
+(* Converter for input modes *)
+let mode_conv = Arg.enum [
+    "full", `Full;
+    "incremental", `Incremental;
   ]
 
 (* Argument converter for integer with multiplier suffix *)
@@ -211,6 +218,13 @@ let state =
         (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Parse.enum) in
     Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc)
   in
+  let in_mode =
+    let doc = Format.asprintf
+        "Set the input mode. the full mode parses the entire file before iterating
+         over its contents whereas the incremental mode processes each delcaration
+         before parsing the next one. Default is incremental mode." in
+    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc)
+  in
   let input =
     let doc = "Input problem file. If no file is specified,
                dolmen will enter interactive mode and read on stdin." in
@@ -232,6 +246,6 @@ let state =
     Arg.(value & opt (some perm_conv) None & info ["shadow"] ~doc)
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
-        time $ size $ in_lang $ input $ typing $ infer $ shadow)
+        time $ size $ in_lang $ in_mode $ input $ typing $ infer $ shadow)
 
 

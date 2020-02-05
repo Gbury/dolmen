@@ -14,4 +14,5 @@ module Make
     type token = Tokens_smtlib.token
     type statement = S.t
     let env = []
+    let incremental = true
   end)(LexSmtlib)(ParseSmtlib.Make(L)(I)(T)(S))

@@ -12,11 +12,12 @@ type reason =
   | Inferred of ParseLocation.t
   | Declared of ParseLocation.t
 
-type ('ty_const, 'term_cstr, 'term_const) binding = [
+type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
   | `Not_found
   | `Ty of 'ty_const * reason
   | `Cstr of 'term_cstr * reason
   | `Term of 'term_const * reason
+  | `Field of 'term_field * reason
 ]
 
 (* Warnings module signature *)
@@ -32,10 +33,11 @@ module type Warn = sig
   type term_var
   type term_cstr
   type term_const
+  type term_field
 
   val shadow : Id.t ->
-    (ty_const, term_cstr, term_const) binding ->
-    (ty_const, term_cstr, term_const) binding ->
+    (ty_const, term_cstr, term_field, term_const) binding ->
+    (ty_const, term_cstr, term_field, term_const) binding ->
     unit
 
   val unused_ty_var : ParseLocation.t -> ty_var -> unit
@@ -70,6 +72,7 @@ module Make
       and type term_var := T.Var.t
       and type term_cstr := T.Cstr.t
       and type term_const := T.Const.t
+      and type term_field := T.Field.t
     )
 = struct
 
@@ -101,9 +104,17 @@ module Make
   module R = Hashtbl.Make(Ty.Const)
   module S = Hashtbl.Make(T.Const)
   module U = Hashtbl.Make(T.Cstr)
+  module V = Hashtbl.Make(T.Field)
 
   (* Convenience functions *)
   (* ************************************************************************ *)
+
+  let init_list n f =
+    let rec aux acc i =
+      if i > n then List.rev acc
+      else aux (f i :: acc) (i + 1)
+    in
+    aux [] 1
 
   let replicate n x =
     let rec aux x acc n =
@@ -246,9 +257,10 @@ module Make
      Ttype location table : stores reasons for typing of type constructors
      Const location table : stores reasons for typing of constants *)
   let global_env = H.create ()
-  let ttype_locs = R.create 4013
+  let ttype_locs = R.create 13
   let const_locs = S.create 4013
-  let cstrs_locs = U.create 4013
+  let cstrs_locs = U.create 13
+  let field_locs = V.create 13
 
   let find_global id =
     try H.find global_env id
@@ -260,6 +272,7 @@ module Make
     | `Ty c -> R.find ttype_locs c
     | `Cstr c -> U.find cstrs_locs c
     | `Term c -> S.find const_locs c
+    | `Field f -> V.find field_locs f
     with Not_found -> assert false
 
   let with_reason reason = function
@@ -267,6 +280,7 @@ module Make
     | `Ty c -> `Ty (c, reason)
     | `Cstr c -> `Cstr (c, reason)
     | `Term c -> `Term (c, reason)
+    | `Field f -> `Field (f, reason)
 
   let add_global id reason v =
     begin match find_global id with
@@ -290,6 +304,10 @@ module Make
   let decl_term_cstr id c reason =
     add_global id reason (`Cstr c);
     U.add cstrs_locs c reason
+
+  let decl_term_field id f reason =
+    add_global id reason (`Field f);
+    V.add field_locs f reason
 
   (* Exported wrappers *)
   let declare_ty_const id c loc = decl_ty_const id c (Declared loc)
@@ -418,6 +436,9 @@ module Make
     | Bad_ty_arity of Ty.Const.t * int
     | Bad_cstr_arity of T.Cstr.t * int * int
     | Bad_term_arity of T.Const.t * int * int
+    | Repeated_record_field of T.Field.t
+    | Missing_record_field of T.Field.t
+    | Mismatch_record_type of T.Field.t * Ty.Const.t
     | Var_application of T.Var.t
     | Ty_var_application of Ty.Var.t
     | Type_mismatch of T.t * Ty.t
@@ -477,6 +498,15 @@ module Make
   let _type_mismatch env t ty ast =
     raise (Typing_error (Type_mismatch (t, ty), env, ast))
 
+  let _record_type_mismatch env f ty_c ast =
+    raise (Typing_error (Mismatch_record_type (f, ty_c), env, ast))
+
+  let _field_repeated env f ast =
+    raise (Typing_error (Repeated_record_field f, env, ast))
+
+  let _field_missing env f ast =
+    raise (Typing_error (Missing_record_field f, env, ast))
+
   let _cannot_infer_quant_var env t =
     raise (Typing_error (Quantified_var_inference, env, t))
 
@@ -491,18 +521,21 @@ module Make
 
   let _wrap env ast f arg =
     try f arg
-    with T.Wrong_type (t, ty) ->
+    with
+    | T.Wrong_type (t, ty) ->
       _type_mismatch env t ty ast
+    | T.Wrong_record_type (f, c) ->
+      _record_type_mismatch env f c ast
+    | T.Field_repeated f ->
+      _field_repeated env f ast
+    | T.Field_missing f ->
+      _field_missing env f ast
 
   let _wrap2 env ast f a b =
-    try f a b
-    with T.Wrong_type (t, ty) ->
-      _type_mismatch env t ty ast
+    _wrap env ast (fun () -> f a b) ()
 
   let _wrap3 env ast f a b c =
-    try f a b c
-    with T.Wrong_type (t, ty) ->
-      _type_mismatch env t ty ast
+    _wrap env ast (fun () -> f a b c) ()
 
   (* Wrappers for expression building *)
   (* ************************************************************************ *)
@@ -528,6 +561,16 @@ module Make
       _wrap3 env ast T.apply_cstr c ty_args t_args
     else
       _bad_cstr_arity env c (n1, n2) ast
+
+  (* Wrapper around record creation *)
+  let create_record env ast l =
+    _wrap env ast T.record l
+
+  let create_record_with env ast t l =
+    _wrap2 env ast T.record_with t l
+
+  let create_record_access env ast t field =
+    _wrap2 env ast T.apply_field field t
 
   let make_eq env ast_term a b =
     _wrap2 env ast_term T.eq a b
@@ -711,6 +754,16 @@ module Make
       | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Ite; _}, l); _ } as ast ->
         parse_ite env ast l
 
+      (* Record creation *)
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record; _ }, l); _ } as ast ->
+        parse_record env ast l
+
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_with; _ }, l); _ } as ast ->
+        parse_record_with env ast l
+
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_access; _ }, l); _ } as ast ->
+        parse_record_access env ast l
+
       (* Builtin application not treated directly, but instead
          routed to a semantic extension through builtin_symbols. *)
       | { Ast.term = Ast.Builtin b; _ } as ast ->
@@ -815,6 +868,53 @@ module Make
         | t -> _expected env "variable binding" t None
       end
 
+  and parse_record_field env ast =
+    match ast with
+    | { Ast.term = Ast.Symbol s; _ }
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
+      begin match find_global s with
+        | `Field f -> f
+        | `Not_found ->
+          raise (Typing_error (Cannot_find s, env, ast))
+        | _ ->
+          _expected env "record field" ast None
+      end
+    | _ ->
+      _expected env "record field name" ast None
+
+  and parse_record_field_binding env ast =
+    match ast with
+    | { Ast.term = Ast.App (
+        {Ast.term = Ast.Builtin Ast.Eq; _ }, [field; value] ); _ } ->
+      let f = parse_record_field env field in
+      let t = parse_term env value in
+      f, t
+    | _ ->
+      _expected env "record field_binding" ast None
+
+  and parse_record env ast = function
+    | [] ->
+      _expected env "at least one field binding" ast None
+    | l ->
+      let l' = List.map (parse_record_field_binding env) l in
+      Term (create_record env ast l')
+
+  and parse_record_with env ast = function
+    | [] ->
+      _expected env "term" ast None
+    | t :: l ->
+      let t' = parse_term env t in
+      let l' = List.map (parse_record_field_binding env) l in
+      Term (create_record_with env ast t' l')
+
+  and parse_record_access env ast = function
+    | [ t; f ] ->
+      let t = parse_term env t in
+      let field = parse_record_field env f in
+      Term (create_record_access env ast t field)
+    | l ->
+      _bad_op_arity env "field record access" 2 (List.length l) ast
+
   and parse_app env ast s args =
     match find_var env s with
     | `Ty v ->
@@ -831,6 +931,8 @@ module Make
           parse_app_cstr env ast c args
         | `Term f ->
           parse_app_term env ast f args
+        | `Field _f ->
+          assert false
         | `Not_found ->
           begin match env.builtins env ast (Id s) args with
             | Some res -> res
@@ -856,6 +958,8 @@ module Make
     let n_ty, n_t = T.Const.arity f in
     let ty_l, t_l =
       if n_args = n_ty + n_t then take_drop n_ty args
+      else if n_args = n_t then
+        init_list n_ty (fun _ -> Ast.wildcard ()), args
       else _bad_term_arity env f (n_ty, n_t) ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
@@ -1037,6 +1141,19 @@ module Make
       else
         raise (Not_well_founded_datatypes l')
 
+  let record env ty_cst { Statement.vars; fields; loc; _ } =
+    let loc = or_default_loc loc in
+    let ttype_vars = List.map (parse_ttype_var env) vars in
+    let ty_vars, env = add_type_vars env ttype_vars in
+    let l = List.map (fun (id, t) ->
+        let ty = parse_ty env t in
+        Id.full_name id, ty
+      ) fields in
+    let field_list = T.define_record ty_cst ty_vars l in
+    List.iter2 (fun (id, _) field ->
+        decl_term_field id field (Declared loc)
+      ) fields field_list
+
   let inductive env ty_cst { Statement.id; vars; cstrs; loc; _ } =
     let loc = or_default_loc loc in
     (* Parse the type variables *)
@@ -1078,7 +1195,7 @@ module Make
     | `Term_decl _, Inductive _ -> assert false
     | `Type_decl c, Inductive i -> inductive env c i
     | `Term_decl _, Record _ -> assert false
-    | `Type_decl _, Record _ -> (* TODO *) ()
+    | `Type_decl c, Record r -> record env c r
 
   let decls env ?attr l =
     let tags = match attr with

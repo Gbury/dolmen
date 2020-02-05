@@ -55,7 +55,7 @@ module type Logic = sig
   (** Declare a new abstract type, quantified over the given list of
       type variables. *)
 
-  val algebraic : ?loc:location -> id -> term list -> (id * term list) list -> t
+  val algebraic_type : ?loc:location -> id -> term list -> (id * term list) list -> t
   (** Defines a new algebraic datatype, quantified over the lsit of type variables,
       and with a list of cases each containing a constructor id and a list of
       fields. *)

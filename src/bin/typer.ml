@@ -29,7 +29,8 @@ module Warn = struct
     | `Not_found -> assert false
     | `Ty (_, reason)
     | `Cstr (_, reason)
-    | `Term (_, reason) -> reason
+    | `Term (_, reason)
+    | `Field (_, reason) -> reason
 
   let shadow id old cur =
     match !shadowing_perm with
@@ -49,15 +50,21 @@ module Warn = struct
       Dolmen.ParseLocation.fmt loc Dolmen.Expr.Print.term_var v
 
   let error_in_attribute loc exn =
-    State.warn () "@<v>%a:@ Error while type-checking an attribute:@ %s"
+    State.warn () "Error while type-checking an attribute:@\n%a@.%s"
       Dolmen.ParseLocation.fmt loc (Printexc.to_string exn)
 
+  let rec suggestions suggest max i =
+    if i >= max then []
+    else match suggest i with
+      | [] -> suggestions suggest max (i + 1)
+      | l -> l
+
   let not_found id suggest =
-    match suggest 3 with
+    match suggestions suggest 3 1 with
     | [] -> ()
     | l ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      State.warn () "Looking up '%a' failed, possibilities were:@ @[<hov>%a@]"
+      State.warn () "Looking up '%a' failed, did you mean one of:@ @[<hov>%a@]"
         Dolmen.Id.print id (Format.pp_print_list ~pp_sep Dolmen.Id.print) l
 
   let superfluous_destructor _ _ _ _ =
@@ -133,15 +140,15 @@ let report_error fmt = function
   | T.Bad_op_arity (s, i, j) ->
     Format.fprintf fmt "@[<hv>Bad arity for builtin '%s':@ expected %d arguments but got %d@]" s j i
   | T.Bad_ty_arity (c, i) ->
-    Format.fprintf fmt "@[<hv>Bad arity (got %d arguments) for type constant@ %a@]"
+    Format.fprintf fmt "@[<hv>Bad arity (expected %d arguments) for type constant@ %a@]"
       i Dolmen.Expr.Print.ty_const c
   | T.Bad_cstr_arity (c, i, j) ->
     Format.fprintf fmt
-      "@[<hv>Bad arity (got %d type argument, and %d term arguments) for term constructor@ %a@]"
+      "@[<hv>Bad arity (expected %d type argument, and %d term arguments) for term constructor@ %a@]"
       i j Dolmen.Expr.Print.term_const c
   | T.Bad_term_arity (c, i, j) ->
     Format.fprintf fmt
-      "@[<hv>Bad arity (got %d type argument, and %d term arguments) for term constant@ %a@]"
+      "@[<hv>Bad arity (expected %d type argument, and %d term arguments) for term constant@ %a@]"
       i j Dolmen.Expr.Print.term_const c
   | T.Var_application v ->
     Format.fprintf fmt "@[<hv>Cannot apply arguments to term variable@ %a@]" Dolmen.Expr.Print.id v
@@ -213,6 +220,16 @@ let report_error fmt = function
   (* Catch-all *)
   | _ ->
     Format.fprintf fmt "@[<hov>Unknown typing error,@ please report upstream, ^^@]"
+
+let () =
+  Printexc.register_printer (function
+      | T.Typing_error (err, _, t) ->
+        Some (Format.asprintf "@[<hv>While typing:@ @[<hov>%a@]@ %a@."
+                Dolmen.Term.print t
+                report_error err)
+      | _ -> None
+    )
+
 
 (* Generate typing env from state *)
 (* ************************************************************************ *)
@@ -294,6 +311,4 @@ let formula st ?attr:_ ~goal:_ t =
 let formulas st ?attr:_ l =
   let env = typing_env st in
   st, List.map (T.parse env) l
-
-
 

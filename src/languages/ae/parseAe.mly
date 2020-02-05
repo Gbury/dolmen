@@ -16,9 +16,13 @@
 file:
   | l=decl* EOF { l }
 
+/* The current syntax has no clear delimiters to denote the end
+   of declarations resulting in a lot of end-of-stream conflicts.
+   This prevents incremental parsing from working correctly,
+   hence the assert false */
 input:
-  | i=decl { Some i }
-  | EOF    { None }
+  | decl    { assert false }
+  | EOF     { assert false }
 
 /* Identifiers */
 
@@ -64,9 +68,10 @@ multi_logic_binder:
 /* Type variables */
 
 type_var:
-  | QUOTE v=raw_ident
+  | QUOTE id=ID
     { let loc = L.mk_pos $startpos $endpos in
-      T.const ~loc (v I.var) }
+      let v = I.mk I.var ("'" ^ id) in
+      T.const ~loc v }
 
 type_vars:
   | { [] }
@@ -479,7 +484,7 @@ algebraic_constructor:
 algebraic_typedef:
   | vars=type_vars c=raw_ident EQUAL l=separated_nonempty_list(BAR, algebraic_constructor)
     { let loc = L.mk_pos $startpos $endpos in
-      S.algebraic ~loc (c I.term) vars l }
+      S.algebraic_type ~loc (c I.term) vars l }
 
 
 /* Top-level declarations */

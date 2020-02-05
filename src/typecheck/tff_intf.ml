@@ -55,6 +55,9 @@ module type S = sig
     | Bad_ty_arity of Ty.Const.t * int
     | Bad_cstr_arity of T.Cstr.t * int * int
     | Bad_term_arity of T.Const.t * int * int
+    | Repeated_record_field of T.Field.t
+    | Missing_record_field of T.Field.t
+    | Mismatch_record_type of T.Field.t * Ty.Const.t
     | Var_application of T.Var.t
     | Ty_var_application of Ty.Var.t
     | Type_mismatch of T.t * Ty.t

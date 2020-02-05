@@ -1,5 +1,6 @@
 
 open Dolmen
+module Ast = Dolmen.Term
 
 (* Merging builtin parser functions *)
 (* ************************************************************************ *)
@@ -131,6 +132,33 @@ let map_chain
   in
   Type.T._and (aux mk args)
 
+(* Alt-ergo builtins *)
+(* ************************************************************************ *)
+
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
+
+    let parse env ast s args =
+      match s with
+      | Type.Builtin Term.Bool ->
+        make_op0 (module Type) env ast "bool" args
+          (fun () -> Type.Ty Ty.bool)
+      | Type.Builtin Term.Unit ->
+        make_op0 (module Type) env ast "unit" args
+          (fun () -> Type.Ty Ty.unit)
+      | Type.Builtin Term.Void ->
+        make_op0 (module Type) env ast "void" args
+          (fun () -> Type.Term T.void)
+      | _ -> None
+
+  end
+
+end
+
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 
@@ -148,7 +176,8 @@ module Tptp = struct
         Some (Type.wildcard env ast id args)
       *)
       | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
-        Some Type.Ttype
+        make_op0 (module Type) env ast "$tType" args
+          (fun () -> Type.Ttype)
       | Type.Id { Id.name = "$o"; ns = Id.Term } ->
         make_op0 (module Type) env ast "$o" args
           (fun () -> (Type.Ty Ty.prop))

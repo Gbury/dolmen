@@ -235,7 +235,7 @@ let rec print_descr fmt = function
   | Decls [t] ->
     print_type_def fmt t
   | Decls l ->
-    Format.fprintf fmt "@[<v>rec_types:@ %a@]"
+    Format.fprintf fmt "@[<v 2>rec_types:@ %a@]"
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:print_type_def) l
 
   | Get_proof -> Format.fprintf fmt "get-proof"
@@ -306,17 +306,25 @@ let exit ?loc () = mk ?loc Exit
 (* Alt-ergo wrappers *)
 let logic ?loc ~ac ids ty =
   let attr = if ac then Some (Term.const ?loc Id.ac_symbol) else None in
+  let ty = match Term.fv ty with
+    | [] -> ty
+    | vars ->
+      let l = List.map (fun x ->
+          Term.colon ?loc (Term.const ?loc x) (Term.tType ?loc ())
+        ) vars in
+      Term.pi ?loc l ty
+  in
   let l = List.map (fun id -> Abstract { id; ty; loc; }) ids in
   mk ?loc ?attr (Decls l)
-
-let record_type ?loc id vars fields =
-  mk ?loc (Decls [Record { id; vars; fields; loc; attr = None; }])
 
 let abstract_type ?loc id vars =
   let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
   mk ?loc (Decls [Abstract { id; ty; loc; }])
 
-let algebraic ?loc id vars cstrs =
+let record_type ?loc id vars fields =
+  mk ?loc (Decls [Record { id; vars; fields; loc; attr = None; }])
+
+let algebraic_type ?loc id vars cstrs =
   mk ?loc (Decls [Inductive { id; vars; cstrs; loc; attr = None; }])
 
 let rec_types ?loc l =

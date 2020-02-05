@@ -79,6 +79,7 @@ type formula = term
 
 type builtin += Base | Wildcard
 type builtin += Prop | Univ
+type builtin += Coercion
 type builtin +=
   | True | False
   | Equal | Distinct
@@ -87,8 +88,8 @@ type builtin +=
   | Imply | Equiv
 type builtin += Ite
 type builtin +=
-  | Constructor of ty_const
-  | Destructor of ty_const * term_const * int
+  | Constructor of ty_const * int
+  | Destructor of ty_const * term_const * int * int
 
 (* arithmetic *)
 type builtin +=
@@ -137,7 +138,148 @@ type builtin +=
 
 exception Bad_ty_arity of ty_const * ty list
 exception Bad_term_arity of term_const * ty list * term list
+
+exception Filter_failed_ty of string * ty
+exception Filter_failed_term of string * term
+
 exception Type_already_defined of ty_const
+exception Record_type_expected of ty_const
+
+(* Views *)
+(* ************************************************************************* *)
+
+module View = struct
+
+  type ty_view =
+    | Var of ty_var
+    | App of ty_const * ty list
+    | Builtin_app of builtin * ty list
+
+  type term_view =
+    | Var of term_var
+    | App of term_const * ty list * term list
+    | Binder of binder * term
+    | Builtin_app of builtin * ty list * term list
+
+  let ty (ty : ty) : ty_view =
+    match ty.descr with
+    | Var v -> Var v
+    | App (({ builtin; _ } as c), l) ->
+      begin match builtin with
+        | Base -> App (c, l)
+        | _ -> Builtin_app (builtin, l)
+      end
+
+  let term (t : term) : term_view =
+    match t.descr with
+    | Var v -> Var v
+    | App (({ builtin; _ } as c), tys, ts) ->
+      begin match builtin with
+        | Base -> App (c, tys, ts)
+        | _ -> Builtin_app (builtin, tys, ts)
+      end
+    | Binder (b, t) -> Binder (b, t)
+
+end
+
+(* Flags and filters *)
+(* ************************************************************************* *)
+
+module Filter = struct
+
+  type status = [
+    | `Pass
+    | `Warn
+    | `Error
+  ]
+  type ty_filter = ty_const -> ty list -> status
+  type term_filter = term_const -> ty list -> term list -> status
+
+  let ty : (string * bool ref * ty_filter) tag = Tag.create ()
+  let term : (string * bool ref * term_filter) tag = Tag.create ()
+
+  module Linear = struct
+
+    let active = ref false
+
+    let classify_ty (ty : ty) =
+      match View.ty ty with
+      | Builtin_app (Int, _) -> `Int
+      | Builtin_app (Rat, _) -> `Rat
+      | Builtin_app (Real, _) -> `Real
+      | _ -> `Other
+
+    let is_ty_int t = (classify_ty t = `Int)
+    let is_ty_rat t = (classify_ty t = `Rat)
+    let is_ty_real t = (classify_ty t = `Real)
+
+    let classify_term (t : term) =
+      match View.term t with
+      | Var _ -> `Const
+      | Builtin_app (Integer _, _, _) -> `Value `Integer
+      | Builtin_app (Rational _, _, _) -> `Value `Rational
+      | Builtin_app (Decimal _, _, _) -> `Value `Decimal
+      | Builtin_app (Minus, _, [t']) -> `Negated t'
+      | Builtin_app (Coercion, [src; dst], [t'])
+        when (( is_ty_int src && (is_ty_rat dst || is_ty_real dst) )
+              || ( is_ty_rat src &&  is_ty_real dst) ) ->
+        `Coerced t'
+      (* Rational values *)
+      | Builtin_app (Div, _, [a; b]) ->
+        `Div (a, b)
+      (* Fallback *)
+      | _ -> `Other
+
+    let classify t =
+      match classify_term t with
+      | `Value _ -> `Value
+      | `Const -> `Constant
+      | `Negated t' ->
+        begin match classify_term t' with
+          | `Value _ -> `Value
+          | _ -> `Other
+        end
+      | `Coerced t' ->
+        begin match classify_term t' with
+          | `Value _ -> `Value
+          | _ -> `Other
+        end
+      | `Div (a, b) ->
+        begin match classify_term a, classify_term b with
+          | `Value `Integer, `Value `Integer -> `Value
+          | _ -> `Other
+        end
+      | _ -> `Other
+
+    let gen_wrapper _ _ _ = `Error
+
+    let div_wrapper _ _ ts =
+      match ts with
+      | [a; b] ->
+        begin match classify_term a, classify_term b with
+          | `Value `Integer, `Value `Integer -> `Pass
+          | _ -> `Error
+        end
+      | _ -> `Error
+
+    let mul_wrapper _ _ ts =
+      match ts with
+      | [a; b] ->
+        begin match classify a, classify b with
+          | `Value, `Constant
+          | `Constant, `Value -> `Pass
+          | _ -> `Error
+        end
+      | _ -> `Error
+
+    let gen = "linear", active, gen_wrapper
+    let div = "linear", active, div_wrapper
+    let mul = "linear", active, mul_wrapper
+
+  end
+
+end
+
 
 (* Helpers *)
 (* ************************************************************************* *)
@@ -175,6 +317,13 @@ let lexicographic cmp l l' =
       end
   in
   aux l l'
+
+(* List creation *)
+let init_list n f =
+  let rec aux acc i =
+    if i > n then List.rev acc else aux (f i :: acc) (i + 1)
+  in
+  aux [] 1
 
 (* constant list with the same elements *)
 let replicate n x =
@@ -588,12 +737,18 @@ module Ty = struct
     | Abstract
     | Adt of {
         ty : ty_const;
+        record : bool;
         cstrs : adt_case list;
       }
 
   let definition_tag : def Tag.t = Tag.create ()
 
   let definition c = Id.get_tag c definition_tag
+
+  let is_record c =
+    match definition c with
+    | Some Adt { record; _ } -> record
+    | _ -> false
 
   let define c d =
     match definition c with
@@ -800,6 +955,10 @@ module Term = struct
   type 'a tag = 'a Tag.t
 
   exception Wrong_type of t * ty
+  exception Wrong_record_type of term_const * ty_const
+  exception Field_repeated of term_const
+  exception Field_missing of term_const
+  exception Field_expected of term_const
 
   let print = Print.term
 
@@ -987,7 +1146,8 @@ module Term = struct
     let coerce =
       let a = Ty.Var.mk "alpha" in
       let b = Ty.Var.mk "beta" in
-      Id.const "coerce" [a; b] [Ty.of_var a] (Ty.of_var b)
+      Id.const ~builtin:Coercion "coerce"
+        [a; b] [Ty.of_var a] (Ty.of_var b)
 
     module Int = struct
 
@@ -1453,26 +1613,33 @@ module Term = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
-    let mk ty_c name vars args ret =
-      Id.const ~builtin:(Constructor ty_c) name vars args ret
+    let mk ty_c name i vars args ret =
+      Id.const ~builtin:(Constructor (ty_c, i)) name vars args ret
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
   end
 
+  (* Record fields are represented as their destructors, i.e. constants *)
+  module Field = struct
+    type t = term_const
+    let hash = Id.hash
+    let equal = Id.equal
+  end
+
   (* ADT definition *)
-  let define_adt ty_const vars l =
+  let define_adt_aux ~record ty_const vars l =
     let ty =  Ty.apply ty_const (List.map Ty.of_var vars) in
     let cases = ref [] in
-    let l' = List.map (fun (cstr_name, args) ->
+    let l' = List.mapi (fun i (cstr_name, args) ->
         let args_ty = List.map fst args in
-        let cstr = Cstr.mk ty_const cstr_name vars args_ty ty in
+        let cstr = Cstr.mk ty_const cstr_name i vars args_ty ty in
         let dstrs = Array.make (List.length args) None in
-        let l' = List.mapi (fun i -> function
+        let l' = List.mapi (fun j -> function
             | (arg_ty, None) -> (arg_ty, None)
             | (arg_ty, Some name) ->
               let dstr =
                 Id.const
-                  ~builtin:(Destructor (ty_const, cstr, i))
+                  ~builtin:(Destructor (ty_const, cstr, i, j))
                   name vars [ty] arg_ty
               in
               dstrs.(i) <- Some dstr;
@@ -1481,8 +1648,25 @@ module Term = struct
         cases := { Ty.cstr; dstrs; } :: !cases;
         cstr, l'
       ) l in
-    Ty.define ty_const (Adt { ty = ty_const; cstrs = List.rev !cases; });
+    assert (not record || List.length !cases = 1);
+    Ty.define ty_const (Adt { ty = ty_const; record; cstrs = List.rev !cases; });
     l'
+
+  let define_adt = define_adt_aux ~record:false
+
+  let define_record ty_const vars l =
+    let name = ty_const.name in
+    let cstr_args = List.map (fun (field_name, ty) ->
+        ty, Some field_name
+      ) l in
+    let l' = define_adt_aux ~record:true ty_const vars [name, cstr_args] in
+    match l' with
+    | [ _, l'' ] ->
+      List.map (function
+          | _, Some dstr -> dstr
+          | _, None -> assert false
+        ) l''
+    | _ -> assert false
 
   (* Term creation *)
   let mk ?(tags=Tag.empty) descr ty = { descr; ty; hash = -1; tags; }
@@ -1590,6 +1774,87 @@ module Term = struct
 
   let apply_cstr = apply
 
+  let apply_field (f : term_const) t =
+    let tys = init_list
+        (List.length f.ty.fun_vars)
+        (fun _ -> Ty.wildcard ())
+    in
+    apply f tys [t]
+
+  (* Record field getter *)
+  let record_field ty_c i =
+    match Ty.definition ty_c with
+    | Some Adt { record = true; cstrs = [ { dstrs; _ } ]; _ } ->
+      begin match dstrs.(i) with
+        | Some c -> c
+        | None -> assert false
+      end
+    | _ ->
+      raise (Record_type_expected ty_c)
+
+  (* Record creation *)
+  let record_field_id ty_c f =
+    match f.builtin with
+    | Destructor (ty_d, _, i, j) ->
+      if Id.equal ty_c ty_d then begin
+        assert (i = 0);
+        j
+      end else
+        raise (Wrong_record_type (f, ty_c))
+    | _ ->
+      raise (Field_expected f)
+
+  let build_record_fields ty_c l =
+    let n =
+      match Ty.definition ty_c with
+      | Some Adt { record = true; cstrs = [ { dstrs; _ } ]; _ } ->
+        Array.length dstrs
+      | _ -> raise (Record_type_expected ty_c)
+    in
+    let fields = Array.make n None in
+    List.iter (fun (field, value) ->
+        let i = record_field_id ty_c field in
+        match fields.(i) with
+        | Some _ -> raise (Field_repeated field)
+        | None -> fields.(i) <- Some value
+      ) l;
+    fields
+
+  let mk_record missing = function
+    | [] -> raise (Invalid_argument "Dolmen.Expr.record")
+    | ((f, _) :: _) as l ->
+      begin match f.builtin with
+        | Destructor (ty_c, c, _, _) when Ty.is_record ty_c ->
+          let fields = build_record_fields ty_c l in
+          (* Check that all fields are indeed present, and create the list
+             of term arguments *)
+          let t_args = Array.to_list @@ Array.mapi (fun i o ->
+              match o with
+              | None -> missing ty_c i
+              | Some v -> v
+            ) fields in
+          (* Create type wildcard to be unified during application. *)
+          let ty_args = init_list
+              (List.length c.ty.fun_vars)
+              (fun _ -> Ty.wildcard ())
+          in
+          apply c ty_args t_args
+        | _ ->
+          raise (Field_expected f)
+      end
+
+  let record l =
+    mk_record (fun ty_c i -> raise (Field_missing (record_field ty_c i))) l
+
+  let record_with t = function
+    | [] -> t
+    | l ->
+      let aux ty_c i =
+        let f = record_field ty_c i in
+        apply_field f t
+      in
+      mk_record aux l
+
   (* coercion *)
   let coerce dst_ty t =
     let src_ty = ty t in
@@ -1629,30 +1894,38 @@ module Term = struct
   let rat s = apply (Const.Rat.rat s) [] []
   let real s = apply (Const.Real.real s) [] []
 
+  (* filter for linear arithmetic *)
+  let builtin_app (t : t) =
+    match t with
+    | { descr = App ({ builtin; _ }, tys, ts); _ } ->
+      Some (builtin, tys, ts)
+    | _ -> None
+
+
   (* arithmetic *)
   module Int = struct
     let int = int
     let minus t = apply Const.Int.minus [] [t]
     let add a b = apply Const.Int.add [] [a; b]
     let sub a b = apply Const.Int.sub [] [a; b]
-    let mul a b = apply Const.Int.mul [] [a; b]
-    let div a b = apply Const.Int.div_e [] [a; b]
-    let rem a b = apply Const.Int.rem_e [] [a; b]
-    let div_e a b = apply Const.Int.div_e [] [a; b]
-    let div_t a b = apply Const.Int.div_t [] [a; b]
-    let div_f a b = apply Const.Int.div_f [] [a; b]
-    let rem_e a b = apply Const.Int.rem_e [] [a; b]
-    let rem_t a b = apply Const.Int.rem_t [] [a; b]
-    let rem_f a b = apply Const.Int.rem_f [] [a; b]
-    let abs a = apply Const.Int.abs [] [a]
+    let mul a b = mul_wrapper Const.Int.mul a b
+    let div a b = linear_filter @@ apply Const.Int.div_e [] [a; b]
+    let rem a b = linear_filter @@ apply Const.Int.rem_e [] [a; b]
+    let div_e a b = linear_filter @@ apply Const.Int.div_e [] [a; b]
+    let div_t a b = linear_filter @@ apply Const.Int.div_t [] [a; b]
+    let div_f a b = linear_filter @@ apply Const.Int.div_f [] [a; b]
+    let rem_e a b = linear_filter @@ apply Const.Int.rem_e [] [a; b]
+    let rem_t a b = linear_filter @@ apply Const.Int.rem_t [] [a; b]
+    let rem_f a b = linear_filter @@ apply Const.Int.rem_f [] [a; b]
+    let abs a = linear_filter @@ apply Const.Int.abs [] [a]
     let lt a b = apply Const.Int.lt [] [a; b]
     let le a b = apply Const.Int.le [] [a; b]
     let gt a b = apply Const.Int.gt [] [a; b]
     let ge a b = apply Const.Int.ge [] [a; b]
-    let floor a = apply Const.Int.floor [] [a]
-    let ceiling a = apply Const.Int.ceiling [] [a]
-    let truncate a = apply Const.Int.truncate [] [a]
-    let round a = apply Const.Int.round [] [a]
+    let floor a = linear_filter @@ apply Const.Int.floor [] [a]
+    let ceiling a = linear_filter @@ apply Const.Int.ceiling [] [a]
+    let truncate a = linear_filter @@ apply Const.Int.truncate [] [a]
+    let round a = linear_filter @@ apply Const.Int.round [] [a]
     let is_int a = apply Const.Int.is_int [] [a]
     let is_rat a = apply Const.Int.is_rat [] [a]
     let to_int t = coerce Ty.int t
@@ -1665,22 +1938,22 @@ module Term = struct
     let minus t = apply Const.Rat.minus [] [t]
     let add a b = apply Const.Rat.add [] [a; b]
     let sub a b = apply Const.Rat.sub [] [a; b]
-    let mul a b = apply Const.Rat.mul [] [a; b]
-    let div a b = apply Const.Rat.div [] [a; b]
-    let div_e a b = apply Const.Rat.div_e [] [a; b]
-    let div_t a b = apply Const.Rat.div_t [] [a; b]
-    let div_f a b = apply Const.Rat.div_f [] [a; b]
-    let rem_e a b = apply Const.Rat.rem_e [] [a; b]
-    let rem_t a b = apply Const.Rat.rem_t [] [a; b]
-    let rem_f a b = apply Const.Rat.rem_f [] [a; b]
+    let mul a b = mul_wrapper Const.Rat.mul a b
+    let div a b = div_wrapper Const.Rat.div a b
+    let div_e a b = linear_filter @@ apply Const.Rat.div_e [] [a; b]
+    let div_t a b = linear_filter @@ apply Const.Rat.div_t [] [a; b]
+    let div_f a b = linear_filter @@ apply Const.Rat.div_f [] [a; b]
+    let rem_e a b = linear_filter @@ apply Const.Rat.rem_e [] [a; b]
+    let rem_t a b = linear_filter @@ apply Const.Rat.rem_t [] [a; b]
+    let rem_f a b = linear_filter @@ apply Const.Rat.rem_f [] [a; b]
     let lt a b = apply Const.Rat.lt [] [a; b]
     let le a b = apply Const.Rat.le [] [a; b]
     let gt a b = apply Const.Rat.gt [] [a; b]
     let ge a b = apply Const.Rat.ge [] [a; b]
-    let floor a = apply Const.Rat.floor [] [a]
-    let ceiling a = apply Const.Rat.ceiling [] [a]
-    let truncate a = apply Const.Rat.truncate [] [a]
-    let round a = apply Const.Rat.round [] [a]
+    let floor a = linear_filter @@ apply Const.Rat.floor [] [a]
+    let ceiling a = linear_filter @@ apply Const.Rat.ceiling [] [a]
+    let truncate a = linear_filter @@ apply Const.Rat.truncate [] [a]
+    let round a = linear_filter @@ apply Const.Rat.round [] [a]
     let is_int a = apply Const.Rat.is_int [] [a]
     let is_rat a = apply Const.Rat.is_rat [] [a]
     let to_int t = coerce Ty.int t
@@ -1693,13 +1966,13 @@ module Term = struct
     let minus t = apply Const.Real.minus [] [t]
     let add a b = apply Const.Real.add [] [a; b]
     let sub a b = apply Const.Real.sub [] [a; b]
-    let mul a b = apply Const.Real.mul [] [a; b]
-    let div a b = apply Const.Real.div [] [a; b]
-    let div_e a b = apply Const.Real.div_e [] [a; b]
-    let div_t a b = apply Const.Real.div_t [] [a; b]
-    let div_f a b = apply Const.Real.div_f [] [a; b]
-    let rem_e a b = apply Const.Real.rem_e [] [a; b]
-    let rem_t a b = apply Const.Real.rem_t [] [a; b]
+    let mul a b = mul_wrapper Const.Real.mul a b
+    let div a b = div_wrapper Const.Real.div a b
+    let div_e a b = linear_filter @@ apply Const.Real.div_e [] [a; b]
+    let div_t a b = linear_filter @@ apply Const.Real.div_t [] [a; b]
+    let div_f a b = linear_filter @@ apply Const.Real.div_f [] [a; b]
+    let rem_e a b = linear_filter @@ apply Const.Real.rem_e [] [a; b]
+    let rem_t a b = linear_filter @@ apply Const.Real.rem_t [] [a; b]
     let rem_f a b = apply Const.Real.rem_f [] [a; b]
     let lt a b = apply Const.Real.lt [] [a; b]
     let le a b = apply Const.Real.le [] [a; b]

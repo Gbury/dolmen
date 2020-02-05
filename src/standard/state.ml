@@ -18,6 +18,8 @@ type ('lang, 'typer, 'solver) t = {
   (* Input settings *)
   input_dir         : string;
   input_lang        : 'lang option;
+  input_mode        : [ `Full
+                      | `Incremental ] option;
   input_source      : [ `Stdin
                       | `File of string ];
 
@@ -43,9 +45,11 @@ let time_limit t = t.time_limit
 let size_limit t = t.size_limit
 
 let input_dir t = t.input_dir
+let input_mode t = t.input_mode
 let input_lang t = t.input_lang
 let input_source t = t.input_source
 
+let set_mode t m = { t with input_mode = Some m; }
 let set_lang t l = { t with input_lang = Some l; }
 
 let is_interactive = function

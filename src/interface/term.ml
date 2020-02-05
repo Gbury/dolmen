@@ -429,6 +429,19 @@ module type Tff = sig
 
   end
 
+  module Field : sig
+
+    type t
+    (** A field of a record. *)
+
+    val hash : t -> int
+    (** A hash function for adt constructors, should be suitable to create hashtables. *)
+
+    val equal : t -> t -> bool
+    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+
+  end
+
   val define_adt :
     ty_const -> ty_var list ->
     (string * (ty * string option) list) list ->
@@ -458,10 +471,25 @@ module type Tff = sig
       be the partial function returning the head of the list.
       *)
 
+  val define_record :
+    ty_const -> ty_var list -> (string * ty) list -> Field.t list
+  (** Define a (previously abstract) type to be a record type, with the given fields. *)
+
   exception Wrong_type of t * ty
   (** Exception raised in case of typing error during term construction.
       [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
       is expected to have type [ty], but does not have that type. *)
+
+  exception Wrong_record_type of Field.t * ty_const
+  (** Exception raised in case of typing error during term construction.
+      This should be raised when the returned field was expected to be a field
+      for the returned record type constant, but it was of another record type. *)
+
+  exception Field_repeated of Field.t
+  (** Field repeated in a record expression. *)
+
+  exception Field_missing of Field.t
+  (** Field missing in a record expression. *)
 
   val of_var : Var.t -> t
   (** Create a term from a variable *)
@@ -471,6 +499,15 @@ module type Tff = sig
 
   val apply_cstr : Cstr.t -> ty list -> t list -> t
   (** Polymorphic application of a constructor. *)
+
+  val apply_field : Field.t -> t -> t
+  (** Apply a field to a record. *)
+
+  val record : (Field.t * t) list -> t
+  (** Create a record. *)
+
+  val record_with : t -> (Field.t * t) list -> t
+  (** Create an updated record *)
 
   val _true : t
   val _false : t
@@ -533,6 +570,32 @@ module type Tff = sig
 
   val fv : t -> ty_var list * Var.t list
   (** Returns the list of free variables in the formula. *)
+
+end
+
+(** Minimum required to type ae's tff *)
+module type Ae_Base = sig
+
+  type t
+  (** The type of terms *)
+
+  val void : t
+  (** The only value of type unit. *)
+
+end
+
+
+(** Minimum required to type ae's arith *)
+module type Ae_Arith = sig
+
+  type t
+  (** The type of terms *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Type of a term. *)
 
 end
 

@@ -11,11 +11,12 @@ type reason =
   | Declared of Dolmen.ParseLocation.t (**)
 (** The type of reasons for constant typing *)
 
-type ('ty_const, 'term_cstr, 'term_const) binding = [
+type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
   | `Not_found
   | `Ty of 'ty_const * reason
   | `Cstr of 'term_cstr * reason
   | `Term of 'term_const * reason
+  | `Field of 'term_field * reason
 ]
 (** The bindings that can occur inside the typechecker. *)
 
@@ -31,10 +32,11 @@ module type Warn = sig
   type term_var
   type term_cstr
   type term_const
+  type term_field
 
   val shadow : Dolmen.Id.t ->
-    (ty_const, term_cstr, term_const) binding ->
-    (ty_const, term_cstr, term_const) binding ->
+    (ty_const, term_cstr, term_field, term_const) binding ->
+    (ty_const, term_cstr, term_field, term_const) binding ->
     unit
 
   val unused_ty_var : Dolmen.ParseLocation.t -> ty_var -> unit
@@ -66,6 +68,7 @@ module Make
       and type term_var := T.Var.t
       and type term_cstr := T.Cstr.t
       and type term_const := T.Const.t
+      and type term_field := T.Field.t
     )
   : S with module Tag = Tag
        and module Ty = Ty

@@ -84,6 +84,32 @@ module type Tff = sig
 
 end
 
+(** Signature required by types for typing ae *)
+module type Ae_Base = sig
+
+  type t
+  (** The type of types. *)
+
+  val bool : t
+  (** The type of booleans *)
+
+  val unit : t
+  (** Unit type *)
+
+end
+
+
+(** Signature required by types for typing tptp *)
+module type Ae_Arith = sig
+
+  type t
+  (** The type of types. *)
+
+  val int : t
+  (** The type of integers. *)
+
+end
+
 (** Signature required by types for typing tptp *)
 module type Tptp_Base = sig
 

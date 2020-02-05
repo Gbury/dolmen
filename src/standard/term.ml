@@ -468,6 +468,8 @@ let rec free_vars acc t =
   | Symbol i -> if i.Id.ns = Id.Var then S.add i acc else acc
   | App (t, l) ->
     List.fold_left free_vars (free_vars acc t) l
+  | Binder (Arrow, l, t) ->
+    List.fold_left free_vars (free_vars acc t) l
   | Binder (_, l, t) ->
     let s = free_vars S.empty t in
     let bound = List.fold_left free_vars S.empty l in
@@ -496,14 +498,18 @@ let check = unary (builtin Check)
 let trigger = and_
 
 let triggers_t = Id.(mk Attr "triggers")
-let triggers ?loc t l =
-  let a = apply ?loc (const ?loc triggers_t) l in
-  annot ?loc t [a]
+let triggers ?loc t = function
+  | [] -> t
+  | l ->
+    let a = apply ?loc (const ?loc triggers_t) l in
+    annot ?loc t [a]
 
 let filters_t = Id.(mk Attr "filters")
-let filters ?loc t l =
-  let a = apply ?loc (const ?loc filters_t) l in
-  annot ?loc t [a]
+let filters ?loc t = function
+  | [] -> t
+  | l ->
+    let a = apply ?loc (const ?loc filters_t) l in
+    annot ?loc t [a]
 
 let tracked ?loc id t =
   let a = const ?loc id in

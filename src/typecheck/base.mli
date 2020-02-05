@@ -77,6 +77,20 @@ val map_chain :
 
 (** {2 Languages base builtins} *)
 
+(** AE builtins *)
+module Ae : sig
+
+  (** Builtin symbols for tptp's tff *)
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) : sig
+
+    val parse : Type.builtin_symbols
+
+  end
+end
+
 (** TPTP builtins ($i, $o, etc..) *)
 module Tptp : sig
 
@@ -89,7 +103,6 @@ module Tptp : sig
     val parse : Type.builtin_symbols
 
   end
-
 end
 
 

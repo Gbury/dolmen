@@ -143,7 +143,6 @@ module type Term = sig
   val adt_project : ?loc:location -> t -> id -> t
   (** Create a projection for the given field of an adt constructor. *)
 
-
   val check : ?loc:location -> t -> t
   (** Create a term to "check" a formula.
       TODO: ask @iguernlala about this. *)
@@ -201,7 +200,7 @@ module type Statement = sig
   val abstract_type : ?loc:location -> id -> term list -> t
   (** Create a new abstract type, quantified over the given type variables. *)
 
-  val algebraic : ?loc:location -> id -> term list -> (id * term list) list -> t
+  val algebraic_type : ?loc:location -> id -> term list -> (id * term list) list -> t
   (** An algebraic datatype definition. *)
 
   val rec_types : ?loc:location -> t list -> t
