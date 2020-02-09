@@ -21,8 +21,10 @@ file:
    This prevents incremental parsing from working correctly,
    hence the assert false */
 input:
+  | EOF { assert false }
+/* this declaration creates end-of-stream conflicts
   | decl    { assert false }
-  | EOF     { assert false }
+*/
 
 /* Identifiers */
 
