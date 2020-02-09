@@ -195,8 +195,8 @@ module Filter = struct
   type ty_filter = ty_const -> ty list -> status
   type term_filter = term_const -> ty list -> term list -> status
 
-  let ty : (string * bool ref * ty_filter) tag = Tag.create ()
-  let term : (string * bool ref * term_filter) tag = Tag.create ()
+  let ty : (string * bool ref * ty_filter) list tag = Tag.create ()
+  let term : (string * bool ref * term_filter) list tag = Tag.create ()
 
   module Linear = struct
 
@@ -830,12 +830,26 @@ module Ty = struct
 
   let wildcard () = of_var (Id.mk ~builtin:Wildcard "_" Type)
 
+  let rec check_filters res f args = function
+    | [] -> res
+    | (name, active, check) :: r ->
+      if !active then match (check f args) with
+        | `Pass -> check_filters res f args r
+        | `Warn -> check_filters res f args r
+        | `Error -> raise (Filter_failed_ty (name, res))
+      else
+        check_filters res f args r
+
   let apply (f : Const.t) (args : ty list) =
     assert (f.ty.fun_vars = []);
     if List.length args <> List.length f.ty.fun_args then
       raise (Bad_ty_arity (f, args))
-    else
-      mk (App (f, args))
+    else begin
+      let res = mk (App (f, args)) in
+      match Const.get_tag f Filter.ty with
+      | None -> res
+      | Some l -> check_filters res f args l
+    end
 
   (* Builtin prop *)
   let prop = apply Const.prop []
@@ -1149,6 +1163,15 @@ module Term = struct
       Id.const ~builtin:Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
+    let linear_gen_tags =
+      Tag.(add empty) Filter.term [Filter.Linear.gen]
+
+    let linear_div_tags =
+      Tag.(add empty) Filter.term [Filter.Linear.div]
+
+    let linear_mul_tags =
+      Tag.(add empty) Filter.term [Filter.Linear.mul]
+
     module Int = struct
 
       let int =
@@ -1169,31 +1192,39 @@ module Term = struct
           "Sub" [] [Ty.int; Ty.int] Ty.int
 
       let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+          ~pos:Pretty.Infix ~name:"*"
+          ~builtin:Mul ~tags:linear_mul_tags
           "Mul" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/e" ~builtin:Div_e
+          ~pos:Pretty.Infix ~name:"/e"
+          ~builtin:Div_e ~tags:linear_gen_tags
           "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+          ~pos:Pretty.Infix ~name:"/t"
+          ~builtin:Div_t ~tags:linear_gen_tags
           "Div_t" [] [Ty.int; Ty.int] Ty.int
       let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+          ~pos:Pretty.Infix ~name:"/f"
+          ~builtin:Div_f ~tags:linear_gen_tags
           "Div_f" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo ~tags:linear_gen_tags
           "Modulo" [] [Ty.int; Ty.int] Ty.int
       let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_t ~tags:linear_gen_tags
           "Modulo" [] [Ty.int; Ty.int] Ty.int
       let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_f ~tags:linear_gen_tags
           "Modulo" [] [Ty.int; Ty.int] Ty.int
 
       let abs = Id.const
           ~name:"abs" ~builtin:Abs
+          ~tags:linear_gen_tags
           "Abs" [] [Ty.int] Ty.int
 
       let lt = Id.const
@@ -1214,18 +1245,22 @@ module Term = struct
 
       let floor = Id.const
           ~name:"floor" ~builtin:Floor
+          ~tags:linear_gen_tags
           "Floor" [] [Ty.int] Ty.int
 
       let ceiling = Id.const
           ~name:"ceiling" ~builtin:Ceiling
+          ~tags:linear_gen_tags
           "Ceiling" [] [Ty.int] Ty.int
 
       let truncate = Id.const
           ~name:"truncate" ~builtin:Truncate
+          ~tags:linear_gen_tags
           "Truncate" [] [Ty.int] Ty.int
 
       let round = Id.const
           ~name:"round" ~builtin:Round
+          ~tags:linear_gen_tags
           "Round" [] [Ty.int] Ty.int
 
       let is_int = Id.const
@@ -1261,30 +1296,38 @@ module Term = struct
           "Sub" [] [Ty.rat; Ty.rat] Ty.rat
 
       let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+          ~pos:Pretty.Infix ~name:"*"
+          ~builtin:Mul ~tags:linear_mul_tags
           "Mul" [] [Ty.rat; Ty.rat] Ty.rat
 
       let div = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div
+          ~pos:Pretty.Infix ~name:"/"
+          ~builtin:Div ~tags:linear_div_tags
           "Div" [] [Ty.rat; Ty.rat] Ty.rat
       let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/e" ~builtin:Div_e
+          ~pos:Pretty.Infix ~name:"/e"
+          ~builtin:Div_e ~tags:linear_gen_tags
           "Div_e" [] [Ty.rat; Ty.rat] Ty.rat
       let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+          ~pos:Pretty.Infix ~name:"/t"
+          ~builtin:Div_t ~tags:linear_gen_tags
           "Div_t" [] [Ty.rat; Ty.rat] Ty.rat
       let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+          ~pos:Pretty.Infix ~name:"/f"
+          ~builtin:Div_f ~tags:linear_gen_tags
           "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo ~tags:linear_gen_tags
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_t ~tags:linear_gen_tags
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_f ~tags:linear_gen_tags
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = Id.const
@@ -1305,18 +1348,22 @@ module Term = struct
 
       let floor = Id.const
           ~name:"floor" ~builtin:Floor
+          ~tags:linear_gen_tags
           "Floor" [] [Ty.rat] Ty.rat
 
       let ceiling = Id.const
           ~name:"ceiling" ~builtin:Ceiling
+          ~tags:linear_gen_tags
           "Ceiling" [] [Ty.rat] Ty.rat
 
       let truncate = Id.const
           ~name:"truncate" ~builtin:Truncate
+          ~tags:linear_gen_tags
           "Truncate" [] [Ty.rat] Ty.rat
 
       let round = Id.const
           ~name:"round" ~builtin:Round
+          ~tags:linear_gen_tags
           "Round" [] [Ty.rat] Ty.rat
 
       let is_int = Id.const
@@ -1348,32 +1395,39 @@ module Term = struct
           "Sub" [] [Ty.real; Ty.real] Ty.real
 
       let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+          ~pos:Pretty.Infix ~name:"*"
+          ~builtin:Mul ~tags:linear_mul_tags
           "Mul" [] [Ty.real; Ty.real] Ty.real
 
       let div = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div
+          ~pos:Pretty.Infix ~name:"/"
+          ~builtin:Div ~tags:linear_div_tags
           "Div" [] [Ty.real; Ty.real] Ty.real
       let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
+          ~pos:Pretty.Infix ~name:"/"
+          ~builtin:Div_e ~tags:linear_gen_tags
           "Div_e" [] [Ty.real; Ty.real] Ty.real
       let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+          ~pos:Pretty.Infix ~name:"/t"
+          ~builtin:Div_t ~tags:linear_gen_tags
           "Div_t" [] [Ty.real; Ty.real] Ty.real
       let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+          ~pos:Pretty.Infix ~name:"/f"
+          ~builtin:Div_f ~tags:linear_gen_tags
           "Div_f" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo ~tags:linear_gen_tags
           "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_t ~tags:linear_gen_tags
           "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
+          ~pos:Pretty.Infix ~name:"%"
+          ~builtin:Modulo_f ~tags:linear_gen_tags
           "Modulo" [] [Ty.real; Ty.real] Ty.real
-
 
       let lt = Id.const
           ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
@@ -1393,18 +1447,22 @@ module Term = struct
 
       let floor = Id.const
           ~name:"floor" ~builtin:Floor
+          ~tags:linear_gen_tags
           "Floor" [] [Ty.real] Ty.real
 
       let ceiling = Id.const
           ~name:"ceiling" ~builtin:Ceiling
+          ~tags:linear_gen_tags
           "Ceiling" [] [Ty.real] Ty.real
 
       let truncate = Id.const
           ~name:"truncate" ~builtin:Truncate
+          ~tags:linear_gen_tags
           "Truncate" [] [Ty.real] Ty.real
 
       let round = Id.const
           ~name:"round" ~builtin:Round
+          ~tags:linear_gen_tags
           "Round" [] [Ty.real] Ty.real
 
       let is_int = Id.const
@@ -1668,6 +1726,17 @@ module Term = struct
         ) l''
     | _ -> assert false
 
+  (* Filter check *)
+  let rec check_filters res f tys args = function
+    | [] -> res
+    | (name, active, check) :: r ->
+      if !active then match (check f tys args) with
+        | `Pass -> check_filters res f tys args r
+        | `Warn -> check_filters res f tys args r
+        | `Error -> raise (Filter_failed_term (name, res))
+      else
+        check_filters res f tys args r
+
   (* Term creation *)
   let mk ?(tags=Tag.empty) descr ty = { descr; ty; hash = -1; tags; }
 
@@ -1770,7 +1839,10 @@ module Term = struct
   (* Application *)
   and apply f tys args =
     let tys, args, ret = instantiate f tys args in
-    mk (App (f, tys, args)) ret
+    let res = mk (App (f, tys, args)) ret in
+    match Const.get_tag f Filter.term with
+    | None -> res
+    | Some l -> check_filters res f tys args l
 
   let apply_cstr = apply
 
@@ -1894,38 +1966,30 @@ module Term = struct
   let rat s = apply (Const.Rat.rat s) [] []
   let real s = apply (Const.Real.real s) [] []
 
-  (* filter for linear arithmetic *)
-  let builtin_app (t : t) =
-    match t with
-    | { descr = App ({ builtin; _ }, tys, ts); _ } ->
-      Some (builtin, tys, ts)
-    | _ -> None
-
-
   (* arithmetic *)
   module Int = struct
     let int = int
     let minus t = apply Const.Int.minus [] [t]
     let add a b = apply Const.Int.add [] [a; b]
     let sub a b = apply Const.Int.sub [] [a; b]
-    let mul a b = mul_wrapper Const.Int.mul a b
-    let div a b = linear_filter @@ apply Const.Int.div_e [] [a; b]
-    let rem a b = linear_filter @@ apply Const.Int.rem_e [] [a; b]
-    let div_e a b = linear_filter @@ apply Const.Int.div_e [] [a; b]
-    let div_t a b = linear_filter @@ apply Const.Int.div_t [] [a; b]
-    let div_f a b = linear_filter @@ apply Const.Int.div_f [] [a; b]
-    let rem_e a b = linear_filter @@ apply Const.Int.rem_e [] [a; b]
-    let rem_t a b = linear_filter @@ apply Const.Int.rem_t [] [a; b]
-    let rem_f a b = linear_filter @@ apply Const.Int.rem_f [] [a; b]
-    let abs a = linear_filter @@ apply Const.Int.abs [] [a]
+    let mul a b = apply Const.Int.mul [] [a; b]
+    let div a b = apply Const.Int.div_e [] [a; b]
+    let rem a b = apply Const.Int.rem_e [] [a; b]
+    let div_e a b = apply Const.Int.div_e [] [a; b]
+    let div_t a b = apply Const.Int.div_t [] [a; b]
+    let div_f a b = apply Const.Int.div_f [] [a; b]
+    let rem_e a b = apply Const.Int.rem_e [] [a; b]
+    let rem_t a b = apply Const.Int.rem_t [] [a; b]
+    let rem_f a b = apply Const.Int.rem_f [] [a; b]
+    let abs a = apply Const.Int.abs [] [a]
     let lt a b = apply Const.Int.lt [] [a; b]
     let le a b = apply Const.Int.le [] [a; b]
     let gt a b = apply Const.Int.gt [] [a; b]
     let ge a b = apply Const.Int.ge [] [a; b]
-    let floor a = linear_filter @@ apply Const.Int.floor [] [a]
-    let ceiling a = linear_filter @@ apply Const.Int.ceiling [] [a]
-    let truncate a = linear_filter @@ apply Const.Int.truncate [] [a]
-    let round a = linear_filter @@ apply Const.Int.round [] [a]
+    let floor a = apply Const.Int.floor [] [a]
+    let ceiling a = apply Const.Int.ceiling [] [a]
+    let truncate a = apply Const.Int.truncate [] [a]
+    let round a = apply Const.Int.round [] [a]
     let is_int a = apply Const.Int.is_int [] [a]
     let is_rat a = apply Const.Int.is_rat [] [a]
     let to_int t = coerce Ty.int t
@@ -1938,22 +2002,22 @@ module Term = struct
     let minus t = apply Const.Rat.minus [] [t]
     let add a b = apply Const.Rat.add [] [a; b]
     let sub a b = apply Const.Rat.sub [] [a; b]
-    let mul a b = mul_wrapper Const.Rat.mul a b
-    let div a b = div_wrapper Const.Rat.div a b
-    let div_e a b = linear_filter @@ apply Const.Rat.div_e [] [a; b]
-    let div_t a b = linear_filter @@ apply Const.Rat.div_t [] [a; b]
-    let div_f a b = linear_filter @@ apply Const.Rat.div_f [] [a; b]
-    let rem_e a b = linear_filter @@ apply Const.Rat.rem_e [] [a; b]
-    let rem_t a b = linear_filter @@ apply Const.Rat.rem_t [] [a; b]
-    let rem_f a b = linear_filter @@ apply Const.Rat.rem_f [] [a; b]
+    let mul a b = apply Const.Rat.mul [] [a; b]
+    let div a b = apply Const.Rat.div [] [a; b]
+    let div_e a b = apply Const.Rat.div_e [] [a; b]
+    let div_t a b = apply Const.Rat.div_t [] [a; b]
+    let div_f a b = apply Const.Rat.div_f [] [a; b]
+    let rem_e a b = apply Const.Rat.rem_e [] [a; b]
+    let rem_t a b = apply Const.Rat.rem_t [] [a; b]
+    let rem_f a b = apply Const.Rat.rem_f [] [a; b]
     let lt a b = apply Const.Rat.lt [] [a; b]
     let le a b = apply Const.Rat.le [] [a; b]
     let gt a b = apply Const.Rat.gt [] [a; b]
     let ge a b = apply Const.Rat.ge [] [a; b]
-    let floor a = linear_filter @@ apply Const.Rat.floor [] [a]
-    let ceiling a = linear_filter @@ apply Const.Rat.ceiling [] [a]
-    let truncate a = linear_filter @@ apply Const.Rat.truncate [] [a]
-    let round a = linear_filter @@ apply Const.Rat.round [] [a]
+    let floor a = apply Const.Rat.floor [] [a]
+    let ceiling a = apply Const.Rat.ceiling [] [a]
+    let truncate a = apply Const.Rat.truncate [] [a]
+    let round a = apply Const.Rat.round [] [a]
     let is_int a = apply Const.Rat.is_int [] [a]
     let is_rat a = apply Const.Rat.is_rat [] [a]
     let to_int t = coerce Ty.int t
@@ -1966,13 +2030,13 @@ module Term = struct
     let minus t = apply Const.Real.minus [] [t]
     let add a b = apply Const.Real.add [] [a; b]
     let sub a b = apply Const.Real.sub [] [a; b]
-    let mul a b = mul_wrapper Const.Real.mul a b
-    let div a b = div_wrapper Const.Real.div a b
-    let div_e a b = linear_filter @@ apply Const.Real.div_e [] [a; b]
-    let div_t a b = linear_filter @@ apply Const.Real.div_t [] [a; b]
-    let div_f a b = linear_filter @@ apply Const.Real.div_f [] [a; b]
-    let rem_e a b = linear_filter @@ apply Const.Real.rem_e [] [a; b]
-    let rem_t a b = linear_filter @@ apply Const.Real.rem_t [] [a; b]
+    let mul a b = apply Const.Real.mul [] [a; b]
+    let div a b = apply Const.Real.div [] [a; b]
+    let div_e a b = apply Const.Real.div_e [] [a; b]
+    let div_t a b = apply Const.Real.div_t [] [a; b]
+    let div_f a b = apply Const.Real.div_f [] [a; b]
+    let rem_e a b = apply Const.Real.rem_e [] [a; b]
+    let rem_t a b = apply Const.Real.rem_t [] [a; b]
     let rem_f a b = apply Const.Real.rem_f [] [a; b]
     let lt a b = apply Const.Real.lt [] [a; b]
     let le a b = apply Const.Real.le [] [a; b]

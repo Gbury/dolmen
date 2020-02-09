@@ -44,8 +44,10 @@ let smtlib_logic
   | "QF_UFLRA"  -> merge [core; reals]
   | "QF_LRA"    -> merge [core; reals]
   | "QF_UFNRA"  -> merge [core; reals]
+  | "UFLIA"     -> merge [core; ints]
   | "UFLRA"     -> merge [core; reals]
   | "UFNIA"     -> merge [core; ints]
+  | "UFNRA"     -> merge [core; reals]
   | logic       -> raise (Unknown_logic logic)
 
 
