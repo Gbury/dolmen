@@ -181,6 +181,8 @@ module Make
 
   module H = struct
 
+    type 'a t = 'a M.t ref
+
     (** Fuzzy hashtables are just references to fuzzy maps. *)
     let create () = ref M.empty
 
@@ -221,8 +223,30 @@ module Make
     | Id of Id.t
     | Builtin of Ast.builtin
 
+  (* Constants that can be bound to a dolmen identifier. *)
+  type cst = [
+    | `Ty of Ty.Const.t
+    | `Cstr of T.Cstr.t
+    | `Term of T.Const.t
+    | `Field of T.Field.t
+  ]
+
+  (* Global, mutable state. *)
+  type state = {
+    csts          : cst H.t;    (* association between dolmen ids and
+                                   types/terms constants. *)
+    ttype_locs    : reason R.t; (* stores reasons for typing of type
+                                   constructors *)
+    const_locs    : reason S.t; (* stores reasons for typing of constants *)
+    cstrs_locs    : reason U.t; (* stores reasons for typing constructors *)
+    field_locs    : reason V.t; (* stores reasons for typing record fields *)
+  }
+
   (* The local environments used for type-checking. *)
   type env = {
+
+    (* global state *)
+    st        : state;
 
     (* Map from term variables to the reason of its type *)
     type_locs : reason E.t;
@@ -248,31 +272,33 @@ module Make
 
   type 'a typer = env -> Ast.t -> 'a
 
-
   (* Global Environment *)
   (* ************************************************************************ *)
 
-  (* Global identifier table; stores declared types and aliases.
-     Global env           : association between dolmen ids and types/terms constants
-     Ttype location table : stores reasons for typing of type constructors
-     Const location table : stores reasons for typing of constants *)
-  let global_env = H.create ()
-  let ttype_locs = R.create 13
-  let const_locs = S.create 4013
-  let cstrs_locs = U.create 13
-  let field_locs = V.create 13
+  let new_state () = {
+    csts = H.create ();
+    ttype_locs = R.create 13;
+    const_locs = S.create 4013;
+    cstrs_locs = U.create 13;
+    field_locs = V.create 13;
+  }
 
-  let find_global id =
-    try H.find global_env id
+  type cst_or_not_found = [
+    | cst
+    | `Not_found
+  ]
+
+  let find_global st id =
+    try (H.find st.csts id :> cst_or_not_found)
     with Not_found -> `Not_found
 
-  let find_reason v =
+  let find_reason st v =
     try match v with
     | `Not_found -> assert false
-    | `Ty c -> R.find ttype_locs c
-    | `Cstr c -> U.find cstrs_locs c
-    | `Term c -> S.find const_locs c
-    | `Field f -> V.find field_locs f
+    | `Ty c -> R.find st.ttype_locs c
+    | `Cstr c -> U.find st.cstrs_locs c
+    | `Term c -> S.find st.const_locs c
+    | `Field f -> V.find st.field_locs f
     with Not_found -> assert false
 
   let with_reason reason = function
@@ -282,49 +308,55 @@ module Make
     | `Term c -> `Term (c, reason)
     | `Field f -> `Field (f, reason)
 
-  let add_global id reason v =
-    begin match find_global id with
+  let add_global st id reason v =
+    begin match find_global st id with
       | `Not_found -> ()
       | old ->
         W.shadow id
-          (with_reason (find_reason old) old)
+          (with_reason (find_reason st old) old)
           (with_reason reason v)
     end;
-    H.add global_env id v
+    H.add st.csts id v
 
   (* Symbol declarations *)
-  let decl_ty_const id c reason =
-    add_global id reason (`Ty c);
-    R.add ttype_locs c reason
+  let decl_ty_const st id c reason =
+    add_global st id reason (`Ty c);
+    R.add st.ttype_locs c reason
 
-  let decl_term_const id c reason =
-    add_global id reason (`Term c);
-    S.add const_locs c reason
+  let decl_term_const st id c reason =
+    add_global st id reason (`Term c);
+    S.add st.const_locs c reason
 
-  let decl_term_cstr id c reason =
-    add_global id reason (`Cstr c);
-    U.add cstrs_locs c reason
+  let decl_term_cstr st id c reason =
+    add_global st id reason (`Cstr c);
+    U.add st.cstrs_locs c reason
 
-  let decl_term_field id f reason =
-    add_global id reason (`Field f);
-    V.add field_locs f reason
+  let decl_term_field st id f reason =
+    add_global st id reason (`Field f);
+    V.add st.field_locs f reason
 
   (* Exported wrappers *)
-  let declare_ty_const id c loc = decl_ty_const id c (Declared loc)
-  let declare_term_const id c loc = decl_term_const id c (Declared loc)
+  let declare_ty_const env id c loc = decl_ty_const env.st id c (Declared loc)
+  let declare_term_const env id c loc = decl_term_const env.st id c (Declared loc)
 
 
   (* Local Environment *)
   (* ************************************************************************ *)
 
+  let global = new_state ()
+
   (* Make a new empty environment *)
   let empty_env
-      ?(expect=Nothing) ?(infer_hook=(fun _ _ -> ())) ?infer_base builtins = {
+      ?(st=global)
+      ?(expect=Nothing)
+      ?(infer_hook=(fun _ _ -> ()))
+      ?infer_base
+      builtins = {
     type_locs = E.empty;
     term_locs = F.empty;
     type_vars = M.empty;
     term_vars = M.empty;
-    builtins; expect; infer_hook; infer_base;
+    st; builtins; expect; infer_hook; infer_base;
   }
 
   let expect ?(force=false) env expect =
@@ -386,7 +418,7 @@ module Make
   let suggest ~limit env id =
     M.suggest ~limit id env.type_vars @
     M.suggest ~limit id env.term_vars @
-    H.suggest ~limit global_env id
+    H.suggest ~limit env.st.csts id
 
   (* Typing explanation *)
   (* ************************************************************************ *)
@@ -602,7 +634,7 @@ module Make
       let ret = Ty.Const.mk (Id.full_name s) n in
       let res = Ty_fun ret in
       env.infer_hook env res;
-      decl_ty_const s ret (Inferred loc);
+      decl_ty_const env.st s ret (Inferred loc);
       Some res
     | Typed _, None -> None
     | Typed ty, Some base ->
@@ -610,7 +642,7 @@ module Make
       let ret = T.Const.mk (Id.full_name s) [] (replicate n base) ty in
       let res = Term_fun ret in
       env.infer_hook env res;
-      decl_term_const s ret (Inferred loc);
+      decl_term_const env.st s ret (Inferred loc);
       Some res
 
   (* Tag application *)
@@ -873,7 +905,7 @@ module Make
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
     | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
-      begin match find_global s with
+      begin match find_global env.st s with
         | `Field f -> f
         | `Not_found ->
           raise (Typing_error (Cannot_find s, env, ast))
@@ -925,7 +957,7 @@ module Make
       if args = [] then Term (T.of_var v)
       else _var_app env v ast
     | `Not_found ->
-      begin match find_global s with
+      begin match find_global env.st s with
         | `Ty f ->
           parse_app_ty env ast f args
         | `Cstr c ->
@@ -1154,7 +1186,7 @@ module Make
       ) fields in
     let field_list = T.define_record ty_cst ty_vars l in
     List.iter2 (fun (id, _) field ->
-        decl_term_field id field (Declared loc)
+        decl_term_field env.st id field (Declared loc)
       ) fields field_list
 
   let inductive env ty_cst { Statement.id; vars; cstrs; loc; _ } =
@@ -1181,12 +1213,12 @@ module Make
     (* Register the constructors and destructors in the global env. *)
     List.iter2 (fun (cid, pargs) (c, targs) ->
         let reason = Declared loc in
-        decl_term_cstr cid c reason;
+        decl_term_cstr env.st cid c reason;
         List.iter2 (fun (t, _, dstr) (_, o) ->
             match dstr, o with
             | None, None -> ()
             | None, Some c -> W.superfluous_destructor loc id cid c
-            | Some id, Some const -> decl_term_const id const reason
+            | Some id, Some const -> decl_term_const env.st id const reason
             | Some id, None ->
               raise (Typing_error (Missing_destructor id, env, t))
           ) pargs targs
@@ -1215,12 +1247,12 @@ module Make
             | `Ty_cstr n ->
               let c = Ty.Const.mk (Id.full_name id) n in
               List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-              decl_ty_const id c (Declared (or_default_loc loc));
+              decl_ty_const env.st id c (Declared (or_default_loc loc));
               `Type_decl c
             | `Fun_ty (vars, args, ret) ->
               let f = T.Const.mk (Id.full_name id) vars args ret in
               List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
-              decl_term_const id f (Declared (or_default_loc loc));
+              decl_term_const env.st id f (Declared (or_default_loc loc));
               `Term_decl f
           end
         | Record { id; vars; loc; _ }
@@ -1228,7 +1260,7 @@ module Make
           let n = List.length vars in
           let c = Ty.Const.mk (Id.full_name id) n in
           List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-          decl_ty_const id c (Declared (or_default_loc loc));
+          decl_ty_const env.st id c (Declared (or_default_loc loc));
           `Type_decl c
       ) l in
     (* Parse each definition

@@ -21,6 +21,9 @@ module type S = sig
 
   (** {2 Type definitions} *)
 
+  type state
+  (** The type of mutable state for typechecking. *)
+
   type env
   (** The type of environments for typechecking. *)
 
@@ -101,7 +104,11 @@ module type S = sig
 
   (** {2 Environments} *)
 
+  val new_state : unit -> state
+  (** Create a new state. *)
+
   val empty_env :
+    ?st:state ->
     ?expect:expect ->
     ?infer_hook:(env -> inferred -> unit) ->
     ?infer_base:Ty.t ->
@@ -120,11 +127,11 @@ module type S = sig
   (** Lookup a variable in an environment. *)
 
   val declare_ty_const :
-    Dolmen.Id.t -> Ty.Const.t -> Dolmen.ParseLocation.t -> unit
+    env -> Dolmen.Id.t -> Ty.Const.t -> Dolmen.ParseLocation.t -> unit
   (** Declare a new type constant. *)
 
   val declare_term_const :
-    Dolmen.Id.t -> T.Const.t -> Dolmen.ParseLocation.t -> unit
+    env -> Dolmen.Id.t -> T.Const.t -> Dolmen.ParseLocation.t -> unit
   (** Declare a new term constant. *)
 
 
