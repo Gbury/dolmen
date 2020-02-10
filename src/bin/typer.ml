@@ -179,6 +179,8 @@ let report_error fmt = function
       Dolmen.Id.print id
   | T.Higher_order_application ->
     Format.fprintf fmt "@[<h>Higher-order applications are not handled by the Tff typechecker@]"
+  | T.Higher_order_type ->
+    Format.fprintf fmt "@[<h>Higher-order types are not handled by the Tff typechecker@]"
   | T.Unbound_variables (tys, [], t) ->
     let pp_sep fmt () = Format.fprintf fmt ",@ " in
     Format.fprintf fmt "@[<v>In term:@ @[<hov>%a@]@ The following variables are not bound:@ @[<hov>%a@]@]"

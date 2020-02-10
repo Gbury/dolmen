@@ -450,6 +450,7 @@ module Make
     | Type_var_in_type_constructor
     | Missing_destructor of Id.t
     | Higher_order_application
+    | Higher_order_type
     | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
     | Unhandled_ast
 
@@ -1062,6 +1063,8 @@ module Make
   and parse_sig_arg env = function
     | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Product; _}, l); _ } ->
       List.flatten @@ List.map (parse_sig_arg env) l
+    | { Ast.term = Ast.Binder (Ast.Arrow, _, _); _ } as ast ->
+      raise (Typing_error (Higher_order_type, env, ast))
     | t ->
       [t, parse_expr env t]
 

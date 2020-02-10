@@ -69,6 +69,7 @@ module type S = sig
     | Type_var_in_type_constructor
     | Missing_destructor of Dolmen.Id.t
     | Higher_order_application
+    | Higher_order_type
     | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
     | Unhandled_ast (**)
   (** The list of potential errors that can arise during typechecking. *)
