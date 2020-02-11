@@ -10,6 +10,8 @@ build: [
 ]
 depends: [
   "dolmen"
+  "dolmen_type"
+  "dolmen_loop"
   "lsp"
   "dune"
 ]
