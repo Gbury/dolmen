@@ -2,5 +2,5 @@
   (name         main)
   (public_name  dolmenls)
   (package      dolmen_lsp)
-  (libraries    dolmen dolmen_type lsp)
+  (libraries    dolmen dolmen_type dolmen_loop lsp)
  )

@@ -1,10 +1,10 @@
 (* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
 module Make
-    (Expr : Expr.S)
-    (State : State.S
+    (Expr : Expr_intf.S)
+    (State : State_intf.S
      with type term := Expr.term)
-    (Typer : Typer.S
+    (Typer : Typer_intf.S
      with type state := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
@@ -69,6 +69,20 @@ module Make
   (* Parsing *)
   (* ************************************************************************ *)
 
+  let gen_finally (gen : 'a Gen.t) cl : 'a Gen.t =
+    (* Register a finaliser for the original generator in case an exception is
+       raised at some point in one of the pipes, which would prevent gen from
+       reaching its end and thus prevent closing of the underlying file. *)
+    let () = Gc.finalise_last cl gen in
+    (* Return a new generator which wraps gen and calls the closing function
+       once gen is finished. *)
+    let aux () =
+      match gen () with
+      | Some _ as res -> res
+      | None -> cl (); None
+    in
+    aux
+
   let wrap_parser g = fun st ->
     if State.is_interactive st then
       Format.printf "%s @?" (State.prelude st);
@@ -83,9 +97,20 @@ module Make
     let st', g =
       match State.input_source st with
       | `Stdin ->
-        let lang, gen, _ = Parse.parse_input
-            ?language:(State.input_lang st) (`Stdin Parse.Smtlib) in
+        let lang, gen, _ = Parser.parse_input
+            ?language:(State.input_lang st) (`Stdin Parser.Smtlib) in
         State.set_lang st lang, gen
+      | `Raw (filename, contents) ->
+        let lang =
+          match State.input_lang st with
+          | Some l -> l
+          | None ->
+            let res, _, _ = Parser.of_filename filename in
+            res
+        in
+        let lang, gen, cl = Parser.parse_input
+            ~language:lang (`Raw (filename, lang, contents)) in
+        State.set_lang st lang, gen_finally gen cl
       | `File f ->
         let s = Dolmen.Statement.include_ f [] in
         (* Auto-detect input format *)
@@ -93,19 +118,19 @@ module Make
           match State.input_lang st with
           | Some l -> l
           | None ->
-            let res, _, _ = Parse.of_filename f in
+            let res, _, _ = Parser.of_filename f in
             res
         in
         (* Formats Dimacs and Tptp are descriptive and lack the emission
             of formal solve/prove instructions, so we need to add them. *)
         let s' =
           match lang with
-          | Parse.Zf
-          | Parse.ICNF
-          | Parse.Smtlib
-          | Parse.Alt_ergo -> s
-          | Parse.Dimacs
-          | Parse.Tptp ->
+          | Parser.Zf
+          | Parser.ICNF
+          | Parser.Smtlib
+          | Parser.Alt_ergo -> s
+          | Parser.Dimacs
+          | Parser.Tptp ->
             Dolmen.Statement.pack [s; Dolmen.Statement.prove ()]
         in
         State.set_lang st lang,
@@ -117,20 +142,6 @@ module Make
 
   (* Expand dolmen statements *)
   (* ************************************************************************ *)
-
-  let gen_finally (gen : 'a Gen.t) cl : 'a Gen.t =
-    (* Register a finaliser for the original generator in case an exception is
-       raised at some point in one of the pipes, which would prevent gen from
-       reaching its end and thus prevent closing of the underlying file. *)
-    let () = Gc.finalise_last cl gen in
-    (* Return a new generator which wraps gen and calls the closing function
-       once gen is finished. *)
-    let aux () =
-      match gen () with
-      | Some _ as res -> res
-      | None -> cl (); None
-    in
-    aux
 
   let gen_of_list l =
     let l = ref l in
@@ -150,18 +161,18 @@ module Make
         let language = State.input_lang st in
         let dir = State.input_dir st in
         begin
-          match Parse.find ?language ~dir file with
+          match Parser.find ?language ~dir file with
           | None ->
             State.file_not_found ?loc ~dir ~file
           | Some file ->
             begin match State.input_mode st with
               | None
               | Some `Incremental ->
-                let lang, gen, cl = Parse.parse_input ?language (`File file) in
+                let lang, gen, cl = Parser.parse_input ?language (`File file) in
                 let st = State.set_lang st lang in
                 st, `Gen (true, gen_finally gen cl)
               | Some `Full ->
-                let lang, l = Parse.parse_file ?language file in
+                let lang, l = Parser.parse_file ?language file in
                 let st = State.set_lang st lang in
                 st, `Gen (true, gen_of_list l)
             end
@@ -195,6 +206,11 @@ module Make
     let l' = List.map Dolmen.Term.fv l in
     List.sort_uniq Dolmen.Id.compare (List.flatten l')
 
+  let add_warnings st l =
+    List.fold_left (fun st (loc, msg) ->
+        State.warn st loc msg
+      ) st l
+
   let typecheck (st, c) =
     State.start `Typing;
     let res =
@@ -227,14 +243,16 @@ module Make
 
       (* Hypotheses and goal statements *)
       | { S.descr = S.Prove l; _ } ->
-        let st, l = Typer.formulas st ?attr:c.S.attr l in
+        let st, l, w = Typer.formulas st ?attr:c.S.attr l in
+        let st = add_warnings st w in
         `Continue (st, simple (prove_id c) c.S.loc (`Solve l))
 
       (* Hypotheses & Goals *)
       | { S.descr = S.Clause l; _ } ->
         begin match fv_list l with
           | [] -> (* regular clauses *)
-            let st, res = Typer.formulas st ?attr:c.S.attr l in
+            let st, res, w = Typer.formulas st ?attr:c.S.attr l in
+            let st = add_warnings st w in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Clause res)
             in
@@ -249,20 +267,23 @@ module Make
                 | [p] -> p
                 | _ -> Dolmen.Term.apply ?loc (Dolmen.Term.or_t ?loc ()) l
               ) in
-            let st, res = Typer.formula st ?attr:c.S.attr ~goal:false f in
+            let st, res, w = Typer.formula st ?attr:c.S.attr ~goal:false f in
+            let st = add_warnings st w in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Hyp res)
             in
             `Continue (st, stmt)
         end
       | { S.descr = S.Antecedent t; _ } ->
-        let st, ret = Typer.formula st ?attr:c.S.attr ~goal:false t in
+        let st, ret, w = Typer.formula st ?attr:c.S.attr ~goal:false t in
+        let st = add_warnings st w in
         let stmt : typechecked stmt =
           simple (hyp_id c) c.S.loc (`Hyp ret)
         in
         `Continue (st, stmt)
       | { S.descr = S.Consequent t; _ } ->
-        let st, ret = Typer.formula st ?attr:c.S.attr ~goal:true t in
+        let st, ret, w = Typer.formula st ?attr:c.S.attr ~goal:true t in
+        let st = add_warnings st w in
         let stmt : typechecked stmt =
           simple (goal_id c) c.S.loc (`Goal ret)
         in
@@ -295,10 +316,12 @@ module Make
 
       (* Declarations and definitions *)
       | { S.descr = S.Def (id, t); _ } ->
-        let st, ret = Typer.def st ?attr:c.S.attr id t in
+        let st, ret, w = Typer.def st ?attr:c.S.attr id t in
+        let st = add_warnings st w in
         `Continue (st, (simple (def_id c) c.S.loc ret :> typechecked stmt))
       | { S.descr = S.Decls l; _ } ->
-        let st, l = Typer.decls st ?attr:c.S.attr l in
+        let st, l, w = Typer.decls st ?attr:c.S.attr l in
+        let st = add_warnings st w in
         let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
         `Continue (st, res)
 
@@ -316,7 +339,8 @@ module Make
         let st = State.get_model st in
         `Done st
       | { S.descr = S.Get_value l; _ } ->
-        let st, l = Typer.terms st ?attr:c.S.attr l in
+        let st, l, w = Typer.terms st ?attr:c.S.attr l in
+        let st = add_warnings st w in
         let st = State.get_values st l in
         `Done st
       | { S.descr = S.Get_assignment; _ } ->

@@ -1,19 +1,11 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module Make(State : State.Pipeline) = struct
+module Make(State : State_intf.Pipeline) = struct
 
   exception Sigint
   exception Out_of_time
   exception Out_of_space
-
-  (* Default functions *)
-  (* ************************************************************************ *)
-
-  let default_finally st = function
-    | None -> st
-    | Some exn ->
-      State.error st "Exception: @<hov>%s@]@." (Printexc.to_string exn)
 
   (* GC alarm for time/space limits *)
   (* ************************************************************************ *)
@@ -146,9 +138,9 @@ module Make(State : State.Pipeline) = struct
      (so all expanded values count toward the same limit). *)
   let rec run :
     type a.
-    ?finally:(State.t -> exn option -> State.t) ->
+    finally:(State.t -> exn option -> State.t) ->
     (State.t -> a option) -> State.t -> (State.t * a, State.t) t -> State.t
-    = fun ?(finally=default_finally) g st pipe ->
+    = fun ~finally g st pipe ->
       let time = State.time_limit st in
       let size = State.size_limit st in
       let al = setup_alarm time size in
@@ -171,7 +163,7 @@ module Make(State : State.Pipeline) = struct
           if Printexc.backtrace_status () then
             Printexc.print_backtrace stdout;
           (* Go on running the rest of the pipeline. *)
-          let st' = try finally st (Some exn) with _ -> st in
+          let st' = finally st (Some exn) in
           run ~finally g st' pipe
       end
 

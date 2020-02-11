@@ -1,8 +1,13 @@
 
+(* This file is free software, part of dolmen. See file "LICENSE" for more information *)
+
+module S = State
+
+let section = Handler.section
 
 let main () =
   Lsp.Logger.log ~section:"" ~title:"app" "start lsp";
-  Lsp.Rpc.start State.empty Handler.handler stdin stdout;
+  Lsp.Rpc.start Handler.empty Handler.handler stdin stdout;
   Lsp.Logger.log ~section:"" ~title:"app" "stop lsp";
   ()
 

@@ -1,93 +1,87 @@
-(* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
-(** Solver State
+(* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-    This module defines various interfaces for states used in main loops of solvers
-    (or other binaries) using dolmen. *)
+(* Exceptions *)
+(* ************************************************************************* *)
 
-module type Pipeline = sig
-  (** This modules defines the smallest signatures for a solver state that allow
-      to isntantiate the {Pipeline.Make} functor. *)
+exception Error
 
-  type t
-  (** The type of values recording options for the current run. *)
+exception Missing_smtlib_logic
 
-  val time_limit : t -> float
-  (** The time limit for one original statement (in seconds). *)
+exception Input_lang_changed of Parser.language * Parser.language
 
-  val size_limit : t -> float
-  (** The size limit for one original statement (in octets). *)
+exception File_not_found of Dolmen.ParseLocation.t option * string * string
 
-  val error : t -> ('a, Format.formatter, unit, t) format4 -> 'a
-  (** A function to log error messages. *)
+(* State for the typer *)
+(* ************************************************************************* *)
+
+module For_typer = struct
+
+  type solve_st = unit
+
+  let missing_smtlib_logic () = raise Missing_smtlib_logic
 
 end
 
-type source = [
-  | `Stdin
-  | `File of string
-]
+(* Full state *)
+(* ************************************************************************* *)
 
-type phase =[
-  | `Parsing
-  | `Include
-  | `Typing
-  | `Solving
-]
+module Make(T : Typer_intf.T) = struct
 
-type mode = [
-  | `Full
-  | `Incremental
-]
+  include Dolmen.State
 
-module type S = sig
-  (** This modules defines the smallest signatures for a solver state that allow
-      to isntantiate the {Pipes.Make} functor. *)
+  let pp_loc fmt o =
+    match o with
+    | None -> ()
+    | Some loc ->
+      Format.fprintf fmt "%a:@ " Dolmen.ParseLocation.fmt loc
 
-  type t
-  (** The type of state *)
+  let error ?loc _ format =
+    Format.kfprintf (fun _ -> raise Error) Format.err_formatter
+      ("%a @[<hov>%a" ^^ format ^^ "@]@.")
+      Fmt.(styled (`Fg (`Hi `Red)) string) "Error" pp_loc loc
 
-  type term
-  (** The type of solver terms. *)
+  let warn_aux st loc msg =
+    Format.eprintf "@[<hov>%a%a %s@]"
+      pp_loc loc
+      Fmt.(styled (`Fg (`Hi `Magenta)) string) "Warning"
+      msg;
+    st
 
-  (* Hooks at the start/end of phases *)
-  val start : phase -> unit
-  val stop : phase -> unit
+  let warn st loc msg = warn_aux st (Some loc) msg
 
-  (* Interactivity-related queries *)
-  val prelude : t -> string
-  val is_interactive : t -> bool
+  type solve_st = unit
+  type type_st = T.ty_state
+  type t = (Parser.language, type_st, solve_st) Dolmen.State.t
 
-  (* Input options *)
-  val set_mode : t -> mode -> t
-  val set_lang : t -> Parse.language -> t
+  let start _ = ()
+  let stop _ = ()
 
-  val input_mode : t -> mode option
-  val input_lang : t -> Parse.language option
-  val input_dir : t -> string
-  val input_source : t -> source
-  val file_not_found :
-    ?loc:Dolmen.ParseLocation.t -> dir:string -> file:string -> 'a
+  let file_not_found ?loc ~dir ~file =
+    raise (File_not_found (loc, dir, file))
 
-  (* Executing statements *)
-  val pop : t -> int -> t
-  val push : t -> int -> t
-  val reset_assertions : t -> t
-  val plain : t -> Dolmen.Term.t -> t
-  val get_proof : t -> t
-  val get_unsat_core : t -> t
-  val get_unsat_assumptions : t -> t
-  val get_model : t -> t
-  val get_values : t -> term list -> t
-  val get_assignment : t -> t
-  val get_assertions : t -> t
-  val get_info : t -> string -> t
-  val get_option : t -> string -> t
-  val set_logic : t -> string -> t
-  val set_info : t -> Dolmen.Term.t -> t
-  val set_option : t -> Dolmen.Term.t -> t
-  val echo : t -> string -> t
-  val reset : t -> t
-  val exit : t -> t
+  let set_lang_aux t l =
+    let t = Dolmen.State.set_lang t l in
+    match l with
+    | Parser.Alt_ergo ->
+      let old_mode = Dolmen.State.input_mode t in
+      let t = Dolmen.State.set_mode t `Full in
+      begin match old_mode with
+        | Some `Incremental ->
+          warn_aux t None
+            "The Alt-ergo format does not support incremental mode, switching to full mode"
+        | _ -> t
+      end
+    | _ -> t
+
+  let set_lang t l =
+    match t.input_lang with
+    | None -> set_lang_aux t l
+    | Some l' ->
+      if l = l'
+      then set_lang_aux t l
+      else raise (Input_lang_changed (l', l))
+
+  let run_typecheck st = st.type_check
 
 end

@@ -6,7 +6,7 @@ let prelude (st : State.t) =
   match st.input_lang with
   | None -> "prompt> @?"
   | Some l ->
-    Format.asprintf "(%s)# @?" (Dolmen_loop.Parse.string_of_language l)
+    Format.asprintf "(%s)# @?" (Dolmen_loop.Parser.string_of_language l)
 
 let prelude_space st =
   String.make (String.length (prelude st) - 8) ' '
@@ -68,20 +68,17 @@ let exn st = function
       Typer.report_error err
 
   (* State errors *)
-  | State.File_not_found (None, dir, f) ->
+  | Dolmen_loop.State.File_not_found (None, dir, f) ->
     State.error st "File not found: '%s' in directory '%s'" f dir
-  | State.File_not_found (Some loc, dir, f) ->
+  | Dolmen_loop.State.File_not_found (Some loc, dir, f) ->
     State.error st "@[<v>%a:@ File not found: '%s' in directory '%s'@]"
       Dolmen.ParseLocation.fmt loc f dir
-  | State.Missing_smtlib_logic ->
+  | Dolmen_loop.State.Missing_smtlib_logic ->
     State.error st "Missing smtlib set-logic statement"
-  | State.Input_lang_changed (l, l') ->
+  | Dolmen_loop.State.Input_lang_changed (l, l') ->
     State.error st "Input language changed from %s to %s (probably because of an include statement)"
-      (Dolmen_loop.Parse.string_of_language l)
-      (Dolmen_loop.Parse.string_of_language l')
-  | State.Shadowing (id, old, curr) ->
-    State.error st "Shadowing of identifier is forbidden@ %a"
-      Typer.print_shadowing_reasons (id, old, curr)
+      (Dolmen_loop.Parser.string_of_language l)
+      (Dolmen_loop.Parser.string_of_language l')
 
   (* Internal Dolmen Expr errors *)
   | Dolmen.Expr.Bad_ty_arity (c, l) ->
@@ -102,7 +99,7 @@ let exn st = function
       Dolmen.Expr.Ty.print ty Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)
 
   (* File format auto-detect *)
-  | Dolmen_loop.Parse.Extension_not_found ext ->
+  | Dolmen_loop.Parser.Extension_not_found ext ->
     State.error st "@[<hv>The following extension was not recognized: '%s'.@ %s" ext
       "Please use a recognised extension or specify an input language on the command line"
 

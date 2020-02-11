@@ -110,6 +110,7 @@ module type S = sig
   val empty_env :
     ?st:state ->
     ?expect:expect ->
+    ?allow_shadow:bool ->
     ?infer_hook:(env -> inferred -> unit) ->
     ?infer_base:Ty.t ->
     builtin_symbols -> env

@@ -21,7 +21,8 @@ type ('lang, 'typer, 'solver) t = {
   input_mode        : [ `Full
                       | `Incremental ] option;
   input_source      : [ `Stdin
-                      | `File of string ];
+                      | `File of string
+                      | `Raw of string * string ];
 
   (* Typechecking state *)
   type_state        : 'typer;

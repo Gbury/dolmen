@@ -43,8 +43,8 @@ let mk_state
     input_dir; input_lang;
     input_mode; input_source;
 
-    type_state = (); type_check;
-    type_infer; type_shadow;
+    type_state = Typer.T.new_state ();
+    type_check; type_infer; type_shadow;
     type_smtlib_logic = None;
 
     solve_state = ();
@@ -57,11 +57,12 @@ let mk_state
 (* ************************************************************************* *)
 
 (* Converter for input formats/languages *)
-let input_format_conv = Arg.enum Dolmen_loop.Parse.enum
+let input_format_conv = Arg.enum Dolmen_loop.Parser.enum
 
 (* Converter for input file/stdin *)
 let input_to_string = function
   | `Stdin -> "<stdin>"
+  | `Raw _ -> "<raw>"
   | `File f -> f
 
 let input_source_conv =
@@ -215,7 +216,7 @@ let state =
   let in_lang =
     let doc = Format.asprintf
         "Set the input language to $(docv) (%s)."
-        (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Parse.enum) in
+        (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Parser.enum) in
     Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc)
   in
   let in_mode =

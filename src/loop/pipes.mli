@@ -6,10 +6,10 @@
     on top-level statements. *)
 
 module Make
-    (Expr : Expr.S)
-    (State : State.S
+    (Expr : Expr_intf.S)
+    (State : State_intf.S
      with type term := Expr.term)
-    (Typer : Typer.S
+    (Typer : Typer_intf.S
      with type state := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var

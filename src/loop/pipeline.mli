@@ -10,7 +10,7 @@
     performing a fixpoint expansion.
 *)
 
-module Make(State : State.Pipeline) : sig
+module Make(State : State_intf.Pipeline) : sig
   (** Concrete pipelines. *)
 
   exception Sigint
@@ -73,7 +73,7 @@ module Make(State : State.Pipeline) : sig
   (** Evaluate a pipeline to a function. *)
 
   val run :
-    ?finally:(State.t -> exn option -> State.t) ->
+    finally:(State.t -> exn option -> State.t) ->
     (State.t -> 'a option) -> State.t ->
     (State.t * 'a, State.t) t ->
     State.t
