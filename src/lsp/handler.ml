@@ -76,9 +76,12 @@ let process state (doc : Doc.t) =
 (* Initialization *)
 (* ************************************************************************ *)
 
-let on_initialize _rpc _state _params =
-  Error "not implemented"
-
+let on_initialize _rpc state _params =
+  Lsp.Logger.log ~section ~title:"initialize" "Initialization succesful";
+  let info = Lsp.Initialize.Info.{ name = "dolmenls"; version = None; } in
+  let capabilities = Lsp.Initialize.ServerCapabilities.default in
+  let result = Lsp.Initialize.Result.{ serverInfo = Some info; capabilities; } in
+  Ok (state, result)
 
 (* Request handler *)
 (* ************************************************************************ *)

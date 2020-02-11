@@ -1,8 +1,6 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module S = State
-
 let section = Handler.section
 
 let main () =
