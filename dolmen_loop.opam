@@ -10,6 +10,7 @@ build: [
 ]
 depends: [
   "dolmen"
+  "dolmen_type"
   "gen"
   "dune"
 ]
