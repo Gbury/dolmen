@@ -36,11 +36,14 @@ let handle_exn st = function
     Ok (State.error st loc "%a" State.Typer.report_error err)
 
   (* File not found *)
-  | Dolmen_loop.State.File_not_found (l, dir, f) ->
+  | State.File_not_found (l, dir, f) ->
     Ok (State.error st (get_loc l) "File not found: '%s' in directory '%s'" f dir)
   (* Missing smtlib statement *)
-  | Dolmen_loop.State.Missing_smtlib_logic ->
+  | State.Missing_smtlib_logic ->
     Ok (State.error st no_loc "Missing smtlib set-logic statement")
+  (* Input lang changed *)
+  | State.Input_lang_changed _ ->
+    Ok (State.error st no_loc "Language changed because of an include")
 
   (* Fallback *)
   | exn ->
