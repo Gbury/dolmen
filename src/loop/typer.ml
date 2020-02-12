@@ -42,7 +42,7 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "declared at %a" Dolmen.ParseLocation.fmt loc
 
   let print_shadowing_reasons fmt (id, old, cur) =
-    Format.fprintf fmt "@[<v>Shadowing:@ %a was %a@ and is now %a@]"
+    Format.fprintf fmt "Shadowing:@ %a was %a@ and is now %a"
       Dolmen.Id.print id
       print_reason old
       print_reason cur
@@ -82,17 +82,17 @@ module Make(S : State_intf.Typer) = struct
 
     let unused_ty_var loc v =
       fmt_warning loc
-          "@[<h>Quantified type variable `%a` is unused@]"
+          "Quantified type variable `%a` is unused"
           Dolmen.Expr.Print.ty_var v
 
     let unused_term_var loc v =
       fmt_warning loc
-        "@[<h>Quantified term variable `%a` is unused@]"
+        "Quantified term variable `%a` is unused"
         Dolmen.Expr.Print.term_var v
 
     let error_in_attribute loc exn =
       fmt_warning loc
-        "[<h>Error while type-checking an attribute:@ %s@]"
+        "Error while type-checking an attribute:@ %s"
         (Printexc.to_string exn)
 
     let not_found _ _ = ()

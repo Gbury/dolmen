@@ -48,6 +48,9 @@ let warn t loc msg =
   add_diag d t
 
 let error t loc format =
+  Format.pp_safe_set_geometry
+    Format.str_formatter
+    ~max_indent:0 ~margin:500;
   Format.kasprintf (fun msg ->
       let d = Diagnostic.error ~loc msg in
       add_diag d t
