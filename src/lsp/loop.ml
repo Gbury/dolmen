@@ -38,6 +38,9 @@ let handle_exn st = function
   (* File not found *)
   | Dolmen_loop.State.File_not_found (l, dir, f) ->
     Ok (State.error st (get_loc l) "File not found: '%s' in directory '%s'" f dir)
+  (* Missing smtlib statement *)
+  | Dolmen_loop.State.Missing_smtlib_logic ->
+    Ok (State.error st no_loc "Missing smtlib set-logic statement")
 
   (* Fallback *)
   | exn ->

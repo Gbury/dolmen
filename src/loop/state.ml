@@ -4,8 +4,6 @@
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Error
-
 exception Missing_smtlib_logic
 
 exception Input_lang_changed of Parser.language * Parser.language
@@ -37,7 +35,7 @@ module Make(T : Typer_intf.T) = struct
       Format.fprintf fmt "%a:@ " Dolmen.ParseLocation.fmt loc
 
   let error ?loc _ format =
-    Format.kfprintf (fun _ -> raise Error) Format.err_formatter
+    Format.kfprintf (fun _ -> exit 1) Format.err_formatter
       ("%a @[<hov>%a" ^^ format ^^ "@]@.")
       Fmt.(styled (`Fg (`Hi `Red)) string) "Error" pp_loc loc
 
