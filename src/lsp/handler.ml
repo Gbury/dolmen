@@ -82,11 +82,18 @@ let change_doc t version uri changes =
 (* ************************************************************************ *)
 
 let process state uri =
+  Lsp.Logger.log ~section ~title:"processing"
+    "Starting processing of %s" (Lsp.Uri.to_path uri);
   let path = Lsp.Uri.to_path uri in
   let+ contents =
     match state.file_mode with
-    | Read_from_disk -> Ok None
+    | Read_from_disk ->
+      Lsp.Logger.log ~section ~title:"processing"
+        "reading from disk...";
+      Ok None
     | Compute_incremental ->
+      Lsp.Logger.log ~section ~title:"processing"
+        "Fetching computed document...";
       let+ doc = fetch_doc state uri in
       Ok (Some (Doc.text doc))
   in
@@ -102,9 +109,14 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   (* Determine in which mode we are *)
   let file_mode, diag_mode =
     if params.capabilities.textDocument.synchronization.didSave then begin
+      (* TODO: restore this commented code once save notifications are received
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: Read_from_disk/On_save";
       Read_from_disk, On_save
+         *)
+      Lsp.Logger.log ~section ~title:"initialize"
+        "Setting mode: Compute_incremental/On_change";
+      Compute_incremental, On_change
     end else begin
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: Compute_incremental/On_change";
