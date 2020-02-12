@@ -112,9 +112,11 @@ let on_did_open _rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   let+ _doc, state = open_doc state d.version d.uri d.text in
   Ok state
 
-let on_did_change _rpc state
+let on_did_change rpc state
     (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
-  let+ _doc, state = change_doc state d.version d.uri changes in
+  let+ doc, state = change_doc state d.version d.uri changes in
+  let+ res, state = process state doc in
+  let () = send_diagnostics rpc d.uri (Some d.version) res in
   Ok state
 
 let on_notification rpc state = function
