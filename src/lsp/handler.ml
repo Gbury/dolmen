@@ -92,7 +92,7 @@ let process state uri =
   in
   let+ st = Loop.process path contents in
   let diags = st.solve_state in
-  Ok (diags, state)
+  Ok (diags)
 
 (* Initialization *)
 (* ************************************************************************ *)
@@ -121,15 +121,13 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
       textDocumentSync = {
         default.textDocumentSync with
         willSave = true;
-        didSave = begin match file_mode with
-          | Compute_incremental -> None
-          | Read_from_disk -> Some {
-              Lsp.Initialize.TextDocumentSyncOptions.includeText = true; }
-        end;
-        change = begin match file_mode with
-          | Read_from_disk -> FullSync
-          | Compute_incremental -> IncrementalSync
-        end;
+        (* Request save notifications, but without transmitting the full doc *)
+        didSave = Some {
+            Lsp.Initialize.TextDocumentSyncOptions.includeText = true; };
+        (* NoSync is bugged under vim-lsp where it send null instead
+           of an empty list, so this is set to incremental even for
+           read_from_disk mode *)
+        change = IncrementalSync;
       };
     } in
   (* Return the new state and answer *)
@@ -157,27 +155,53 @@ let send_diagnostics rpc uri version l =
 
 let on_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
-  let+ res, state = process state d.uri in
-  if state.diag_mode = On_save then begin
-    send_diagnostics rpc d.uri None res
-  end;
-  Ok state
+  match state.diag_mode with
+  | On_change ->
+    Ok state
+  | On_save ->
+    let+ l = process state d.uri in
+    send_diagnostics rpc d.uri None l;
+    Ok state
 
-let on_did_open _rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
+let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   Lsp.Logger.log ~section ~title:"docDidOpen" "uri %s, size %d"
     (Lsp.Uri.to_path d.uri) (String.length d.text);
-  let+ state = open_doc state d.version d.uri d.text in
+  let+ state = match state.file_mode with
+    | Read_from_disk -> Ok state
+    | Compute_incremental -> open_doc state d.version d.uri d.text
+  in
+  let+ o = match state.diag_mode with
+    | On_change ->
+      let+ l = process state d.uri in
+      Ok (Some l)
+    | On_save ->
+      Ok None
+  in
+  let () = match o with
+    | None -> ()
+    | Some l -> send_diagnostics rpc d.uri (Some d.version) l
+  in
   Ok state
 
 let on_did_change rpc state
     (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
   Lsp.Logger.log ~section ~title:"docDidChange"
     "uri %s" (Lsp.Uri.to_path d.uri);
-  let+ state = change_doc state d.version d.uri changes in
-  let+ res, state = process state d.uri in
-  if state.diag_mode = On_change then begin
-    send_diagnostics rpc d.uri (Some d.version) res
-  end;
+  let+ state = match state.file_mode with
+    | Read_from_disk -> Ok state
+    | Compute_incremental -> change_doc state d.version d.uri changes
+  in
+  let+ o = match state.diag_mode with
+    | On_change ->
+      let+ l = process state d.uri in
+      Ok (Some l)
+    | On_save ->
+      Ok None
+  in
+  let () = match o with
+    | None -> ()
+    | Some l -> send_diagnostics rpc d.uri (Some d.version) l
+  in
   Ok state
 
 let on_notification rpc state = function
