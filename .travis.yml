@@ -42,72 +42,70 @@ before_cache:
 # Order stages to first build, then test installation
 stages:
   - build
-  - documentation
+  - install
 
 jobs:
   include:
     # === Build stage ===
     - stage: "build"
-      name: "build & install (no tests)"
+      name: "build"
+      script: make
+      env: OPAMBUILDTEST=false OCAML_VERSION=4.08.0
+    # === Install stage ===
+    - stage: "install"
+      name: "install (no tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=false OCAML_VERSION=4.02.3
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.02.3
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.03.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.03.0+flambda
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.04.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.04.0+flambda
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.05.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.05.0+flambda
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.06.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.06.0+flambda
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.07.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.07.0+flambda
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.08.0
-    - stage: "build"
-      name: "build & install (with tests)"
+    - stage: "install"
+      name: "install (with tests)"
       script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
       env: OPAMBUILDTEST=true OCAML_VERSION=4.08.0+flambda
-
-# Scripts to run
-script:
-  # Build and launch the tests
-  - if [ "$TO_TEST" = "tests" ]; then make && make test; fi
-  # Try and install the package with opam
-  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev; fi
 
