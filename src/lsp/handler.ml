@@ -27,49 +27,19 @@ type res = {
 }
 
 type t = {
-  docs: Doc.t Umap.t;
   processed: res Umap.t;
 }
 
 let empty = {
-  docs = Umap.empty;
   processed = Umap.empty;
 }
-
-(* Manipulating documents *)
-(* ************************************************************************ *)
-
-let add_doc t uri doc =
-  let t' = { t with docs = Umap.add uri doc t.docs; } in
-  Ok (doc, t')
-
-let open_doc t version uri text =
-  let doc = Doc.make ~version uri text in
-  add_doc t uri doc
-
-let fetch_doc t uri =
-  match Umap.find uri t.docs with
-  | doc -> Ok doc
-  | exception Not_found ->
-    Error "uri not found"
-
-let apply_changes version doc changes =
-  List.fold_right (Doc.apply_content_change ~version) changes doc
-
-let change_doc t version uri changes =
-  let+ doc = fetch_doc t uri in
-  let doc' = apply_changes version doc changes in
-  add_doc t uri doc'
-
 
 (* Document processing *)
 (* ************************************************************************ *)
 
-let process state (doc : Doc.t) =
-  let uri = Doc.documentUri doc in
+let process state uri =
   let path = Lsp.Uri.to_path uri in
-  let contents = Doc.text doc in
-  let+ st = Loop.process path contents in
+  let+ st = Loop.process path in
   let diags = st.solve_state in
   Ok (diags, state)
 
@@ -79,7 +49,16 @@ let process state (doc : Doc.t) =
 let on_initialize _rpc state _params =
   Lsp.Logger.log ~section ~title:"initialize" "Initialization succesful";
   let info = Lsp.Initialize.Info.{ name = "dolmenls"; version = None; } in
-  let capabilities = Lsp.Initialize.ServerCapabilities.default in
+  let default = Lsp.Initialize.ServerCapabilities.default in
+  let capabilities =
+    { default with
+      textDocumentSync = {
+        default.textDocumentSync with
+        didSave = Some {
+            Lsp.Initialize.TextDocumentSyncOptions.includeText = false; };
+        change = NoSync;
+      };
+    } in
   let result = Lsp.Initialize.Result.{ serverInfo = Some info; capabilities; } in
   Ok (state, result)
 
@@ -103,20 +82,8 @@ let send_diagnostics rpc uri version l =
   }
 
 let on_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  let+ doc = fetch_doc state d.uri in
-  let+ res, state = process state doc in
+  let+ res, state = process state d.uri in
   let () = send_diagnostics rpc d.uri None res in
-  Ok state
-
-let on_did_open _rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
-  let+ _doc, state = open_doc state d.version d.uri d.text in
-  Ok state
-
-let on_did_change rpc state
-    (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
-  let+ doc, state = change_doc state d.version d.uri changes in
-  let+ res, state = process state doc in
-  let () = send_diagnostics rpc d.uri (Some d.version) res in
   Ok state
 
 let on_notification rpc state = function
@@ -127,17 +94,10 @@ let on_notification rpc state = function
     Ok state
 
   (* New document *)
-  | N.TextDocumentDidOpen { textDocument=d } ->
-    Lsp.Logger.log ~section ~title:"docDidOpen" "uri %s, size %d"
-      (Lsp.Uri.to_path d.uri) (String.length d.text);
-    on_did_open rpc state d
+  | N.TextDocumentDidOpen _ -> Ok state
+  | N.TextDocumentDidChange _ -> Ok state
 
-  (* Document changes *)
-  | N.TextDocumentDidChange { textDocument; contentChanges; } ->
-    Lsp.Logger.log ~section ~title:"docDidChange" "uri %s"
-      (Lsp.Uri.to_path textDocument.uri);
-    on_did_change rpc state textDocument contentChanges
-
+  (* Document saving *)
   | N.DidSaveTextDocument { textDocument=d; _ } ->
     on_save rpc state d
 

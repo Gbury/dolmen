@@ -50,7 +50,7 @@ let finally st e =
     let res = handle_exn st exn in
     raise (Finished res)
 
-let process path contents =
+let process path =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
   let st = Dolmen.State.{
@@ -59,7 +59,7 @@ let process path contents =
       input_dir = dir;
       input_lang = None;
       input_mode = None;
-      input_source = `Raw (file, contents);
+      input_source = `File file;
       type_state = State.Typer.T.new_state ();
       type_check = true;
       type_infer = None;
