@@ -127,7 +127,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
               Lsp.Initialize.TextDocumentSyncOptions.includeText = true; }
         end;
         change = begin match file_mode with
-          | Read_from_disk -> NoSync
+          | Read_from_disk -> FullSync
           | Compute_incremental -> IncrementalSync
         end;
       };
