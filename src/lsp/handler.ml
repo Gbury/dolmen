@@ -120,6 +120,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
     { default with
       textDocumentSync = {
         default.textDocumentSync with
+        willSave = true;
         didSave = begin match file_mode with
           | Compute_incremental -> None
           | Read_from_disk -> Some {
