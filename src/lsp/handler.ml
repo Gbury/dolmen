@@ -46,8 +46,8 @@ let process state uri =
 (* Initialization *)
 (* ************************************************************************ *)
 
-let on_initialize _rpc state _params =
-  Lsp.Logger.log ~section ~title:"initialize" "Initialization succesful";
+let on_initialize _rpc state params =
+  Lsp.Logger.log ~section ~title:"initialize" "Initialization started";
   let info = Lsp.Initialize.Info.{ name = "dolmenls"; version = None; } in
   let default = Lsp.Initialize.ServerCapabilities.default in
   let capabilities =
@@ -55,8 +55,8 @@ let on_initialize _rpc state _params =
       textDocumentSync = {
         default.textDocumentSync with
         didSave = Some {
-            Lsp.Initialize.TextDocumentSyncOptions.includeText = false; };
-        change = NoSync;
+            Lsp.Initialize.TextDocumentSyncOptions.includeText = true; };
+        change = FullSync;
       };
     } in
   let result = Lsp.Initialize.Result.{ serverInfo = Some info; capabilities; } in
