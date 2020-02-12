@@ -9,14 +9,20 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
+  "ocaml" {>= "4.02.3"}
   "dolmen"
   "dolmen_type"
   "gen"
   "dune"
 ]
-available: [ ocaml-version >= "4.02.3" ]
 tags: [ "logic" "computation" "automated theorem prover" ]
 homepage: "https://github.com/Gbury/dolmen"
-doc: "http://gbury.github.io/dolmen"
-bug-reports: "https://github.com/Gbury/dolmen/issues"
 dev-repo: "https://github.com/Gbury/dolmen.git"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+
+doc: "http://gbury.github.io/dolmen"
+synopsis: "A tool library for automated deduction tools"
+description:
+"Dolmen Loop is a library of useful helpers to parse
+and loop over statements found in automated deduction files."
+

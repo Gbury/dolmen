@@ -9,13 +9,15 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
+  "ocaml" {>= "4.02.3"}
   "dolmen"
   "spelll"
   "dune"
 ]
-available: [ ocaml-version >= "4.02.3" ]
 tags: [ "logic" "type" "typechecking" "first order" ]
 homepage: "https://github.com/Gbury/dolmen"
-doc: "http://gbury.github.io/dolmen"
-bug-reports: "https://github.com/Gbury/dolmen/issues"
 dev-repo: "https://github.com/Gbury/dolmen.git"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+
+doc: "http://gbury.github.io/dolmen"
+synopsis: "A typechecker for automated deduction languages"
