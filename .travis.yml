@@ -5,6 +5,7 @@ env:
   - TO_TEST=install OPAMBUILDTEST=true OCAML_VERSION=4.03.0
   # Check build and unit tests
   # NOTE: testing needs OPAMBUILDTEST=true so that test deps are installed
+  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.02.3
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.03.0
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.03.0+flambda
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.04.2
@@ -13,6 +14,10 @@ env:
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.05.0+flambda
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.06.0
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.06.0+flambda
+  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.07.0
+  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.07.0+flambda
+  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.08.0
+  - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.08.0+flambda
 #matrix:
 #  allow_failures:
 #    # opam-installer fails on these versions (will probably be fixed before the official opam2 release
@@ -36,10 +41,10 @@ before_install:
 install:
   # Install dependencies
   - ${HOME}/opam pin add --no-action .
-  - ${HOME}/opam install --deps-only dolmen.dev dolmen_typecheck.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
+  - ${HOME}/opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
 script:
   # Build and launch the tests
   - if [ "$TO_TEST" = "tests" ]; then make && make test; fi
   # Try and install the package with opam
-  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev dolmen_typecheck.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev; fi
+  - if [ "$TO_TEST" = "install" ]; then ${HOME}/opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev; fi
 
