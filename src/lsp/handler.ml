@@ -123,7 +123,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
         didSave = begin match file_mode with
           | Compute_incremental -> None
           | Read_from_disk -> Some {
-              Lsp.Initialize.TextDocumentSyncOptions.includeText = false; }
+              Lsp.Initialize.TextDocumentSyncOptions.includeText = true; }
         end;
         change = begin match file_mode with
           | Read_from_disk -> NoSync
