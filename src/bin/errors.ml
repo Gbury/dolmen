@@ -62,7 +62,7 @@ let exn st = function
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     State.error st
-      "@[<hv>While typing:@ @[<hov>%a@]@]@.%a:@\n%a"
+      "@[<hv>While typing:@ @[<hov>%a@]@]@.%a:@\n@[<hv>%a@]"
       Dolmen.Term.print t
       Dolmen.ParseLocation.fmt loc
       Typer.report_error err

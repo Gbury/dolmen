@@ -160,94 +160,93 @@ module Make(S : State_intf.Typer) = struct
   let report_error fmt = function
     (* Core Typechecking Errors *)
     | T.Infer_type_variable ->
-      Format.fprintf fmt "@[<h>Cannot infer the type of a variable@]"
+      Format.fprintf fmt "Cannot infer the type of a variable"
     | T.Expected (expect, got) ->
-      Format.fprintf fmt "@[<hv>Expected %s but got %a@]" expect (print_opt print_res) got
+      Format.fprintf fmt "Expected %s but got %a" expect (print_opt print_res) got
     | T.Bad_op_arity (s, i, j) ->
-      Format.fprintf fmt "@[<hv>Bad arity for builtin '%s':@ expected %d arguments but got %d@]" s j i
+      Format.fprintf fmt "Bad arity for builtin '%s':@ expected %d arguments but got %d" s j i
     | T.Bad_ty_arity (c, i) ->
-      Format.fprintf fmt "@[<hv>Bad arity (expected %d arguments) for type constant@ %a@]"
+      Format.fprintf fmt "Bad arity (expected %d arguments) for type constant@ %a"
         i Dolmen.Expr.Print.ty_const c
     | T.Bad_cstr_arity (c, i, j) ->
       Format.fprintf fmt
-        "@[<hv>Bad arity (expected %d type argument, and %d term arguments) for term constructor@ %a@]"
+        "Bad arity (expected %d type argument, and %d term arguments) for term constructor@ %a"
         i j Dolmen.Expr.Print.term_const c
     | T.Bad_term_arity (c, i, j) ->
       Format.fprintf fmt
-        "@[<hv>Bad arity (expected %d type argument, and %d term arguments) for term constant@ %a@]"
+        "Bad arity (expected %d type argument, and %d term arguments) for term constant@ %a"
         i j Dolmen.Expr.Print.term_const c
     | T.Var_application v ->
-      Format.fprintf fmt "@[<hv>Cannot apply arguments to term variable@ %a@]" Dolmen.Expr.Print.id v
+      Format.fprintf fmt "Cannot apply arguments to term variable@ %a" Dolmen.Expr.Print.id v
     | T.Ty_var_application v ->
-      Format.fprintf fmt "@[<hv>Cannot apply arguments to type variable@ %a@]" Dolmen.Expr.Print.id v
+      Format.fprintf fmt "Cannot apply arguments to type variable@ %a" Dolmen.Expr.Print.id v
     | T.Type_mismatch (t, expected) ->
-      Format.fprintf fmt "@[<v>@[<v 2>The term:@ %a@]@ @ @[<v 2>has type@ %a@]@ @[<v 2>but was expected to be of type@ %a@]@]"
+      Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
         Dolmen.Expr.Term.print t
         Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)
         Dolmen.Expr.Ty.print expected
     | T.Quantified_var_inference ->
-      Format.fprintf fmt "@[<h>Cannot infer type for a quantified variable@]"
+      Format.fprintf fmt "Cannot infer type for a quantified variable"
     | T.Unhandled_builtin b ->
       Format.fprintf fmt
-        "@[<hv>The following Dolmen builtin is currently not handled@ %a@ Please report upstream@]"
+        "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
         Dolmen.Term.print_builtin b
     | T.Cannot_tag_tag ->
-      Format.fprintf fmt "@[<h>Cannot apply a tag to another tag (only expressions)@]"
+      Format.fprintf fmt "Cannot apply a tag to another tag (only expressions)"
     | T.Cannot_tag_ttype ->
-      Format.fprintf fmt "@[<h>Cannot apply a tag to the Ttype constant@]"
+      Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
     | T.Cannot_find id ->
-      Format.fprintf fmt "@[<hv>Unbound identifier:@ '%a'@]" Dolmen.Id.print id
+      Format.fprintf fmt "Unbound identifier:@ '%a'" Dolmen.Id.print id
     | T.Type_var_in_type_constructor ->
-      Format.fprintf fmt "@[<h>Type variables cannot appear in the signature of a type constant@]"
+      Format.fprintf fmt "Type variables cannot appear in the signature of a type constant"
     | T.Missing_destructor id ->
       Format.fprintf fmt
-        "@[<hv>The destructor '%a'@ was not provided by the user implementation.@ Please report upstream.@]"
+        "The destructor '%a'@ was not provided by the user implementation.@ Please report upstream."
         Dolmen.Id.print id
     | T.Higher_order_application ->
-      Format.fprintf fmt "@[<h>Higher-order applications are not handled by the Tff typechecker@]"
+      Format.fprintf fmt "Higher-order applications are not handled by the Tff typechecker"
     | T.Higher_order_type ->
-      Format.fprintf fmt "@[<h>Higher-order types are not handled by the Tff typechecker@]"
-    | T.Unbound_variables (tys, [], t) ->
+      Format.fprintf fmt "Higher-order types are not handled by the Tff typechecker"
+    | T.Unbound_variables (tys, [], _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "@[<v>In term:@ @[<hov>%a@]@ The following variables are not bound:@ @[<hov>%a@]@]"
-        Dolmen.Expr.Term.print t (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
-    | T.Unbound_variables ([], ts, t) ->
+      Format.fprintf fmt "The following variables are not bound:@ %a"
+        (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
+    | T.Unbound_variables ([], ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "@[<v>In term:@ @[<hov>%a@]@ The following variables are not bound:@ @[<hov>%a@]@]"
-        Dolmen.Expr.Term.print t (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
-    | T.Unbound_variables (tys, ts, t) ->
+      Format.fprintf fmt "The following variables are not bound:@ %a"
+        (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
+    | T.Unbound_variables (tys, ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "@[<v>In term:@ %a@ The following variables are not bound:@ @[<hov>%a,@ %a@]@]"
-        Dolmen.Expr.Term.print t
+      Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
     | T.Unhandled_ast ->
-      Format.fprintf fmt "@[<hv>The typechecker did not know what to do with the term.@ Please report upstream.@]"
+      Format.fprintf fmt "The typechecker did not know what to do with the term.@ Please report upstream."
 
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
-      Format.fprintf fmt "@[<hv>Arithmetic type expected but got@ %a@ %s@]"
+      Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
         "Tptp arithmetic symbols are only polymoprhic over the arithmetic types $int, $rat and $real."
     | Tptp_Arith.Cannot_apply_to ty ->
-      Format.fprintf fmt "@[<hv>Cannot apply the arithmetic operation to type@ %a@]"
+      Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
         Dolmen.Expr.Ty.print ty
 
     (* Smtlib Arithmetic errors *)
     | Smtlib_Reals_Ints.Expected_arith_type ty ->
-      Format.fprintf fmt "@[<hv>Arithmetic type expected but got@ %a@ %s@]"
+      Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
         "The stmlib Reals_Ints theory requires an arithmetic type in order to correctly desugar the expression."
 
     (* Smtlib Bitvector errors *)
     | Smtlib_Bitv.Invalid_bin_char c ->
-      Format.fprintf fmt "@[<hov>The@ character@ '%c'@ is@ invalid@ inside@ a@ binary@ bitvector@ litteral@]" c
+      Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
     | Smtlib_Bitv.Invalid_hex_char c ->
-      Format.fprintf fmt "@[<hov>The@ character@ '%c'@ is@ invalid@ inside@ a@ hexadecimal@ bitvector@ litteral@]" c
+      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Catch-all *)
     | _ ->
-      Format.fprintf fmt "@[<hov>Unknown typing error,@ please report upstream, ^^@]"
+      Format.fprintf fmt "Unknown typing error,@ please report upstream, ^^"
 
   let () =
     Printexc.register_printer (function
