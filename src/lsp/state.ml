@@ -54,7 +54,7 @@ let error t loc format =
   Format.kasprintf (fun msg ->
       let d = Diagnostic.error ~loc msg in
       add_diag d t
-    ) format
+    ) ("@[<h>" ^^ format ^^ "@]")
 
 (* Necessary functions *)
 (* ************************************************************************* *)
