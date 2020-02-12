@@ -94,11 +94,16 @@ let on_notification rpc state = function
     Ok state
 
   (* New document *)
-  | N.TextDocumentDidOpen _ -> Ok state
-  | N.TextDocumentDidChange _ -> Ok state
+  | N.TextDocumentDidOpen _ ->
+    Lsp.Logger.log ~section ~title:"doc open" "Document opened succesfully";
+    Ok state
+  | N.TextDocumentDidChange _ ->
+    Lsp.Logger.log ~section ~title:"doc change" "Document changed succesfully";
+    Ok state
 
   (* Document saving *)
   | N.DidSaveTextDocument { textDocument=d; _ } ->
+    Lsp.Logger.log ~section ~title:"doc saved" "Document saved";
     on_save rpc state d
 
   (* Exit *)
