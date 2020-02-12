@@ -130,6 +130,10 @@ module Make
     in
     aux [] n l
 
+  let option_map f = function
+    | None -> None
+    | Some x -> Some (f x)
+
   (* Fuzzy search maps *)
   (* ************************************************************************ *)
 
@@ -1209,7 +1213,7 @@ module Make
     (* Constructors with strings for names *)
     let cstrs_with_strings = List.map (fun (id, args) ->
         Id.full_name id, List.map (fun (_, ty, dstr) ->
-            ty, Option.map Id.full_name dstr
+            ty, option_map Id.full_name dstr
           ) args
       ) cstrs_with_ids in
     (* Call the T module to define the adt and get the typed constructors

@@ -295,6 +295,11 @@ let hash2 x y = Hashtbl.seeded_hash x y
 let hash3 x y z = hash2 x (hash2 y z)
 let hash4 x y z t = hash2 x (hash3 y z t)
 
+(* option iter *)
+let option_iter f = function
+  | None -> ()
+  | Some x -> f x
+
 (* list hash *)
 let hash_list f l =
   let rec aux acc = function
@@ -545,8 +550,8 @@ module Id = struct
       ?pos ?name ?builtin ?tags
       cname fun_vars fun_args fun_ret =
     let res = mk ?builtin ?tags cname { fun_vars; fun_args; fun_ret; } in
-    Option.iter (tag res Print.pos) pos;
-    Option.iter (fun s -> tag res Print.name (Pretty.Exact s)) name;
+    option_iter (tag res Print.pos) pos;
+    option_iter (fun s -> tag res Print.name (Pretty.Exact s)) name;
     res
 
   let indexed
