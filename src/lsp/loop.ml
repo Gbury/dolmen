@@ -8,7 +8,7 @@ module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(State.Typer)
 
 exception Finished of (State.t, string) result
 
-let no_loc = Dolmen.ParseLocation.mk "" 0 0 0 0
+let no_loc = Dolmen.ParseLocation.mk "" 1 1 1 1
 let get_loc = function
   | Some l -> l
   | None -> no_loc
