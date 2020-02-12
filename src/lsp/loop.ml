@@ -33,7 +33,7 @@ let handle_exn st = function
   (* Typing error *)
   | State.Typer.T.Typing_error (err, _, t) ->
     let loc = get_loc t.Dolmen.Term.loc in
-    Ok (State.error st loc "@[<h>Typing error: %a@]" State.Typer.report_error err)
+    Ok (State.error st loc "Typing error: %a" State.Typer.report_error err)
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->
