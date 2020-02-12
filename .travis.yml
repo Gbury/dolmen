@@ -1,4 +1,21 @@
+# ocaml is not a recognized language by travis, and using it
+# make travis default to ruby, whose setup is a bit time-consuming.
+# Hence, we currently use c given it's the most lightweight
+# in terms of language setup for the VMs.
 language: c
+# Cache the opam directory
+cache:
+  directories:
+    - $HOME/.opam
+# External dependencies (non-ocaml)
+addons:
+  apt:
+    sources:
+      - avsm
+    packages:
+      - opam>=2
+
+# Environment matrix
 env:
   # Check that the package installs correctly with and without its test dependencies using opam
   - TO_TEST=install OPAMBUILDTEST=false OCAML_VERSION=4.03.0
@@ -18,30 +35,32 @@ env:
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.07.0+flambda
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.08.0
   - TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.08.0+flambda
-#matrix:
-#  allow_failures:
-#    # opam-installer fails on these versions (will probably be fixed before the official opam2 release
-#    - env: TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.06.0
-#    - env: TO_TEST=tests OPAMBUILDTEST=true OCAML_VERSION=4.06.0+flambda
-# Caching may take a lot of space with so many ocaml versions
-#cache:
-#  directories:
-#    - $HOME/.opam
+
+# Prepare the opam switch
 before_install:
-  # Download and use opam2
-  - wget -O ${HOME}/opam https://github.com/ocaml/opam/releases/download/2.0.0-beta6/opam-2.0.0-beta6-x86_64-linux
-  - chmod +x ${HOME}/opam
   # Some opam boilerplate
   - export OPAMYES=1
   - export OPAMJOBS=2
   # Init opam, and the default switch with the right ocaml version
-  - ${HOME}/opam init --compiler=${OCAML_VERSION}
-  - eval `${HOME}/opam config env`
+  - opam init --disable-sandboxing --compiler=${OCAML_VERSION}
+  - eval `opam config env`
+  # Set the verbose option *after* compiling the compiler
+  # and installing odoc, else the log oveflows
   - export OPAMVERBOSE=1
+
+# Install dependencies
 install:
-  # Install dependencies
-  - ${HOME}/opam pin add --no-action .
-  - ${HOME}/opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
+  - opam pin add --no-action .
+  - opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev ||
+    (opam update && opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev)
+
+# Remove source pins before the cache is updated, to avoid
+# having the dolmen sources in the cache
+before_cache:
+  - opam uninstall dolmen dolmen_type dolmen_loop dolmen_bin dolmen_lsp
+  - opam pin remove dolmen dolmen_type dolmen_loop dolmen_bin dolmen_lsp
+
+# Scripts to run
 script:
   # Build and launch the tests
   - if [ "$TO_TEST" = "tests" ]; then make && make test; fi
