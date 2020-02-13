@@ -1,112 +1,18 @@
-# ocaml is not a recognized language by travis, and using it
-# make travis default to ruby, whose setup is a bit time-consuming.
-# Hence, we currently use c given it's the most lightweight
-# in terms of language setup for the VMs.
 language: c
-# Cache the opam directory
-cache:
-  directories:
-    - $HOME/.opam
-# External dependencies (non-ocaml)
-addons:
-  apt:
-    sources:
-      - avsm
-    packages:
-      - opam>=2
-
-# Prepare the opam switch
-before_install:
-  # Some opam boilerplate
-  - export OPAMYES=1
-  - export OPAMJOBS=2
-  # Init opam, and the default switch with the right ocaml version
-  - opam init --disable-sandboxing --compiler=${OCAML_VERSION}
-  - eval `opam config env`
-  # Set the verbose option *after* compiling the compiler
-  # and installing odoc, else the log oveflows
-  - export OPAMVERBOSE=1
-
-# Install dependencies
-install:
-  - opam pin add --no-action .
-  - opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev ||
-    (opam update && opam install --deps-only dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev)
-  - if [ "$OCAML_VERSION" \>= "4.06.0" ]; opam install --deps-only dolmen_lsp.dev || (opam update && opam install --deps-only dolmen_lsp.dev); fi
-
-# Remove source pins before the cache is updated, to avoid
-# having the dolmen sources in the cache
-before_cache:
-  - opam uninstall dolmen dolmen_type dolmen_loop dolmen_bin dolmen_lsp
-  - opam pin remove dolmen dolmen_type dolmen_loop dolmen_bin dolmen_lsp
-
-# Order stages to first build, then test installation
-stages:
-  - build
-  - install
-
-jobs:
-  include:
-    # === Build stage ===
-    - stage: "build"
-      name: "build"
-      script: make
-      env: OPAMBUILDTEST=false OCAML_VERSION=4.08.0
-    # === Install stage ===
-    - stage: "install"
-      name: "install (no tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=false OCAML_VERSION=4.02.3
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.02.3
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.03.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.03.0+flambda
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.04.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.04.0+flambda
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.05.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.05.0+flambda
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.06.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.06.0+flambda
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.07.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.07.0+flambda
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.08.0
-    - stage: "install"
-      name: "install (with tests)"
-      script: opam install dolmen.dev dolmen_type.dev dolmen_loop.dev dolmen_bin.dev dolmen_lsp.dev
-      env: OPAMBUILDTEST=true OCAML_VERSION=4.08.0+flambda
-
+install: wget https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-docker.sh
+script: bash -ex .travis-docker.sh
+services:
+- docker
+env:
+  global:
+  - PINS="dolmen:. dolmen_lsp:. dolmen_bin:. dolmen_loop:. dolmen_type:."
+  - DISTRO="ubuntu-16.04"
+  matrix:
+  - PACKAGE="dolmen" CAML_VERSION="4.03"
+  - PACKAGE="dolmen" CAML_VERSION="4.04"
+  - PACKAGE="dolmen" CAML_VERSION="4.05"
+  - PACKAGE="dolmen" CAML_VERSION="4.06"
+  - PACKAGE="dolmen" CAML_VERSION="4.08"
+  - PACKAGE="dolmen" CAML_VERSION="4.09"
+  - PACKAGE="dolmen_lsp" CAML_VERSION="4.06"
+  - PACKAGE="dolmen_lsp" CAML_VERSION="4.08"
