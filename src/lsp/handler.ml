@@ -117,14 +117,9 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   (* Determine in which mode we are *)
   let file_mode, diag_mode =
     if params.capabilities.textDocument.synchronization.didSave then begin
-      (* TODO: restore this commented code once save notifications are received
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: Read_from_disk/On_save";
       Read_from_disk, On_save
-         *)
-      Lsp.Logger.log ~section ~title:"initialize"
-        "Setting mode: Compute_incremental/On_change";
-      Compute_incremental, On_change
     end else begin
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: Compute_incremental/On_change";
@@ -142,7 +137,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
         default.textDocumentSync with
         willSave = true;
         (* Request save notifications, but without transmitting the full doc *)
-        didSave = Some {
+        save = Some {
             Lsp.Initialize.TextDocumentSyncOptions.includeText = true; };
         (* NoSync is bugged under vim-lsp where it send null instead
            of an empty list, so this is set to incremental even for
