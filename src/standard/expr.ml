@@ -518,6 +518,12 @@ module Print = struct
         pp fmt x
       ) seq
 
+  let iter ~sep pp fmt k =
+    let first = ref true in
+    k (fun x ->
+        if !first then first := false else sep fmt ();
+        pp fmt x
+      )
 end
 
 (* Ids *)
@@ -688,7 +694,7 @@ module Subst = struct
       Format.fprintf fmt "@[<hov 2>%a ↦@ %a@]" print_key key print_value value
     in
     Format.fprintf fmt "@[<hv>%a@]"
-      Print.(seq ~sep:(return ";@ ") aux) (Mi.to_seq map)
+      Print.(iter ~sep:(return ";@ ") aux) (fun k -> Mi.iter (fun x y -> k(x,y)) map)
 
   let debug print_key print_value fmt map =
     let aux fmt (i, (key, value)) =
@@ -696,7 +702,7 @@ module Subst = struct
         i print_key key print_value value
     in
     Format.fprintf fmt "@[<hv>%a@]"
-      Print.(seq ~sep:(return ";@ ") aux) (Mi.to_seq map)
+      Print.(iter ~sep:(return ";@ ") aux) (fun k -> Mi.iter (fun x y -> k(x,y)) map)
 
   (* Specific substitutions signature *)
   module type S = sig

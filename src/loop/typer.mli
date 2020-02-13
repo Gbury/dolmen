@@ -16,7 +16,7 @@ module type S = sig
      and type T.Cstr.t = Dolmen.Expr.term_const
 
   include Typer_intf.S
-    with type state := (Parser.language, T.state, solve_st) Dolmen.State.t
+    with type state := (Parser.language, T.state, solve_st) Dolmen.State.state
      and type ty := Dolmen.Expr.ty
      and type ty_var := Dolmen.Expr.ty_var
      and type ty_const := Dolmen.Expr.ty_const

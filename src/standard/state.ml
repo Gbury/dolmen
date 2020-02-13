@@ -9,7 +9,7 @@ type perm =
   | Warn
   | Error
 
-type ('lang, 'typer, 'solver) t = {
+type ('lang, 'typer, 'solver) state = {
 
   (* Limits for time and size *)
   time_limit        : float;

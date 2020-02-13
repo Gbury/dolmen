@@ -2,6 +2,8 @@
 (* Some helper functions *)
 (* ************************************************************************ *)
 
+module State = Bin_state
+
 let prelude (st : State.t) =
   match st.input_lang with
   | None -> "prompt> @?"
@@ -32,21 +34,21 @@ let out_of_space st = State.error st "Memory limit reached"
 let exn st = function
   (* Parsing errors *)
   | Dolmen.ParseLocation.Uncaught (loc, exn) ->
-    if State.is_interactive st then
+    if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     State.error st "%a:@\n%s@."
       Dolmen.ParseLocation.fmt loc (Printexc.to_string exn)
   | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
-    if State.is_interactive st then
+    if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     State.error st "%a:@\nLexing error: invalid character '%s'@."
       Dolmen.ParseLocation.fmt loc msg
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
-    if State.is_interactive st then
+    if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
@@ -57,7 +59,7 @@ let exn st = function
   (* Typing errors *)
   | Typer.T.Typing_error (err, _, t) ->
     let loc = get_loc st t.Dolmen.Term.loc in
-    if State.is_interactive st then
+    if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;

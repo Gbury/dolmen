@@ -35,7 +35,7 @@ type lang = Dolmen_loop.Parser.language
 type typer_st = Typer.T.state
 type solver_st = Diagnostic.t list
 
-type t = (lang, typer_st, solver_st) Dolmen.State.t
+type t = (lang, typer_st, solver_st) Dolmen.State.state
 
 (* Warnings *)
 (* ************************************************************************* *)
@@ -48,9 +48,8 @@ let warn t loc msg =
   add_diag d t
 
 let error t loc format =
-  Format.pp_safe_set_geometry
-    Format.str_formatter
-    ~max_indent:0 ~margin:500;
+  (* NOTE: probably useless, kasprintf allocates a new buffer… right? *)
+  Format.pp_set_margin Format.str_formatter 500;
   Format.kasprintf (fun msg ->
       let d = Diagnostic.error ~loc msg in
       add_diag d t

@@ -1,8 +1,6 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-open Result
-
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
 module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(State.Typer)
 
@@ -61,7 +59,7 @@ let process path opt_contents =
   let file = Filename.basename path in
   let st = Dolmen.State.{
       time_limit = 0.; (* disable the timer *)
-      size_limit = Float.max_float;
+      size_limit = max_float;
       input_dir = dir;
       input_lang = None;
       input_mode = None;

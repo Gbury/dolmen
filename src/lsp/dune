@@ -2,6 +2,5 @@
   (name         main)
   (public_name  dolmenls)
   (package      dolmen_lsp)
-  (preprocess   future_syntax)
   (libraries    dolmen dolmen_type dolmen_loop lsp)
  )

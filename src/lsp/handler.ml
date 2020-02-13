@@ -1,12 +1,19 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-open Result
-
 (* Some module aliases and small stuff *)
 (* ************************************************************************ *)
 
 let section = "dolmen_lsp"
+
+module Res_ = struct
+  let (>|=) x f = match x with
+    | Error e -> Error e
+    | Ok x -> Ok (f x)
+  let (>>=) x f = match x with
+    | Error e -> Error e
+    | Ok x -> f x
+end
 
 module Loc = Dolmen.ParseLocation
 
@@ -73,7 +80,8 @@ let apply_changes version doc changes =
   List.fold_right (Doc.apply_content_change ~version) changes doc
 
 let change_doc t version uri changes =
-  let+ doc = fetch_doc t uri in
+  let open Res_ in
+  fetch_doc t uri >>= fun doc ->
   let doc' = apply_changes version doc changes in
   add_doc t uri doc'
 
@@ -85,8 +93,8 @@ let process state uri =
   Lsp.Logger.log ~section ~title:"processing"
     "Starting processing of %s" (Lsp.Uri.to_path uri);
   let path = Lsp.Uri.to_path uri in
-  let+ contents =
-    match state.file_mode with
+  let open Res_ in
+  begin match state.file_mode with
     | Read_from_disk ->
       Lsp.Logger.log ~section ~title:"processing"
         "reading from disk...";
@@ -94,10 +102,10 @@ let process state uri =
     | Compute_incremental ->
       Lsp.Logger.log ~section ~title:"processing"
         "Fetching computed document...";
-      let+ doc = fetch_doc state uri in
-      Ok (Some (Doc.text doc))
-  in
-  let+ st = Loop.process path contents in
+      fetch_doc state uri >|= fun doc ->
+      Some (Doc.text doc)
+  end >>= fun contents ->
+  Loop.process path contents >>= fun st ->
   let diags = st.solve_state in
   Ok (diags)
 
@@ -166,29 +174,31 @@ let send_diagnostics rpc uri version l =
   }
 
 let on_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
+  let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode with
   | On_change ->
     Ok state
   | On_save ->
-    let+ l = process state d.uri in
+    process state d.uri >>= fun l ->
     send_diagnostics rpc d.uri None l;
     Ok state
 
 let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
+  let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidOpen" "uri %s, size %d"
     (Lsp.Uri.to_path d.uri) (String.length d.text);
-  let+ state = match state.file_mode with
+  begin match state.file_mode with
     | Read_from_disk -> Ok state
     | Compute_incremental -> open_doc state d.version d.uri d.text
-  in
-  let+ o = match state.diag_mode with
+  end >>= fun state ->
+  begin match state.diag_mode with
     | On_change ->
-      let+ l = process state d.uri in
-      Ok (Some l)
+      process state d.uri >|= fun l ->
+      Some l
     | On_save ->
       Ok None
-  in
+  end >>= fun o ->
   let () = match o with
     | None -> ()
     | Some l -> send_diagnostics rpc d.uri (Some d.version) l
@@ -197,19 +207,20 @@ let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
 
 let on_did_change rpc state
     (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
+  let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidChange"
     "uri %s" (Lsp.Uri.to_path d.uri);
-  let+ state = match state.file_mode with
+  begin match state.file_mode with
     | Read_from_disk -> Ok state
     | Compute_incremental -> change_doc state d.version d.uri changes
-  in
-  let+ o = match state.diag_mode with
+  end >>= fun state ->
+  begin match state.diag_mode with
     | On_change ->
-      let+ l = process state d.uri in
-      Ok (Some l)
+      process state d.uri >|= fun l ->
+      Some l
     | On_save ->
       Ok None
-  in
+  end >>= fun o ->
   let () = match o with
     | None -> ()
     | Some l -> send_diagnostics rpc d.uri (Some d.version) l

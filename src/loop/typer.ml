@@ -16,7 +16,7 @@ module type S = sig
      and type T.Cstr.t = Dolmen.Expr.term_const
 
   include Typer_intf.S
-    with type state := (Parser.language, T.state, solve_st) Dolmen.State.t
+    with type state := (Parser.language, T.state, solve_st) Dolmen.State.state
      and type ty := Dolmen.Expr.ty
      and type ty_var := Dolmen.Expr.ty_var
      and type ty_const := Dolmen.Expr.ty_const
@@ -148,10 +148,10 @@ module Make(S : State_intf.Typer) = struct
 
   let print_res fmt res =
     match (res : T.res) with
-    | Ttype -> Format.fprintf fmt "Type"
-    | Ty ty -> Format.fprintf fmt "the type@ %a" Dolmen.Expr.Ty.print ty
-    | Term t -> Format.fprintf fmt "the term@ %a" Dolmen.Expr.Term.print t
-    | Tags _ -> Format.fprintf fmt "some tags"
+    | T.Ttype -> Format.fprintf fmt "Type"
+    | T.Ty ty -> Format.fprintf fmt "the type@ %a" Dolmen.Expr.Ty.print ty
+    | T.Term t -> Format.fprintf fmt "the term@ %a" Dolmen.Expr.Term.print t
+    | T.Tags _ -> Format.fprintf fmt "some tags"
 
   let print_opt pp fmt = function
     | None -> Format.fprintf fmt "<none>"
@@ -262,7 +262,7 @@ module Make(S : State_intf.Typer) = struct
   (* ************************************************************************ *)
 
   (* TODO: set global options  to enforce limitations such as linearity. *)
-  let typing_env (st : (Parser.language, _, _) Dolmen.State.t) =
+  let typing_env (st : (Parser.language, _, _) Dolmen.State.state) =
     let expect =
       match st.input_lang with
       | Some Dimacs
@@ -312,7 +312,7 @@ module Make(S : State_intf.Typer) = struct
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
-  let typecheck (st : _ Dolmen.State.t) = st.type_check
+  let typecheck (st : _ Dolmen.State.state) = st.type_check
 
   let def st ?attr id t =
     let env = typing_env st in

@@ -1,8 +1,8 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module Pipeline = Dolmen_loop.Pipeline.Make(State)
-module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(Typer)
+module Pipeline = Dolmen_loop.Pipeline.Make(Bin_state)
+module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(Bin_state)(Typer)
 
 let handle_exn st = function
   | Pipeline.Sigint ->

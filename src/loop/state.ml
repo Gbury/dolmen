@@ -25,8 +25,7 @@ end
 (* ************************************************************************* *)
 
 module Make(T : Typer_intf.T) = struct
-
-  include Dolmen.State
+  open Dolmen.State
 
   let pp_loc fmt o =
     match o with
@@ -50,7 +49,7 @@ module Make(T : Typer_intf.T) = struct
 
   type solve_st = unit
   type type_st = T.ty_state
-  type t = (Parser.language, type_st, solve_st) Dolmen.State.t
+  type t = (Parser.language, type_st, solve_st) Dolmen.State.state
 
   let start _ = ()
   let stop _ = ()

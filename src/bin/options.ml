@@ -37,7 +37,7 @@ let mk_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   (* State creation *)
   let input_dir, input_source = split_input input in
-  let st : State.t = {
+  let st : Bin_state.t = {
     time_limit; size_limit;
 
     input_dir; input_lang;
@@ -72,9 +72,9 @@ let input_source_conv =
 
 (* Converter for permissions *)
 let perm_conv = Arg.enum [
-    "allow", State.Allow;
-    "warn", State.Warn;
-    "error", State.Error;
+    "allow", Dolmen.State.Allow;
+    "warn", Dolmen.State.Warn;
+    "error", Dolmen.State.Error;
   ]
 
 (* Converter for input modes *)
