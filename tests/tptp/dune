@@ -1,0 +1,110 @@
+; File generated for tests by a script
+
+; Test for SYN000+1.p
+(rule
+  (target  SYN000+1.output)
+  (deps    SYN000+1.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000+1.output SYN000+1.expected))
+)
+
+; Test for SYN000-1.p
+(rule
+  (target  SYN000-1.output)
+  (deps    SYN000-1.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000-1.output SYN000-1.expected))
+)
+
+; Test for SYN000^1.p
+(rule
+  (target  SYN000^1.output)
+  (deps    SYN000^1.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000^1.output SYN000^1.expected))
+)
+
+; Test for SYN000_1.p
+(rule
+  (target  SYN000_1.output)
+  (deps    SYN000_1.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000_1.output SYN000_1.expected))
+)
+
+; Test for SYN000+2.p
+(rule
+  (target  SYN000+2.output)
+  (deps    SYN000+2.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000+2.output SYN000+2.expected))
+)
+
+; Test for SYN000-2.p
+(rule
+  (target  SYN000-2.output)
+  (deps    SYN000-2.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000-2.output SYN000-2.expected))
+)
+
+; Test for SYN000=2.p
+(rule
+  (target  SYN000=2.output)
+  (deps    SYN000=2.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000=2.output SYN000=2.expected))
+)
+
+; Test for SYN000^2.p
+(rule
+  (target  SYN000^2.output)
+  (deps    SYN000^2.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000^2.output SYN000^2.expected))
+)
+
+; Test for SYN000_2.p
+(rule
+  (target  SYN000_2.output)
+  (deps    SYN000_2.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff SYN000_2.output SYN000_2.expected))
+)
+
