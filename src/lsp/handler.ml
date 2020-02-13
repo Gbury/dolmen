@@ -138,7 +138,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
         willSave = true;
         (* Request save notifications, but without transmitting the full doc *)
         save = Some {
-            Lsp.Initialize.TextDocumentSyncOptions.includeText = true; };
+            Lsp.Initialize.TextDocumentSyncOptions.includeText = false; };
         (* NoSync is bugged under vim-lsp where it send null instead
            of an empty list, so this is set to incremental even for
            read_from_disk mode *)
@@ -249,7 +249,7 @@ let on_notification rpc state = function
     Lsp.Logger.log ~section ~title:"on-notif" "unhandled notif";
     Error "not implemented"
   | N.Unknown_notification _req ->
-    Lsp.Logger.log ~section ~title:"on-notif" "unknown notif";
+    Lsp.Logger.log ~section ~title:"on-notif" "unknown notification";
     Error "not implemented"
 
 
