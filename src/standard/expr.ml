@@ -511,13 +511,6 @@ module Print = struct
   and binding fmt (v, t) =
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
 
-  let seq ~sep pp fmt seq =
-    let first = ref true in
-    Seq.iter (fun x ->
-        if !first then first := false else sep fmt ();
-        pp fmt x
-      ) seq
-
   let iter ~sep pp fmt k =
     let first = ref true in
     k (fun x ->
