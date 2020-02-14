@@ -148,12 +148,13 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
           | On_did_save -> false
           | On_will_save -> true
         end;
-        save = None;
-        (* begin match state.diag_mode with
+        (* Request didSave notifiations. *)
+        save = begin match state.diag_mode with
           | On_change -> None
-          | On_save -> Some {
+          | On_will_save -> None
+          | On_did_save -> Some {
               Lsp.Initialize.TextDocumentSyncOptions.includeText = false; }
-        end; *)
+        end;
         (* NoSync is bugged under vim-lsp where it send null instead
            of an empty list, so this is set to incremental even for
            read_from_disk mode *)
