@@ -39,7 +39,7 @@ module Make(T : Typer_intf.T) = struct
       Fmt.(styled (`Fg (`Hi `Red)) string) "Error" pp_loc loc
 
   let warn_aux st loc msg =
-    Format.eprintf "@[<hov>%a%a %s@]"
+    Format.eprintf "@[<hov>%a%a %s@]@."
       pp_loc loc
       Fmt.(styled (`Fg (`Hi `Magenta)) string) "Warning"
       msg;

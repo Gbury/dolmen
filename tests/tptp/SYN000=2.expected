@@ -1,0 +1,2 @@
+File 'tests/tptp/SYN000=2.p', line 304, character 23-31:
+[95mWarning[0m Quantified term variable `Z : Real` is unused
