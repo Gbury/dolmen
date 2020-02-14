@@ -53,7 +53,7 @@ type t = {
 }
 
 let empty = {
-  file_mode = Read_from_disk;
+  file_mode = Compute_incremental;
   diag_mode = On_save;
   docs = Umap.empty;
   processed = Umap.empty;
@@ -115,19 +115,19 @@ let process state uri =
 let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   Lsp.Logger.log ~section ~title:"initialize" "Initialization started";
   (* Determine in which mode we are *)
-  let file_mode, diag_mode =
+  let diag_mode =
     if params.capabilities.textDocument.synchronization.didSave then begin
       Lsp.Logger.log ~section ~title:"initialize"
-        "Setting mode: Read_from_disk/On_save";
-      Read_from_disk, On_save
+        "Setting mode: on_save";
+      On_save
     end else begin
       Lsp.Logger.log ~section ~title:"initialize"
-        "Setting mode: Compute_incremental/On_change";
-      Compute_incremental, On_change
+        "Setting mode: on_change";
+      On_change
     end
   in
   (* New state *)
-  let state = { state with file_mode; diag_mode; } in
+  let state = { state with diag_mode; } in
   (* Create the capabilities answer *)
   let info = Lsp.Initialize.Info.{ name = "dolmenls"; version = None; } in
   let default = Lsp.Initialize.ServerCapabilities.default in
@@ -135,10 +135,19 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
     { default with
       textDocumentSync = {
         default.textDocumentSync with
-        willSave = true;
-        (* Request save notifications, but without transmitting the full doc *)
-        save = Some {
-            Lsp.Initialize.TextDocumentSyncOptions.includeText = false; };
+        (* Request willSave notifications, better then didSave notification,
+           because it is sent earlier (before the editor has to write the full
+           file), but still on save sfrom the user. *)
+        willSave = begin match state.diag_mode with
+          | On_change -> false
+          | On_save -> true
+        end;
+        save = None;
+        (* begin match state.diag_mode with
+          | On_change -> None
+          | On_save -> Some {
+              Lsp.Initialize.TextDocumentSyncOptions.includeText = false; }
+        end; *)
         (* NoSync is bugged under vim-lsp where it send null instead
            of an empty list, so this is set to incremental even for
            read_from_disk mode *)
@@ -155,7 +164,6 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
 let on_request _rpc _state _capabilities _req =
   Error "not implemented"
 
-
 (* Notification handler *)
 (* ************************************************************************ *)
 
@@ -168,59 +176,58 @@ let send_diagnostics rpc uri version l =
     diagnostics = l;
   }
 
-let on_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
+let process_and_send rpc state uri =
+  let open Res_ in
+  process state uri >>= fun l ->
+  send_diagnostics rpc uri None l;
+  Ok state
+
+let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
+  let open Res_ in
+  Lsp.Logger.log ~section ~title:"docWillSave" "uri %s" (Lsp.Uri.to_path d.uri);
+  match state.diag_mode, state.file_mode with
+  | On_save, Compute_incremental -> process_and_send rpc state d.uri
+  | On_save, Read_from_disk -> Ok state (* wait for the save write to finish *)
+  | On_change, _ -> Ok state
+
+let on_did_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
-  match state.diag_mode with
-  | On_change ->
-    Ok state
-  | On_save ->
-    process state d.uri >>= fun l ->
-    send_diagnostics rpc d.uri None l;
-    Ok state
+  match state.diag_mode, state.file_mode with
+  | On_save, Compute_incremental -> Ok state (* processing done on willSave *)
+  | On_save, Read_from_disk -> process_and_send rpc state d.uri
+  | On_change, _ -> Ok state
 
 let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidOpen" "uri %s, size %d"
     (Lsp.Uri.to_path d.uri) (String.length d.text);
+  (* Register the doc in the state if in incremental mode *)
   begin match state.file_mode with
     | Read_from_disk -> Ok state
     | Compute_incremental -> open_doc state d.version d.uri d.text
   end >>= fun state ->
+  (* Process and send if in on_change mode *)
   begin match state.diag_mode with
-    | On_change ->
-      process state d.uri >|= fun l ->
-      Some l
-    | On_save ->
-      Ok None
-  end >>= fun o ->
-  let () = match o with
-    | None -> ()
-    | Some l -> send_diagnostics rpc d.uri (Some d.version) l
-  in
-  Ok state
+    | On_change -> process_and_send rpc state d.uri
+    | On_save -> process_and_send rpc state d.uri
+  end
 
 let on_did_change rpc state
     (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
   let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidChange"
     "uri %s" (Lsp.Uri.to_path d.uri);
+  (* Update the doc in the state if in incremental mode *)
   begin match state.file_mode with
     | Read_from_disk -> Ok state
     | Compute_incremental -> change_doc state d.version d.uri changes
   end >>= fun state ->
+  (* Process and send if in on_change mode *)
   begin match state.diag_mode with
-    | On_change ->
-      process state d.uri >|= fun l ->
-      Some l
-    | On_save ->
-      Ok None
-  end >>= fun o ->
-  let () = match o with
-    | None -> ()
-    | Some l -> send_diagnostics rpc d.uri (Some d.version) l
-  in
-  Ok state
+    | On_change -> process_and_send rpc state d.uri
+    | On_save -> Ok state
+  end
 
 let on_notification rpc state = function
 
@@ -235,21 +242,25 @@ let on_notification rpc state = function
   (* Document changes *)
   | N.TextDocumentDidChange { textDocument; contentChanges; } ->
     on_did_change rpc state textDocument contentChanges
+  (* will save *)
+  | N.WillSaveTextDocument { textDocument=d; _ } ->
+    on_will_save rpc state d
+  (* did save *)
   | N.DidSaveTextDocument { textDocument=d; _ } ->
-    Lsp.Logger.log ~section ~title:"doc saved" "Document saved";
-    on_save rpc state d
+    on_did_save rpc state d
 
   (* Exit *)
   | N.Exit -> Ok state
 
   (* TODO stuff *)
-  | N.WillSaveTextDocument _
-  | N.ChangeWorkspaceFolders _
+  | N.ChangeWorkspaceFolders _ ->
+    Lsp.Logger.log ~section ~title:"on-change_workspace" "nothing to do";
+    Ok state
   | N.ChangeConfiguration _ ->
-    Lsp.Logger.log ~section ~title:"on-notif" "unhandled notif";
+    Lsp.Logger.log ~section ~title:"on-change_config" "unhandled notification";
     Error "not implemented"
   | N.Unknown_notification _req ->
-    Lsp.Logger.log ~section ~title:"on-notif" "unknown notification";
+    Lsp.Logger.log ~section ~title:"on-unknown_notif" "don't know what to do";
     Error "not implemented"
 
 
