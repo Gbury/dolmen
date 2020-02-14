@@ -123,7 +123,7 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
       On_will_save
     end else if params.capabilities.textDocument.synchronization.didSave then begin
       Lsp.Logger.log ~section ~title:"initialize"
-        "Setting mode: on_save";
+        "Setting mode: on_did_save";
       On_did_save
     end else begin
       Lsp.Logger.log ~section ~title:"initialize"
@@ -190,7 +190,6 @@ let process_and_send rpc state uri =
   Ok state
 
 let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  let open Res_ in
   Lsp.Logger.log ~section ~title:"docWillSave" "uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode, state.file_mode with
   | On_will_save, Compute_incremental -> process_and_send rpc state d.uri
@@ -198,7 +197,6 @@ let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   | _ -> Ok state
 
 let on_did_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode with
   | On_did_save -> process_and_send rpc state d.uri

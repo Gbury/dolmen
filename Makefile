@@ -7,13 +7,16 @@ BINDIR=_build/install/default/bin
 all: dune
 
 watch:
-	dune build $(FLAGS) -w
+	dune build $(FLAGS) -w @check
 
 dune:
-	dune build $(FLAGS)
+	dune build $(FLAGS) @install
 
 doc:
 	dune build $(FLAGS) @doc
+
+test:
+	dune build $(FLAGS) @runtest
 
 clean:
 	$(COMP) clean
