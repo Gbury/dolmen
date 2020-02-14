@@ -34,8 +34,9 @@ type file_mode =
   | Compute_incremental
 
 type diag_mode =
-  | On_save
   | On_change
+  | On_did_save
+  | On_will_save
 
 type res = {
   diags : Lsp.Protocol.PublishDiagnostics.params list;
@@ -54,7 +55,7 @@ type t = {
 
 let empty = {
   file_mode = Compute_incremental;
-  diag_mode = On_save;
+  diag_mode = On_will_save;
   docs = Umap.empty;
   processed = Umap.empty;
 }
@@ -116,10 +117,14 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   Lsp.Logger.log ~section ~title:"initialize" "Initialization started";
   (* Determine in which mode we are *)
   let diag_mode =
-    if params.capabilities.textDocument.synchronization.didSave then begin
+    if params.capabilities.textDocument.synchronization.willSave then begin
+      Lsp.Logger.log ~section ~title:"initialize"
+        "Setting mode: on_will_save";
+      On_will_save
+    end else if params.capabilities.textDocument.synchronization.didSave then begin
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: on_save";
-      On_save
+      On_did_save
     end else begin
       Lsp.Logger.log ~section ~title:"initialize"
         "Setting mode: on_change";
@@ -140,7 +145,8 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
            file), but still on save sfrom the user. *)
         willSave = begin match state.diag_mode with
           | On_change -> false
-          | On_save -> true
+          | On_did_save -> false
+          | On_will_save -> true
         end;
         save = None;
         (* begin match state.diag_mode with
@@ -186,17 +192,16 @@ let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   let open Res_ in
   Lsp.Logger.log ~section ~title:"docWillSave" "uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode, state.file_mode with
-  | On_save, Compute_incremental -> process_and_send rpc state d.uri
-  | On_save, Read_from_disk -> Ok state (* wait for the save write to finish *)
-  | On_change, _ -> Ok state
+  | On_will_save, Compute_incremental -> process_and_send rpc state d.uri
+  | On_will_save, Read_from_disk -> Error "incoherent internal state"
+  | _ -> Ok state
 
 let on_did_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   let open Res_ in
   Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
-  match state.diag_mode, state.file_mode with
-  | On_save, Compute_incremental -> Ok state (* processing done on willSave *)
-  | On_save, Read_from_disk -> process_and_send rpc state d.uri
-  | On_change, _ -> Ok state
+  match state.diag_mode with
+  | On_did_save -> process_and_send rpc state d.uri
+  | _ -> Ok state
 
 let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   let open Res_ in
@@ -210,7 +215,8 @@ let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   (* Process and send if in on_change mode *)
   begin match state.diag_mode with
     | On_change -> process_and_send rpc state d.uri
-    | On_save -> process_and_send rpc state d.uri
+    | On_did_save -> process_and_send rpc state d.uri
+    | On_will_save -> process_and_send rpc state d.uri
   end
 
 let on_did_change rpc state
@@ -226,7 +232,8 @@ let on_did_change rpc state
   (* Process and send if in on_change mode *)
   begin match state.diag_mode with
     | On_change -> process_and_send rpc state d.uri
-    | On_save -> Ok state
+    | On_did_save
+    | On_will_save -> Ok state
   end
 
 let on_notification rpc state = function
