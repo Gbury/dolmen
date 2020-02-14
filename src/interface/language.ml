@@ -30,8 +30,10 @@ module type S = sig
       @param dir: optional directory to use if the file path is relative. *)
 
   val parse_input :
-    [ `Stdin | `File of string ] -> (unit -> statement option) * (unit -> unit)
-  (** Incremental parsing. Given an input to read (either a file, or stdin),
+    [ `Stdin | `File of string | `Contents of string * string ] ->
+    (unit -> statement option) * (unit -> unit)
+  (** Incremental parsing. Given an input to read (either a file, stdin,
+      or some contents of the form [(filename, s)] where [s] is the contents to parse),
       returns a generator that will incrementally parse the statements,
       together with a cleanup function to close file descriptors.
       In case of a syntax error, the current line will be completely

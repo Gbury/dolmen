@@ -14,5 +14,6 @@ module Make
     type token = Tokens_tptp.token
     type statement = S.t
     let env = ["TPTP"]
+    let incremental = true
   end)(LexTptp)(ParseTptp.Make(L)(I)(T)(S))
 

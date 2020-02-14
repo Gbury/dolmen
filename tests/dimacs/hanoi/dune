@@ -1,0 +1,26 @@
+; File generated for tests by a script
+
+; Test for hanoi4.cnf
+(rule
+  (target  hanoi4.output)
+  (deps    hanoi4.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hanoi4.output hanoi4.expected))
+)
+
+; Test for hanoi5.cnf
+(rule
+  (target  hanoi5.output)
+  (deps    hanoi5.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hanoi5.output hanoi5.expected))
+)
+

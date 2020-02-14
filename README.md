@@ -19,8 +19,7 @@ With opam:
 
 Manually:
 
-    make -C src
-    make -C src install
+    make
 
 ## Current state
 
@@ -90,6 +89,22 @@ let _ = P.parse_file "~/example.smt2"
 ```
 
 For more examples, see the [tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).
+
+## LSP
+
+### Vim + ALE setup
+
+```vim
+for ft in ['smt2', 'tptp', 'p', 'cnf', 'icnf', 'zf']
+  call ale#linter#Define(ft, {
+  \   'name': 'dolmenls',
+  \   'lsp': 'stdio',
+  \   'executable': '/path/to/dolmenls',
+  \   'command': '%e',
+  \   'project_root': '.',
+  \})
+endfor
+```
 
 ## Future work
 

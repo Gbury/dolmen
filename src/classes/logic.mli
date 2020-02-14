@@ -3,14 +3,10 @@
 
 (** Logic languages for formal proofs *)
 
-module Make
-    (L : Dolmen_intf.Location.S)
-    (I : Dolmen_intf.Id.Logic)
-    (T : Dolmen_intf.Term.Logic with type location := L.t
-                                 and type id := I.t)
-    (S : Dolmen_intf.Stmt.Logic with type location := L.t
-                                 and type id := I.t
-                                 and type term := T.t): sig
+module type S = sig
+
+  type statement
+  (** The type of statements. *)
 
   exception Extension_not_found of string
   (** Raised when trying to find a language given a file extension. *)
@@ -18,6 +14,8 @@ module Make
   (** {2 Supported languages} *)
 
   type language =
+    | Alt_ergo
+    (** Alt-ergo's format *)
     | Dimacs
     (** Dimacs CNF format *)
     | ICNF
@@ -47,17 +45,21 @@ module Make
 
   val parse_file :
     ?language:language ->
-    string -> language * S.t list
+    string -> language * statement list
   (** Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
 
   val parse_input :
     ?language:language ->
-    [ `File of string | `Stdin of language ] ->
-    language * (unit -> S.t option) * (unit -> unit)
-  (** Incremental parsing of either a file (see {!parse_file}), or stdin
-      (with given language). Returns a triplet [(lan, gen, cl)], containing
+    [< `File of string
+    | `Stdin of language
+    | `Raw of string * language * string ] ->
+    language * (unit -> statement option) * (unit -> unit)
+  (** Incremental parsing of either a file (see {!parse_file}), stdin
+      (with given language), or some arbitrary contents, of the form
+      [`Raw (filename, language, contents)].
+      Returns a triplet [(lan, gen, cl)], containing
       the language detexted [lan], a genratro function [gen] for parsing the input,
       and a cleanup function [cl] to call in order to cleanup the file descriptors.
       @param language specify a language for parsing, overrides auto-detection
@@ -65,7 +67,7 @@ module Make
 
   (** {2 Mid-level parsing} *)
 
-  module type S = Dolmen_intf.Language.S with type statement := S.t
+  module type S = Dolmen_intf.Language.S with type statement := statement
   (** The type of language modules. *)
 
   val of_language   : language  -> language * string * (module S)
@@ -82,3 +84,14 @@ module Make
   *)
 
 end
+
+module Make
+    (L : Dolmen_intf.Location.S)
+    (I : Dolmen_intf.Id.Logic)
+    (T : Dolmen_intf.Term.Logic with type location := L.t
+                                 and type id := I.t)
+    (S : Dolmen_intf.Stmt.Logic with type location := L.t
+                                 and type id := I.t
+                                 and type term := T.t)
+  : S with type statement := S.t
+

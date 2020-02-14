@@ -7,6 +7,7 @@ module Make
        type token
        type statement
        val env : string list
+       val incremental : bool
      end)
     (Lex    : Dolmen_intf.Lex.S with type token := Ty.token)
     (Parse  : Dolmen_intf.Parse.S with type token := Ty.token
@@ -67,6 +68,10 @@ module Make
 
   let parse_input i =
     let lexbuf, cleanup = ParseLocation.mk_lexbuf i in
+    if not Ty.incremental then
+      (* If incremental mode is not supported, raise an error rather than do weird things. *)
+      raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf,
+                               "Input format does not support incrmental parsing"));
     let supplier = Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
         Lexer.token lexbuf in
     let loop = Parse.MenhirInterpreter.loop supplier in

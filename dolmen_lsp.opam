@@ -1,0 +1,27 @@
+opam-version: "1.2"
+name: "dolmen_lsp"
+version: "dev"
+author: "Guillaume Bury"
+maintainer: "guillaume.bury@gmail.com"
+license: "BSD-2-clauses"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" {>= "4.02.3"}
+  "dolmen"
+  "dolmen_type"
+  "dolmen_loop"
+  "lsp"
+  "dune"
+  "ocaml-syntax-shims"
+]
+pin-depends: [ "lsp.dev" "git+https://github.com/ocaml/ocaml-lsp.git" ]
+tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
+homepage: "https://github.com/Gbury/dolmen"
+dev-repo: "https://github.com/Gbury/dolmen.git"
+bug-reports: "https://github.com/Gbury/dolmen/issues"
+
+doc: "http://gbury.github.io/dolmen"
+synopsis: "A LSP server for automated deduction languages"

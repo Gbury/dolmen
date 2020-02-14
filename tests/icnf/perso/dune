@@ -1,0 +1,38 @@
+; File generated for tests by a script
+
+; Test for test-000.icnf
+(rule
+  (target  test-000.output)
+  (deps    test-000.icnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test-000.output test-000.expected))
+)
+
+; Test for test-001.icnf
+(rule
+  (target  test-001.output)
+  (deps    test-001.icnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test-001.output test-001.expected))
+)
+
+; Test for test-002.icnf
+(rule
+  (target  test-002.output)
+  (deps    test-002.icnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test-002.output test-002.expected))
+)
+

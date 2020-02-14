@@ -8,8 +8,8 @@ data nat :=
 
 val plus : nat -> nat -> nat.
 
-assert forall x. plus Z x = x.
-assert forall x y. plus (S x) y = S (plus x y).
+assert forall (x : nat). plus Z x = x.
+assert forall (x y : nat). plus (S x) y = S (plus x y).
 
 goal plus (S (S Z)) (S (S Z)) = S (S (S (S Z))).
 

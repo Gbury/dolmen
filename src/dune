@@ -1,20 +1,18 @@
 
-(documentation)
+(documentation (package dolmen))
 
 (library
   (name           dolmen)
   (public_name    dolmen)
-  (libraries      dolmen_intf dolmen_std dolmen_line
-                  dolmen_dimacs dolmen_icnf
-                  dolmen_tptp dolmen_smtlib dolmen_zf
-                  dolmen_class)
+  (libraries
+    ; Generic dolmen sub-libs
+    dolmen_intf dolmen_std dolmen_line
+    ; Dolmen languages
+    dolmen_ae dolmen_dimacs dolmen_icnf
+    dolmen_tptp dolmen_smtlib dolmen_zf
+    ; Dolmen classes
+    dolmen_class
+  )
   (modules        Dolmen)
-)
-
-(executable
-  (name            main)
-  (public_name     dolmen)
-  (libraries       dolmen)
-  (modules         Main)
 )
 

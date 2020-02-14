@@ -100,5 +100,6 @@ rule token = parse
 and quoted b = parse
   | '"'       { QUOTED(Buffer.contents b) }
   | '\\' '"'  { Buffer.add_char b '"'; quoted b lexbuf }
-  | _ as c    { Buffer.add_char b c; quoted b lexbuf }
+  | _ as c    { if c = '\n' then Lexing.new_line lexbuf;
+                Buffer.add_char b c; quoted b lexbuf }
 

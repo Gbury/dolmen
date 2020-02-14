@@ -7,6 +7,9 @@ val get_extension : string -> string
 (** Returns the extension of a file, i.e the shortest suffix containing
     the character '.'. Returns an empty string if such a suffix does not exists. *)
 
+val split_on_char : char -> string -> string list
+(** Split on characters in a string (see Stdlib's split_on_char). *)
+
 val replicate : int -> 'a -> 'a list
 (** Returns a list with [n] times the given value. Returns an empty list if [n] *)
 

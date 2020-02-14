@@ -6,19 +6,19 @@ BINDIR=_build/install/default/bin
 
 all: dune
 
+watch:
+	dune build $(FLAGS) -w @check
+
 dune:
-	dune build $(FLAGS)
-
-bin: dune
-	cp $(BINDIR)/dolmen ./
-
-test: bin
-	cd tests && ./run
+	dune build $(FLAGS) @install
 
 doc:
 	dune build $(FLAGS) @doc
 
-clean:
-	$(COMP) clean && rm -f $(NAME)
+test:
+	dune build $(FLAGS) @runtest
 
-.PHONY: all dune bin test doc clean
+clean:
+	$(COMP) clean
+
+.PHONY: all watch dune bin test doc clean

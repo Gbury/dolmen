@@ -17,11 +17,19 @@ type term = Term.t
 type location = ParseLocation.t
 (** Type aliases for readability. *)
 
+type abstract = {
+  id : Id.t;
+  ty : term;
+  loc : location option;
+}
+(** The type for abstract type definitions. *)
+
 type inductive = {
   id : Id.t;
   vars : term list;
   cstrs : (Id.t * term list) list;
   loc : location option;
+  attr : term option;
 }
 (** The type for inductive type declarations. The "vars" field if used
     to store polymorphic variables of the inductive type. For instance,
@@ -32,6 +40,21 @@ type inductive = {
     - ["Nil", \[\]]
     - ["Cons", \[var "a"\]]
 *)
+
+type record = {
+  id : Id.t;
+  vars : term list;
+  fields : (Id.t * term) list;
+  loc : location option;
+  attr : term option;
+}
+(** The type of record definitions. *)
+
+type decl =
+  | Abstract of abstract
+  | Record of record
+  | Inductive of inductive (**)
+(** Type definitions. *)
 
 type descr =
   | Pack of t list
@@ -46,7 +69,7 @@ type descr =
   (** Reset all assertions. *)
 
   | Plain of term
-  (** A plain statement ontaining a term with no defined semantics. *)
+  (** A plain statement containing a term with no defined semantics. *)
 
   | Prove of term list
   (** Try and prove the current sequent, under some local assumptions. *)
@@ -75,10 +98,8 @@ type descr =
 
   | Def of Id.t * term
   (** Symbol definition, i.e the symbol is equal to the given term. *)
-  | Decl of Id.t * term
-  (** Symbol declaration, i.e the symbol has the given term as its type. *)
-  | Inductive of inductive
-  (** Inductive type definition, see the [inductive] type. *)
+  | Decls of decl list
+  (** A list of potentially recursive type definitions. *)
 
   | Get_proof
   (** Get the proof of the last sequent (if it was proved). *)
@@ -99,7 +120,7 @@ type descr =
   | Echo of string
   (** Prints the string. *)
   | Reset
-  (** Full reset of the prove to initial state. *)
+  (** Full reset of the prover to its initial state. *)
   | Exit
   (** Exit the interactive loop. *)
 

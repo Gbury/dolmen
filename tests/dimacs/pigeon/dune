@@ -1,0 +1,62 @@
+; File generated for tests by a script
+
+; Test for hole10.cnf
+(rule
+  (target  hole10.output)
+  (deps    hole10.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hole10.output hole10.expected))
+)
+
+; Test for hole6.cnf
+(rule
+  (target  hole6.output)
+  (deps    hole6.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hole6.output hole6.expected))
+)
+
+; Test for hole7.cnf
+(rule
+  (target  hole7.output)
+  (deps    hole7.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hole7.output hole7.expected))
+)
+
+; Test for hole8.cnf
+(rule
+  (target  hole8.output)
+  (deps    hole8.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hole8.output hole8.expected))
+)
+
+; Test for hole9.cnf
+(rule
+  (target  hole9.output)
+  (deps    hole9.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff hole9.output hole9.expected))
+)
+

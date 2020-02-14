@@ -24,6 +24,10 @@ module type Logic = sig
   (** The namespace for sorts (also called types). Currently only used
       for smtlib. *)
 
+  val var : namespace
+  (** Namespace for variables (when they can be syntatically distinguished from
+      constants). *)
+
   val term : namespace
   (** The usual namespace for terms. *)
 
@@ -34,10 +38,16 @@ module type Logic = sig
   (** Namespace used for declaration identifiers (for instance used
       to filter declarations during includes) *)
 
+  val track : namespace
+  (** Namespace used to tag and identify sub-terms occuring in files. *)
+
   val mod_name : string -> namespace
   (** Namespace used by modules (for instance in dedulkti). *)
 
   val mk : namespace -> string -> t
   (** Make an identifier from its namespace and name. *)
+
+  val tracked : track:t -> namespace -> string -> t
+  (** An identifier with an additional name for tracking purposes. *)
 
 end

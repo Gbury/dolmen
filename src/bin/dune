@@ -1,0 +1,8 @@
+
+(executable
+  (name           main)
+  (public_name    dolmen)
+  (package        dolmen_bin)
+  (libraries      dolmen dolmen_type dolmen_loop cmdliner fmt)
+)
+

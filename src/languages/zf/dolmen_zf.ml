@@ -14,5 +14,6 @@ module Make
     type token = Tokens_zf.token
     type statement = S.t
     let env = []
+    let incremental = true
   end)(LexZf)(ParseZf.Make(L)(I)(T)(S))
 

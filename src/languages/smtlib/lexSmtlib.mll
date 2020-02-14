@@ -1,6 +1,8 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+(** {1 Smtlib Lexer} *)
+
 {
   open Tokens_smtlib
 
@@ -99,7 +101,7 @@ let symbol = simple_symbol | quoted_symbol
 
 let keyword = ':' simple_symbol
 
-let comment = ';' (printable_char # ['\r' '\n'])
+let comment = ';' (printable_char # ['\r' '\n'])*
 
 rule token = parse
   (* Whitespace, newlines and comments *)

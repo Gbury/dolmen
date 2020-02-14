@@ -1,0 +1,98 @@
+; File generated for tests by a script
+
+; Test for ssa0432-003.cnf
+(rule
+  (target  ssa0432-003.output)
+  (deps    ssa0432-003.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa0432-003.output ssa0432-003.expected))
+)
+
+; Test for ssa2670-130.cnf
+(rule
+  (target  ssa2670-130.output)
+  (deps    ssa2670-130.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa2670-130.output ssa2670-130.expected))
+)
+
+; Test for ssa2670-141.cnf
+(rule
+  (target  ssa2670-141.output)
+  (deps    ssa2670-141.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa2670-141.output ssa2670-141.expected))
+)
+
+; Test for ssa6288-047.cnf
+(rule
+  (target  ssa6288-047.output)
+  (deps    ssa6288-047.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa6288-047.output ssa6288-047.expected))
+)
+
+; Test for ssa7552-038.cnf
+(rule
+  (target  ssa7552-038.output)
+  (deps    ssa7552-038.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa7552-038.output ssa7552-038.expected))
+)
+
+; Test for ssa7552-158.cnf
+(rule
+  (target  ssa7552-158.output)
+  (deps    ssa7552-158.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa7552-158.output ssa7552-158.expected))
+)
+
+; Test for ssa7552-159.cnf
+(rule
+  (target  ssa7552-159.output)
+  (deps    ssa7552-159.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa7552-159.output ssa7552-159.expected))
+)
+
+; Test for ssa7552-160.cnf
+(rule
+  (target  ssa7552-160.output)
+  (deps    ssa7552-160.cnf)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff ssa7552-160.output ssa7552-160.expected))
+)
+

@@ -1,3 +1,3 @@
-(lang dune 1.5)
+(lang dune 2.0)
 (name dolmen)
 (using menhir 2.0)

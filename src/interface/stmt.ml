@@ -42,6 +42,43 @@ module type Logic = sig
       the directives from file [file] that appear in [l]. If [l] is the empty list,
       all directives should be imported. *)
 
+  (** {2 Alt-ergo Statements} *)
+
+  val logic : ?loc:location -> ac:bool -> id list -> term -> t
+  (** Functions type definition. Allows to specify whether a list of symbol is ac or not *)
+
+  val record_type : ?loc:location -> id -> term list -> (id * term) list -> t
+  (** Declares a new record type, with first a list of type variables,
+      and then the list of the record fields. *)
+
+  val abstract_type : ?loc:location -> id -> term list -> t
+  (** Declare a new abstract type, quantified over the given list of
+      type variables. *)
+
+  val algebraic_type : ?loc:location -> id -> term list -> (id * term list) list -> t
+  (** Defines a new algebraic datatype, quantified over the lsit of type variables,
+      and with a list of cases each containing a constructor id and a list of
+      fields. *)
+
+  val rec_types : ?loc:location -> t list -> t
+  (** Pack together a list of mutually recursive type definitions. *)
+
+  val axiom : ?loc:location -> id -> term -> t
+  (** Create a axiom. *)
+
+  val case_split : ?loc:location -> id -> term -> t
+  (** Create a case split. *)
+
+  val theory : ?loc:location -> id -> id -> t list -> t
+  (** Create a theory, extending another, with the given list of declarations. *)
+
+  val rewriting : ?loc:location -> id -> term list -> t
+  (** Create a set of rewriting rules. *)
+
+  val prove_goal : ?loc:location -> id -> term -> t
+  (** Goal declaration. *)
+
+
   (** {2 Dimacs&iCNF Statements} *)
 
   val p_cnf       : ?loc:location -> int -> int -> t
@@ -106,8 +143,8 @@ module type Logic = sig
       [body] which is of type [ret]. *)
 
   val funs_def_rec : ?loc:location -> (id * term list * term * term) list -> t
-(** Define a list of mutually recursive functions. Each functions has the same
-    definition as in [fun_def] *)
+  (** Define a list of mutually recursive functions. Each functions has the same
+      definition as in [fun_def] *)
 
   val get_proof       : ?loc:location -> unit -> t
   (** If the last call to [check_sat] returned UNSAT, then instruct the prover to return

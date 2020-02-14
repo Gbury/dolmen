@@ -1,6 +1,42 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+module type S = sig
+
+  type statement
+  exception Extension_not_found of string
+
+  type language =
+    | Alt_ergo
+    | Dimacs
+    | ICNF
+    | Smtlib
+    | Tptp
+    | Zf
+
+  val enum : (string * language) list
+  val string_of_language : language -> string
+
+  val find :
+    ?language:language ->
+    ?dir:string -> string -> string option
+  val parse_file :
+    ?language:language ->
+    string -> language * statement list
+
+  val parse_input :
+    ?language:language ->
+    [< `File of string | `Stdin of language
+    | `Raw of string * language * string ] ->
+    language * (unit -> statement option) * (unit -> unit)
+
+  module type S = Dolmen_intf.Language.S with type statement := statement
+  val of_language   : language  -> language * string * (module S)
+  val of_extension  : string    -> language * string * (module S)
+  val of_filename   : string    -> language * string * (module S)
+
+end
+
 module Make
     (L : Dolmen_intf.Location.S)
     (I : Dolmen_intf.Id.Logic)
@@ -15,6 +51,7 @@ module Make
   module type S = Dolmen_intf.Language.S with type statement := S.t
 
   type language =
+    | Alt_ergo
     | Dimacs
     | ICNF
     | Smtlib
@@ -22,6 +59,7 @@ module Make
     | Zf
 
   let enum = [
+    "ae", Alt_ergo;
     "dimacs", Dimacs;
     "iCNF",   ICNF;
     "smt2",   Smtlib;
@@ -33,11 +71,12 @@ module Make
     fst (List.find (fun (_, l') -> l = l') enum)
 
   let assoc = [
-    Dimacs, ".cnf",  (module Dolmen_dimacs.Make(L)(T)(S)     : S);
-    ICNF,   ".icnf", (module Dolmen_icnf.Make(L)(T)(S)       : S);
-    Smtlib, ".smt2", (module Dolmen_smtlib.Make(L)(I)(T)(S)  : S);
-    Tptp,   ".p",    (module Dolmen_tptp.Make(L)(I)(T)(S)    : S);
-    Zf,     ".zf",   (module Dolmen_zf.Make(L)(I)(T)(S)      : S);
+    Alt_ergo,   ".ae",    (module Dolmen_ae.Make(L)(I)(T)(S)      : S);
+    Dimacs,     ".cnf",   (module Dolmen_dimacs.Make(L)(T)(S)     : S);
+    ICNF,       ".icnf",  (module Dolmen_icnf.Make(L)(T)(S)       : S);
+    Smtlib,     ".smt2",  (module Dolmen_smtlib.Make(L)(I)(T)(S)  : S);
+    Tptp,       ".p",     (module Dolmen_tptp.Make(L)(I)(T)(S)    : S);
+    Zf,         ".zf",    (module Dolmen_zf.Make(L)(I)(T)(S)      : S);
   ]
 
   let of_language l =
@@ -84,6 +123,11 @@ module Make
       let _, _, (module P : S) = of_language
           (match language with | Some l' -> l' | None -> l) in
       let gen, cl = P.parse_input `Stdin in
+      l, gen, cl
+    | `Raw (filename, l, s) ->
+      let _, _, (module P : S) = of_language
+          (match language with | Some l' -> l' | None -> l) in
+      let gen, cl = P.parse_input (`Contents (filename, s)) in
       l, gen, cl
 
 end

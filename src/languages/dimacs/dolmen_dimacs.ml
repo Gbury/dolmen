@@ -12,5 +12,6 @@ module Make
     type token = Tokens_dimacs.token
     type statement = S.t
     let env = []
+    let incremental = true
   end)(LexDimacs)(ParseDimacs.Make(L)(T)(S))
 

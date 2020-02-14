@@ -10,9 +10,10 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.02.3"}
-  "menhir" {>= "20180523"}
-  "dune" {build}
-  "stdlib-shims"
+  "menhir" {>= "20180703"}
+  "dune"
+  "fmt"
+  "seq"
 ]
 
 tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
