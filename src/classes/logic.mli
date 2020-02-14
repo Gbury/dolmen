@@ -15,15 +15,15 @@ module type S = sig
 
   type language =
     | Alt_ergo
-    (** Alt-ergo's format *)
+    (** Alt-ergo's native language *)
     | Dimacs
     (** Dimacs CNF format *)
     | ICNF
     (** iCNF format *)
-    | Smtlib
-    (** Smtlib format *)
-    | Tptp
-    (** TPTP format (including THF) *)
+    | Smtlib2 of Dolmen_smtlib2.version
+    (** Smtlib v2 latest version *)
+    | Tptp of Dolmen_tptp.version
+    (** TPTP format (including THF), latest version *)
     | Zf
     (** Zipperposition format *)
   (** The languages supported by the Logic class. *)

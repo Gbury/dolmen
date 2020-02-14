@@ -817,11 +817,11 @@ module Ty = struct
     let arity (c : t) = List.length c.ty.fun_args
 
     let prop = Id.const ~builtin:Prop "Prop" [] [] Type
-    let base = Id.const ~builtin:Univ "Univ" [] [] Type
-    let int = Id.const ~builtin:Int "Int" [] [] Type
-    let rat = Id.const ~builtin:Rat "Rat" [] [] Type
-    let real = Id.const ~builtin:Real "Real" [] [] Type
-    let array = Id.const ~builtin:Array "Array" [] [Type; Type] Type
+    let base = Id.const ~builtin:Univ "$i" [] [] Type
+    let int = Id.const ~builtin:Int "int" [] [] Type
+    let rat = Id.const ~builtin:Rat "rat" [] [] Type
+    let real = Id.const ~builtin:Real "real" [] [] Type
+    let array = Id.const ~builtin:Array "array" [] [Type; Type] Type
     let bitv =
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
           Id.const ~builtin:(Bitv i) (Format.asprintf "Bitv_%d" i) [] [] Type

@@ -4,14 +4,14 @@ open Dolmen
 (* Smtlib arrays *)
 (* ************************************************************************ *)
 
-module Smtlib = struct
+module Smtlib2 = struct
 
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Smtlib_Array with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) = struct
 
-    let parse env ast s args =
+    let parse _version env ast s args =
       match s with
       | Type.Id { Id.name = "Array"; ns = Id.Sort } ->
         Base.make_op2 (module Type) env ast "Array" args (fun (src, dst) ->

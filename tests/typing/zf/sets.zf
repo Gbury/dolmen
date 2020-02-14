@@ -1,0 +1,48 @@
+
+val set : type -> type.
+val mem : pi a. a -> set a -> prop.
+val union : pi a. set a -> set a -> set a.
+val subset : pi a. set a -> set a -> prop.
+
+data bool :=
+  | BTrue
+  | BFalse.
+
+val ite : pi a. bool -> a -> a -> a.
+
+rewrite
+  forall (a : type) (x y : a).
+  ite _ BTrue x y = x.
+
+rewrite
+  forall (a : type) (x y : a).
+  ite a BFalse x y = y.
+
+val and_ : bool -> bool -> bool.
+
+rewrite
+  forall (x : bool). and_ x BFalse = BFalse.
+
+rewrite
+  forall (x : bool). and_ BFalse x = BFalse.
+
+rewrite
+  and_ BTrue BTrue = BTrue.
+
+val is_true : bool -> prop.
+
+rewrite
+  is_true BTrue <=> true.
+
+rewrite
+  is_true BFalse <=> false.
+
+rewrite
+  forall (a b : bool).
+  is_true (and_ a b) <=> is_true a && is_true b.
+
+# extensionality
+assert
+  forall (a : type) (s1 s2 : set a).
+    s1 = s2 <=> (forall (x : a). mem _ x s1 <=> mem _ x s2).
+

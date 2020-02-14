@@ -27,7 +27,7 @@ module Line = Dolmen_line
 module Ae = Dolmen_ae
 module Dimacs = Dolmen_dimacs
 module ICNF = Dolmen_icnf
-module Smtlib = Dolmen_smtlib
+module Smtlib2 = Dolmen_smtlib2
 module Tptp = Dolmen_tptp
 module Zf = Dolmen_zf
 

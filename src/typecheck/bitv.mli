@@ -1,7 +1,7 @@
 
 
 (** Smtlib bitvector builtins *)
-module Smtlib : sig
+module Smtlib2 : sig
 
   module Tff
       (Type : Tff_intf.S)
@@ -12,7 +12,7 @@ module Smtlib : sig
       | Invalid_bin_char of char
       | Invalid_hex_char of char
 
-    val parse : Type.builtin_symbols
+    val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
   end
 
 end

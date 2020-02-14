@@ -104,14 +104,14 @@ module Tptp : sig
       (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) : sig
 
-    val parse : Type.builtin_symbols
+    val parse : Dolmen_tptp.version -> Type.builtin_symbols
 
   end
 end
 
 
 (** Smtlib builtin *)
-module Smtlib : sig
+module Smtlib2 : sig
 
   (** Builtins for smtlib's core theory *)
   module Tff
@@ -120,7 +120,7 @@ module Smtlib : sig
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) : sig
 
-    val parse : Type.builtin_symbols
+    val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
   end
 end
 

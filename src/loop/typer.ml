@@ -119,23 +119,23 @@ module Make(S : State_intf.Typer) = struct
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Stmlib theories *)
-  module Smtlib_Base =
-    Dolmen_type.Base.Smtlib.Tff(T)(Dolmen.Expr.Tags)
+  module Smtlib2_Base =
+    Dolmen_type.Base.Smtlib2.Tff(T)(Dolmen.Expr.Tags)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib_Ints =
-    Dolmen_type.Arith.Smtlib.Int.Tff(T)
+  module Smtlib2_Ints =
+    Dolmen_type.Arith.Smtlib2.Int.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Int)
-  module Smtlib_Reals =
-    Dolmen_type.Arith.Smtlib.Real.Tff(T)
+  module Smtlib2_Reals =
+    Dolmen_type.Arith.Smtlib2.Real.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Real)
-  module Smtlib_Reals_Ints =
-    Dolmen_type.Arith.Smtlib.Real_Int.Tff(T)
+  module Smtlib2_Reals_Ints =
+    Dolmen_type.Arith.Smtlib2.Real_Int.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib_Arrays =
-    Dolmen_type.Arrays.Smtlib.Tff(T)
+  module Smtlib2_Arrays =
+    Dolmen_type.Arrays.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib_Bitv =
-    Dolmen_type.Bitv.Smtlib.Tff(T)
+  module Smtlib2_Bitv =
+    Dolmen_type.Bitv.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Zf *)
@@ -233,15 +233,15 @@ module Make(S : State_intf.Typer) = struct
         Dolmen.Expr.Ty.print ty
 
     (* Smtlib Arithmetic errors *)
-    | Smtlib_Reals_Ints.Expected_arith_type ty ->
+    | Smtlib2_Reals_Ints.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
         "The stmlib Reals_Ints theory requires an arithmetic type in order to correctly desugar the expression."
 
     (* Smtlib Bitvector errors *)
-    | Smtlib_Bitv.Invalid_bin_char c ->
+    | Smtlib2_Bitv.Invalid_bin_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
-    | Smtlib_Bitv.Invalid_hex_char c ->
+    | Smtlib2_Bitv.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Catch-all *)
@@ -269,7 +269,7 @@ module Make(S : State_intf.Typer) = struct
       match st.input_lang with
       | Some Dimacs
       | Some ICNF
-      | Some Tptp ->
+      | Some Tptp _ ->
         T.Typed Dolmen.Expr.Ty.prop
       | _ ->
         T.Nothing
@@ -278,7 +278,7 @@ module Make(S : State_intf.Typer) = struct
       match st.input_lang with
       | Some Dimacs
       | Some ICNF -> Some Dolmen.Expr.Ty.prop
-      | Some Tptp -> Some Dolmen.Expr.Ty.base
+      | Some Tptp _ -> Some Dolmen.Expr.Ty.base
       | _ -> None
     in
     let lang_builtins =
@@ -287,13 +287,13 @@ module Make(S : State_intf.Typer) = struct
       | Some Dimacs
       | Some ICNF -> Dolmen_type.Base.noop
       | Some Alt_ergo -> Dolmen_type.Base.noop
-      | Some Tptp ->
+      | Some Tptp v ->
         Dolmen_type.Base.merge [
-          Tptp_Base.parse;
-          Tptp_Arith.parse;
+          Tptp_Base.parse v;
+          Tptp_Arith.parse v;
         ]
       | Some Zf -> Zf_Base.parse
-      | Some Smtlib ->
+      | Some Smtlib2 v ->
         let logic =
           match st.type_smtlib_logic with
           | Some s -> s
@@ -303,21 +303,21 @@ module Make(S : State_intf.Typer) = struct
           (* Try and adequately combine the theories according
              to the smtlib logic *)
           Dolmen_type.Base.smtlib_logic logic
-            ~arrays:Smtlib_Arrays.parse
-            ~bv:Smtlib_Bitv.parse
-            ~core:Smtlib_Base.parse
-            ~ints:Smtlib_Ints.parse
-            ~reals:Smtlib_Reals.parse
-            ~reals_ints:Smtlib_Reals_Ints.parse
+            ~arrays:(Smtlib2_Arrays.parse v)
+            ~bv:(Smtlib2_Bitv.parse v)
+            ~core:(Smtlib2_Base.parse v)
+            ~ints:(Smtlib2_Ints.parse v)
+            ~reals:(Smtlib2_Reals.parse v)
+            ~reals_ints:(Smtlib2_Reals_Ints.parse v)
         with Dolmen_type.Base.Unknown_logic s ->
           (* Unknown logic, default to a reasonable combination *)
           add_warning loc (
             Format.asprintf "Unknown logic %s" s);
           Dolmen_type.Base.merge [
-            Smtlib_Arrays.parse;
-            Smtlib_Bitv.parse;
-            Smtlib_Base.parse;
-            Smtlib_Reals_Ints.parse;
+            Smtlib2_Arrays.parse v;
+            Smtlib2_Bitv.parse v;
+            Smtlib2_Base.parse v;
+            Smtlib2_Reals_Ints.parse v;
           ]
     in
     let builtins = Dolmen_type.Base.merge [Def.parse; lang_builtins] in
