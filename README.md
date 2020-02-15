@@ -12,15 +12,16 @@ The Dolmen project aims at providing an assortiment of tools to help
 handle languages that are used in automated deduction and formal logic.
 
 More precisely, the Dolmen project provides:
-- A few OCaml libraries for parsing, typechecking and writing main loops for
-  binaries that want to handle the supported languages.
-  See [the readme](https://github.com/Gbury/dolmen/tree/master/doc/parsing.md)
+- A few OCaml libraries for:
+  - parsing, see [the parsing doc](https://github.com/Gbury/dolmen/tree/master/doc/parsing.md)
+  - typechecking, see [the typing doc](https://github.com/Gbury/dolmen/tree/master/doc/type.md)
+  - writing main loops for binaries, [the loop doc](https://github.com/Gbury/dolmen/tree/master/doc/loop.md)
 - A binary (which is using the above libraries), to parse and typecheck input files.
   This could be used to check a file against its language specification, and/or
-  obtain detailed errors
+  obtain detailed errors. See [the bin doc](https://github.com/Gbury/dolmen/tree/master/doc/bin.md)
 - A LSP server so that the feature sof the above binary can also be used inside
   your favorite editor.
-  See [the readme](https://github.com/Gbury/dolmen/tree/master/doc/lsp.md)
+  See [the dolmen lsp doc](https://github.com/Gbury/dolmen/tree/master/doc/lsp.md)
 
 
 ## Documentation
