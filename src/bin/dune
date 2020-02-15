@@ -6,3 +6,15 @@
   (libraries      dolmen dolmen_type dolmen_loop cmdliner fmt)
 )
 
+; Rule to generate a man page for dolmen
+(rule
+  (target        dolmen.1)
+  (action (with-outputs-to %{target} (run dolmen --help=groff)))
+)
+
+; Install the man page
+(install
+ (files    dolmen.1)
+ (section  man)
+ (package  dolmen_bin)
+)
