@@ -27,7 +27,17 @@ let finally st e =
   | Some exn -> handle_exn st exn
 
 let () =
-  let info = Cmdliner.Term.info ~version:"0.1" "dolmen" in
+  let man = [
+    `S Options.common_section;
+    `P "Common options for the dolmen binary";
+    `S Options.gc_section;
+    `P "Options to fine-tune the gc, only experts should use these.";
+    `S Cmdliner.Manpage.s_bugs;
+    `P "You can report bugs at https://github.com/Gbury/dolmen/issues";
+    `S Cmdliner.Manpage.s_authors;
+    `P "Guillaume Bury <guillaume.bury@gmail.com>"
+  ] in
+  let info = Cmdliner.Term.info ~man ~version:"0.1" "dolmen" in
   let st = match Cmdliner.Term.eval (Options.state, info) with
     | `Version | `Help -> exit 0
     | `Error `Parse | `Error `Term | `Error `Exn -> exit 1

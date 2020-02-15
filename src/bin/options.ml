@@ -3,6 +3,12 @@
 
 open Cmdliner
 
+(* Sections *)
+(* ************************************************************************* *)
+
+let gc_section = "GC OPTIONS"
+let common_section = Manpage.s_options
+
 (* State creation *)
 (* ************************************************************************* *)
 
@@ -162,25 +168,26 @@ let c_size = parse_size, print_size
 (* ************************************************************************* *)
 
 let gc_t =
+  let docs = gc_section in
   let minor_heap_size =
     let doc = "Set Gc.minor_heap_size" in
-    Arg.(value & opt int 1_000_000 & info ["gc-s"] ~doc)
+    Arg.(value & opt int 1_000_000 & info ["gc-s"] ~doc ~docs)
   in
   let major_heap_increment =
     let doc = "Set Gc.major_heap_increment" in
-    Arg.(value & opt int 100 & info ["gc-i"] ~doc)
+    Arg.(value & opt int 100 & info ["gc-i"] ~doc ~docs)
   in
   let space_overhead =
     let doc = "Set Gc.space_overhead" in
-    Arg.(value & opt int 200 & info ["gc-o"] ~doc)
+    Arg.(value & opt int 200 & info ["gc-o"] ~doc ~docs)
   in
   let max_overhead =
     let doc = "Set Gc.max_overhead" in
-    Arg.(value & opt int 500 & info ["gc-O"] ~doc)
+    Arg.(value & opt int 500 & info ["gc-O"] ~doc ~docs)
   in
   let allocation_policy =
     let doc = "Set Gc.allocation policy" in
-    Arg.(value & opt int 0 & info ["gc-a"] ~doc)
+    Arg.(value & opt int 0 & info ["gc-a"] ~doc ~docs)
   in
   Term.((const gc_opts $ minor_heap_size $ major_heap_increment $
          space_overhead $ max_overhead $ allocation_policy))
@@ -189,42 +196,43 @@ let gc_t =
 (* ************************************************************************* *)
 
 let state =
+  let docs = common_section in
   let gc =
     let doc = "Print statistics about the gc upon exiting" in
-    Arg.(value & flag & info ["g"; "gc"] ~doc)
+    Arg.(value & flag & info ["g"; "gc"] ~doc ~docs)
   in
   let bt =
     let doc = "Enables printing of backtraces." in
-    Arg.(value & flag & info ["b"; "backtrace"] ~doc)
+    Arg.(value & flag & info ["b"; "backtrace"] ~doc ~docs)
   in
   let colors =
     let doc = "Activate coloring of output" in
-    Arg.(value & opt bool true & info ["color"] ~doc)
+    Arg.(value & opt bool true & info ["color"] ~doc ~docs)
   in
   let time =
     let doc = "Stop the program after a time lapse of $(docv).
                  Accepts usual suffixes for durations : s,m,h,d.
                  Without suffix, default to a time in seconds." in
-    Arg.(value & opt c_time 300. & info ["t"; "time"] ~docv:"TIME" ~doc)
+    Arg.(value & opt c_time 300. & info ["t"; "time"] ~docv:"TIME" ~doc ~docs)
   in
   let size =
     let doc = "Stop the program if it tries and use more the $(docv) memory space. " ^
               "Accepts usual suffixes for sizes : k,M,G,T. " ^
               "Without suffix, default to a size in octet." in
-    Arg.(value & opt c_size 1_000_000_000. & info ["s"; "size"] ~docv:"SIZE" ~doc)
+    Arg.(value & opt c_size 1_000_000_000. & info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
   let in_lang =
     let doc = Format.asprintf
         "Set the input language to $(docv) (%s)."
         (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Parser.enum) in
-    Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc)
+    Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
   in
   let in_mode =
     let doc = Format.asprintf
         "Set the input mode. the full mode parses the entire file before iterating
          over its contents whereas the incremental mode processes each delcaration
          before parsing the next one. Default is incremental mode." in
-    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc)
+    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc ~docs)
   in
   let input =
     let doc = "Input problem file. If no file is specified,
@@ -234,17 +242,17 @@ let state =
   let typing =
     let doc = "Decide whether to type-check input expressions. If false, only parsing
                is done. " in
-    Arg.(value & opt bool true & info ["type"] ~doc)
+    Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
   let infer =
     let doc = Format.asprintf
         "Decide the permissions for type inference" in
-    Arg.(value & opt (some perm_conv) None & info ["infer"] ~doc)
+    Arg.(value & opt (some perm_conv) None & info ["infer"] ~docs ~doc)
   in
   let shadow =
     let doc = Format.asprintf
         "Decide the permissions for shadowing of symbols" in
-    Arg.(value & opt (some perm_conv) None & info ["shadow"] ~doc)
+    Arg.(value & opt (some perm_conv) None & info ["shadow"] ~doc ~docs)
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $ typing $ infer $ shadow)
