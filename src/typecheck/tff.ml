@@ -632,9 +632,9 @@ module Make
       ) t_vars;
     (* Filter quantified variables from free_variables *)
     let fv_ty = List.filter (fun v ->
-        List.exists (Ty.Var.equal v) ty_vars) fv_ty in
+        not (List.exists (Ty.Var.equal v) ty_vars)) fv_ty in
     let fv_t = List.filter (fun v ->
-        List.exists (T.Var.equal v) t_vars) fv_t in
+        not (List.exists (T.Var.equal v) t_vars)) fv_t in
     (* Create the quantified formula *)
     _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
 
