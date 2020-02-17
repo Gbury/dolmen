@@ -11,7 +11,7 @@ build: [
 depends: [
   "ocaml" {>= "4.02.3"}
   "menhir" {>= "20180703"}
-  "dune"
+  "dune" { >= "2.0" }
   "fmt"
   "seq"
 ]
