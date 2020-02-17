@@ -821,6 +821,10 @@ module Make
       | { Ast.term = Ast.Binder (Ast.Let, vars, f); _ } ->
         parse_let env [] f vars
 
+      (* Type annotations *)
+      | { Ast.term = Ast.Colon (a, expected); _ } ->
+        parse_ensure env a expected
+
       (* Explicitly catch higher-order application. *)
       | { Ast.term = Ast.App ({ Ast.term = Ast.App _; _ }, _); _ } as ast ->
         raise (Typing_error (Higher_order_application, env, ast))
@@ -1031,6 +1035,11 @@ module Make
       Term (_wrap3 env ast T.ite cond then_t else_t)
     | args ->
       _bad_op_arity env "#ite" 3 (List.length args) ast
+
+  and parse_ensure env a expected =
+    let t = parse_term env a in
+    let ty = parse_ty env expected in
+    Term (T.ensure t ty)
 
   and parse_builtin env ast b args =
     match env.builtins env ast (Builtin b) args with

@@ -1931,6 +1931,13 @@ module Term = struct
       in
       mk_record aux l
 
+  (* typing annotations *)
+  let ensure t ty =
+    match Ty.robinson Subst.empty ty t.ty with
+    | s -> subst s Subst.empty t
+    | exception Ty.Impossible_unification _ ->
+      raise (Wrong_type (t, ty))
+
   (* coercion *)
   let coerce dst_ty t =
     let src_ty = ty t in

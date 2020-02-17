@@ -615,6 +615,9 @@ module Term : sig
   exception Field_expected of term_const
   (** A field was expected but the returned term constant is not a record field. *)
 
+  val ensure : t -> ty -> t
+  (** Ensure a term has the given type. *)
+
   val of_var : Var.t -> t
   (** Create a term from a variable *)
 

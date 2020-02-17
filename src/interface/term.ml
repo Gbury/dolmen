@@ -491,6 +491,9 @@ module type Tff = sig
   exception Field_missing of Field.t
   (** Field missing in a record expression. *)
 
+  val ensure : t -> ty -> t
+  (** Ensure that a given term has the given type. *)
+
   val of_var : Var.t -> t
   (** Create a term from a variable *)
 
