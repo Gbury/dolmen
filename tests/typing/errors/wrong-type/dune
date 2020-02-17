@@ -1,0 +1,26 @@
+; File generated for tests by a script
+
+; Test for test_tptp_infer.p
+(rule
+  (target  test_tptp_infer.output)
+  (deps    test_tptp_infer.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test_tptp_infer.output test_tptp_infer.expected))
+)
+
+; Test for test_tptp.p
+(rule
+  (target  test_tptp.output)
+  (deps    test_tptp.p)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test_tptp.output test_tptp.expected))
+)
+
