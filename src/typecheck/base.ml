@@ -119,8 +119,9 @@ let fold_left_assoc mk = function
   | h :: r -> List.fold_left mk h r
   | _ -> raise (Invalid_argument "Base.fold_left_assoc")
 
-let fold_right_assoc mk = function
-  | h :: r -> List.fold_right mk r h
+let rec fold_right_assoc mk = function
+  | [x] -> x
+  | h :: r -> mk h (fold_right_assoc mk r)
   | _ -> raise (Invalid_argument "Base.fold_right_assoc")
 
 let make_chain = make_assoc
