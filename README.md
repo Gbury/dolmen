@@ -67,6 +67,19 @@ Once the dependencies have been installed, you can build the project with:
     make
 
 
+For a remote connection (replace the `'address'` field):
+
+```vim
+for ft in ['smt2', 'tptp', 'p', 'cnf', 'icnf', 'zf']
+  call ale#linter#Define(ft, {
+  \   'name': 'dolmenls',
+  \   'lsp': 'socket', 
+  \   'address': '127.0.0.1:8854',
+  \   'project_root': '.',
+  \})
+endfor
+```
+
 ## Future work
 
 - Adding new languages
