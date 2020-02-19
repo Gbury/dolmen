@@ -22,6 +22,8 @@ exception Unknown_logic of string
 
 let smtlib_logic
     ~arrays ~bv ~core ~ints ~reals ~reals_ints = function
+  | "ALIA"      -> merge [core; ints; arrays]
+  | "AUFDTLIA"  -> merge [core; ints; arrays]
   | "AUFLIA"    -> merge [core; ints; arrays]
   | "AUFLIRA"   -> merge [core; reals_ints; arrays]
   | "AUFNIRA"   -> merge [core; reals_ints; arrays]
@@ -44,6 +46,8 @@ let smtlib_logic
   | "QF_UFLRA"  -> merge [core; reals]
   | "QF_LRA"    -> merge [core; reals]
   | "QF_UFNRA"  -> merge [core; reals]
+  | "UF"        -> merge [core]
+  | "UFDT"      -> merge [core]
   | "UFLIA"     -> merge [core; ints]
   | "UFLRA"     -> merge [core; reals]
   | "UFNIA"     -> merge [core; ints]

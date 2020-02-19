@@ -262,7 +262,9 @@ module Make(S : State_intf.Typer) = struct
   (* ************************************************************************ *)
 
   (* TODO: set global options  to enforce limitations such as linearity. *)
-  let typing_env (st : (Parser.language, _, _) Dolmen.State.state) =
+  let typing_env
+      ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0)
+      (st : (Parser.language, _, _) Dolmen.State.state) =
     let expect =
       match st.input_lang with
       | Some Dimacs
@@ -297,13 +299,26 @@ module Make(S : State_intf.Typer) = struct
           | Some s -> s
           | None -> S.missing_smtlib_logic ()
         in
-        Dolmen_type.Base.smtlib_logic logic
-          ~arrays:Smtlib_Arrays.parse
-          ~bv:Smtlib_Bitv.parse
-          ~core:Smtlib_Base.parse
-          ~ints:Smtlib_Ints.parse
-          ~reals:Smtlib_Reals.parse
-          ~reals_ints:Smtlib_Reals_Ints.parse
+        try
+          (* Try and adequately combine the theories according
+             to the smtlib logic *)
+          Dolmen_type.Base.smtlib_logic logic
+            ~arrays:Smtlib_Arrays.parse
+            ~bv:Smtlib_Bitv.parse
+            ~core:Smtlib_Base.parse
+            ~ints:Smtlib_Ints.parse
+            ~reals:Smtlib_Reals.parse
+            ~reals_ints:Smtlib_Reals_Ints.parse
+        with Dolmen_type.Base.Unknown_logic s ->
+          (* Unknown logic, default to a reasonable combination *)
+          add_warning loc (
+            Format.asprintf "Unknown logic %s" s);
+          Dolmen_type.Base.merge [
+            Smtlib_Arrays.parse;
+            Smtlib_Bitv.parse;
+            Smtlib_Base.parse;
+            Smtlib_Reals_Ints.parse;
+          ]
     in
     let builtins = Dolmen_type.Base.merge [Def.parse; lang_builtins] in
     T.empty_env ~st:st.type_state ~expect ?infer_base builtins

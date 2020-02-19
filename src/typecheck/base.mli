@@ -10,6 +10,9 @@ val merge :
 (** A convenient function for merging a list of
     builtin parser functions into a single builtin function. *)
 
+exception Unknown_logic of string
+(** Exceptoin raised by {!smtlib_logic} if the given logic is unknown. *)
+
 val smtlib_logic :
   arrays:('a -> 'b -> 'c -> 'd -> 'e option) ->
   bv:('a -> 'b -> 'c -> 'd -> 'e option) ->
@@ -18,7 +21,8 @@ val smtlib_logic :
   reals:('a -> 'b -> 'c -> 'd -> 'e option) ->
   reals_ints:('a -> 'b -> 'c -> 'd -> 'e option) ->
   string -> ('a -> 'b -> 'c -> 'd -> 'e option)
-(** Correctly merge builtins functions according to the given smtlib logic. *)
+(** Correctly merge builtins functions according to the given smtlib logic.
+    @raise Unknown_logic *)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
