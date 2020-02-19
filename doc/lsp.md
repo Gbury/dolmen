@@ -90,5 +90,22 @@ au BufEnter *.zf setf zf
 
 ### Emacs
 
-TODO: could some emacs expert share a working configuration ?
+Since emacs has no built-in LSP support, you will need to install
+the [lsp-mode](https://github.com/emacs-lsp/lsp-mode) first. These instructions also
+assume that [smtlib-mode](https://github.com/mebsout/smtlib-mode) is installed. Then extend your
+`.emacs` configuration with the following lines after `lsp-mode` and `smtlib-mode` have been initialized:
+
+```
+;; connect dolmen as lsp backend for smtlib-mode
+(add-hook 'smtlib-mode-hook #'lsp)
+
+(add-to-list 'lsp-language-id-configuration '(smtlib-mode . "smtlib"))
+
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection "dolmenls")
+                  :major-modes '(smtlib-mode)
+                  :priority 0
+                  :server-id 'dolmenls
+                  ))
+```
 
