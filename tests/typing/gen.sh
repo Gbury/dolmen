@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+RET=1
+OPTIONS=""
+
 shopt -s globstar nullglob extglob
 
 process_dir () {
@@ -17,7 +20,7 @@ process_dir () {
     echo "  (target  ${f%.*}.output)"                         >> dune
     echo "  (deps    $f)"                                     >> dune
     echo "  (package dolmen_bin)"                             >> dune
-    echo "  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))" >> dune
+    echo "  (action (chdir %{workspace_root} (with-outputs-to %{target} (with-accepted-exit-codes ${RET} (run dolmen ${OPTIONS} %{deps})))))" >> dune
     echo ")"                                                  >> dune
     echo "(rule"                                              >> dune
     echo "  (alias runtest)"                                  >> dune

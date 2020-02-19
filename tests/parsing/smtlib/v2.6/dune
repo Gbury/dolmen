@@ -5,7 +5,7 @@
   (target  test-002.output)
   (deps    test-002.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -17,7 +17,7 @@
   (target  test-003.output)
   (deps    test-003.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -29,7 +29,7 @@
   (target  test-004.output)
   (deps    test-004.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -41,7 +41,7 @@
   (target  test-005.output)
   (deps    test-005.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -53,7 +53,7 @@
   (target  test-006.output)
   (deps    test-006.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -65,7 +65,7 @@
   (target  test-007.output)
   (deps    test-007.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -77,7 +77,7 @@
   (target  test-008.output)
   (deps    test-008.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -89,7 +89,7 @@
   (target  test-009.output)
   (deps    test-009.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -101,7 +101,7 @@
   (target  test-010.output)
   (deps    test-010.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -113,7 +113,7 @@
   (target  test-011.output)
   (deps    test-011.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -125,7 +125,7 @@
   (target  test-fun_def_1.output)
   (deps    test-fun_def_1.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
@@ -137,7 +137,7 @@
   (target  test-fun_def_2.output)
   (deps    test-fun_def_2.smt2)
   (package dolmen_bin)
-  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false %{deps}))))
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen --type=false --lang=smt2.6 %{deps}))))
 )
 (rule
   (alias runtest)
