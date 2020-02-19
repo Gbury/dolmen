@@ -185,9 +185,12 @@ let send_diagnostics rpc uri version l =
 
 let process_and_send rpc state uri =
   let open Res_ in
-  process state uri >>= fun l ->
-  send_diagnostics rpc uri None l;
-  Ok state
+  try
+    process state uri >>= fun l ->
+    send_diagnostics rpc uri None l;
+    Ok state
+  with exn ->
+    Error (Format.asprintf "Uncaught exn: %s" (Printexc.to_string exn))
 
 let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
   Lsp.Logger.log ~section ~title:"docWillSave" "uri %s" (Lsp.Uri.to_path d.uri);
