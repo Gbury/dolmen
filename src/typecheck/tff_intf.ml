@@ -6,6 +6,25 @@
     This module defines the external typechcker interface, that is,
     the interface of an instantiated typechecker. *)
 
+(** {1 Useful types} *)
+
+type reason =
+  | Inferred of Dolmen.ParseLocation.t
+  | Declared of Dolmen.ParseLocation.t (**)
+(** The type of reasons for constant typing *)
+
+type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
+  | `Not_found
+  | `Ty of 'ty_const * reason
+  | `Cstr of 'term_cstr * reason
+  | `Term of 'term_const * reason
+  | `Field of 'term_field * reason
+]
+(** The bindings that can occur inside the typechecker. *)
+
+
+(** {1 Typechecker interface} *)
+
 (** Typechecker interface *)
 module type S = sig
 
@@ -79,6 +98,12 @@ module type S = sig
 
   exception Typing_error of err * env * Dolmen.Term.t
   (** Exception raised when a typing error is encountered. *)
+
+  exception Shadowing of
+      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
+      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
+  (** Exception raised upon redefinition of symbols/constants
+      when it is not allowed by the env. *)
 
   exception Not_well_founded_datatypes of Dolmen.Statement.decl list
   (** Exception raised when a list of inductive datatypes could not be proved to
