@@ -176,7 +176,7 @@ module Tptp = struct
       (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) = struct
 
-    let parse env ast s args =
+    let parse _version env ast s args =
       match s with
       (*
       | Type.Id ({ Id.name = "$_"; ns = Id.Term } as id) ->
@@ -208,7 +208,7 @@ end
 (* Smtlib builtins (bool, =, etc...) *)
 (* ************************************************************************ *)
 
-module Smtlib = struct
+module Smtlib2 = struct
 
   module Tff
       (Type : Tff_intf.S)
@@ -229,7 +229,7 @@ module Smtlib = struct
       let t = Term.apply ?loc cstr args in
       Type.Term (Type.parse_term env t)
 
-    let parse env ast s args =
+    let parse _version env ast s args =
       match s with
       (* Bool sort and constants *)
       | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->

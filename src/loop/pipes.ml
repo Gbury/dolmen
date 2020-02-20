@@ -98,7 +98,9 @@ module Make
       match State.input_source st with
       | `Stdin ->
         let lang, gen, _ = Parser.parse_input
-            ?language:(State.input_lang st) (`Stdin Parser.Smtlib) in
+            ?language:(State.input_lang st)
+            (`Stdin (Parser.Smtlib2 `Latest))
+        in
         State.set_lang st lang, gen
       | `Raw (filename, contents) ->
         let lang =
@@ -127,10 +129,10 @@ module Make
           match lang with
           | Parser.Zf
           | Parser.ICNF
-          | Parser.Smtlib
+          | Parser.Smtlib2 _
           | Parser.Alt_ergo -> s
           | Parser.Dimacs
-          | Parser.Tptp ->
+          | Parser.Tptp _ ->
             Dolmen.Statement.pack [s; Dolmen.Statement.prove ()]
         in
         State.set_lang st lang,

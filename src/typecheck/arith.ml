@@ -4,7 +4,7 @@ open Dolmen
 (* Smtlib arithmetic (integer and reals) *)
 (* ************************************************************************ *)
 
-module Smtlib = struct
+module Smtlib2 = struct
 
   module Int = struct
 
@@ -34,7 +34,7 @@ module Smtlib = struct
 
       let split_id = Dolmen_std.Misc.split_on_char '\000'
 
-      let parse env ast s args =
+      let parse _version env ast s args =
         match s with
         (* type *)
         | Type.Id { Id.ns = Id.Sort; name = "Int"; } ->
@@ -94,7 +94,7 @@ module Smtlib = struct
             Type.Term (Base.map_chain (module Type) mk l')
           )
 
-      let parse env ast s args =
+      let parse _version env ast s args =
         match s with
         (* type *)
         | Type.Id { Id.ns = Id.Sort; name = "Real"; } ->
@@ -194,7 +194,7 @@ module Smtlib = struct
 
       let split_id = Dolmen_std.Misc.split_on_char '\000'
 
-      let parse env ast s args =
+      let parse _version env ast s args =
         match s with
         (* type *)
         | Type.Id { Id.ns = Id.Sort; name = "Int"; } ->
@@ -311,7 +311,7 @@ module Tptp = struct
         (fun (a, b) ->
            Type.Term (mk (Type.parse_term env a) (Type.parse_term env b)))
 
-    let parse env ast s args =
+    let parse _version env ast s args =
       match s with
       (* type *)
       | Type.Id { Id.ns = Id.Term; name = "$int"; } ->

@@ -1,0 +1,7 @@
+
+# deconstruct pairs
+
+data pair a b := Pair a b.
+
+goal forall (a b : type) (p : pair a b). exists (x : a) (y : b). p = Pair _ _ x y.
+

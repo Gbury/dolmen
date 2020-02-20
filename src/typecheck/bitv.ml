@@ -4,7 +4,7 @@ open Dolmen
 (* Smtlib arrays *)
 (* ************************************************************************ *)
 
-module Smtlib = struct
+module Smtlib2 = struct
 
   module Tff
       (Type : Tff_intf.S)
@@ -116,7 +116,7 @@ module Smtlib = struct
       Base.make_assoc (module Type) env ast name args
         (fun l -> Type.Term (Base.fold_left_assoc mk (List.map (Type.parse_term env) l)))
 
-    let parse env ast s args =
+    let parse _version env ast s args =
       match s with
       (* sort *)
       | Type.Id { Id.ns = Id.Sort; name; } ->

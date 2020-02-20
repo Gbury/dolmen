@@ -6,17 +6,13 @@
 module type S = Tff_intf.S
 (** Typechecker external interface *)
 
-type reason =
+type reason = Tff_intf.reason =
   | Inferred of Dolmen.ParseLocation.t
   | Declared of Dolmen.ParseLocation.t (**)
 (** The type of reasons for constant typing *)
 
 type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
-  | `Not_found
-  | `Ty of 'ty_const * reason
-  | `Cstr of 'term_cstr * reason
-  | `Term of 'term_const * reason
-  | `Field of 'term_field * reason
+  | ('ty_const, 'term_cstr, 'term_field, 'term_const) Tff_intf.binding
 ]
 (** The bindings that can occur inside the typechecker. *)
 

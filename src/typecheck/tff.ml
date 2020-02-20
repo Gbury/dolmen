@@ -8,16 +8,12 @@ module type S = Tff_intf.S
 (* ************************************************************************ *)
 
 (* The type of reasons for constant typing *)
-type reason =
+type reason = Tff_intf.reason =
   | Inferred of ParseLocation.t
   | Declared of ParseLocation.t
 
 type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
-  | `Not_found
-  | `Ty of 'ty_const * reason
-  | `Cstr of 'term_cstr * reason
-  | `Term of 'term_const * reason
-  | `Field of 'term_field * reason
+  | ('ty_const, 'term_cstr, 'term_field, 'term_const) Tff_intf.binding
 ]
 
 (* Warnings module signature *)
@@ -281,6 +277,122 @@ module Make
 
   type 'a typer = env -> Ast.t -> 'a
 
+  (* Exceptions *)
+  (* ************************************************************************ *)
+
+  (* Internal exception *)
+  exception Found of Ast.t * res
+
+  type err = ..
+
+  type err +=
+    | Infer_type_variable
+    | Expected of string * res option
+    | Bad_op_arity of string * int * int
+    | Bad_ty_arity of Ty.Const.t * int
+    | Bad_cstr_arity of T.Cstr.t * int * int
+    | Bad_term_arity of T.Const.t * int * int
+    | Repeated_record_field of T.Field.t
+    | Missing_record_field of T.Field.t
+    | Mismatch_record_type of T.Field.t * Ty.Const.t
+    | Var_application of T.Var.t
+    | Ty_var_application of Ty.Var.t
+    | Type_mismatch of T.t * Ty.t
+    | Quantified_var_inference
+    | Unhandled_builtin of Term.builtin
+    | Cannot_tag_tag
+    | Cannot_tag_ttype
+    | Cannot_find of Id.t
+    | Type_var_in_type_constructor
+    | Missing_destructor of Id.t
+    | Higher_order_application
+    | Higher_order_type
+    | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
+    | Unhandled_ast
+
+  (* Exception for typing errors *)
+  exception Typing_error of err * env * Ast.t
+
+  (** Exception for redefinition/shadowing *)
+  exception Shadowing of
+      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
+      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
+
+  (* Exception for not well-dounded datatypes definitions. *)
+  exception Not_well_founded_datatypes of Dolmen.Statement.decl list
+
+    (* TOOD: uncomment this code
+  (* Creating explanations *)
+  let mk_expl preface env fmt t = ()
+    match env.explain with
+    | `No -> ()
+    | `Yes ->
+      Format.fprintf fmt "%s\n%a" preface (explain ~full:false env) t
+    | `Full ->
+       Format.fprintf fmt "%s\n%a" preface (explain ~full:true env) t
+    *)
+
+  (* Convenience functions *)
+  let _infer_var env t =
+    raise (Typing_error (Infer_type_variable, env, t))
+
+  let _expected env s t res =
+    raise (Typing_error (Expected (s, res), env, t))
+
+  let _bad_op_arity env s n m t =
+    raise (Typing_error (Bad_op_arity (s, n, m), env, t))
+
+  let _bad_ty_arity env f n t =
+    raise (Typing_error (Bad_ty_arity (f, n), env, t))
+
+  let _bad_term_arity env f (n1, n2) t =
+    raise (Typing_error (Bad_term_arity (f, n1, n2), env, t))
+
+  let _bad_cstr_arity env c (n1, n2) t =
+    raise (Typing_error (Bad_cstr_arity (c, n1, n2), env, t))
+
+  let _ty_var_app env v t =
+    raise (Typing_error (Ty_var_application v, env, t))
+
+  let _var_app env v t =
+    raise (Typing_error (Var_application v, env, t))
+
+  let _type_mismatch env t ty ast =
+    raise (Typing_error (Type_mismatch (t, ty), env, ast))
+
+  let _record_type_mismatch env f ty_c ast =
+    raise (Typing_error (Mismatch_record_type (f, ty_c), env, ast))
+
+  let _field_repeated env f ast =
+    raise (Typing_error (Repeated_record_field f, env, ast))
+
+  let _field_missing env f ast =
+    raise (Typing_error (Missing_record_field f, env, ast))
+
+  let _cannot_infer_quant_var env t =
+    raise (Typing_error (Quantified_var_inference, env, t))
+
+  let _unknown_builtin env ast b =
+    raise (Typing_error (Unhandled_builtin b, env, ast))
+
+  let _wrap env ast f arg =
+    try f arg
+    with
+    | T.Wrong_type (t, ty) ->
+      _type_mismatch env t ty ast
+    | T.Wrong_record_type (f, c) ->
+      _record_type_mismatch env f c ast
+    | T.Field_repeated f ->
+      _field_repeated env f ast
+    | T.Field_missing f ->
+      _field_missing env f ast
+
+  let _wrap2 env ast f a b =
+    _wrap env ast (fun () -> f a b) ()
+
+  let _wrap3 env ast f a b c =
+    _wrap env ast (fun () -> f a b c) ()
+
   (* Global Environment *)
   (* ************************************************************************ *)
 
@@ -321,12 +433,12 @@ module Make
     begin match find_global env.st id with
       | `Not_found -> ()
       | old ->
+        let old_binding = with_reason (find_reason env.st old) old in
+        let new_binding = with_reason reason v in
         if env.allow_shadow then
-          W.shadow id
-            (with_reason (find_reason env.st old) old)
-            (with_reason reason v)
+          W.shadow id old_binding new_binding
         else
-          assert false
+          raise (Shadowing (old_binding, new_binding))
     end;
     H.add env.st.csts id v
 
@@ -348,8 +460,11 @@ module Make
     V.add env.st.field_locs f reason
 
   (* Exported wrappers *)
-  let declare_ty_const env id c loc = decl_ty_const env id c (Declared loc)
-  let declare_term_const env id c loc = decl_term_const env id c (Declared loc)
+  let declare_ty_const env id c loc =
+    decl_ty_const env id c (Declared loc)
+
+  let declare_term_const env id c loc =
+    decl_term_const env id c (Declared loc)
 
 
   (* Local Environment *)
@@ -438,6 +553,12 @@ module Make
 
   let get_reason_loc = function Inferred l | Declared l -> l
 
+  let _unused_type v env =
+    W.unused_ty_var (get_reason_loc (E.find v env.type_locs)) v
+
+  let _unused_term v env =
+    W.unused_term_var (get_reason_loc (F.find v env.term_locs)) v
+
 (* TODO: uncomment this code
   exception Continue of Expr.term list
 
@@ -465,123 +586,6 @@ module Make
     | Continue l ->
       List.iter (explain env ~full fmt) l
 *)
-
-  (* Exceptions *)
-  (* ************************************************************************ *)
-
-  (* Internal exception *)
-  exception Found of Ast.t * res
-
-  type err = ..
-
-  type err +=
-    | Infer_type_variable
-    | Expected of string * res option
-    | Bad_op_arity of string * int * int
-    | Bad_ty_arity of Ty.Const.t * int
-    | Bad_cstr_arity of T.Cstr.t * int * int
-    | Bad_term_arity of T.Const.t * int * int
-    | Repeated_record_field of T.Field.t
-    | Missing_record_field of T.Field.t
-    | Mismatch_record_type of T.Field.t * Ty.Const.t
-    | Var_application of T.Var.t
-    | Ty_var_application of Ty.Var.t
-    | Type_mismatch of T.t * Ty.t
-    | Quantified_var_inference
-    | Unhandled_builtin of Term.builtin
-    | Cannot_tag_tag
-    | Cannot_tag_ttype
-    | Cannot_find of Id.t
-    | Type_var_in_type_constructor
-    | Missing_destructor of Id.t
-    | Higher_order_application
-    | Higher_order_type
-    | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
-    | Unhandled_ast
-
-  (* Exception for typing errors *)
-  exception Typing_error of err * env * Ast.t
-
-  (* Exception for not well-dounded datatypes definitions. *)
-  exception Not_well_founded_datatypes of Dolmen.Statement.decl list
-
-    (* TOOD: uncomment this code
-  (* Creating explanations *)
-  let mk_expl preface env fmt t = ()
-    match env.explain with
-    | `No -> ()
-    | `Yes ->
-      Format.fprintf fmt "%s\n%a" preface (explain ~full:false env) t
-    | `Full ->
-       Format.fprintf fmt "%s\n%a" preface (explain ~full:true env) t
-    *)
-
-  (* Convenience functions *)
-  let _infer_var env t =
-    raise (Typing_error (Infer_type_variable, env, t))
-
-  let _expected env s t res =
-    raise (Typing_error (Expected (s, res), env, t))
-
-  let _bad_op_arity env s n m t =
-    raise (Typing_error (Bad_op_arity (s, n, m), env, t))
-
-  let _bad_ty_arity env f n t =
-    raise (Typing_error (Bad_ty_arity (f, n), env, t))
-
-  let _bad_term_arity env f (n1, n2) t =
-    raise (Typing_error (Bad_term_arity (f, n1, n2), env, t))
-
-  let _bad_cstr_arity env c (n1, n2) t =
-    raise (Typing_error (Bad_cstr_arity (c, n1, n2), env, t))
-
-  let _ty_var_app env v t =
-    raise (Typing_error (Ty_var_application v, env, t))
-
-  let _var_app env v t =
-    raise (Typing_error (Var_application v, env, t))
-
-  let _type_mismatch env t ty ast =
-    raise (Typing_error (Type_mismatch (t, ty), env, ast))
-
-  let _record_type_mismatch env f ty_c ast =
-    raise (Typing_error (Mismatch_record_type (f, ty_c), env, ast))
-
-  let _field_repeated env f ast =
-    raise (Typing_error (Repeated_record_field f, env, ast))
-
-  let _field_missing env f ast =
-    raise (Typing_error (Missing_record_field f, env, ast))
-
-  let _cannot_infer_quant_var env t =
-    raise (Typing_error (Quantified_var_inference, env, t))
-
-  let _unused_type v env =
-    W.unused_ty_var (get_reason_loc (E.find v env.type_locs)) v
-
-  let _unused_term v env =
-    W.unused_term_var (get_reason_loc (F.find v env.term_locs)) v
-
-  let _unknown_builtin env ast b =
-    raise (Typing_error (Unhandled_builtin b, env, ast))
-
-  let _wrap env ast f arg =
-    try f arg
-    with
-    | T.Wrong_type (t, ty) ->
-      _type_mismatch env t ty ast
-    | T.Wrong_record_type (f, c) ->
-      _record_type_mismatch env f c ast
-    | T.Field_repeated f ->
-      _field_repeated env f ast
-    | T.Field_missing f ->
-      _field_missing env f ast
-
-  let _wrap2 env ast f a b =
-    _wrap env ast (fun () -> f a b) ()
-
-  let _wrap3 env ast f a b c =
-    _wrap env ast (fun () -> f a b c) ()
 
   (* Wrappers for expression building *)
   (* ************************************************************************ *)

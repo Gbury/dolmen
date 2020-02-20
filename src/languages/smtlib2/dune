@@ -1,0 +1,7 @@
+
+(library
+  (name         dolmen_smtlib2)
+  (public_name  dolmen.smtlib2)
+  (libraries    dolmen_smtlib2_v6)
+  (modules      Dolmen_smtlib2)
+)

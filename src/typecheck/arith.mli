@@ -1,6 +1,6 @@
 
 (** Smtlib Integer and Real Arithmetic *)
-module Smtlib : sig
+module Smtlib2 : sig
 
   (** Standalone Integer arithmetic *)
   module Int : sig
@@ -10,7 +10,7 @@ module Smtlib : sig
         (Ty : Dolmen.Intf.Ty.Smtlib_Int with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t) : sig
 
-      val parse : Type.builtin_symbols
+      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
     end
 
   end
@@ -23,7 +23,7 @@ module Smtlib : sig
         (Ty : Dolmen.Intf.Ty.Smtlib_Real with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t) : sig
 
-      val parse : Type.builtin_symbols
+      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
     end
 
   end
@@ -37,12 +37,12 @@ module Smtlib : sig
         (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
                                                and type ty := Type.Ty.t) : sig
 
-    type Type.err +=
-      | Expected_arith_type of Type.Ty.t
-      (** Error raised when an arithmetic type was expected (i.e. either
-          int or real), but another type was found. *)
+      type Type.err +=
+        | Expected_arith_type of Type.Ty.t
+        (** Error raised when an arithmetic type was expected (i.e. either
+            int or real), but another type was found. *)
 
-    val parse : Type.builtin_symbols
+      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
 
     end
 
@@ -68,7 +68,7 @@ module Tptp : sig
           type that cannot support the given operation (e.g. $quotient
           on integers). *)
 
-    val parse : Type.builtin_symbols
+    val parse : Dolmen_tptp.version -> Type.builtin_symbols
   end
 
 end
