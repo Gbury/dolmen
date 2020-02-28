@@ -224,6 +224,13 @@ module Smtlib2 = struct
       make_assoc (module Type) env ast name args
         (fun l -> Type.Term (fold_right_assoc mk (List.map (Type.parse_term env) l)))
 
+    let parse_symbol env = function
+      | { Ast.term = Ast.Symbol s; _ }
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } ->
+        Id.full_name s
+      | ast ->
+        raise (Type.Typing_error (Type.Expected ("symbol", None), env, ast))
+
     let parse_f env ast cstr args =
       let loc = Term.(ast.loc) in
       let t = Term.apply ?loc cstr args in
@@ -269,6 +276,14 @@ module Smtlib2 = struct
       | Type.Id { Id.name = "="; ns = Id.Term } ->
         let l = List.map (Type.parse_term env) args in
         Some (Type.Term (T.eqs l))
+
+      (* Named formulas *)
+      | Type.Id { Id.name = ":named"; ns = Id.Attr } ->
+        make_op1 (module Type) env ast ":named" args
+          (fun t ->
+             let name = parse_symbol env t in
+             Type.Tags [Type.Any (Tag.named, name)]
+          )
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->

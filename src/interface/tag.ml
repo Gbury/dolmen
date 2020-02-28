@@ -18,6 +18,10 @@ module type Smtlib_Base = sig
     type 'a t
     (** Polymorphic tags *)
 
+    val named : string t
+    (** A tag used to named formulas in smtlib.
+        Should correspond to the `:named` attribute. *)
+
     val rwrt : unit t
     (** A flag (i.e. unit tag), indicatgin that the tagged term/formula
         is to be considered as a rewrite rule. *)

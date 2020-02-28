@@ -164,7 +164,7 @@ module Make(S : State_intf.Typer) = struct
     | T.Expected (expect, got) ->
       Format.fprintf fmt "Expected %s but got %a" expect (print_opt print_res) got
     | T.Bad_op_arity (s, i, j) ->
-      Format.fprintf fmt "Bad arity for builtin '%s':@ expected %d arguments but got %d" s j i
+      Format.fprintf fmt "Bad arity for builtin '%s':@ expected %d arguments but got %d" s i j
     | T.Bad_ty_arity (c, i) ->
       Format.fprintf fmt "Bad arity (expected %d arguments) for type constant@ %a"
         i Dolmen.Expr.Print.ty_const c
@@ -250,10 +250,8 @@ module Make(S : State_intf.Typer) = struct
 
   let () =
     Printexc.register_printer (function
-        | T.Typing_error (err, _, t) ->
-          Some (Format.asprintf "@[<hv>While typing:@ @[<hov>%a@]@ %a@."
-                  Dolmen.Term.print t
-                  report_error err)
+        | T.Typing_error (err, _, _) ->
+          Some (Format.asprintf "@[<hov>%a@]@." report_error err)
         | _ -> None
       )
 

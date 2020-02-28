@@ -364,6 +364,8 @@ module Tags = struct
   let infix = Pretty.Infix
   let prefix = Pretty.Prefix
 
+  let named = Tag.create ()
+
 end
 
 (* Printing *)

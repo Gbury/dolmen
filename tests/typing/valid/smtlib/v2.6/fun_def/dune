@@ -1,0 +1,26 @@
+; File generated for tests by a script
+
+; Test for test-fun_def_1.smt2
+(rule
+  (target  test-fun_def_1.output)
+  (deps    test-fun_def_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test-fun_def_1.output test-fun_def_1.expected))
+)
+
+; Test for test-fun_def_2.smt2
+(rule
+  (target  test-fun_def_2.output)
+  (deps    test-fun_def_2.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (run dolmen %{deps}))))
+)
+(rule
+  (alias runtest)
+  (action (diff test-fun_def_2.output test-fun_def_2.expected))
+)
+
