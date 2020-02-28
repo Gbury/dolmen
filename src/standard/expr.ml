@@ -400,17 +400,15 @@ module Print = struct
     | App (f, []) -> id fmt f
     | App (f, l) ->
       begin match Tag.get f.tags pos with
-        | None ->
-          Format.fprintf fmt "@[<hov 2>%a(%a)@]"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") ty) l
         | Some Pretty.Prefix ->
-          assert (List.length l = 1);
           Format.fprintf fmt "@[<hov 2>%a %a@]"
             id f (Format.pp_print_list ~pp_sep:(return "") ty) l
-        | Some Pretty.Infix ->
-          assert (List.length l > 1);
+        | Some Pretty.Infix when List.length l >= 2 ->
           let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
           Format.fprintf fmt "@[<hov 2>%a@]" (Format.pp_print_list ~pp_sep ty) l
+        | None | Some Pretty.Infix ->
+          Format.fprintf fmt "@[<hov 2>%a(%a)@]"
+            id f (Format.pp_print_list ~pp_sep:(return ",@ ") ty) l
       end
 
   let params fmt = function
