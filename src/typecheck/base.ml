@@ -137,7 +137,10 @@ let map_chain
     | [_] -> []
     | x :: ((y :: _) as r) -> mk x y :: aux mk r
   in
-  Type.T._and (aux mk args)
+  match aux mk args with
+  | [] -> assert false
+  | [x] -> x
+  | l -> Type.T._and l
 
 (* Alt-ergo builtins *)
 (* ************************************************************************ *)

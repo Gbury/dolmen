@@ -461,7 +461,17 @@ module Print = struct
 
   and term_app fmt (f : _ id) tys args =
     match Tag.get f.tags pos with
-    | None ->
+    | Some Pretty.Prefix ->
+      begin match args with
+        | [] -> id fmt f
+        | _ ->
+          Format.fprintf fmt "@[<hov>%a(%a)@]"
+            id f (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
+      end
+    | Some Pretty.Infix when List.length args >= 2 ->
+      let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
+      Format.fprintf fmt "(@[<hov>%a@])" (Format.pp_print_list ~pp_sep term) args
+    | None | Some Pretty.Infix ->
       begin match tys, args with
         | _, [] ->
           Format.fprintf fmt "%a(@[<hov>%a@])"
@@ -475,17 +485,6 @@ module Print = struct
             (return ";@ ") ()
             (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
       end
-    | Some Pretty.Prefix ->
-      begin match args with
-        | [] -> id fmt f
-        | _ ->
-          Format.fprintf fmt "@[<hov>%a(%a)@]"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
-      end
-    | Some Pretty.Infix ->
-      assert (List.length args >= 2);
-      let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
-      Format.fprintf fmt "(@[<hov>%a@])" (Format.pp_print_list ~pp_sep term) args
 
   and binder fmt b =
     match b with

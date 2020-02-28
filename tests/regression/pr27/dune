@@ -1,0 +1,11 @@
+
+(rule
+  (target  pb.output)
+  (deps    pb.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (with-accepted-exit-codes 1 (run dolmen  %{deps})))))
+)
+(rule
+  (alias runtest)
+  (action (diff pb.output pb.expected))
+)

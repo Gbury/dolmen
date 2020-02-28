@@ -1,0 +1,8 @@
+[91mError[0m While typing: (= (notindomain (i)) (or (< (i) 0) (< 5 (i))))
+File 'tests/regression/pr27/pb.smt2', line 4, character 16-57:
+The term:
+((i < 0) ∨ (5 < i))
+has type
+Prop
+but was expected to be of type
+int

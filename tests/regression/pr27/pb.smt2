@@ -1,0 +1,5 @@
+(set-logic AUFLIA)
+(declare-fun notindomain (Int) Int)
+(assert (forall ((i Int))
+                (= (notindomain i) (or (< i 0) (< 5 i)) )))
+(check-sat)
