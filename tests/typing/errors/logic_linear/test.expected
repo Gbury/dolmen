@@ -1,3 +1,3 @@
 [91mError[0m While typing: (* (a) (b))
-File 'tests/typing/errors/linear/test.smt2', line 4, character 13-20:
-Non-linear term.
+File 'tests/typing/errors/logic_linear/test.smt2', line 4, character 13-20:
+Non-linear expressions are forbidden by the logic.

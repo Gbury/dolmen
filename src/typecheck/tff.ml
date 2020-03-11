@@ -781,10 +781,10 @@ module Make
 
       (* Binders *)
       | { Ast.term = Ast.Binder (Ast.All, _, _); _ } ->
-        parse_quant T.all Ast.All env [] [] t
+        parse_quant T.all Ast.All env t [] [] t
 
       | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
-        parse_quant T.all Ast.Ex env [] [] t
+        parse_quant T.all Ast.Ex env t [] [] t
 
       (* (Dis)Equality *)
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _ }, l); _ } as t ->
@@ -900,12 +900,12 @@ module Make
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
-  and parse_quant mk b env ttype_acc ty_acc = function
+  and parse_quant mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
       let ttype_vars, ty_vars, env' = parse_quant_vars (expect_base env) vars in
-      parse_quant mk b env' (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
-    | ast ->
-      let body = parse_prop env ast in
+      parse_quant mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
+    | body_ast ->
+      let body = parse_prop env body_ast in
       let f = mk_quant env ast mk (ttype_acc, ty_acc) body in
       Term f
 
