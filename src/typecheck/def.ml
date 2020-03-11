@@ -90,13 +90,15 @@ module Declare(Type : Tff_intf.S) = struct
 
   let define_ty id vars _body =
     let c = Type.Ty.Const.mk (Id.full_name id) (List.length vars) in
-    H.add definitions id (`Ty c)
+    let () = H.add definitions id (`Ty c) in
+    c
 
   let define_term id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
     let c = Type.T.Const.mk (Id.full_name id) vars args_ty ret_ty in
-    H.add definitions id (`Term c)
+    let () = H.add definitions id (`Term c) in
+    c
 
   let parse env ast symbol args =
     match (symbol : Type.symbol) with

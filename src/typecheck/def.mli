@@ -11,11 +11,11 @@
 module Declare(Type : Tff_intf.S) : sig
 
   val define_ty :
-    Dolmen.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> unit
+    Dolmen.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> Type.Ty.Const.t
   (** Define a type constant. *)
 
   val define_term :
-    Dolmen.Id.t -> Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> unit
+    Dolmen.Id.t -> Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> Type.T.Const.t
   (** Define a term constant. *)
 
   val parse : Type.builtin_symbols
