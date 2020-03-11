@@ -137,6 +137,15 @@ module Filter : sig
 
   end
 
+  module Quantifier : sig
+
+    val allow : bool ref
+    (** If [false], trying to build a quantified term
+        (i.e. contianing a forall or exists), will raise
+        a [Filter_failed_term] exception. *)
+
+  end
+
 end
 
 (** {2 Printing} *)

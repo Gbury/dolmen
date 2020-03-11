@@ -198,9 +198,18 @@ module Filter = struct
   let ty : (string * bool ref * ty_filter) list tag = Tag.create ()
   let term : (string * bool ref * term_filter) list tag = Tag.create ()
 
+  module Quantifier = struct
+
+    let allow = ref true
+    let name = "quantifier"
+    let reset () = allow := true
+
+  end
+
   module Linear = struct
 
     let active = ref false
+    let name = "linear"
     let reset () = active := false
 
     let classify_ty (ty : ty) =
@@ -273,13 +282,14 @@ module Filter = struct
         end
       | _ -> `Error
 
-    let gen = "linear", active, gen_wrapper
-    let div = "linear", active, div_wrapper
-    let mul = "linear", active, mul_wrapper
+    let gen = name, active, gen_wrapper
+    let div = name, active, div_wrapper
+    let mul = name, active, mul_wrapper
 
   end
 
   let reset () =
+    Quantifier.reset ();
     Linear.reset ()
 
 end
@@ -1750,7 +1760,13 @@ module Term = struct
   let of_var v = mk (Var v) v.ty
 
   (* This function does not check types enough, do not export outside the module *)
-  let bind b body = mk (Binder (b, body)) (ty body)
+  let bind b body =
+    let res = mk (Binder (b, body)) (ty body) in
+    match !Filter.Quantifier.allow, b with
+    | true, _
+    | _, (Letin _) -> res
+    | false, (Exists _ | Forall _) ->
+      raise (Filter_failed_term (Filter.Quantifier.name, res))
 
   (* Substitutions *)
   let rec ty_var_list_subst ty_var_map = function

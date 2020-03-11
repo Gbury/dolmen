@@ -309,7 +309,8 @@ module Make(S : State_intf.Typer) = struct
     List.iter (function
         | `Linear_arithmetic ->
           Dolmen.Expr.Filter.Linear.active := true
-        | `Quantifier_free
+        | `Quantifier_free ->
+          Dolmen.Expr.Filter.Quantifier.allow := false
         | `Difference_logic
         | `No_free_symbol -> (* TODO *) ()
       ) l.Dolmen_type.Base.restrictions
