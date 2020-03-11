@@ -21,10 +21,10 @@ end
 
 module Subst
     (Type : Tff_intf.S)
-    (T : Subst_arg with type ty = Type.Ty.t
-                    and type ty_var = Type.Ty.Var.t
-                    and type term = Type.T.t
-                    and type term_var = Type.T.Var.t) = struct
+    (T : Subst_arg with type ty := Type.Ty.t
+                    and type ty_var := Type.Ty.Var.t
+                    and type term := Type.T.t
+                    and type term_var := Type.T.Var.t) = struct
 
   module H = Hashtbl.Make(Id)
 

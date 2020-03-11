@@ -43,10 +43,10 @@ end
 
 (** Handle definitions by subsituting in the bodies during type-checking. *)
 module Subst(Type : Tff_intf.S)
-    (T : Subst_arg with type ty = Type.Ty.t
-                    and type ty_var = Type.Ty.Var.t
-                    and type term = Type.T.t
-                    and type term_var = Type.T.Var.t) : sig
+    (T : Subst_arg with type ty := Type.Ty.t
+                    and type ty_var := Type.Ty.Var.t
+                    and type term := Type.T.t
+                    and type term_var := Type.T.Var.t) : sig
 
   val define_ty :
     Dolmen.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> unit
