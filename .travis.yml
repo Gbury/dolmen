@@ -16,3 +16,8 @@ env:
   - PACKAGE="dolmen" CAML_VERSION="4.09"
   - PACKAGE="dolmen_lsp" CAML_VERSION="4.06"
   - PACKAGE="dolmen_lsp" CAML_VERSION="4.08"
+jobs:
+  allow_failures:
+    - env: PACKAGE="dolmen_lsp" CAML_VERSION="4.06"
+    - env: PACKAGE="dolmen_lsp" CAML_VERSION="4.08"
+
