@@ -96,6 +96,7 @@ let exn st = function
   | Dolmen.Expr.Type_already_defined c ->
     State.error st "Type constant '%a' was already defined earlier, cannot re-define it."
       Dolmen.Expr.Print.id c
+
   | Dolmen.Expr.Term.Wrong_type (t, ty) ->
     State.error st "@[<hv>A term of type@ %a@ was expected but instead got a term of type@ %a@]"
       Dolmen.Expr.Ty.print ty Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)

@@ -244,6 +244,16 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Bitv.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
+    (* Expression filters *)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty)) ->
+      Format.fprintf fmt "Filter '%s' failed for the given type." name
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t)) ->
+      Format.fprintf fmt "Filter '%s' failed for the given term." name
+
+    (* Uncaught exception during type-checking *)
+    | T.Uncaught_exn exn ->
+      Format.fprintf fmt "Uncaught exception: %s" (Printexc.to_string exn)
+
     (* Catch-all *)
     | _ ->
       Format.fprintf fmt "Unknown typing error,@ please report upstream, ^^"
@@ -259,10 +269,51 @@ module Make(S : State_intf.Typer) = struct
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
-  (* TODO: set global options  to enforce limitations such as linearity. *)
+  let default_smtlib_logic = {
+    Dolmen_type.Base.theories =
+      [ `Core; `Reals_Ints; `Arrays; `Bitvectors; ];
+    restrictions = [];
+  }
+
+  let smtlib_logic loc st =
+    match st.Dolmen.State.type_smtlib_logic with
+    | Some s ->
+      begin match Dolmen_type.Base.smtlib_logic s with
+        | Some logic -> logic
+        | None ->
+          (* Unknown logic, default to a reasonable combination *)
+          add_warning loc (Format.asprintf "Unknown logic %s" s);
+          default_smtlib_logic
+      end
+    | None ->
+      (* Missing logic, this is a hard error in an smtlib file *)
+      S.missing_smtlib_logic ()
+
+  let builtins_of_smtlib_logic v l =
+    List.fold_left (fun acc th ->
+        match (th : Dolmen_type.Base.smtlib_theory) with
+        | `Core -> Smtlib2_Base.parse v :: acc
+        | `Ints -> Smtlib2_Ints.parse v :: acc
+        | `Arrays -> Smtlib2_Arrays.parse v :: acc
+        | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
+        | `Reals -> Smtlib2_Reals.parse v :: acc
+        | `Reals_Ints -> Smtlib2_Reals_Ints.parse v :: acc
+      ) [] l.Dolmen_type.Base.theories
+
+  let restrictions_of_smtlib_logic _v l =
+    Dolmen.Expr.Filter.reset ();
+    List.iter (function
+        | `Linear_arithmetic ->
+          Dolmen.Expr.Filter.Linear.active := true
+        | `Quantifier_free
+        | `Difference_logic
+        | `No_free_symbol -> (* TODO *) ()
+      ) l.Dolmen_type.Base.restrictions
+
   let typing_env
       ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0)
       (st : (Parser.language, _, _) Dolmen.State.state) =
+    (* Expected type for type inference (top-down) *)
     let expect =
       match st.input_lang with
       | Some Dimacs
@@ -272,6 +323,7 @@ module Make(S : State_intf.Typer) = struct
       | _ ->
         T.Nothing
     in
+    (* Base type used for type inference (bottom) *)
     let infer_base =
       match st.input_lang with
       | Some Dimacs
@@ -279,46 +331,26 @@ module Make(S : State_intf.Typer) = struct
       | Some Tptp _ -> Some Dolmen.Expr.Ty.base
       | _ -> None
     in
+    (* Builtins for each language *)
     let lang_builtins =
       match st.input_lang with
       | None -> assert false
       | Some Dimacs
-      | Some ICNF -> Dolmen_type.Base.noop
-      | Some Alt_ergo -> Dolmen_type.Base.noop
-      | Some Tptp v ->
-        Dolmen_type.Base.merge [
+      | Some ICNF -> []
+      | Some Alt_ergo -> []
+      | Some Tptp v -> [
           Tptp_Base.parse v;
           Tptp_Arith.parse v;
         ]
-      | Some Zf -> Zf_Base.parse
+      | Some Zf -> [
+          Zf_Base.parse;
+        ]
       | Some Smtlib2 v ->
-        let logic =
-          match st.type_smtlib_logic with
-          | Some s -> s
-          | None -> S.missing_smtlib_logic ()
-        in
-        try
-          (* Try and adequately combine the theories according
-             to the smtlib logic *)
-          Dolmen_type.Base.smtlib_logic logic
-            ~arrays:(Smtlib2_Arrays.parse v)
-            ~bv:(Smtlib2_Bitv.parse v)
-            ~core:(Smtlib2_Base.parse v)
-            ~ints:(Smtlib2_Ints.parse v)
-            ~reals:(Smtlib2_Reals.parse v)
-            ~reals_ints:(Smtlib2_Reals_Ints.parse v)
-        with Dolmen_type.Base.Unknown_logic s ->
-          (* Unknown logic, default to a reasonable combination *)
-          add_warning loc (
-            Format.asprintf "Unknown logic %s" s);
-          Dolmen_type.Base.merge [
-            Smtlib2_Arrays.parse v;
-            Smtlib2_Bitv.parse v;
-            Smtlib2_Base.parse v;
-            Smtlib2_Reals_Ints.parse v;
-          ]
+        let logic = smtlib_logic loc st in
+        restrictions_of_smtlib_logic v logic;
+        builtins_of_smtlib_logic v logic
     in
-    let builtins = Dolmen_type.Base.merge [Def.parse; lang_builtins] in
+    let builtins = Dolmen_type.Base.merge (Def.parse :: lang_builtins) in
     T.empty_env ~st:st.type_state ~expect ?infer_base builtins
 
 
@@ -327,8 +359,8 @@ module Make(S : State_intf.Typer) = struct
 
   let typecheck (st : _ Dolmen.State.state) = st.type_check
 
-  let def st ?attr id t =
-    let env = typing_env st in
+  let def st ?attr id (t : Dolmen.Term.t) =
+    let env = typing_env ?loc:t.loc st in
     begin match T.new_def ?attr env t id with
       | `Type_def (id, _, vars, body) ->
         let _ = Def.define_ty id vars body in
@@ -344,18 +376,22 @@ module Make(S : State_intf.Typer) = struct
     st, decls, get_warnings ()
 
   let terms st ?attr:_ l =
-    let env = typing_env st in
-    let res = List.map (T.parse_term env) l in
+    let res = List.map (fun (t : Dolmen.Term.t) ->
+        let env = typing_env ?loc:t.loc st in
+        T.parse_term env t
+      ) l in
     st, res, get_warnings ()
 
-  let formula st ?attr:_ ~goal:_ t =
-    let env = typing_env st in
+  let formula st ?attr:_ ~goal:_ (t : Dolmen.Term.t) =
+    let env = typing_env ?loc:t.loc st in
     let res = T.parse env t in
     st, res, get_warnings ()
 
   let formulas st ?attr:_ l =
-    let env = typing_env st in
-    let l' = List.map (T.parse env) l in
+    let l' = List.map (fun (t : Dolmen.Term.t) ->
+        let env = typing_env ?loc:t.loc st in
+        T.parse env t
+      ) l in
     st, l', get_warnings ()
 
 end

@@ -10,20 +10,6 @@ val merge :
 (** A convenient function for merging a list of
     builtin parser functions into a single builtin function. *)
 
-exception Unknown_logic of string
-(** Exceptoin raised by {!smtlib_logic} if the given logic is unknown. *)
-
-val smtlib_logic :
-  arrays:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  bv:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  core:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  ints:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  reals:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  reals_ints:('a -> 'b -> 'c -> 'd -> 'e option) ->
-  string -> ('a -> 'b -> 'c -> 'd -> 'e option)
-(** Correctly merge builtins functions according to the given smtlib logic.
-    @raise Unknown_logic *)
-
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
   'env -> Dolmen.Term.t -> string -> Dolmen.Term.t list ->
@@ -78,6 +64,37 @@ val map_chain :
     [map_chain (module Type) mk \[t1; t2; ..; tn\]]
     is
     [Type.T._and \[mk t1 t2; mk t2 t3; ..\]] *)
+
+
+(** {2 Smtlib logic detection} *)
+
+type smtlib_theory = [
+  | `Core
+  | `Arrays
+  | `Bitvectors
+  | `Ints
+  | `Reals
+  | `Reals_Ints
+]
+(** Smtlib theories. *)
+
+type smtlib_restriction = [
+  | `No_free_symbol
+  | `Quantifier_free
+  | `Difference_logic
+  | `Linear_arithmetic
+]
+(** Smtlib restrictions. *)
+
+type smtlib_logic = {
+  theories      : smtlib_theory list;
+  restrictions  : smtlib_restriction list;
+}
+(** Structured representation of an smtlib logic. *)
+
+val smtlib_logic : string -> smtlib_logic option
+(** Parses an smtlib logic string and returns its structured version. *)
+
 
 (** {2 Languages base builtins} *)
 

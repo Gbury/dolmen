@@ -93,6 +93,7 @@ module type S = sig
     | Higher_order_application
     | Higher_order_type
     | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
+    | Uncaught_exn of exn
     | Unhandled_ast (**)
   (** The list of potential errors that can arise during typechecking. *)
 

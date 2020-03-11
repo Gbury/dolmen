@@ -308,6 +308,7 @@ module Make
     | Higher_order_application
     | Higher_order_type
     | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
+    | Uncaught_exn of exn
     | Unhandled_ast
 
   (* Exception for typing errors *)
@@ -375,6 +376,9 @@ module Make
   let _unknown_builtin env ast b =
     raise (Typing_error (Unhandled_builtin b, env, ast))
 
+  let _uncaught_exn env ast exn =
+    raise (Typing_error (Uncaught_exn exn, env, ast))
+
   let _wrap env ast f arg =
     try f arg
     with
@@ -386,6 +390,8 @@ module Make
       _field_repeated env f ast
     | T.Field_missing f ->
       _field_missing env f ast
+    | exn ->
+      _uncaught_exn env ast exn
 
   let _wrap2 env ast f a b =
     _wrap env ast (fun () -> f a b) ()

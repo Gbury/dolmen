@@ -99,6 +99,9 @@ exception Bad_ty_arity of ty_const * ty list
 exception Bad_term_arity of term_const * ty list * term list
 exception Type_already_defined of ty_const
 
+exception Filter_failed_ty of string * ty
+exception Filter_failed_term of string * term
+
 
 (** {2 Builtins Tags} *)
 (*  ************************************************************************* *)
@@ -113,6 +116,26 @@ module Tags : sig
 
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
   (** Satsify the Zf interface. *)
+
+end
+
+(** {2 Filters} *)
+(*  ************************************************************************* *)
+
+module Filter : sig
+
+  val reset : unit -> unit
+  (** Reset all filters. *)
+
+  module Linear : sig
+
+    val active : bool ref
+    (** If [true], only linear terms may be created.
+        Trying to create a non-linear term will raise
+        a [Filter_failed_ty] or [Filter_failed_term]
+        exception. *)
+
+  end
 
 end
 

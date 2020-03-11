@@ -18,42 +18,149 @@ let rec merge l env ast s args =
 
 (* Smtlib logic merging *)
 
-exception Unknown_logic of string
+type smtlib_theory = [
+  | `Core
+  | `Arrays
+  | `Bitvectors
+  | `Ints
+  | `Reals
+  | `Reals_Ints
+]
 
-let smtlib_logic
-    ~arrays ~bv ~core ~ints ~reals ~reals_ints = function
-  | "ALIA"      -> merge [core; ints; arrays]
-  | "AUFDTLIA"  -> merge [core; ints; arrays]
-  | "AUFLIA"    -> merge [core; ints; arrays]
-  | "AUFLIRA"   -> merge [core; reals_ints; arrays]
-  | "AUFNIRA"   -> merge [core; reals_ints; arrays]
-  | "LIA"       -> merge [core; ints]
-  | "LRA"       -> merge [core; reals]
-  | "QF_ABV"    -> merge [core; bv; arrays]
-  | "QF_AUFBV"  -> merge [core; bv; arrays]
-  | "QF_AUFLIA" -> merge [core; ints; arrays]
-  | "QF_AX"     -> merge [core; arrays]
-  | "QF_BV"     -> merge [core; bv]
-  | "QF_IDL"    -> merge [core; ints]
-  | "QF_LIA"    -> merge [core; ints]
-  | "QF_NIA"    -> merge [core; ints]
-  | "QF_NRA"    -> merge [core; reals]
-  | "QF_RDL"    -> merge [core; reals]
-  | "QF_UF"     -> merge [core]
-  | "QF_UFBV"   -> merge [core; bv]
-  | "QF_UFIDL"  -> merge [core; ints]
-  | "QF_UFLIA"  -> merge [core; ints]
-  | "QF_UFLRA"  -> merge [core; reals]
-  | "QF_LRA"    -> merge [core; reals]
-  | "QF_UFNRA"  -> merge [core; reals]
-  | "UF"        -> merge [core]
-  | "UFDT"      -> merge [core]
-  | "UFLIA"     -> merge [core; ints]
-  | "UFLRA"     -> merge [core; reals]
-  | "UFNIA"     -> merge [core; ints]
-  | "UFNRA"     -> merge [core; reals]
-  | logic       -> raise (Unknown_logic logic)
+type smtlib_restriction = [
+  | `No_free_symbol
+  | `Quantifier_free
+  | `Difference_logic
+  | `Linear_arithmetic
+]
 
+type smtlib_logic = {
+  theories      : smtlib_theory list;
+  restrictions  : smtlib_restriction list;
+}
+
+let smtlib_logic = function
+  | "ALIA"      -> Some {
+      theories = [`Core; `Ints; `Arrays];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "AUFDTLIA"  -> Some {
+      theories = [ `Core; `Ints; `Arrays; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "AUFLIA"    -> Some {
+      theories = [ `Core; `Ints; `Arrays; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "AUFLIRA"   -> Some {
+      theories = [ `Core; `Reals_Ints; `Arrays; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "AUFNIRA"   -> Some {
+      theories = [ `Core; `Reals_Ints; `Arrays; ];
+      restrictions = [];
+    }
+  | "LIA"       -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "LRA"       -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "QF_ABV"    -> Some {
+      theories = [ `Core; `Bitvectors; `Arrays; ];
+      restrictions = [ `Quantifier_free; `No_free_symbol; ];
+    }
+  | "QF_AUFBV"  -> Some {
+      theories = [ `Core; `Bitvectors; `Arrays; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_AUFLIA" -> Some {
+      theories = [ `Core; `Ints; `Arrays; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "QF_AX"     -> Some {
+      theories = [ `Core; `Arrays; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_BV"     -> Some {
+      theories = [ `Core; `Bitvectors; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_IDL"    -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Quantifier_free; `Difference_logic; ];
+    }
+  | "QF_LIA"    -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "QF_NIA"    -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_NRA"    -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_RDL"    -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Quantifier_free; `Difference_logic; ];
+    }
+  | "QF_UF"     -> Some {
+      theories = [ `Core; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_UFBV"   -> Some {
+      theories = [ `Core; `Bitvectors; ];
+      restrictions = [ `Quantifier_free; ];
+    }
+  | "QF_UFIDL"  -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Quantifier_free; `Difference_logic; ];
+    }
+  | "QF_UFLIA"  -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "QF_UFLRA"  -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "QF_LRA"    -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "QF_UFNRA"  -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
+    }
+  | "UF"        -> Some {
+      theories = [ `Core; ];
+      restrictions = [];
+    }
+  | "UFDT"      -> Some {
+      theories = [ `Core; ];
+      restrictions = [];
+    }
+  | "UFLIA"     -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [ `Linear_arithmetic; ];
+    }
+  | "UFLRA"     -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [ `Linear_arithmetic ];
+    }
+  | "UFNIA"     -> Some {
+      theories = [ `Core; `Ints; ];
+      restrictions = [];
+    }
+  | "UFNRA"     -> Some {
+      theories = [ `Core; `Reals; ];
+      restrictions = [];
+    }
+  | _           -> None
 
 (* Building builtins parser functions *)
 (* ************************************************************************ *)

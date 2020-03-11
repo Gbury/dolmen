@@ -201,6 +201,7 @@ module Filter = struct
   module Linear = struct
 
     let active = ref false
+    let reset () = active := false
 
     let classify_ty (ty : ty) =
       match View.ty ty with
@@ -277,6 +278,9 @@ module Filter = struct
     let mul = "linear", active, mul_wrapper
 
   end
+
+  let reset () =
+    Linear.reset ()
 
 end
 
