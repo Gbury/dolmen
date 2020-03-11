@@ -392,6 +392,8 @@ module Make
       _field_missing env f ast
     | (Typing_error _) as exn ->
       raise exn
+    | exn ->
+      _uncaught_exn env ast exn
 
   let _wrap2 env ast f a b =
     _wrap env ast (fun () -> f a b) ()

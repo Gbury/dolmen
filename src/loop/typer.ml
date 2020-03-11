@@ -245,8 +245,13 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Linear arithmetic *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term ("linear", _t)) ->
-      Format.fprintf fmt "Non-linear term."
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))
+      when name = Dolmen.Expr.Filter.Linear.name ->
+      Format.fprintf fmt "Non-linear expressions are forbidden by the logic."
+    (* Quantifier free formulas *)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))
+      when name = Dolmen.Expr.Filter.Quantifier.name ->
+      Format.fprintf fmt "Quantified expressions are forbidden by the logic."
 
     (* Expression filters *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty)) ->

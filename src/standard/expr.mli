@@ -135,6 +135,9 @@ module Filter : sig
         a [Filter_failed_ty] or [Filter_failed_term]
         exception. *)
 
+    val name : string
+    (** Name of the filter for linear expressions. *)
+
   end
 
   module Quantifier : sig
@@ -143,6 +146,9 @@ module Filter : sig
     (** If [false], trying to build a quantified term
         (i.e. contianing a forall or exists), will raise
         a [Filter_failed_term] exception. *)
+
+    val name : string
+    (** Name of the filter for qunatifier-free expressions. *)
 
   end
 
