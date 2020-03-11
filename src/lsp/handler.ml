@@ -197,6 +197,8 @@ let process_and_send rpc state uri =
     send_diagnostics rpc uri None l;
     Ok state
   with exn ->
+    Lsp.Logger.log ~section ~title:Error
+      "uncaught exception: %s" (Printexc.to_string exn);
     Error (Format.asprintf "Uncaught exn: %s" (Printexc.to_string exn))
 
 let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =

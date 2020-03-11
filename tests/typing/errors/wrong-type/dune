@@ -24,3 +24,15 @@
   (action (diff test_tptp.output test_tptp.expected))
 )
 
+; Test for test_smtlib.smt2
+(rule
+  (target  test_smtlib.output)
+  (deps    test_smtlib.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root} (with-outputs-to %{target} (with-accepted-exit-codes 1 (run dolmen  %{deps})))))
+)
+(rule
+  (alias runtest)
+  (action (diff test_smtlib.output test_smtlib.expected))
+)
+
