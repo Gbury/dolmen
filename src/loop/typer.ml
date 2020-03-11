@@ -244,6 +244,10 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Bitv.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
+    (* Linear arithmetic *)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term ("linear", _t)) ->
+      Format.fprintf fmt "Non-linear term."
+
     (* Expression filters *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty)) ->
       Format.fprintf fmt "Filter '%s' failed for the given type." name

@@ -390,8 +390,8 @@ module Make
       _field_repeated env f ast
     | T.Field_missing f ->
       _field_missing env f ast
-    | exn ->
-      _uncaught_exn env ast exn
+    | (Typing_error _) as exn ->
+      raise exn
 
   let _wrap2 env ast f a b =
     _wrap env ast (fun () -> f a b) ()
@@ -1006,6 +1006,10 @@ module Make
               end
             | exception T.Wrong_type (t, ty) ->
               _type_mismatch env t ty ast
+            | exception (Typing_error _ as exn) ->
+              raise exn
+            | exception exn ->
+              _uncaught_exn env ast exn
           end
       end
 
