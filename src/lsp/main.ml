@@ -39,13 +39,16 @@ let () =
   let stdio = ref true in
   let host = ref "0.0.0.0" in
   let port = ref 8854 in
+  let logfile = ref "" in
   let opts = [
     "--host", Arg.Set_string host, " address to listen in";
     "--port", Arg.Set_int port, " port to listen on";
     "--stdio", Arg.Set stdio, " connection on stdio";
     "--tcp", Arg.Clear stdio, " connections on TCP";
+    "--log", Arg.Set_string logfile, " log file";
   ] |> Arg.align in
   Arg.parse opts (fun _ -> raise (Arg.Bad "no such arg")) "dolmenls [option*]";
+  if !logfile = "" then logfile := Filename.temp_file "dolmenls-" ".log";
   let listen = if !stdio then Stdio else Server (!host, !port) in
-  Lsp.Logger.with_log_file (Some "/tmp/lsp.log") (main ~listen)
+  Lsp.Logger.with_log_file (Some !logfile) (main ~listen)
 
