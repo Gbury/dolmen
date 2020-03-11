@@ -7,9 +7,9 @@ type listen =
 
 let run ic oc =
   let section = Printf.sprintf "%s[%d]" Handler.section @@ Thread.id (Thread.self ()) in
-  Lsp.Logger.log ~section ~title:"app" "start lsp";
+  Lsp.Logger.log ~section ~title:Debug "start lsp";
   Lsp.Rpc.start Handler.empty Handler.handler ic oc;
-  Lsp.Logger.log ~section ~title:"app" "stop lsp";
+  Lsp.Logger.log ~section ~title:Debug "stop lsp";
   ()
 
 let main_tcp addr port =

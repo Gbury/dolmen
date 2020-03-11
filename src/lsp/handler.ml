@@ -71,6 +71,9 @@ let open_doc t version uri text =
   let doc = Doc.make ~version uri text in
   add_doc t uri doc
 
+let close_doc t uri =
+  { t with docs = Umap.remove uri t.docs; }
+
 let fetch_doc t uri =
   match Umap.find uri t.docs with
   | doc -> Ok doc
@@ -91,17 +94,17 @@ let change_doc t version uri changes =
 (* ************************************************************************ *)
 
 let process state uri =
-  Lsp.Logger.log ~section ~title:"processing"
+  Lsp.Logger.log ~section ~title:Debug
     "Starting processing of %s" (Lsp.Uri.to_path uri);
   let path = Lsp.Uri.to_path uri in
   let open Res_ in
   begin match state.file_mode with
     | Read_from_disk ->
-      Lsp.Logger.log ~section ~title:"processing"
+      Lsp.Logger.log ~section ~title:Debug
         "reading from disk...";
       Ok None
     | Compute_incremental ->
-      Lsp.Logger.log ~section ~title:"processing"
+      Lsp.Logger.log ~section ~title:Debug
         "Fetching computed document...";
       fetch_doc state uri >|= fun doc ->
       Some (Doc.text doc)
@@ -114,19 +117,19 @@ let process state uri =
 (* ************************************************************************ *)
 
 let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
-  Lsp.Logger.log ~section ~title:"initialize" "Initialization started";
+  Lsp.Logger.log ~section ~title:Debug "Initialization started";
   (* Determine in which mode we are *)
   let diag_mode =
     if params.capabilities.textDocument.synchronization.willSave then begin
-      Lsp.Logger.log ~section ~title:"initialize"
+      Lsp.Logger.log ~section ~title:Info
         "Setting mode: on_will_save";
       On_will_save
     end else if params.capabilities.textDocument.synchronization.didSave then begin
-      Lsp.Logger.log ~section ~title:"initialize"
+      Lsp.Logger.log ~section ~title:Info
         "Setting mode: on_did_save";
       On_did_save
     end else begin
-      Lsp.Logger.log ~section ~title:"initialize"
+      Lsp.Logger.log ~section ~title:Info
         "Setting mode: on_change";
       On_change
     end
@@ -169,13 +172,17 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
 (* ************************************************************************ *)
 
 let on_request _rpc _state _capabilities _req =
-  Error "not implemented"
+  Error (
+    Lsp.Jsonrpc.Response.Error.make
+      ~code:InternalError ~message:"not implemented" ()
+  )
+
 
 (* Notification handler *)
 (* ************************************************************************ *)
 
 let send_diagnostics rpc uri version l =
-  Lsp.Logger.log ~section ~title:"sendDiagnostics"
+  Lsp.Logger.log ~section ~title:Debug
     "sending diagnostics list (length %d)" (List.length l);
   Lsp.Rpc.send_notification rpc @@
   Lsp.Server_notification.PublishDiagnostics {
@@ -193,21 +200,26 @@ let process_and_send rpc state uri =
     Error (Format.asprintf "Uncaught exn: %s" (Printexc.to_string exn))
 
 let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  Lsp.Logger.log ~section ~title:"docWillSave" "uri %s" (Lsp.Uri.to_path d.uri);
+  Lsp.Logger.log ~section ~title:Debug "will save / uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode, state.file_mode with
   | On_will_save, Compute_incremental -> process_and_send rpc state d.uri
   | On_will_save, Read_from_disk -> Error "incoherent internal state"
   | _ -> Ok state
 
 let on_did_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  Lsp.Logger.log ~section ~title:"docDidSave" "uri %s" (Lsp.Uri.to_path d.uri);
+  Lsp.Logger.log ~section ~title:Debug "did save / uri %s" (Lsp.Uri.to_path d.uri);
   match state.diag_mode with
   | On_did_save -> process_and_send rpc state d.uri
   | _ -> Ok state
 
+let on_did_close _rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
+  Lsp.Logger.log ~section ~title:Debug
+    "did close / uri %s" (Lsp.Uri.to_path d.uri);
+  Ok (close_doc state d.uri)
+
 let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
   let open Res_ in
-  Lsp.Logger.log ~section ~title:"docDidOpen" "uri %s, size %d"
+  Lsp.Logger.log ~section ~title:Debug "did open / uri %s, size %d"
     (Lsp.Uri.to_path d.uri) (String.length d.text);
   (* Register the doc in the state if in incremental mode *)
   begin match state.file_mode with
@@ -224,8 +236,8 @@ let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
 let on_did_change rpc state
     (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
   let open Res_ in
-  Lsp.Logger.log ~section ~title:"docDidChange"
-    "uri %s" (Lsp.Uri.to_path d.uri);
+  Lsp.Logger.log ~section ~title:Debug
+    "did change / uri %s" (Lsp.Uri.to_path d.uri);
   (* Update the doc in the state if in incremental mode *)
   begin match state.file_mode with
     | Read_from_disk -> Ok state
@@ -242,12 +254,16 @@ let on_notification rpc state = function
 
   (* Initialization, not much to do *)
   | N.Initialized ->
-    Lsp.Logger.log ~section ~title:"initialized" "ok";
+    Lsp.Logger.log ~section ~title:Debug "initializing";
     Ok state
 
   (* New document *)
   | N.TextDocumentDidOpen { textDocument=d } ->
     on_did_open rpc state d
+  (* Close document *)
+  | N.TextDocumentDidClose { textDocument=d } ->
+    on_did_close rpc state d
+
   (* Document changes *)
   | N.TextDocumentDidChange { textDocument; contentChanges; } ->
     on_did_change rpc state textDocument contentChanges
@@ -263,13 +279,13 @@ let on_notification rpc state = function
 
   (* TODO stuff *)
   | N.ChangeWorkspaceFolders _ ->
-    Lsp.Logger.log ~section ~title:"on-change_workspace" "nothing to do";
+    Lsp.Logger.log ~section ~title:Debug "workspace change";
     Ok state
   | N.ChangeConfiguration _ ->
-    Lsp.Logger.log ~section ~title:"on-change_config" "unhandled notification";
+    Lsp.Logger.log ~section ~title:Debug "change config";
     Error "not implemented"
   | N.Unknown_notification _req ->
-    Lsp.Logger.log ~section ~title:"on-unknown_notif" "don't know what to do";
+    Lsp.Logger.log ~section ~title:Debug "unknown notification";
     Error "not implemented"
 
 
