@@ -13,5 +13,6 @@ module Make
     type statement = S.t
     let env = []
     let incremental = true
+    let error _ = ""
   end)(LexDimacs)(ParseDimacs.Make(L)(T)(S))
 

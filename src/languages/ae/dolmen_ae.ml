@@ -15,5 +15,6 @@ module Make
     type statement = S.t
     let env = []
     let incremental = false
+    let error _ = ""
   end)(LexAe)(ParseAe.Make(L)(I)(T)(S))
 

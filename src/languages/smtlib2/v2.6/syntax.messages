@@ -1,0 +1,3156 @@
+term: OPEN AS OPEN SYMBOL
+##
+## Ends in an error in state: 57.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL OPEN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN AS SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 434.
+##
+## qual_identifier -> OPEN AS identifier sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN AS SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 433.
+##
+## qual_identifier -> OPEN AS identifier . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN AS UNDERSCORE
+##
+## Ends in an error in state: 432.
+##
+## qual_identifier -> OPEN AS . identifier sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
+##
+## Ends in an error in state: 125.
+##
+## nonempty_list(attribute) -> attribute . [ CLOSE ]
+## nonempty_list(attribute) -> attribute . nonempty_list(attribute) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## attribute
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 429.
+##
+## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN ATTRIBUTE UNDERSCORE
+##
+## Ends in an error in state: 428.
+##
+## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 426.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 425.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN EXISTS OPEN UNDERSCORE
+##
+## Ends in an error in state: 423.
+##
+## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN EXISTS UNDERSCORE
+##
+## Ends in an error in state: 422.
+##
+## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 420.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 419.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 109.
+##
+## nonempty_list(sorted_var) -> sorted_var . [ CLOSE ]
+## nonempty_list(sorted_var) -> sorted_var . nonempty_list(sorted_var) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sorted_var
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 107.
+##
+## sorted_var -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 106.
+##
+## sorted_var -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 105.
+##
+## sorted_var -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL OPEN UNDERSCORE
+##
+## Ends in an error in state: 417.
+##
+## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN FORALL UNDERSCORE
+##
+## Ends in an error in state: 416.
+##
+## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 414.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 413.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 97.
+##
+## nonempty_list(var_binding) -> var_binding . [ CLOSE ]
+## nonempty_list(var_binding) -> var_binding . nonempty_list(var_binding) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## var_binding
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 95.
+##
+## var_binding -> OPEN SYMBOL term . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 94.
+##
+## var_binding -> OPEN SYMBOL . term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 93.
+##
+## var_binding -> OPEN . SYMBOL term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET OPEN UNDERSCORE
+##
+## Ends in an error in state: 411.
+##
+## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN LET UNDERSCORE
+##
+## Ends in an error in state: 410.
+##
+## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 75.
+##
+## nonempty_list(pattern_symbol) -> pattern_symbol . [ CLOSE ]
+## nonempty_list(pattern_symbol) -> pattern_symbol . nonempty_list(pattern_symbol) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## pattern_symbol
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 74.
+##
+## pattern -> OPEN pattern_symbol . nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern_symbol
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 73.
+##
+## pattern -> OPEN . pattern_symbol nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 408.
+##
+## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 89.
+##
+## nonempty_list(match_case) -> match_case . [ CLOSE ]
+## nonempty_list(match_case) -> match_case . nonempty_list(match_case) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## match_case
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 81.
+##
+## match_case -> OPEN pattern term . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 80.
+##
+## match_case -> OPEN pattern . term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 71.
+##
+## match_case -> OPEN . pattern term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 406.
+##
+## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 405.
+##
+## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN MATCH UNDERSCORE
+##
+## Ends in an error in state: 404.
+##
+## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 66.
+##
+## qual_identifier -> OPEN AS identifier sort . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN AS SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 58.
+##
+## qual_identifier -> OPEN AS identifier . sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN AS UNDERSCORE
+##
+## Ends in an error in state: 56.
+##
+## qual_identifier -> OPEN AS . identifier sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN SYMBOL
+##
+## Ends in an error in state: 55.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN UNDERSCORE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 48.
+##
+## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN OPEN UNDERSCORE UNDERSCORE
+##
+## Ends in an error in state: 47.
+##
+## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN STR
+##
+## Ends in an error in state: 399.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ # ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ # ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ # ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 128.
+##
+## nonempty_list(term) -> term . [ CLOSE ]
+## nonempty_list(term) -> term . nonempty_list(term) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 436.
+##
+## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN qual_identifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN UNDERSCORE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 53.
+##
+## nonempty_list(index) -> index . [ CLOSE ]
+## nonempty_list(index) -> index . nonempty_list(index) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## index
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN UNDERSCORE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 401.
+##
+## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: OPEN UNDERSCORE UNDERSCORE
+##
+## Ends in an error in state: 400.
+##
+## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+term: UNDERSCORE
+##
+## Ends in an error in state: 396.
+##
+## term' -> . term [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 391.
+##
+## command -> OPEN ASSERT term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT UNDERSCORE
+##
+## Ends in an error in state: 390.
+##
+## command -> OPEN ASSERT . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN CHECK_SAT UNDERSCORE
+##
+## Ends in an error in state: 388.
+##
+## command -> OPEN CHECK_SAT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 386.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 384.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN CHECK_SAT_ASSUMING UNDERSCORE
+##
+## Ends in an error in state: 383.
+##
+## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 381.
+##
+## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_CONST SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 380.
+##
+## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_CONST UNDERSCORE
+##
+## Ends in an error in state: 379.
+##
+## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 377.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 376.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPE UNDERSCORE
+##
+## Ends in an error in state: 375.
+##
+## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 373.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 371.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 370.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
+##
+## Ends in an error in state: 368.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_DATATYPES UNDERSCORE
+##
+## Ends in an error in state: 367.
+##
+## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 365.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 364.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 362.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 361.
+##
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN UNDERSCORE
+##
+## Ends in an error in state: 360.
+##
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 358.
+##
+## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 357.
+##
+## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_SORT UNDERSCORE
+##
+## Ends in an error in state: 356.
+##
+## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 354.
+##
+## command -> OPEN DEFINE_FUN function_def . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN function_def
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUN UNDERSCORE
+##
+## Ends in an error in state: 353.
+##
+## command -> OPEN DEFINE_FUN . function_def CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 351.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 349.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 348.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
+##
+## Ends in an error in state: 346.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUNS_REC UNDERSCORE
+##
+## Ends in an error in state: 345.
+##
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 343.
+##
+## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC function_def
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_FUN_REC UNDERSCORE
+##
+## Ends in an error in state: 342.
+##
+## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 340.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 339.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 337.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 336.
+##
+## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DEFINE_SORT UNDERSCORE
+##
+## Ends in an error in state: 335.
+##
+## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ECHO STR UNDERSCORE
+##
+## Ends in an error in state: 333.
+##
+## command -> OPEN ECHO STR . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO STR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ECHO UNDERSCORE
+##
+## Ends in an error in state: 332.
+##
+## command -> OPEN ECHO . STR CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN EXIT UNDERSCORE
+##
+## Ends in an error in state: 330.
+##
+## command -> OPEN EXIT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXIT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 328.
+##
+## command -> OPEN GET_ASSERTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSERTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_ASSIGNMENT UNDERSCORE
+##
+## Ends in an error in state: 326.
+##
+## command -> OPEN GET_ASSIGNMENT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSIGNMENT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_INFO KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 324.
+##
+## command -> OPEN GET_INFO info_flag . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO info_flag
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_INFO UNDERSCORE
+##
+## Ends in an error in state: 323.
+##
+## command -> OPEN GET_INFO . info_flag CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_MODEL UNDERSCORE
+##
+## Ends in an error in state: 321.
+##
+## command -> OPEN GET_MODEL . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_MODEL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 319.
+##
+## command -> OPEN GET_OPTION KEYWORD . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION KEYWORD
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 318.
+##
+## command -> OPEN GET_OPTION . KEYWORD CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_PROOF UNDERSCORE
+##
+## Ends in an error in state: 316.
+##
+## command -> OPEN GET_PROOF . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_PROOF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
+##
+## Ends in an error in state: 314.
+##
+## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_ASSUMPTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_UNSAT_CORE UNDERSCORE
+##
+## Ends in an error in state: 312.
+##
+## command -> OPEN GET_UNSAT_CORE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_CORE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 310.
+##
+## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_VALUE OPEN UNDERSCORE
+##
+## Ends in an error in state: 308.
+##
+## command -> OPEN GET_VALUE OPEN . nonempty_list(term) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN GET_VALUE UNDERSCORE
+##
+## Ends in an error in state: 307.
+##
+## command -> OPEN GET_VALUE . OPEN nonempty_list(term) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN POP NUM UNDERSCORE
+##
+## Ends in an error in state: 305.
+##
+## command -> OPEN POP NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN POP UNDERSCORE
+##
+## Ends in an error in state: 304.
+##
+## command -> OPEN POP . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN PUSH NUM UNDERSCORE
+##
+## Ends in an error in state: 302.
+##
+## command -> OPEN PUSH NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN PUSH UNDERSCORE
+##
+## Ends in an error in state: 301.
+##
+## command -> OPEN PUSH . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN RESET UNDERSCORE
+##
+## Ends in an error in state: 299.
+##
+## command -> OPEN RESET . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN RESET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 297.
+##
+## command -> OPEN RESET_ASSERTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET_ASSERTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_INFO KEYWORD KEYWORD
+##
+## Ends in an error in state: 295.
+##
+## command -> OPEN SET_INFO command_option . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_INFO UNDERSCORE
+##
+## Ends in an error in state: 294.
+##
+## command -> OPEN SET_INFO . command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_LOGIC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 292.
+##
+## command -> OPEN SET_LOGIC SYMBOL . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_LOGIC UNDERSCORE
+##
+## Ends in an error in state: 291.
+##
+## command -> OPEN SET_LOGIC . SYMBOL CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_OPTION KEYWORD KEYWORD
+##
+## Ends in an error in state: 289.
+##
+## command -> OPEN SET_OPTION command_option . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN SET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 288.
+##
+## command -> OPEN SET_OPTION . command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN UNDERSCORE
+##
+## Ends in an error in state: 287.
+##
+## command -> OPEN . ASSERT term CLOSE [ # ]
+## command -> OPEN . CHECK_SAT CLOSE [ # ]
+## command -> OPEN . CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE CLOSE [ # ]
+## command -> OPEN . DECLARE_CONST SYMBOL sort CLOSE [ # ]
+## command -> OPEN . DECLARE_DATATYPE SYMBOL datatype_dec CLOSE [ # ]
+## command -> OPEN . DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort CLOSE [ # ]
+## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ # ]
+## command -> OPEN . DEFINE_FUN function_def CLOSE [ # ]
+## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ # ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+## command -> OPEN . ECHO STR CLOSE [ # ]
+## command -> OPEN . EXIT CLOSE [ # ]
+## command -> OPEN . GET_ASSERTIONS CLOSE [ # ]
+## command -> OPEN . GET_ASSIGNMENT CLOSE [ # ]
+## command -> OPEN . GET_INFO info_flag CLOSE [ # ]
+## command -> OPEN . GET_MODEL CLOSE [ # ]
+## command -> OPEN . GET_OPTION KEYWORD CLOSE [ # ]
+## command -> OPEN . GET_PROOF CLOSE [ # ]
+## command -> OPEN . GET_UNSAT_ASSUMPTIONS CLOSE [ # ]
+## command -> OPEN . GET_UNSAT_CORE CLOSE [ # ]
+## command -> OPEN . GET_VALUE OPEN nonempty_list(term) CLOSE CLOSE [ # ]
+## command -> OPEN . POP NUM CLOSE [ # ]
+## command -> OPEN . PUSH NUM CLOSE [ # ]
+## command -> OPEN . RESET CLOSE [ # ]
+## command -> OPEN . RESET_ASSERTIONS CLOSE [ # ]
+## command -> OPEN . SET_INFO command_option CLOSE [ # ]
+## command -> OPEN . SET_LOGIC SYMBOL CLOSE [ # ]
+## command -> OPEN . SET_OPTION command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: UNDERSCORE
+##
+## Ends in an error in state: 286.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN ATTRIBUTE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 122.
+##
+## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
+##
+## Ends in an error in state: 121.
+##
+## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 119.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 118.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
+##
+## Ends in an error in state: 116.
+##
+## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN EXISTS UNDERSCORE
+##
+## Ends in an error in state: 115.
+##
+## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 113.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 112.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN FORALL OPEN UNDERSCORE
+##
+## Ends in an error in state: 104.
+##
+## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN FORALL UNDERSCORE
+##
+## Ends in an error in state: 103.
+##
+## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 101.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 100.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN LET OPEN UNDERSCORE
+##
+## Ends in an error in state: 92.
+##
+## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN LET UNDERSCORE
+##
+## Ends in an error in state: 91.
+##
+## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN MATCH SYMBOL OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 87.
+##
+## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN MATCH SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 70.
+##
+## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN MATCH SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 69.
+##
+## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN MATCH UNDERSCORE
+##
+## Ends in an error in state: 68.
+##
+## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN STR
+##
+## Ends in an error in state: 46.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 127.
+##
+## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN qual_identifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 279.
+##
+## command -> OPEN ASSERT term . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT UNDERSCORE
+##
+## Ends in an error in state: 278.
+##
+## command -> OPEN ASSERT . term CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT UNDERSCORE
+##
+## Ends in an error in state: 276.
+##
+## command -> OPEN CHECK_SAT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 274.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 267.
+##
+## prop_literal -> OPEN not_symbol prop_symbol . CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN not_symbol prop_symbol
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 266.
+##
+## prop_literal -> OPEN not_symbol . prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN not_symbol
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 264.
+##
+## prop_literal -> OPEN . not_symbol prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 271.
+##
+## list(prop_literal) -> prop_literal . list(prop_literal) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## prop_literal
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 263.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
+##
+## Ends in an error in state: 262.
+##
+## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST SYMBOL OPEN STR
+##
+## Ends in an error in state: 59.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+## sort -> OPEN . identifier nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 61.
+##
+## nonempty_list(sort) -> sort . [ CLOSE ]
+## nonempty_list(sort) -> sort . nonempty_list(sort) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 60.
+##
+## sort -> OPEN identifier . nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN identifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 260.
+##
+## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 259.
+##
+## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_CONST UNDERSCORE
+##
+## Ends in an error in state: 258.
+##
+## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 256.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 243.
+##
+## nonempty_list(constructor_dec) -> constructor_dec . [ CLOSE ]
+## nonempty_list(constructor_dec) -> constructor_dec . nonempty_list(constructor_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## constructor_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 236.
+##
+## list(selector_dec) -> selector_dec . list(selector_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## selector_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 234.
+##
+## selector_dec -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 233.
+##
+## selector_dec -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 232.
+##
+## selector_dec -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 231.
+##
+## constructor_dec -> OPEN SYMBOL . list(selector_dec) CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 230.
+##
+## constructor_dec -> OPEN . SYMBOL list(selector_dec) CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 241.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 229.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 228.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 245.
+##
+## nonempty_list(datatype_symbol) -> datatype_symbol . [ CLOSE ]
+## nonempty_list(datatype_symbol) -> datatype_symbol . nonempty_list(datatype_symbol) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## datatype_symbol
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 225.
+##
+## datatype_dec -> OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 224.
+##
+## datatype_dec -> OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 223.
+##
+## datatype_dec -> OPEN . nonempty_list(constructor_dec) CLOSE [ OPEN CLOSE ]
+## datatype_dec -> OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 255.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPE UNDERSCORE
+##
+## Ends in an error in state: 254.
+##
+## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 250.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 252.
+##
+## nonempty_list(datatype_dec) -> datatype_dec . [ CLOSE ]
+## nonempty_list(datatype_dec) -> datatype_dec . nonempty_list(datatype_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## datatype_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 222.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 221.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
+##
+## Ends in an error in state: 218.
+##
+## nonempty_list(sort_dec) -> sort_dec . [ CLOSE ]
+## nonempty_list(sort_dec) -> sort_dec . nonempty_list(sort_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 216.
+##
+## sort_dec -> OPEN SYMBOL NUM . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 215.
+##
+## sort_dec -> OPEN SYMBOL . NUM CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 214.
+##
+## sort_dec -> OPEN . SYMBOL NUM CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
+##
+## Ends in an error in state: 213.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_DATATYPES UNDERSCORE
+##
+## Ends in an error in state: 212.
+##
+## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 210.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 209.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 206.
+##
+## list(sort) -> sort . list(sort) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 205.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 204.
+##
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN UNDERSCORE
+##
+## Ends in an error in state: 203.
+##
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 201.
+##
+## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 200.
+##
+## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_SORT UNDERSCORE
+##
+## Ends in an error in state: 199.
+##
+## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 197.
+##
+## command -> OPEN DEFINE_FUN function_def . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN function_def
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN UNDERSCORE
+##
+## Ends in an error in state: 196.
+##
+## command -> OPEN DEFINE_FUN . function_def CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 192.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 190.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 189.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 194.
+##
+## nonempty_list(function_dec) -> function_dec . [ CLOSE ]
+## nonempty_list(function_dec) -> function_dec . nonempty_list(function_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## function_dec
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 186.
+##
+## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN list(sorted_var) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 185.
+##
+## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 183.
+##
+## function_dec -> OPEN SYMBOL OPEN . list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 182.
+##
+## function_dec -> OPEN SYMBOL . OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 181.
+##
+## function_dec -> OPEN . SYMBOL OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
+##
+## Ends in an error in state: 180.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUNS_REC UNDERSCORE
+##
+## Ends in an error in state: 179.
+##
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 177.
+##
+## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC function_def
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 175.
+##
+## function_def -> SYMBOL OPEN list(sorted_var) CLOSE sort . term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN list(sorted_var) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 174.
+##
+## function_def -> SYMBOL OPEN list(sorted_var) CLOSE . sort term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN list(sorted_var) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 171.
+##
+## list(sorted_var) -> sorted_var . list(sorted_var) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sorted_var
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 170.
+##
+## function_def -> SYMBOL OPEN . list(sorted_var) CLOSE sort term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 169.
+##
+## function_def -> SYMBOL . OPEN list(sorted_var) CLOSE sort term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_FUN_REC UNDERSCORE
+##
+## Ends in an error in state: 168.
+##
+## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 166.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 165.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 162.
+##
+## list(SYMBOL) -> SYMBOL . list(SYMBOL) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 161.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 160.
+##
+## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DEFINE_SORT UNDERSCORE
+##
+## Ends in an error in state: 159.
+##
+## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ECHO STR UNDERSCORE
+##
+## Ends in an error in state: 157.
+##
+## command -> OPEN ECHO STR . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO STR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ECHO UNDERSCORE
+##
+## Ends in an error in state: 156.
+##
+## command -> OPEN ECHO . STR CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN EXIT UNDERSCORE
+##
+## Ends in an error in state: 154.
+##
+## command -> OPEN EXIT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXIT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 152.
+##
+## command -> OPEN GET_ASSERTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSERTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_ASSIGNMENT UNDERSCORE
+##
+## Ends in an error in state: 150.
+##
+## command -> OPEN GET_ASSIGNMENT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSIGNMENT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_INFO KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 148.
+##
+## command -> OPEN GET_INFO info_flag . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO info_flag
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_INFO UNDERSCORE
+##
+## Ends in an error in state: 146.
+##
+## command -> OPEN GET_INFO . info_flag CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_MODEL UNDERSCORE
+##
+## Ends in an error in state: 144.
+##
+## command -> OPEN GET_MODEL . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_MODEL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 142.
+##
+## command -> OPEN GET_OPTION KEYWORD . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION KEYWORD
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 141.
+##
+## command -> OPEN GET_OPTION . KEYWORD CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_PROOF UNDERSCORE
+##
+## Ends in an error in state: 139.
+##
+## command -> OPEN GET_PROOF . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_PROOF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
+##
+## Ends in an error in state: 137.
+##
+## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_ASSUMPTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_UNSAT_CORE UNDERSCORE
+##
+## Ends in an error in state: 135.
+##
+## command -> OPEN GET_UNSAT_CORE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_CORE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 133.
+##
+## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_VALUE OPEN UNDERSCORE
+##
+## Ends in an error in state: 44.
+##
+## command -> OPEN GET_VALUE OPEN . nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN GET_VALUE UNDERSCORE
+##
+## Ends in an error in state: 43.
+##
+## command -> OPEN GET_VALUE . OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN POP NUM UNDERSCORE
+##
+## Ends in an error in state: 41.
+##
+## command -> OPEN POP NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN POP UNDERSCORE
+##
+## Ends in an error in state: 40.
+##
+## command -> OPEN POP . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN PUSH NUM UNDERSCORE
+##
+## Ends in an error in state: 38.
+##
+## command -> OPEN PUSH NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH NUM
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN PUSH UNDERSCORE
+##
+## Ends in an error in state: 37.
+##
+## command -> OPEN PUSH . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN RESET UNDERSCORE
+##
+## Ends in an error in state: 35.
+##
+## command -> OPEN RESET . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN RESET_ASSERTIONS CLOSE UNDERSCORE
+##
+## Ends in an error in state: 284.
+##
+## list(command) -> command . list(command) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## command
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN RESET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 33.
+##
+## command -> OPEN RESET_ASSERTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET_ASSERTIONS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_INFO KEYWORD KEYWORD
+##
+## Ends in an error in state: 31.
+##
+## command -> OPEN SET_INFO command_option . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_INFO UNDERSCORE
+##
+## Ends in an error in state: 30.
+##
+## command -> OPEN SET_INFO . command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_LOGIC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 28.
+##
+## command -> OPEN SET_LOGIC SYMBOL . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC SYMBOL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_LOGIC UNDERSCORE
+##
+## Ends in an error in state: 27.
+##
+## command -> OPEN SET_LOGIC . SYMBOL CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION KEYWORD KEYWORD
+##
+## Ends in an error in state: 24.
+##
+## command -> OPEN SET_OPTION command_option . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION KEYWORD OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 8.
+##
+## s_expr -> OPEN . list(s_expr) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION KEYWORD OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 15.
+##
+## list(s_expr) -> s_expr . list(s_expr) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## s_expr
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION KEYWORD OPEN UNDERSCORE
+##
+## Ends in an error in state: 6.
+##
+## attribute_value -> OPEN . list(s_expr) CLOSE [ KEYWORD CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 3.
+##
+## attribute -> KEYWORD . option(attribute_value) [ KEYWORD CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## KEYWORD
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN SET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 2.
+##
+## command -> OPEN SET_OPTION . command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN UNDERSCORE
+##
+## Ends in an error in state: 1.
+##
+## command -> OPEN . ASSERT term CLOSE [ OPEN EOF ]
+## command -> OPEN . CHECK_SAT CLOSE [ OPEN EOF ]
+## command -> OPEN . CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_CONST SYMBOL sort CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_DATATYPE SYMBOL datatype_dec CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUN function_def CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN . ECHO STR CLOSE [ OPEN EOF ]
+## command -> OPEN . EXIT CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_ASSERTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_ASSIGNMENT CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_INFO info_flag CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_MODEL CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_OPTION KEYWORD CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_PROOF CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_UNSAT_ASSUMPTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_UNSAT_CORE CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_VALUE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . POP NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . PUSH NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . RESET CLOSE [ OPEN EOF ]
+## command -> OPEN . RESET_ASSERTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_INFO command_option CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_LOGIC SYMBOL CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_OPTION command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: UNDERSCORE
+##
+## Ends in an error in state: 0.
+##
+## file' -> . file [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+

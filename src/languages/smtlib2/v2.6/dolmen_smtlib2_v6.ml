@@ -15,4 +15,5 @@ module Make
     type statement = S.t
     let env = []
     let incremental = true
+    let error s = Syntax_messages.message s
   end)(LexSmtlib)(ParseSmtlib.Make(L)(I)(T)(S))

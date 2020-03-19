@@ -15,5 +15,6 @@ module Make
     type statement = S.t
     let env = []
     let incremental = true
+    let error _ = ""
   end)(LexZf)(ParseZf.Make(L)(I)(T)(S))
 

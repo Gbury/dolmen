@@ -13,5 +13,6 @@ module Make
     type statement = S.t
     let env = []
     let incremental = true
+    let error _ = ""
   end)(LexiCNF)(ParseiCNF.Make(L)(T)(S))
 

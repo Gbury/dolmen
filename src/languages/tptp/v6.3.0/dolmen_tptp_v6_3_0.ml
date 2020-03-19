@@ -15,5 +15,6 @@ module Make
     type statement = S.t
     let env = ["TPTP"]
     let incremental = true
+    let error _ = ""
   end)(LexTptp)(ParseTptp.Make(L)(I)(T)(S))
 
