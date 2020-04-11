@@ -15,9 +15,6 @@ type builtin = ..
 (* Extensible variant type for builtin operations. Encodes in its type
    arguments the lengths of the expected ty and term arguments respectively. *)
 
-type builtin += Base
-(** The base builtin has unknown argument lengths. *)
-
 type ttype = Type
 (** The type of types. *)
 
@@ -102,8 +99,383 @@ exception Type_already_defined of ty_const
 exception Filter_failed_ty of string * ty
 exception Filter_failed_term of string * term
 
+(* {2 Builtins} *)
+(* ************************************************************************* *)
 
-(** {2 Builtins Tags} *)
+(** This section presents the builtins that are defined by Dolmen.
+
+    Users are encouraged to match builtins rather than specific symbols,
+    as this basically allows to match on the semantics of an identifier
+    rather than matching on the syntaxic value of an identifier. For
+    instance, equality can take an arbitrary number of arguments, and thus
+    in order to have well-typed terms, each arity of equality gives rise to
+    a different symbol (because the symbol's type depends on the arity
+    desired), but all these symbols have the [Equal] builtin.
+
+    In the following we will use pseudo-code to describe the arity and
+    actual type associated to symbols. These will follow ocaml's notation
+    for types with an additional syntax using dots for arbitrary arity.
+    Some examples:
+    - [ttype] is a type constant
+    - [ttype -> ttype] is a type constructor (e.g. [list])
+    - [int] is a constant of type [int]
+    - [float -> int] is a unary function
+    - ['a. 'a -> 'a] is a polymorphic unary function
+    - ['a. 'a -> ... -> Prop] describes a family of functions that take
+      a type and then an arbitrary number of arguments of that type, and
+      return a proposition (this is for instance the type of equality).
+
+    Additionally, due to some languages having overloaded operators, and in
+    order to not have too verbose names, some of these builtins may have
+    ovreloaded signtures, such as comparisons on numbers which can operate
+    on integers, rationals, or reals. Note that arbitrary arity operators
+    (well family of operators) can be also be seen as overloaded operators.
+    Overloaded types (particularly for numbers) are written:
+    - [{a=(Int|Rational|Real)} a -> a -> Prop], which the notable difference
+      form polymorphic function that this functions of this type does not
+      take a type argument.
+
+    Finally, remember that expressions are polymorphic and that type arguments
+    are explicit.
+*)
+
+type builtin +=
+  | Base
+  (** The base builtin; it is the default builtin for identifiers. *)
+  | Wildcard
+  (** Wildcards, currently used internally to represent implicit type
+      variables during type-checking. *)
+
+type builtin +=
+  | Prop
+  (** [Prop: ttype]: the builtin type constant for the type of
+      propositions / booleans. *)
+  | Univ
+  (** [Univ: ttype]: a builtin type constant used for languages
+      with a default type for elements (such as tptp's `$i`). *)
+
+type builtin +=
+  | Coercion
+  (** [Coercion: 'a 'b. 'a -> 'b]:
+      Coercion/cast operator, i.e. allows to cast values of some type to
+      another type. This is a polymorphic operator that takes two type
+      arguments [a] and [b], a value of type [a], and returns a value of
+      type [b].
+      The interpretation/semantics of this cast can remain
+      up to the user. This operator is currently mainly used to cast
+      numeric types when this transormation is exact (i.e. an integer
+      casted into a rational, which is always possible and exact,
+      or the cast of a rational into an integer, as long as the cast is
+      guarded by a clause verifying the rational is an integer). *)
+
+type builtin +=
+  | True      (** [True: Prop]: the [true] proposition. *)
+  | False     (** [False: Prop]: the [false] proposition. *)
+  | Equal     (** [Equal: 'a. 'a -> ... -> Prop]: equality beetween values. *)
+  | Distinct  (** [Distinct: 'a. 'a -> ... -> Prop]: pairwise dis-equality beetween arguments. *)
+  | Neg       (** [Neg: Prop -> Prop]: propositional negation. *)
+  | And       (** [And: Prop -> Prop]: propositional conjunction. *)
+  | Or        (** [Or: Prop -> ... -> Prop]: propositional disjunction. *)
+  | Nand      (** [Nand: Prop -> Prop -> Prop]: propositional negated conjunction. *)
+  | Nor       (** [Nor: Prop -> Prop -> Prop]: propositional negated disjunction. *)
+  | Xor       (** [Xor: Prop -> Prop -> Prop]: ppropositional exclusive disjunction. *)
+  | Imply     (** [Imply: Prop -> Prop -> Prop]: propositional implication. *)
+  | Equiv     (** [Equiv: Prop -> Prop -> Prop]: propositional Equivalence. *)
+
+type builtin +=
+  | Ite
+  (** [Ite: 'a. Prop -> 'a -> 'a -> 'a]: branching operator. *)
+
+type builtin +=
+  | Constructor of ty_const * int
+  (** [Constructor (t, n)] is the n-th constructor of the algebraic datatype
+      defined by [t]. *)
+  | Destructor of ty_const * term_const * int * int
+  (** [Destructor (t, c, n, k)] is the destructor retuning the k-th argument
+      of the n-th constructor of type [t] which should be [c]. *)
+
+type builtin +=
+  | Int
+  (** [Int: ttype] the type for signed integers of arbitrary precision. *)
+  | Integer of string
+  (** [Integer s: Int]: integer litteral. The string [s] should be the
+      decimal representation of an integer with arbitrary precision (hence
+      the use of strings rather than the limited precision [int]). *)
+  | Rat
+  (** [Rat: ttype] the type for signed rationals. *)
+  | Rational of string
+  (** [Rational s: Rational]: rational litteral. The string [s] should be
+      the decimal representation of a rational (see the various languages
+      spec for more information). *)
+  | Real
+  (** [Real: ttype] the type for signed reals. *)
+  | Decimal of string
+  (** [Decimal s: Real]: real litterals. The string [s] should be a
+      floating point representatoin of a real. Not however that reals
+      here means the mathematical abstract notion of real numbers, including
+      irrational, non-algebric numbers, and is thus not restricted to
+      floating point numbers, although these are the only litterals
+      supported. *)
+  | Lt
+  (** [Lt: {a=(Int|Rational|Real)} a -> a -> Prop]:
+      strict comparison (less than) on numbers
+      (whether integers, rationals, or reals). *)
+  | Leq
+  (** [Leq:{a=(Int|Rational|Real)} a -> a -> Prop]:
+      large comparison (less or equal than) on numbers
+      (whether integers, rationals, or reals). *)
+  | Gt
+  (** [Gt:{a=(Int|Rational|Real)} a -> a -> Prop]:
+      strict comparison (greater than) on numbers
+      (whether integers, rationals, or reals). *)
+  | Geq
+  (** [Geq:{a=(Int|Rational|Real)} a -> a -> Prop]:
+      large comparison (greater or equal than) on numbers
+      (whether integers, rationals, or reals). *)
+  | Minus
+  (** [Minus:{a=(Int|Rational|Real)} a -> a]:
+      arithmetic unary negation/minus on numbers
+      (whether integers, rationals, or reals). *)
+  | Add
+  (** [Add:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic addition on numbers
+      (whether integers, rationals, or reals). *)
+  | Sub
+  (** [Sub:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic substraction on numbers
+      (whether integers, rationals, or reals). *)
+  | Mul
+  (** [Mul:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic multiplication on numbers
+      (whether integers, rationals, or reals). *)
+  | Div
+  (** [Div:{a=(Rational|Real)} a -> a -> a]:
+      arithmetic exact division on numbers
+      (rationals, or reals, but **not** integers). *)
+  | Div_e
+  (** [Div_e:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer euclidian quotient
+      (whether integers, rationals, or reals).
+      If D is positive then [Div_e (N,D)] is the floor
+      (in the type of N and D) of the real division [N/D],
+      and if D is negative then [Div_e (N,D)] is the ceiling
+      of [N/D]. *)
+  | Div_t
+  (** [Div_t:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer truncated quotient
+      (whether integers, rationals, or reals).
+      [Div_t (N,D)] is the truncation of the real
+      division [N/D]. *)
+  | Div_f
+  (** [Div_f:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer floor quotient
+      (whether integers, rationals, or reals).
+      [Div_t (N,D)] is the floor of the real
+      division [N/D]. *)
+  | Modulo
+  (** [Modulo:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer euclidian remainder
+      (whether integers, rationals, or reals).
+      It is defined by the following equation:
+      [Div_e (N, D) * D + Modulo(N, D) = N]. *)
+  | Modulo_t
+  (** [Modulo_t:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer truncated remainder
+      (whether integers, rationals, or reals).
+      It is defined by the following equation:
+      [Div_t (N, D) * D + Modulo_t(N, D) = N]. *)
+  | Modulo_f
+  (** [Modulo_f:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic integer floor remainder
+      (whether integers, rationals, or reals).
+      It is defined by the following equation:
+      [Div_f (N, D) * D + Modulo_f(N, D) = N]. *)
+  | Abs
+  (** [Abs: Int -> Int]:
+      absolute value on integers. *)
+  | Divisible
+  (** [Divisible: Int -> Int -> Prop]:
+      divisibility predicate on integers. Smtlib restricts
+      applications of this predicate to have a litteral integer
+      for the divisor/second argument. *)
+  | Is_int
+  (** [Is_int:{a=(Int|Rational|Real)} a -> Prop]:
+      integer predicate for numbers: is the given number
+      an integer. *)
+  | Is_rat
+  (** [Is_rat:{a=(Int|Rational|Real)} a -> Prop]:
+      rational predicate for numbers: is the given number
+      an rational. *)
+  | Floor
+  (** [Floor:{a=(Int|Rational|Real)} a -> a]:
+      floor function on numbers, defined in tptp as
+      the largest intger not greater than the argument. *)
+  | Ceiling
+  (** [Ceiling:{a=(Int|Rational|Real)} a -> a]:
+      ceiling function on numbers, defined in tptp as
+      the smallest intger not less than the argument. *)
+  | Truncate
+  (** [Truncate:{a=(Int|Rational|Real)} a -> a]:
+      ceiling function on numbers, defined in tptp as
+      the nearest integer value with magnitude not greater
+      than the absolute value of the argument. *)
+  | Round
+  (** [Round:{a=(Int|Rational|Real)} a -> a]:
+      rounding function on numbers, defined in tptp as
+      the nearest intger to the argument; when the argument
+      is halfway between two integers, the nearest even integer
+      to the argument. *)
+
+(* arrays *)
+type builtin +=
+  | Array
+  (** [Array: ttype -> ttype -> ttype]: the type constructor for
+      polymorphic functional arrays. An [(src, dst) Array] is an array
+      from expressions of type [src] to expressions of type [dst].
+      Typically, such arrays are immutables. *)
+  | Store
+  (** [Store: 'a 'b. ('a, 'b) Array -> 'a -> 'b -> ('a, 'b) Array]:
+      store operation on arrays. Returns a new array with the key bound
+      to the given value (shadowing the previous value associated to
+      the key). *)
+  | Select
+  (** [Select: 'a 'b. ('a, 'b) Array -> 'a -> 'b]:
+      select operation on arrays. Returns the value associated to the
+      given key. Typically, functional arrays are complete, i.e. all
+      keys are mapped to a value. *)
+
+(* Bitvectors *)
+type builtin +=
+  | Bitv of int
+  (** [Bitv n: ttype]: type constructor for bitvectors of length [n]. *)
+  | Bitvec of string
+  (** [Bitvec s: Bitv]: bitvector litteral. The sting [s] should
+      be a binary representation of bitvectors using characters
+      ['0'], and ['1'].
+      NOTE: clarify order of bits (lsb first or last ?) *)
+  | Bitv_concat
+  (** [Bitv_concat: Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
+      concatenation opeartor on bitvectors. *)
+  | Bitv_extract of int * int
+  (** [Bitv_extract(i, j): Bitv(n) -> Bitv(i - j + 1)]:
+      bitvector extraction, from index [j] up to [i] (both included). *)
+  | Bitv_repeat
+  (** [Bitv_repeat: Bitv(n) -> Bitv(n*k)]:
+      bitvector repeatition. NOTE: inlcude [k] in the builtin ? *)
+  | Bitv_zero_extend
+  (** [Bitv_zero_extend: Bitv(n) -> Bitv(n + k)]:
+      zero extension for bitvectors (produces a representation of the
+      same unsigned integer). *)
+  | Bitv_sign_extend
+  (** [Bitv_sign_extend: Bitv(n) -> Bitv(n + k)]:
+      sign extension for bitvectors ((produces a representation of the
+      same signed integer). *)
+  | Bitv_rotate_right of int
+  (** [Bitv_rotate_right(i): Bitv(n) -> Bitv(n)]:
+      logical rotate right for bitvectors by [i]. *)
+  | Bitv_rotate_left of int
+  (** [Bitv_rotate_left(i): Bitv(n) -> Bitv(n)]:
+      logical rotate left for bitvectors by [i]. *)
+  | Bitv_not
+  (** [Bitv_not: Bitv(n) -> Bitv(n)]:
+      bitwise negation for bitvectors. *)
+  | Bitv_and
+  (** [Bitv_and: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise conjunction for bitvectors. *)
+  | Bitv_or
+  (** [bitv_or: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise disjunction for bitvectors. *)
+  | Bitv_nand
+  (** [Bitv_nand: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise negated conjunction for bitvectors.
+      [Bitv_nand s t] abbreviates [Bitv_not (Bitv_and s t))]. *)
+  | Bitv_nor
+  (** [Bitv_nor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise negated disjunction for bitvectors.
+      [Bitv_nor s t] abbreviates [Bitv_not (Bitv_or s t))]. *)
+  | Bitv_xor
+  (** [Bitv_xor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise exclusive disjunction for bitvectors.
+      [Bitv_xor s t] abbreviates
+      [Bitv_or (Bitv_and s (Bitv_not t))
+               (Bitv_and (Bitv_not s) t) ]. *)
+  | Bitv_xnor
+  (** [Bitv_xnor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      bitwise negated exclusive disjunction for bitvectors.
+      [Bitv_xnor s t] abbreviates
+      [Bitv_or (Bitv_and s t)
+               (Bitv_and (Bitv_not s) (Bitv_not t))]. *)
+  | Bitv_comp
+  (** [Bitv_comp: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      TODO: is there a short legible definition of this operator ?
+      see SMTLIB's 2.7 spec *)
+  | Bitv_neg
+  (** [Bitv_neg: Bitv(n) -> Bitv(n)]:
+      2's complement unary minus. *)
+  | Bitv_add
+  (** [Bitv_add: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      addition modulo 2^n. *)
+  | Bitv_sub
+  (** [Bitv_sub: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      2's complement subtraction modulo 2^n. *)
+  | Bitv_mul
+  (** [Bitv_mul: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      multiplication modulo 2^n. *)
+  | Bitv_udiv
+  (** [Bitv_udiv: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      unsigned division, truncating towards 0. *)
+  | Bitv_urem
+  (** [Bitv_urem: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      unsigned remainder from truncating division. *)
+  | Bitv_sdiv
+  (** [Bitv_sdiv: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      2's complement signed division. *)
+  | Bitv_srem
+  (** [Bitv_srem: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      2's complement signed remainder (sign follows dividend). *)
+  | Bitv_smod
+  (** [Bitv_smod: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      2's complement signed remainder (sign follows divisor). *)
+  | Bitv_shl
+  (** [Bitv_shl: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      shift left (equivalent to multiplication by 2^x where x
+      is the value of the second argument). *)
+  | Bitv_lshr
+  (** [Bitv_lshr: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      logical shift right (equivalent to unsigned division by 2^x,
+      where x is the value of the second argument). *)
+  | Bitv_ashr
+  (** [Bitv_ashr: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+      Arithmetic shift right, like logical shift right except that
+      the most significant bits of the result always copy the most
+      significant bit of the first argument. *)
+  | Bitv_ult
+  (** [Bitv_ult: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for unsigned less-than. *)
+  | Bitv_ule
+  (** [Bitv_ule: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for unsigned less than or equal. *)
+  | Bitv_ugt
+  (** [Bitv_ugt: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for unsigned greater-than. *)
+  | Bitv_uge
+  (** [Bitv_uge: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for unsigned greater than or equal. *)
+  | Bitv_slt
+  (** [Bitv_slt: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for signed less-than. *)
+  | Bitv_sle
+  (** [Bitv_sle: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for signed less than or equal. *)
+  | Bitv_sgt
+  (** [Bitv_sgt: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for signed greater-than. *)
+  | Bitv_sge
+  (** [Bitv_sge: Bitv(n) -> Bitv(n) -> Prop]:
+      binary predicate for signed greater than or equal. *)
+
+
+(** {2 Native Tags} *)
 (*  ************************************************************************* *)
 
 module Tags : sig

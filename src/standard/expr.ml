@@ -1289,7 +1289,7 @@ module Term = struct
           "Is_rat" [] [Ty.int] Ty.prop
 
       let divisible = Id.const
-          ~builtin:Divisible "Divisible" [] [Ty.int; Ty.int] Ty.int
+          ~builtin:Divisible "Divisible" [] [Ty.int; Ty.int] Ty.prop
 
     end
 
@@ -2120,6 +2120,7 @@ module Term = struct
 
   let bitv_extract i j t =
     let n = match_bitv_type t in
+    (* TODO: check that i and j are correct index for a bitv(n) *)
     apply (Const.bitv_extract (i, j, n)) [] [t]
 
   let bitv_repeat k t =
