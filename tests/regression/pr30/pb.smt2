@@ -1,0 +1,6 @@
+(set-logic QF_LIA)
+(define-sort F () Int)
+(declare-fun x () F)
+(assert (= x 1))
+(check-sat)
+(exit)
