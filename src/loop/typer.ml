@@ -108,7 +108,19 @@ module Make(S : State_intf.Typer) = struct
       (Dolmen.Tag)(Dolmen.Expr.Ty)(Dolmen.Expr.Term)(Warn)
 
   (* Definitions builtin *)
-  module Def = Dolmen_type.Def.Declare(T)
+  module Decl = Dolmen_type.Def.Declare(T)
+  module Subst = Dolmen_type.Def.Subst(T)(struct
+
+      let of_list l =
+        let aux acc (k, v) = Dolmen.Expr.Subst.Var.bind acc k v in
+        List.fold_left aux Dolmen.Expr.Subst.empty l
+
+      let ty_subst l ty =
+        Dolmen.Expr.Ty.subst (of_list l) ty
+
+      let term_subst tys terms t =
+        Dolmen.Expr.Term.subst (of_list tys) (of_list terms) t
+    end)
 
   (* Tptp builtins *)
   module Tptp_Base =
@@ -360,7 +372,10 @@ module Make(S : State_intf.Typer) = struct
         restrictions_of_smtlib_logic v logic;
         builtins_of_smtlib_logic v logic
     in
-    let builtins = Dolmen_type.Base.merge (Def.parse :: lang_builtins) in
+    let builtins =
+      Dolmen_type.Base.merge
+        (Decl.parse :: Subst.parse :: lang_builtins)
+    in
     T.empty_env ~st:st.type_state ~expect ?infer_base builtins
 
 
@@ -373,10 +388,10 @@ module Make(S : State_intf.Typer) = struct
     let env = typing_env ?loc:t.loc st in
     begin match T.new_def ?attr env t id with
       | `Type_def (id, _, vars, body) ->
-        let _ = Def.define_ty id vars body in
+        let _ = Subst.define_ty id vars body in
         st, `Type_def (id, vars, body), get_warnings ()
       | `Term_def (id, _, vars, args, body) ->
-        let _ = Def.define_term id vars args body in
+        let _ = Decl.define_term id vars args body in
         st, `Term_def (id, vars, args, body), get_warnings ()
     end
 
