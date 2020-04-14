@@ -823,6 +823,11 @@ module Ty : sig
   val bitv : int -> t
   (** Bitvectors of a given length. *)
 
+  val float : int -> int -> t
+  (** Floating point of given exponent and significand. *)
+
+  val roundingMode : t
+
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
 
@@ -1134,6 +1139,9 @@ module Term : sig
 
   include Dolmen_intf.Term.Smtlib_Bitv with type t := t
   (** Satisfy the required interface for typing smtlib bitvectors. *)
+
+  include Dolmen_intf.Term.Smtlib_Float with type t := t
+  (** Satisfy the required interface for typing smtlib floating points. *)
 
   (** Integer operations. *)
   module Int : sig

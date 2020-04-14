@@ -1,7 +1,7 @@
 
 module Id = Dolmen.Id
 
-(* Smtlib arrays *)
+(* Smtlib Bitvector *)
 (* ************************************************************************ *)
 
 module Smtlib2 = struct

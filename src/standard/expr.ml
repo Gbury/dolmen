@@ -132,6 +132,54 @@ type builtin +=
   | Bitv_slt | Bitv_sle
   | Bitv_sgt | Bitv_sge
 
+(* Floats *)
+type builtin +=
+  | Float of int * int
+  | RoundingMode
+  | Fp of string * string * string
+  | RoundNearestTiesToEven
+  | RoundNearestTiesToAway
+  | RoundTowardPositive
+  | RoundTowardNegative
+  | RoundTowardZero
+  | Plus_infinity of int * int
+  | Minus_infinity of int * int
+  | Plus_zero of int * int
+  | Minus_zero of int * int
+  | NaN of int * int
+  | Fp_abs  of int * int
+  | Fp_neg  of int * int
+  | Fp_add  of int * int
+  | Fp_sub  of int * int
+  | Fp_mul  of int * int
+  | Fp_div  of int * int
+  | Fp_fma  of int * int
+  | Fp_sqrt  of int * int
+  | Fp_rem  of int * int
+  | Fp_roundToIntegral  of int * int
+  | Fp_min  of int * int
+  | Fp_max  of int * int
+  | Fp_leq  of int * int
+  | Fp_lt  of int * int
+  | Fp_geq  of int * int
+  | Fp_gt  of int * int
+  | Fp_eq  of int * int
+  | Fp_isNormal  of int * int
+  | Fp_isSubnormal  of int * int
+  | Fp_isZero  of int * int
+  | Fp_isInfinite  of int * int
+  | Fp_isNaN  of int * int
+  | Fp_isNegative  of int * int
+  | Fp_isPositive  of int * int
+  | Ieee_format_to_fp of int * int
+  | Fp_to_fp of int * int * int * int
+  | Real_to_fp of int * int
+  | Sbv_to_fp of int * int * int
+  | Ubv_to_fp of int * int * int
+  | To_ubv of int * int * int
+  | To_sbv of int * int * int
+  | To_real of int * int
+
 
 (* Exceptions *)
 (* ************************************************************************* *)
@@ -839,6 +887,11 @@ module Ty = struct
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
           Id.const ~builtin:(Bitv i) (Format.asprintf "Bitv_%d" i) [] [] Type
         )
+    let float =
+      with_cache ~cache:(Hashtbl.create 13) (fun (e,s) ->
+          Id.const ~builtin:(Float(e,s)) (Format.asprintf "FloatingPoint_%d_%d" e s) [] [] Type
+        )
+    let roundingMode = Id.const ~builtin:RoundingMode "RoundingMode" [] [] Type
   end
 
   let mk descr = { descr; hash = -1; tags = Tag.empty; }
@@ -876,6 +929,9 @@ module Ty = struct
   let real = apply Const.real []
   let array src dst = apply Const.array [src; dst]
   let bitv i = apply (Const.bitv i) []
+  let float' es = apply (Const.float es) []
+  let float e s = float' (e,s)
+  let roundingMode = apply Const.roundingMode []
 
   (* Matching *)
   exception Impossible_matching of ty * ty
@@ -1678,6 +1734,104 @@ module Term = struct
           Id.const ~builtin:Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
         )
 
+    module Float = struct
+      let fp sign exp significand =
+        let e = String.length exp in
+        let s = String.length significand + 1 in
+        Id.const
+          ~name:"fp" ~builtin:(Fp (sign,exp,significand))
+          ~tags:linear_gen_tags
+          (Format.asprintf "bv#%s#%s#%s#" sign exp significand) [] [] (Ty.float e s)
+
+      let roundNearestTiesToEven =
+        Id.const ~builtin:RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
+
+      let roundNearestTiesToAway =
+        Id.const ~builtin:RoundNearestTiesToAway "RoundNearestTiesToAway" [] [] Ty.roundingMode
+
+      let roundTowardPositive =
+        Id.const ~builtin:RoundTowardPositive "RoundTowardPositive" [] [] Ty.roundingMode
+
+      let roundTowardNegative =
+        Id.const ~builtin:RoundTowardNegative "RoundTowardNegative" [] [] Ty.roundingMode
+
+      let roundTowardZero =
+        Id.const ~builtin:RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
+
+      let fp_gen ~args ?rm ?res name builtin =
+        with_cache ~cache:(Hashtbl.create 13) (fun es ->
+            let fp = Ty.float' es in
+            let args = List.init args (fun _ -> fp) in
+            let args = match rm with None -> args | Some () -> Ty.roundingMode::args in
+            let res =
+              match res with
+              | Some res -> res
+              | None -> fp
+            in
+            Id.const ~builtin:(builtin es) name [] args res
+          )
+
+      let plus_infinity = fp_gen ~args:0 "plus_infinity" (fun (e,s) -> Plus_infinity (e,s))
+      let minus_infinity = fp_gen ~args:0 "minus_infinity" (fun (e,s) -> Minus_infinity (e,s))
+      let plus_zero = fp_gen ~args:0 "plus_zero" (fun (e,s) -> Plus_zero (e,s))
+      let minus_zero = fp_gen ~args:0 "minus_zero" (fun (e,s) -> Minus_zero (e,s))
+      let nan = fp_gen ~args:0 "nan" (fun (e,s) -> NaN (e,s))
+      let fp_abs = fp_gen ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
+      let fp_neg = fp_gen ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
+      let fp_add = fp_gen ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
+      let fp_sub = fp_gen ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
+      let fp_mul = fp_gen ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
+      let fp_div = fp_gen ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
+      let fp_fma = fp_gen ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
+      let fp_sqrt = fp_gen ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
+      let fp_rem = fp_gen ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
+      let fp_roundToIntegral = fp_gen ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
+      let fp_min = fp_gen ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
+      let fp_max = fp_gen ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
+      let fp_leq = fp_gen ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
+      let fp_lt = fp_gen ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
+      let fp_geq = fp_gen ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
+      let fp_gt = fp_gen ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
+      let fp_eq = fp_gen ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
+      let fp_isNormal = fp_gen ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
+      let fp_isSubnormal = fp_gen ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
+      let fp_isZero = fp_gen ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
+      let fp_isInfinite = fp_gen ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
+      let fp_isNaN = fp_gen ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
+      let fp_isNegative = fp_gen ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
+      let fp_isPositive = fp_gen ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
+      let to_real = fp_gen ~args:1 ~res:Ty.real "fp.to_real" (fun (e,s) -> To_real (e,s))
+
+      let ieee_format_to_fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
+            Id.const ~builtin:(Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
+          )
+      let fp_to_fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun (e1,s1,e2,s2) ->
+            Id.const ~builtin:(Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
+          )
+      let real_to_fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
+            Id.const ~builtin:(Real_to_fp (e,s)) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
+          )
+      let sbv_to_fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
+            Id.const ~builtin:(Sbv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+          )
+      let ubv_to_fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
+            Id.const ~builtin:(Ubv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+          )
+      let to_ubv =
+        with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
+            Id.const ~builtin:(To_ubv (bv,e,s)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+          )
+      let to_sbv =
+        with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
+            Id.const ~builtin:(To_sbv (bv,e,s)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+          )
+
+    end
   end
 
   (* Constructors are simply constants *)
@@ -2255,6 +2409,134 @@ module Term = struct
     let n = match_bitv_type u in
     apply (Const.bvsge n) [] [u; v]
 
+  (* Floats *)
+  let match_float_type t =
+    match ty t with
+    | { descr = App ({ builtin = Float (e,s); _ }, _); _ } -> (e,s)
+    | _ -> raise (Wrong_type (t, Ty.float 0 0))
+
+  let fp sign exp significand =
+    begin match String.length sign with
+      | 1 -> ()
+      | _ -> raise (Wrong_type (mk_bitv sign, Ty.bitv 1))
+    end;
+    apply (Const.Float.fp sign exp significand) [] []
+
+
+
+  let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
+  let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
+  let roundTowardPositive = apply Const.Float.roundTowardPositive [] []
+  let roundTowardNegative = apply Const.Float.roundTowardNegative [] []
+  let roundTowardZero = apply Const.Float.roundTowardZero [] []
+
+  let plus_infinity e s = apply (Const.Float.plus_infinity (e,s)) [] []
+  let minus_infinity e s = apply (Const.Float.minus_infinity (e,s)) [] []
+  let plus_zero e s = apply (Const.Float.plus_zero (e,s)) [] []
+  let minus_zero e s = apply (Const.Float.minus_zero (e,s)) [] []
+  let nan e s = apply (Const.Float.nan (e,s)) [] []
+  let fp_abs x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_abs es) [] [x]
+  let fp_neg x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_neg es) [] [x]
+  let fp_add rm x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_add es) [] [rm;x;y]
+  let fp_sub rm x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_sub es) [] [rm;x;y]
+  let fp_mul rm x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_mul es) [] [rm;x;y]
+  let fp_div rm x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_div es) [] [rm;x;y]
+  let fp_fma rm x y z =
+    let es = match_float_type x in
+    apply (Const.Float.fp_fma es) [] [rm;x;y;z]
+  let fp_sqrt rm x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_sqrt es) [] [rm;x]
+  let fp_rem x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_rem es) [] [x;y]
+  let fp_roundToIntegral rm x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_roundToIntegral es) [] [rm;x]
+  let fp_min x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_min es) [] [x;y]
+  let fp_max x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_max es) [] [x;y]
+  let fp_leq x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_leq es) [] [x;y]
+  let fp_lt x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_lt es) [] [x;y]
+  let fp_geq x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_geq es) [] [x;y]
+  let fp_gt x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_gt es) [] [x;y]
+  let fp_eq x y =
+    let es = match_float_type x in
+    apply (Const.Float.fp_eq es) [] [x;y]
+  let fp_isNormal x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isNormal es) [] [x]
+  let fp_isSubnormal x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isSubnormal es) [] [x]
+  let fp_isZero x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isZero es) [] [x]
+  let fp_isInfinite x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isInfinite es) [] [x]
+  let fp_isNaN x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isNaN es) [] [x]
+  let fp_isNegative x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isNegative es) [] [x]
+  let fp_isPositive x =
+    let es = match_float_type x in
+    apply (Const.Float.fp_isPositive es) [] [x]
+  let to_real x =
+    let es = match_float_type x in
+    apply (Const.Float.to_real es) [] [x]
+  let ieee_format_to_fp e s bv =
+    apply (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
+  let fp_to_fp e2 s2 rm x =
+    let (e1,s1) = match_float_type x in
+    apply (Const.Float.fp_to_fp (e1,s1,e2,s2)) [] [rm;x]
+  let real_to_fp e s rm r =
+    apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
+  let sbv_to_fp e s rm bv =
+    let n = match_bitv_type bv in
+    apply (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
+  let ubv_to_fp e s rm bv =
+    let n = match_bitv_type bv in
+    apply (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
+  let to_ubv m rm x =
+    let (e,s) = match_float_type x in
+    apply (Const.Float.to_ubv (e,s,m)) [] [rm;x]
+  let to_sbv m rm x =
+    let (e,s) = match_float_type x in
+    apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
+
+  let type_for_to_fp (t:t) =
+    match t.ty.descr with
+    | Var _ -> `Other
+    | App ({ builtin = Real; _ }, _) -> `Real
+    | App ({ builtin = Bitv _; _ }, _) -> `Bitv
+    | App ({ builtin = Float _; _ }, _) -> `Float
+    | App _ -> `Other
 
   (* Wrappers for the tff typechecker *)
   let all _ (tys, ts) body =

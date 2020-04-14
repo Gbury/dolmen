@@ -211,3 +211,18 @@ module type Smtlib_Bitv = sig
   (** Create a fixed size bitvector type. *)
 
 end
+
+(** Signature required for types for typing smtlib bitvectors *)
+module type Smtlib_Float = sig
+
+  type t
+  (** The type of types *)
+
+  val float : int -> int -> t
+  (** Create a float type with fixed exponent size in bits and fixed significand,
+      including the hidden bit. *)
+
+  val roundingMode: t
+  (** Type of the rounding modes *)
+
+end

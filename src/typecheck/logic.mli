@@ -13,6 +13,7 @@ module Smtlib2 : sig
     | `Core
     | `Arrays
     | `Bitvectors
+    | `Floats
     | `Ints
     | `Reals
     | `Reals_Ints

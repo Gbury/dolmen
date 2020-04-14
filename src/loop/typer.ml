@@ -83,6 +83,9 @@ module Make(S : State_intf.Typer) = struct
   module Smtlib2_Bitv =
     Dolmen_type.Bitv.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+  module Smtlib2_Float =
+    Dolmen_type.Float.Smtlib2.Tff(T)
+      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Zf *)
   module Zf_Base =
@@ -272,6 +275,12 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Bitv.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
+    (* Smtlib Float errors *)
+    | Smtlib2_Float.Invalid_bin_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a binary float litteral" c
+    | Smtlib2_Float.Invalid_hex_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal float litteral" c
+
     (* Linear arithmetic *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))
       when name = Dolmen.Expr.Filter.Linear.name ->
@@ -381,6 +390,7 @@ module Make(S : State_intf.Typer) = struct
         | `Ints -> Smtlib2_Ints.parse v :: acc
         | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
+        | `Floats -> Smtlib2_Float.parse v :: acc
         | `Reals -> Smtlib2_Reals.parse v :: acc
         | `Reals_Ints -> Smtlib2_Reals_Ints.parse v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories

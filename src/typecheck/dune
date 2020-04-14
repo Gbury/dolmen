@@ -6,7 +6,7 @@
     ; TFF typechecking
     Tff_intf Tff
     ; Builtins
-    Base Def Arith Arrays Bitv
+    Base Def Arith Arrays Bitv Float
     ; Helpers
     Logic Misc)
 )

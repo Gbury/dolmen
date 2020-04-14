@@ -61,6 +61,15 @@ let make_op3
     Type._error env (Ast ast)
       (Type.Bad_op_arity (op, 3, List.length args))
 
+let make_op4
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env op ret = fun ast args ->
+  match args with
+  | [t1; t2; t3; t4] -> ret ast (t1, t2, t3, t4)
+  | _ ->
+    Type._error env (Ast ast)
+      (Type.Bad_op_arity (op, 4, List.length args))
+
 let make_opn n
     (type env) (module Type: Tff_intf.S with type env = env)
     env op ret = fun ast args ->

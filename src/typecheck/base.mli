@@ -34,6 +34,11 @@ val make_op3 :
 (** Same as {!make_op0} but the returning function
     takes a triple of terms as argument. *)
 
+val make_op4 :
+  (_, Dolmen.Term.t * Dolmen.Term.t * Dolmen.Term.t * Dolmen.Term.t, _) helper
+(** Same as {!make_op0} but the returning function
+    takes a quadruple of terms as argument. *)
+
 val make_opn :
   int -> (_, Dolmen.Term.t list, _) helper
 (** Same as {!make_op0} but takes an arity first,
