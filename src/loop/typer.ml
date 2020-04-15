@@ -280,6 +280,13 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a binary float litteral" c
     | Smtlib2_Float.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal float litteral" c
+    | Smtlib2_Float.Bitvector_litteral_expected ->
+      Format.fprintf fmt "The fp floating point constructor requires direct bitvector litteral"
+    | Smtlib2_Float.To_fp_incorrect_args ->
+      Format.fprintf fmt "The to_fp function accept on argument on type \
+                          Bitvector or two arguments with the first one a \
+                          RoundingMode and the second one Real, Bitvector or \
+                          FloatingPoint"
 
     (* Linear arithmetic *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))

@@ -349,13 +349,12 @@ type builtin +=
   | Bitv of int
   (** [Bitv n: ttype]: type constructor for bitvectors of length [n]. *)
   | Bitvec of string
-  (** [Bitvec s: Bitv]: bitvector litteral. The sting [s] should
+  (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
-      ['0'], and ['1'].
-      NOTE: clarify order of bits (lsb first or last ?) *)
+      ['0'], and ['1'] (lsb last) *)
   | Bitv_concat
   (** [Bitv_concat: Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
-      concatenation opeartor on bitvectors. *)
+      concatenation operator on bitvectors. *)
   | Bitv_extract of int * int
   (** [Bitv_extract(i, j): Bitv(n) -> Bitv(i - j + 1)]:
       bitvector extraction, from index [j] up to [i] (both included). *)
@@ -474,6 +473,104 @@ type builtin +=
   (** [Bitv_sge: Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed greater than or equal. *)
 
+(* Floats *)
+type builtin +=
+  | RoundingMode
+  (** [RoundingMode: ttype]: type for enumerated type of rounding modes. *)
+  | RoundNearestTiesToEven
+  (** [RoundNearestTiesToEven : RoundingMode]: *)
+  | RoundNearestTiesToAway
+  (** [RoundNearestTiesToAway : RoundingMode]: *)
+  | RoundTowardPositive
+  (** [RoundTowardPositive : RoundingMode *)
+  | RoundTowardNegative
+  (** [RoundTowardNegative : RoundingMode *)
+  | RoundTowardZero
+  (** [RoundTowardZero : RoundingMode *)
+  | Float of int * int
+  (** [Float(e,s): ttype]: type constructor for floating point of exponent of
+     size [e] and significand of size [s] (hidden bit included). Those size are
+     greater than 1 *)
+  | Fp of string * string * string
+  (** [Fp sb se ss: Fp(|se|,|ss|+1)]: bitvector literal. The strings [sb] [se] and [ss]
+     should be a binary representation of bitvectors using characters ['0'], and
+     ['1'] (lsb last). |sb| = 1. The IEEE-format is used for the conversion [sb^se^ss].
+      All the NaN are converted to the same value.
+ *)
+  | Plus_infinity of int * int
+  (** [Plus_infinity(s,e) : Fp(s,e)] *)
+  | Minus_infinity of int * int
+  (** [Minus_infinity(s,e) : Fp(s,e)] *)
+  | Plus_zero of int * int
+  (** [Plus_zero(s,e) : Fp(s,e)] *)
+  | Minus_zero of int * int
+  (** [Minus_zero(s,e) : Fp(s,e)] *)
+  | NaN of int * int
+  (** [NaN(s,e) : Fp(s,e)] *)
+  | Fp_abs  of int * int
+  (** [Fp_abs(s,e): Fp(s,e) -> Fp(s,e)]: absolute value *)
+  | Fp_neg  of int * int
+  (** [Fp_neg(s,e): Fp(s,e) -> Fp(s,e)]: negation *)
+  | Fp_add  of int * int
+  (** [Fp_add(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: addition *)
+  | Fp_sub  of int * int
+  (** [Fp_sub(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: subtraction *)
+  | Fp_mul  of int * int
+  (** [Fp_mul(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: multiplication *)
+  | Fp_div  of int * int
+  (** [Fp_div(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: division *)
+  | Fp_fma  of int * int
+  (** [Fp_fma(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: fuse multiply add *)
+  | Fp_sqrt  of int * int
+  (** [Fp_sqrt(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: square root *)
+  | Fp_rem  of int * int
+  (** [Fp_rem(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: remainder *)
+  | Fp_roundToIntegral  of int * int
+  (** [Fp_roundToIntegral(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: round to integral *)
+  | Fp_min  of int * int
+  (** [Fp_min(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: minimum *)
+  | Fp_max  of int * int
+  (** [Fp_max(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: maximum *)
+  | Fp_leq  of int * int
+  (** [Fp_leq(s,e): Fp(s,e) -> Fp(s,e) -> Prop]: IEEE less or equal *)
+  | Fp_lt  of int * int
+  (** [Fp_lt(s,e): Fp(s,e) -> Fp(s,e) -> Prop]: IEEE less than *)
+  | Fp_geq  of int * int
+  (** [Fp_geq(s,e): Fp(s,e) -> Fp(s,e) -> Prop]: IEEE greater or equal *)
+  | Fp_gt  of int * int
+  (** [Fp_gt(s,e): Fp(s,e) -> Fp(s,e) -> Prop]: IEEE greater than *)
+  | Fp_eq  of int * int
+  (** [Fp_eq(s,e): Fp(s,e) -> Fp(s,e) -> Prop]: IEEE equality *)
+  | Fp_isNormal  of int * int
+  (** [Fp_isNormal(s,e): Fp(s,e) -> Prop]: test if it is a normal floating point *)
+  | Fp_isSubnormal  of int * int
+  (** [Fp_isSubnormal(s,e): Fp(s,e) -> Prop]: test if it is a subnormal floating point *)
+  | Fp_isZero  of int * int
+  (** [Fp_isZero(s,e): Fp(s,e) -> Prop]: test if it is a zero *)
+  | Fp_isInfinite  of int * int
+  (** [Fp_isInfinite(s,e): Fp(s,e) -> Prop]: test if it is an infinite *)
+  | Fp_isNaN  of int * int
+  (** [Fp_isNaN(s,e): Fp(s,e) -> Prop]: test if it is Not a Number *)
+  | Fp_isNegative  of int * int
+  (** [Fp_isNegative(s,e): Fp(s,e) -> Prop]: test if it is negative *)
+  | Fp_isPositive  of int * int
+  (** [Fp_isPositive(s,e): Fp(s,e) -> Prop]: test if it is positive *)
+  | Ieee_format_to_fp of int * int
+  (** [Ieee_format_to_fp(s,e): Bv(s+e) -> Fp(s,e)]: Convert from IEEE interchange format *)
+  | Fp_to_fp of int * int * int * int
+  (** [Fp_to_fp(s1,e1,s2,e2): RoundingMode -> Fp(s1,e1) -> Fp(s2,e2)]: Convert from another floating point format *)
+  | Real_to_fp of int * int
+  (** [Real_to_fp(s,e): RoundingMode -> Real -> Fp(s,e)]: Convert from a real *)
+  | Sbv_to_fp of int * int * int
+  (** [Sbv_to_fp(m,s,e): RoundingMode -> Bitv(m) -> Fp(s,e)]: Convert from a signed integer *)
+  | Ubv_to_fp of int * int * int
+  (** [Ubv_to_fp(m,s,e): RoundingMode -> Bitv(m) -> Fp(s,e)]: Convert from a unsigned integer *)
+  | To_ubv of int * int * int
+  (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv(m)]: Convert to an unsigned integer *)
+  | To_sbv of int * int * int
+  (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv(m)]: Convert to an signed integer *)
+  | To_real of int * int
+  (** [To_real(s,e,m): RoundingMode -> Fp(s,e) -> Real]: Convert to real *)
 
 (** {2 Native Tags} *)
 (*  ************************************************************************* *)
