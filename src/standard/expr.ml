@@ -2409,134 +2409,136 @@ module Term = struct
     let n = match_bitv_type u in
     apply (Const.bvsge n) [] [u; v]
 
-  (* Floats *)
-  let match_float_type t =
-    match ty t with
-    | { descr = App ({ builtin = Float (e,s); _ }, _); _ } -> (e,s)
-    | _ -> raise (Wrong_type (t, Ty.float 0 0))
+  module Float = struct
+    (* Floats *)
+    let match_float_type t =
+      match ty t with
+      | { descr = App ({ builtin = Float (e,s); _ }, _); _ } -> (e,s)
+      | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
-  let fp sign exp significand =
-    begin match String.length sign with
-      | 1 -> ()
-      | _ -> raise (Wrong_type (mk_bitv sign, Ty.bitv 1))
-    end;
-    apply (Const.Float.fp sign exp significand) [] []
+    let fp sign exp significand =
+      begin match String.length sign with
+        | 1 -> ()
+        | _ -> raise (Wrong_type (mk_bitv sign, Ty.bitv 1))
+      end;
+      apply (Const.Float.fp sign exp significand) [] []
 
 
 
-  let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
-  let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
-  let roundTowardPositive = apply Const.Float.roundTowardPositive [] []
-  let roundTowardNegative = apply Const.Float.roundTowardNegative [] []
-  let roundTowardZero = apply Const.Float.roundTowardZero [] []
+    let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
+    let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
+    let roundTowardPositive = apply Const.Float.roundTowardPositive [] []
+    let roundTowardNegative = apply Const.Float.roundTowardNegative [] []
+    let roundTowardZero = apply Const.Float.roundTowardZero [] []
 
-  let plus_infinity e s = apply (Const.Float.plus_infinity (e,s)) [] []
-  let minus_infinity e s = apply (Const.Float.minus_infinity (e,s)) [] []
-  let plus_zero e s = apply (Const.Float.plus_zero (e,s)) [] []
-  let minus_zero e s = apply (Const.Float.minus_zero (e,s)) [] []
-  let nan e s = apply (Const.Float.nan (e,s)) [] []
-  let fp_abs x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_abs es) [] [x]
-  let fp_neg x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_neg es) [] [x]
-  let fp_add rm x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_add es) [] [rm;x;y]
-  let fp_sub rm x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_sub es) [] [rm;x;y]
-  let fp_mul rm x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_mul es) [] [rm;x;y]
-  let fp_div rm x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_div es) [] [rm;x;y]
-  let fp_fma rm x y z =
-    let es = match_float_type x in
-    apply (Const.Float.fp_fma es) [] [rm;x;y;z]
-  let fp_sqrt rm x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_sqrt es) [] [rm;x]
-  let fp_rem x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_rem es) [] [x;y]
-  let fp_roundToIntegral rm x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_roundToIntegral es) [] [rm;x]
-  let fp_min x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_min es) [] [x;y]
-  let fp_max x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_max es) [] [x;y]
-  let fp_leq x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_leq es) [] [x;y]
-  let fp_lt x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_lt es) [] [x;y]
-  let fp_geq x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_geq es) [] [x;y]
-  let fp_gt x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_gt es) [] [x;y]
-  let fp_eq x y =
-    let es = match_float_type x in
-    apply (Const.Float.fp_eq es) [] [x;y]
-  let fp_isNormal x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isNormal es) [] [x]
-  let fp_isSubnormal x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isSubnormal es) [] [x]
-  let fp_isZero x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isZero es) [] [x]
-  let fp_isInfinite x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isInfinite es) [] [x]
-  let fp_isNaN x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isNaN es) [] [x]
-  let fp_isNegative x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isNegative es) [] [x]
-  let fp_isPositive x =
-    let es = match_float_type x in
-    apply (Const.Float.fp_isPositive es) [] [x]
-  let to_real x =
-    let es = match_float_type x in
-    apply (Const.Float.to_real es) [] [x]
-  let ieee_format_to_fp e s bv =
-    apply (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
-  let fp_to_fp e2 s2 rm x =
-    let (e1,s1) = match_float_type x in
-    apply (Const.Float.fp_to_fp (e1,s1,e2,s2)) [] [rm;x]
-  let real_to_fp e s rm r =
-    apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
-  let sbv_to_fp e s rm bv =
-    let n = match_bitv_type bv in
-    apply (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
-  let ubv_to_fp e s rm bv =
-    let n = match_bitv_type bv in
-    apply (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
-  let to_ubv m rm x =
-    let (e,s) = match_float_type x in
-    apply (Const.Float.to_ubv (e,s,m)) [] [rm;x]
-  let to_sbv m rm x =
-    let (e,s) = match_float_type x in
-    apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
+    let plus_infinity e s = apply (Const.Float.plus_infinity (e,s)) [] []
+    let minus_infinity e s = apply (Const.Float.minus_infinity (e,s)) [] []
+    let plus_zero e s = apply (Const.Float.plus_zero (e,s)) [] []
+    let minus_zero e s = apply (Const.Float.minus_zero (e,s)) [] []
+    let nan e s = apply (Const.Float.nan (e,s)) [] []
+    let fp_abs x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_abs es) [] [x]
+    let fp_neg x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_neg es) [] [x]
+    let fp_add rm x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_add es) [] [rm;x;y]
+    let fp_sub rm x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_sub es) [] [rm;x;y]
+    let fp_mul rm x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_mul es) [] [rm;x;y]
+    let fp_div rm x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_div es) [] [rm;x;y]
+    let fp_fma rm x y z =
+      let es = match_float_type x in
+      apply (Const.Float.fp_fma es) [] [rm;x;y;z]
+    let fp_sqrt rm x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_sqrt es) [] [rm;x]
+    let fp_rem x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_rem es) [] [x;y]
+    let fp_roundToIntegral rm x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_roundToIntegral es) [] [rm;x]
+    let fp_min x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_min es) [] [x;y]
+    let fp_max x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_max es) [] [x;y]
+    let fp_leq x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_leq es) [] [x;y]
+    let fp_lt x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_lt es) [] [x;y]
+    let fp_geq x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_geq es) [] [x;y]
+    let fp_gt x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_gt es) [] [x;y]
+    let fp_eq x y =
+      let es = match_float_type x in
+      apply (Const.Float.fp_eq es) [] [x;y]
+    let fp_isNormal x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isNormal es) [] [x]
+    let fp_isSubnormal x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isSubnormal es) [] [x]
+    let fp_isZero x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isZero es) [] [x]
+    let fp_isInfinite x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isInfinite es) [] [x]
+    let fp_isNaN x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isNaN es) [] [x]
+    let fp_isNegative x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isNegative es) [] [x]
+    let fp_isPositive x =
+      let es = match_float_type x in
+      apply (Const.Float.fp_isPositive es) [] [x]
+    let to_real x =
+      let es = match_float_type x in
+      apply (Const.Float.to_real es) [] [x]
+    let ieee_format_to_fp e s bv =
+      apply (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
+    let fp_to_fp e2 s2 rm x =
+      let (e1,s1) = match_float_type x in
+      apply (Const.Float.fp_to_fp (e1,s1,e2,s2)) [] [rm;x]
+    let real_to_fp e s rm r =
+      apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
+    let sbv_to_fp e s rm bv =
+      let n = match_bitv_type bv in
+      apply (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
+    let ubv_to_fp e s rm bv =
+      let n = match_bitv_type bv in
+      apply (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
+    let to_ubv m rm x =
+      let (e,s) = match_float_type x in
+      apply (Const.Float.to_ubv (e,s,m)) [] [rm;x]
+    let to_sbv m rm x =
+      let (e,s) = match_float_type x in
+      apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
 
-  let type_for_to_fp (t:t) =
-    match t.ty.descr with
-    | Var _ -> `Other
-    | App ({ builtin = Real; _ }, _) -> `Real
-    | App ({ builtin = Bitv _; _ }, _) -> `Bitv
-    | App ({ builtin = Float _; _ }, _) -> `Float
-    | App _ -> `Other
+    let type_for_to_fp (t:t) =
+      match t.ty.descr with
+      | Var _ -> `Other
+      | App ({ builtin = Real; _ }, _) -> `Real
+      | App ({ builtin = Bitv _; _ }, _) -> `Bitv
+      | App ({ builtin = Float _; _ }, _) -> `Float
+      | App _ -> `Other
+  end
 
   (* Wrappers for the tff typechecker *)
   let all _ (tys, ts) body =

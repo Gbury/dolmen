@@ -7,11 +7,12 @@ module Ast = Dolmen.Term
 
 module Smtlib2 = struct
 
-
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Smtlib_Float with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Float with type t = Type.T.t) = struct
+
+    module T = T.Float
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Term.t Type.err
