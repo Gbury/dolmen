@@ -12,6 +12,7 @@ module Smtlib2 = struct
       (Ty : Dolmen.Intf.Ty.Smtlib_Float with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Float with type t = Type.T.t) = struct
 
+    let classify = T.classify
     module T = T.Float
 
     type _ Type.err +=
@@ -132,11 +133,11 @@ module Smtlib2 = struct
       match args with
       | [ a ] -> return (T.ieee_format_to_fp e s a)
       | [ rm; b ] -> begin
-          match T.type_for_to_fp b with
+          match classify b with
           | `Real -> return (T.real_to_fp e s rm b)
-          | `Bitv -> return (T.ubv_to_fp e s rm b)
-          | `Float -> return (T.fp_to_fp e s rm b)
-          | `Other -> Type._error env (Ast ast) To_fp_incorrect_args
+          | `Bitv _ -> return (T.ubv_to_fp e s rm b)
+          | `Float (_,_) -> return (T.fp_to_fp e s rm b)
+          | _ -> Type._error env (Ast ast) To_fp_incorrect_args
         end
       | _ -> Type._error env (Ast ast) To_fp_incorrect_args
       )

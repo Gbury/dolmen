@@ -1012,6 +1012,9 @@ module type Smtlib_Float = sig
   type t
   (** The type of terms *)
 
+  val classify: t -> [ `Real | ` Bitv of int | `Float of int * int | `Other ]
+  (** Give the type of the given term *)
+
   module Float: sig
     (** Floating points are complicated so this documentation is not in anyway
         sufficient. A detailed description of the theory together with the
@@ -1155,8 +1158,5 @@ module type Smtlib_Float = sig
 
     val to_real: t -> t
     (** [to_real f] convert to a real *)
-
-    val type_for_to_fp: t -> [ `Real | ` Bitv | `Float | `Other ]
-    (** Used for `to_fp` parsing; give the broad type of the given term *)
   end
 end

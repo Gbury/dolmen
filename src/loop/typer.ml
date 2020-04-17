@@ -283,7 +283,7 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Float.Bitvector_litteral_expected ->
       Format.fprintf fmt "The fp floating point constructor requires direct bitvector litteral"
     | Smtlib2_Float.To_fp_incorrect_args ->
-      Format.fprintf fmt "The to_fp function accept on argument on type \
+      Format.fprintf fmt "The to_fp function accept an argument of type \
                           Bitvector or two arguments with the first one a \
                           RoundingMode and the second one Real, Bitvector or \
                           FloatingPoint"

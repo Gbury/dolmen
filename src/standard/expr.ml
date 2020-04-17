@@ -1740,8 +1740,7 @@ module Term = struct
         let s = String.length significand + 1 in
         Id.const
           ~name:"fp" ~builtin:(Fp (sign,exp,significand))
-          ~tags:linear_gen_tags
-          (Format.asprintf "bv#%s#%s#%s#" sign exp significand) [] [] (Ty.float e s)
+          (Format.asprintf "fp#%s#%s#%s#" sign exp significand) [] [] (Ty.float e s)
 
       let roundNearestTiesToEven =
         Id.const ~builtin:RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
@@ -1758,7 +1757,10 @@ module Term = struct
       let roundTowardZero =
         Id.const ~builtin:RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
 
-      let fp_gen ~args ?rm ?res name builtin =
+      (** Generic function for creating functions primarily on the same floating
+         point format with optionally a rounding mode and a particular result
+         type *)
+      let fp_gen_fun ~args ?rm ?res name builtin =
         with_cache ~cache:(Hashtbl.create 13) (fun es ->
             let fp = Ty.float' es in
             let args = List.init args (fun _ -> fp) in
@@ -1771,36 +1773,36 @@ module Term = struct
             Id.const ~builtin:(builtin es) name [] args res
           )
 
-      let plus_infinity = fp_gen ~args:0 "plus_infinity" (fun (e,s) -> Plus_infinity (e,s))
-      let minus_infinity = fp_gen ~args:0 "minus_infinity" (fun (e,s) -> Minus_infinity (e,s))
-      let plus_zero = fp_gen ~args:0 "plus_zero" (fun (e,s) -> Plus_zero (e,s))
-      let minus_zero = fp_gen ~args:0 "minus_zero" (fun (e,s) -> Minus_zero (e,s))
-      let nan = fp_gen ~args:0 "nan" (fun (e,s) -> NaN (e,s))
-      let fp_abs = fp_gen ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
-      let fp_neg = fp_gen ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
-      let fp_add = fp_gen ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
-      let fp_sub = fp_gen ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
-      let fp_mul = fp_gen ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
-      let fp_div = fp_gen ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
-      let fp_fma = fp_gen ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
-      let fp_sqrt = fp_gen ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
-      let fp_rem = fp_gen ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
-      let fp_roundToIntegral = fp_gen ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
-      let fp_min = fp_gen ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
-      let fp_max = fp_gen ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
-      let fp_leq = fp_gen ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
-      let fp_lt = fp_gen ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
-      let fp_geq = fp_gen ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
-      let fp_gt = fp_gen ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
-      let fp_eq = fp_gen ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
-      let fp_isNormal = fp_gen ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
-      let fp_isSubnormal = fp_gen ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
-      let fp_isZero = fp_gen ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
-      let fp_isInfinite = fp_gen ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
-      let fp_isNaN = fp_gen ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
-      let fp_isNegative = fp_gen ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
-      let fp_isPositive = fp_gen ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
-      let to_real = fp_gen ~args:1 ~res:Ty.real "fp.to_real" (fun (e,s) -> To_real (e,s))
+      let plus_infinity = fp_gen_fun ~args:0 "plus_infinity" (fun (e,s) -> Plus_infinity (e,s))
+      let minus_infinity = fp_gen_fun ~args:0 "minus_infinity" (fun (e,s) -> Minus_infinity (e,s))
+      let plus_zero = fp_gen_fun ~args:0 "plus_zero" (fun (e,s) -> Plus_zero (e,s))
+      let minus_zero = fp_gen_fun ~args:0 "minus_zero" (fun (e,s) -> Minus_zero (e,s))
+      let nan = fp_gen_fun ~args:0 "nan" (fun (e,s) -> NaN (e,s))
+      let fp_abs = fp_gen_fun ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
+      let fp_neg = fp_gen_fun ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
+      let fp_add = fp_gen_fun ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
+      let fp_sub = fp_gen_fun ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
+      let fp_mul = fp_gen_fun ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
+      let fp_div = fp_gen_fun ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
+      let fp_fma = fp_gen_fun ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
+      let fp_sqrt = fp_gen_fun ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
+      let fp_rem = fp_gen_fun ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
+      let fp_roundToIntegral = fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
+      let fp_min = fp_gen_fun ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
+      let fp_max = fp_gen_fun ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
+      let fp_leq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
+      let fp_lt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
+      let fp_geq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
+      let fp_gt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
+      let fp_eq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
+      let fp_isNormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
+      let fp_isSubnormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
+      let fp_isZero = fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
+      let fp_isInfinite = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
+      let fp_isNaN = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
+      let fp_isNegative = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
+      let fp_isPositive = fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
+      let to_real = fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real" (fun (e,s) -> To_real (e,s))
 
       let ieee_format_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
@@ -2409,6 +2411,14 @@ module Term = struct
     let n = match_bitv_type u in
     apply (Const.bvsge n) [] [u; v]
 
+  let classify= fun t ->
+    match t.ty.descr with
+    | Var _ -> `Other
+    | App ({ builtin = Real; _ }, _) -> `Real
+    | App ({ builtin = Bitv s; _ }, _) -> `Bitv s
+    | App ({ builtin = Float (e,s); _ }, _) -> `Float (e,s)
+    | App _ -> `Other
+
   module Float = struct
     (* Floats *)
     let match_float_type t =
@@ -2422,8 +2432,6 @@ module Term = struct
         | _ -> raise (Wrong_type (mk_bitv sign, Ty.bitv 1))
       end;
       apply (Const.Float.fp sign exp significand) [] []
-
-
 
     let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
     let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
@@ -2530,14 +2538,6 @@ module Term = struct
     let to_sbv m rm x =
       let (e,s) = match_float_type x in
       apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
-
-    let type_for_to_fp (t:t) =
-      match t.ty.descr with
-      | Var _ -> `Other
-      | App ({ builtin = Real; _ }, _) -> `Real
-      | App ({ builtin = Bitv _; _ }, _) -> `Bitv
-      | App ({ builtin = Float _; _ }, _) -> `Float
-      | App _ -> `Other
   end
 
   (* Wrappers for the tff typechecker *)
