@@ -39,128 +39,43 @@ type smtlib_logic = {
   restrictions  : smtlib_restriction list;
 }
 
-let smtlib_logic = function
-  | "ALIA"      -> Some {
-      theories = [`Core; `Ints; `Arrays];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "AUFDTLIA"  -> Some {
-      theories = [ `Core; `Ints; `Arrays; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "AUFLIA"    -> Some {
-      theories = [ `Core; `Ints; `Arrays; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "AUFLIRA"   -> Some {
-      theories = [ `Core; `Reals_Ints; `Arrays; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "AUFNIRA"   -> Some {
-      theories = [ `Core; `Reals_Ints; `Arrays; ];
-      restrictions = [];
-    }
-  | "LIA"       -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "LRA"       -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "QF_ABV"    -> Some {
-      theories = [ `Core; `Bitvectors; `Arrays; ];
-      restrictions = [ `Quantifier_free; `No_free_symbol; ];
-    }
-  | "QF_AUFBV"  -> Some {
-      theories = [ `Core; `Bitvectors; `Arrays; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_AUFLIA" -> Some {
-      theories = [ `Core; `Ints; `Arrays; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "QF_AX"     -> Some {
-      theories = [ `Core; `Arrays; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_BV"     -> Some {
-      theories = [ `Core; `Bitvectors; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_IDL"    -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Quantifier_free; `Difference_logic; ];
-    }
-  | "QF_LIA"    -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "QF_NIA"    -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_NRA"    -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_RDL"    -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Quantifier_free; `Difference_logic; ];
-    }
-  | "QF_UF"     -> Some {
-      theories = [ `Core; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_UFBV"   -> Some {
-      theories = [ `Core; `Bitvectors; ];
-      restrictions = [ `Quantifier_free; ];
-    }
-  | "QF_UFIDL"  -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Quantifier_free; `Difference_logic; ];
-    }
-  | "QF_UFLIA"  -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "QF_UFLRA"  -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "QF_LRA"    -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "QF_UFNRA"  -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Quantifier_free; `Linear_arithmetic; ];
-    }
-  | "UF"        -> Some {
-      theories = [ `Core; ];
-      restrictions = [];
-    }
-  | "UFDT"      -> Some {
-      theories = [ `Core; ];
-      restrictions = [];
-    }
-  | "UFLIA"     -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [ `Linear_arithmetic; ];
-    }
-  | "UFLRA"     -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [ `Linear_arithmetic ];
-    }
-  | "UFNIA"     -> Some {
-      theories = [ `Core; `Ints; ];
-      restrictions = [];
-    }
-  | "UFNRA"     -> Some {
-      theories = [ `Core; `Reals; ];
-      restrictions = [];
-    }
-  | _           -> None
+(*
+QF for the restriction to quantifier free formulas
+A or AX for the theory ArraysEx
+BV for the theory FixedSizeBitVectors
+FP (forthcoming) for the theory FloatingPoint
+IA for the theory Ints (Integer Arithmetic)
+RA for the theory Reals (Real Arithmetic)
+IRA for the theory Reals_Ints (mixed Integer Real Arithmetic)
+IDL for Integer Difference Logic
+RDL for Rational Difference Logic
+L before IA, RA, or IRA for the linear fragment of those arithmetics
+N before IA, RA, or IRA for the non-linear fragment of those arithmetics
+UF for the extension allowing free sort and function symbols
+*)
+
+let smtlib_logic s =
+  let add_restrictions c r = { c with restrictions = r::c.restrictions } in
+  let add_theories c r = { c with theories = r::c.theories } in
+  let rec aux c = function
+    | [] -> Some c
+    | 'Q'::'F'::'_'::l -> aux (add_restrictions c `Quantifier_free) l
+    | 'U'::'F'::l -> aux c l
+    | 'D'::'T'::l -> aux c l
+    | 'I'::'D'::'L'::l ->  aux (add_theories (add_restrictions c `Difference_logic) `Ints) l
+    | 'R'::'D'::'L'::l ->  aux (add_theories (add_restrictions c `Difference_logic) `Reals) l
+    | 'L'::'I'::'A'::l -> aux (add_theories (add_restrictions c `Linear_arithmetic) `Ints) l
+    | 'L'::'R'::'A'::l -> aux (add_theories (add_restrictions c `Linear_arithmetic) `Reals) l
+    | 'L'::'I'::'R'::'A'::l -> aux (add_theories (add_restrictions c `Linear_arithmetic) `Reals_Ints) l
+    | 'N'::'I'::'A'::l -> aux (add_theories c `Ints) l
+    | 'N'::'R'::'A'::l -> aux (add_theories c `Reals) l
+    | 'N'::'I'::'R'::'A'::l -> aux (add_theories c `Reals_Ints) l
+    | 'A'::'X'::l | 'A'::l  -> aux (add_theories c `Arrays) l
+    | 'B'::'V'::l -> aux (add_theories c `Bitvectors) l
+    | _ -> None
+  in
+  aux { theories = [ `Core ]; restrictions = [] } (List.of_seq (String.to_seq s))
+
 
 (* Building builtins parser functions *)
 (* ************************************************************************ *)
