@@ -30,11 +30,6 @@ module Make
     loc : Dolmen.ParseLocation.t option;
   }
 
-  (* Typechecked statements *)
-  type executed = [
-    | `Executed
-  ]
-
   type defs = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Id.t * Expr.ty_var list * Expr.term_var list * Expr.term
@@ -59,12 +54,39 @@ module Make
     | `Solve of Expr.formula list
   ]
 
+  type get_info = [
+    | `Get_info of string
+    | `Get_option of string
+    | `Get_proof
+    | `Get_unsat_core
+    | `Get_unsat_assumptions
+    | `Get_model
+    | `Get_value of Expr.term list
+    | `Get_assignment
+    | `Get_assertions
+    | `Echo of string
+    | `Plain of Dolmen.Statement.term
+  ]
+
+  type set_info = [
+    | `Set_info of Dolmen.Statement.term
+    | `Set_option of Dolmen.Statement.term
+  ]
+
+  type stack_control = [
+    | `Pop of int
+    | `Push of int
+    | `Reset_assertions
+    | `Reset
+    | `Exit
+  ]
+
   (* Agregate types *)
-  type typechecked = [ executed | defs | decls | assume | solve ]
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
 
   (* Simple constructor *)
   (* let tr implicit contents = { implicit; contents; } *)
-  let simple id loc contents = { id; loc; contents; }
+  let simple id loc (contents: typechecked)  = { id; loc; contents; }
 
   (* Parsing *)
   (* ************************************************************************ *)
@@ -203,6 +225,7 @@ module Make
   let hyp_id   = stmt_id "hyp"
   let goal_id  = stmt_id "goal"
   let prove_id = stmt_id "prove"
+  let other_id = stmt_id "other"
 
   let fv_list l =
     let l' = List.map Dolmen.Term.fv l in
@@ -228,20 +251,16 @@ module Make
 
       (* Assertion stack Management *)
       | { S.descr = S.Pop i; _ } ->
-        let st = State.pop st i in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Pop i))
       | { S.descr = S.Push i; _ } ->
-        let st = State.push st i in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Push i))
       | { S.descr = S.Reset_assertions; _ } ->
-        let st = State.reset_assertions st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Reset_assertions)
 
       (* Plain statements
          TODO: allow the `plain` function to return a meaningful value *)
       | { S.descr = S.Plain t; _ } ->
-        let st = State.plain st t in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Plain t))
 
       (* Hypotheses and goal statements *)
       | { S.descr = S.Prove l; _ } ->
@@ -302,25 +321,21 @@ module Make
 
       (* Set/Get info *)
       | { S.descr = S.Get_info s; _ } ->
-        let st = State.get_info st s in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Get_info s))
       | { S.descr = S.Set_info t; _ } ->
-        let st = State.set_info st t in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Set_info t))
 
       (* Set/Get options *)
       | { S.descr = S.Get_option s; _ } ->
-        let st = State.get_option st s in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Get_option s))
       | { S.descr = S.Set_option t; _ } ->
-        let st = State.set_option st t in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Set_option t))
 
       (* Declarations and definitions *)
       | { S.descr = S.Def (id, t); _ } ->
         let st, ret, w = Typer.def st ?attr:c.S.attr id t in
         let st = add_warnings st w in
-        `Continue (st, (simple (def_id c) c.S.loc ret :> typechecked stmt))
+        `Continue (st, (simple (def_id c) c.S.loc (ret :> typechecked)))
       | { S.descr = S.Decls l; _ } ->
         let st, l, w = Typer.decls st ?attr:c.S.attr l in
         let st = add_warnings st w in
@@ -329,41 +344,29 @@ module Make
 
       (* Smtlib's proof/model instructions *)
       | { S.descr = S.Get_proof; _ } ->
-        let st = State.get_proof st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Get_proof)
       | { S.descr = S.Get_unsat_core; _ } ->
-        let st = State.get_unsat_core st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Get_unsat_core)
       | { S.descr = S.Get_unsat_assumptions; _ } ->
-        let st = State.get_unsat_assumptions st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Get_unsat_assumptions)
       | { S.descr = S.Get_model; _ } ->
-        let st = State.get_model st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Get_model)
       | { S.descr = S.Get_value l; _ } ->
         let st, l, w = Typer.terms st ?attr:c.S.attr l in
         let st = add_warnings st w in
-        let st = State.get_values st l in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Get_value l))
       | { S.descr = S.Get_assignment; _ } ->
-        let st = State.get_assignment st in
-        `Done st
-
+        `Continue (st, simple (other_id c) c.S.loc `Get_assignment)
       (* Assertions *)
       | { S.descr = S.Get_assertions; _ } ->
-        let st = State.get_assertions st in
-        `Done st
-
+        `Continue (st, simple (other_id c) c.S.loc `Get_assertions)
       (* Misc *)
       | { S.descr = S.Echo s; _ } ->
-        let st = State.echo st s in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc (`Echo s))
       | { S.descr = S.Reset; _ } ->
-        let st = State.reset st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Reset)
       | { S.descr = S.Exit; _ } ->
-        let st = State.exit st in
-        `Done st
+        `Continue (st, simple (other_id c) c.S.loc `Exit)
 
     in
     State.stop `Typing;
