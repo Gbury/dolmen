@@ -29,10 +29,6 @@ module Make
   }
   (** Wrapper around statements. It records implicit type declarations. *)
 
-  type executed = [
-    | `Executed
-  ]
-
   type decl = [
     | `Type_decl of Expr.ty_const
     | `Term_decl of Expr.term_const
@@ -62,7 +58,34 @@ module Make
   ]
   (** Top-level solve instruction *)
 
-  type typechecked = [ executed | defs | decls | assume | solve ]
+  type get_info = [
+    | `Get_info of string
+    | `Get_option of string
+    | `Get_proof
+    | `Get_unsat_core
+    | `Get_unsat_assumptions
+    | `Get_model
+    | `Get_value of Expr.term list
+    | `Get_assignment
+    | `Get_assertions
+    | `Echo of string
+    | `Plain of Dolmen.Statement.term
+  ]
+
+  type set_info = [
+    | `Set_info of Dolmen.Statement.term
+    | `Set_option of Dolmen.Statement.term
+  ]
+
+  type stack_control = [
+    | `Pop of int
+    | `Push of int
+    | `Reset_assertions
+    | `Reset
+    | `Exit
+  ]
+
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
   (** The type of statements after typechecking *)
 
 

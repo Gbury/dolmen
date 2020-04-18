@@ -64,28 +64,3 @@ let prelude _ = "prompt>"
 
 let set_logic t s =
   { t with type_smtlib_logic = Some s; }
-
-(* Some dummy implementations *)
-let get_info t _ = t
-let set_info t _ = t
-
-let get_option t _ = t
-let set_option t _ = t
-
-let pop t _  = t
-let push t _ = t
-
-let reset_assertions t = t
-let plain t _ = t
-
-let get_proof t = t
-let get_unsat_core t = t
-let get_unsat_assumptions t = t
-let get_model t = t
-let get_values t _ = t
-let get_assignment t = t
-let get_assertions t = t
-let echo t _ = t
-let reset t = t
-let exit t = t
-

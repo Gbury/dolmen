@@ -84,25 +84,6 @@ module type S = sig
     ?loc:Dolmen.ParseLocation.t -> dir:string -> file:string -> 'a
   val warn : t -> Dolmen.ParseLocation.t -> string -> t
 
-  (* Executing statements *)
-  val pop : t -> int -> t
-  val push : t -> int -> t
-  val reset_assertions : t -> t
-  val plain : t -> Dolmen.Term.t -> t
-  val get_proof : t -> t
-  val get_unsat_core : t -> t
-  val get_unsat_assumptions : t -> t
-  val get_model : t -> t
-  val get_values : t -> term list -> t
-  val get_assignment : t -> t
-  val get_assertions : t -> t
-  val get_info : t -> string -> t
-  val get_option : t -> string -> t
   val set_logic : t -> string -> t
-  val set_info : t -> Dolmen.Term.t -> t
-  val set_option : t -> Dolmen.Term.t -> t
-  val echo : t -> string -> t
-  val reset : t -> t
-  val exit : t -> t
 
 end
