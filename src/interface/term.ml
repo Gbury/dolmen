@@ -1028,7 +1028,8 @@ module type Smtlib_Float = sig
 
 
     val fp : string -> string -> string -> t
-    (** Construct a floating point from bitvector literals (sign, exponent, significand) *)
+    (** Construct a floating point from bitvector literals (sign, exponent, significand).
+        Sign is of size 1*)
 
     val roundNearestTiesToEven: t
     (** constant for rounding mode RNE *)

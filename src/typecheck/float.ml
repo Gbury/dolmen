@@ -19,6 +19,7 @@ module Smtlib2 = struct
       | Invalid_bin_char : char -> Dolmen.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Term.t Type.err
       | Bitvector_litteral_expected : Dolmen.Term.t Type.err
+      | Bitvector_of_size_one_expected : int -> Dolmen.Term.t Type.err
       | To_fp_incorrect_args : Dolmen.Term.t Type.err
 
     let parse_int env ast s =
@@ -181,9 +182,14 @@ module Smtlib2 = struct
         ] (function
             | ["fp"] ->
               Some (Base.make_op3 (module Type) env "fp" (fun ast (a,b,c) ->
-                  Type.Term (T.fp (parse_bitv_lit env ast a)
-                               (parse_bitv_lit env ast b)
-                               (parse_bitv_lit env ast c))
+                   let sa = parse_bitv_lit env ast a in
+                   if String.length sa <> 1 then begin
+                     Type._error env (Ast ast)
+                       (Bitvector_of_size_one_expected (String.length sa))
+                   end;
+                   Type.Term (T.fp sa
+                                (parse_bitv_lit env ast b)
+                                (parse_bitv_lit env ast c))
                 ))
             | ["roundNearestTiesToEven"] | ["RNE"] ->
               Some (app0 env "roundNearestTiesToEven"

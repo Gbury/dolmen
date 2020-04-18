@@ -282,6 +282,8 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal float litteral" c
     | Smtlib2_Float.Bitvector_litteral_expected ->
       Format.fprintf fmt "The fp floating point constructor requires direct bitvector litteral"
+    | Smtlib2_Float.Bitvector_of_size_one_expected i ->
+      Format.fprintf fmt "The fp floating point constructor expect a literal bitvector of size one has first argument (the sign), here it is of size %i" i
     | Smtlib2_Float.To_fp_incorrect_args ->
       Format.fprintf fmt "The to_fp function accept an argument of type \
                           Bitvector or two arguments with the first one a \

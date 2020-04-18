@@ -11,6 +11,7 @@ module Smtlib2 : sig
       | Invalid_bin_char : char -> Dolmen.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Term.t Type.err
       | Bitvector_litteral_expected : Dolmen.Term.t Type.err
+      | Bitvector_of_size_one_expected : int -> Dolmen.Term.t Type.err
       | To_fp_incorrect_args : Dolmen.Term.t Type.err
 
     val parse : Dolmen_smtlib2.version -> Type.builtin_symbols

@@ -2427,10 +2427,7 @@ module Term = struct
       | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
     let fp sign exp significand =
-      begin match String.length sign with
-        | 1 -> ()
-        | _ -> raise (Wrong_type (mk_bitv sign, Ty.bitv 1))
-      end;
+      assert (String.length sign = 1);
       apply (Const.Float.fp sign exp significand) [] []
 
     let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
