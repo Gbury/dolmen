@@ -1009,23 +1009,28 @@ module type Smtlib_Bitv = sig
 end
 
 module type Smtlib_Float = sig
+
+  (** Floating points are complicated so this documentation is not in anyway
+      sufficient. A detailed description of the theory together with the
+      rationale of several models decisions as well as a formal semantics of the
+      theory can be found in
+
+      [BTRW15] Martin Brain, Cesare Tinelli, Philipp Ruemmer, and Thomas Wahl. An
+      Automatable Formal Semantics for IEEE-754 Floating-Point Arithmetic
+      Technical Report, 2015. (http://smt-lib.org/papers/BTRW15.pdf)
+  *)
+
   type t
   (** The type of terms *)
 
-  val classify: t -> [ `Real | ` Bitv of int | `Float of int * int | `Other ]
-  (** Give the type of the given term *)
+  type ty
+  (** The type of types. *)
 
-  module Float: sig
-    (** Floating points are complicated so this documentation is not in anyway
-        sufficient. A detailed description of the theory together with the
-        rationale of several models decisions as well as a formal semantics of the
-        theory can be found in
+  val ty : t -> ty
+  (** Type of a term. *)
 
-        [BTRW15] Martin Brain, Cesare Tinelli, Philipp Ruemmer, and Thomas Wahl. An
-        Automatable Formal Semantics for IEEE-754 Floating-Point Arithmetic
-        Technical Report, 2015. (http://smt-lib.org/papers/BTRW15.pdf)
-    *)
-
+  (** Sub-module used for namespacing *)
+  module Float : sig
 
     val fp : string -> string -> string -> t
     (** Construct a floating point from bitvector literals (sign, exponent, significand).
@@ -1159,5 +1164,6 @@ module type Smtlib_Float = sig
 
     val to_real: t -> t
     (** [to_real f] convert to a real *)
+
   end
 end

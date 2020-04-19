@@ -1,6 +1,11 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(* Temporary workaround for the fact that some of the module types included
+   to simplify the documentation of the Term module ovarlap (i.e. multiple
+   included signatures define the same function). *)
+[@@@warning "-32"]
+
 (** {2 Type definitions} *)
 (*  ************************************************************************* *)
 
@@ -775,6 +780,7 @@ module Ty : sig
   type 'a tag = 'a Tag.t
   (** A type for tags to attach to arbitrary types. *)
 
+
   val hash : t -> int
   (** A hash function for types, should be suitable to create hashtables. *)
 
@@ -786,6 +792,35 @@ module Ty : sig
 
   val print : Format.formatter -> t -> unit
   (** Printing function. *)
+
+
+  (** {4 View} *)
+
+  type view = [
+    | `Int
+    (** Integers *)
+    | `Rat
+    (** Rationals *)
+    | `Real
+    (** Reals *)
+    | `Array of ty * ty
+    (** Function arrays, from source to destination type. *)
+    | `Bitv of int
+    (** Bitvectors of fixed length. *)
+    | `Float of int * int
+    (** Floating points. *)
+    | `Var of ty_var
+    (** Variables *)
+    | `App of [
+        | `Generic of ty_const
+        | `Builtin of builtin
+      ] * ty list
+    (** Generic applications. *)
+  ]
+  (** View on types. *)
+
+  val view : t -> view
+  (** View on types. *)
 
 
   (** {4 Type structure definition} *)
@@ -1238,6 +1273,7 @@ module Term : sig
   (** Satisfy the required interface for typing smtlib bitvectors. *)
 
   include Dolmen_intf.Term.Smtlib_Float with type t := t
+                                         and type ty := ty
   (** Satisfy the required interface for typing smtlib floating points. *)
 
   (** Integer operations. *)

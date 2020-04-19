@@ -198,35 +198,64 @@ exception Record_type_expected of ty_const
 
 module View = struct
 
-  type ty_view =
-    | Var of ty_var
-    | App of ty_const * ty list
-    | Builtin_app of builtin * ty list
+  module Ty = struct
+    type t = [
+      | `Int
+      | `Rat
+      | `Real
+      | `Array of ty * ty
+      | `Bitv of int
+      | `Float of int * int
+      (* Generic cases *)
+      | `Var of ty_var
+      | `App of [
+          | `Generic of ty_const
+          | `Builtin of builtin
+        ] * ty list
+    ]
 
-  type term_view =
-    | Var of term_var
-    | App of term_const * ty list * term list
-    | Binder of binder * term
-    | Builtin_app of builtin * ty list * term list
+    let view (ty : ty) : t =
+      match ty.descr with
+      | Var v -> `Var v
+      | App (({ builtin; _ } as c), l) ->
+        begin match builtin with
+          | Int -> `Int
+          | Rat -> `Rat
+          | Real -> `Real
+          | Bitv i -> `Bitv i
+          | Float (e, s) -> `Float (e, s)
+          | Array -> begin match l with
+              | [src; dst] -> `Array (src, dst)
+              | _ -> assert false (* not possible *)
+            end
+          | Base -> `App (`Generic c, l)
+          | _ -> `App (`Builtin builtin, l)
+        end
 
-  let ty (ty : ty) : ty_view =
-    match ty.descr with
-    | Var v -> Var v
-    | App (({ builtin; _ } as c), l) ->
-      begin match builtin with
-        | Base -> App (c, l)
-        | _ -> Builtin_app (builtin, l)
-      end
+  end
 
-  let term (t : term) : term_view =
-    match t.descr with
-    | Var v -> Var v
-    | App (({ builtin; _ } as c), tys, ts) ->
-      begin match builtin with
-        | Base -> App (c, tys, ts)
-        | _ -> Builtin_app (builtin, tys, ts)
-      end
-    | Binder (b, t) -> Binder (b, t)
+  module Term = struct
+
+    type t = [
+      | `Var of term_var
+      | `Binder of binder * term
+      | `App of [
+          | `Generic of term_const
+          | `Builtin of builtin
+        ] * ty list * term list
+    ]
+
+    let view (t : term) : t =
+      match t.descr with
+      | Var v -> `Var v
+      | App (({ builtin; _ } as c), tys, ts) ->
+        begin match builtin with
+          | Base -> `App (`Generic c, tys, ts)
+          | _ -> `App (`Builtin builtin, tys, ts)
+        end
+      | Binder (b, t) -> `Binder (b, t)
+
+  end
 
 end
 
@@ -260,30 +289,23 @@ module Filter = struct
     let name = "linear"
     let reset () = active := false
 
-    let classify_ty (ty : ty) =
-      match View.ty ty with
-      | Builtin_app (Int, _) -> `Int
-      | Builtin_app (Rat, _) -> `Rat
-      | Builtin_app (Real, _) -> `Real
-      | _ -> `Other
-
-    let is_ty_int t = (classify_ty t = `Int)
-    let is_ty_rat t = (classify_ty t = `Rat)
-    let is_ty_real t = (classify_ty t = `Real)
+    let is_ty_int t = (View.Ty.view t = `Int)
+    let is_ty_rat t = (View.Ty.view t = `Rat)
+    let is_ty_real t = (View.Ty.view t = `Real)
 
     let classify_term (t : term) =
-      match View.term t with
-      | Var _ -> `Const
-      | Builtin_app (Integer _, _, _) -> `Value `Integer
-      | Builtin_app (Rational _, _, _) -> `Value `Rational
-      | Builtin_app (Decimal _, _, _) -> `Value `Decimal
-      | Builtin_app (Minus, _, [t']) -> `Negated t'
-      | Builtin_app (Coercion, [src; dst], [t'])
+      match View.Term.view t with
+      | `Var _ -> `Const
+      | `App (`Builtin Integer _, _, _) -> `Value `Integer
+      | `App (`Builtin Rational _, _, _) -> `Value `Rational
+      | `App (`Builtin Decimal _, _, _) -> `Value `Decimal
+      | `App (`Builtin Minus, _, [t']) -> `Negated t'
+      | `App (`Builtin Coercion, [src; dst], [t'])
         when (( is_ty_int src && (is_ty_rat dst || is_ty_real dst) )
               || ( is_ty_rat src &&  is_ty_real dst) ) ->
         `Coerced t'
       (* Rational values *)
-      | Builtin_app (Div, _, [a; b]) ->
+      | `App (`Builtin Div, _, [a; b]) ->
         `Div (a, b)
       (* Fallback *)
       | _ -> `Other
@@ -787,6 +809,8 @@ module Ty = struct
 
   type t = ty
 
+  type view = View.Ty.t
+
   type subst = (ty_var, ty) Subst.t
 
   type 'a tag = 'a Tag.t
@@ -820,6 +844,8 @@ module Ty = struct
     | None -> Id.tag c definition_tag d
     | Some _ -> raise (Type_already_defined c)
 
+  (* view *)
+  let view = View.Ty.view
 
   (* Tags *)
   let get_tag (t : t) k = Tag.get t.tags k
@@ -2411,13 +2437,6 @@ module Term = struct
     let n = match_bitv_type u in
     apply (Const.bvsge n) [] [u; v]
 
-  let classify= fun t ->
-    match t.ty.descr with
-    | Var _ -> `Other
-    | App ({ builtin = Real; _ }, _) -> `Real
-    | App ({ builtin = Bitv s; _ }, _) -> `Bitv s
-    | App ({ builtin = Float (e,s); _ }, _) -> `Float (e,s)
-    | App _ -> `Other
 
   module Float = struct
     (* Floats *)

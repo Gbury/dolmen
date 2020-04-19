@@ -225,4 +225,15 @@ module type Smtlib_Float = sig
   val roundingMode: t
   (** Type of the rounding modes *)
 
+  type view = private [>
+    | `Real
+    | `Bitv of int
+    | `Float of int * int
+  ]
+  (** Partial views for types. These are used in the Float theory to
+      perform type-base dispatch for some conversion functions. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
+
 end
