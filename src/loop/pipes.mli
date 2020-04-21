@@ -42,9 +42,9 @@ module Make
 
   type defs = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
-    | `Term_def of Dolmen.Id.t * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
-  (** The type of top-level type definitions. *)
+  (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
 
   type assume = [
     | `Hyp of Expr.formula

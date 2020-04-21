@@ -32,7 +32,7 @@ module Make
 
   type defs = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
-    | `Term_def of Dolmen.Id.t * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
   type decl = [

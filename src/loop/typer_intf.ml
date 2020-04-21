@@ -33,7 +33,7 @@ module type S = sig
     state *
     [
      | `Type_def of Dolmen.Id.t * ty_var list * ty
-     | `Term_def of Dolmen.Id.t * ty_var list * term_var list * term
+     | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
     ] *
     (Dolmen.ParseLocation.t * string) list
 

@@ -388,11 +388,11 @@ module Make(S : State_intf.Typer) = struct
     let env = typing_env ?loc:t.loc st in
     begin match T.new_def ?attr env t id with
       | `Type_def (id, _, vars, body) ->
-        let _ = Subst.define_ty id vars body in
+        let () = Subst.define_ty id vars body in
         st, `Type_def (id, vars, body), get_warnings ()
       | `Term_def (id, _, vars, args, body) ->
-        let _ = Decl.define_term id vars args body in
-        st, `Term_def (id, vars, args, body), get_warnings ()
+        let expr_id = Decl.define_term id vars args body in
+        st, `Term_def (id, expr_id, vars, args, body), get_warnings ()
     end
 
   let decls st ?attr l =
