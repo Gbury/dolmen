@@ -690,18 +690,6 @@ module Make(S : State_intf.Typer) = struct
   (* Setting the logic *)
   (* ************************************************************************ *)
 
-  let default_smtlib2_logic = {
-    Dolmen_type.Logic.Smtlib2.theories =
-      [ `Core; `Reals_Ints; `Arrays; `Bitvectors; ];
-    features = {
-      free_sorts = true;
-      free_functions = true;
-      datatypes = true;
-      quantifiers = true;
-      arithmetic = `Regular;
-    };
-  }
-
   let set_logic (st : _ Dolmen.State.state) ?(loc=no_loc) s =
     (* auxiliary funciton/lens to set the logic in the state *)
     let set (st : _ Dolmen.State.state) logic = {
@@ -717,7 +705,7 @@ module Make(S : State_intf.Typer) = struct
         | Some l -> l
         | None ->
           add_raw_warning loc (Format.asprintf "Unknown logic %s" s);
-          default_smtlib2_logic
+          Dolmen_type.Logic.Smtlib2.all
       in
       set st (Smtlib2 l), get_warnings ()
     | _ ->

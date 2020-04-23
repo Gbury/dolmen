@@ -39,6 +39,8 @@ module Smtlib2 : sig
   val parse : string -> t option
   (** Parses an smtlib logic string and returns its structured version. *)
 
+  val all: t
+  (** All the smtlib2 logic parsable *)
 end
 
 (** {2 All logics} *)

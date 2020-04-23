@@ -28,6 +28,17 @@ module Smtlib2 = struct
     features      : features;
   }
 
+  let all = {
+    theories = [ `Core; `Arrays; `Bitvectors; `Floats; `Reals_Ints ];
+    features = {
+      free_sorts = true;
+      free_functions = true;
+      datatypes = true;
+      quantifiers = true;
+      arithmetic = `Regular;
+    };
+  }
+
   (*
   QF to disable the quantifier feature
   A or AX for the theory ArraysEx
@@ -49,16 +60,6 @@ module Smtlib2 = struct
         free_sorts = false;
         free_functions = false;
         datatypes = false;
-        quantifiers = true;
-        arithmetic = `Regular;
-      };
-    } in
-    let all = {
-      theories = [ `Core; `Arrays; `Bitvectors; `Floats; `Reals_Ints ];
-      features = {
-        free_sorts = true;
-        free_functions = true;
-        datatypes = true;
         quantifiers = true;
         arithmetic = `Regular;
       };
