@@ -110,6 +110,10 @@ module type S = sig
   (** Exception raised when a list of inductive datatypes could not be proved to
       be well-founded. *)
 
+  exception Illegal_declaration of env * Dolmen.Statement.decl
+  (** Exception raised when type-checking a list of declarations and some
+      of the declarations are not allowed by the environment. *)
+
   type 'a typer = env -> Dolmen.Term.t -> 'a
   (** A general type for typers. Takes a local environment and the current untyped term,
       and return a value. The typer may need additional information for parsing,
@@ -136,9 +140,12 @@ module type S = sig
   val empty_env :
     ?st:state ->
     ?expect:expect ->
-    ?allow_shadow:bool ->
     ?infer_hook:(env -> inferred -> unit) ->
     ?infer_base:Ty.t ->
+    ?allow_shadow:bool ->
+    ?allow_function_decl:bool ->
+    ?allow_data_type_decl:bool ->
+    ?allow_abstract_type_decl:bool ->
     builtin_symbols -> env
   (** Create a new environment. *)
 

@@ -78,17 +78,17 @@ type smtlib_theory = [
 ]
 (** Smtlib theories. *)
 
-type smtlib_restriction = [
-  | `No_free_symbol
-  | `Quantifier_free
-  | `Difference_logic
-  | `Linear_arithmetic
-]
-(** Smtlib restrictions. *)
+type smtlib_features = {
+  uninterpreted   : bool;
+  datatypes       : bool;
+  quantifiers     : bool;
+  arithmetic      : [ `Linear | `Difference | `Regular ];
+}
+(** Smtlib features. *)
 
 type smtlib_logic = {
   theories      : smtlib_theory list;
-  restrictions  : smtlib_restriction list;
+  features      : smtlib_features;
 }
 (** Structured representation of an smtlib logic. *)
 

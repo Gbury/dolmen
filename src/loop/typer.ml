@@ -239,7 +239,7 @@ module Make(S : State_intf.Typer) = struct
     | Tptp_Arith.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
-        "Tptp arithmetic symbols are only polymoprhic over the arithmetic types $int, $rat and $real."
+        "Tptp arithmetic symbols are only polymorphic over the arithmetic types $int, $rat and $real."
     | Tptp_Arith.Cannot_apply_to ty ->
       Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
         Dolmen.Expr.Ty.print ty
@@ -282,7 +282,7 @@ module Make(S : State_intf.Typer) = struct
   let () =
     Printexc.register_printer (function
         | T.Typing_error (err, _, _) ->
-          Some (Format.asprintf "@[<hov>%a@]@." report_error err)
+          Some (Format.asprintf "Typing error:@ %a" report_error err)
         | _ -> None
       )
 
@@ -290,10 +290,19 @@ module Make(S : State_intf.Typer) = struct
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
+  let allow_function_decl = ref None
+  let allow_data_type_decl = ref None
+  let allow_abstract_type_decl = ref None
+
   let default_smtlib_logic = {
     Dolmen_type.Base.theories =
       [ `Core; `Reals_Ints; `Arrays; `Bitvectors; ];
-    restrictions = [];
+    features = {
+      uninterpreted = true;
+      datatypes = true;
+      quantifiers = true;
+      arithmetic = `Regular;
+    };
   }
 
   let smtlib_logic loc st =
@@ -321,20 +330,36 @@ module Make(S : State_intf.Typer) = struct
         | `Reals_Ints -> Smtlib2_Reals_Ints.parse v :: acc
       ) [] l.Dolmen_type.Base.theories
 
-  let restrictions_of_smtlib_logic _v l =
+  let reset_restrictions () =
     Dolmen.Expr.Filter.reset ();
-    List.iter (function
-        | `Linear_arithmetic ->
-          Dolmen.Expr.Filter.Linear.active := true
-        | `Quantifier_free ->
-          Dolmen.Expr.Filter.Quantifier.allow := false
-        | `Difference_logic
-        | `No_free_symbol -> (* TODO *) ()
-      ) l.Dolmen_type.Base.restrictions
+    allow_function_decl := None;
+    allow_data_type_decl := None;
+    allow_abstract_type_decl := None;
+    ()
+
+  let restrictions_of_smtlib_logic _v (l: Dolmen_type.Base.smtlib_logic) =
+    (* Uninterpreted function and datatypes support *)
+    allow_function_decl := Some l.features.uninterpreted;
+    allow_data_type_decl := Some l.features.datatypes;
+    allow_abstract_type_decl := Some l.features.uninterpreted;
+    (* Arithmetic restrictions *)
+    begin match l.features.arithmetic with
+      | `Regular -> ()
+      | `Linear -> Dolmen.Expr.Filter.Linear.active := true
+      | `Difference -> (* TODO *) ()
+    end;
+    (* Quantifiers restrictions *)
+    if not l.features.quantifiers then begin
+      Dolmen.Expr.Filter.Quantifier.allow := false
+    end;
+    ()
 
   let typing_env
       ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0)
       (st : (Parser.language, _, _) Dolmen.State.state) =
+    (* Reset restricitons (useful if multiple instances of the typing
+       functions are used to type different inputs conccurrently *)
+    reset_restrictions ();
     (* Expected type for type inference (top-down) *)
     let expect =
       match st.input_lang with
@@ -377,6 +402,9 @@ module Make(S : State_intf.Typer) = struct
         (Decl.parse :: Subst.parse :: lang_builtins)
     in
     T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+      ?allow_function_decl:!allow_function_decl
+      ?allow_data_type_decl:!allow_data_type_decl
+      ?allow_abstract_type_decl:!allow_abstract_type_decl
 
 
   (* Wrappers around the Type-checking module *)
