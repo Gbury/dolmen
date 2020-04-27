@@ -1,0 +1,3 @@
+; Ensure no inlinging takes place in dev mode to have more accurate backtraces
+(env (dev (ocamlopt_flags -g -inline 0)))
+
