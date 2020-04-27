@@ -9,7 +9,7 @@
 )
 (rule
   (alias runtest)
-  (action (diff test_tptp_infer.output test_tptp_infer.expected))
+  (action (diff test_tptp_infer.expected test_tptp_infer.output))
 )
 
 ; Test for test_tptp.p
@@ -21,7 +21,7 @@
 )
 (rule
   (alias runtest)
-  (action (diff test_tptp.output test_tptp.expected))
+  (action (diff test_tptp.expected test_tptp.output))
 )
 
 ; Test for test_smtlib.smt2
@@ -33,6 +33,6 @@
 )
 (rule
   (alias runtest)
-  (action (diff test_smtlib.output test_smtlib.expected))
+  (action (diff test_smtlib.expected test_smtlib.output))
 )
 
