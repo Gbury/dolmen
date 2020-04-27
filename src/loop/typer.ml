@@ -27,12 +27,36 @@ module type S = sig
 
   val report_error : Format.formatter -> T.err -> unit
 
+  val binding_loc :
+    (_, _, _, _) Dolmen_type.Tff.binding ->
+    Dolmen.ParseLocation.t
+
+  val print_shadowing_reasons :
+    Format.formatter ->
+    Dolmen.Id.t *
+    (_, _, _, _) Dolmen_type.Tff.binding *
+    (_, _, _, _) Dolmen_type.Tff.binding -> unit
 end
 
 module Make(S : State_intf.Typer) = struct
 
   (* Shadowing *)
   (* ************************************************************************ *)
+
+  let binding_reason = function
+    | `Not_found -> assert false
+    | `Ty (_, reason)
+    | `Cstr (_, reason)
+    | `Term (_, reason)
+    | `Field (_, reason) -> reason
+
+  let reason_loc r =
+    match (r : Dolmen_type.Tff.reason) with
+    | Inferred loc
+    | Declared loc -> loc
+
+  let binding_loc b =
+    reason_loc (binding_reason b)
 
   let print_reason fmt r =
     match (r : Dolmen_type.Tff.reason) with
@@ -42,10 +66,10 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "declared at %a" Dolmen.ParseLocation.fmt loc
 
   let print_shadowing_reasons fmt (id, old, cur) =
-    Format.fprintf fmt "Shadowing:@ %a was %a@ and is now %a"
+    Format.fprintf fmt "%a was %a@ and is now %a"
       Dolmen.Id.print id
-      print_reason old
-      print_reason cur
+      print_reason (binding_reason old)
+      print_reason (binding_reason cur)
 
   (* Warnings *)
   (* ************************************************************************ *)
@@ -61,24 +85,10 @@ module Make(S : State_intf.Typer) = struct
 
   module Warn = struct
 
-    let reason_loc r =
-    match (r : Dolmen_type.Tff.reason) with
-      | Inferred loc
-      | Declared loc -> loc
-
-    let binding_reason = function
-      | `Not_found -> assert false
-      | `Ty (_, reason)
-      | `Cstr (_, reason)
-      | `Term (_, reason)
-      | `Field (_, reason) -> reason
-
     let shadow id old cur =
-      let old_reason = binding_reason old in
-      let new_reason = binding_reason cur in
-      let loc = reason_loc new_reason in
-      fmt_warning loc "%a"
-          print_shadowing_reasons (id, old_reason, new_reason)
+      let loc = reason_loc (binding_reason cur) in
+      fmt_warning loc "shadowing:@ %a"
+          print_shadowing_reasons (id, old, cur)
 
     let unused_ty_var loc v =
       fmt_warning loc

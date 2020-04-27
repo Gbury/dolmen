@@ -321,6 +321,7 @@ module Make
 
   (** Exception for redefinition/shadowing *)
   exception Shadowing of
+      Dolmen.Id.t *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
 
@@ -455,7 +456,7 @@ module Make
         if env.allow_shadow then
           W.shadow id old_binding new_binding
         else
-          raise (Shadowing (old_binding, new_binding))
+          raise (Shadowing (id, old_binding, new_binding))
     end;
     H.add env.st.csts id v
 

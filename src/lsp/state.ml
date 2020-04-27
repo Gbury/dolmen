@@ -48,8 +48,6 @@ let warn t loc msg =
   add_diag d t
 
 let error t loc format =
-  (* NOTE: probably useless, kasprintf allocates a new buffer… right? *)
-  Format.pp_set_margin Format.str_formatter 500;
   Format.kasprintf (fun msg ->
       let d = Diagnostic.error ~loc msg in
       add_diag d t

@@ -101,6 +101,7 @@ module type S = sig
   (** Exception raised when a typing error is encountered. *)
 
   exception Shadowing of
+      Dolmen.Id.t *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
   (** Exception raised upon redefinition of symbols/constants
