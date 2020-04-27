@@ -76,7 +76,7 @@ module Smtlib2 = struct
         | [ rm; b ] -> begin
             match Ty.view @@ T.ty b with
             | `Real -> F.real_to_fp e s rm b
-            | `Bitv _ -> F.ubv_to_fp e s rm b
+            | `Bitv _ -> F.sbv_to_fp e s rm b
             | `Float (_,_) -> F.to_fp e s rm b
             | _ -> Type._error env (Ast ast) (
                 Type.Expected ("a real, bitvector or float", Some (Term b)))
