@@ -16,6 +16,7 @@ doc:
 	dune build $(FLAGS) @doc
 
 test:
+	dune exec -- tests/gentests.exe tests/
 	dune build $(FLAGS) @runtest
 
 clean:
