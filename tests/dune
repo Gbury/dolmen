@@ -1,2 +1,6 @@
-; File generated for tests by a script
+
+(executable
+  (name       gentests)
+  (libraries  unix)
+)
 
