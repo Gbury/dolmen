@@ -79,9 +79,9 @@ let smtlib_logic s =
   let set_dt c = set_features c (fun f -> { f with datatypes = true}) in
   let set_dl c = set_features c (fun f -> { f with arithmetic = `Difference}) in
   let set_la c = set_features c (fun f -> { f with arithmetic = `Linear}) in
-  (** Entry-point for a best effort at parsing a logic name into a
-      structured representation of what theories the logic includes and
-      what restrictions it imposes. *)
+  (* Entry-point for a best effort at parsing a logic name into a
+     structured representation of what theories the logic includes and
+     what restrictions it imposes. *)
   let rec parse_logic c l = parse_all c l
   (* The 'ALL' logic is described in the SMTlib language standard as
      a logic including all that is supported by the solver. *)
