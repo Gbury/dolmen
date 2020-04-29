@@ -101,6 +101,7 @@ module type S = sig
   (** Exception raised when a typing error is encountered. *)
 
   exception Shadowing of
+      Dolmen.Id.t *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
   (** Exception raised upon redefinition of symbols/constants
@@ -109,6 +110,10 @@ module type S = sig
   exception Not_well_founded_datatypes of Dolmen.Statement.decl list
   (** Exception raised when a list of inductive datatypes could not be proved to
       be well-founded. *)
+
+  exception Illegal_declaration of env * Dolmen.Statement.decl
+  (** Exception raised when type-checking a list of declarations and some
+      of the declarations are not allowed by the environment. *)
 
   type 'a typer = env -> Dolmen.Term.t -> 'a
   (** A general type for typers. Takes a local environment and the current untyped term,
@@ -136,9 +141,12 @@ module type S = sig
   val empty_env :
     ?st:state ->
     ?expect:expect ->
-    ?allow_shadow:bool ->
     ?infer_hook:(env -> inferred -> unit) ->
     ?infer_base:Ty.t ->
+    ?allow_shadow:bool ->
+    ?allow_function_decl:bool ->
+    ?allow_data_type_decl:bool ->
+    ?allow_abstract_type_decl:bool ->
     builtin_symbols -> env
   (** Create a new environment. *)
 

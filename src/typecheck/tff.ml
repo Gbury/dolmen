@@ -265,9 +265,14 @@ module Make
 
     (* Additional typing info *)
     expect       : expect;
-    allow_shadow : bool;
     infer_base   : Ty.t option;
     infer_hook   : env -> inferred -> unit;
+
+    (* Potential restrictions on the typing *)
+    allow_shadow              : bool;
+    allow_function_decl       : bool;
+    allow_data_type_decl      : bool;
+    allow_abstract_type_decl  : bool;
   }
 
   (* Builtin symbols, i.e symbols understood by some theories,
@@ -316,11 +321,16 @@ module Make
 
   (** Exception for redefinition/shadowing *)
   exception Shadowing of
+      Dolmen.Id.t *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
       (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
 
   (* Exception for not well-dounded datatypes definitions. *)
   exception Not_well_founded_datatypes of Dolmen.Statement.decl list
+
+  (* Exception for declarations forbidden by the env
+     (i.e. by the user's settings). *)
+  exception Illegal_declaration of env * Dolmen.Statement.decl
 
     (* TOOD: uncomment this code
   (* Creating explanations *)
@@ -446,7 +456,7 @@ module Make
         if env.allow_shadow then
           W.shadow id old_binding new_binding
         else
-          raise (Shadowing (old_binding, new_binding))
+          raise (Shadowing (id, old_binding, new_binding))
     end;
     H.add env.st.csts id v
 
@@ -482,17 +492,19 @@ module Make
 
   (* Make a new empty environment *)
   let empty_env
-      ?(st=global)
-      ?(expect=Nothing)
-      ?(allow_shadow=true)
-      ?(infer_hook=(fun _ _ -> ()))
-      ?infer_base
+      ?(st=global) ?(expect=Nothing)
+      ?(infer_hook=(fun _ _ -> ())) ?infer_base
+      ?(allow_shadow=true) ?(allow_function_decl=true)
+      ?(allow_data_type_decl=true) ?(allow_abstract_type_decl=true)
       builtins = {
     type_locs = E.empty;
     term_locs = F.empty;
     type_vars = M.empty;
     term_vars = M.empty;
-    st; builtins; expect; allow_shadow; infer_hook; infer_base;
+    st; builtins; expect;
+    infer_hook; infer_base;
+    allow_shadow; allow_function_decl;
+    allow_data_type_decl; allow_abstract_type_decl;
   }
 
   let expect ?(force=false) env expect =
@@ -1283,11 +1295,16 @@ module Make
         | Abstract { id; ty; loc; } ->
           begin match parse_sig env ty with
             | `Ty_cstr n ->
+              if not env.allow_abstract_type_decl then
+                raise (Illegal_declaration (env, t));
               let c = Ty.Const.mk (Id.full_name id) n in
               List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
               decl_ty_const env id c (Declared (or_default_loc loc));
               `Type_decl c
             | `Fun_ty (vars, args, ret) ->
+              if not env.allow_function_decl &&
+                 (vars <> [] || args <> []) then
+                raise (Illegal_declaration (env, t));
               let f = T.Const.mk (Id.full_name id) vars args ret in
               List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
               decl_term_const env id f (Declared (or_default_loc loc));
@@ -1295,6 +1312,8 @@ module Make
           end
         | Record { id; vars; loc; _ }
         | Inductive { id; vars; loc; _ } ->
+          if not env.allow_data_type_decl then
+            raise (Illegal_declaration (env, t));
           let n = List.length vars in
           let c = Ty.Const.mk (Id.full_name id) n in
           List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;

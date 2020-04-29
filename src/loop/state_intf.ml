@@ -13,7 +13,7 @@ type source = [
   | `Raw of string * string
 ]
 
-type phase =[
+type phase = [
   | `Parsing
   | `Include
   | `Typing

@@ -27,11 +27,15 @@ let handle_exn st = function
     Ok (State.error st loc "Lexing error: %s" msg)
   (* Parsing error *)
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
-    Ok (State.error st loc "Syntax error %s" msg)
+    Ok (State.error st loc "Syntax error: %s" msg)
   (* Typing error *)
   | State.Typer.T.Typing_error (err, _, t) ->
     let loc = get_loc t.Dolmen.Term.loc in
     Ok (State.error st loc "Typing error: %a" State.Typer.report_error err)
+  | State.Typer.T.Shadowing (id, old, cur) ->
+    let loc = State.Typer.binding_loc cur in
+    Ok (State.error st loc "Typing error: %a"
+          State.Typer.print_shadowing_reasons (id, old, cur))
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->

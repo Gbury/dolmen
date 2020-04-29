@@ -3,6 +3,8 @@
 
 module type S = sig
 
+  (** {2 Main interface} *)
+
   type solve_st
 
   module T : Dolmen_type.Tff_intf.S
@@ -27,6 +29,20 @@ module type S = sig
 
   val report_error : Format.formatter -> T.err -> unit
   (** Report a typing error on the given formatter. *)
+
+
+  (** {2 Error reporting helpers} *)
+
+  val binding_loc :
+    (_, _, _, _) Dolmen_type.Tff.binding ->
+    Dolmen.ParseLocation.t
+
+  val print_shadowing_reasons :
+    Format.formatter ->
+    Dolmen.Id.t *
+    (_, _, _, _) Dolmen_type.Tff.binding *
+    (_, _, _, _) Dolmen_type.Tff.binding -> unit
+  (** Print reasons for a shadowing *)
 
 end
 
