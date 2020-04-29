@@ -63,6 +63,15 @@ let smtlib_logic s =
       arithmetic = `Regular;
     };
   } in
+  let all = {
+    theories = [ `Core; ];
+    features = {
+      uninterpreted = true;
+      datatypes = true;
+      quantifiers = true;
+      arithmetic = `Regular;
+    };
+  } in
   let add_theory t c = { c with theories = t :: c.theories } in
   let set_features c f = { c with features = f c.features } in
   let set_uf c = set_features c (fun f -> { f with uninterpreted = true}) in
@@ -70,47 +79,56 @@ let smtlib_logic s =
   let set_dt c = set_features c (fun f -> { f with datatypes = true}) in
   let set_dl c = set_features c (fun f -> { f with arithmetic = `Difference}) in
   let set_la c = set_features c (fun f -> { f with arithmetic = `Linear}) in
+  (** Entry-point for a best effort at parsing a logic name into a
+      structured representation of what theories the logic includes and
+      what restrictions it imposes. *)
+  let rec parse_logic c l = parse_all c l
+  (* The 'ALL' logic is described in the SMTlib language standard as
+     a logic including all that is supported by the solver. *)
+  and parse_all c = function
+    | 'A'::'L'::'L'::l -> parse_end all l
+    | l -> parse_qf c l
   (* The QF theory can only appear as a prefix "QF_" *)
-  let rec parse1 c = function
+  and parse_qf c = function
     | [] -> Some c
-    | 'Q'::'F'::'_'::l -> parse2 (set_qf c) l
-    | l -> parse2 c l
+    | 'Q'::'F'::'_'::l -> parse_array (set_qf c) l
+    | l -> parse_array c l
   (* The Array theory is specified first after an optional QF_, and
      can be one of two forms:
      - either 'A' followed by some other theories
      - either 'AX' followed by no theory *)
-  and parse2 c = function
-    | 'A'::'X'::l -> parse6 (add_theory `Arrays c) l
+  and parse_array c = function
+    | 'A'::'X'::l -> parse_end (add_theory `Arrays c) l
     | 'A'::[] -> None (* "QF_A" and "A" are not valid logics *)
-    | 'A'::l  -> parse3 (add_theory `Arrays c) l
-    | l -> parse3 c l
+    | 'A'::l  -> parse_uf (add_theory `Arrays c) l
+    | l -> parse_uf c l
   (* The UF theory can be specified after the array theory *)
-  and parse3 c = function
-    | 'U'::'F'::l -> parse4 (set_uf c) l
-    | l -> parse4 c l
+  and parse_uf c = function
+    | 'U'::'F'::l -> parse_arith (set_uf c) l
+    | l -> parse_arith c l
   (* After the QF, Array and UF theories have been specified,
      one of the BV or some arithmetic theory can be specified. *)
-  and parse4 c = function
-    | 'B'::'V'::l -> parse5 (add_theory `Bitvectors c) l
-    | 'I'::'D'::'L'::l -> parse5 (add_theory `Ints (set_dl c)) l
-    | 'R'::'D'::'L'::l -> parse5 (add_theory `Reals (set_dl c)) l
-    | 'L'::'I'::'A'::l -> parse5 (add_theory `Ints (set_la c)) l
-    | 'L'::'R'::'A'::l -> parse5 (add_theory `Reals (set_la c)) l
-    | 'L'::'I'::'R'::'A'::l -> parse5 (add_theory `Reals_Ints (set_la c)) l
-    | 'N'::'I'::'A'::l -> parse5 (add_theory `Ints c) l
-    | 'N'::'R'::'A'::l -> parse5 (add_theory `Reals c) l
-    | 'N'::'I'::'R'::'A'::l -> parse5 (add_theory `Reals_Ints c) l
-    | l -> parse5 c l
+  and parse_arith c = function
+    | 'B'::'V'::l -> parse_dt (add_theory `Bitvectors c) l
+    | 'I'::'D'::'L'::l -> parse_dt (add_theory `Ints (set_dl c)) l
+    | 'R'::'D'::'L'::l -> parse_dt (add_theory `Reals (set_dl c)) l
+    | 'L'::'I'::'A'::l -> parse_dt (add_theory `Ints (set_la c)) l
+    | 'L'::'R'::'A'::l -> parse_dt (add_theory `Reals (set_la c)) l
+    | 'L'::'I'::'R'::'A'::l -> parse_dt (add_theory `Reals_Ints (set_la c)) l
+    | 'N'::'I'::'A'::l -> parse_dt (add_theory `Ints c) l
+    | 'N'::'R'::'A'::l -> parse_dt (add_theory `Reals c) l
+    | 'N'::'I'::'R'::'A'::l -> parse_dt (add_theory `Reals_Ints c) l
+    | l -> parse_dt c l
   (* TODO: where can the DT theory appear ? *)
-  and parse5 c = function
-    | 'D'::'T'::l -> parse6 (set_dt c) l
-    | l -> parse6 c l
+  and parse_dt c = function
+    | 'D'::'T'::l -> parse_end (set_dt c) l
+    | l -> parse_end c l
   (* End of list *)
-  and parse6 c = function
+  and parse_end c = function
     | [] -> Some c
     | _ -> None
   in
-  parse1 default (List.of_seq (String.to_seq s))
+  parse_logic default (List.of_seq (String.to_seq s))
 
 (* Building builtins parser functions *)
 (* ************************************************************************ *)
