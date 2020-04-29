@@ -21,6 +21,17 @@ This will install (among other things) the dolmen lsp server in binary called
 
 ### Vim & Neovim
 
+### 'autozimu/LanguageClient-neovim'
+
+```vim
+let g:LanguageClient_serverCommands = {
+\ 'smt2': ['dolmenls'],
+\ 'p': ['dolmenls'],
+\ 'cnf': ['dolmenls'],
+\ 'zf': ['dolmenls'],
+\ }
+```
+
 #### ALE setup
 
 ```vim
@@ -41,7 +52,7 @@ For a remote connection (replace the `'address'` field):
 for ft in ['smt2', 'tptp', 'p', 'cnf', 'icnf', 'zf']
   call ale#linter#Define(ft, {
   \   'name': 'dolmenls',
-  \   'lsp': 'socket', 
+  \   'lsp': 'socket',
   \   'address': '127.0.0.1:8854',
   \   'project_root': '.',
   \})
