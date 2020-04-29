@@ -32,6 +32,7 @@ let mk_state
     time_limit size_limit
     input_lang input_mode input
     type_check type_infer type_shadow
+    debug
   =
   (* Side-effects *)
   let () = Gc.set gc_opt in
@@ -44,6 +45,8 @@ let mk_state
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Bin_state.t = {
+    debug;
+
     time_limit; size_limit;
 
     input_dir; input_lang;
@@ -55,7 +58,7 @@ let mk_state
 
     solve_state = ();
 
-    export_lang = None;
+    export_lang = [];
   } in
   st
 
@@ -88,6 +91,22 @@ let mode_conv = Arg.enum [
     "full", `Full;
     "incremental", `Incremental;
   ]
+
+(* Output converters *)
+(* ************************************************************************* *)
+
+let output_to_string = function
+  | `Stdout -> "<stdout>"
+  | `File f -> f
+
+let parse_output = function
+  | "stdout" -> Ok `Stdout
+  | f -> Ok (`File f)
+
+let output_conv =
+  let print fmt o = Format.fprintf fmt "%s" (output_to_string o) in
+  Arg.conv (parse_output, print)
+
 
 (* Argument converter for integer with multiplier suffix *)
 (* ************************************************************************ *)
@@ -254,7 +273,14 @@ let state =
         "Decide the permissions for shadowing of symbols" in
     Arg.(value & opt (some perm_conv) None & info ["shadow"] ~doc ~docs)
   in
+  let debug =
+    let doc = Format.asprintf
+        "Print the parsed dolmen statement (after expansion of includes)" in
+    Arg.(value & flag & info ["debug"] ~docs ~doc)
+  in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
-        time $ size $ in_lang $ in_mode $ input $ typing $ infer $ shadow)
+        time $ size $ in_lang $ in_mode $ input $
+        typing $ infer $ shadow $
+        debug)
 
 

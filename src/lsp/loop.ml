@@ -62,6 +62,7 @@ let process path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
   let st = Dolmen.State.{
+      debug = false;
       time_limit = 0.; (* disable the timer *)
       size_limit = max_float;
       input_dir = dir;
@@ -77,7 +78,7 @@ let process path opt_contents =
       type_shadow = None;
       type_smtlib_logic = None;
       solve_state = [];
-      export_lang = None;
+      export_lang = [];
     } in
   try
     let st, g = Pipe.parse [] st in

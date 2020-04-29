@@ -27,6 +27,12 @@ end
 module Make(T : Typer_intf.T) = struct
   open Dolmen.State
 
+  type type_st = T.ty_state
+
+  type solve_st = unit
+
+  type t = (Parser.language, type_st, solve_st) Dolmen.State.state
+
   let pp_loc fmt o =
     match o with
     | None -> ()
@@ -46,10 +52,6 @@ module Make(T : Typer_intf.T) = struct
     st
 
   let warn st loc msg = warn_aux st (Some loc) msg
-
-  type solve_st = unit
-  type type_st = T.ty_state
-  type t = (Parser.language, type_st, solve_st) Dolmen.State.state
 
   let start _ = ()
   let stop _ = ()

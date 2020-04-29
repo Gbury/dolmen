@@ -11,6 +11,9 @@ type perm =
 
 type ('lang, 'typer, 'solver) state = {
 
+  (* Debug option *)
+  debug             : bool;
+
   (* Limits for time and size *)
   time_limit        : float;
   size_limit        : float;
@@ -35,7 +38,7 @@ type ('lang, 'typer, 'solver) state = {
   solve_state       : 'solver;
 
   (* Output settings *)
-  export_lang       : 'lang option;
+  export_lang       : ('lang * Format.formatter) list;
 
 }
 

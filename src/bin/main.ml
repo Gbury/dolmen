@@ -26,6 +26,11 @@ let finally st e =
   | None -> st
   | Some exn -> handle_exn st exn
 
+let debug_pipe ((st, c) as res) =
+  if st.Bin_state.debug then
+    Format.eprintf "%a@." Dolmen.Statement.print c;
+  res
+
 let () =
   let man = [
     `S Options.common_section;
@@ -51,7 +56,8 @@ let () =
     let open Pipeline in
     run ~finally g st (
       (fix (apply ~name:"expand" Pipe.expand) (
-          (apply ~name:"typecheck" Pipe.typecheck)
+          (apply ~name:"debug" debug_pipe)
+          @>>> (apply ~name:"typecheck" Pipe.typecheck)
           @>|> ((apply fst) @>>> _end)
         )
       )
