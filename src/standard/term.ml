@@ -222,10 +222,21 @@ let rec print_descr fmt = function
 and print_match_case fmt (pattern, branch) =
   Format.fprintf fmt "%a => %a" print pattern print branch
 
+and print_attr fmt = function
+  | [] -> ()
+  | a :: r ->
+    Format.fprintf fmt "{%a}@,%a" print a print_attr r
+
 and print fmt = function
-  | { term = (Symbol _) as d ; _ }
-  | { term = (Builtin _) as d ; _ } -> print_descr fmt d
-  | e -> Format.fprintf fmt "@[<hov 2>(%a)@]" print_descr e.term
+  | { term = (Symbol _) as d ; attr; _ }
+  | { term = (Builtin _) as d ; attr; _ } ->
+    Format.fprintf fmt "@[<hov 2>%a@,%a@]"
+      print_descr d
+      print_attr attr
+  | e ->
+    Format.fprintf fmt "@[<hov 2>(%a)@,%a@]"
+      print_descr e.term
+      print_attr e.attr
 
 (* Comparison *)
 let _descr = function
