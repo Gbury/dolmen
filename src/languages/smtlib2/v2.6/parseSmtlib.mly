@@ -80,7 +80,7 @@ attribute:
       | None -> t
       | Some t' ->
         let loc = L.mk_pos $startpos $endpos in
-        T.colon ~loc t t'
+        T.apply ~loc t [t']
     }
 ;
 
