@@ -300,10 +300,6 @@ module Make(S : State_intf.Typer) = struct
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
-  let allow_function_decl = ref None
-  let allow_data_type_decl = ref None
-  let allow_abstract_type_decl = ref None
-
   let default_smtlib_logic = {
     Dolmen_type.Base.theories =
       [ `Core; `Reals_Ints; `Arrays; `Bitvectors; ];
@@ -342,16 +338,9 @@ module Make(S : State_intf.Typer) = struct
 
   let reset_restrictions () =
     Dolmen.Expr.Filter.reset ();
-    allow_function_decl := None;
-    allow_data_type_decl := None;
-    allow_abstract_type_decl := None;
     ()
 
   let restrictions_of_smtlib_logic _v (l: Dolmen_type.Base.smtlib_logic) =
-    (* Uninterpreted function and datatypes support *)
-    allow_function_decl := Some l.features.uninterpreted;
-    allow_data_type_decl := Some l.features.datatypes;
-    allow_abstract_type_decl := Some l.features.uninterpreted;
     (* Arithmetic restrictions *)
     begin match l.features.arithmetic with
       | `Regular -> ()
@@ -362,7 +351,14 @@ module Make(S : State_intf.Typer) = struct
     if not l.features.quantifiers then begin
       Dolmen.Expr.Filter.Quantifier.allow := false
     end;
-    ()
+    (* Uninterpreted function and datatypes support *)
+    let allow_function_decl = Some l.features.uninterpreted in
+    let allow_data_type_decl = Some l.features.datatypes in
+    let allow_abstract_type_decl = Some l.features.uninterpreted in
+    (allow_function_decl,
+     allow_data_type_decl,
+     allow_abstract_type_decl)
+
 
   let typing_env
       ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0)
@@ -370,51 +366,84 @@ module Make(S : State_intf.Typer) = struct
     (* Reset restricitons (useful if multiple instances of the typing
        functions are used to type different inputs conccurrently *)
     reset_restrictions ();
-    (* Expected type for type inference (top-down) *)
-    let expect =
-      match st.input_lang with
-      | Some Dimacs
-      | Some ICNF
-      | Some Tptp _ ->
-        T.Typed Dolmen.Expr.Ty.prop
-      | _ ->
-        T.Nothing
-    in
-    (* Base type used for type inference (bottom) *)
-    let infer_base =
-      match st.input_lang with
-      | Some Dimacs
-      | Some ICNF -> Some Dolmen.Expr.Ty.prop
-      | Some Tptp _ -> Some Dolmen.Expr.Ty.base
-      | _ -> None
-    in
-    (* Builtins for each language *)
-    let lang_builtins =
-      match st.input_lang with
-      | None -> assert false
-      | Some Dimacs
-      | Some ICNF -> []
-      | Some Alt_ergo -> []
-      | Some Tptp v -> [
+    match st.input_lang with
+    | None -> assert false
+
+    (* Dimacs & iCNF
+       - these infer the declarations of their constants
+         (we could declare them when the number of clauses and variables
+         is declared in the file, but it's easier this way).
+       - there are no explicit declaration or definitions, hence no builtins *)
+    | Some Dimacs | Some ICNF ->
+      let expect = T.Typed Dolmen.Expr.Ty.prop in
+      let infer_base = Some Dolmen.Expr.Ty.prop in
+      let builtins = Dolmen_type.Base.noop in
+      T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+
+    (* Alt-Ergo format
+       *)
+    | Some Alt_ergo ->
+      let expect = T.Nothing in
+      let infer_base = None in
+      let builtins = Dolmen_type.Base.merge [
+          Decl.parse; Subst.parse;
+        ] in
+      T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+
+    (* Zipperposition Format
+       - no inference of constants
+       - only the base builtin
+    *)
+    | Some Zf ->
+      let expect = T.Nothing in
+      let infer_base = None in
+      let builtins = Dolmen_type.Base.merge [
+          Decl.parse;
+          Subst.parse;
+          Zf_Base.parse;
+        ] in
+      T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+
+    (* TPTP
+       - tptp has inference of constants
+       - 2 base theories (Base and Arith) + the builtin Decl and Subst
+         for explicit declaration and definitions
+       *)
+    | Some Tptp v ->
+      let expect = T.Typed Dolmen.Expr.Ty.prop in
+      let infer_base = Some Dolmen.Expr.Ty.base in
+      let builtins = Dolmen_type.Base.merge [
+          Decl.parse;
+          Subst.parse;
           Tptp_Base.parse v;
           Tptp_Arith.parse v;
-        ]
-      | Some Zf -> [
-          Zf_Base.parse;
-        ]
-      | Some Smtlib2 v ->
-        let logic = smtlib_logic loc st in
-        restrictions_of_smtlib_logic v logic;
-        builtins_of_smtlib_logic v logic
-    in
-    let builtins =
-      Dolmen_type.Base.merge
-        (Decl.parse :: Subst.parse :: lang_builtins)
-    in
-    T.empty_env ~st:st.type_state ~expect ?infer_base builtins
-      ?allow_function_decl:!allow_function_decl
-      ?allow_data_type_decl:!allow_data_type_decl
-      ?allow_abstract_type_decl:!allow_abstract_type_decl
+        ] in
+      T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+
+    (* SMTLib v2
+       - no inference
+       - see the dedicated function for the builtins
+       - restrictions come from the logic declaration
+       - shadowing is forbidden
+       *)
+    | Some Smtlib2 v ->
+      let expect = T.Nothing in
+      let infer_base = None in
+      let logic = smtlib_logic loc st in
+      let builtins = Dolmen_type.Base.merge (
+          Decl.parse :: Subst.parse ::
+          builtins_of_smtlib_logic v logic
+        ) in
+      let allow_function_decl,
+          allow_data_type_decl,
+          allow_abstract_type_decl =
+        restrictions_of_smtlib_logic v logic
+      in
+      T.empty_env ~st:st.type_state ~expect ?infer_base builtins
+        ~allow_shadow:false
+        ?allow_function_decl
+        ?allow_data_type_decl
+        ?allow_abstract_type_decl
 
 
   (* Wrappers around the Type-checking module *)
