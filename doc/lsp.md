@@ -17,6 +17,10 @@ Once you have opam, you can install `dolmen_lsp` with the following command:
 This will install (among other things) the dolmen lsp server in binary called
 `dolmenls` (for dolmen language server).
 
+## Demo
+
+<a href="https://asciinema.org/a/MoaXpOZJnrJDyrB5gZneuWZxd" target="_blank"><img src="https://asciinema.org/a/MoaXpOZJnrJDyrB5gZneuWZxd.svg" /></a>
+
 ## Configuration
 
 ### Vim & Neovim
