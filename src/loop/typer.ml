@@ -61,15 +61,13 @@ module Make(S : State_intf.Typer) = struct
   let print_reason fmt r =
     match (r : Dolmen_type.Tff.reason) with
     | Inferred loc ->
-      Format.fprintf fmt "inferred at %a" Dolmen.ParseLocation.fmt loc
+      Format.fprintf fmt "inferred at %a" Dolmen.ParseLocation.fmt_pos loc
     | Declared loc ->
-      Format.fprintf fmt "declared at %a" Dolmen.ParseLocation.fmt loc
+      Format.fprintf fmt "declared at %a" Dolmen.ParseLocation.fmt_pos loc
 
-  let print_shadowing_reasons fmt (id, old, cur) =
-    Format.fprintf fmt "%a was %a@ and is now %a"
-      Dolmen.Id.print id
-      print_reason (binding_reason old)
-      print_reason (binding_reason cur)
+  let print_shadowing_reasons fmt (id, old, _cur) =
+    Format.fprintf fmt "%a was already %a"
+      Dolmen.Id.print id print_reason (binding_reason old)
 
   (* Warnings *)
   (* ************************************************************************ *)
@@ -348,13 +346,11 @@ module Make(S : State_intf.Typer) = struct
       | `Difference -> (* TODO *) ()
     end;
     (* Quantifiers restrictions *)
-    if not l.features.quantifiers then begin
-      Dolmen.Expr.Filter.Quantifier.allow := false
-    end;
+    Dolmen.Expr.Filter.Quantifier.allow := l.features.quantifiers;
     (* Uninterpreted function and datatypes support *)
-    let allow_function_decl = Some l.features.uninterpreted in
-    let allow_data_type_decl = Some l.features.datatypes in
-    let allow_abstract_type_decl = Some l.features.uninterpreted in
+    let allow_function_decl = l.features.uninterpreted in
+    let allow_data_type_decl = l.features.datatypes in
+    let allow_abstract_type_decl = l.features.uninterpreted in
     (allow_function_decl,
      allow_data_type_decl,
      allow_abstract_type_decl)
@@ -441,9 +437,9 @@ module Make(S : State_intf.Typer) = struct
       in
       T.empty_env ~st:st.type_state ~expect ?infer_base builtins
         ~allow_shadow:false
-        ?allow_function_decl
-        ?allow_data_type_decl
-        ?allow_abstract_type_decl
+        ~allow_function_decl
+        ~allow_data_type_decl
+        ~allow_abstract_type_decl
 
 
   (* Wrappers around the Type-checking module *)

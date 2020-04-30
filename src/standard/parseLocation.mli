@@ -59,6 +59,7 @@ val mk_pos : Lexing.position -> Lexing.position -> t
 
 val pp : Buffer.t -> t -> unit
 val fmt : Format.formatter -> t -> unit
+val fmt_pos : Format.formatter -> t -> unit
 val fmt_hint : Format.formatter -> t -> unit
 (** Printing functions *)
 

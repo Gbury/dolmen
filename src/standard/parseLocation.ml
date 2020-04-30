@@ -126,6 +126,16 @@ let fmt_hint fmt pos =
       (String.make (pos.start_column) ' ')
       (String.make (pos.stop_column - pos.start_column) '^')
 
+let fmt_pos fmt pos =
+  if pos.start_line = pos.stop_line
+  then
+    Format.fprintf fmt "line %d, character %d-%d"
+      pos.start_line pos.start_column pos.stop_column
+  else
+    Format.fprintf fmt "line %d, character %d to line %d, character %d"
+      pos.start_line pos.start_column
+      pos.stop_line pos.stop_column
+
 
 (* Operations on Lexing.lexbuf *)
 let set_file buf filename =

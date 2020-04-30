@@ -10,6 +10,11 @@ let no_loc = Dolmen.ParseLocation.mk "" 1 1 1 1
 let get_loc = function
   | Some l -> l
   | None -> no_loc
+let get_decl_loc d =
+  match (d : Dolmen.Statement.decl) with
+  | Abstract { loc; _ }
+  | Record { loc; _ }
+  | Inductive { loc; _ } -> get_loc loc
 
 let handle_exn st = function
 
@@ -36,6 +41,19 @@ let handle_exn st = function
     let loc = State.Typer.binding_loc cur in
     Ok (State.error st loc "Typing error: %a"
           State.Typer.print_shadowing_reasons (id, old, cur))
+  | State.Typer.T.Not_well_founded_datatypes l ->
+    let loc = get_decl_loc (List.hd l) in
+    Ok (State.error st loc
+          "Typing error: not well-founded datatype declaration")
+  | State.Typer.T.Illegal_declaration (_, d) ->
+    let loc = get_decl_loc d in
+    Ok (State.error st loc
+          "Illegal declaration %s"
+          (match st.input_lang with
+           | Some Smtlib2 _ -> "(hint: check your logic includes UF/DT ?)"
+           | _ -> ""
+          )
+       )
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->
@@ -49,7 +67,9 @@ let handle_exn st = function
 
   (* Fallback *)
   | exn ->
-    Error (Format.asprintf "unknown exn: %s" (Printexc.to_string exn))
+    Ok (State.error st no_loc
+          "Internal error, please report upstream: %s"
+          (Printexc.to_string exn))
 
 let finally st e =
   match e with
