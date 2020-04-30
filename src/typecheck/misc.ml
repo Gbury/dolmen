@@ -79,6 +79,11 @@ module Bitv = struct
     | 9 -> '9'
     | _ -> assert false
 
+  (* Implementation of division by 2 on strings, and
+     of parsing a string-encoded decimal into a binary bitv,
+     taken from
+     https://stackoverflow.com/questions/11006844/convert-a-very-large-number-from-decimal-string-to-binary-representation/11007021#11007021 *)
+
   let divide_string_by_2 b start =
     let b' = Bytes.create (Bytes.length b - start) in
     let next_additive = ref 0 in
