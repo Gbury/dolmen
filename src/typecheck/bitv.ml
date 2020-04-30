@@ -1,5 +1,5 @@
 
-open Dolmen
+module Id = Dolmen.Id
 
 (* Smtlib arrays *)
 (* ************************************************************************ *)
@@ -14,69 +14,29 @@ module Smtlib2 = struct
     type Type.err +=
       | Invalid_bin_char of char
       | Invalid_hex_char of char
+      | Invalid_dec_char of char
 
-    let check_bin env ast = function
-      | '0' | '1' -> ()
-      | c ->
+    let parse_binary env ast s =
+      match Misc.Bitv.parse_binary s with
+      | s -> Type.Term (T.mk_bitv s)
+      | exception Misc.Bitv.Invalid_char c ->
         let err = Invalid_bin_char c in
         raise (Type.Typing_error (err, env, ast))
 
-    let hex_to_bin env ast = function
-      | '0' -> "0000"
-      | '1' -> "0001"
-      | '2' -> "0010"
-      | '3' -> "0011"
-      | '4' -> "0100"
-      | '5' -> "0101"
-      | '6' -> "0110"
-      | '7' -> "0111"
-      | '8' -> "1000"
-      | '9' -> "1001"
-      | 'a' | 'A' -> "1010"
-      | 'b' | 'B' -> "1011"
-      | 'c' | 'C' -> "1100"
-      | 'd' | 'D' -> "1101"
-      | 'e' | 'E' -> "1110"
-      | 'f' | 'F' -> "1111"
-      | c ->
+    let parse_hexa env ast s =
+      match Misc.Bitv.parse_binary s with
+      | s -> Type.Term (T.mk_bitv s)
+      | exception Misc.Bitv.Invalid_char c ->
         let err = Invalid_hex_char c in
         raise (Type.Typing_error (err, env, ast))
 
-    let parse_binary env ast s =
-      assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'b');
-      let s' = String.sub s 2 (String.length s - 2) in
-      String.iter (check_bin env ast) s';
-      Type.Term (T.mk_bitv s')
-
-    let parse_hexa env ast s =
-      assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'x');
-      let b = Bytes.create ((String.length s - 2) * 4) in
-      String.iteri (fun i c ->
-          Bytes.blit_string (hex_to_bin env ast c) 0 b (i * 4) 4
-        ) s;
-      let s' = Bytes.to_string b in
-      Type.Term (T.mk_bitv s')
-
     let parse_extended_lit env ast s n =
       assert (String.length s >= 2);
-      let s' = String.sub s 2 (String.length s - 2) in
-      match int_of_string s' with
-      | exception Failure _ -> None
-      | x ->
-        let x_s = Format.asprintf "%x" x in
-        let m = (String.length s' * 4) in
-        let b = Bytes.create m in
-        String.iteri (fun i c ->
-            Bytes.blit_string (hex_to_bin env ast c) 0 b (i * 4) 4
-          ) x_s;
-        let s'' =
-          if n <= m then Bytes.sub_string b 0 n
-          else
-            let b' = Bytes.extend b (n - m) 0 in
-            Bytes.fill b' 0 (n - m) '0';
-            Bytes.to_string b'
-        in
-        Some (Type.Term (T.mk_bitv s''))
+      match Misc.Bitv.parse_decimal s n with
+      | s -> Some (Type.Term (T.mk_bitv s))
+      | exception Misc.Bitv.Invalid_char c ->
+        let err = Invalid_dec_char c in
+        raise (Type.Typing_error (err, env, ast))
 
     let split_id = Dolmen_std.Misc.split_on_char '\000'
 
