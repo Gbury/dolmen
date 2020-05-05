@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-fun_def_1.output test-fun_def_1.expected)))
+  (action (diff test-fun_def_1.expected test-fun_def_1.output)))
 
 ; Test for test-fun_def_2.smt2
 (rule
@@ -24,5 +24,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-fun_def_2.output test-fun_def_2.expected)))
+  (action (diff test-fun_def_2.expected test-fun_def_2.output)))
 ; End

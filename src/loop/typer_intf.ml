@@ -5,9 +5,7 @@
 (** This modules defines the smallest signatures for a typechecker that allow
     to instantiate the {State.Make} functor. *)
 module type T = sig
-
-  type ty_state
-
+  type type_st
 end
 
 (** This modules defines the smallest signatures for a typechecker that allow
@@ -28,14 +26,15 @@ module type S = sig
 
   val typecheck : state -> bool
 
+  val set_logic :
+    state -> ?loc:Dolmen.ParseLocation.t -> string -> state
+
   val def :
     state -> ?attr:Dolmen.Term.t -> Dolmen.Id.t -> Dolmen.Term.t ->
-    state *
-    [
+    state * [
      | `Type_def of Dolmen.Id.t * ty_var list * ty
      | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
-    ] *
-    (Dolmen.ParseLocation.t * string) list
+    ] * (Dolmen.ParseLocation.t * string) list
 
   val decls :
     state -> ?attr:Dolmen.Term.t ->
@@ -43,8 +42,7 @@ module type S = sig
     state * [
       | `Type_decl of ty_const
       | `Term_decl of term_const
-    ] list *
-    (Dolmen.ParseLocation.t * string) list
+    ] list * (Dolmen.ParseLocation.t * string) list
 
   val terms :
     state -> ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->

@@ -1,4 +1,47 @@
 
+(* Option helpers *)
+(* ************************************************************************ *)
+
+module Option = struct
+
+  let map f = function
+    | None -> None
+    | Some x -> Some (f x)
+
+end
+
+(* List helpers *)
+(* ************************************************************************ *)
+
+(* Alias to the stdlib's List module, to allow further code in this
+   file to call it, since the following module will shadow it. *)
+module L = List
+
+module List = struct
+
+  let init n f =
+    let rec aux acc i =
+      if i > n then List.rev acc
+      else aux (f i :: acc) (i + 1)
+    in
+    aux [] 1
+
+  let replicate n x =
+    let rec aux x acc n =
+      if n <= 0 then acc else aux x (x :: acc) (n - 1)
+    in
+    aux x [] n
+
+  let take_drop n l =
+    let rec aux acc n = function
+      | r when n <= 0 -> List.rev acc, r
+      | [] -> raise (Invalid_argument "take_drop")
+      | x :: r -> aux (x :: acc) (n - 1) r
+    in
+    aux [] n l
+
+end
+
 (* Bitvector manipulation *)
 (* ************************************************************************ *)
 
@@ -126,3 +169,76 @@ module Bitv = struct
     Bytes.to_string b'
 
 end
+
+(* Fuzzy search maps *)
+(* ************************************************************************ *)
+
+module Fuzzy_Map = struct
+
+  module S = Spelll
+  module I = S.Index
+
+  (** We use fuzzy maps in order to give suggestions in case of typos.
+        Since such maps are not trivial to extend to Dolmen identifiers,
+        we map strings (identifier names) to list of associations. *)
+  type 'a t = (Dolmen.Id.t * 'a) list I.t
+
+  let eq id (x, _) = Dolmen.Id.equal id x
+
+  let empty = I.empty
+
+  let rec seq_to_list_ s = match s() with
+    | Seq.Nil -> []
+    | Seq.Cons (x,y) -> x :: seq_to_list_ y
+
+  let get t id =
+    let s = Dolmen.Id.(id.name) in
+    match seq_to_list_ (I.retrieve ~limit:0 t s) with
+    | [l] -> l
+    | [] -> []
+    | _ -> assert false
+
+  let mem t id =
+    L.exists (eq id) (get t id)
+
+  let find t id =
+    snd @@ L.find (eq id) (get t id)
+
+  let add t id v =
+    let l = get t id in
+    let l' =
+      if L.exists (eq id) (get t id) then l
+      else (id, v) :: l
+    in
+    I.add t Dolmen.Id.(id.name) l'
+
+  (** Return a list of suggestions for an identifier. *)
+  let suggest t ~limit id =
+    let s = Dolmen.Id.(id.name) in
+    let l = seq_to_list_ (I.retrieve ~limit t s) in
+    L.flatten @@ L.map (L.map fst) l
+
+end
+
+(* Fuzzy search hashtables *)
+(* ************************************************************************ *)
+
+module Fuzzy_Hashtbl = struct
+
+  (** Fuzzy hashtables are just references to fuzzy maps. *)
+  type 'a t = 'a Fuzzy_Map.t ref
+
+  let create () =
+    ref Fuzzy_Map.empty
+
+  let find r id =
+    Fuzzy_Map.find !r id
+
+  let add r id v =
+    r := Fuzzy_Map.add !r id v
+
+  let suggest r ~limit id =
+    Fuzzy_Map.suggest !r ~limit id
+
+end
+

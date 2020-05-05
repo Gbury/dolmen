@@ -8,5 +8,5 @@
     ; Builtins
     Base Def Arith Arrays Bitv
     ; Helpers
-    Misc)
+    Logic Misc)
 )

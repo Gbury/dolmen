@@ -4,21 +4,15 @@
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Missing_smtlib_logic
-
 exception Input_lang_changed of Parser.language * Parser.language
 
 exception File_not_found of Dolmen.ParseLocation.t option * string * string
 
-(* State for the typer *)
+(* Type information to close the state type in the typer functor *)
 (* ************************************************************************* *)
 
-module For_typer = struct
-
+module Aux = struct
   type solve_st = unit
-
-  let missing_smtlib_logic () = raise Missing_smtlib_logic
-
 end
 
 (* Full state *)
@@ -27,11 +21,7 @@ end
 module Make(T : Typer_intf.T) = struct
   open Dolmen.State
 
-  type type_st = T.ty_state
-
-  type solve_st = unit
-
-  type t = (Parser.language, type_st, solve_st) Dolmen.State.state
+  type t = (Parser.language, T.type_st, unit) Dolmen.State.state
 
   let pp_loc fmt o =
     match o with

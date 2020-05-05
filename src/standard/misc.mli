@@ -1,6 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+
 (** {2 Misc functions} *)
 
 val get_extension : string -> string
@@ -12,6 +13,7 @@ val split_on_char : char -> string -> string list
 
 val replicate : int -> 'a -> 'a list
 (** Returns a list with [n] times the given value. Returns an empty list if [n] *)
+
 
 (** {2 Printing helpers} *)
 

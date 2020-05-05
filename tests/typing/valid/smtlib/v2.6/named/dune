@@ -11,5 +11,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-named.output test-named.expected)))
+  (action (diff test-named.expected test-named.output)))
 ; End

@@ -8,9 +8,10 @@ module Smtlib2 : sig
       (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Bitv with type t = Type.T.t) : sig
 
-    type Type.err +=
-      | Invalid_bin_char of char
-      | Invalid_hex_char of char
+    type _ Type.err +=
+      | Invalid_bin_char : char -> Dolmen.Term.t Type.err
+      | Invalid_hex_char : char -> Dolmen.Term.t Type.err
+      | Invalid_dec_char : char -> Dolmen.Term.t Type.err
 
     val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
   end

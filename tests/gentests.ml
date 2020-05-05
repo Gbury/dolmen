@@ -77,7 +77,7 @@ let test_stanza fmt (exit_code, pb_file) =
   (alias runtest)
   (action (diff %s %s)))
 |}
-    pb_file output_file pb_file exit_code output_file expected_file
+    pb_file output_file pb_file exit_code expected_file output_file
 
 
 (* Generating a test case *)

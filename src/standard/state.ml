@@ -32,7 +32,6 @@ type ('lang, 'typer, 'solver) state = {
   type_check        : bool;
   type_infer        : perm option;
   type_shadow       : perm option;
-  type_smtlib_logic : string option;
 
   (* Solving state *)
   solve_state       : 'solver;
@@ -62,8 +61,3 @@ let is_interactive = function
 
 let prelude _ = "prompt>"
 
-(* Semantic operations *)
-(* ************************************************************************* *)
-
-let set_logic t s =
-  { t with type_smtlib_logic = Some s; }

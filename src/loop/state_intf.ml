@@ -34,9 +34,6 @@ module type Typer = sig
   type solve_st
   (** The type used to store results of solving. *)
 
-  val missing_smtlib_logic : unit -> 'a
-  (** Called when an smtlib set-logic command is missing. *)
-
 end
 
 (** This modules defines the smallest signatures for a solver state that allow
@@ -64,26 +61,42 @@ module type S = sig
   type term
   (** The type of solver terms. *)
 
-  (* Hooks at the start/end of phases *)
+  val warn : t -> Dolmen.ParseLocation.t -> string -> t
+  (** Emit a warning *)
+
   val start : phase -> unit
+  (** Hook at the start of a phase *)
+
   val stop : phase -> unit
+  (** Hook at the end of a phase *)
 
-  (* Interactivity-related queries *)
   val prelude : t -> string
-  val is_interactive : t -> bool
+  (** Some prelude to print at the begining of lines when in interactive mode. *)
 
-  (* Input options *)
+  val is_interactive : t -> bool
+  (** Whether we are running in interactive mode. *)
+
   val set_mode : t -> mode -> t
+  (* Set the input mode. *)
+
   val set_lang : t -> Parser.language -> t
+  (** Set the input language. *)
 
   val input_mode : t -> mode option
+  (** Return the current mode (if any). *)
+
   val input_lang : t -> Parser.language option
+  (** Return the input language (if any). *)
+
   val input_dir : t -> string
+  (** Return the directory of the input source (e.g. the directory of the
+      input file, or the current directory if in interactive mode). *)
+
   val input_source : t -> source
+  (** Return the input source. *)
+
   val file_not_found :
     ?loc:Dolmen.ParseLocation.t -> dir:string -> file:string -> 'a
-  val warn : t -> Dolmen.ParseLocation.t -> string -> t
-
-  val set_logic : t -> string -> t
+  (** Callback for when a file specified by the input source is not found. *)
 
 end

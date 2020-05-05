@@ -73,6 +73,7 @@ module Make
   ]
 
   type set_info = [
+    | `Set_logic of string
     | `Set_info of Dolmen.Statement.term
     | `Set_option of Dolmen.Statement.term
   ]

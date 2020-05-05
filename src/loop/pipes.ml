@@ -69,6 +69,7 @@ module Make
   ]
 
   type set_info = [
+    | `Set_logic of string
     | `Set_info of Dolmen.Statement.term
     | `Set_option of Dolmen.Statement.term
   ]
@@ -310,14 +311,10 @@ module Make
         in
         `Continue (st, stmt)
 
-      (* We can safely ignore set-logic "dimacs", as it only gives the number of atoms
-          and clauses of the dimacs problem, which is of no interest. *)
-      | { S.descr = S.Set_logic "dimacs"; _ } ->
-        `Done st
       (* Other set_logics should check whether corresponding plugins are activated ? *)
       | { S.descr = S.Set_logic s; _ } ->
-        let st = State.set_logic st s in
-        `Done st
+        let st = Typer.set_logic st ?loc:c.S.loc s in
+        `Continue (st, simple (other_id c) c.S.loc (`Set_logic s))
 
       (* Set/Get info *)
       | { S.descr = S.Get_info s; _ } ->

@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000-2.output SYN000-2.expected)))
+  (action (diff SYN000-2.expected SYN000-2.output)))
 
 ; Test for SYN000+1.p
 (rule
@@ -24,7 +24,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000+1.output SYN000+1.expected)))
+  (action (diff SYN000+1.expected SYN000+1.output)))
 
 ; Test for SYN000^2.p
 (rule
@@ -37,7 +37,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000^2.output SYN000^2.expected)))
+  (action (diff SYN000^2.expected SYN000^2.output)))
 
 ; Test for SYN000-1.p
 (rule
@@ -50,7 +50,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000-1.output SYN000-1.expected)))
+  (action (diff SYN000-1.expected SYN000-1.output)))
 
 ; Test for SYN000+2.p
 (rule
@@ -63,7 +63,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000+2.output SYN000+2.expected)))
+  (action (diff SYN000+2.expected SYN000+2.output)))
 
 ; Test for SYN000_2.p
 (rule
@@ -76,7 +76,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000_2.output SYN000_2.expected)))
+  (action (diff SYN000_2.expected SYN000_2.output)))
 
 ; Test for SYN000^1.p
 (rule
@@ -89,7 +89,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000^1.output SYN000^1.expected)))
+  (action (diff SYN000^1.expected SYN000^1.output)))
 
 ; Test for SYN000=2.p
 (rule
@@ -102,7 +102,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000=2.output SYN000=2.expected)))
+  (action (diff SYN000=2.expected SYN000=2.output)))
 
 ; Test for SYN000_1.p
 (rule
@@ -115,5 +115,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff SYN000_1.output SYN000_1.expected)))
+  (action (diff SYN000_1.expected SYN000_1.output)))
 ; End

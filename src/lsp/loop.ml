@@ -34,26 +34,9 @@ let handle_exn st = function
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
     Ok (State.error st loc "Syntax error: %s" msg)
   (* Typing error *)
-  | State.Typer.T.Typing_error (err, _, t) ->
-    let loc = get_loc t.Dolmen.Term.loc in
-    Ok (State.error st loc "Typing error: %a" State.Typer.report_error err)
-  | State.Typer.T.Shadowing (id, old, cur) ->
-    let loc = State.Typer.binding_loc cur in
-    Ok (State.error st loc "Typing error: %a"
-          State.Typer.print_shadowing_reasons (id, old, cur))
-  | State.Typer.T.Not_well_founded_datatypes l ->
-    let loc = get_decl_loc (List.hd l) in
-    Ok (State.error st loc
-          "Typing error: not well-founded datatype declaration")
-  | State.Typer.T.Illegal_declaration (_, d) ->
-    let loc = get_decl_loc d in
-    Ok (State.error st loc
-          "Illegal declaration %s"
-          (match st.input_lang with
-           | Some Smtlib2 _ -> "(hint: check your logic includes UF/DT ?)"
-           | _ -> ""
-          )
-       )
+  | State.Typer.T.Typing_error (Error (_env, fragment, _err) as error) ->
+    let loc = get_loc (State.Typer.T.fragment_loc fragment) in
+    Ok (State.error st loc "Typing error: %a" State.Typer.report_error error)
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->
@@ -92,11 +75,10 @@ let process path opt_contents =
         | None -> `File file
         | Some contents -> `Raw (file, contents)
       end;
-      type_state = State.Typer.T.new_state ();
+      type_state = State.Typer.new_state ();
       type_check = true;
       type_infer = None;
       type_shadow = None;
-      type_smtlib_logic = None;
       solve_state = [];
       export_lang = [];
     } in

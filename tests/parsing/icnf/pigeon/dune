@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hole10.output hole10.expected)))
+  (action (diff hole10.expected hole10.output)))
 
 ; Test for hole7.icnf
 (rule
@@ -24,7 +24,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hole7.output hole7.expected)))
+  (action (diff hole7.expected hole7.output)))
 
 ; Test for hole6.icnf
 (rule
@@ -37,7 +37,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hole6.output hole6.expected)))
+  (action (diff hole6.expected hole6.output)))
 
 ; Test for hole9.icnf
 (rule
@@ -50,7 +50,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hole9.output hole9.expected)))
+  (action (diff hole9.expected hole9.output)))
 
 ; Test for hole8.icnf
 (rule
@@ -63,5 +63,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hole8.output hole8.expected)))
+  (action (diff hole8.expected hole8.output)))
 ; End

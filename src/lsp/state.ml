@@ -32,7 +32,7 @@ module Typer = Dolmen_loop.Typer.Make(Aux)
 (* ************************************************************************* *)
 
 type lang = Dolmen_loop.Parser.language
-type typer_st = Typer.T.state
+type typer_st = Typer.type_st
 type solver_st = Diagnostic.t list
 
 type t = (lang, typer_st, solver_st) Dolmen.State.state

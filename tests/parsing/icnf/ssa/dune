@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa7552-158.output ssa7552-158.expected)))
+  (action (diff ssa7552-158.expected ssa7552-158.output)))
 
 ; Test for ssa7552-038.icnf
 (rule
@@ -24,7 +24,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa7552-038.output ssa7552-038.expected)))
+  (action (diff ssa7552-038.expected ssa7552-038.output)))
 
 ; Test for ssa7552-160.icnf
 (rule
@@ -37,7 +37,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa7552-160.output ssa7552-160.expected)))
+  (action (diff ssa7552-160.expected ssa7552-160.output)))
 
 ; Test for ssa6288-047.icnf
 (rule
@@ -50,7 +50,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa6288-047.output ssa6288-047.expected)))
+  (action (diff ssa6288-047.expected ssa6288-047.output)))
 
 ; Test for ssa2670-141.icnf
 (rule
@@ -63,7 +63,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa2670-141.output ssa2670-141.expected)))
+  (action (diff ssa2670-141.expected ssa2670-141.output)))
 
 ; Test for ssa7552-159.icnf
 (rule
@@ -76,7 +76,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa7552-159.output ssa7552-159.expected)))
+  (action (diff ssa7552-159.expected ssa7552-159.output)))
 
 ; Test for ssa2670-130.icnf
 (rule
@@ -89,7 +89,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa2670-130.output ssa2670-130.expected)))
+  (action (diff ssa2670-130.expected ssa2670-130.output)))
 
 ; Test for ssa0432-003.icnf
 (rule
@@ -102,5 +102,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff ssa0432-003.output ssa0432-003.expected)))
+  (action (diff ssa0432-003.expected ssa0432-003.output)))
 ; End

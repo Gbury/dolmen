@@ -66,8 +66,8 @@ module Smtlib2 = struct
                       Base.make_op1 (module Type) env ast "divisible" args
                         (fun t -> Type.Term (T.divisible n (Type.parse_term env t)))
                     | _ ->
-                      let err = Type.Bad_op_arity ("divisible", 1, List.length r) in
-                      raise (Type.Typing_error (err, env, ast))
+                      Type._error env (Ast ast)
+                        (Type.Bad_op_arity ("divisible", 1, List.length r))
                   end
                 | _ -> None
               end
@@ -132,16 +132,15 @@ module Smtlib2 = struct
         (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
                                                and type ty := Type.Ty.t) = struct
 
-      type Type.err +=
-        | Expected_arith_type of Type.Ty.t
+      type _ Type.err +=
+        | Expected_arith_type : Type.Ty.t -> Term.t Type.err
 
       let dispatch1 env ast (mk_int, mk_real) t =
         let ty = T.ty t in
         if Ty.(equal int) ty then mk_int t
         else if Ty.(equal real) ty then mk_real t
         else begin
-          let err = Expected_arith_type ty in
-          raise (Type.Typing_error (err, env, ast))
+          Type._error env (Ast ast) (Expected_arith_type ty)
         end
 
       let dispatch2 env ast (mk_int, mk_real) a b =
@@ -158,8 +157,7 @@ module Smtlib2 = struct
           else
             mk_real a b
         else begin
-          let err = Expected_arith_type a_ty in
-          raise (Type.Typing_error (err, env, ast))
+          Type._error env (Ast ast) (Expected_arith_type a_ty)
         end
 
       let promote_int_to_real _env _ast mk_real a b =
@@ -250,8 +248,8 @@ module Smtlib2 = struct
                       Base.make_op1 (module Type) env ast "divisible" args
                         (fun t -> Type.Term (T.Int.divisible n (Type.parse_term env t)))
                     | _ ->
-                      let err = Type.Bad_op_arity ("divisible", 1, List.length r) in
-                      raise (Type.Typing_error (err, env, ast))
+                      Type._error env (Ast ast)
+                        (Type.Bad_op_arity ("divisible", 1, List.length r))
                   end
                 | _ -> None
               end
@@ -275,12 +273,12 @@ module Tptp = struct
       (T : Dolmen.Intf.Term.Tptp_Arith with type t := Type.T.t
                                         and type ty := Type.Ty.t) = struct
 
-    type Type.err +=
-      | Expected_arith_type of Type.Ty.t
-      | Cannot_apply_to of Type.Ty.t
+    type _ Type.err +=
+      | Expected_arith_type : Type.Ty.t -> Term.t Type.err
+      | Cannot_apply_to : Type.Ty.t -> Term.t Type.err
 
     let _invalid env ast ty _ =
-      raise (Type.Typing_error (Cannot_apply_to ty, env, ast))
+      Type._error env (Ast ast) (Cannot_apply_to ty)
 
     let dispatch1 env ast (mk_int, mk_rat, mk_real) t =
       let ty = T.ty t in
@@ -288,8 +286,7 @@ module Tptp = struct
       else if Ty.(equal rat) ty then mk_rat t
       else if Ty.(equal real) ty then mk_real t
       else begin
-        let err = Expected_arith_type ty in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Expected_arith_type ty)
       end
 
     let dispatch2 env ast (mk_int, mk_rat, mk_real) a b =
@@ -298,8 +295,7 @@ module Tptp = struct
       else if Ty.(equal rat) ty then mk_rat a b
       else if Ty.(equal real) ty then mk_real a b
       else begin
-        let err = Expected_arith_type ty in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Expected_arith_type ty)
       end
 
     let app1 env ast args name mk =

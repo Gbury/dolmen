@@ -11,32 +11,29 @@ module Smtlib2 = struct
       (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Bitv with type t = Type.T.t) = struct
 
-    type Type.err +=
-      | Invalid_bin_char of char
-      | Invalid_hex_char of char
-      | Invalid_dec_char of char
+    type _ Type.err +=
+      | Invalid_bin_char : char -> Dolmen.Term.t Type.err
+      | Invalid_hex_char : char -> Dolmen.Term.t Type.err
+      | Invalid_dec_char : char -> Dolmen.Term.t Type.err
 
     let parse_binary env ast s =
       match Misc.Bitv.parse_binary s with
       | s -> Type.Term (T.mk_bitv s)
       | exception Misc.Bitv.Invalid_char c ->
-        let err = Invalid_bin_char c in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Invalid_bin_char c)
 
     let parse_hexa env ast s =
       match Misc.Bitv.parse_binary s with
       | s -> Type.Term (T.mk_bitv s)
       | exception Misc.Bitv.Invalid_char c ->
-        let err = Invalid_hex_char c in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Invalid_hex_char c)
 
     let parse_extended_lit env ast s n =
       assert (String.length s >= 2);
       match Misc.Bitv.parse_decimal s n with
       | s -> Some (Type.Term (T.mk_bitv s))
       | exception Misc.Bitv.Invalid_char c ->
-        let err = Invalid_dec_char c in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Invalid_dec_char c)
 
     let split_id = Dolmen_std.Misc.split_on_char '\000'
 
@@ -47,8 +44,7 @@ module Smtlib2 = struct
           if String.equal s h then begin
             if r_l = n then f r
             else begin
-              let err = Type.Bad_op_arity (s, n, r_l) in
-              raise (Type.Typing_error (err, env, ast))
+              Type._error env (Ast ast) (Type.Bad_op_arity (s, n, r_l))
             end
           end else
             aux h r r_l l'
@@ -60,8 +56,7 @@ module Smtlib2 = struct
     let parse_int env ast s =
       try int_of_string s
       with Failure _ ->
-        let err = Type.Expected ("an integer", None) in
-        raise (Type.Typing_error (err, env, ast))
+        Type._error env (Ast ast) (Type.Expected ("an integer", None))
 
     let app1 env ast args name mk =
       Base.make_op1 (module Type) env ast name args

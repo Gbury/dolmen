@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff pair.output pair.expected)))
+  (action (diff pair.expected pair.output)))
 
 ; Test for length.zf
 (rule
@@ -24,7 +24,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff length.output length.expected)))
+  (action (diff length.expected length.output)))
 
 ; Test for find_bigger.zf
 (rule
@@ -37,7 +37,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff find_bigger.output find_bigger.expected)))
+  (action (diff find_bigger.expected find_bigger.output)))
 
 ; Test for mult_300.zf
 (rule
@@ -50,7 +50,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff mult_300.output mult_300.expected)))
+  (action (diff mult_300.expected mult_300.output)))
 
 ; Test for mult_3000.zf
 (rule
@@ -63,7 +63,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff mult_3000.output mult_3000.expected)))
+  (action (diff mult_3000.expected mult_3000.output)))
 
 ; Test for sets.zf
 (rule
@@ -76,7 +76,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff sets.output sets.expected)))
+  (action (diff sets.expected sets.output)))
 
 ; Test for mult.zf
 (rule
@@ -89,7 +89,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff mult.output mult.expected)))
+  (action (diff mult.expected mult.output)))
 
 ; Test for plist.zf
 (rule
@@ -102,7 +102,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff plist.output plist.expected)))
+  (action (diff plist.expected plist.output)))
 
 ; Test for plus.zf
 (rule
@@ -115,5 +115,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff plus.output plus.expected)))
+  (action (diff plus.expected plus.output)))
 ; End

@@ -1,3 +1,3 @@
-[91mError[0m While typing: (p 12)
-File 'tests/typing/errors/wrong-type/test_tptp_infer.p', line 4, character 18-23:
-The term: 12 has type int but was expected to be of type $i
+[91mError[0m File 'tests/typing/errors/wrong-type/test_tptp_infer.p', line 4, character 18-23:
+      The term: 12 has type int but was expected to be of type $i
+

@@ -52,9 +52,8 @@ let mk_state
     input_dir; input_lang;
     input_mode; input_source;
 
-    type_state = Typer.T.new_state ();
+    type_state = Typer.new_state ();
     type_check; type_infer; type_shadow;
-    type_smtlib_logic = None;
 
     solve_state = ();
 

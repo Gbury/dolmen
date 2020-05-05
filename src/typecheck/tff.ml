@@ -1,52 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-open Dolmen
 module type S = Tff_intf.S
-
-(* Common types *)
-(* ************************************************************************ *)
-
-(* The type of reasons for constant typing *)
-type reason = Tff_intf.reason =
-  | Inferred of ParseLocation.t
-  | Declared of ParseLocation.t
-
-type ('ty_const, 'term_cstr, 'term_field, 'term_const) binding = [
-  | ('ty_const, 'term_cstr, 'term_field, 'term_const) Tff_intf.binding
-]
-
-(* Warnings module signature *)
-(* ************************************************************************ *)
-
-module type Warn = sig
-
-  type ty
-  type ty_var
-  type ty_const
-
-  type term
-  type term_var
-  type term_cstr
-  type term_const
-  type term_field
-
-  val shadow : Id.t ->
-    (ty_const, term_cstr, term_field, term_const) binding ->
-    (ty_const, term_cstr, term_field, term_const) binding ->
-    unit
-
-  val unused_ty_var : ParseLocation.t -> ty_var -> unit
-  val unused_term_var : ParseLocation.t -> term_var -> unit
-
-  val error_in_attribute : ParseLocation.t -> exn -> unit
-
-  val not_found : Id.t -> (int -> Id.t list) -> unit
-
-  val superfluous_destructor :
-    ParseLocation.t -> Id.t -> Id.t -> term_const -> unit
-
-end
 
 (* Typechecking functor *)
 (* ************************************************************************ *)
@@ -60,148 +15,24 @@ module Make
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
       and type 'a tag := 'a Tag.t)
-    (W : Warn
-     with type ty := Ty.t
-      and type ty_var := Ty.Var.t
-      and type ty_const := Ty.Const.t
-      and type term := T.t
-      and type term_var := T.Var.t
-      and type term_cstr := T.Cstr.t
-      and type term_const := T.Const.t
-      and type term_field := T.Field.t
-    )
 = struct
 
   (* Module aliases *)
   (* ************************************************************************ *)
 
-  module Tag = Tag
-  module Ty = Ty
+  (* These are exported *)
   module T = T
+  module Ty = Ty
+  module Tag = Tag
 
-  (* Log&Module Init *)
-  (* ************************************************************************ *)
-
-  let default_loc = ParseLocation.mk "<?>" 0 0 0 0
-
-  let or_default_loc = function
-    | Some loc -> loc
-    | None -> default_loc
-
-  let get_loc t =
-    match t.Term.loc with Some l -> l | None -> default_loc
-
-  (* Module alias to avoid confusing untyped Terms and typed terms *)
-  module Ast = Term
-
-  (** Some maps and hashtables *)
-  module E = Map.Make(Ty.Var)
-  module F = Map.Make(T.Var)
-  module R = Hashtbl.Make(Ty.Const)
-  module S = Hashtbl.Make(T.Const)
-  module U = Hashtbl.Make(T.Cstr)
-  module V = Hashtbl.Make(T.Field)
-
-  (* Convenience functions *)
-  (* ************************************************************************ *)
-
-  let init_list n f =
-    let rec aux acc i =
-      if i > n then List.rev acc
-      else aux (f i :: acc) (i + 1)
-    in
-    aux [] 1
-
-  let replicate n x =
-    let rec aux x acc n =
-      if n <= 0 then acc else aux x (x :: acc) (n - 1)
-    in
-    aux x [] n
-
-  let take_drop n l =
-    let rec aux acc n = function
-      | r when n <= 0 -> List.rev acc, r
-      | [] -> raise (Invalid_argument "take_drop")
-      | x :: r -> aux (x :: acc) (n - 1) r
-    in
-    aux [] n l
-
-  let option_map f = function
-    | None -> None
-    | Some x -> Some (f x)
-
-  (* Fuzzy search maps *)
-  (* ************************************************************************ *)
-
-  module M = struct
-
-    module S = Spelll
-    module I = S.Index
-
-    (** We use fuzzy maps in order to give suggestions in case of typos.
-        Since such maps are not trivial to extend to Dolmen identifiers,
-        we map strings (identifier names) to list of associations. *)
-    type 'a t = (Id.t * 'a) list I.t
-
-    let eq id (x, _) = Id.equal id x
-
-    let empty = I.empty
-
-    let rec seq_to_list_ s = match s() with
-      | Seq.Nil -> []
-      | Seq.Cons (x,y) -> x :: seq_to_list_ y
-
-    let get t id =
-      let s = Id.(id.name) in
-      match seq_to_list_ (I.retrieve ~limit:0 t s) with
-      | [l] -> l
-      | [] -> []
-      | _ -> assert false
-
-    let mem id t =
-      List.exists (eq id) (get t id)
-
-    let find id t =
-      snd @@ List.find (eq id) (get t id)
-
-    let add id v t =
-      let l = get t id in
-      let l' =
-        if List.exists (eq id) (get t id) then l
-        else (id, v) :: l
-      in
-      I.add t Id.(id.name) l'
-
-    (** Return a list of suggestions for an identifier. *)
-    let suggest ~limit id t =
-      let s = Id.(id.name) in
-      let l = seq_to_list_ (I.retrieve ~limit t s) in
-      List.flatten @@ List.map (List.map fst) l
-
-  end
-
-  (* Fuzzy search hashtables *)
-  (* ************************************************************************ *)
-
-  module H = struct
-
-    type 'a t = 'a M.t ref
-
-    (** Fuzzy hashtables are just references to fuzzy maps. *)
-    let create () = ref M.empty
-
-    let find r id = M.find id !r
-
-    let suggest r id = M.suggest id !r
-
-    let add r id v =
-      r := M.add id v !r
-
-  end
+  (* Non-exported module alias to avoid confusing
+     untyped Terms and typed terms *)
+  module Id = Dolmen.Id
+  module Ast = Dolmen.Term
+  module Stmt = Dolmen.Statement
 
   (* Types *)
   (* ************************************************************************ *)
-
 
   (* The type of potentially expected result type for parsing an expression *)
   type expect =
@@ -210,7 +41,8 @@ module Make
     | Typed of Ty.t
 
   (* The type returned after parsing an expression. *)
-  type tag = Any : 'a Tag.t * 'a -> tag
+  type tag =
+    | Any : 'a Tag.t * 'a -> tag
 
   type res =
     | Ttype   : res
@@ -234,6 +66,150 @@ module Make
     | `Term of T.Const.t
     | `Field of T.Field.t
   ]
+
+  type reason =
+    | Bound of Ast.t
+    | Inferred of Ast.t
+    | Declared of Stmt.decl
+  (** The type of reasons for constant typing *)
+
+  type binding = [
+    | `Not_found
+    | `Ty of Ty.Const.t * reason
+    | `Cstr of T.Cstr.t * reason
+    | `Term of T.Const.t * reason
+    | `Field of T.Field.t * reason
+  ]
+  (** The bindings that can occur. *)
+
+  (* Maps & Hashtbls *)
+  (* ************************************************************************ *)
+
+  module M = Misc.Fuzzy_Map
+  module H = Misc.Fuzzy_Hashtbl
+
+  module E = Map.Make(Ty.Var)
+  module F = Map.Make(T.Var)
+  module R = Hashtbl.Make(Ty.Const)
+  module S = Hashtbl.Make(T.Const)
+  module U = Hashtbl.Make(T.Cstr)
+  module V = Hashtbl.Make(T.Field)
+
+  (* Warnings & Errors *)
+  (* ************************************************************************ *)
+
+  (* Fragments of input that represent the sources of warnings/errors *)
+  type _ fragment =
+    | Ast : Ast.t -> Ast.t fragment
+    | Decl : Stmt.decl -> Stmt.decl fragment
+    | Decls : Stmt.decl list -> Stmt.decl list fragment
+    | Located : Dolmen.ParseLocation.t -> Dolmen.ParseLocation.t fragment
+
+  let decl_loc d =
+    match (d : Dolmen.Statement.decl) with
+    | Record { loc; _ }
+    | Abstract { loc; _ }
+    | Inductive { loc; _ } -> loc
+
+  let fragment_loc :
+    type a. a fragment -> Dolmen.ParseLocation.t option = function
+    | Ast { loc; _ } -> loc
+    | Decl d -> decl_loc d
+    | Decls [] -> None
+    | Decls (d :: _) -> decl_loc d
+    | Located l -> Some l
+
+  (* Warnings *)
+  (* ******** *)
+
+  (* Warnings, parameterized by the type of fragment they cna trigger on *)
+  type _ warn = ..
+
+  type _ warn +=
+    | Unused_type_variable : Ty.Var.t -> Ast.t warn
+    (* Unused quantified type variable *)
+    | Unused_term_variable : T.Var.t -> Ast.t warn
+    (* Unused quantified term variable *)
+    | Error_in_attribute : exn -> Ast.t warn
+    (* An error occurred wile parsing an attribute *)
+    | Superfluous_destructor : Id.t * Id.t * T.Const.t -> Ast.t warn
+    (* The user implementation of typed terms returned a destructor where
+       was asked for. This warning can very safely be ignored. *)
+
+  (* Special case for shadowing, as it can happen both from a term but also
+     a declaration, hence why the type variable of [warn] is left wild. *)
+  type _ warn +=
+    | Shadowing : Id.t * binding * binding -> _ warn
+    (* Shadowing of the given identifier, together with the old and current
+       binding. *)
+
+
+  (* Errors *)
+  (* ****** *)
+
+  (* Errors, parameterized by the kind of fragment they can trigger on *)
+  type _ err = ..
+
+  (* Errors that occur on declaration(s) *)
+  type _ err +=
+    | Not_well_founded_datatypes : Stmt.decl list err
+    (* Not well-dounded datatypes definitions. *)
+
+  (* Errors that occur on term fragments, i.e. Ast.t fragments *)
+  type _ err +=
+    | Infer_type_variable : Ast.t err
+    (* the type of a bound variable had to be inferred which is forbidden.
+       todo: rename this *)
+    | Expected : string * res option -> Ast.t err
+    (* the parsed term didn't match the expected shape *)
+    | Bad_op_arity : string * int * int -> Ast.t err
+    (*  *)
+    | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
+    (* *)
+    | Bad_cstr_arity : T.Cstr.t * int * int -> Ast.t err
+    (* *)
+    | Bad_term_arity : T.Const.t * int * int -> Ast.t err
+    (* *)
+    | Repeated_record_field : T.Field.t -> Ast.t err
+    (* *)
+    | Missing_record_field : T.Field.t -> Ast.t err
+    (* *)
+    | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
+    (* *)
+    | Var_application : T.Var.t -> Ast.t err
+    (* *)
+    | Ty_var_application : Ty.Var.t -> Ast.t err
+    (* *)
+    | Type_mismatch : T.t * Ty.t -> Ast.t err
+    (* *)
+    | Quantified_var_inference : Ast.t err
+    (* quantified variable without a type *)
+    | Unhandled_builtin : Ast.builtin -> Ast.t err
+    (* *)
+    | Cannot_tag_tag : Ast.t err
+    (* *)
+    | Cannot_tag_ttype : Ast.t err
+    (* *)
+    | Cannot_find : Id.t -> Ast.t err
+    (* *)
+    | Type_var_in_type_constructor : Ast.t err
+    (* *)
+    | Missing_destructor : Id.t -> Ast.t err
+    (* *)
+    | Higher_order_application : Ast.t err
+    (* *)
+    | Higher_order_type : Ast.t err
+    (* *)
+    | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
+    (* *)
+    | Uncaught_exn : exn -> Ast.t err
+    (* *)
+    | Unhandled_ast : Ast.t err
+    (* *)
+
+
+  (* State & Environment *)
+  (* ************************************************************************ *)
 
   (* Global, mutable state. *)
   type state = {
@@ -263,16 +239,14 @@ module Make
     (* The current builtin symbols *)
     builtins : builtin_symbols;
 
+    (* warnings *)
+    warnings : warning -> unit;
+
     (* Additional typing info *)
     expect       : expect;
     infer_base   : Ty.t option;
     infer_hook   : env -> inferred -> unit;
 
-    (* Potential restrictions on the typing *)
-    allow_shadow              : bool;
-    allow_function_decl       : bool;
-    allow_data_type_decl      : bool;
-    allow_abstract_type_decl  : bool;
   }
 
   (* Builtin symbols, i.e symbols understood by some theories,
@@ -280,7 +254,17 @@ module Make
      cases of application. *)
   and builtin_symbols = env -> Ast.t -> symbol -> Ast.t list -> res option
 
+  (* Existencial wrapper for wranings. *)
+  and warning =
+    | Warning : env * 'a fragment * 'a warn -> warning
+
+  (* Exitencial wrapper around errors *)
+  and error =
+    | Error : env * 'a fragment * 'a err -> error
+
+  (* Convenient alias *)
   type 'a typer = env -> Ast.t -> 'a
+
 
   (* Exceptions *)
   (* ************************************************************************ *)
@@ -288,106 +272,63 @@ module Make
   (* Internal exception *)
   exception Found of Ast.t * res
 
-  type err = ..
-
-  type err +=
-    | Infer_type_variable
-    | Expected of string * res option
-    | Bad_op_arity of string * int * int
-    | Bad_ty_arity of Ty.Const.t * int
-    | Bad_cstr_arity of T.Cstr.t * int * int
-    | Bad_term_arity of T.Const.t * int * int
-    | Repeated_record_field of T.Field.t
-    | Missing_record_field of T.Field.t
-    | Mismatch_record_type of T.Field.t * Ty.Const.t
-    | Var_application of T.Var.t
-    | Ty_var_application of Ty.Var.t
-    | Type_mismatch of T.t * Ty.t
-    | Quantified_var_inference
-    | Unhandled_builtin of Term.builtin
-    | Cannot_tag_tag
-    | Cannot_tag_ttype
-    | Cannot_find of Id.t
-    | Type_var_in_type_constructor
-    | Missing_destructor of Id.t
-    | Higher_order_application
-    | Higher_order_type
-    | Unbound_variables of Ty.Var.t list * T.Var.t list * T.t
-    | Uncaught_exn of exn
-    | Unhandled_ast
-
   (* Exception for typing errors *)
-  exception Typing_error of err * env * Ast.t
+  exception Typing_error of error
 
-  (** Exception for redefinition/shadowing *)
-  exception Shadowing of
-      Dolmen.Id.t *
-      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding *
-      (Ty.Const.t, T.Cstr.t, T.Field.t, T.Const.t) binding
-
-  (* Exception for not well-dounded datatypes definitions. *)
-  exception Not_well_founded_datatypes of Dolmen.Statement.decl list
-
-  (* Exception for declarations forbidden by the env
-     (i.e. by the user's settings). *)
-  exception Illegal_declaration of env * Dolmen.Statement.decl
-
-    (* TOOD: uncomment this code
-  (* Creating explanations *)
-  let mk_expl preface env fmt t = ()
-    match env.explain with
-    | `No -> ()
-    | `Yes ->
-      Format.fprintf fmt "%s\n%a" preface (explain ~full:false env) t
-    | `Full ->
-       Format.fprintf fmt "%s\n%a" preface (explain ~full:true env) t
-    *)
 
   (* Convenience functions *)
-  let _infer_var env t =
-    raise (Typing_error (Infer_type_variable, env, t))
+  (* ************************************************************************ *)
+
+  let _warn env fragment w =
+    env.warnings (Warning (env, fragment, w))
+
+  let _error env fragment e =
+    raise (Typing_error (Error (env, fragment, e)))
 
   let _expected env s t res =
-    raise (Typing_error (Expected (s, res), env, t))
+    _error env (Ast t) (Expected (s, res))
 
   let _bad_op_arity env s n m t =
-    raise (Typing_error (Bad_op_arity (s, n, m), env, t))
+    _error env (Ast t) (Bad_op_arity (s, n, m))
 
   let _bad_ty_arity env f n t =
-    raise (Typing_error (Bad_ty_arity (f, n), env, t))
+    _error env (Ast t) (Bad_ty_arity (f, n))
 
   let _bad_term_arity env f (n1, n2) t =
-    raise (Typing_error (Bad_term_arity (f, n1, n2), env, t))
+    _error env (Ast t) (Bad_term_arity (f, n1, n2))
 
   let _bad_cstr_arity env c (n1, n2) t =
-    raise (Typing_error (Bad_cstr_arity (c, n1, n2), env, t))
+    _error env (Ast t) (Bad_cstr_arity (c, n1, n2))
 
   let _ty_var_app env v t =
-    raise (Typing_error (Ty_var_application v, env, t))
+    _error env (Ast t) (Ty_var_application v)
 
   let _var_app env v t =
-    raise (Typing_error (Var_application v, env, t))
+    _error env (Ast t) (Var_application v)
 
   let _type_mismatch env t ty ast =
-    raise (Typing_error (Type_mismatch (t, ty), env, ast))
+    _error env (Ast ast) (Type_mismatch (t, ty))
 
   let _record_type_mismatch env f ty_c ast =
-    raise (Typing_error (Mismatch_record_type (f, ty_c), env, ast))
+    _error env (Ast ast) (Mismatch_record_type (f, ty_c))
 
   let _field_repeated env f ast =
-    raise (Typing_error (Repeated_record_field f, env, ast))
+    _error env (Ast ast) (Repeated_record_field f)
 
   let _field_missing env f ast =
-    raise (Typing_error (Missing_record_field f, env, ast))
+    _error env (Ast ast) (Missing_record_field f)
 
   let _cannot_infer_quant_var env t =
-    raise (Typing_error (Quantified_var_inference, env, t))
+    _error env (Ast t) (Quantified_var_inference)
 
   let _unknown_builtin env ast b =
-    raise (Typing_error (Unhandled_builtin b, env, ast))
+    _error env (Ast ast) (Unhandled_builtin b)
 
   let _uncaught_exn env ast exn =
-    raise (Typing_error (Uncaught_exn exn, env, ast))
+    _error env (Ast ast) (Uncaught_exn exn)
+
+  let _cannot_find env ast s =
+    _error env (Ast ast) (Cannot_find s)
 
   let _wrap env ast f arg =
     try f arg
@@ -447,42 +388,32 @@ module Make
     | `Term c -> `Term (c, reason)
     | `Field f -> `Field (f, reason)
 
-  let add_global env id reason v =
+  let add_global env fragment id reason v =
     begin match find_global env.st id with
       | `Not_found -> ()
       | old ->
         let old_binding = with_reason (find_reason env.st old) old in
         let new_binding = with_reason reason v in
-        if env.allow_shadow then
-          W.shadow id old_binding new_binding
-        else
-          raise (Shadowing (id, old_binding, new_binding))
+        _warn env fragment (Shadowing (id, old_binding, new_binding))
     end;
     H.add env.st.csts id v
 
   (* Symbol declarations *)
-  let decl_ty_const env id c reason =
-    add_global env id reason (`Ty c);
+  let decl_ty_const env fg id c reason =
+    add_global env fg id reason (`Ty c);
     R.add env.st.ttype_locs c reason
 
-  let decl_term_const env id c reason =
-    add_global env id reason (`Term c);
+  let decl_term_const env fg id c reason =
+    add_global env fg id reason (`Term c);
     S.add env.st.const_locs c reason
 
-  let decl_term_cstr env id c reason =
-    add_global env id reason (`Cstr c);
+  let decl_term_cstr env fg id c reason =
+    add_global env fg id reason (`Cstr c);
     U.add env.st.cstrs_locs c reason
 
-  let decl_term_field env id f reason =
-    add_global env id reason (`Field f);
+  let decl_term_field env fg id f reason =
+    add_global env fg id reason (`Field f);
     V.add env.st.field_locs f reason
-
-  (* Exported wrappers *)
-  let declare_ty_const env id c loc =
-    decl_ty_const env id c (Declared loc)
-
-  let declare_term_const env id c loc =
-    decl_term_const env id c (Declared loc)
 
 
   (* Local Environment *)
@@ -492,19 +423,18 @@ module Make
 
   (* Make a new empty environment *)
   let empty_env
-      ?(st=global) ?(expect=Nothing)
-      ?(infer_hook=(fun _ _ -> ())) ?infer_base
-      ?(allow_shadow=true) ?(allow_function_decl=true)
-      ?(allow_data_type_decl=true) ?(allow_abstract_type_decl=true)
+      ?(st=global)
+      ?(expect=Nothing)
+      ?(infer_hook=(fun _ _ -> ()))
+      ?infer_base
+      ~warnings
       builtins = {
     type_locs = E.empty;
     term_locs = F.empty;
     type_vars = M.empty;
     term_vars = M.empty;
-    st; builtins; expect;
-    infer_hook; infer_base;
-    allow_shadow; allow_function_decl;
-    allow_data_type_decl; allow_abstract_type_decl;
+    st; builtins; warnings;
+    expect; infer_hook; infer_base;
   }
 
   let expect ?(force=false) env expect =
@@ -520,42 +450,42 @@ module Make
   let new_term_name = new_name "term#"
 
   (* Add local variables to environment *)
-  let add_type_var env id v loc =
+  let add_type_var env id v ast =
     let v' =
-      if M.mem id env.type_vars then
+      if M.mem env.type_vars id then
         Ty.Var.mk (new_ty_name ())
       else
         v
     in
     v', { env with
-          type_vars = M.add id v' env.type_vars;
-          type_locs = E.add v' (Declared loc) env.type_locs;
+          type_vars = M.add env.type_vars id v';
+          type_locs = E.add v' (Bound ast) env.type_locs;
         }
 
   let add_type_vars env l =
-    let l', env' = List.fold_left (fun (l, acc) (id, v, loc) ->
-        let v', acc' = add_type_var acc id v loc in
+    let l', env' = List.fold_left (fun (l, acc) (id, v, ast) ->
+        let v', acc' = add_type_var acc id v ast in
         v' :: l, acc') ([], env) l in
     List.rev l', env'
 
-  let add_term_var env id v loc =
+  let add_term_var env id v ast =
     let v' =
-      if M.mem id env.type_vars then
+      if M.mem env.type_vars id then
         T.Var.mk (new_term_name ()) (T.Var.ty v)
       else
         v
     in
     v', { env with
-          term_vars = M.add id v' env.term_vars;
-          term_locs = F.add v' (Declared loc) env.term_locs;
+          term_vars = M.add env.term_vars id v';
+          term_locs = F.add v' (Bound ast) env.term_locs;
         }
 
   let find_var env name =
-    try `Ty (M.find name env.type_vars)
+    try `Ty (M.find env.type_vars name)
     with Not_found ->
       begin
         try
-          `Term (M.find name env.term_vars)
+          `Term (M.find env.term_vars name)
         with Not_found ->
           `Not_found
       end
@@ -564,48 +494,27 @@ module Make
   (* ************************************************************************ *)
 
   let suggest ~limit env id =
-    M.suggest ~limit id env.type_vars @
-    M.suggest ~limit id env.term_vars @
-    H.suggest ~limit env.st.csts id
+    M.suggest env.type_vars ~limit id @
+    M.suggest env.term_vars ~limit id @
+    H.suggest env.st.csts ~limit id
 
   (* Typing explanation *)
   (* ************************************************************************ *)
 
-  let get_reason_loc = function Inferred l | Declared l -> l
+  let _unused_type env v =
+    match E.find v env.type_locs with
+    | Bound t | Inferred t ->
+      _warn env (Ast t) (Unused_type_variable v)
+    | Declared _ -> (* variables should not be declare-able *)
+      assert false
 
-  let _unused_type v env =
-    W.unused_ty_var (get_reason_loc (E.find v env.type_locs)) v
+  let _unused_term env v =
+    match F.find v env.term_locs with
+    | Bound t | Inferred t ->
+      _warn env (Ast t) (Unused_term_variable v)
+    | Declared _ -> (* variables should not be declare-able *)
+      assert false
 
-  let _unused_term v env =
-    W.unused_term_var (get_reason_loc (F.find v env.term_locs)) v
-
-(* TODO: uncomment this code
-  exception Continue of Expr.term list
-
-  let pp_reason fmt = function
-    | Inferred loc -> Format.fprintf fmt "inferred at %a" Dolmen.ParseLocation.fmt loc
-    | Declared loc -> Format.fprintf fmt "declared at %a" Dolmen.ParseLocation.fmt loc
-
-  let rec explain ~full env fmt t =
-    try
-      begin match t with
-        | { Expr.term = Expr.Var v } ->
-          let reason = F.find v env.term_locs in
-          Format.fprintf fmt "%a was %a\n" Expr.Print.id_ty v pp_reason reason
-        | { Expr.term = Expr.Meta m } ->
-          let f = Expr.Meta.def Expr.(m.meta_index) in
-          Format.fprintf fmt "%a was defined by %a\n"
-            Expr.Print.meta m Expr.Print.formula f
-        | { Expr.term = Expr.App (f, _, l) } ->
-          let reason = S.find const_locs f in
-          Format.fprintf fmt "%a was %a\n" Expr.Print.const_ty f pp_reason reason;
-          if full then raise (Continue l)
-      end with
-    | Not_found ->
-      Format.fprintf fmt "Couldn't find a reason..."
-    | Continue l ->
-      List.iter (explain env ~full fmt) l
-*)
 
   (* Wrappers for expression building *)
   (* ************************************************************************ *)
@@ -647,12 +556,12 @@ module Make
 
   let mk_quant env ast mk (ty_vars, t_vars) body =
     let fv_ty, fv_t = T.fv body in
-    (* Check that all quantified variables are actually used *)
+    (* Emit warnings for quantified variables that are unused *)
     List.iter (fun v ->
-        if not @@ List.exists (Ty.Var.equal v) fv_ty then _unused_type v env
+        if not @@ List.exists (Ty.Var.equal v) fv_ty then _unused_type env v
       ) ty_vars;
     List.iter (fun v ->
-        if not @@ List.exists (T.Var.equal v) fv_t then _unused_term v env
+        if not @@ List.exists (T.Var.equal v) fv_t then _unused_term env v
       ) t_vars;
     (* Filter quantified variables from free_variables *)
     let fv_ty = List.filter (fun v ->
@@ -662,8 +571,9 @@ module Make
     (* Create the quantified formula *)
     _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
 
-  let infer env ast s args loc =
-    if Id.(s.ns = Var) then _infer_var env ast;
+  let infer env ast s args s_ast =
+    if Id.(s.ns = Var) then
+      _error env (Ast ast) Infer_type_variable;
     match env.expect, env.infer_base with
     | Nothing, _ -> None
     | Type, _ ->
@@ -671,23 +581,26 @@ module Make
       let ret = Ty.Const.mk (Id.full_name s) n in
       let res = Ty_fun ret in
       env.infer_hook env res;
-      decl_ty_const env s ret (Inferred loc);
+      decl_ty_const env (Ast ast) s ret (Inferred s_ast);
       Some res
     | Typed _, None -> None
     | Typed ty, Some base ->
       let n = List.length args in
-      let ret = T.Const.mk (Id.full_name s) [] (replicate n base) ty in
+      let ret = T.Const.mk
+          (Id.full_name s) [] (Misc.List.replicate n base) ty
+      in
       let res = Term_fun ret in
       env.infer_hook env res;
-      decl_term_const env s ret (Inferred loc);
+      decl_term_const env (Ast ast) s ret (Inferred s_ast);
       Some res
+
 
   (* Tag application *)
   (* ************************************************************************ *)
 
   let apply_tag env ast tag v = function
-    | Ttype -> raise (Typing_error (Cannot_tag_ttype, env, ast))
-    | Tags _ -> raise (Typing_error (Cannot_tag_tag, env, ast))
+    | Ttype -> _error env (Ast ast) Cannot_tag_ttype
+    | Tags _ -> _error env (Ast ast) Cannot_tag_tag
     | Ty ty -> Ty.tag ty tag v
     | Term t -> T.tag t tag v
 
@@ -816,9 +729,10 @@ module Make
 
       (* General case: application *)
       | { Ast.term = Ast.Symbol s; _ } as ast ->
-        parse_app env ast s []
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, l); _ } as ast ->
-        parse_app env ast s l
+        parse_app env ast s ast []
+      | { Ast.term = Ast.App (
+          { Ast.term = Ast.Symbol s; _ } as s_ast, l); _ } as ast ->
+        parse_app env ast s s_ast l
 
       (* If-then-else *)
       | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Ite; _}, l); _ } as ast ->
@@ -851,10 +765,10 @@ module Make
 
       (* Explicitly catch higher-order application. *)
       | { Ast.term = Ast.App ({ Ast.term = Ast.App _; _ }, _); _ } as ast ->
-        raise (Typing_error (Higher_order_application, env, ast))
+        _error env (Ast ast) Higher_order_application
 
       (* Other cases *)
-      | ast -> raise (Typing_error (Unhandled_ast, env, ast))
+      | ast -> _error env (Ast ast) Unhandled_ast
     in
     apply_attr env res t t.Ast.attr
 
@@ -879,8 +793,11 @@ module Make
           parse_attrs env ast (l @ acc) r
         | res ->
           _expected env "tag" a (Some res)
-        | exception (Typing_error (_, _, t) as exn) ->
-          W.error_in_attribute (get_loc t) exn;
+        | exception (Typing_error Error (_, Ast t, _) as exn) ->
+          _warn env (Ast t) (Error_in_attribute exn);
+          parse_attrs env ast acc r
+        | exception exn ->
+          _warn env (Ast a) (Error_in_attribute exn);
           parse_attrs env ast acc r
       end
 
@@ -904,10 +821,10 @@ module Make
         fun (l1, l2, acc) v ->
           match parse_var acc v with
           | `Ty (id, v') ->
-            let v'', acc' = add_type_var acc id v' (get_loc v) in
+            let v'', acc' = add_type_var acc id v' v in
             (v'' :: l1, l2, acc')
           | `Term (id, v') ->
-            let v'', acc' = add_term_var acc id v' (get_loc v) in
+            let v'', acc' = add_term_var acc id v' v in
             (l1, v'' :: l2, acc')
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
@@ -937,7 +854,7 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
-          let v', env' = add_term_var env s v (get_loc w) in
+          let v', env' = add_term_var env s v w in
           parse_let env' ((v', t) :: acc) f r
         | t -> _expected env "variable binding" t None
       end
@@ -948,10 +865,8 @@ module Make
     | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
       begin match find_global env.st s with
         | `Field f -> f
-        | `Not_found ->
-          raise (Typing_error (Cannot_find s, env, ast))
-        | _ ->
-          _expected env "record field" ast None
+        | `Not_found -> _cannot_find env ast s
+        | _ -> _expected env "record field" ast None
       end
     | _ ->
       _expected env "record field name" ast None
@@ -989,7 +904,7 @@ module Make
     | l ->
       _bad_op_arity env "field record access" 2 (List.length l) ast
 
-  and parse_app env ast s args =
+  and parse_app env ast s s_ast args =
     match find_var env s with
     | `Ty v ->
       if args = [] then Ty (Ty.of_var v)
@@ -1011,12 +926,10 @@ module Make
           begin match env.builtins env ast (Id s) args with
             | Some res -> res
             | None ->
-              begin match infer env ast s args (get_loc ast) with
+              begin match infer env ast s args s_ast with
                 | Some Ty_fun f -> parse_app_ty env ast f args
                 | Some Term_fun f -> parse_app_term env ast f args
-                | None ->
-                  W.not_found s (fun limit -> suggest ~limit env s);
-                  raise (Typing_error (Cannot_find s, env, ast))
+                | None -> _cannot_find env ast s
               end
             | exception T.Wrong_type (t, ty) ->
               _type_mismatch env t ty ast
@@ -1035,10 +948,12 @@ module Make
     let n_args = List.length args in
     let n_ty, n_t = T.Const.arity f in
     let ty_l, t_l =
-      if n_args = n_ty + n_t then take_drop n_ty args
+      if n_args = n_ty + n_t then
+        Misc.List.take_drop n_ty args
       else if n_args = n_t then
-        init_list n_ty (fun _ -> Ast.wildcard ()), args
-      else _bad_term_arity env f (n_ty, n_t) ast
+        Misc.List.init n_ty (fun _ -> Ast.wildcard ()), args
+      else
+        _bad_term_arity env f (n_ty, n_t) ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
@@ -1048,8 +963,10 @@ module Make
     let n_args = List.length args in
     let n_ty, n_t = T.Cstr.arity c in
     let ty_l, t_l =
-      if n_args = n_ty + n_t then take_drop n_ty args
-      else _bad_cstr_arity env c (n_ty, n_t) ast
+      if n_args = n_ty + n_t then
+        Misc.List.take_drop n_ty args
+      else
+        _bad_cstr_arity env c (n_ty, n_t) ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
@@ -1091,7 +1008,7 @@ module Make
 
   let parse_ttype_var env t =
     match parse_var (expect ~force:true env Type) t with
-    | `Ty (id, v) -> (id, v, get_loc t)
+    | `Ty (id, v) -> (id, v, t)
     | `Term (_, v) ->
       _expected env "type variable" t (Some (Term (T.of_var v)))
 
@@ -1113,7 +1030,7 @@ module Make
         | Ttype ->
           begin match ttype_vars with
             | (h, _) :: _ ->
-              raise (Typing_error (Type_var_in_type_constructor, env, h))
+              _error env (Ast h) Type_var_in_type_constructor
             | [] ->
               let aux n = function
                 | (_, Ttype) -> n + 1
@@ -1123,7 +1040,7 @@ module Make
                 match List.fold_left aux 0 ty_args with
                 | n -> `Ty_cstr n
                 | exception Found (err, _) ->
-                  raise (Typing_error (Type_var_in_type_constructor, env, err))
+                  _error env (Ast err) Type_var_in_type_constructor
               end
           end
         | Ty ret ->
@@ -1146,7 +1063,7 @@ module Make
     | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Product; _}, l); _ } ->
       List.flatten @@ List.map (parse_sig_arg env) l
     | { Ast.term = Ast.Binder (Ast.Arrow, _, _); _ } as ast ->
-      raise (Typing_error (Higher_order_type, env, ast))
+      _error env (Ast ast) Higher_order_type
     | t ->
       [t, parse_expr env t]
 
@@ -1178,7 +1095,7 @@ module Make
   (* ************************************************************************ *)
 
   let decl_id t =
-    match (t : Statement.decl) with
+    match (t : Stmt.decl) with
     | Abstract { id; _ }
     | Record { id; _ }
     | Inductive { id; _ } -> id
@@ -1194,7 +1111,7 @@ module Make
     with Exit -> true
 
   let well_founded_aux l t =
-    match (t : Statement.decl) with
+    match (t : Stmt.decl) with
     | Abstract _ -> true
     | Inductive { cstrs; _ } ->
       List.exists (fun (_, args) ->
@@ -1211,8 +1128,8 @@ module Make
             ) l)
         ) fields
 
-  let rec check_well_founded l =
-    match (l : Statement.decl list) with
+  let rec check_well_founded env l =
+    match (l : Stmt.decl list) with
     | [] -> ()
     | _ ->
       let has_progressed = ref false in
@@ -1222,12 +1139,11 @@ module Make
           not b
         ) l in
       if !has_progressed then
-        check_well_founded l'
+        check_well_founded env l'
       else
-        raise (Not_well_founded_datatypes l')
+        _error env (Decls l') Not_well_founded_datatypes
 
-  let record env ty_cst { Statement.vars; fields; loc; _ } =
-    let loc = or_default_loc loc in
+  let record env d ty_cst { Stmt.vars; fields; _ } =
     let ttype_vars = List.map (parse_ttype_var env) vars in
     let ty_vars, env = add_type_vars env ttype_vars in
     let l = List.map (fun (id, t) ->
@@ -1236,11 +1152,10 @@ module Make
       ) fields in
     let field_list = T.define_record ty_cst ty_vars l in
     List.iter2 (fun (id, _) field ->
-        decl_term_field env id field (Declared loc)
+        decl_term_field env (Decl d) id field (Declared d)
       ) fields field_list
 
-  let inductive env ty_cst { Statement.id; vars; cstrs; loc; _ } =
-    let loc = or_default_loc loc in
+  let inductive env d ty_cst { Stmt.id; vars; cstrs; _ } =
     (* Parse the type variables *)
     let ttype_vars = List.map (parse_ttype_var env) vars in
     let ty_vars, env = add_type_vars env ttype_vars in
@@ -1254,7 +1169,7 @@ module Make
     (* Constructors with strings for names *)
     let cstrs_with_strings = List.map (fun (id, args) ->
         Id.full_name id, List.map (fun (_, ty, dstr) ->
-            ty, option_map Id.full_name dstr
+            ty, Misc.Option.map Id.full_name dstr
           ) args
       ) cstrs_with_ids in
     (* Call the T module to define the adt and get the typed constructors
@@ -1262,25 +1177,26 @@ module Make
     let defined_cstrs = T.define_adt ty_cst ty_vars cstrs_with_strings in
     (* Register the constructors and destructors in the global env. *)
     List.iter2 (fun (cid, pargs) (c, targs) ->
-        let reason = Declared loc in
-        decl_term_cstr env cid c reason;
+        decl_term_cstr env (Decl d) cid c (Declared d);
         List.iter2 (fun (t, _, dstr) (_, o) ->
             match dstr, o with
             | None, None -> ()
-            | None, Some c -> W.superfluous_destructor loc id cid c
-            | Some id, Some const -> decl_term_const env id const reason
+            | None, Some c ->
+              _warn env (Ast t) (Superfluous_destructor (id, cid, c))
+            | Some id, Some const ->
+              decl_term_const env (Decl d) id const (Declared d)
             | Some id, None ->
-              raise (Typing_error (Missing_destructor id, env, t))
+              _error env (Ast t) (Missing_destructor id)
           ) pargs targs
       ) cstrs_with_ids defined_cstrs
 
   let decl env cst t =
-    match cst, (t : Statement.decl) with
+    match cst, (t : Stmt.decl) with
     | _, Abstract _ -> ()
     | `Term_decl _, Inductive _ -> assert false
-    | `Type_decl c, Inductive i -> inductive env c i
+    | `Type_decl c, Inductive i -> inductive env t c i
     | `Term_decl _, Record _ -> assert false
-    | `Type_decl c, Record r -> record env c r
+    | `Type_decl c, Record r -> record env t c r
 
   let decls env ?attr l =
     let tags = match attr with
@@ -1288,36 +1204,29 @@ module Make
       | Some a -> parse_attr_and env a
     in
     (* Check well-foundedness *)
-    check_well_founded l;
+    check_well_founded env l;
     (* First create (in the global env) the type const for each adt *)
-    let l_decl = List.map (fun (t : Statement.decl) ->
+    let l_decl = List.map (fun (t : Stmt.decl) ->
         match t with
-        | Abstract { id; ty; loc; } ->
+        | Abstract { id; ty; _ } ->
           begin match parse_sig env ty with
             | `Ty_cstr n ->
-              if not env.allow_abstract_type_decl then
-                raise (Illegal_declaration (env, t));
               let c = Ty.Const.mk (Id.full_name id) n in
               List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-              decl_ty_const env id c (Declared (or_default_loc loc));
+              decl_ty_const env (Decl t) id c (Declared t);
               `Type_decl c
             | `Fun_ty (vars, args, ret) ->
-              if not env.allow_function_decl &&
-                 (vars <> [] || args <> []) then
-                raise (Illegal_declaration (env, t));
               let f = T.Const.mk (Id.full_name id) vars args ret in
               List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
-              decl_term_const env id f (Declared (or_default_loc loc));
+              decl_term_const env (Decl t) id f (Declared t);
               `Term_decl f
           end
-        | Record { id; vars; loc; _ }
-        | Inductive { id; vars; loc; _ } ->
-          if not env.allow_data_type_decl then
-            raise (Illegal_declaration (env, t));
+        | Record { id; vars; _ }
+        | Inductive { id; vars; _ } ->
           let n = List.length vars in
           let c = Ty.Const.mk (Id.full_name id) n in
           List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-          decl_ty_const env id c (Declared (or_default_loc loc));
+          decl_ty_const env (Decl t) id c (Declared t);
           `Type_decl c
       ) l in
     (* Parse each definition
@@ -1345,7 +1254,6 @@ module Make
     let res = parse_prop env ast in
     match T.fv res with
     | [], [] -> res
-    | tys, ts ->
-      raise (Typing_error (Unbound_variables (tys, ts, res), env, ast))
+    | tys, ts -> _error env (Ast ast) (Unbound_variables (tys, ts, res))
 
 end

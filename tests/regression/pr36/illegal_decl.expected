@@ -1,2 +1,3 @@
-[91mError[0m Unhandled exception:
-      Dolmen_type.Tff.Make(Tag)(Ty)(T)(W).Illegal_declaration(_, _)
+[91mError[0m File 'tests/regression/pr36/illegal_decl.smt2', line 2, character 0-27:
+      Illegal declaration. Hint: check your logic
+

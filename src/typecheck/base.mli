@@ -66,36 +66,6 @@ val map_chain :
     [Type.T._and \[mk t1 t2; mk t2 t3; ..\]] *)
 
 
-(** {2 Smtlib logic detection} *)
-
-type smtlib_theory = [
-  | `Core
-  | `Arrays
-  | `Bitvectors
-  | `Ints
-  | `Reals
-  | `Reals_Ints
-]
-(** Smtlib theories. *)
-
-type smtlib_features = {
-  uninterpreted   : bool;
-  datatypes       : bool;
-  quantifiers     : bool;
-  arithmetic      : [ `Linear | `Difference | `Regular ];
-}
-(** Smtlib features. *)
-
-type smtlib_logic = {
-  theories      : smtlib_theory list;
-  features      : smtlib_features;
-}
-(** Structured representation of an smtlib logic. *)
-
-val smtlib_logic : string -> smtlib_logic option
-(** Parses an smtlib logic string and returns its structured version. *)
-
-
 (** {2 Languages base builtins} *)
 
 (** AE builtins *)

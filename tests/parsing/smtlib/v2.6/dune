@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-004.output test-004.expected)))
+  (action (diff test-004.expected test-004.output)))
 
 ; Test for test-008.smt2
 (rule
@@ -24,7 +24,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-008.output test-008.expected)))
+  (action (diff test-008.expected test-008.output)))
 
 ; Test for test-011.smt2
 (rule
@@ -37,7 +37,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-011.output test-011.expected)))
+  (action (diff test-011.expected test-011.output)))
 
 ; Test for test-005.smt2
 (rule
@@ -50,7 +50,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-005.output test-005.expected)))
+  (action (diff test-005.expected test-005.output)))
 
 ; Test for test-010.smt2
 (rule
@@ -63,7 +63,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-010.output test-010.expected)))
+  (action (diff test-010.expected test-010.output)))
 
 ; Test for test-009.smt2
 (rule
@@ -76,7 +76,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-009.output test-009.expected)))
+  (action (diff test-009.expected test-009.output)))
 
 ; Test for test-007.smt2
 (rule
@@ -89,7 +89,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-007.output test-007.expected)))
+  (action (diff test-007.expected test-007.output)))
 
 ; Test for test-002.smt2
 (rule
@@ -102,7 +102,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-002.output test-002.expected)))
+  (action (diff test-002.expected test-002.output)))
 
 ; Test for test-003.smt2
 (rule
@@ -115,7 +115,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-003.output test-003.expected)))
+  (action (diff test-003.expected test-003.output)))
 
 ; Test for test-006.smt2
 (rule
@@ -128,7 +128,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-006.output test-006.expected)))
+  (action (diff test-006.expected test-006.output)))
 
 ; Test for test-fun_def_1.smt2
 (rule
@@ -141,7 +141,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-fun_def_1.output test-fun_def_1.expected)))
+  (action (diff test-fun_def_1.expected test-fun_def_1.output)))
 
 ; Test for test-fun_def_2.smt2
 (rule
@@ -154,5 +154,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff test-fun_def_2.output test-fun_def_2.expected)))
+  (action (diff test-fun_def_2.expected test-fun_def_2.output)))
 ; End

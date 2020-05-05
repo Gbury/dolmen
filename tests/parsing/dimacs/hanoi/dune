@@ -11,7 +11,7 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hanoi4.output hanoi4.expected)))
+  (action (diff hanoi4.expected hanoi4.output)))
 
 ; Test for hanoi5.cnf
 (rule
@@ -24,5 +24,5 @@
              (run dolmen %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
-  (action (diff hanoi5.output hanoi5.expected)))
+  (action (diff hanoi5.expected hanoi5.output)))
 ; End

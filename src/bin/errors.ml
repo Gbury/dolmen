@@ -57,17 +57,16 @@ let exn st = function
       (match msg with "" -> "Syntax error" | x -> x)
 
   (* Typing errors *)
-  | Typer.T.Typing_error (err, _, t) ->
-    let loc = get_loc st t.Dolmen.Term.loc in
+  | Typer.T.Typing_error (Error (_env, fragment, _err) as error) ->
+    let loc = get_loc st (Typer.T.fragment_loc fragment) in
     if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     State.error st
-      "@[<hv>While typing:@ @[<hov>%a@]@]@.%a:@\n@[<hv>%a@]"
-      Dolmen.Term.print t
+      "%a:@\n@[<hv>%a@]@."
       Dolmen.ParseLocation.fmt loc
-      Typer.report_error err
+      Typer.report_error error
 
   (* State errors *)
   | Dolmen_loop.State.File_not_found (None, dir, f) ->
@@ -75,8 +74,6 @@ let exn st = function
   | Dolmen_loop.State.File_not_found (Some loc, dir, f) ->
     State.error st "@[<v>%a:@ File not found: '%s' in directory '%s'@]"
       Dolmen.ParseLocation.fmt loc f dir
-  | Dolmen_loop.State.Missing_smtlib_logic ->
-    State.error st "Missing smtlib set-logic statement"
   | Dolmen_loop.State.Input_lang_changed (l, l') ->
     State.error st "Input language changed from %s to %s (probably because of an include statement)"
       (Dolmen_loop.Parser.string_of_language l)

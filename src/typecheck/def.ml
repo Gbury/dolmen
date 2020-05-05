@@ -63,8 +63,8 @@ module Subst
             if n_args = n_ty + n_t then
               take_drop n_ty args
             else begin
-              let err = Type.Bad_op_arity (Id.full_name id, n_ty, n_ty) in
-              raise (Type.Typing_error (err, env, ast))
+              Type._error env (Ast ast)
+                (Type.Bad_op_arity (Id.full_name id, n_ty, n_ty))
             end
           in
           let ty_l = List.map2 (fun x y -> x, y) ty_vars

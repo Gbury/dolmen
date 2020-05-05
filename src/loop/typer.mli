@@ -5,6 +5,7 @@ module type S = sig
 
   (** {2 Main interface} *)
 
+  type type_st
   type solve_st
 
   module T : Dolmen_type.Tff_intf.S
@@ -18,7 +19,7 @@ module type S = sig
      and type T.Cstr.t = Dolmen.Expr.term_const
 
   include Typer_intf.S
-    with type state := (Parser.language, T.state, solve_st) Dolmen.State.state
+    with type state := (Parser.language, type_st, solve_st) Dolmen.State.state
      and type ty := Dolmen.Expr.ty
      and type ty_var := Dolmen.Expr.ty_var
      and type ty_const := Dolmen.Expr.ty_const
@@ -27,22 +28,16 @@ module type S = sig
      and type term_const := Dolmen.Expr.term_const
      and type formula := Dolmen.Expr.formula
 
-  val report_error : Format.formatter -> T.err -> unit
+  val new_state : unit -> type_st
+  (* Generate a fresh typing state. *)
+
+  val report_error : Format.formatter -> T.error -> unit
   (** Report a typing error on the given formatter. *)
 
-
-  (** {2 Error reporting helpers} *)
-
-  val binding_loc :
-    (_, _, _, _) Dolmen_type.Tff.binding ->
-    Dolmen.ParseLocation.t
-
-  val print_shadowing_reasons :
-    Format.formatter ->
-    Dolmen.Id.t *
-    (_, _, _, _) Dolmen_type.Tff.binding *
-    (_, _, _, _) Dolmen_type.Tff.binding -> unit
-  (** Print reasons for a shadowing *)
+  val report_warning : T.warning ->
+    (Format.formatter -> unit -> unit) option
+  (** Return a reporter for the given warning, if the warning should be
+      reported. *)
 
 end
 

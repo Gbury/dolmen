@@ -1,2 +1,3 @@
-[91mError[0m Unhandled exception:
-      Dolmen_type.Tff.Make(Tag)(Ty)(T)(W).Shadowing(_, _, _)
+[91mError[0m File 'tests/regression/pr36/shadow.smt2', line 3, character 0-23:
+      Shadowing: f was already declared at line 2, character 0-23
+
