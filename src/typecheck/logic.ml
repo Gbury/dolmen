@@ -114,7 +114,7 @@ module Smtlib2 = struct
       | [] -> Some c
       | _ -> None
     in
-    parse_logic default (List.of_seq (String.to_seq s))
+    parse_logic default (Misc.Strings.to_list s)
 
 end
 

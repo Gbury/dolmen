@@ -2,7 +2,7 @@
 (* Option helpers *)
 (* ************************************************************************ *)
 
-module Option = struct
+module Options = struct
 
   let map f = function
     | None -> None
@@ -13,11 +13,7 @@ end
 (* List helpers *)
 (* ************************************************************************ *)
 
-(* Alias to the stdlib's List module, to allow further code in this
-   file to call it, since the following module will shadow it. *)
-module L = List
-
-module List = struct
+module Lists = struct
 
   let init n f =
     let rec aux acc i =
@@ -39,6 +35,20 @@ module List = struct
       | x :: r -> aux (x :: acc) (n - 1) r
     in
     aux [] n l
+
+end
+
+(* String manipulation *)
+(* ************************************************************************ *)
+
+module Strings = struct
+
+  let to_list s =
+    let rec aux s i acc =
+      if i < 0 then acc
+      else aux s (i - 1) (s.[i] :: acc)
+    in
+    aux s (String.length s - 1) []
 
 end
 
@@ -199,15 +209,15 @@ module Fuzzy_Map = struct
     | _ -> assert false
 
   let mem t id =
-    L.exists (eq id) (get t id)
+    List.exists (eq id) (get t id)
 
   let find t id =
-    snd @@ L.find (eq id) (get t id)
+    snd @@ List.find (eq id) (get t id)
 
   let add t id v =
     let l = get t id in
     let l' =
-      if L.exists (eq id) (get t id) then l
+      if List.exists (eq id) (get t id) then l
       else (id, v) :: l
     in
     I.add t Dolmen.Id.(id.name) l'
@@ -216,7 +226,7 @@ module Fuzzy_Map = struct
   let suggest t ~limit id =
     let s = Dolmen.Id.(id.name) in
     let l = seq_to_list_ (I.retrieve ~limit t s) in
-    L.flatten @@ L.map (L.map fst) l
+    List.flatten @@ List.map (List.map fst) l
 
 end
 

@@ -12,7 +12,7 @@
 *)
 
 (** Option helpers *)
-module Option : sig
+module Options : sig
 
   val map : ('a -> 'b) -> 'a option -> 'b option
   (** Map over options. *)
@@ -20,7 +20,7 @@ module Option : sig
 end
 
 (** List helpers *)
-module List : sig
+module Lists : sig
 
   val init : int -> (int -> 'a) -> 'a list
   (** Create a list of the given length by calling th e givne function
@@ -34,6 +34,14 @@ module List : sig
       containing the first [n] elements of [l], and in a second list
       the rest.
       @raise Invalid_argument if [l] has less than [n] elements. *)
+
+end
+
+(** String helper *)
+module Strings : sig
+
+  val to_list : string -> char list
+  (** Explode the string into a list of characters. *)
 
 end
 

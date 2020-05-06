@@ -57,7 +57,7 @@ let exn st = function
       (match msg with "" -> "Syntax error" | x -> x)
 
   (* Typing errors *)
-  | Typer.T.Typing_error (Error (_env, fragment, _err) as error) ->
+  | Typer.T.Typing_error (Typer.T.Error (_env, fragment, _err) as error) ->
     let loc = get_loc st (Typer.T.fragment_loc fragment) in
     if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"

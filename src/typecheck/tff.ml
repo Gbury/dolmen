@@ -587,7 +587,7 @@ module Make
     | Typed ty, Some base ->
       let n = List.length args in
       let ret = T.Const.mk
-          (Id.full_name s) [] (Misc.List.replicate n base) ty
+          (Id.full_name s) [] (Misc.Lists.replicate n base) ty
       in
       let res = Term_fun ret in
       env.infer_hook env res;
@@ -949,9 +949,9 @@ module Make
     let n_ty, n_t = T.Const.arity f in
     let ty_l, t_l =
       if n_args = n_ty + n_t then
-        Misc.List.take_drop n_ty args
+        Misc.Lists.take_drop n_ty args
       else if n_args = n_t then
-        Misc.List.init n_ty (fun _ -> Ast.wildcard ()), args
+        Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args
       else
         _bad_term_arity env f (n_ty, n_t) ast
     in
@@ -964,7 +964,7 @@ module Make
     let n_ty, n_t = T.Cstr.arity c in
     let ty_l, t_l =
       if n_args = n_ty + n_t then
-        Misc.List.take_drop n_ty args
+        Misc.Lists.take_drop n_ty args
       else
         _bad_cstr_arity env c (n_ty, n_t) ast
     in
@@ -1169,7 +1169,7 @@ module Make
     (* Constructors with strings for names *)
     let cstrs_with_strings = List.map (fun (id, args) ->
         Id.full_name id, List.map (fun (_, ty, dstr) ->
-            ty, Misc.Option.map Id.full_name dstr
+            ty, Misc.Options.map Id.full_name dstr
           ) args
       ) cstrs_with_ids in
     (* Call the T module to define the adt and get the typed constructors

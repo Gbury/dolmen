@@ -34,7 +34,8 @@ let handle_exn st = function
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
     Ok (State.error st loc "Syntax error: %s" msg)
   (* Typing error *)
-  | State.Typer.T.Typing_error (Error (_env, fragment, _err) as error) ->
+  | State.Typer.T.Typing_error (
+      State.Typer.T.Error (_env, fragment, _err) as error) ->
     let loc = get_loc (State.Typer.T.fragment_loc fragment) in
     Ok (State.error st loc "Typing error: %a" State.Typer.report_error error)
 

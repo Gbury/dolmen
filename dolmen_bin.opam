@@ -15,6 +15,7 @@ depends: [
   "dolmen_loop"
   "dune"
   "fmt"
+  "cmdliner"
 ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
