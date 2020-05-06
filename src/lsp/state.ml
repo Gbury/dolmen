@@ -6,8 +6,6 @@ include Dolmen.State
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Missing_smtlib_logic
-
 exception File_not_found of
     Dolmen.ParseLocation.t option * string * string
 
@@ -19,11 +17,7 @@ exception Input_lang_changed of
 (* ************************************************************************* *)
 
 module Aux = struct
-
   type solve_st = Diagnostic.t list
-
-  let missing_smtlib_logic () = raise Missing_smtlib_logic
-
 end
 
 module Typer = Dolmen_loop.Typer.Make(Aux)

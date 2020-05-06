@@ -4,9 +4,11 @@
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Input_lang_changed of Parser.language * Parser.language
+exception File_not_found of
+    Dolmen.ParseLocation.t option * string * string
 
-exception File_not_found of Dolmen.ParseLocation.t option * string * string
+exception Input_lang_changed of
+    Parser.language * Parser.language
 
 (* Type information to close the state type in the typer functor *)
 (* ************************************************************************* *)
