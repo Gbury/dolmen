@@ -31,8 +31,10 @@ let handle_exn st = function
   | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
     Ok (State.error st loc "Lexing error: %s" msg)
   (* Parsing error *)
+  | Dolmen.ParseLocation.Syntax_error (loc, "") ->
+    Ok (State.error st loc "Syntax error")
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
-    Ok (State.error st loc "Syntax error: %s" msg)
+    Ok (State.error st loc "%s" msg)
   (* Typing error *)
   | State.Typer.T.Typing_error (
       State.Typer.T.Error (_env, fragment, _err) as error) ->
