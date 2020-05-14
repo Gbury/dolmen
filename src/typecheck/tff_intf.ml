@@ -46,6 +46,7 @@ module type S = sig
   (** The type for inferred symbols. *)
 
   type reason =
+    | Builtin
     | Bound of Dolmen.Term.t
     | Inferred of Dolmen.Term.t
     | Declared of Dolmen.Statement.decl
@@ -53,10 +54,17 @@ module type S = sig
 
   type binding = [
     | `Not_found
-    | `Ty of Ty.Const.t * reason
-    | `Cstr of T.Cstr.t * reason
-    | `Term of T.Const.t * reason
-    | `Field of T.Field.t * reason
+    | `Builtin
+    | `Variable of [
+        | `Ty of Ty.Var.t * reason
+        | `Term of T.Var.t * reason
+      ]
+    | `Constant of [
+        | `Ty of Ty.Const.t * reason
+        | `Cstr of T.Cstr.t * reason
+        | `Term of T.Const.t * reason
+        | `Field of T.Field.t * reason
+      ]
   ]
   (** The bindings that can occur. *)
 
@@ -175,12 +183,13 @@ module type S = sig
     | Builtin of Dolmen.Term.builtin
     (** Wrapper around potential function symbols from the Dolmen AST. *)
 
-  type builtin_symbols = (symbol -> Dolmen.Term.t list -> res option) typer
-  (** The type of a typer for builtin symbols. Takes the name of the symbol and the arguments
-      applied to it, and can return a typechecking result.
-      Can be useful for extensions to define overloaded operators such as addition in arithmetic,
-      since the exact function symbol returned can depend on the arguments (or even be different
-      between two calls with the same arguments). *)
+  type builtin_symbols =
+    env -> symbol -> (Dolmen.Term.t -> Dolmen.Term.t list -> res) option
+  (** The type of a typer for builtin symbols. Given the environment and a symbol,
+      the theory should return a typing function if the symbol belongs to the
+      theory. This typing function takes first the ast term of the whole
+      application that is beign typechecked, and the list of arguments to the
+      symbol. *)
 
   type warning =
     | Warning : env * 'a fragment * 'a warn -> warning (**)
@@ -207,10 +216,15 @@ module type S = sig
   (** Returns the same environment but with the given expectation,
       except if the environnement already except [Nothing]. *)
 
+
   (** {2 Error helpers} *)
 
   val fragment_loc : _ fragment -> Dolmen.ParseLocation.t option
   (** Convenient function to get the location of a fragment. *)
+
+  val binding_reason : binding -> reason
+  (** Extract the reason from a binding
+      @raise Invalid_argument if the binding is [`Not_found] *)
 
   val _warn : env -> 'a fragment -> 'a warn -> unit
   (** Emit a warning *)

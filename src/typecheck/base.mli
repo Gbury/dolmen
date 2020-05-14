@@ -1,19 +1,19 @@
 
 (** {2 Helpers} *)
 
-val noop : 'a -> 'b -> 'c -> 'd -> 'e option
+val noop : _ -> _ -> _ option
 (** Noop builtins function. *)
 
 val merge :
-  ('a -> 'b -> 'c -> 'd -> 'e option) list ->
-  'a -> 'b -> 'c -> 'd -> 'e option
+  ('a -> 'b -> ('c -> 'd -> 'e) option) list ->
+  'a -> 'b -> ('c -> 'd -> 'e) option
 (** A convenient function for merging a list of
     builtin parser functions into a single builtin function. *)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
-  'env -> Dolmen.Term.t -> string -> Dolmen.Term.t list ->
-  ('args -> 'ret) -> 'ret option
+  'env -> string -> (Dolmen.Term.t -> 'args -> 'ret) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
 
 val make_op0: (_, unit, _) helper
 (** [make_op (module Type) env ast op arity args ret] checks

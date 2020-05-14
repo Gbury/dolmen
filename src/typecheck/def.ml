@@ -44,34 +44,36 @@ module Subst
   let define_term id vars args body =
     H.add definitions id (`Term (vars, args, body))
 
-  let parse env ast symbol args =
+  let parse env symbol =
     match (symbol : Type.symbol) with
     | Id id ->
       begin match H.find definitions id with
         | `Ty (vars, body) ->
-          Base.make_opn (List.length vars)
-            (module Type) env ast (Id.full_name id) args (fun args ->
-                let ty_args = List.map (Type.parse_ty env) args in
-                let l = List.map2 (fun x y -> x, y) vars ty_args in
-                Type.Ty (T.ty_subst l body)
-              )
+          Some (Base.make_opn (List.length vars)
+                  (module Type) env (Id.full_name id) (fun _ args ->
+                      let ty_args = List.map (Type.parse_ty env) args in
+                      let l = List.map2 (fun x y -> x, y) vars ty_args in
+                      Type.Ty (T.ty_subst l body)
+                    ))
         | `Term (ty_vars, t_vars, body) ->
-          let n_args = List.length args in
-          let n_ty = List.length ty_vars in
-          let n_t = List.length t_vars in
-          let ty_l, t_l =
-            if n_args = n_ty + n_t then
-              take_drop n_ty args
-            else begin
-              Type._error env (Ast ast)
-                (Type.Bad_op_arity (Id.full_name id, n_ty, n_ty))
-            end
-          in
-          let ty_l = List.map2 (fun x y -> x, y) ty_vars
-              (List.map (Type.parse_ty env) ty_l) in
-          let t_l = List.map2 (fun x y -> x, y) t_vars
-              (List.map (Type.parse_term env) t_l) in
-          Some (Type.Term (T.term_subst ty_l t_l body))
+          Some (fun ast args ->
+              let n_args = List.length args in
+              let n_ty = List.length ty_vars in
+              let n_t = List.length t_vars in
+              let ty_l, t_l =
+                if n_args = n_ty + n_t then
+                  take_drop n_ty args
+                else begin
+                  Type._error env (Ast ast)
+                    (Type.Bad_op_arity (Id.full_name id, n_ty, n_ty))
+                end
+              in
+              let ty_l = List.map2 (fun x y -> x, y) ty_vars
+                  (List.map (Type.parse_ty env) ty_l) in
+              let t_l = List.map2 (fun x y -> x, y) t_vars
+                  (List.map (Type.parse_term env) t_l) in
+              Type.Term (T.term_subst ty_l t_l body)
+            )
         | exception Not_found -> None
       end
     | Builtin _ -> None
@@ -100,12 +102,14 @@ module Declare(Type : Tff_intf.S) = struct
     let () = H.add definitions id (`Term c) in
     c
 
-  let parse env ast symbol args =
+  let parse env symbol =
     match (symbol : Type.symbol) with
     | Id id ->
       begin match H.find definitions id with
-        | `Ty c -> Some (Type.parse_app_ty env ast c args)
-        | `Term c -> Some (Type.parse_app_term env ast c args)
+        | `Ty c ->
+          Some (fun ast args -> Type.parse_app_ty env ast c args)
+        | `Term c ->
+          Some (fun ast args -> Type.parse_app_term env ast c args)
         | exception Not_found -> None
       end
     | Builtin _ -> None

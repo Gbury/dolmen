@@ -33,13 +33,14 @@ module Make(T : Typer_intf.T) = struct
 
   let error ?loc _ format =
     Format.kfprintf (fun _ -> exit 1) Format.err_formatter
-      ("%a @[<hov>%a" ^^ format ^^ "@]@.")
-      Fmt.(styled (`Fg (`Hi `Red)) string) "Error" pp_loc loc
+      ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
+      pp_loc loc
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
 
   let warn_aux st loc msg =
-    Format.eprintf "@[<hov>%a%a %s@]@."
+    Format.eprintf "@[<v>%a@[<hov>%a %s@]@]@."
       pp_loc loc
-      Fmt.(styled (`Fg (`Hi `Magenta)) string) "Warning"
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
       msg;
     st
 

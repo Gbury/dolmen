@@ -219,6 +219,13 @@ include Dolmen_intf.Term.Logic
     functions that you may want to use. *)
 
 
+(** {2 Term constructor not in implemented interfaces} *)
+
+val ite_t : ?loc:location -> unit -> t
+(** The standalone term corresponding to the if-then-else builtin
+    construction. *)
+
+
 (** {2 Term inspection} *)
 
 val fv : t -> Id.t list

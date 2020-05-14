@@ -129,15 +129,10 @@ module Make(S : State_intf.Typer) = struct
     | Abstract { loc; _ }
     | Inductive { loc; _ } -> loc
 
-  let binding_reason = function
-    | `Not_found -> assert false
-    | `Ty (_, reason)
-    | `Cstr (_, reason)
-    | `Term (_, reason)
-    | `Field (_, reason) -> reason
-
   let print_reason fmt r =
     match (r : T.reason) with
+    | Builtin ->
+      Format.fprintf fmt "defined by a builtin theory"
     | Bound ast ->
       Format.fprintf fmt "bound at %a" pp_opt_loc ast.loc
     | Inferred ast ->
@@ -166,7 +161,7 @@ module Make(S : State_intf.Typer) = struct
     | T.Shadowing (id, old, _cur) -> Some (fun fmt () ->
         Format.fprintf fmt
           "Shadowing: %a was already %a"
-          Dolmen.Id.print id print_reason (binding_reason old)
+          Dolmen.Id.print id print_reason (T.binding_reason old)
       )
 
     | _ -> Some (fun fmt () ->
@@ -362,10 +357,13 @@ module Make(S : State_intf.Typer) = struct
     error_on_shadow : bool;
   }
 
+  (* Warning reporter, sent to the typechecker.
+     This is responsible for turning fatal warnings into errors *)
   let warnings conf ((T.Warning (env, fragment, warn)) as w) =
     match warn, fragment with
     (* Warnings as errors *)
-    | T.Shadowing _, fragment when conf.error_on_shadow ->
+    | T.Shadowing (_, _, `Constant _), fragment
+      when conf.error_on_shadow ->
       T._error env fragment (Warning_as_error w)
 
     (* general case *)

@@ -38,22 +38,19 @@ let exn st = function
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
-    State.error st "%a:@\n%s@."
-      Dolmen.ParseLocation.fmt loc (Printexc.to_string exn)
+    State.error ~loc st "%s" (Printexc.to_string exn)
   | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
     if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
-    State.error st "%a:@\nLexing error: invalid character '%s'@."
-      Dolmen.ParseLocation.fmt loc msg
+    State.error ~loc st "Lexing error: invalid character '%s'" msg
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
     if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
-    State.error st "%a:@\n%s@."
-      Dolmen.ParseLocation.fmt loc
+    State.error ~loc st "%s@."
       (match msg with "" -> "Syntax error" | x -> x)
 
   (* Typing errors *)
@@ -63,17 +60,12 @@ let exn st = function
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
-    State.error st
-      "%a:@\n@[<hv>%a@]@."
-      Dolmen.ParseLocation.fmt loc
+    State.error ~loc st "%a"
       Typer.report_error error
 
   (* State errors *)
-  | Dolmen_loop.State.File_not_found (None, dir, f) ->
-    State.error st "File not found: '%s' in directory '%s'" f dir
-  | Dolmen_loop.State.File_not_found (Some loc, dir, f) ->
-    State.error st "@[<v>%a:@ File not found: '%s' in directory '%s'@]"
-      Dolmen.ParseLocation.fmt loc f dir
+  | Dolmen_loop.State.File_not_found (loc, dir, f) ->
+    State.error ?loc st "File not found: '%s' in directory '%s'" f dir
   | Dolmen_loop.State.Input_lang_changed (l, l') ->
     State.error st "Input language changed from %s to %s (probably because of an include statement)"
       (Dolmen_loop.Parser.string_of_language l)
@@ -82,20 +74,20 @@ let exn st = function
   (* Internal Dolmen Expr errors *)
   | Dolmen.Expr.Bad_ty_arity (c, l) ->
     let pp_sep fmt () = Format.fprintf fmt ";@ " in
-    State.error st "@[<hv>Bad arity for type constant '%a', which was provided arguments:@ [@[<hv>%a@]]@]"
+    State.error st "@[<hv>Internal error: Bad arity for type constant '%a',@ which was provided arguments:@ [@[<hv>%a@]]@]"
       Dolmen.Expr.Print.ty_const c (Format.pp_print_list ~pp_sep Dolmen.Expr.Ty.print) l
   | Dolmen.Expr.Bad_term_arity (c, tys, ts) ->
     let pp_sep fmt () = Format.fprintf fmt ";@ " in
-    State.error st "@[<hv>Bad arity for type constant '%a', which was provided arguments:@ [@[<hv>%a;@ %a@]]@]"
+    State.error st "@[<hv>Internal error: Bad arity for type constant '%a',@ which was provided arguments:@ [@[<hv>%a;@ %a@]]@]"
       Dolmen.Expr.Print.term_const c
       (Format.pp_print_list ~pp_sep Dolmen.Expr.Ty.print) tys
       (Format.pp_print_list ~pp_sep Dolmen.Expr.Term.print) ts
   | Dolmen.Expr.Type_already_defined c ->
-    State.error st "Type constant '%a' was already defined earlier, cannot re-define it."
+    State.error st "@[<hv>Internal error: Type constant '%a' was already defined earlier,@ cannot re-define it.@]"
       Dolmen.Expr.Print.id c
 
   | Dolmen.Expr.Term.Wrong_type (t, ty) ->
-    State.error st "@[<hv>A term of type@ %a@ was expected but instead got a term of type@ %a@]"
+    State.error st "@[<hv>Internal error: A term of type@ %a@ was expected but instead got a term of type@ %a@]"
       Dolmen.Expr.Ty.print ty Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)
 
   (* File format auto-detect *)

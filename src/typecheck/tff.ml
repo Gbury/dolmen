@@ -59,15 +59,31 @@ module Make
     | Id of Id.t
     | Builtin of Ast.builtin
 
-  (* Constants that can be bound to a dolmen identifier. *)
-  type cst = [
-    | `Ty of Ty.Const.t
-    | `Cstr of T.Cstr.t
-    | `Term of T.Const.t
-    | `Field of T.Field.t
+  (* Variable that can be bound to a dolmen identifier *)
+  type var = [
+    | `Ty_var of Ty.Var.t
+    | `Term_var of T.Var.t
   ]
 
+  (* Constants that can be bound to a dolmen identifier. *)
+  type cst = [
+    | `Cstr of T.Cstr.t
+    | `Field of T.Field.t
+    | `Ty_cst of Ty.Const.t
+    | `Term_cst of T.Const.t
+  ]
+
+  (* Names that are bound to a dolmen identifier by the builtins *)
+  type builtin = [
+    | `Builtin of Ast.t -> Ast.t list -> res
+  ]
+
+  (* Either a bound variable or a bound constant *)
+  type bound = [ var | cst | builtin ]
+  type bound_or_not_found = [ bound | `Not_found ]
+
   type reason =
+    | Builtin
     | Bound of Ast.t
     | Inferred of Ast.t
     | Declared of Stmt.decl
@@ -75,10 +91,17 @@ module Make
 
   type binding = [
     | `Not_found
-    | `Ty of Ty.Const.t * reason
-    | `Cstr of T.Cstr.t * reason
-    | `Term of T.Const.t * reason
-    | `Field of T.Field.t * reason
+    | `Builtin
+    | `Variable of [
+        | `Ty of Ty.Var.t * reason
+        | `Term of T.Var.t * reason
+      ]
+    | `Constant of [
+        | `Ty of Ty.Const.t * reason
+        | `Cstr of T.Cstr.t * reason
+        | `Term of T.Const.t * reason
+        | `Field of T.Field.t * reason
+      ]
   ]
   (** The bindings that can occur. *)
 
@@ -252,7 +275,7 @@ module Make
   (* Builtin symbols, i.e symbols understood by some theories,
      but which do not have specific syntax, so end up as special
      cases of application. *)
-  and builtin_symbols = env -> Ast.t -> symbol -> Ast.t list -> res option
+  and builtin_symbols = env -> symbol -> (Ast.t -> Ast.t list -> res) option
 
   (* Existencial wrapper for wranings. *)
   and warning =
@@ -352,6 +375,90 @@ module Make
   let _wrap3 env ast f a b c =
     _wrap env ast (fun () -> f a b c) ()
 
+  (* Binding lookups *)
+  (* ************************************************************************ *)
+
+  let find_reason env (v : bound) =
+    try match v with
+      | `Builtin _ -> Builtin
+      | `Ty_var v -> E.find v env.type_locs
+      | `Term_var v -> F.find v env.term_locs
+      | `Ty_cst c -> R.find env.st.ttype_locs c
+      | `Term_cst c -> S.find env.st.const_locs c
+      | `Cstr c -> U.find env.st.cstrs_locs c
+      | `Field f -> V.find env.st.field_locs f
+    with Not_found -> assert false
+
+  let with_reason reason bound : binding =
+    match (bound : bound_or_not_found) with
+    | `Not_found -> `Not_found
+    | `Builtin _ -> `Builtin
+    | `Ty_var v -> `Variable (`Ty (v, reason))
+    | `Term_var v -> `Variable (`Term (v, reason))
+    | `Ty_cst c -> `Constant (`Ty (c, reason))
+    | `Term_cst c -> `Constant (`Term (c, reason))
+    | `Cstr c -> `Constant (`Cstr (c, reason))
+    | `Field f -> `Constant (`Field (f, reason))
+
+  let binding_reason binding : reason =
+    match (binding : binding) with
+    | `Not_found -> assert false
+    | `Builtin -> Builtin
+    | `Variable `Ty (_, reason)
+    | `Variable `Term (_, reason)
+    | `Constant `Ty (_, reason)
+    | `Constant `Term (_, reason)
+    | `Constant `Cstr (_, reason)
+    | `Constant `Field (_, reason)
+      -> reason
+
+  let _shadow env fragment id
+      (old : bound) reason (bound : [< bound]) =
+    let old_binding =
+      with_reason (find_reason env old) (old :> bound_or_not_found)
+    in
+    let new_binding = with_reason reason (bound :> bound_or_not_found) in
+    _warn env fragment (Shadowing (id, old_binding, new_binding))
+
+
+  type cst_or_not_found = [
+    | cst
+    | `Not_found
+  ]
+
+  let find_global env id : cst_or_not_found =
+    try (H.find env.st.csts id :> cst_or_not_found)
+    with Not_found -> `Not_found
+
+  type var_or_not_found = [
+    | var
+    | `Not_found
+  ]
+
+  let find_var env name : var_or_not_found =
+    try `Ty_var (M.find env.type_vars name)
+    with Not_found ->
+      begin
+        try
+          `Term_var (M.find env.term_vars name)
+        with Not_found ->
+          `Not_found
+      end
+
+  let find_bound env id : bound_or_not_found =
+    match find_var env id with
+    | #var as res -> (res :> bound_or_not_found)
+    | `Not_found ->
+      begin match find_global env id with
+        | #cst as res -> (res :> bound_or_not_found)
+        | `Not_found ->
+          begin match env.builtins env (Id id) with
+            | Some f -> `Builtin f
+            | None -> `Not_found
+          end
+      end
+
+
   (* Global Environment *)
   (* ************************************************************************ *)
 
@@ -363,48 +470,20 @@ module Make
     field_locs = V.create 13;
   }
 
-  type cst_or_not_found = [
-    | cst
-    | `Not_found
-  ]
-
-  let find_global st id =
-    try (H.find st.csts id :> cst_or_not_found)
-    with Not_found -> `Not_found
-
-  let find_reason st v =
-    try match v with
-    | `Not_found -> assert false
-    | `Ty c -> R.find st.ttype_locs c
-    | `Cstr c -> U.find st.cstrs_locs c
-    | `Term c -> S.find st.const_locs c
-    | `Field f -> V.find st.field_locs f
-    with Not_found -> assert false
-
-  let with_reason reason = function
-    | `Not_found -> `Not_found
-    | `Ty c -> `Ty (c, reason)
-    | `Cstr c -> `Cstr (c, reason)
-    | `Term c -> `Term (c, reason)
-    | `Field f -> `Field (f, reason)
-
-  let add_global env fragment id reason v =
-    begin match find_global env.st id with
+  let add_global env fragment id reason (v : cst) =
+    begin match find_bound env id with
       | `Not_found -> ()
-      | old ->
-        let old_binding = with_reason (find_reason env.st old) old in
-        let new_binding = with_reason reason v in
-        _warn env fragment (Shadowing (id, old_binding, new_binding))
+      | #bound as old -> _shadow env fragment id old reason v
     end;
     H.add env.st.csts id v
 
   (* Symbol declarations *)
   let decl_ty_const env fg id c reason =
-    add_global env fg id reason (`Ty c);
+    add_global env fg id reason (`Ty_cst c);
     R.add env.st.ttype_locs c reason
 
   let decl_term_const env fg id c reason =
-    add_global env fg id reason (`Term c);
+    add_global env fg id reason (`Term_cst c);
     S.add env.st.const_locs c reason
 
   let decl_term_cstr env fg id c reason =
@@ -451,15 +530,18 @@ module Make
 
   (* Add local variables to environment *)
   let add_type_var env id v ast =
+    let reason = Bound ast in
     let v' =
-      if M.mem env.type_vars id then
-        Ty.Var.mk (new_ty_name ())
-      else
-        v
+      match find_bound env id with
+      | `Not_found -> v
+      | #bound as old ->
+        let v' = Ty.Var.mk (new_ty_name ()) in
+        _shadow env (Ast ast) id old reason (`Ty_var v');
+        v'
     in
     v', { env with
           type_vars = M.add env.type_vars id v';
-          type_locs = E.add v' (Bound ast) env.type_locs;
+          type_locs = E.add v' reason env.type_locs;
         }
 
   let add_type_vars env l =
@@ -469,26 +551,19 @@ module Make
     List.rev l', env'
 
   let add_term_var env id v ast =
+    let reason = Bound ast in
     let v' =
-      if M.mem env.type_vars id then
-        T.Var.mk (new_term_name ()) (T.Var.ty v)
-      else
-        v
+      match find_bound env id with
+      | `Not_found -> v
+      | #bound as old ->
+        let v' = T.Var.mk (new_term_name ()) (T.Var.ty v) in
+        _shadow env (Ast ast) id old reason (`Term_var v');
+        v'
     in
     v', { env with
           term_vars = M.add env.term_vars id v';
-          term_locs = F.add v' (Bound ast) env.term_locs;
+          term_locs = F.add v' reason env.term_locs;
         }
-
-  let find_var env name =
-    try `Ty (M.find env.type_vars name)
-    with Not_found ->
-      begin
-        try
-          `Term (M.find env.term_vars name)
-        with Not_found ->
-          `Not_found
-      end
 
   (* Typo suggestion *)
   (* ************************************************************************ *)
@@ -498,21 +573,26 @@ module Make
     M.suggest env.term_vars ~limit id @
     H.suggest env.st.csts ~limit id
 
+
   (* Typing explanation *)
   (* ************************************************************************ *)
 
   let _unused_type env v =
     match E.find v env.type_locs with
+    (* Variable bound or inferred *)
     | Bound t | Inferred t ->
       _warn env (Ast t) (Unused_type_variable v)
-    | Declared _ -> (* variables should not be declare-able *)
+    (* variables should not be declare-able nor builtin *)
+    | Builtin | Declared _ ->
       assert false
 
   let _unused_term env v =
     match F.find v env.term_locs with
+    (* Variable bound or inferred *)
     | Bound t | Inferred t ->
       _warn env (Ast t) (Unused_term_variable v)
-    | Declared _ -> (* variables should not be declare-able *)
+    (* variables should not be declare-able nor builtin *)
+    | Builtin | Declared _ ->
       assert false
 
 
@@ -540,6 +620,18 @@ module Make
       _wrap3 env ast T.apply_cstr c ty_args t_args
     else
       _bad_cstr_arity env c (n1, n2) ast
+
+  (* wrapper for builtin application *)
+  let builtin_apply env b ast args =
+    try
+      b ast args
+    with
+    | T.Wrong_type (t, ty) ->
+      _type_mismatch env t ty ast
+    | Typing_error _ as exn ->
+      raise exn
+    | exn ->
+      _uncaught_exn env ast exn
 
   (* Wrapper around record creation *)
   let create_record env ast l =
@@ -863,7 +955,7 @@ module Make
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
     | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
-      begin match find_global env.st s with
+      begin match find_bound env s with
         | `Field f -> f
         | `Not_found -> _cannot_find env ast s
         | _ -> _expected env "record field" ast None
@@ -905,39 +997,28 @@ module Make
       _bad_op_arity env "field record access" 2 (List.length l) ast
 
   and parse_app env ast s s_ast args =
-    match find_var env s with
-    | `Ty v ->
+    match find_bound env s with
+    | `Ty_var v ->
       if args = [] then Ty (Ty.of_var v)
       else _ty_var_app env v ast
-    | `Term v ->
+    | `Term_var v ->
       if args = [] then Term (T.of_var v)
       else _var_app env v ast
+    | `Ty_cst f ->
+      parse_app_ty env ast f args
+    | `Term_cst f ->
+      parse_app_term env ast f args
+    | `Cstr c ->
+      parse_app_cstr env ast c args
+    | `Field _f ->
+      _expected env "not a field name" s_ast None
+    | `Builtin b ->
+      builtin_apply env b ast args
     | `Not_found ->
-      begin match find_global env.st s with
-        | `Ty f ->
-          parse_app_ty env ast f args
-        | `Cstr c ->
-          parse_app_cstr env ast c args
-        | `Term f ->
-          parse_app_term env ast f args
-        | `Field _f ->
-          assert false
-        | `Not_found ->
-          begin match env.builtins env ast (Id s) args with
-            | Some res -> res
-            | None ->
-              begin match infer env ast s args s_ast with
-                | Some Ty_fun f -> parse_app_ty env ast f args
-                | Some Term_fun f -> parse_app_term env ast f args
-                | None -> _cannot_find env ast s
-              end
-            | exception T.Wrong_type (t, ty) ->
-              _type_mismatch env t ty ast
-            | exception (Typing_error _ as exn) ->
-              raise exn
-            | exception exn ->
-              _uncaught_exn env ast exn
-          end
+      begin match infer env ast s args s_ast with
+        | Some Ty_fun f -> parse_app_ty env ast f args
+        | Some Term_fun f -> parse_app_term env ast f args
+        | None -> _cannot_find env ast s
       end
 
   and parse_app_ty env ast f args =
@@ -987,9 +1068,9 @@ module Make
     Term (T.ensure t ty)
 
   and parse_builtin env ast b args =
-    match env.builtins env ast (Builtin b) args with
-    | Some res -> res
+    match env.builtins env (Builtin b) with
     | None -> _unknown_builtin env ast b
+    | Some b -> builtin_apply env b ast args
 
   and parse_ty env ast =
     match parse_expr (expect env Type) ast with
