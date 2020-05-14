@@ -1,3 +1,0 @@
-[91mError[0m File 'tests/typing/errors/wrong-type/test_tptp.p', line 6, character 18-22:
-      The term: a has type int but was expected to be of type $i
-

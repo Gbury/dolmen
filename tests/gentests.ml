@@ -60,7 +60,12 @@ let scan_folder path =
 (* Base stanza *)
 (* ************************************************************************* *)
 
-let test_stanza fmt (exit_code, pb_file) =
+let rec pp_exit_codes fmt = function
+  | [] -> assert false
+  | [x] -> Format.fprintf fmt "%d" x
+  | x :: r -> Format.fprintf fmt "(or %d %a)" x pp_exit_codes r
+
+let test_stanza fmt (exit_codes, pb_file) =
   let output_file = output_of_problem pb_file in
   let expected_file = expected_of_problem pb_file in
   Format.fprintf fmt {|
@@ -71,13 +76,15 @@ let test_stanza fmt (exit_code, pb_file) =
   (package dolmen_bin)
   (action (chdir %%{workspace_root}
            (with-outputs-to %%{target}
-            (with-accepted-exit-codes %d
+            (with-accepted-exit-codes %a
              (run dolmen %%{deps} %%{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff %s %s)))
 |}
-    pb_file output_file pb_file exit_code expected_file output_file
+    pb_file output_file pb_file
+    pp_exit_codes exit_codes
+    expected_file output_file
 
 
 (* Generating a test case *)
@@ -96,8 +103,8 @@ let is_empty_or_create file =
 
 let gen_test fmt path pb =
   let expected_file = Filename.concat path (expected_of_problem pb) in
-  let exit_code = if is_empty_or_create expected_file then 0 else 1 in
-  test_stanza fmt (exit_code, pb)
+  let exit_codes = if is_empty_or_create expected_file then [0] else [0; 1] in
+  test_stanza fmt (exit_codes, pb)
 
 
 (* Generating tests for a folder and its files *)

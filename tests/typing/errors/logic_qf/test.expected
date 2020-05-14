@@ -1,3 +1,0 @@
-[91mError[0m File 'tests/typing/errors/logic_qf/test.smt2', line 4, character 8-32:
-      Quantified expressions are forbidden by the logic.
-

@@ -19,6 +19,12 @@ test:
 	dune exec -- tests/gentests.exe tests/
 	dune build $(FLAGS) @runtest
 
+test-promote:
+	dune exec -- tests/gentests.exe tests/
+	-dune build $(FLAGS) @runtest
+	dune promote $(FLAGS)
+
+
 clean:
 	$(COMP) clean
 

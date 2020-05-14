@@ -1,0 +1,2 @@
+File 'tests/typing/error-shadow/redefinition.smt2', line 3, character 0-23:
+[1m[91mError[0;1m[0m Shadowing: a was already declared at line 2, character 0-23
