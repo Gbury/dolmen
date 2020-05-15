@@ -496,12 +496,10 @@ type builtin +=
   (** [Float(e,s): ttype]: type constructor for floating point of exponent of
      size [e] and significand of size [s] (hidden bit included). Those size are
      greater than 1 *)
-  | Fp of string * string * string
-  (** [Fp sb se ss: Fp(|se|,|ss|+1)]: bitvector literal. The strings [sb] [se] and [ss]
-     should be a binary representation of bitvectors using characters ['0'], and
-     ['1'] (lsb last). |sb| = 1. The IEEE-format is used for the conversion [sb^se^ss].
-      All the NaN are converted to the same value.
- *)
+  | Fp of int * int
+  (** [Fp(e, s): Bitv(1) -> Bitv(e) -> Bitv(s) -> Fp(e,s+1)]: bitvector literal.
+      The IEEE-format is used for the conversion [sb^se^ss].
+      All the NaN are converted to the same value. *)
   | Plus_infinity of int * int
   (** [Plus_infinity(s,e) : Fp(s,e)] *)
   | Minus_infinity of int * int
@@ -1269,17 +1267,33 @@ module Term : sig
   val subst : ?fix:bool -> Ty.subst -> subst -> t -> t
   (** Substitution over terms. *)
 
-  include Dolmen_intf.Term.Smtlib_Bitv with type t := t
-  (** Satisfy the required interface for typing smtlib bitvectors. *)
+  (* Bitvector manipulation *)
+  module Bitv : sig
 
-  include Dolmen_intf.Term.Smtlib_Float with type t := t
-                                         and type ty := ty
-  (** Satisfy the required interface for typing smtlib floating points. *)
+    include Dolmen_intf.Term.Smtlib_Bitv with type t := t
+    (** Satisfy the required interface for typing smtlib bitvectors. *)
+
+    include Dolmen_intf.Term.Smtlib_Float_Bitv with type t := t
+    (** Satisfy the required interface for typing smtlib floats. *)
+
+  end
+
+  (* Floating point number manipulations *)
+  module Float : sig
+
+    include Dolmen_intf.Term.Smtlib_Float_Float with type t := t
+    (** Satisfy the required interface for typing smtlib floating points. *)
+
+  end
 
   (** Integer operations. *)
   module Int : sig
+
     include Dolmen_intf.Term.Smtlib_Int with type t := t
+    (** Satisfy the required interface for the typing of smtlib integers. *)
+
     include Dolmen_intf.Term.Tptp_Arith_Common with type t := t
+    (** Satisfy the common interface for TPTP's arithmetic on integers. *)
 
     val div : t -> t -> t
     (** Euclidian division quotient *)
@@ -1303,7 +1317,9 @@ module Term : sig
 
   (** Rational operations *)
   module Rat : sig
+
     include Dolmen_intf.Term.Tptp_Arith_Common with type t := t
+    (** Satisfy the common interface for TPTP's arithmetic over Rationals *)
 
     val div : t -> t -> t
     (** Exact division on rationals. *)
@@ -1311,8 +1327,13 @@ module Term : sig
 
   (** Real operations *)
   module Real : sig
+
     include Dolmen_intf.Term.Smtlib_Real with type t := t
+    (** Satisfy the required interface for the typing of smtlib's reals *)
+
     include Dolmen_intf.Term.Tptp_Arith_Common with type t := t
+    (** Satisfy the common interface for TPTP's arithmetic over reals *)
+
   end
 
 end

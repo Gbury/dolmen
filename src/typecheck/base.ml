@@ -32,7 +32,7 @@ let make_op0
   | [] -> ret ast ()
   | _ ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 0, List.length args))
+      (Type.Bad_op_arity (op, [0], List.length args))
 
 let make_op1
     (type env) (module Type: Tff_intf.S with type env = env)
@@ -41,7 +41,7 @@ let make_op1
   | [t1] -> ret ast t1
   | _ ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 1, List.length args))
+      (Type.Bad_op_arity (op, [1], List.length args))
 
 let make_op2
     (type env) (module Type: Tff_intf.S with type env = env)
@@ -50,7 +50,7 @@ let make_op2
   | [t1; t2] -> ret ast (t1, t2)
   | _ ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 2, List.length args))
+      (Type.Bad_op_arity (op, [2], List.length args))
 
 let make_op3
     (type env) (module Type: Tff_intf.S with type env = env)
@@ -59,7 +59,7 @@ let make_op3
   | [t1; t2; t3] -> ret ast (t1, t2, t3)
   | _ ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 3, List.length args))
+      (Type.Bad_op_arity (op, [3], List.length args))
 
 let make_op4
     (type env) (module Type: Tff_intf.S with type env = env)
@@ -68,7 +68,7 @@ let make_op4
   | [t1; t2; t3; t4] -> ret ast (t1, t2, t3, t4)
   | _ ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 4, List.length args))
+      (Type.Bad_op_arity (op, [4], List.length args))
 
 let make_opn n
     (type env) (module Type: Tff_intf.S with type env = env)
@@ -78,7 +78,7 @@ let make_opn n
     ret ast args
   else begin
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 1, List.length args))
+      (Type.Bad_op_arity (op, [n], l))
   end
 
 let make_assoc
@@ -87,7 +87,7 @@ let make_assoc
   match args with
   | [] | [_] ->
     Type._error env (Ast ast)
-      (Type.Bad_op_arity (op, 2, List.length args))
+      (Type.Bad_op_arity (op, [2], List.length args))
   | _ -> ret ast args
 
 let fold_left_assoc mk = function

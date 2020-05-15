@@ -117,8 +117,11 @@ module type S = sig
     (** The type of a bound variable had to be inferred which is forbidden. *)
     | Expected : string * res option -> Dolmen.Term.t err
     (** The parsed term didn't match the expected shape *)
-    | Bad_op_arity : string * int * int -> Dolmen.Term.t err
-    (**  *)
+    | Bad_op_arity : string * int list * int -> Dolmen.Term.t err
+    (** [Bad_op_arity (name, expected, actual)] denotes a named operator
+        (which may be a builtin operator, a top-level defined constant which
+        is being subtituted, etc...) expecting a number of arguments among
+        the [expected] list, but instead got [actual] number of arguments. *)
     | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Term.t err
     (** *)
     | Bad_cstr_arity : T.Cstr.t * int * int -> Dolmen.Term.t err

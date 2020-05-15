@@ -82,7 +82,7 @@ module Make(S : State_intf.Typer) = struct
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
   module Smtlib2_Bitv =
     Dolmen_type.Bitv.Smtlib2.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+      (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Bitv)
   module Smtlib2_Float =
     Dolmen_type.Float.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
@@ -187,15 +187,23 @@ module Make(S : State_intf.Typer) = struct
     | None -> Format.fprintf fmt "<none>"
     | Some x -> pp fmt x
 
+  let rec print_expected fmt = function
+    | [] -> assert false
+    | x :: [] -> Format.fprintf fmt "%d" x
+    | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
+
   let report_error fmt (T.Error (_env, _fragment, err)) =
     match err with
     (* Core Typechecking Errors *)
     | T.Infer_type_variable ->
       Format.fprintf fmt "Cannot infer the type of a variable"
     | T.Expected (expect, got) ->
-      Format.fprintf fmt "Expected %s but got %a" expect (print_opt print_res) got
-    | T.Bad_op_arity (s, i, j) ->
-      Format.fprintf fmt "Bad arity for builtin '%s':@ expected %d arguments but got %d" s i j
+      Format.fprintf fmt "Expected %s but got %a"
+        expect (print_opt print_res) got
+    | T.Bad_op_arity (s, expected, actual) ->
+      Format.fprintf fmt
+        "Bad arity for builtin '%s':@ expected %a arguments but got %d"
+        s print_expected expected actual
     | T.Bad_ty_arity (c, i) ->
       Format.fprintf fmt "Bad arity (expected %d arguments) for type constant@ %a"
         i Dolmen.Expr.Print.ty_const c
@@ -277,18 +285,9 @@ module Make(S : State_intf.Typer) = struct
 
     (* Smtlib Float errors *)
     | Smtlib2_Float.Invalid_bin_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a binary float litteral" c
+      Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
     | Smtlib2_Float.Invalid_hex_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal float litteral" c
-    | Smtlib2_Float.Bitvector_litteral_expected ->
-      Format.fprintf fmt "The fp floating point constructor requires direct bitvector litteral"
-    | Smtlib2_Float.Bitvector_of_size_one_expected i ->
-      Format.fprintf fmt "The fp floating point constructor expect a literal bitvector of size one has first argument (the sign), here it is of size %i" i
-    | Smtlib2_Float.To_fp_incorrect_args ->
-      Format.fprintf fmt "The to_fp function accept an argument of type \
-                          Bitvector or two arguments with the first one a \
-                          RoundingMode and the second one Real, Bitvector or \
-                          FloatingPoint"
+      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Linear arithmetic *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))

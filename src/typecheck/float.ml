@@ -13,14 +13,12 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Float with type t := Type.T.t
                                           and type ty := Type.Ty.t) = struct
 
+    module B = T.Bitv
     module F = T.Float
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Term.t Type.err
-      | Bitvector_litteral_expected : Dolmen.Term.t Type.err
-      | Bitvector_of_size_one_expected : int -> Dolmen.Term.t Type.err
-      | To_fp_incorrect_args : Dolmen.Term.t Type.err
 
     let parse_int env ast s =
       match int_of_string s with
@@ -34,24 +32,15 @@ module Smtlib2 = struct
 
     let parse_binary env ast s =
       match Misc.Bitv.parse_binary s with
-      | s -> s
+      | s -> Type.Term (B.mk s)
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
 
     let parse_hexa env ast s =
       match Misc.Bitv.parse_binary s with
-      | s -> s
+      | s -> Type.Term (B.mk s)
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
-
-    let parse_bitv_lit env ast arg =
-      match arg.Ast.term with
-      | Ast.Symbol { Id.ns = Id.Value Id.Binary; name; } ->
-        parse_binary env ast name
-      | Ast.Symbol { Id.ns = Id.Value Id.Hexadecimal; name; } ->
-        parse_hexa env ast name
-      | _ ->
-        Type._error env (Ast ast) Bitvector_litteral_expected
 
     let split_id = Dolmen_std.Misc.split_on_char '\000'
 
@@ -63,7 +52,8 @@ module Smtlib2 = struct
             if r_l = n then f r
             else begin
               Some (fun ast _args ->
-                  Type._error env (Ast ast) (Type.Bad_op_arity (s, n, r_l))
+                  Type._error env (Ast ast)
+                    (Type.Bad_op_arity (s, [n], r_l))
                 )
             end
           end else
@@ -138,18 +128,26 @@ module Smtlib2 = struct
           | `Real -> return (F.real_to_fp e s rm b)
           | `Bitv _ -> return (F.ubv_to_fp e s rm b)
           | `Float (_,_) -> return (F.to_fp e s rm b)
-          | _ -> Type._error env (Ast ast) To_fp_incorrect_args
+          | _ -> Type._error env (Ast ast) (
+              Type.Expected ("a real, bitvector or float", Some (Term b)))
         end
-      | _ -> Type._error env (Ast ast) To_fp_incorrect_args
+      | _ -> Type._error env (Ast ast)
+               (Type.Bad_op_arity ("fp", [1; 2], List.length args))
       )
 
     let wrap f = fun _ -> f
 
     let parse _version env s =
       match s with
+
       (* sort *)
       | Type.Id { Id.ns = Id.Sort; name; } ->
         parse_id env name [
+          "BitVec", 1, (function
+              | [n_s] ->
+                Some (Base.make_op0 (module Type) env "BitVec"
+                        (fun ast () -> Type.Ty (Ty.bitv (parse_int env ast n_s))))
+              | _ -> assert false);
           "FloatingPoint", 2, (function
               | [n_e;n_s] -> Some (fun ast args ->
                   fp_type env
@@ -167,6 +165,15 @@ module Smtlib2 = struct
               Some (Base.make_op0 (module Type) env "RoundingMode"
                       (fun _ () -> Type.Ty Ty.roundingMode))
             | _ -> None)
+
+      (* Bitvector litterals *)
+      | Type.Id { Id.ns = Id.Value Id.Binary; name; } ->
+        Some (Base.make_op0 (module Type) env name (fun ast () ->
+            parse_binary env ast name))
+      | Type.Id { Id.ns = Id.Value Id.Hexadecimal; name; } ->
+        Some (Base.make_op0 (module Type) env name (fun ast () ->
+            parse_hexa env ast name))
+
       (* terms *)
       | Type.Id { Id.ns = Id.Term; name; } ->
         parse_id env name [
@@ -181,16 +188,7 @@ module Smtlib2 = struct
           "fp.to_sbv", 1, app2_param1 env "to_sbv" F.to_sbv;
         ] (function
             | ["fp"] ->
-              Some (Base.make_op3 (module Type) env "fp" (fun ast (a,b,c) ->
-                   let sa = parse_bitv_lit env ast a in
-                   if String.length sa <> 1 then begin
-                     Type._error env (Ast ast)
-                       (Bitvector_of_size_one_expected (String.length sa))
-                   end;
-                   Type.Term (F.fp sa
-                                (parse_bitv_lit env ast b)
-                                (parse_bitv_lit env ast c))
-                ))
+              Some (app3 env "fp" (wrap F.fp))
             | ["roundNearestTiesToEven"] | ["RNE"] ->
               Some (app0 env "roundNearestTiesToEven"
                       (wrap F.roundNearestTiesToEven))

@@ -218,6 +218,9 @@ module type Smtlib_Float = sig
   type t
   (** The type of types *)
 
+  val bitv : int -> t
+  (** Create a fixed size bitvector type. *)
+
   val float : int -> int -> t
   (** Create a float type with fixed exponent size in bits and fixed significand,
       including the hidden bit. *)

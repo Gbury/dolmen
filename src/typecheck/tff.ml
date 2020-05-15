@@ -185,7 +185,7 @@ module Make
        todo: rename this *)
     | Expected : string * res option -> Ast.t err
     (* the parsed term didn't match the expected shape *)
-    | Bad_op_arity : string * int * int -> Ast.t err
+    | Bad_op_arity : string * int list * int -> Ast.t err
     (*  *)
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
     (* *)
@@ -312,7 +312,7 @@ module Make
     _error env (Ast t) (Expected (s, res))
 
   let _bad_op_arity env s n m t =
-    _error env (Ast t) (Bad_op_arity (s, n, m))
+    _error env (Ast t) (Bad_op_arity (s, [n], m))
 
   let _bad_ty_arity env f n t =
     _error env (Ast t) (Bad_ty_arity (f, n))

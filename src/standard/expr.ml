@@ -136,7 +136,7 @@ type builtin +=
 type builtin +=
   | Float of int * int
   | RoundingMode
-  | Fp of string * string * string
+  | Fp of int * int
   | RoundNearestTiesToEven
   | RoundNearestTiesToAway
   | RoundTowardPositive
@@ -147,30 +147,30 @@ type builtin +=
   | Plus_zero of int * int
   | Minus_zero of int * int
   | NaN of int * int
-  | Fp_abs  of int * int
-  | Fp_neg  of int * int
-  | Fp_add  of int * int
-  | Fp_sub  of int * int
-  | Fp_mul  of int * int
-  | Fp_div  of int * int
-  | Fp_fma  of int * int
-  | Fp_sqrt  of int * int
-  | Fp_rem  of int * int
+  | Fp_abs of int * int
+  | Fp_neg of int * int
+  | Fp_add of int * int
+  | Fp_sub of int * int
+  | Fp_mul of int * int
+  | Fp_div of int * int
+  | Fp_fma of int * int
+  | Fp_sqrt of int * int
+  | Fp_rem of int * int
   | Fp_roundToIntegral  of int * int
-  | Fp_min  of int * int
-  | Fp_max  of int * int
-  | Fp_leq  of int * int
-  | Fp_lt  of int * int
-  | Fp_geq  of int * int
-  | Fp_gt  of int * int
-  | Fp_eq  of int * int
-  | Fp_isNormal  of int * int
-  | Fp_isSubnormal  of int * int
-  | Fp_isZero  of int * int
-  | Fp_isInfinite  of int * int
-  | Fp_isNaN  of int * int
-  | Fp_isNegative  of int * int
-  | Fp_isPositive  of int * int
+  | Fp_min of int * int
+  | Fp_max of int * int
+  | Fp_leq of int * int
+  | Fp_lt of int * int
+  | Fp_geq of int * int
+  | Fp_gt of int * int
+  | Fp_eq of int * int
+  | Fp_isNormal of int * int
+  | Fp_isSubnormal of int * int
+  | Fp_isZero of int * int
+  | Fp_isInfinite of int * int
+  | Fp_isNaN of int * int
+  | Fp_isNegative of int * int
+  | Fp_isPositive of int * int
   | Ieee_format_to_fp of int * int
   | Fp_to_fp of int * int * int * int
   | Real_to_fp of int * int
@@ -1573,200 +1573,204 @@ module Term = struct
           "Is_rat" [] [Ty.real] Ty.prop
     end
 
-    let bitv s =
-      Id.const ~builtin:(Bitvec s)
-        (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
+    module Bitv = struct
 
-    let bitv_concat =
-      with_cache ~cache:(Hashtbl.create 13) (fun (i, j) ->
-          Id.const ~builtin:Bitv_concat "bitv_concat"
-            [] [Ty.bitv i; Ty.bitv j] (Ty.bitv (i + j))
-        )
+      let bitv s =
+        Id.const ~builtin:(Bitvec s)
+          (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
-    let bitv_extract =
-      with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-          Id.const ~builtin:(Bitv_extract (j, i))
-            (Format.asprintf "bitv_extract_%d_%d" i j) []
-            [Ty.bitv n] (Ty.bitv (i - j + 1))
-        )
+      let concat =
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, j) ->
+            Id.const ~builtin:Bitv_concat "bitv_concat"
+              [] [Ty.bitv i; Ty.bitv j] (Ty.bitv (i + j))
+          )
 
-    let bitv_repeat =
-      with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-          Id.const ~builtin:Bitv_repeat (Format.asprintf "bitv_repeat_%d" k)
-            [] [Ty.bitv n] (Ty.bitv (n * k))
-        )
+      let extract =
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
+            Id.const ~builtin:(Bitv_extract (j, i))
+              (Format.asprintf "bitv_extract_%d_%d" i j) []
+              [Ty.bitv n] (Ty.bitv (i - j + 1))
+          )
 
-    let zero_extend =
-      with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-          Id.const ~builtin:Bitv_zero_extend (Format.asprintf "zero_extend_%d" k)
-            [] [Ty.bitv n] (Ty.bitv (n + k))
-        )
+      let repeat =
+        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+            Id.const ~builtin:Bitv_repeat (Format.asprintf "bitv_repeat_%d" k)
+              [] [Ty.bitv n] (Ty.bitv (n * k))
+          )
 
-    let sign_extend =
-      with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-          Id.const ~builtin:Bitv_sign_extend (Format.asprintf "sign_extend_%d" k)
-            [] [Ty.bitv n] (Ty.bitv (n + k))
-        )
+      let zero_extend =
+        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+            Id.const ~builtin:Bitv_zero_extend (Format.asprintf "zero_extend_%d" k)
+              [] [Ty.bitv n] (Ty.bitv (n + k))
+          )
 
-    let rotate_right =
-      with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-          Id.const ~builtin:(Bitv_rotate_right k)
-            (Format.asprintf "rotate_right_%d" k) [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let sign_extend =
+        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+            Id.const ~builtin:Bitv_sign_extend (Format.asprintf "sign_extend_%d" k)
+              [] [Ty.bitv n] (Ty.bitv (n + k))
+          )
 
-    let rotate_left =
-      with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-          Id.const ~builtin:(Bitv_rotate_left k)
-            (Format.asprintf "rotate_left_%d" k) [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let rotate_right =
+        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+            Id.const ~builtin:(Bitv_rotate_right k)
+              (Format.asprintf "rotate_right_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvnot =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_not "bvnot" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let rotate_left =
+        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+            Id.const ~builtin:(Bitv_rotate_left k)
+              (Format.asprintf "rotate_left_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvand =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_and "bvand" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let not =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_not "bvnot" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvor =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_or "bvor" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let and_ =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_and "bvand" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvnand =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_nand "bvnand" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let or_ =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_or "bvor" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvnor =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_nor "bvnor" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let nand =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_nand "bvnand" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvxor =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_xor "bvxor" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let nor =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_nor "bvnor" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvxnor =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_xnor "bvxnor" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let xor =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_xor "bvxor" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvcomp =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_comp "bvcomp" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
-        )
+      let xnor =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_xnor "bvxnor" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvneg =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_neg "bvneg" [] [Ty.bitv n] (Ty.bitv n)
-        )
+      let comp =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_comp "bvcomp" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
+          )
 
-    let bvadd =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_add "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let neg =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_neg "bvneg" [] [Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvsub =
+      let add =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_add "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
+
+      let sub =
       with_cache ~cache:(Hashtbl.create 13) (fun n ->
           Id.const ~builtin:Bitv_sub "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
         )
 
-    let bvmul =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_mul "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let mul =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_mul "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvudiv =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_udiv "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let udiv =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_udiv "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvurem =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_urem "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let urem =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_urem "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvsdiv =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_sdiv "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let sdiv =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_sdiv "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvsrem =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_srem "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let srem =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_srem "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvsmod =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_smod "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let smod =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_smod "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvshl =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_shl "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let shl =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_shl "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvlshr =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_lshr "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let lshr =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_lshr "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvashr =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_ashr "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+      let ashr =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_ashr "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
-    let bvult =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_ult "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let ult =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_ult "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvule =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_ule "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let ule =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_ule "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvugt =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_ugt "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let ugt =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_ugt "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvuge =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_uge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let uge =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_uge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvslt =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_slt "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let slt =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_slt "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvsle =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_sle "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let sle =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_sle "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvsgt =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_sgt "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let sgt =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_sgt "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
 
-    let bvsge =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
-        )
+      let sge =
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            Id.const ~builtin:Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+    end
 
     module Float = struct
-      let fp sign exp significand =
-        let e = String.length exp in
-        let s = String.length significand + 1 in
-        Id.const
-          ~name:"fp" ~builtin:(Fp (sign,exp,significand))
-          (Format.asprintf "fp#%s#%s#%s#" sign exp significand) [] [] (Ty.float e s)
+
+      let fp =
+        with_cache ~cache:(Hashtbl.create 13) (fun (e, s) ->
+            Id.const ~builtin:(Fp(e, s)) "fp" []
+              [Ty.bitv 1; Ty.bitv e; Ty.bitv s] (Ty.float e (s + 1))
+          )
 
       let roundNearestTiesToEven =
         Id.const ~builtin:RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
@@ -2288,155 +2292,157 @@ module Term = struct
     apply Const.store [src; dst] [t; idx; value]
 
   (* Bitvectors *)
-  let match_bitv_type t =
-    match ty t with
-    | { descr = App ({ builtin = Bitv i; _ }, _); _ } -> i
-    | _ -> raise (Wrong_type (t, Ty.bitv 0))
+  module Bitv = struct
+    let match_bitv_type t =
+      match ty t with
+      | { descr = App ({ builtin = Bitv i; _ }, _); _ } -> i
+      | _ -> raise (Wrong_type (t, Ty.bitv 0))
 
-  let mk_bitv s = apply (Const.bitv s) [] []
+    let mk s = apply (Const.Bitv.bitv s) [] []
 
-  let bitv_concat u v =
-    let i = match_bitv_type u in
-    let j = match_bitv_type v in
-    apply (Const.bitv_concat (i, j)) [] [u; v]
+    let concat u v =
+      let i = match_bitv_type u in
+      let j = match_bitv_type v in
+      apply (Const.Bitv.concat (i, j)) [] [u; v]
 
-  let bitv_extract i j t =
-    let n = match_bitv_type t in
-    (* TODO: check that i and j are correct index for a bitv(n) *)
-    apply (Const.bitv_extract (i, j, n)) [] [t]
+    let extract i j t =
+      let n = match_bitv_type t in
+      (* TODO: check that i and j are correct index for a bitv(n) *)
+      apply (Const.Bitv.extract (i, j, n)) [] [t]
 
-  let bitv_repeat k t =
-    let n = match_bitv_type t in
-    apply (Const.bitv_repeat (k, n)) [] [t]
+    let repeat k t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.repeat (k, n)) [] [t]
 
-  let zero_extend k t =
-    let n = match_bitv_type t in
-    apply (Const.zero_extend (k, n)) [] [t]
+    let zero_extend k t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.zero_extend (k, n)) [] [t]
 
-  let sign_extend k t =
-    let n = match_bitv_type t in
-    apply (Const.sign_extend (k, n)) [] [t]
+    let sign_extend k t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.sign_extend (k, n)) [] [t]
 
-  let rotate_right k t =
-    let n = match_bitv_type t in
-    apply (Const.rotate_right (k, n)) [] [t]
+    let rotate_right k t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.rotate_right (k, n)) [] [t]
 
-  let rotate_left k t =
-    let n = match_bitv_type t in
-    apply (Const.rotate_left (k, n)) [] [t]
+    let rotate_left k t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.rotate_left (k, n)) [] [t]
 
-  let bvnot t =
-    let n = match_bitv_type t in
-    apply (Const.bvnot n) [] [t]
+    let not t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.not n) [] [t]
 
-  let bvand u v =
-    let n = match_bitv_type u in
-    apply (Const.bvand n) [] [u; v]
+    let and_ u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.and_ n) [] [u; v]
 
-  let bvor u v =
-    let n = match_bitv_type u in
-    apply (Const.bvor n) [] [u; v]
+    let or_ u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.or_ n) [] [u; v]
 
-  let bvnand u v =
-    let n = match_bitv_type u in
-    apply (Const.bvnand n) [] [u; v]
+    let nand u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.nand n) [] [u; v]
 
-  let bvnor u v =
-    let n = match_bitv_type u in
-    apply (Const.bvnor n) [] [u; v]
+    let nor u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.nor n) [] [u; v]
 
-  let bvxor u v =
-    let n = match_bitv_type u in
-    apply (Const.bvxor n) [] [u; v]
+    let xor u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.xor n) [] [u; v]
 
-  let bvxnor u v =
-    let n = match_bitv_type u in
-    apply (Const.bvxnor n) [] [u; v]
+    let xnor u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.xnor n) [] [u; v]
 
-  let bvcomp u v =
-    let n = match_bitv_type u in
-    apply (Const.bvcomp n) [] [u; v]
+    let comp u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.comp n) [] [u; v]
 
-  let bvneg t =
-    let n = match_bitv_type t in
-    apply (Const.bvneg n) [] [t]
+    let neg t =
+      let n = match_bitv_type t in
+      apply (Const.Bitv.neg n) [] [t]
 
-  let bvadd u v =
-    let n = match_bitv_type u in
-    apply (Const.bvadd n) [] [u; v]
+    let add u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.add n) [] [u; v]
 
-  let bvsub u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsub n) [] [u; v]
+    let sub u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.sub n) [] [u; v]
 
-  let bvmul u v =
-    let n = match_bitv_type u in
-    apply (Const.bvmul n) [] [u; v]
+    let mul u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.mul n) [] [u; v]
 
-  let bvudiv u v =
-    let n = match_bitv_type u in
-    apply (Const.bvudiv n) [] [u; v]
+    let udiv u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.udiv n) [] [u; v]
 
-  let bvurem u v =
-    let n = match_bitv_type u in
-    apply (Const.bvurem n) [] [u; v]
+    let urem u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.urem n) [] [u; v]
 
-  let bvsdiv u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsdiv n) [] [u; v]
+    let sdiv u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.sdiv n) [] [u; v]
 
-  let bvsrem u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsrem n) [] [u; v]
+    let srem u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.srem n) [] [u; v]
 
-  let bvsmod u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsmod n) [] [u; v]
+    let smod u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.smod n) [] [u; v]
 
-  let bvshl u v =
-    let n = match_bitv_type u in
-    apply (Const.bvshl n) [] [u; v]
+    let shl u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.shl n) [] [u; v]
 
-  let bvlshr u v =
-    let n = match_bitv_type u in
-    apply (Const.bvlshr n) [] [u; v]
+    let lshr u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.lshr n) [] [u; v]
 
-  let bvashr u v =
-    let n = match_bitv_type u in
-    apply (Const.bvashr n) [] [u; v]
+    let ashr u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.ashr n) [] [u; v]
 
-  let bvult u v =
-    let n = match_bitv_type u in
-    apply (Const.bvult n) [] [u; v]
+    let ult u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.ult n) [] [u; v]
 
-  let bvule u v =
-    let n = match_bitv_type u in
-    apply (Const.bvule n) [] [u; v]
+    let ule u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.ule n) [] [u; v]
 
-  let bvugt u v =
-    let n = match_bitv_type u in
-    apply (Const.bvugt n) [] [u; v]
+    let ugt u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.ugt n) [] [u; v]
 
-  let bvuge u v =
-    let n = match_bitv_type u in
-    apply (Const.bvuge n) [] [u; v]
+    let uge u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.uge n) [] [u; v]
 
-  let bvslt u v =
-    let n = match_bitv_type u in
-    apply (Const.bvslt n) [] [u; v]
+    let slt u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.slt n) [] [u; v]
 
-  let bvsle u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsle n) [] [u; v]
+    let sle u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.sle n) [] [u; v]
 
-  let bvsgt u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsgt n) [] [u; v]
+    let sgt u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.sgt n) [] [u; v]
 
-  let bvsge u v =
-    let n = match_bitv_type u in
-    apply (Const.bvsge n) [] [u; v]
+    let sge u v =
+      let n = match_bitv_type u in
+      apply (Const.Bitv.sge n) [] [u; v]
 
+  end
 
   module Float = struct
     (* Floats *)
@@ -2446,8 +2452,9 @@ module Term = struct
       | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
     let fp sign exp significand =
-      assert (String.length sign = 1);
-      apply (Const.Float.fp sign exp significand) [] []
+      let e = Bitv.match_bitv_type exp in
+      let s = Bitv.match_bitv_type significand in
+      apply (Const.Float.fp (e, s)) [] [sign; exp; significand]
 
     let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
     let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
@@ -2543,10 +2550,10 @@ module Term = struct
     let real_to_fp e s rm r =
       apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
     let sbv_to_fp e s rm bv =
-      let n = match_bitv_type bv in
+      let n = Bitv.match_bitv_type bv in
       apply (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
     let ubv_to_fp e s rm bv =
-      let n = match_bitv_type bv in
+      let n = Bitv.match_bitv_type bv in
       apply (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
     let to_ubv m rm x =
       let (e,s) = match_float_type x in

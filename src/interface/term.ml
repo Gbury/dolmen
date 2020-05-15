@@ -871,19 +871,19 @@ module type Smtlib_Bitv = sig
   type t
   (** The type of terms *)
 
-  val mk_bitv : string -> t
+  val mk : string -> t
   (** Create a bitvector litteral from a string representation.
         The string should only contain characters '0' or '1'. *)
 
-  val bitv_concat : t -> t -> t
+  val concat : t -> t -> t
   (** Bitvector concatenation. *)
 
-  val bitv_extract : int -> int -> t -> t
+  val extract : int -> int -> t -> t
   (** Bitvector extraction, using in that order,
       the end (exclusive) and then the start (inclusive)
       position of the bitvector to extract. *)
 
-  val bitv_repeat : int -> t -> t
+  val repeat : int -> t -> t
   (** Repetition of a bitvector. *)
 
   val zero_extend : int -> t -> t
@@ -899,142 +899,135 @@ module type Smtlib_Bitv = sig
   val rotate_left : int -> t -> t
   (** [rotate_left i x] means rotate bits of x to the left i times. *)
 
-  val bvnot : t -> t
+  val not : t -> t
   (** Bitwise negation. *)
 
-  val bvand : t -> t -> t
+  val and_ : t -> t -> t
   (** Bitwise conjunction. *)
 
-  val bvor : t -> t -> t
+  val or_ : t -> t -> t
   (** Bitwise disjunction. *)
 
-  val bvnand : t -> t -> t
-  (** [bvnand s t] abbreviates [bvnot (bvand s t)]. *)
+  val nand : t -> t -> t
+  (** [nand s t] abbreviates [not (and_ s t)]. *)
 
-  val bvnor : t -> t -> t
-  (** [bvnor s t] abbreviates [bvnot (bvor s t)]. *)
+  val nor : t -> t -> t
+  (** [nor s t] abbreviates [not (or_ s t)]. *)
 
-  val bvxor : t -> t -> t
-  (** [bvxor s t] abbreviates [bvor (bvand s (bvnot t)) (bvand (bvnot s) t)]. *)
+  val xor : t -> t -> t
+  (** [xor s t] abbreviates [or_ (and_ s (not t)) (and_ (not s) t)]. *)
 
-  val bvxnor : t -> t -> t
-  (** [bvxnor s t] abbreviates [bvor (bvand s t) (bvand (bvnot s) (bvnot t))]. *)
+  val xnor : t -> t -> t
+  (** [xnor s t] abbreviates [or_ (and_ s t) (and_ (not s) (not t))]. *)
 
-  val bvcomp : t -> t -> t
-  (** Bitwise comparison. [bvcomp s t] equald [#b1] iff [s] and [t]
+  val comp : t -> t -> t
+  (** Bitwise comparison. [comp s t] equald [#b1] iff [s] and [t]
       are bitwise equal. *)
 
-
-  val bvneg : t -> t
+  val neg : t -> t
   (** Arithmetic complement on bitvectors.
       Supposing an input bitvector of size [m] representing
       an integer [k], the resulting term should represent
       the integer [2^m - k]. *)
 
-  val bvadd : t -> t -> t
+  val add : t -> t -> t
   (** Arithmetic addition on bitvectors, modulo the size of
       the bitvectors (overflows wrap around [2^m] where [m]
       is the size of the two input bitvectors). *)
 
-  val bvsub : t -> t -> t
+  val sub : t -> t -> t
   (** Arithmetic substraction on bitvectors, modulo the size
       of the bitvectors (2's complement subtraction modulo).
-      [bvsub s t] should be equal to [bvadd s (bvneg t)]. *)
+      [sub s t] should be equal to [add s (neg t)]. *)
 
-  val bvmul : t -> t -> t
+  val mul : t -> t -> t
   (** Arithmetic multiplication on bitvectors, modulo the size
-      of the bitvectors (see {!bvadd}). *)
+      of the bitvectors (see {!add}). *)
 
-  val bvudiv : t -> t -> t
+  val udiv : t -> t -> t
   (** Arithmetic euclidian integer division on bitvectors. *)
 
-  val bvurem : t -> t -> t
+  val urem : t -> t -> t
   (** Arithmetic euclidian integer remainder on bitvectors. *)
 
-  val bvsdiv : t -> t -> t
+  val sdiv : t -> t -> t
   (** Arithmetic 2's complement signed division.
       (see smtlib's specification for more information). *)
 
-  val bvsrem : t -> t -> t
+  val srem : t -> t -> t
   (** Arithmetic 2's coplement signed remainder (sign follows dividend).
       (see smtlib's specification for more information). *)
 
-  val bvsmod : t -> t -> t
+  val smod : t -> t -> t
   (** Arithmetic 2's coplement signed remainder (sign follows divisor).
       (see smtlib's specification for more information). *)
 
-  val bvshl : t -> t -> t
-  (** Logical shift left. [bvshl t k] return the result of
+  val shl : t -> t -> t
+  (** Logical shift left. [shl t k] return the result of
       shifting [t] to the left [k] times. In other words,
       this should return the bitvector representing
       [t * 2^k] (since bitvectors represent integers using
       the least significatn bit in cell 0). *)
 
-  val bvlshr : t -> t -> t
-  (** Logical shift right. [bvlshr t k] return the result of
+  val lshr : t -> t -> t
+  (** Logical shift right. [lshr t k] return the result of
       shifting [t] to the right [k] times. In other words,
       this should return the bitvector representing
       [t / (2^k)]. *)
 
-  val bvashr : t -> t -> t
+  val ashr : t -> t -> t
   (** Arithmetic shift right, like logical shift right except that the most
       significant bits of the result always copy the most significant
       bit of the first argument*)
 
-  val bvult : t -> t -> t
+  val ult : t -> t -> t
   (** Boolean arithmetic comparison (less than).
-      [bvult s t] should return the [true] term iff [s < t]. *)
+      [ult s t] should return the [true] term iff [s < t]. *)
 
-  val bvule : t -> t -> t
+  val ule : t -> t -> t
   (** Boolean arithmetic comparison (less or equal than). *)
 
-  val bvugt : t -> t -> t
+  val ugt : t -> t -> t
   (** Boolean arithmetic comparison (greater than). *)
 
-  val bvuge : t -> t -> t
+  val uge : t -> t -> t
   (** Boolean arithmetic comparison (greater or equal than). *)
 
-  val bvslt : t -> t -> t
+  val slt : t -> t -> t
   (** Boolean signed arithmetic comparison (less than).
       (See smtlib's specification for more information) *)
 
-  val bvsle : t -> t -> t
+  val sle : t -> t -> t
   (** Boolean signed arithmetic comparison (less or equal than). *)
 
-  val bvsgt : t -> t -> t
+  val sgt : t -> t -> t
   (** Boolean signed arithmetic comparison (greater than). *)
 
-  val bvsge : t -> t -> t
+  val sge : t -> t -> t
   (** Boolean signed arithmetic comparison (greater or equal than). *)
+
 end
 
-module type Smtlib_Float = sig
-
-  (** Floating points are complicated so this documentation is not in anyway
-      sufficient. A detailed description of the theory together with the
-      rationale of several models decisions as well as a formal semantics of the
-      theory can be found in
-
-      [BTRW15] Martin Brain, Cesare Tinelli, Philipp Ruemmer, and Thomas Wahl. An
-      Automatable Formal Semantics for IEEE-754 Floating-Point Arithmetic
-      Technical Report, 2015. (http://smt-lib.org/papers/BTRW15.pdf)
-  *)
+(** Bitvector part of the smtlib float requirements *)
+module type Smtlib_Float_Bitv = sig
 
   type t
-  (** The type of terms *)
+  (** the type of terms *)
 
-  type ty
-  (** The type of types. *)
+  val mk : string -> t
+  (** Bitvector litteral. *)
 
-  val ty : t -> ty
-  (** Type of a term. *)
+end
 
-  (** Sub-module used for namespacing *)
-  module Float : sig
+(** Float part of the smtlib float requirements *)
+module type Smtlib_Float_Float = sig
 
-    val fp : string -> string -> string -> t
-    (** Construct a floating point from bitvector literals (sign, exponent, significand).
-        Sign is of size 1*)
+    type t
+    (** the type of terms *)
+
+    val fp : t -> t -> t -> t
+    (** Construct a floating point from bitvector literals
+        (sign, exponent, significand). The sign should be of size 1. *)
 
     val roundNearestTiesToEven: t
     (** constant for rounding mode RNE *)
@@ -1165,5 +1158,37 @@ module type Smtlib_Float = sig
     val to_real: t -> t
     (** [to_real f] convert to a real *)
 
-  end
 end
+
+(* Requirement for the Floats SMTLIB theory *)
+module type Smtlib_Float = sig
+
+  (** Floating points are complicated so this documentation is not in anyway
+      sufficient. A detailed description of the theory together with the
+      rationale of several models decisions as well as a formal semantics of the
+      theory can be found in
+
+      [BTRW15] Martin Brain, Cesare Tinelli, Philipp Ruemmer, and Thomas Wahl. An
+      Automatable Formal Semantics for IEEE-754 Floating-Point Arithmetic
+      Technical Report, 2015. (http://smt-lib.org/papers/BTRW15.pdf)
+  *)
+
+  type t
+  (** The type of terms *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Type of a term. *)
+
+  module Bitv : Smtlib_Float_Bitv with type t := t
+  (** Sub-module used for namespacing the bitvector part
+      of the theory requirements *)
+
+  module Float : Smtlib_Float_Float with type t := t
+  (** Sub-module used for namespacing the floating number part
+      of the theory requirements *)
+
+end
+
