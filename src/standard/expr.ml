@@ -1804,37 +1804,37 @@ module Term = struct
       let plus_zero = fp_gen_fun ~args:0 "plus_zero" (fun (e,s) -> Plus_zero (e,s))
       let minus_zero = fp_gen_fun ~args:0 "minus_zero" (fun (e,s) -> Minus_zero (e,s))
       let nan = fp_gen_fun ~args:0 "nan" (fun (e,s) -> NaN (e,s))
-      let fp_abs = fp_gen_fun ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
-      let fp_neg = fp_gen_fun ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
-      let fp_add = fp_gen_fun ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
-      let fp_sub = fp_gen_fun ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
-      let fp_mul = fp_gen_fun ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
-      let fp_div = fp_gen_fun ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
-      let fp_fma = fp_gen_fun ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
-      let fp_sqrt = fp_gen_fun ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
-      let fp_rem = fp_gen_fun ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
-      let fp_roundToIntegral = fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
-      let fp_min = fp_gen_fun ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
-      let fp_max = fp_gen_fun ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
-      let fp_leq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
-      let fp_lt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
-      let fp_geq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
-      let fp_gt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
-      let fp_eq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
-      let fp_isNormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
-      let fp_isSubnormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
-      let fp_isZero = fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
-      let fp_isInfinite = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
-      let fp_isNaN = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
-      let fp_isNegative = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
-      let fp_isPositive = fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
+      let abs = fp_gen_fun ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
+      let neg = fp_gen_fun ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
+      let add = fp_gen_fun ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
+      let sub = fp_gen_fun ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
+      let mul = fp_gen_fun ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
+      let div = fp_gen_fun ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
+      let fma = fp_gen_fun ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
+      let sqrt = fp_gen_fun ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
+      let rem = fp_gen_fun ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
+      let roundToIntegral = fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
+      let min = fp_gen_fun ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
+      let max = fp_gen_fun ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
+      let leq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
+      let lt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
+      let geq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
+      let gt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
+      let eq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
+      let isNormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
+      let isSubnormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
+      let isZero = fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
+      let isInfinite = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
+      let isNaN = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
+      let isNegative = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
+      let isPositive = fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
       let to_real = fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real" (fun (e,s) -> To_real (e,s))
 
       let ieee_format_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
             Id.const ~builtin:(Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
           )
-      let fp_to_fp =
+      let to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (e1,s1,e2,s2) ->
             Id.const ~builtin:(Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
           )
@@ -2460,86 +2460,86 @@ module Term = struct
     let plus_zero e s = apply (Const.Float.plus_zero (e,s)) [] []
     let minus_zero e s = apply (Const.Float.minus_zero (e,s)) [] []
     let nan e s = apply (Const.Float.nan (e,s)) [] []
-    let fp_abs x =
+    let abs x =
       let es = match_float_type x in
-      apply (Const.Float.fp_abs es) [] [x]
-    let fp_neg x =
+      apply (Const.Float.abs es) [] [x]
+    let neg x =
       let es = match_float_type x in
-      apply (Const.Float.fp_neg es) [] [x]
-    let fp_add rm x y =
+      apply (Const.Float.neg es) [] [x]
+    let add rm x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_add es) [] [rm;x;y]
-    let fp_sub rm x y =
+      apply (Const.Float.add es) [] [rm;x;y]
+    let sub rm x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_sub es) [] [rm;x;y]
-    let fp_mul rm x y =
+      apply (Const.Float.sub es) [] [rm;x;y]
+    let mul rm x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_mul es) [] [rm;x;y]
-    let fp_div rm x y =
+      apply (Const.Float.mul es) [] [rm;x;y]
+    let div rm x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_div es) [] [rm;x;y]
-    let fp_fma rm x y z =
+      apply (Const.Float.div es) [] [rm;x;y]
+    let fma rm x y z =
       let es = match_float_type x in
-      apply (Const.Float.fp_fma es) [] [rm;x;y;z]
-    let fp_sqrt rm x =
+      apply (Const.Float.fma es) [] [rm;x;y;z]
+    let sqrt rm x =
       let es = match_float_type x in
-      apply (Const.Float.fp_sqrt es) [] [rm;x]
-    let fp_rem x y =
+      apply (Const.Float.sqrt es) [] [rm;x]
+    let rem x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_rem es) [] [x;y]
-    let fp_roundToIntegral rm x =
+      apply (Const.Float.rem es) [] [x;y]
+    let roundToIntegral rm x =
       let es = match_float_type x in
-      apply (Const.Float.fp_roundToIntegral es) [] [rm;x]
-    let fp_min x y =
+      apply (Const.Float.roundToIntegral es) [] [rm;x]
+    let min x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_min es) [] [x;y]
-    let fp_max x y =
+      apply (Const.Float.min es) [] [x;y]
+    let max x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_max es) [] [x;y]
-    let fp_leq x y =
+      apply (Const.Float.max es) [] [x;y]
+    let leq x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_leq es) [] [x;y]
-    let fp_lt x y =
+      apply (Const.Float.leq es) [] [x;y]
+    let lt x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_lt es) [] [x;y]
-    let fp_geq x y =
+      apply (Const.Float.lt es) [] [x;y]
+    let geq x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_geq es) [] [x;y]
-    let fp_gt x y =
+      apply (Const.Float.geq es) [] [x;y]
+    let gt x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_gt es) [] [x;y]
-    let fp_eq x y =
+      apply (Const.Float.gt es) [] [x;y]
+    let eq x y =
       let es = match_float_type x in
-      apply (Const.Float.fp_eq es) [] [x;y]
-    let fp_isNormal x =
+      apply (Const.Float.eq es) [] [x;y]
+    let isNormal x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isNormal es) [] [x]
-    let fp_isSubnormal x =
+      apply (Const.Float.isNormal es) [] [x]
+    let isSubnormal x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isSubnormal es) [] [x]
-    let fp_isZero x =
+      apply (Const.Float.isSubnormal es) [] [x]
+    let isZero x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isZero es) [] [x]
-    let fp_isInfinite x =
+      apply (Const.Float.isZero es) [] [x]
+    let isInfinite x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isInfinite es) [] [x]
-    let fp_isNaN x =
+      apply (Const.Float.isInfinite es) [] [x]
+    let isNaN x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isNaN es) [] [x]
-    let fp_isNegative x =
+      apply (Const.Float.isNaN es) [] [x]
+    let isNegative x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isNegative es) [] [x]
-    let fp_isPositive x =
+      apply (Const.Float.isNegative es) [] [x]
+    let isPositive x =
       let es = match_float_type x in
-      apply (Const.Float.fp_isPositive es) [] [x]
+      apply (Const.Float.isPositive es) [] [x]
     let to_real x =
       let es = match_float_type x in
       apply (Const.Float.to_real es) [] [x]
     let ieee_format_to_fp e s bv =
       apply (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
-    let fp_to_fp e2 s2 rm x =
+    let to_fp e2 s2 rm x =
       let (e1,s1) = match_float_type x in
-      apply (Const.Float.fp_to_fp (e1,s1,e2,s2)) [] [rm;x]
+      apply (Const.Float.to_fp (e1,s1,e2,s2)) [] [rm;x]
     let real_to_fp e s rm r =
       apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
     let sbv_to_fp e s rm bv =

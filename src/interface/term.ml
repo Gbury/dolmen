@@ -1067,85 +1067,85 @@ module type Smtlib_Float = sig
     (** The constant Non-numbers, it is also equivalent to many literals which are
         equivalent together *)
 
-    val fp_abs : t -> t
+    val abs : t -> t
     (** absolute value *)
 
-    val fp_neg : t -> t
+    val neg : t -> t
     (** negation *)
 
-    val fp_add : t -> t -> t -> t
-    (** [fp_add rm f1 f2] addition *)
+    val add : t -> t -> t -> t
+    (** [add rm f1 f2] addition *)
 
-    val fp_sub : t -> t -> t -> t
-    (** [fp_sub rm f1 f2] subtraction *)
+    val sub : t -> t -> t -> t
+    (** [sub rm f1 f2] subtraction *)
 
-    val fp_mul : t -> t -> t -> t
-    (** [fp_mul rm f1 f2] multiplication *)
+    val mul : t -> t -> t -> t
+    (** [mul rm f1 f2] multiplication *)
 
-    val fp_div : t -> t -> t -> t
-    (** [fp_mul rm f1 f2] division *)
+    val div : t -> t -> t -> t
+    (** [mul rm f1 f2] division *)
 
-    val fp_fma : t -> t -> t -> t -> t
-    (** [fp_mul rm f1 f2] fused multiplication and addition *)
+    val fma : t -> t -> t -> t -> t
+    (** [mul rm f1 f2] fused multiplication and addition *)
 
-    val fp_sqrt : t -> t -> t
-    (** [fp_sqrt rm f] square root *)
+    val sqrt : t -> t -> t
+    (** [sqrt rm f] square root *)
 
-    val fp_rem : t -> t -> t
-    (** [fp_rem f1 f2] remainder *)
+    val rem : t -> t -> t
+    (** [rem f1 f2] remainder *)
 
-    val fp_roundToIntegral : t -> t -> t
-    (** [fp_roundToIntegral rm f] rounding to integral *)
+    val roundToIntegral : t -> t -> t
+    (** [roundToIntegral rm f] rounding to integral *)
 
-    val fp_min : t -> t -> t
-    (** [fp_min f1 f2] minimum *)
+    val min : t -> t -> t
+    (** [min f1 f2] minimum *)
 
-    val fp_max : t -> t -> t
-    (** [fp_max f1 f2] maximum *)
+    val max : t -> t -> t
+    (** [max f1 f2] maximum *)
 
-    val fp_leq : t -> t -> t
-    (** [fp_leq f1 f2] less or equal floating point comparison *)
+    val leq : t -> t -> t
+    (** [leq f1 f2] less or equal floating point comparison *)
 
-    val fp_lt : t -> t -> t
-    (** [fp_lt f1 f2] less than floating point comparison *)
+    val lt : t -> t -> t
+    (** [lt f1 f2] less than floating point comparison *)
 
-    val fp_geq : t -> t -> t
-    (** [fp_geq f1 f2] greater or equal floating point comparison *)
+    val geq : t -> t -> t
+    (** [geq f1 f2] greater or equal floating point comparison *)
 
-    val fp_gt : t -> t -> t
-    (** [fp_lt f1 f2] greater than floating point comparison *)
+    val gt : t -> t -> t
+    (** [lt f1 f2] greater than floating point comparison *)
 
-    val fp_eq : t -> t -> t
-    (** [fp_eq f1 f2] floating point equality *)
+    val eq : t -> t -> t
+    (** [eq f1 f2] floating point equality *)
 
-    val fp_isNormal : t -> t
-    (** [fp_isNormal f] test if it is a normal floating point *)
+    val isNormal : t -> t
+    (** [isNormal f] test if it is a normal floating point *)
 
-    val fp_isSubnormal : t -> t
-    (** [fp_isSubnormal f] test if it is a subnormal floating point *)
+    val isSubnormal : t -> t
+    (** [isSubnormal f] test if it is a subnormal floating point *)
 
-    val fp_isZero : t -> t
-    (** [fp_isZero f] test if it is a zero *)
+    val isZero : t -> t
+    (** [isZero f] test if it is a zero *)
 
-    val fp_isInfinite : t -> t
-    (** [fp_isInfinite f] test if it is an infinite *)
+    val isInfinite : t -> t
+    (** [isInfinite f] test if it is an infinite *)
 
-    val fp_isNaN : t -> t
-    (** [fp_isNaN f] test if it is NaN *)
+    val isNaN : t -> t
+    (** [isNaN f] test if it is NaN *)
 
-    val fp_isNegative : t -> t
-    (** [fp_isNegative f] test if it is a negative floating point *)
+    val isNegative : t -> t
+    (** [isNegative f] test if it is a negative floating point *)
 
-    val fp_isPositive : t -> t
-    (** [fp_isPositive f] test if it is a positive floating point *)
+    val isPositive : t -> t
+    (** [isPositive f] test if it is a positive floating point *)
 
     val ieee_format_to_fp: int -> int -> t -> t
     (** [ieee_format_to_fp e s bv] Convert a bitvector into a floating point using IEEE 754-2008 interchange format.
         (reinterpret the bitvector into floating-point)
     *)
 
-    val fp_to_fp: int -> int -> t -> t -> t
-    (** [fp_to_fp e s rm f] convert from one floating point format to another *)
+    val to_fp: int -> int -> t -> t -> t
+    (** [to_fp e s rm f] convert from one floating point format to another *)
 
     val real_to_fp: int -> int -> t -> t -> t
     (** [real_to_fp e s rm r] convert from a real *)

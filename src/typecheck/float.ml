@@ -137,7 +137,7 @@ module Smtlib2 = struct
           match Ty.view @@ T.ty b with
           | `Real -> return (F.real_to_fp e s rm b)
           | `Bitv _ -> return (F.ubv_to_fp e s rm b)
-          | `Float (_,_) -> return (F.fp_to_fp e s rm b)
+          | `Float (_,_) -> return (F.to_fp e s rm b)
           | _ -> Type._error env (Ast ast) To_fp_incorrect_args
         end
       | _ -> Type._error env (Ast ast) To_fp_incorrect_args
@@ -206,38 +206,38 @@ module Smtlib2 = struct
             | ["roundTowardZero"] | ["RTZ"] ->
               Some (app0 env "roundTowardZero"
                       (wrap F.roundTowardZero))
-            | ["fp.abs"] -> Some (app1 env "fp.abs" (wrap F.fp_abs))
-            | ["fp.neg"] -> Some (app1 env "fp.neg" (wrap F.fp_neg))
-            | ["fp.add"] -> Some (app3 env "fp.add" (wrap F.fp_add))
-            | ["fp.sub"] -> Some (app3 env "fp.sub" (wrap F.fp_sub))
-            | ["fp.mul"] -> Some (app3 env "fp.mul" (wrap F.fp_mul))
-            | ["fp.div"] -> Some (app3 env "fp.div" (wrap F.fp_div))
-            | ["fp.fma"] -> Some (app4 env "fp.fma" (wrap F.fp_fma))
-            | ["fp.sqrt"] -> Some (app2 env "fp.sqrt" (wrap F.fp_sqrt))
-            | ["fp.rem"] -> Some (app2 env "fp.rem" (wrap F.fp_rem))
+            | ["fp.abs"] -> Some (app1 env "fp.abs" (wrap F.abs))
+            | ["fp.neg"] -> Some (app1 env "fp.neg" (wrap F.neg))
+            | ["fp.add"] -> Some (app3 env "fp.add" (wrap F.add))
+            | ["fp.sub"] -> Some (app3 env "fp.sub" (wrap F.sub))
+            | ["fp.mul"] -> Some (app3 env "fp.mul" (wrap F.mul))
+            | ["fp.div"] -> Some (app3 env "fp.div" (wrap F.div))
+            | ["fp.fma"] -> Some (app4 env "fp.fma" (wrap F.fma))
+            | ["fp.sqrt"] -> Some (app2 env "fp.sqrt" (wrap F.sqrt))
+            | ["fp.rem"] -> Some (app2 env "fp.rem" (wrap F.rem))
             | ["fp.roundToIntegral"] ->
-              Some (app2 env "fp.roundToIntegral" (wrap F.fp_roundToIntegral))
-            | ["fp.min"] -> Some (app2 env "fp.min" (wrap F.fp_min))
-            | ["fp.max"] -> Some (app2 env "fp.max" (wrap F.fp_max))
-            | ["fp.leq"] -> Some (app_chain env "fp.leq" (wrap F.fp_leq))
-            | ["fp.lt"] -> Some (app_chain env "fp.lt" (wrap F.fp_lt))
-            | ["fp.geq"] -> Some (app_chain env "fp.geq" (wrap F.fp_geq))
-            | ["fp.gt"] -> Some (app_chain env "fp.gt" (wrap F.fp_gt))
-            | ["fp.eq"] -> Some (app_chain env "fp.eq" (wrap F.fp_eq))
+              Some (app2 env "fp.roundToIntegral" (wrap F.roundToIntegral))
+            | ["fp.min"] -> Some (app2 env "fp.min" (wrap F.min))
+            | ["fp.max"] -> Some (app2 env "fp.max" (wrap F.max))
+            | ["fp.leq"] -> Some (app_chain env "fp.leq" (wrap F.leq))
+            | ["fp.lt"] -> Some (app_chain env "fp.lt" (wrap F.lt))
+            | ["fp.geq"] -> Some (app_chain env "fp.geq" (wrap F.geq))
+            | ["fp.gt"] -> Some (app_chain env "fp.gt" (wrap F.gt))
+            | ["fp.eq"] -> Some (app_chain env "fp.eq" (wrap F.eq))
             | ["fp.isNormal"] ->
-              Some (app1 env "fp.isNormal" (wrap F.fp_isNormal))
+              Some (app1 env "fp.isNormal" (wrap F.isNormal))
             | ["fp.isSubnormal"] ->
-              Some (app1 env "fp.isSubnormal" (wrap F.fp_isSubnormal))
+              Some (app1 env "fp.isSubnormal" (wrap F.isSubnormal))
             | ["fp.isZero"] ->
-              Some (app1 env "fp.isZero" (wrap F.fp_isZero))
+              Some (app1 env "fp.isZero" (wrap F.isZero))
             | ["fp.isInfinite"] ->
-              Some (app1 env "fp.isInfinite" (wrap F.fp_isInfinite))
+              Some (app1 env "fp.isInfinite" (wrap F.isInfinite))
             | ["fp.isNaN"] ->
-              Some (app1 env "fp.isNaN" (wrap F.fp_isNaN))
+              Some (app1 env "fp.isNaN" (wrap F.isNaN))
             | ["fp.isNegative"] ->
-              Some (app1 env "fp.isNegative" (wrap F.fp_isNegative))
+              Some (app1 env "fp.isNegative" (wrap F.isNegative))
             | ["fp.isPositive"] ->
-              Some (app1 env "fp.isPositive" (wrap F.fp_isPositive))
+              Some (app1 env "fp.isPositive" (wrap F.isPositive))
             | ["fp.to_real"] ->
               Some (app1 env "fp.to_real" (wrap F.to_real))
             | _ -> None
