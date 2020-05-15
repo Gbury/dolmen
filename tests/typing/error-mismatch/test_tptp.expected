@@ -1,2 +1,2 @@
-File 'tests/typing/error-mismatch/test_tptp.p', line 6, character 18-22:
+File "tests/typing/error-mismatch/test_tptp.p", line 6, character 18-22:
 [1m[91mError[0;1m[0m The term: a has type int but was expected to be of type $i

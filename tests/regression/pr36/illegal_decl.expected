@@ -1,2 +1,2 @@
-File 'tests/regression/pr36/illegal_decl.smt2', line 2, character 0-27:
+File "tests/regression/pr36/illegal_decl.smt2", line 2, character 0-27:
 [1m[91mError[0;1m[0m Illegal declaration. Hint: check your logic

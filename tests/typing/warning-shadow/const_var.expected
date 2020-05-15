@@ -1,2 +1,2 @@
-File 'tests/typing/warning-shadow/const_var.smt2', line 3, character 15-16:
+File "tests/typing/warning-shadow/const_var.smt2", line 3, character 15-16:
 [1m[95mWarning[0;1m[0m Shadowing: a was already declared at line 2, character 0-22
