@@ -70,7 +70,7 @@ module Smtlib2 = struct
                     | _ ->
                       Some (fun ast _args ->
                           Type._error env (Ast ast)
-                            (Type.Bad_op_arity ("divisible", 1, List.length r)))
+                            (Type.Bad_op_arity ("divisible", [1], List.length r)))
                   end
                 | _ -> None
               end
@@ -263,7 +263,7 @@ module Smtlib2 = struct
                     | _ ->
                       Some (fun ast _ ->
                           Type._error env (Ast ast)
-                            (Type.Bad_op_arity ("divisible", 1, List.length r)))
+                            (Type.Bad_op_arity ("divisible", [1], List.length r)))
                   end
                 | _ -> None
               end

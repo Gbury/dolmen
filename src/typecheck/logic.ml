@@ -8,6 +8,7 @@ module Smtlib2 = struct
     | `Core
     | `Arrays
     | `Bitvectors
+    | `Floats
     | `Ints
     | `Reals
     | `Reals_Ints
@@ -107,7 +108,11 @@ module Smtlib2 = struct
       | l -> parse_dt c l
     (* TODO: where can the DT theory appear ? *)
     and parse_dt c = function
-      | 'D'::'T'::l -> parse_end (set_dt c) l
+      | 'D'::'T'::l -> parse_fp (set_dt c) l
+      | l -> parse_fp c l
+    (* TODO: where cna the FP theory appear ? *)
+    and parse_fp c = function
+      | 'F'::'P'::l -> parse_end (add_theory `Floats c) l
       | l -> parse_end c l
     (* End of list *)
     and parse_end c = function

@@ -1,15 +1,15 @@
 
 module Id = Dolmen.Id
 
-(* Smtlib arrays *)
+(* Smtlib Bitvector *)
 (* ************************************************************************ *)
 
 module Smtlib2 = struct
 
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Bitv with type t = Type.T.t) = struct
+      (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Bitv with type t := Type.T.t) = struct
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Term.t Type.err
@@ -23,13 +23,13 @@ module Smtlib2 = struct
 
     let parse_binary env ast s =
       match Misc.Bitv.parse_binary s with
-      | s -> Type.Term (T.mk_bitv s)
+      | s -> Type.Term (T.mk s)
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
 
     let parse_hexa env ast s =
       match Misc.Bitv.parse_binary s with
-      | s -> Type.Term (T.mk_bitv s)
+      | s -> Type.Term (T.mk s)
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
@@ -38,7 +38,7 @@ module Smtlib2 = struct
           assert (String.length s >= 2);
           let n = parse_int env ast n in
           match Misc.Bitv.parse_decimal s n with
-          | s -> Type.Term (T.mk_bitv s)
+          | s -> Type.Term (T.mk s)
           | exception Misc.Bitv.Invalid_char c ->
             Type._error env (Ast ast) (Invalid_dec_char c)
         )
@@ -53,7 +53,8 @@ module Smtlib2 = struct
             if r_l = n then f r
             else begin
               Some (fun ast _args ->
-                  Type._error env (Ast ast) (Type.Bad_op_arity (s, n, r_l))
+                  Type._error env (Ast ast)
+                    (Type.Bad_op_arity (s, [n], r_l))
                 )
             end
           end else
@@ -77,7 +78,8 @@ module Smtlib2 = struct
 
     let parse _version env s =
       match s with
-      (* sort *)
+
+      (* Bitvector sort *)
       | Type.Id { Id.ns = Id.Sort; name; } ->
         parse_id env name [
           "BitVec", 1, (function
@@ -86,13 +88,15 @@ module Smtlib2 = struct
                         (fun ast () -> Type.Ty (Ty.bitv (parse_int env ast n_s))))
               | _ -> assert false);
         ] (fun _ -> None)
-      (* values *)
+
+      (* Bitvector litterals *)
       | Type.Id { Id.ns = Id.Value Id.Binary; name; } ->
         Some (Base.make_op0 (module Type) env name (fun ast () ->
             parse_binary env ast name))
       | Type.Id { Id.ns = Id.Value Id.Hexadecimal; name; } ->
         Some (Base.make_op0 (module Type) env name (fun ast () ->
             parse_hexa env ast name))
+
       (* terms *)
       | Type.Id { Id.ns = Id.Term; name; } ->
         parse_id env name [
@@ -100,7 +104,7 @@ module Smtlib2 = struct
               | [i_s] ->
                 Some (Base.make_op1 (module Type) env "repeat" (fun ast b ->
                     let i = parse_int env ast i_s in
-                    Type.Term (T.bitv_repeat i (Type.parse_term env b))
+                    Type.Term (T.repeat i (Type.parse_term env b))
                   ))
               | _ -> assert false);
           "zero_extend", 1, (function
@@ -137,7 +141,7 @@ module Smtlib2 = struct
                     let i = parse_int env ast i_s in
                     let j = parse_int env ast j_s in
                     let b_t = Type.parse_term env b in
-                    Type.Term (T.bitv_extract i j b_t)
+                    Type.Term (T.extract i j b_t)
                   ))
               | _ -> assert false);
         ] (function
@@ -145,25 +149,25 @@ module Smtlib2 = struct
                            s.[0] = 'b' && s.[1] = 'v') ->
               Some (parse_extended_lit env s n)
 
-            | ["bvnot"] -> Some (app1 env "bvnot" T.bvnot)
-            | ["bvand"] -> Some (app_left env "bvand" T.bvand)
-            | ["bvor"] -> Some (app_left env "bvor" T.bvor)
-            | ["bvnand"] -> Some (app2 env "bvnand" T.bvnand)
-            | ["bvnor"] -> Some (app2 env "bvnor" T.bvnor)
-            | ["bvxor"] -> Some (app_left env "bvxor" T.bvxor)
-            | ["bvxnor"] -> Some (app_left env "bvxnor" T.bvxnor)
-            | ["bvcomp"] -> Some (app2 env "bvcomp" T.bvcomp)
+            | ["bvnot"] -> Some (app1 env "bvnot" T.not)
+            | ["bvand"] -> Some (app_left env "bvand" T.and_)
+            | ["bvor"] -> Some (app_left env "bvor" T.or_)
+            | ["bvnand"] -> Some (app2 env "bvnand" T.nand)
+            | ["bvnor"] -> Some (app2 env "bvnor" T.nor)
+            | ["bvxor"] -> Some (app_left env "bvxor" T.xor)
+            | ["bvxnor"] -> Some (app_left env "bvxnor" T.xnor)
+            | ["bvcomp"] -> Some (app2 env "bvcomp" T.comp)
 
-            | ["bvneg"] -> Some (app1 env "bvneg" T.bvneg)
-            | ["bvadd"] -> Some (app_left env "bvadd" T.bvadd)
-            | ["bvsub"] -> Some (app2 env "bvsub" T.bvsub)
-            | ["bvmul"] -> Some (app_left env "bvmul" T.bvmul)
-            | ["bvudiv"] -> Some (app2 env "bvudiv" T.bvudiv)
-            | ["bvurem"] -> Some (app2 env "bvurem" T.bvurem)
-            | ["bvshl"] -> Some (app2 env "bvshl" T.bvshl)
-            | ["bvlshr"] -> Some (app2 env "bvlshr" T.bvlshr)
-            | ["bvult"] -> Some (app2 env "bvult" T.bvult)
-            | ["concat"] -> Some (app2 env "concat" T.bitv_concat)
+            | ["bvneg"] -> Some (app1 env "bvneg" T.neg)
+            | ["bvadd"] -> Some (app_left env "bvadd" T.add)
+            | ["bvsub"] -> Some (app2 env "bvsub" T.sub)
+            | ["bvmul"] -> Some (app_left env "bvmul" T.mul)
+            | ["bvudiv"] -> Some (app2 env "bvudiv" T.udiv)
+            | ["bvurem"] -> Some (app2 env "bvurem" T.urem)
+            | ["bvshl"] -> Some (app2 env "bvshl" T.shl)
+            | ["bvlshr"] -> Some (app2 env "bvlshr" T.lshr)
+            | ["bvult"] -> Some (app2 env "bvult" T.ult)
+            | ["concat"] -> Some (app2 env "concat" T.concat)
             | _ -> None
           )
       | _ -> None

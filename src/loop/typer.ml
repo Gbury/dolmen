@@ -82,6 +82,9 @@ module Make(S : State_intf.Typer) = struct
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
   module Smtlib2_Bitv =
     Dolmen_type.Bitv.Smtlib2.Tff(T)
+      (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Bitv)
+  module Smtlib2_Float =
+    Dolmen_type.Float.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Zf *)
@@ -184,15 +187,23 @@ module Make(S : State_intf.Typer) = struct
     | None -> Format.fprintf fmt "<none>"
     | Some x -> pp fmt x
 
+  let rec print_expected fmt = function
+    | [] -> assert false
+    | x :: [] -> Format.fprintf fmt "%d" x
+    | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
+
   let report_error fmt (T.Error (_env, _fragment, err)) =
     match err with
     (* Core Typechecking Errors *)
     | T.Infer_type_variable ->
       Format.fprintf fmt "Cannot infer the type of a variable"
     | T.Expected (expect, got) ->
-      Format.fprintf fmt "Expected %s but got %a" expect (print_opt print_res) got
-    | T.Bad_op_arity (s, i, j) ->
-      Format.fprintf fmt "Bad arity for builtin '%s':@ expected %d arguments but got %d" s i j
+      Format.fprintf fmt "Expected %s but got %a"
+        expect (print_opt print_res) got
+    | T.Bad_op_arity (s, expected, actual) ->
+      Format.fprintf fmt
+        "Bad arity for builtin '%s':@ expected %a arguments but got %d"
+        s print_expected expected actual
     | T.Bad_ty_arity (c, i) ->
       Format.fprintf fmt "Bad arity (expected %d arguments) for type constant@ %a"
         i Dolmen.Expr.Print.ty_const c
@@ -270,6 +281,12 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Bitv.Invalid_bin_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
     | Smtlib2_Bitv.Invalid_hex_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
+
+    (* Smtlib Float errors *)
+    | Smtlib2_Float.Invalid_bin_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
+    | Smtlib2_Float.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Linear arithmetic *)
@@ -381,6 +398,7 @@ module Make(S : State_intf.Typer) = struct
         | `Ints -> Smtlib2_Ints.parse v :: acc
         | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
+        | `Floats -> Smtlib2_Float.parse v :: acc
         | `Reals -> Smtlib2_Reals.parse v :: acc
         | `Reals_Ints -> Smtlib2_Reals_Ints.parse v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories

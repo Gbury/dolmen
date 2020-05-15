@@ -211,3 +211,32 @@ module type Smtlib_Bitv = sig
   (** Create a fixed size bitvector type. *)
 
 end
+
+(** Signature required for types for typing smtlib bitvectors *)
+module type Smtlib_Float = sig
+
+  type t
+  (** The type of types *)
+
+  val bitv : int -> t
+  (** Create a fixed size bitvector type. *)
+
+  val float : int -> int -> t
+  (** Create a float type with fixed exponent size in bits and fixed significand,
+      including the hidden bit. *)
+
+  val roundingMode: t
+  (** Type of the rounding modes *)
+
+  type view = private [>
+    | `Real
+    | `Bitv of int
+    | `Float of int * int
+  ]
+  (** Partial views for types. These are used in the Float theory to
+      perform type-base dispatch for some conversion functions. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
+
+end

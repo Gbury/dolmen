@@ -104,10 +104,10 @@ let smaller p1 p2 =
 let pp buf pos =
   if pos.start_line = pos.stop_line
   then
-    Printf.bprintf buf "File '%s', line %d, character %d-%d"
+    Printf.bprintf buf "File \"%s\", line %d, character %d-%d"
       pos.file pos.start_line pos.start_column pos.stop_column
   else
-    Printf.bprintf buf "File '%s', line %d, character %d to line %d, character %d"
+    Printf.bprintf buf "File \"%s\", line %d, character %d to line %d, character %d"
       pos.file
       pos.start_line pos.start_column
       pos.stop_line pos.stop_column
