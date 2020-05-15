@@ -127,7 +127,9 @@ module type S = sig
         is being subtituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
     | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Term.t err
-    (** *)
+    (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
+        to [actual] arguments, but which has a different arity (which should
+        be accessible by getting its type/sort/arity). *)
     | Bad_cstr_arity : T.Cstr.t * int * int -> Dolmen.Term.t err
     (** *)
     | Bad_term_arity : T.Const.t * int * int -> Dolmen.Term.t err
