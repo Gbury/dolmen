@@ -195,6 +195,8 @@ module Make(S : State_intf.Typer) = struct
   let report_error fmt (T.Error (_env, _fragment, err)) =
     match err with
     (* Core Typechecking Errors *)
+    | T.Not_well_founded_datatypes ->
+      Format.fprintf fmt "Not well founded datatype declaration"
     | T.Infer_type_variable ->
       Format.fprintf fmt "Cannot infer the type of a variable"
     | T.Expected (expect, got) ->
