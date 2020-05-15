@@ -1,0 +1,2 @@
+File "tests/typing/error-bad_ty_arity/sort.smt2", line 3, character 18-19:
+[1m[91mError[0;1m[0m Bad arity: got 0 arguments for type constant s : Type -> Type

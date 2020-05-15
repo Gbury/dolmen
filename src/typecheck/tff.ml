@@ -604,7 +604,7 @@ module Make
   (* Wrapper around type application *)
   let ty_apply env ast f args =
     if List.length args = Ty.Const.arity f then Ty.apply f args
-    else _bad_ty_arity env f (Ty.Const.arity f) ast
+    else _bad_ty_arity env f (List.length args) ast
 
   (* Wrapper around term application. *)
   let term_apply env ast f ty_args t_args =
