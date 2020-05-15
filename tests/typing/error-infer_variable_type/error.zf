@@ -1,0 +1,8 @@
+# Rejected by Dolmen because it doesn't do inference for the
+# types of bound variables, even if it could be possible
+
+val t : type.
+val p : t -> prop.
+
+assert forall a. p a.
+

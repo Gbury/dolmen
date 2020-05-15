@@ -1,0 +1,2 @@
+File "tests/typing/error-unfounded_datatype/error.smt2", line 2, character 0-79:
+[1m[91mError[0;1m[0m Not well founded datatype declaration
