@@ -1903,7 +1903,7 @@ module Term = struct
                   ~builtin:(Destructor (ty_const, cstr, i, j))
                   name vars [ty] arg_ty
               in
-              dstrs.(i) <- Some dstr;
+              dstrs.(j) <- Some dstr;
               (arg_ty, Some dstr)
           ) args in
         cases := { Ty.cstr; dstrs; } :: !cases;

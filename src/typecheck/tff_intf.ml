@@ -130,8 +130,9 @@ module type S = sig
     (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
         to [actual] arguments, but which has a different arity (which should
         be accessible by getting its type/sort/arity). *)
-    | Bad_cstr_arity : T.Cstr.t * int * int -> Dolmen.Term.t err
-    (** *)
+    | Bad_cstr_arity : T.Cstr.t * int -> Dolmen.Term.t err
+    (** [Bad_cstr_arity (cstr, actual)] denotes an ADT constructor applied
+        to [actual] arguments, but whose arity does not match that. *)
     | Bad_term_arity : T.Const.t * int * int -> Dolmen.Term.t err
     (** *)
     | Repeated_record_field : T.Field.t -> Dolmen.Term.t err
@@ -243,16 +244,7 @@ module type S = sig
 
   val suggest : limit:int -> env -> Dolmen.Id.t -> Dolmen.Id.t list
   (** From a dolmen identifier, return a list of existing bound identifiers
-      in the env that are up tom [~limit] in terms of distance of edition. *)
-
-
-  (** {2 Parsing helpers} *)
-
-  val ty_apply :
-    (Ty.Const.t -> Ty.t list -> Ty.t) typer
-  val term_apply :
-    (T.Const.t -> Ty.t list -> T.t list -> T.t) typer
-  (** Wrappers for making applications, so that it raises the right exceptions. *)
+      in the env that are up to [~limit] in terms of distance of edition. *)
 
 
   (** {2 Parsing functions} *)

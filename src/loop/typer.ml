@@ -213,10 +213,10 @@ module Make(S : State_intf.Typer) = struct
     | T.Bad_ty_arity (c, actual) ->
       Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
         actual Dolmen.Expr.Print.ty_const c
-    | T.Bad_cstr_arity (c, i, j) ->
+    | T.Bad_cstr_arity (c, actual) ->
       Format.fprintf fmt
-        "Bad arity (expected %d type argument, and %d term arguments) for term constructor@ %a"
-        i j Dolmen.Expr.Print.term_const c
+        "Bad arity: got %d arguments for term constructor@ %a"
+        actual Dolmen.Expr.Print.term_const c
     | T.Bad_term_arity (c, i, j) ->
       Format.fprintf fmt
         "Bad arity (expected %d type argument, and %d term arguments) for term constant@ %a"

@@ -191,7 +191,7 @@ module Make
     (*  *)
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
     (* *)
-    | Bad_cstr_arity : T.Cstr.t * int * int -> Ast.t err
+    | Bad_cstr_arity : T.Cstr.t * int -> Ast.t err
     (* *)
     | Bad_term_arity : T.Const.t * int * int -> Ast.t err
     (* *)
@@ -322,8 +322,8 @@ module Make
   let _bad_term_arity env f (n1, n2) t =
     _error env (Ast t) (Bad_term_arity (f, n1, n2))
 
-  let _bad_cstr_arity env c (n1, n2) t =
-    _error env (Ast t) (Bad_cstr_arity (c, n1, n2))
+  let _bad_cstr_arity env c n t =
+    _error env (Ast t) (Bad_cstr_arity (c, n))
 
   let _ty_var_app env v t =
     _error env (Ast t) (Ty_var_application v)
@@ -601,39 +601,9 @@ module Make
   (* Wrappers for expression building *)
   (* ************************************************************************ *)
 
-  (* Wrapper around type application *)
-  let ty_apply env ast f args =
-    if List.length args = Ty.Const.arity f then Ty.apply f args
-    else _bad_ty_arity env f (List.length args) ast
-
-  (* Wrapper around term application. *)
-  let term_apply env ast f ty_args t_args =
-    let n1, n2 = T.Const.arity f in
-    if n1 = List.length ty_args &&
-       n2 = List.length t_args then
-      _wrap3 env ast T.apply f ty_args t_args
-    else
-      _bad_term_arity env f (n1, n2) ast
-
-  let term_apply_cstr env ast c ty_args t_args =
-    let n1, n2 = T.Cstr.arity c in
-    if n1 = List.length ty_args &&
-       n2 = List.length t_args then
-      _wrap3 env ast T.apply_cstr c ty_args t_args
-    else
-      _bad_cstr_arity env c (n1, n2) ast
-
   (* wrapper for builtin application *)
   let builtin_apply env b ast args =
-    try
-      b ast args
-    with
-    | T.Wrong_type (t, ty) ->
-      _type_mismatch env t ty ast
-    | Typing_error _ as exn ->
-      raise exn
-    | exn ->
-      _uncaught_exn env ast exn
+    _wrap2 env ast b ast args
 
   (* Wrapper around record creation *)
   let create_record env ast l =
@@ -1024,8 +994,10 @@ module Make
       end
 
   and parse_app_ty env ast f args =
+    if List.length args <> Ty.Const.arity f then
+      _bad_ty_arity env f (List.length args) ast;
     let l = List.map (parse_ty env) args in
-    Ty (ty_apply env ast f l)
+    Ty (Ty.apply f l)
 
   and parse_app_term env ast f args =
     let n_args = List.length args in
@@ -1040,7 +1012,7 @@ module Make
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
-    Term (term_apply env ast f ty_args t_args)
+    Term (_wrap3 env ast T.apply f ty_args t_args)
 
   and parse_app_cstr env ast c args =
     let n_args = List.length args in
@@ -1049,11 +1021,11 @@ module Make
       if n_args = n_ty + n_t then
         Misc.Lists.take_drop n_ty args
       else
-        _bad_cstr_arity env c (n_ty, n_t) ast
+        _bad_cstr_arity env c n_args ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
-    Term (term_apply_cstr env ast c ty_args t_args)
+    Term (_wrap3 env ast T.apply_cstr c ty_args t_args)
 
   and parse_ite env ast = function
     | [c; a; b] ->
