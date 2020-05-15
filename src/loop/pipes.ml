@@ -313,7 +313,8 @@ module Make
 
       (* Other set_logics should check whether corresponding plugins are activated ? *)
       | { S.descr = S.Set_logic s; _ } ->
-        let st = Typer.set_logic st ?loc:c.S.loc s in
+        let st, w = Typer.set_logic st ?loc:c.S.loc s in
+        let st = add_warnings st w in
         `Continue (st, simple (other_id c) c.S.loc (`Set_logic s))
 
       (* Set/Get info *)

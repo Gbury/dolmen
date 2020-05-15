@@ -573,12 +573,12 @@ module Make(S : State_intf.Typer) = struct
           add_raw_warning loc (Format.asprintf "Unknown logic %s" s);
           default_smtlib2_logic
       in
-      set st (Smtlib2 l)
+      set st (Smtlib2 l), get_warnings ()
     | _ ->
       add_raw_warning loc (
         Format.asprintf "Set logic is not supported for the current language"
       );
-      st
+      st, get_warnings ()
 
 
 

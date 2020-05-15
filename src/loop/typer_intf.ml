@@ -27,7 +27,8 @@ module type S = sig
   val typecheck : state -> bool
 
   val set_logic :
-    state -> ?loc:Dolmen.ParseLocation.t -> string -> state
+    state -> ?loc:Dolmen.ParseLocation.t -> string ->
+    state * (Dolmen.ParseLocation.t * string) list
 
   val def :
     state -> ?attr:Dolmen.Term.t -> Dolmen.Id.t -> Dolmen.Term.t ->
