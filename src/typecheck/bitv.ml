@@ -54,7 +54,7 @@ module Smtlib2 = struct
             else begin
               Some (fun ast _args ->
                   Type._error env (Ast ast)
-                    (Type.Bad_op_arity (s, [n], r_l))
+                    (Type.Bad_index_arity (s, n, r_l))
                 )
             end
           end else

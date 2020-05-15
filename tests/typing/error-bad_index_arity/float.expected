@@ -1,0 +1,2 @@
+File "tests/typing/error-bad_index_arity/float.smt2", line 3, character 13-28:
+[1m[91mError[0;1m[0m The indexed family of operators 'to_fp' expects 2 indexes, but was given 1

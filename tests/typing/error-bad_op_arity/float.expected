@@ -1,0 +1,2 @@
+File "tests/typing/error-bad_op_arity/float.smt2", line 3, character 13-34:
+[1m[91mError[0;1m[0m Bad arity for operator 'to_fp': expected 1 or 2 arguments but got 3

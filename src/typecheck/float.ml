@@ -53,7 +53,7 @@ module Smtlib2 = struct
             else begin
               Some (fun ast _args ->
                   Type._error env (Ast ast)
-                    (Type.Bad_op_arity (s, [n], r_l))
+                    (Type.Bad_index_arity (s, n, r_l))
                 )
             end
           end else
@@ -132,7 +132,7 @@ module Smtlib2 = struct
               Type.Expected ("a real, bitvector or float", Some (Term b)))
         end
       | _ -> Type._error env (Ast ast)
-               (Type.Bad_op_arity ("fp", [1; 2], List.length args))
+               (Type.Bad_op_arity ("to_fp", [1; 2], List.length args))
       )
 
     let wrap f = fun _ -> f

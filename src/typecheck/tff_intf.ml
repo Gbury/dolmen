@@ -117,6 +117,10 @@ module type S = sig
     (** The type of a bound variable had to be inferred which is forbidden. *)
     | Expected : string * res option -> Dolmen.Term.t err
     (** The parsed term didn't match the expected shape *)
+    | Bad_index_arity : string * int * int -> Dolmen.Term.t err
+    (** [Bad_index_arity (name, expected, actual)] denotes an error where
+        an indexed family of operators (based on [name]) expect to be indexed
+        by [expected] arguments but got [actual] instead. *)
     | Bad_op_arity : string * int list * int -> Dolmen.Term.t err
     (** [Bad_op_arity (name, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which

@@ -202,9 +202,13 @@ module Make(S : State_intf.Typer) = struct
     | T.Expected (expect, got) ->
       Format.fprintf fmt "Expected %s but got %a"
         expect (print_opt print_res) got
+    | T.Bad_index_arity (s, expected, actual) ->
+      Format.fprintf fmt
+        "The indexed family of operators '%s' expects %d indexes, but was given %d"
+        s expected actual
     | T.Bad_op_arity (s, expected, actual) ->
       Format.fprintf fmt
-        "Bad arity for builtin '%s':@ expected %a arguments but got %d"
+        "Bad arity for operator '%s':@ expected %a arguments but got %d"
         s print_expected expected actual
     | T.Bad_ty_arity (c, i) ->
       Format.fprintf fmt "Bad arity (expected %d arguments) for type constant@ %a"

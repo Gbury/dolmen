@@ -185,6 +185,8 @@ module Make
        todo: rename this *)
     | Expected : string * res option -> Ast.t err
     (* the parsed term didn't match the expected shape *)
+    | Bad_index_arity : string * int * int -> Ast.t err
+    (* *)
     | Bad_op_arity : string * int list * int -> Ast.t err
     (*  *)
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
