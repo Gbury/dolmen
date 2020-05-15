@@ -154,6 +154,7 @@ module Make(State : State_intf.Pipeline) = struct
           let st'' = try finally st' None with _ -> st' in
           run ~finally g st'' pipe
         | exception exn ->
+          let bt = Printexc.get_raw_backtrace () in
           (* delete alarm *)
           let () = delete_alarm al in
           (* Flush stdout and print a newline in case the exn was
@@ -161,7 +162,7 @@ module Make(State : State_intf.Pipeline) = struct
           Format.pp_print_flush Format.std_formatter ();
           (* Print the backtrace if requested *)
           if Printexc.backtrace_status () then
-            Printexc.print_backtrace stdout;
+            Printexc.print_raw_backtrace stdout bt;
           (* Go on running the rest of the pipeline. *)
           let st' = finally st (Some exn) in
           run ~finally g st' pipe
