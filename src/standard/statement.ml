@@ -103,10 +103,13 @@ let pp_record b (i : record) =
            Printf.bprintf b "%a: %a" Id.pp id Term.pp ty
          )) i.fields
 
-let pp_type_def b = function
+let pp_decl b = function
   | Abstract a -> pp_abstract b a
   | Record r -> pp_record b r
   | Inductive i -> pp_inductive b i
+
+let pp_decls b l =
+  Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:pp_decl b l
 
 let rec pp_descr b = function
   | Pack l ->
@@ -142,9 +145,8 @@ let rec pp_descr b = function
     Printf.bprintf b "set-option: %a" Term.pp t
 
   | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
-  | Decls [t] -> pp_type_def b t
-  | Decls l ->
-    Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:pp_type_def b l
+  | Decls [t] -> pp_decl b t
+  | Decls l -> pp_decls b l
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
@@ -186,10 +188,13 @@ let print_record fmt (r : record) =
          Format.fprintf fmt "%a : %a" Id.print f Term.print ty
        )) r.fields
 
-let print_type_def fmt = function
+let print_decl fmt = function
   | Abstract a -> print_abstract fmt a
   | Record r -> print_record fmt r
   | Inductive i -> print_inductive fmt i
+
+let print_decls fmt l =
+  (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:print_decl) fmt l
 
 let rec print_descr fmt = function
   | Pack l ->
@@ -233,10 +238,9 @@ let rec print_descr fmt = function
   | Def (id, t) ->
     Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
   | Decls [t] ->
-    print_type_def fmt t
+    print_decl fmt t
   | Decls l ->
-    Format.fprintf fmt "@[<v 2>rec_types:@ %a@]"
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:print_type_def) l
+    Format.fprintf fmt "@[<v 2>rec_types:@ %a@]" print_decls l
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"

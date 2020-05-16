@@ -827,6 +827,10 @@ module Make
       | { Ast.term = Ast.Colon (a, expected); _ } ->
         parse_ensure env a expected
 
+      (* Sometimes parser creates extra applications *)
+      | { Ast.term = Ast.App (t, []); _ } ->
+        parse_expr env t
+
       (* Explicitly catch higher-order application. *)
       | { Ast.term = Ast.App ({ Ast.term = Ast.App _; _ }, _); _ } as ast ->
         _error env (Ast ast) Higher_order_application
@@ -1020,6 +1024,8 @@ module Make
     let ty_l, t_l =
       if n_args = n_ty + n_t then
         Misc.Lists.take_drop n_ty args
+      else if n_args = n_t then
+        Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args
       else
         _bad_cstr_arity env c n_args ast
     in

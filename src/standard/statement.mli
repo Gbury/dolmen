@@ -148,6 +148,14 @@ val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions for statements. *)
 
+val pp_decl : Buffer.t -> decl -> unit
+val print_decl : Format.formatter -> decl -> unit
+(* Printer for declarations. *)
+
+val pp_decls : Buffer.t -> decl list -> unit
+val print_decls : Format.formatter -> decl list -> unit
+(* Printer for declaration lists. *)
+
 val prove : ?loc:location -> unit -> t
 (** Emit a [Prove] statement. *)
 

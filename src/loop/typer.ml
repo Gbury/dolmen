@@ -192,7 +192,15 @@ module Make(S : State_intf.Typer) = struct
     | x :: [] -> Format.fprintf fmt "%d" x
     | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
 
-  let report_error fmt (T.Error (_env, _fragment, err)) =
+  let print_fragment (type a) fmt (fragment : a T.fragment) =
+    match fragment with
+    | T.Ast ast -> Dolmen.Term.print fmt ast
+    | T.Decl d -> Dolmen.Statement.print_decl fmt d
+    | T.Decls l -> Dolmen.Statement.print_decls fmt l
+    | T.Located loc ->
+      Format.fprintf fmt "<located at %a>" Dolmen.ParseLocation.fmt loc
+
+  let report_error fmt (T.Error (_env, fragment, err)) =
     match err with
     (* Core Typechecking Errors *)
     | T.Not_well_founded_datatypes ->
@@ -266,7 +274,10 @@ module Make(S : State_intf.Typer) = struct
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
     | T.Unhandled_ast ->
-      Format.fprintf fmt "The typechecker did not know what to do with the term.@ Please report upstream."
+      Format.fprintf fmt
+        "The typechecker did not know what to do with the following term.@ \
+         Please report upstream.@\n%a"
+        print_fragment fragment
 
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
