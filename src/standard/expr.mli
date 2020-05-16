@@ -155,6 +155,8 @@ type builtin +=
   | Prop
   (** [Prop: ttype]: the builtin type constant for the type of
       propositions / booleans. *)
+  | Unit
+  (** The unit type, which has only one element (named void). *)
   | Univ
   (** [Univ: ttype]: a builtin type constant used for languages
       with a default type for elements (such as tptp's `$i`). *)
@@ -648,7 +650,6 @@ module Print : sig
       [Pretty.Infix] uses the identifier as a separator when printing th argument list
       [Pretty.Prefix] just ignore type arguments. *)
 
-
   val id : _ id t
   (** Printer for ids *)
 
@@ -912,6 +913,9 @@ module Ty : sig
     val prop : t
     (** The type constant for propositions *)
 
+    val unit : t
+    (** The unit type. *)
+
     val base : t
     (** An arbitrary type constant. *)
 
@@ -925,6 +929,12 @@ module Ty : sig
 
   val prop : t
   (** The type of propositions *)
+
+  val bool : t
+  (** Alias for {prop}. *)
+
+  val unit : t
+  (** The unit type. *)
 
   val base : t
   (** An arbitrary type. *)
@@ -1086,6 +1096,9 @@ module Term : sig
     val arity : t -> int * int
     (** Returns the arity of a constructor. *)
 
+    val void : t
+    (** Only constructor for the type unit. *)
+
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
@@ -1174,6 +1187,9 @@ module Term : sig
 
   val apply_field : Field.t -> t -> t
   (** Field access for a record. *)
+
+  val void : t
+  (** The only inhabitant of type unit. *)
 
   val _true : t
   val _false : t

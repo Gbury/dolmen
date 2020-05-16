@@ -56,6 +56,11 @@ module Make(S : State_intf.Typer) = struct
         Dolmen.Expr.Term.subst (of_list tys) (of_list terms) t
     end)
 
+  (* AE builtins *)
+  module Ae_Core =
+    Dolmen_type.Core.Ae.Tff(T)
+      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+
   (* Tptp builtins *)
   module Tptp_Core =
     Dolmen_type.Core.Tptp.Tff(T)
@@ -226,14 +231,21 @@ module Make(S : State_intf.Typer) = struct
 
   let report_error fmt (T.Error (_env, fragment, err)) =
     match err with
-    (* Core Typechecking Errors *)
+
+    (* Datatype definition not well founded *)
     | T.Not_well_founded_datatypes ->
       Format.fprintf fmt "Not well founded datatype declaration"
+
+    (* Inference of the type of a bound variable *)
     | T.Infer_type_variable ->
       Format.fprintf fmt "Cannot infer the type of a variable"
+
+    (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
       Format.fprintf fmt "Expected %s but got %a"
         expect (print_opt print_res) got
+
+    (* Arity errors *)
     | T.Bad_index_arity (s, expected, actual) ->
       Format.fprintf fmt
         "The indexed family of operators '%s' expects %d indexes, but was given %d"
@@ -255,50 +267,81 @@ module Make(S : State_intf.Typer) = struct
         "Bad arity: expected %a but got %d arguments for function@ %a%a"
         print_expected expected actual Dolmen.Expr.Print.term_const c
         poly_hint (c, expected, actual)
+
+    (* Record constuction errors *)
+    | T.Repeated_record_field f ->
+      Format.fprintf fmt
+        "The field %a is used more than once in this record construction"
+        Dolmen.Expr.Print.id f
+    | T.Missing_record_field f ->
+      Format.fprintf fmt
+        "The field %a is missing from this record construction"
+        Dolmen.Expr.Print.id f
+    | T.Mismatch_record_type (f, r) ->
+      Format.fprintf fmt
+        "The field %a does not belong to record type %a"
+        Dolmen.Expr.Print.id f Dolmen.Expr.Print.id r
+
+    (* Application of a variable *)
     | T.Var_application v ->
       Format.fprintf fmt "Cannot apply arguments to term variable@ %a" Dolmen.Expr.Print.id v
     | T.Ty_var_application v ->
       Format.fprintf fmt "Cannot apply arguments to type variable@ %a" Dolmen.Expr.Print.id v
+
+    (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
       Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
         Dolmen.Expr.Term.print t
         Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)
         Dolmen.Expr.Ty.print expected
+
     | T.Quantified_var_inference ->
       Format.fprintf fmt "Cannot infer type for a quantified variable"
+
     | T.Unhandled_builtin b ->
       Format.fprintf fmt
         "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
         Dolmen.Term.print_builtin b
+
     | T.Cannot_tag_tag ->
       Format.fprintf fmt "Cannot apply a tag to another tag (only expressions)"
+
     | T.Cannot_tag_ttype ->
       Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
+
     | T.Cannot_find id ->
       Format.fprintf fmt "Unbound identifier:@ '%a'" Dolmen.Id.print id
+
     | T.Type_var_in_type_constructor ->
       Format.fprintf fmt "Type variables cannot appear in the signature of a type constant"
+
     | T.Missing_destructor id ->
       Format.fprintf fmt
         "The destructor '%a'@ was not provided by the user implementation.@ Please report upstream."
         Dolmen.Id.print id
+
     | T.Higher_order_application ->
       Format.fprintf fmt "Higher-order applications are not handled by the Tff typechecker"
+
     | T.Higher_order_type ->
       Format.fprintf fmt "Higher-order types are not handled by the Tff typechecker"
+
     | T.Unbound_variables (tys, [], _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a"
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
+
     | T.Unbound_variables ([], ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a"
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
+
     | T.Unbound_variables (tys, ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) tys
         (Format.pp_print_list ~pp_sep Dolmen.Expr.Print.id) ts
+
     | T.Unhandled_ast ->
       Format.fprintf fmt
         "The typechecker did not know what to do with the following term.@ \
@@ -503,6 +546,7 @@ module Make(S : State_intf.Typer) = struct
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
+          Ae_Core.parse;
           Decl.parse; Subst.parse;
         ] in
       T.empty_env

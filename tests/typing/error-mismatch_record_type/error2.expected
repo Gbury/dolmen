@@ -1,0 +1,2 @@
+File "tests/typing/error-mismatch_record_type/error2.ae", line 6, character 19-49:
+[1m[91mError[0;1m[0m The field foo does not belong to record type tt

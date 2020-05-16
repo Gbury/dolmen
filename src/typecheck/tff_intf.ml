@@ -169,15 +169,23 @@ module type S = sig
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
     | Repeated_record_field : T.Field.t -> Dolmen.Term.t err
-    (** *)
+    (** [Repeated_record_field f] denotes an error within an expression
+        that builds a record by giving values to all fields, but where the
+        field [f] appears more than once. *)
     | Missing_record_field : T.Field.t -> Dolmen.Term.t err
-    (** *)
+    (** [Missing_record_field f] denotes an error within an expression
+        that builds a record by giving values to all fields, but where the
+        field [f] does not appear. *)
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Dolmen.Term.t err
-    (** *)
+    (** [Mismatch_record_type (f, r)] denotes an error where while building
+        a record expression for a record of type [c], a field [f] belonging
+        to another record type was used. *)
     | Var_application : T.Var.t -> Dolmen.Term.t err
-    (** *)
+    (** [Var_application v] denotes a variable which was applied to other
+        terms, which is forbidden in first-order formulas. *)
     | Ty_var_application : Ty.Var.t -> Dolmen.Term.t err
-    (** *)
+    (** [Ty_var_application v] denotes a type variable which was applied to
+        other terms, which is forbidden in first-order formulas. *)
     | Type_mismatch : T.t * Ty.t -> Dolmen.Term.t err
     (** *)
     | Quantified_var_inference : Dolmen.Term.t err

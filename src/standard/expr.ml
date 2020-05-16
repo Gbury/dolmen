@@ -78,7 +78,7 @@ type formula = term
 (* ************************************************************************* *)
 
 type builtin += Base | Wildcard
-type builtin += Prop | Univ
+type builtin += Prop | Unit | Univ
 type builtin += Coercion
 type builtin +=
   | True | False
@@ -904,6 +904,7 @@ module Ty = struct
     let arity (c : t) = List.length c.ty.fun_args
 
     let prop = Id.const ~builtin:Prop "Prop" [] [] Type
+    let unit = Id.const ~builtin:Unit "unit" [] [] Type
     let base = Id.const ~builtin:Univ "$i" [] [] Type
     let int = Id.const ~builtin:Int "int" [] [] Type
     let rat = Id.const ~builtin:Rat "rat" [] [] Type
@@ -947,8 +948,9 @@ module Ty = struct
       | Some l -> check_filters res f args l
     end
 
-  (* Builtin prop *)
+  (* Builtin types *)
   let prop = apply Const.prop []
+  let unit = apply Const.unit []
   let base = apply Const.base []
   let int = apply Const.int []
   let rat = apply Const.rat []
@@ -958,6 +960,9 @@ module Ty = struct
   let float' es = apply (Const.float es) []
   let float e s = float' (e,s)
   let roundingMode = apply Const.roundingMode []
+
+  (* alias for alt-ergo *)
+  let bool = prop
 
   (* Matching *)
   exception Impossible_matching of ty * ty
@@ -1147,6 +1152,52 @@ module Term = struct
 
   (* Inspection *)
   let ty { ty; _ } = ty
+
+  (* Helpers for adt definition *)
+  let mk_cstr ty_c name i vars args ret =
+    Id.const ~builtin:(Constructor (ty_c, i)) name vars args ret
+
+  (* ADT definition *)
+  let define_adt_aux ~record ty_const vars l =
+    let ty =  Ty.apply ty_const (List.map Ty.of_var vars) in
+    let cases = ref [] in
+    let l' = List.mapi (fun i (cstr_name, args) ->
+        let args_ty = List.map fst args in
+        let cstr = mk_cstr ty_const cstr_name i vars args_ty ty in
+        let dstrs = Array.make (List.length args) None in
+        let l' = List.mapi (fun j -> function
+            | (arg_ty, None) -> (arg_ty, None)
+            | (arg_ty, Some name) ->
+              let dstr =
+                Id.const
+                  ~builtin:(Destructor (ty_const, cstr, i, j))
+                  name vars [ty] arg_ty
+              in
+              dstrs.(j) <- Some dstr;
+              (arg_ty, Some dstr)
+          ) args in
+        cases := { Ty.cstr; dstrs; } :: !cases;
+        cstr, l'
+      ) l in
+    assert (not record || List.length !cases = 1);
+    Ty.define ty_const (Adt { ty = ty_const; record; cstrs = List.rev !cases; });
+    l'
+
+  let define_adt = define_adt_aux ~record:false
+
+  let define_record ty_const vars l =
+    let name = ty_const.name in
+    let cstr_args = List.map (fun (field_name, ty) ->
+        ty, Some field_name
+      ) l in
+    let l' = define_adt_aux ~record:true ty_const vars [name, cstr_args] in
+    match l' with
+    | [ _, l'' ] ->
+      List.map (function
+          | _, Some dstr -> dstr
+          | _, None -> assert false
+        ) l''
+    | _ -> assert false
 
   (* Variables *)
   module Var = struct
@@ -1874,10 +1925,14 @@ module Term = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
-    let mk ty_c name i vars args ret =
-      Id.const ~builtin:(Constructor (ty_c, i)) name vars args ret
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
+
+    let void =
+      match define_adt Ty.Const.unit [] ["void", []] with
+      | [void, _] -> void
+      | _ -> assert false
+
   end
 
   (* Record fields are represented as their destructors, i.e. constants *)
@@ -1887,47 +1942,6 @@ module Term = struct
     let equal = Id.equal
   end
 
-  (* ADT definition *)
-  let define_adt_aux ~record ty_const vars l =
-    let ty =  Ty.apply ty_const (List.map Ty.of_var vars) in
-    let cases = ref [] in
-    let l' = List.mapi (fun i (cstr_name, args) ->
-        let args_ty = List.map fst args in
-        let cstr = Cstr.mk ty_const cstr_name i vars args_ty ty in
-        let dstrs = Array.make (List.length args) None in
-        let l' = List.mapi (fun j -> function
-            | (arg_ty, None) -> (arg_ty, None)
-            | (arg_ty, Some name) ->
-              let dstr =
-                Id.const
-                  ~builtin:(Destructor (ty_const, cstr, i, j))
-                  name vars [ty] arg_ty
-              in
-              dstrs.(j) <- Some dstr;
-              (arg_ty, Some dstr)
-          ) args in
-        cases := { Ty.cstr; dstrs; } :: !cases;
-        cstr, l'
-      ) l in
-    assert (not record || List.length !cases = 1);
-    Ty.define ty_const (Adt { ty = ty_const; record; cstrs = List.rev !cases; });
-    l'
-
-  let define_adt = define_adt_aux ~record:false
-
-  let define_record ty_const vars l =
-    let name = ty_const.name in
-    let cstr_args = List.map (fun (field_name, ty) ->
-        ty, Some field_name
-      ) l in
-    let l' = define_adt_aux ~record:true ty_const vars [name, cstr_args] in
-    match l' with
-    | [ _, l'' ] ->
-      List.map (function
-          | _, Some dstr -> dstr
-          | _, None -> assert false
-        ) l''
-    | _ -> assert false
 
   (* Filter check *)
   let rec check_filters res f tys args = function
@@ -2149,6 +2163,8 @@ module Term = struct
     apply Const.coerce [src_ty; dst_ty] [t]
 
   (* Common constructions *)
+  let void = apply Cstr.void [] []
+
   let _true = apply Const._true [] []
   let _false = apply Const._false [] []
 

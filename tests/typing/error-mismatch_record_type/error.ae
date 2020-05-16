@@ -1,0 +1,6 @@
+
+type t = { foo : bool; bar : bool }
+type tt = { foobar : bool }
+
+goal g:
+  forall x:t . x = { foo = true; foobar = false }

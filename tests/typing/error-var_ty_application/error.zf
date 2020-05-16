@@ -1,0 +1,3 @@
+
+goal exists (a : type). a a.
+

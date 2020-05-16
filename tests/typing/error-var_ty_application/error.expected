@@ -1,0 +1,2 @@
+File "tests/typing/error-var_ty_application/error.zf", line 2, character 24-27:
+[1m[91mError[0;1m[0m Cannot apply arguments to type variable a
