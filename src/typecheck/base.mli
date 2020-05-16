@@ -1,14 +1,58 @@
 
-(** {2 Helpers} *)
+(** {2 Builtin functions manipulations} *)
 
-val noop : _ -> _ -> _ option
+val noop : _ -> _ -> [> `Not_found ]
 (** Noop builtins function. *)
 
 val merge :
-  ('a -> 'b -> ('c -> 'd -> 'e) option) list ->
-  'a -> 'b -> ('c -> 'd -> 'e) option
+  ('a -> 'b -> ([> `Not_found ] as 'c)) list ->
+  'a -> 'b -> 'c
 (** A convenient function for merging a list of
     builtin parser functions into a single builtin function. *)
+
+(** {2 Smtlib Indexed id helpers} *)
+
+val split_id : string -> string list
+(** Split the given strings on the ['`000'] character used to
+    squash smtlib indexed family into a single string. *)
+
+type 'ret indexed = [
+  | `Unary of (string -> 'ret)
+  | `Binary of (string -> string -> 'ret)
+  | `Ternary of (string -> string -> string -> 'ret)
+  | `Nary of int * (string list -> 'ret)
+]
+(** The type of indexed family of operators. *)
+
+val parse_id : string ->
+  (string * 'ret indexed) list ->
+  err:(string -> int -> int -> 'ret) ->
+  k:(string list -> 'ret) ->
+  'ret
+(** [parse_id id l ~err ~k] splits [id] (using {split_id})
+    into a list. If the list has a head [s] and a tail [l], it tries and find
+    in the list [l] a pair (s', indexed) such that [s = s'].
+    If the length of [l] matches the arity of [indexed], the provided function
+    is called, else [err] is called with [s], the arity of [indexed],
+    and the lenght of [l].
+    If no match is found or the split list does not contain a head and a
+    tail, [k] is called wiht the split list. *)
+
+val bad_ty_index_arity :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> int -> int ->
+  [> `Ty of (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty) ]
+(** Suitable [err] function for {parse_id} for typing sort indexed families. *)
+
+val bad_term_index_arity :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> int -> int ->
+  [> `Term of (Dolmen.Term.t -> Dolmen.Term.t list -> 'term) ]
+(** Suitable [err] function for {parse_id} for typing term indexed families. *)
+
+
+
+(** {2 Low-level helpers} *)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
@@ -71,59 +115,132 @@ val map_chain :
     [Type.T._and \[mk t1 t2; mk t2 t3; ..\]] *)
 
 
-(** {2 Languages base builtins} *)
+(** {2 High level helpers} *)
 
-(** AE builtins *)
-module Ae : sig
+val app0 :
+  (module Tff_intf.S with type env = 'env) ->
+  'env -> string -> ('ret) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
 
-  (** Builtin symbols for tptp's tff *)
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) : sig
-
-    val parse : Type.builtin_symbols
-
-  end
-end
-
-(** TPTP builtins ($i, $o, etc..) *)
-module Tptp : sig
-
-  (** Builtin symbols for tptp's tff *)
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) : sig
-
-    val parse : Dolmen_tptp.version -> Type.builtin_symbols
-
-  end
-end
+val app0_ast :
+  (module Tff_intf.S with type env = 'env) ->
+  'env -> string -> (Dolmen.Term.t -> 'ret) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
 
 
-(** Smtlib builtin *)
-module Smtlib2 : sig
+val ty_app1 :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> ('ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
-  (** Builtins for smtlib's core theory *)
-  module Tff
-      (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) : sig
+val ty_app1_ast :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
-    val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
-  end
-end
+val term_app1 :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
-(** Zf builtins *)
-module Zf : sig
+val term_app1_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
-  (** Builtins for smtlib's core theory *)
-  module Tff
-      (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Zf_Base with type 'a t = 'a Type.Tag.t) : sig
 
-    val parse : Type.builtin_symbols
-  end
-end
+val ty_app2 :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> ('ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val ty_app2_ast :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val term_app2 :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app2_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+
+val ty_app3 :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> ('ty -> 'ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val ty_app3_ast :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val term_app3 :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app3_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+
+val ty_app4 :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> ('ty -> 'ty -> 'ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val ty_app4_ast :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty -> 'ty -> 'ty) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
+
+val term_app4 :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app4_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+
+val term_app_left :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app_left_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app_right :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app_right_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+
+val term_app_chain :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> ('term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+val term_app_chain_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
+  (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
+
+

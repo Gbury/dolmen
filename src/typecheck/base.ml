@@ -1,23 +1,74 @@
 
-open Dolmen
-module Ast = Dolmen.Term
-
 (* Merging builtin parser functions *)
 (* ************************************************************************ *)
 
-let noop _ _ = None
+let noop _ _ = `Not_found
 
 let rec merge l env s =
   match l with
-  | [] -> None
+  | [] -> `Not_found
   | f :: r ->
     begin match f env s with
-      | (Some _) as ret -> ret
-      | None -> merge r env s
+      | `Not_found -> merge r env s
+      | ret -> ret
     end
 
+(* Smtlib ID splitting *)
+(* ************************************************************************ *)
 
-(* Building builtins parser functions *)
+type 'ret indexed = [
+  | `Unary of (string -> 'ret)
+  | `Binary of (string -> string -> 'ret)
+  | `Ternary of (string -> string -> string -> 'ret)
+  | `Nary of int * (string list -> 'ret)
+]
+
+let split_id = Dolmen_std.Misc.split_on_char '\000'
+
+let parse_id id l ~err ~k =
+  let rec aux h r r_l = function
+    | [] -> k (h :: r)
+    | (s, `Unary f) :: _ when String.equal s h ->
+      begin match r with
+        | [x] -> f x
+        | _ -> err s 1 r_l
+      end
+    | (s, `Binary f) :: _ when String.equal s h ->
+      begin match r with
+        | [x; y] -> f x y
+        | _ -> err s 2 r_l
+      end
+    | (s, `Ternary f) :: _ when String.equal s h ->
+      begin match r with
+        | [x; y; z] -> f x y z
+        | _ -> err s 3 r_l
+      end
+    | (s, `Nary (n, f)) :: _ when String.equal s h ->
+      if r_l = n then f r else err s n r_l
+    | _ :: l' -> aux h r r_l l'
+  in
+  match split_id id with
+  | h :: r -> aux h r (List.length r) l
+  | r -> k r
+
+let bad_ty_index_arity (type env ty)
+    (module Type: Tff_intf.S with type env = env and type Ty.t = ty)
+    env s n r_l =
+  `Ty (fun ast _args ->
+      Type._error env (Ast ast)
+        (Type.Bad_index_arity (s, n, r_l))
+    )
+
+let bad_term_index_arity (type env term)
+    (module Type: Tff_intf.S with type env = env and type T.t = term)
+    env s n r_l =
+  `Term (fun ast _args ->
+      Type._error env (Ast ast)
+        (Type.Bad_index_arity (s, n, r_l))
+    )
+
+
+(* Low level helpers *)
 (* ************************************************************************ *)
 
 type ('env, 'args, 'ret) helper =
@@ -113,184 +164,198 @@ let map_chain
   | [x] -> x
   | l -> Type.T._and l
 
-(* Alt-ergo builtins *)
+(* High level helpers *)
 (* ************************************************************************ *)
 
-module Ae = struct
+(* Nullary applications *)
 
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
+let app0
+    (type env) (module Type : Tff_intf.S with type env = env)
+    env name ret =
+  make_op0 (module Type) env name (fun _ () -> ret)
 
-    let parse env s =
-      match s with
-      | Type.Builtin Term.Bool ->
-        Some (make_op0 (module Type) env "bool" (fun _ () -> Type.Ty Ty.bool))
-      | Type.Builtin Term.Unit ->
-        Some (make_op0 (module Type) env "unit" (fun _ () -> Type.Ty Ty.unit))
-      | Type.Builtin Term.Void ->
-        Some (make_op0 (module Type) env "void" (fun _ () -> Type.Term T.void))
-      | _ -> None
-
-  end
-
-end
-
-(* TPTP builtins ($i, $o, etc..) *)
-(* ************************************************************************ *)
-
-module Tptp = struct
-
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) = struct
-
-    let parse _version env s =
-      match s with
-      (*
-      | Type.Id ({ Id.name = "$_"; ns = Id.Term } as id) ->
-        Some (Type.wildcard env ast id args)
-      *)
-      | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "$tType" (fun _ () -> Type.Ttype))
-      | Type.Id { Id.name = "$o"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "$o" (fun _ () -> (Type.Ty Ty.prop)))
-      | Type.Id { Id.name = "$i"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "$i" (fun _ () -> (Type.Ty Ty.base)))
-      | Type.Id { Id.name = "$true"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "$true" (fun _ () -> Type.Term T._true))
-      | Type.Id { Id.name = "$false"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "$false" (fun _ () -> Type.Term T._false))
-      | Type.Id id when Id.equal id Id.tptp_role ->
-        Some (fun _ast _args -> Type.Tags [])
-      | _ -> None
-
-  end
-
-end
-
-(* Smtlib builtins (bool, =, etc...) *)
-(* ************************************************************************ *)
-
-module Smtlib2 = struct
-
-  module Tff
-      (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) = struct
-
-    let app_left env name mk =
-      make_assoc (module Type) env name (fun _ l ->
-          Type.Term (fold_left_assoc mk (List.map (Type.parse_term env) l)))
-
-    let app_right env name mk =
-      make_assoc (module Type) env name (fun _ l ->
-          Type.Term (fold_right_assoc mk (List.map (Type.parse_term env) l)))
-
-    let parse_symbol env = function
-      | { Ast.term = Ast.Symbol s; _ }
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } ->
-        Id.full_name s
-      | ast ->
-        Type._error env (Ast ast) (Type.Expected ("symbol", None))
-
-    let parse_f env ast cstr args =
-      let loc = Term.(ast.loc) in
-      let t = Term.apply ?loc cstr args in
-      Type.Term (Type.parse_term env t)
-
-    let parse _version env s =
-      match s with
-      (* Bool sort and constants *)
-      | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->
-        Some (make_op0 (module Type) env "Bool" (fun _ () -> (Type.Ty Ty.prop)))
-      | Type.Id { Id.name = "true"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "true" (fun _ () -> (Type.Term Type.T._true)))
-      | Type.Id { Id.name = "false"; ns = Id.Term } ->
-        Some (make_op0 (module Type) env "false" (fun _ () -> (Type.Term Type.T._false)))
-
-      (* Boolean operators *)
-      | Type.Id { Id.name = "not"; ns = Id.Term } ->
-        Some (make_op1 (module Type) env "not" (fun _ t ->
-            Type.Term (Type.T.neg (Type.parse_term env t))))
-      | Type.Id { Id.name = "and"; ns = Id.Term } ->
-        Some (fun ast args -> parse_f env ast (Term.and_t ()) args)
-      | Type.Id { Id.name = "or"; ns = Id.Term } ->
-        Some (fun ast args -> parse_f env ast (Term.or_t ()) args)
-      | Type.Id { Id.name = "xor"; ns = Id.Term } ->
-        Some (app_left env "xor" Type.T.xor)
-      | Type.Id { Id.name = "=>"; ns = Id.Term } ->
-        Some (app_right env "=>" Type.T.imply)
-
-      (* If-then-else *)
-      | Type.Id { Id.name = "ite"; ns = Id.Term } ->
-        Some (fun ast args -> parse_f env ast (Term.ite_t ()) args)
-
-      (* Equality *)
-      | Type.Id { Id.name = "distinct"; ns = Id.Term } ->
-        Some (fun ast args -> parse_f env ast (Term.neq_t ()) args)
-      | Type.Id { Id.name = "="; ns = Id.Term } ->
-        Some (fun _ast args ->
-            let l = List.map (Type.parse_term env) args in
-            Type.Term (T.eqs l)
-          )
+let app0_ast
+    (type env) (module Type : Tff_intf.S with type env = env)
+    env name mk =
+  make_op0 (module Type) env name (fun ast () -> mk ast)
 
 
-      (* Named formulas *)
-      | Type.Id { Id.name = ":named"; ns = Id.Attr } ->
-        Some (make_op1 (module Type) env ":named"
-                (fun _ t ->
-                   let name = parse_symbol env t in
-                   Type.Tags [Type.Any (Tag.named, name)]
-                ))
+(* Unary applications *)
 
-      (* Rewrite rules *)
-      | Type.Id id when Id.equal id Id.rwrt_rule ->
-        Some (fun _ast _args -> Type.Tags [Type.Any (Tag.rwrt, ())])
+let ty_app1
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op1 (module Type) env name (fun _ t -> mk (Type.parse_ty env t))
 
-      | _ -> None
+let ty_app1_ast
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op1 (module Type) env name (fun ast t -> mk ast (Type.parse_ty env t))
 
-  end
+let term_app1
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op1 (module Type) env name (fun _ t -> mk (Type.parse_term env t))
 
-end
+let term_app1_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op1 (module Type) env name (fun ast t -> mk ast (Type.parse_term env t))
 
-(* Zipperposition builtins *)
-(* ************************************************************************ *)
 
-module Zf = struct
+(* Binary applications *)
 
-  module Tff
-      (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Zf_Base with type 'a t = 'a Type.Tag.t) = struct
+let ty_app2
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op2 (module Type) env name (fun _ (a, b) ->
+      mk (Type.parse_ty env a) (Type.parse_ty env b))
 
-    let parse _env s =
-      match s with
-      | Type.Id id when Id.equal id Id.rwrt_rule ->
-        Some (fun _ast _args -> Type.Tags [Type.Any (Tag.rwrt, ())])
-      | Type.Id { Id.name = "infix"; ns = Id.Term } ->
-        Some (fun _ast args -> match args with
-            | [ { Term.term = Term.Symbol { Id.name; _ }; _ } ] ->
-              Type.Tags [
-                Type.Any (Tag.name, Tag.exact name);
-                Type.Any (Tag.pos, Tag.infix);
-              ]
-            | _ -> assert false
-          )
-      | Type.Id { Id.name = "prefix"; ns = Id.Term } ->
-        Some (fun _ast args -> match args with
-            | [ { Term.term = Term.Symbol { Id.name; _ }; _ } ] ->
-              Type.Tags [
-                Type.Any (Tag.name, Tag.exact name);
-                Type.Any (Tag.pos, Tag.prefix);
-              ]
-            | _ -> assert false
-          )
-      | _ -> None
+let ty_app2_ast
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op2 (module Type) env name (fun ast (a, b) ->
+      mk ast (Type.parse_ty env a) (Type.parse_ty env b))
 
-  end
+let term_app2
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op2 (module Type) env name (fun _ (a, b) ->
+      mk (Type.parse_term env a) (Type.parse_term env b))
 
-end
+let term_app2_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op2 (module Type) env name (fun ast (a, b) ->
+      mk ast (Type.parse_term env a) (Type.parse_term env b))
+
+
+(* Ternary applications *)
+
+let ty_app3
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op3 (module Type) env name (fun _ (a, b, c) ->
+      mk (Type.parse_ty env a) (Type.parse_ty env b) (Type.parse_ty env c))
+
+let ty_app3_ast
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op3 (module Type) env name (fun ast (a, b, c) ->
+      mk ast (Type.parse_ty env a) (Type.parse_ty env b) (Type.parse_ty env c))
+
+let term_app3
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op3 (module Type) env name (fun _ (a, b, c) ->
+      mk (Type.parse_term env a) (Type.parse_term env b) (Type.parse_term env c))
+
+let term_app3_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op3 (module Type) env name (fun ast (a, b, c) ->
+      mk ast (Type.parse_term env a) (Type.parse_term env b) (Type.parse_term env c))
+
+
+(* Quaternary applications *)
+
+let ty_app4
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op4 (module Type) env name (fun _ (a, b, c, d) ->
+      mk (Type.parse_ty env a) (Type.parse_ty env b)
+        (Type.parse_ty env c) (Type.parse_ty env d))
+
+let ty_app4_ast
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    env name mk =
+  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+      mk ast (Type.parse_ty env a) (Type.parse_ty env b)
+        (Type.parse_ty env c) (Type.parse_ty env d))
+
+let term_app4
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op4 (module Type) env name (fun _ (a, b, c, d) ->
+      mk (Type.parse_term env a) (Type.parse_term env b)
+        (Type.parse_term env c) (Type.parse_term env d))
+
+let term_app4_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+      mk ast (Type.parse_term env a) (Type.parse_term env b)
+        (Type.parse_term env c) (Type.parse_term env d))
+
+
+(* Left associative applications *)
+
+let term_app_left
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_assoc (module Type) env name (fun _ l ->
+      fold_left_assoc mk (List.map (Type.parse_term env) l))
+
+let term_app_left_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_assoc (module Type) env name (fun ast l ->
+      fold_left_assoc (mk ast) (List.map (Type.parse_term env) l))
+
+
+(* Right associative applications *)
+
+let term_app_right
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_assoc (module Type) env name (fun _ l ->
+      fold_right_assoc mk (List.map (Type.parse_term env) l))
+
+let term_app_right_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_assoc (module Type) env name (fun ast l ->
+      fold_right_assoc (mk ast) (List.map (Type.parse_term env) l))
+
+
+(* Chained applications *)
+
+let term_app_chain
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_chain (module Type) env name (fun _ l ->
+      let l' = List.map (Type.parse_term env) l in
+      map_chain (module Type) mk l'
+    )
+
+let term_app_chain_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env name mk =
+  make_chain (module Type) env name (fun ast l ->
+      let l' = List.map (Type.parse_term env) l in
+      map_chain (module Type) (mk ast) l'
+    )
+
 

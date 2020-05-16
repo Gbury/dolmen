@@ -23,6 +23,20 @@ module type S = sig
 
   (** {2 Type definitions} *)
 
+  type poly =
+    | Explicit
+    (** Type arguments must be explicitly given in funciton applications *)
+    | Implicit
+    (** Type arguments are not given in funciton applications, and instead
+        type annotations/coercions are used to disambiguate applications
+        of polymorphic symbols. *)
+    | Flexible
+    (** Mix between explicit and implicit: depending on the arity of a
+        symbol and the number of arguments provided, either the provided
+        type arguments are used, or wildcards are generated for all of them,
+        and later instantiated when needed. *)
+  (** The various polymorphism mode for the typechecker *)
+
   type expect =
     | Nothing
     | Type
@@ -34,11 +48,22 @@ module type S = sig
   (** Existencial wrapper around tags *)
 
   type res =
-    | Ttype   : res
-    | Ty      : Ty.t -> res
-    | Term    : T.t -> res
-    | Tags    : tag list -> res (**)
+    | Ttype
+    | Ty    of Ty.t
+    | Term  of T.t
+    | Tags  of tag list (**)
   (** The results of parsing an untyped term.  *)
+
+  type builtin_res = [
+    | `Ttype of (Dolmen.Term.t -> Dolmen.Term.t list -> unit)
+    | `Ty    of (Dolmen.Term.t -> Dolmen.Term.t list -> Ty.t)
+    | `Term  of (Dolmen.Term.t -> Dolmen.Term.t list -> T.t)
+    | `Tags  of (Dolmen.Term.t -> Dolmen.Term.t list -> tag list)
+  ]
+  (** The result of parsing a symbol by the theory *)
+
+  type not_found = [ `Not_found ]
+  (** Not found results *)
 
   type inferred =
     | Ty_fun of Ty.Const.t
@@ -54,7 +79,12 @@ module type S = sig
 
   type binding = [
     | `Not_found
-    | `Builtin
+    | `Builtin of [
+        | `Ttype
+        | `Ty
+        | `Term
+        | `Tag
+      ]
     | `Variable of [
         | `Ty of Ty.Var.t * reason
         | `Term of T.Var.t * reason
@@ -121,20 +151,23 @@ module type S = sig
     (** [Bad_index_arity (name, expected, actual)] denotes an error where
         an indexed family of operators (based on [name]) expect to be indexed
         by [expected] arguments but got [actual] instead. *)
+    | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Term.t err
+    (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
+        to [actual] arguments, but which has a different arity (which should
+        be accessible by getting its type/sort/arity). *)
     | Bad_op_arity : string * int list * int -> Dolmen.Term.t err
     (** [Bad_op_arity (name, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which
         is being subtituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
-    | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Term.t err
-    (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
-        to [actual] arguments, but which has a different arity (which should
-        be accessible by getting its type/sort/arity). *)
-    | Bad_cstr_arity : T.Cstr.t * int -> Dolmen.Term.t err
-    (** [Bad_cstr_arity (cstr, actual)] denotes an ADT constructor applied
-        to [actual] arguments, but whose arity does not match that. *)
-    | Bad_term_arity : T.Const.t * int * int -> Dolmen.Term.t err
-    (** *)
+    | Bad_cstr_arity : T.Cstr.t * int list * int -> Dolmen.Term.t err
+    (** [Bad_cstr_arity (cstr, expected, actual)] denotes an ADT constructor,
+        which was expecting one of [expected] arguments, but which was applied
+        to [actual] arguments. *)
+    | Bad_term_arity : T.Const.t * int list * int -> Dolmen.Term.t err
+    (** [Bad_term_arity (func, expected, actual)] denotes a funciton symbol,
+        which was expecting one of [expected] arguments, but which was applied
+        to [actual] arguments. *)
     | Repeated_record_field : T.Field.t -> Dolmen.Term.t err
     (** *)
     | Missing_record_field : T.Field.t -> Dolmen.Term.t err
@@ -193,8 +226,7 @@ module type S = sig
     | Builtin of Dolmen.Term.builtin
     (** Wrapper around potential function symbols from the Dolmen AST. *)
 
-  type builtin_symbols =
-    env -> symbol -> (Dolmen.Term.t -> Dolmen.Term.t list -> res) option
+  type builtin_symbols = env -> symbol -> [ builtin_res | not_found ]
   (** The type of a typer for builtin symbols. Given the environment and a symbol,
       the theory should return a typing function if the symbol belongs to the
       theory. This typing function takes first the ast term of the whole
@@ -218,7 +250,8 @@ module type S = sig
   val empty_env :
     ?st:state -> ?expect:expect ->
     ?infer_hook:(env -> inferred -> unit) ->
-    ?infer_base:Ty.t -> warnings:(warning -> unit) ->
+    ?infer_base:Ty.t -> ?poly:poly ->
+    warnings:(warning -> unit) ->
     builtin_symbols -> env
   (** Create a new environment. *)
 
@@ -262,6 +295,12 @@ module type S = sig
   val parse_app_term : (T.Const.t -> Dolmen.Term.t list -> res) typer
   (** Function used for parsing applications. The first dolmen term given
       is the application term being parsed (used for reporting errors). *)
+
+  val unwrap_ty : env -> Dolmen.Term.t -> res -> Ty.t
+  val unwrap_term : env -> Dolmen.Term.t -> res -> T.t
+  (** Unwrap a result, raising the adequate typing error
+      if the result if not as expected. *)
+
 
   (** {2 High-level functions} *)
 

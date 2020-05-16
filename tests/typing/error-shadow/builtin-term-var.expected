@@ -1,0 +1,2 @@
+File "tests/typing/error-shadow/builtin-term-var.smt2", line 2, character 15-19:
+[1m[91mError[0;1m[0m Shadowing: true was already defined by a builtin theory

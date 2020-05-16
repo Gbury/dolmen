@@ -57,16 +57,16 @@ module Make(S : State_intf.Typer) = struct
     end)
 
   (* Tptp builtins *)
-  module Tptp_Base =
-    Dolmen_type.Base.Tptp.Tff(T)
+  module Tptp_Core =
+    Dolmen_type.Core.Tptp.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
   module Tptp_Arith =
     Dolmen_type.Arith.Tptp.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Stmlib theories *)
-  module Smtlib2_Base =
-    Dolmen_type.Base.Smtlib2.Tff(T)(Dolmen.Expr.Tags)
+  module Smtlib2_Core =
+    Dolmen_type.Core.Smtlib2.Tff(T)(Dolmen.Expr.Tags)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
   module Smtlib2_Ints =
     Dolmen_type.Arith.Smtlib2.Int.Tff(T)
@@ -88,8 +88,8 @@ module Make(S : State_intf.Typer) = struct
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Zf *)
-  module Zf_Base =
-    Dolmen_type.Base.Zf.Tff(T)(Dolmen.Expr.Tags)
+  module Zf_Core =
+    Dolmen_type.Core.Zf.Tff(T)(Dolmen.Expr.Tags)
 
   (* Typing state *)
   (* ************************************************************************ *)
@@ -172,6 +172,30 @@ module Make(S : State_intf.Typer) = struct
           "Unknown warning, please report upstream, ^^"
       )
 
+  (* Hint sfor type errors *)
+  (* ************************************************************************ *)
+
+  let poly_hint fmt (c, expected, actual) =
+    let n_ty, n_t = Dolmen.Expr.Term.Const.arity c in
+    let total_arity = n_ty + n_t in
+    match expected with
+    | [x] when x = total_arity && actual = n_t ->
+      Format.fprintf fmt
+        "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "this is a polymorphic function, you probably forgot \
+         the type arguments@]"
+    | [x] when x = n_t && n_ty <> 0 ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "it looks like the language enforces implicit polymorphism, \
+         i.e. no type arguments are to be provided to applications \
+         (and instead type annotation/coercions should be used)."
+    | _ :: _ ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "this is a polymorphic function, and multiple accepted arities \
+         are possible because the language supports inference of all type \
+         arguments when none are given in an application."
+    | _ -> ()
+
 
   (* Report type errors *)
   (* ************************************************************************ *)
@@ -214,21 +238,23 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt
         "The indexed family of operators '%s' expects %d indexes, but was given %d"
         s expected actual
+    | T.Bad_ty_arity (c, actual) ->
+      Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
+        actual Dolmen.Expr.Print.ty_const c
     | T.Bad_op_arity (s, expected, actual) ->
       Format.fprintf fmt
         "Bad arity for operator '%s':@ expected %a arguments but got %d"
         s print_expected expected actual
-    | T.Bad_ty_arity (c, actual) ->
-      Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
-        actual Dolmen.Expr.Print.ty_const c
-    | T.Bad_cstr_arity (c, actual) ->
+    | T.Bad_cstr_arity (c, expected, actual) ->
       Format.fprintf fmt
-        "Bad arity: got %d arguments for term constructor@ %a"
-        actual Dolmen.Expr.Print.term_const c
-    | T.Bad_term_arity (c, i, j) ->
+        "Bad arity: expected %a arguments but got %d arguments for constructor@ %a%a"
+        print_expected expected actual Dolmen.Expr.Print.term_const c
+        poly_hint (c, expected, actual)
+    | T.Bad_term_arity (c, expected, actual) ->
       Format.fprintf fmt
-        "Bad arity (expected %d type argument, and %d term arguments) for term constant@ %a"
-        i j Dolmen.Expr.Print.term_const c
+        "Bad arity: expected %a but got %d arguments for function@ %a%a"
+        print_expected expected actual Dolmen.Expr.Print.term_const c
+        poly_hint (c, expected, actual)
     | T.Var_application v ->
       Format.fprintf fmt "Cannot apply arguments to term variable@ %a" Dolmen.Expr.Print.id v
     | T.Ty_var_application v ->
@@ -388,7 +414,7 @@ module Make(S : State_intf.Typer) = struct
     add, add_raw, get
 
   type warning_conf = {
-    error_on_shadow : bool;
+    smtlib2_6_shadow_rules : bool;
   }
 
   (* Warning reporter, sent to the typechecker.
@@ -396,8 +422,10 @@ module Make(S : State_intf.Typer) = struct
   let warnings conf ((T.Warning (env, fragment, warn)) as w) =
     match warn, fragment with
     (* Warnings as errors *)
-    | T.Shadowing (_, _, `Constant _), fragment
-      when conf.error_on_shadow ->
+    | T.Shadowing (_, `Builtin `Term, `Variable _), fragment
+    | T.Shadowing (_, `Builtin _, `Constant _), fragment
+    | T.Shadowing (_, `Constant _, `Constant _), fragment
+      when conf.smtlib2_6_shadow_rules ->
       T._error env fragment (Warning_as_error w)
 
     (* general case *)
@@ -411,7 +439,7 @@ module Make(S : State_intf.Typer) = struct
   let builtins_of_smtlib2_logic v l =
     List.fold_left (fun acc th ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
-        | `Core -> Smtlib2_Base.parse v :: acc
+        | `Core -> Smtlib2_Core.parse v :: acc
         | `Ints -> Smtlib2_Ints.parse v :: acc
         | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
@@ -453,31 +481,33 @@ module Make(S : State_intf.Typer) = struct
          is declared in the file, but it's easier this way).
        - there are no explicit declaration or definitions, hence no builtins *)
     | Some Dimacs | Some ICNF ->
+      let poly = T.Flexible in
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.prop in
       let warnings = warnings {
-          error_on_shadow = false;
+          smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.noop in
       T.empty_env
         ~st:st.type_state.typer
-        ~expect ?infer_base
+        ~expect ?infer_base ~poly
         ~warnings builtins
 
     (* Alt-Ergo format
        *)
     | Some Alt_ergo ->
+      let poly = T.Flexible in
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          error_on_shadow = false;
+          smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
           Decl.parse; Subst.parse;
         ] in
       T.empty_env
         ~st:st.type_state.typer
-        ~expect ?infer_base
+        ~expect ?infer_base ~poly
         ~warnings builtins
 
     (* Zipperposition Format
@@ -485,41 +515,43 @@ module Make(S : State_intf.Typer) = struct
        - only the base builtin
     *)
     | Some Zf ->
+      let poly = T.Flexible in
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          error_on_shadow = false;
+          smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
           Decl.parse;
           Subst.parse;
-          Zf_Base.parse;
+          Zf_Core.parse;
         ] in
       T.empty_env
         ~st:st.type_state.typer
-        ~expect ?infer_base
+        ~expect ?infer_base ~poly
         ~warnings builtins
 
     (* TPTP
        - tptp has inference of constants
-       - 2 base theories (Base and Arith) + the builtin Decl and Subst
+       - 2 base theories (Core and Arith) + the builtin Decl and Subst
          for explicit declaration and definitions
        *)
     | Some Tptp v ->
+      let poly = T.Explicit in
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.base in
       let warnings = warnings {
-          error_on_shadow = false;
+          smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
           Decl.parse;
           Subst.parse;
-          Tptp_Base.parse v;
+          Tptp_Core.parse v;
           Tptp_Arith.parse v;
         ] in
       T.empty_env
         ~st:st.type_state.typer
-        ~expect ?infer_base
+        ~expect ?infer_base ~poly
         ~warnings builtins
 
     (* SMTLib v2
@@ -529,16 +561,18 @@ module Make(S : State_intf.Typer) = struct
        - shadowing is forbidden
        *)
     | Some Smtlib2 v ->
+      let poly = T.Implicit in
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          error_on_shadow = true;
+          smtlib2_6_shadow_rules = match v with
+            | `Latest | `V2_6 -> true;
         } in
       begin match st.type_state.logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env = T.empty_env
-              ~st:st.type_state.typer ~expect ~warnings builtins
+              ~st:st.type_state.typer ~poly ~expect ~warnings builtins
           in
           T._error env (Located loc) Missing_logic
         | Smtlib2 logic ->
@@ -549,7 +583,7 @@ module Make(S : State_intf.Typer) = struct
           let () = restrictions_of_smtlib2_logic v logic in
           T.empty_env
             ~st:st.type_state.typer
-            ~expect ?infer_base
+            ~expect ?infer_base ~poly
             ~warnings builtins
       end
 

@@ -15,11 +15,6 @@ module Smtlib2 : sig
 
     val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
 
-    val parse_binary : Type.env -> Dolmen_std.Term.t -> string -> Type.res
-    (** parse binary constant into bitvector constants *)
-
-    val parse_hexa   : Type.env -> Dolmen_std.Term.t -> string -> Type.res
-    (** parse hexa constant into bitvector constants *)
   end
 
 end

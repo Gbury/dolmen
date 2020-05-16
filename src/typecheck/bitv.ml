@@ -17,19 +17,24 @@ module Smtlib2 = struct
       | Invalid_dec_char : char -> Dolmen.Term.t Type.err
 
     let parse_int env ast s =
-      try int_of_string s
-      with Failure _ ->
-        Type._error env (Ast ast) (Type.Expected ("an integer", None))
+      match int_of_string s with
+      | i when i > 0 -> i
+      | _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("a positive integer", None))
+      | exception Failure _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("a positive integer", None))
 
-    let parse_binary env ast s =
+    let parse_binary env s ast =
       match Misc.Bitv.parse_binary s with
-      | s -> Type.Term (T.mk s)
+      | s -> T.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
 
-    let parse_hexa env ast s =
+    let parse_hexa env s ast =
       match Misc.Bitv.parse_binary s with
-      | s -> Type.Term (T.mk s)
+      | s -> T.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
@@ -38,139 +43,103 @@ module Smtlib2 = struct
           assert (String.length s >= 2);
           let n = parse_int env ast n in
           match Misc.Bitv.parse_decimal s n with
-          | s -> Type.Term (T.mk s)
+          | s -> T.mk s
           | exception Misc.Bitv.Invalid_char c ->
             Type._error env (Ast ast) (Invalid_dec_char c)
         )
 
-    let split_id = Dolmen_std.Misc.split_on_char '\000'
+    let indexed1 env mk i_s ast =
+      let i = parse_int env ast i_s in
+      mk i
 
-    let parse_id env id l k =
-      let rec aux h r r_l = function
-        | [] -> k (h :: r)
-        | (s, n, f) :: l' ->
-          if String.equal s h then begin
-            if r_l = n then f r
-            else begin
-              Some (fun ast _args ->
-                  Type._error env (Ast ast)
-                    (Type.Bad_index_arity (s, n, r_l))
-                )
-            end
-          end else
-            aux h r r_l l'
-      in
-      match split_id id with
-      | h :: r -> aux h r (List.length r) l
-      | r -> k r
-
-    let app1 env name mk =
-      Base.make_op1 (module Type) env name (fun _ t ->
-          Type.Term (mk (Type.parse_term env t)))
-
-    let app2 env name mk =
-      Base.make_op2 (module Type) env name (fun _ (a, b) ->
-          Type.Term (mk (Type.parse_term env a) (Type.parse_term env b)))
-
-    let app_left env name mk =
-      Base.make_assoc (module Type) env name (fun _ l ->
-          Type.Term (Base.fold_left_assoc mk (List.map (Type.parse_term env) l)))
+    let indexed2 env mk i_s j_s ast =
+      let i = parse_int env ast i_s in
+      let j = parse_int env ast j_s in
+      mk i j
 
     let parse _version env s =
       match s with
 
       (* Bitvector sort *)
       | Type.Id { Id.ns = Id.Sort; name; } ->
-        parse_id env name [
-          "BitVec", 1, (function
-              | [n_s] ->
-                Some (Base.make_op0 (module Type) env "BitVec"
-                        (fun ast () -> Type.Ty (Ty.bitv (parse_int env ast n_s))))
-              | _ -> assert false);
-        ] (fun _ -> None)
+        Base.parse_id name [
+          "BitVec", `Unary (function n_s ->
+              `Ty (Base.app0_ast (module Type) env "BitVec" (fun ast ->
+                  Ty.bitv (parse_int env ast n_s))));
+        ] ~err:(Base.bad_ty_index_arity (module Type) env)
+          ~k:(fun _ -> `Not_found)
 
       (* Bitvector litterals *)
       | Type.Id { Id.ns = Id.Value Id.Binary; name; } ->
-        Some (Base.make_op0 (module Type) env name (fun ast () ->
-            parse_binary env ast name))
+        `Term (Base.app0_ast (module Type) env name (parse_binary env name))
       | Type.Id { Id.ns = Id.Value Id.Hexadecimal; name; } ->
-        Some (Base.make_op0 (module Type) env name (fun ast () ->
-            parse_hexa env ast name))
+        `Term (Base.app0_ast (module Type) env name (parse_hexa env name))
 
       (* terms *)
       | Type.Id { Id.ns = Id.Term; name; } ->
-        parse_id env name [
-          "repeat", 1, (function
-              | [i_s] ->
-                Some (Base.make_op1 (module Type) env "repeat" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    Type.Term (T.repeat i (Type.parse_term env b))
-                  ))
-              | _ -> assert false);
-          "zero_extend", 1, (function
-              | [i_s] ->
-                Some (Base.make_op1 (module Type) env "zero_extend" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    Type.Term (T.zero_extend i (Type.parse_term env b))
-                  ))
-              | _ -> assert false);
-          "sign_extend", 1, (function
-              | [i_s] ->
-                Some (Base.make_op1 (module Type) env "sign_extend" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    Type.Term (T.sign_extend i (Type.parse_term env b))
-                  ))
-              | _ -> assert false);
-          "rotate_right", 1, (function
-              | [i_s] ->
-                Some (Base.make_op1 (module Type) env "rotate_right" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    Type.Term (T.rotate_right i (Type.parse_term env b))
-                  ))
-              | _ -> assert false);
-          "rotate_left", 1, (function
-              | [i_s] ->
-                Some (Base.make_op1 (module Type) env "rotate_left" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    Type.Term (T.rotate_left i (Type.parse_term env b))
-                  ))
-              | _ -> assert false);
-          "extract", 2, (function
-              | [ i_s; j_s ] ->
-                Some (Base.make_op1 (module Type) env "extract" (fun ast b ->
-                    let i = parse_int env ast i_s in
-                    let j = parse_int env ast j_s in
-                    let b_t = Type.parse_term env b in
-                    Type.Term (T.extract i j b_t)
-                  ))
-              | _ -> assert false);
-        ] (function
-            | [s; n] when (String.length s >= 2 &&
-                           s.[0] = 'b' && s.[1] = 'v') ->
-              Some (parse_extended_lit env s n)
-
-            | ["bvnot"] -> Some (app1 env "bvnot" T.not)
-            | ["bvand"] -> Some (app_left env "bvand" T.and_)
-            | ["bvor"] -> Some (app_left env "bvor" T.or_)
-            | ["bvnand"] -> Some (app2 env "bvnand" T.nand)
-            | ["bvnor"] -> Some (app2 env "bvnor" T.nor)
-            | ["bvxor"] -> Some (app_left env "bvxor" T.xor)
-            | ["bvxnor"] -> Some (app_left env "bvxnor" T.xnor)
-            | ["bvcomp"] -> Some (app2 env "bvcomp" T.comp)
-
-            | ["bvneg"] -> Some (app1 env "bvneg" T.neg)
-            | ["bvadd"] -> Some (app_left env "bvadd" T.add)
-            | ["bvsub"] -> Some (app2 env "bvsub" T.sub)
-            | ["bvmul"] -> Some (app_left env "bvmul" T.mul)
-            | ["bvudiv"] -> Some (app2 env "bvudiv" T.udiv)
-            | ["bvurem"] -> Some (app2 env "bvurem" T.urem)
-            | ["bvshl"] -> Some (app2 env "bvshl" T.shl)
-            | ["bvlshr"] -> Some (app2 env "bvlshr" T.lshr)
-            | ["bvult"] -> Some (app2 env "bvult" T.ult)
-            | ["concat"] -> Some (app2 env "concat" T.concat)
-            | _ -> None
-          )
-      | _ -> None
+        Base.parse_id name [
+          "repeat", `Unary (function i_s ->
+              `Term (Base.term_app1_ast (module Type) env "repeat"
+                       (indexed1 env T.repeat i_s)));
+          "zero_extend", `Unary (function i_s ->
+              `Term (Base.term_app1_ast (module Type) env "zero_extend"
+                       (indexed1 env T.zero_extend i_s)));
+          "sign_extend", `Unary (function i_s ->
+              `Term (Base.term_app1_ast (module Type) env "sign_extend"
+                       (indexed1 env T.sign_extend i_s)));
+          "rotate_right", `Unary (function i_s ->
+              `Term (Base.term_app1_ast (module Type) env "rotate_right"
+                       (indexed1 env T.rotate_right i_s)));
+          "rotate_left", `Unary (function i_s ->
+              `Term (Base.term_app1_ast (module Type) env "rotate_left"
+                       (indexed1 env T.rotate_left i_s)));
+          "extract", `Binary (fun i_s j_s ->
+              `Term (Base.term_app1_ast (module Type) env "extract"
+                       (indexed2 env T.extract i_s j_s)));
+        ] ~err:(Base.bad_term_index_arity (module Type) env)
+          ~k:(function
+              | [s; n] when (String.length s >= 2 &&
+                             s.[0] = 'b' && s.[1] = 'v') ->
+                `Term (parse_extended_lit env s n)
+              | ["bvnot"] ->
+                `Term (Base.term_app1 (module Type) env "bvnot" T.not)
+              | ["bvand"] ->
+                `Term (Base.term_app_left (module Type) env "bvand" T.and_)
+              | ["bvor"] ->
+                `Term (Base.term_app_left (module Type) env "bvor" T.or_)
+              | ["bvnand"] ->
+                `Term (Base.term_app2 (module Type) env "bvnand" T.nand)
+              | ["bvnor"] ->
+                `Term (Base.term_app2 (module Type) env "bvnor" T.nor)
+              | ["bvxor"] ->
+                `Term (Base.term_app_left (module Type) env "bvxor" T.xor)
+              | ["bvxnor"] ->
+                `Term (Base.term_app_left (module Type) env "bvxnor" T.xnor)
+              | ["bvcomp"] ->
+                `Term (Base.term_app2 (module Type) env "bvcomp" T.comp)
+              | ["bvneg"] ->
+                `Term (Base.term_app1 (module Type) env "bvneg" T.neg)
+              | ["bvadd"] ->
+                `Term (Base.term_app_left (module Type) env "bvadd" T.add)
+              | ["bvsub"] ->
+                `Term (Base.term_app2 (module Type) env "bvsub" T.sub)
+              | ["bvmul"] ->
+                `Term (Base.term_app_left (module Type) env "bvmul" T.mul)
+              | ["bvudiv"] ->
+                `Term (Base.term_app2 (module Type) env "bvudiv" T.udiv)
+              | ["bvurem"] ->
+                `Term (Base.term_app2 (module Type) env "bvurem" T.urem)
+              | ["bvshl"] ->
+                `Term (Base.term_app2 (module Type) env "bvshl" T.shl)
+              | ["bvlshr"] ->
+                `Term (Base.term_app2 (module Type) env "bvlshr" T.lshr)
+              | ["bvult"] ->
+                `Term (Base.term_app2 (module Type) env "bvult" T.ult)
+              | ["concat"] ->
+                `Term (Base.term_app2 (module Type) env "concat" T.concat)
+              | _ -> `Not_found
+            )
+      | _ -> `Not_found
 
   end
 end

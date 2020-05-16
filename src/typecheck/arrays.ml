@@ -14,25 +14,12 @@ module Smtlib2 = struct
     let parse _version env s =
       match s with
       | Type.Id { Id.name = "Array"; ns = Id.Sort } ->
-        Some (Base.make_op2 (module Type) env "Array" (fun _ (src, dst) ->
-            let src_ty = Type.parse_ty env src in
-            let dst_ty = Type.parse_ty env dst in
-            Type.Ty (Ty.array src_ty dst_ty)
-          ))
+        `Ty (Base.ty_app2 (module Type) env "Array" Ty.array)
       | Type.Id { Id.name = "select"; ns = Id.Term } ->
-        Some (Base.make_op2 (module Type) env "select" (fun _ (arr, idx) ->
-            let arr_t = Type.parse_term env arr in
-            let idx_t = Type.parse_term env idx in
-            Type.Term (T.select arr_t idx_t)
-          ))
+        `Term (Base.term_app2 (module Type) env "select" T.select)
       | Type.Id { Id.name = "store"; ns = Id.Term } ->
-        Some (Base.make_op3 (module Type) env "store" (fun _ (arr, idx, value) ->
-            let arr_t = Type.parse_term env arr in
-            let idx_t = Type.parse_term env idx in
-            let val_t = Type.parse_term env value in
-            Type.Term (T.store arr_t idx_t val_t)
-          ))
-      | _ -> None
+        `Term (Base.term_app3 (module Type) env "select" T.store)
+      | _ -> `Not_found
 
   end
 

@@ -34,6 +34,12 @@ module Make
   (* Types *)
   (* ************************************************************************ *)
 
+  (* Different behavior of polymorphism *)
+  type poly =
+    | Explicit
+    | Implicit
+    | Flexible
+
   (* The type of potentially expected result type for parsing an expression *)
   type expect =
     | Nothing
@@ -44,12 +50,15 @@ module Make
   type tag =
     | Any : 'a Tag.t * 'a -> tag
 
+  (* Result of parsing an expression *)
   type res =
-    | Ttype   : res
-    | Ty      : Ty.t -> res
-    | Term    : T.t -> res
-    | Tags    : tag list -> res
+    | Ttype
+    | Ty    of Ty.t
+    | Term  of T.t
+    | Tags  of tag list
 
+
+  (* Things that can be inferred *)
   type inferred =
     | Ty_fun of Ty.Const.t
     | Term_fun of T.Const.t
@@ -73,14 +82,30 @@ module Make
     | `Term_cst of T.Const.t
   ]
 
+  (* Not founs result *)
+  type not_found = [ `Not_found ]
+
+  (* Result of parsing a symbol by the theory *)
+  type builtin_res = [
+    | `Ttype of (Ast.t -> Ast.t list -> unit)
+    | `Ty    of (Ast.t -> Ast.t list -> Ty.t)
+    | `Term  of (Ast.t -> Ast.t list -> T.t)
+    | `Tags  of (Ast.t -> Ast.t list -> tag list)
+  ]
+
+  type builtin_res_or_not_found = [
+    | builtin_res
+    | not_found
+  ]
+
   (* Names that are bound to a dolmen identifier by the builtins *)
   type builtin = [
-    | `Builtin of Ast.t -> Ast.t list -> res
+    | `Builtin of builtin_res
   ]
 
   (* Either a bound variable or a bound constant *)
   type bound = [ var | cst | builtin ]
-  type bound_or_not_found = [ bound | `Not_found ]
+  type bound_or_not_found = [ bound | not_found ]
 
   type reason =
     | Builtin
@@ -91,7 +116,12 @@ module Make
 
   type binding = [
     | `Not_found
-    | `Builtin
+    | `Builtin of [
+        | `Ttype
+        | `Ty
+        | `Term
+        | `Tag
+      ]
     | `Variable of [
         | `Ty of Ty.Var.t * reason
         | `Term of T.Var.t * reason
@@ -181,56 +211,30 @@ module Make
   (* Errors that occur on term fragments, i.e. Ast.t fragments *)
   type _ err +=
     | Infer_type_variable : Ast.t err
-    (* the type of a bound variable had to be inferred which is forbidden.
-       todo: rename this *)
     | Expected : string * res option -> Ast.t err
-    (* the parsed term didn't match the expected shape *)
     | Bad_index_arity : string * int * int -> Ast.t err
-    (* *)
-    | Bad_op_arity : string * int list * int -> Ast.t err
-    (*  *)
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
-    (* *)
-    | Bad_cstr_arity : T.Cstr.t * int -> Ast.t err
-    (* *)
-    | Bad_term_arity : T.Const.t * int * int -> Ast.t err
-    (* *)
+    | Bad_op_arity : string * int list * int -> Ast.t err
+    | Bad_cstr_arity : T.Cstr.t * int list * int -> Ast.t err
+    | Bad_term_arity : T.Const.t * int list * int -> Ast.t err
     | Repeated_record_field : T.Field.t -> Ast.t err
-    (* *)
     | Missing_record_field : T.Field.t -> Ast.t err
-    (* *)
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
-    (* *)
     | Var_application : T.Var.t -> Ast.t err
-    (* *)
     | Ty_var_application : Ty.Var.t -> Ast.t err
-    (* *)
     | Type_mismatch : T.t * Ty.t -> Ast.t err
-    (* *)
     | Quantified_var_inference : Ast.t err
-    (* quantified variable without a type *)
     | Unhandled_builtin : Ast.builtin -> Ast.t err
-    (* *)
     | Cannot_tag_tag : Ast.t err
-    (* *)
     | Cannot_tag_ttype : Ast.t err
-    (* *)
     | Cannot_find : Id.t -> Ast.t err
-    (* *)
     | Type_var_in_type_constructor : Ast.t err
-    (* *)
     | Missing_destructor : Id.t -> Ast.t err
-    (* *)
     | Higher_order_application : Ast.t err
-    (* *)
     | Higher_order_type : Ast.t err
-    (* *)
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
-    (* *)
     | Uncaught_exn : exn -> Ast.t err
-    (* *)
     | Unhandled_ast : Ast.t err
-    (* *)
 
 
   (* State & Environment *)
@@ -268,6 +272,7 @@ module Make
     warnings : warning -> unit;
 
     (* Additional typing info *)
+    poly         : poly;
     expect       : expect;
     infer_base   : Ty.t option;
     infer_hook   : env -> inferred -> unit;
@@ -277,7 +282,7 @@ module Make
   (* Builtin symbols, i.e symbols understood by some theories,
      but which do not have specific syntax, so end up as special
      cases of application. *)
-  and builtin_symbols = env -> symbol -> (Ast.t -> Ast.t list -> res) option
+  and builtin_symbols = env -> symbol -> builtin_res_or_not_found
 
   (* Existencial wrapper for wranings. *)
   and warning =
@@ -319,11 +324,11 @@ module Make
   let _bad_ty_arity env f n t =
     _error env (Ast t) (Bad_ty_arity (f, n))
 
-  let _bad_term_arity env f (n1, n2) t =
-    _error env (Ast t) (Bad_term_arity (f, n1, n2))
+  let _bad_term_arity env f expected actual t =
+    _error env (Ast t) (Bad_term_arity (f, expected, actual))
 
-  let _bad_cstr_arity env c n t =
-    _error env (Ast t) (Bad_cstr_arity (c, n))
+  let _bad_cstr_arity env c expected actual t =
+    _error env (Ast t) (Bad_cstr_arity (c, expected, actual))
 
   let _ty_var_app env v t =
     _error env (Ast t) (Ty_var_application v)
@@ -394,7 +399,10 @@ module Make
   let with_reason reason bound : binding =
     match (bound : bound_or_not_found) with
     | `Not_found -> `Not_found
-    | `Builtin _ -> `Builtin
+    | `Builtin `Ttype _ -> `Builtin `Ttype
+    | `Builtin `Ty _ -> `Builtin `Ty
+    | `Builtin `Term _ -> `Builtin `Term
+    | `Builtin `Tags _ -> `Builtin `Tag
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
     | `Ty_cst c -> `Constant (`Ty (c, reason))
@@ -405,7 +413,7 @@ module Make
   let binding_reason binding : reason =
     match (binding : binding) with
     | `Not_found -> assert false
-    | `Builtin -> Builtin
+    | `Builtin _ -> Builtin
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -455,8 +463,8 @@ module Make
         | #cst as res -> (res :> bound_or_not_found)
         | `Not_found ->
           begin match env.builtins env (Id id) with
-            | Some f -> `Builtin f
-            | None -> `Not_found
+            | `Not_found -> `Not_found
+            | #builtin_res as res -> `Builtin res
           end
       end
 
@@ -508,6 +516,7 @@ module Make
       ?(expect=Nothing)
       ?(infer_hook=(fun _ _ -> ()))
       ?infer_base
+      ?(poly=Flexible)
       ~warnings
       builtins = {
     type_locs = E.empty;
@@ -515,7 +524,7 @@ module Make
     type_vars = M.empty;
     term_vars = M.empty;
     st; builtins; warnings;
-    expect; infer_hook; infer_base;
+    poly; expect; infer_hook; infer_base;
   }
 
   let expect ?(force=false) env expect =
@@ -601,9 +610,45 @@ module Make
   (* Wrappers for expression building *)
   (* ************************************************************************ *)
 
+  (* unwrap results *)
+  let unwrap_ty env ast = function
+    | Ty ty -> ty
+    | res -> _expected env "type" ast (Some res)
+
+  let unwrap_term env ast = function
+    | Term t -> t
+    | res -> _expected env "term" ast (Some res)
+
+  (* Split arguments of a function/constructor application *)
+  let split_args env n_ty n_t args =
+    let n_args = List.length args in
+    match env.poly with
+    | Explicit ->
+      if n_args = n_ty + n_t then
+        `Ok (Misc.Lists.take_drop n_ty args)
+      else
+        `Bad_arity ([n_ty + n_t], n_args)
+    | Implicit ->
+      if n_args = n_t then
+        `Ok (Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args)
+      else
+        `Bad_arity ([n_t], n_args)
+    | Flexible ->
+      if n_args = n_ty + n_t then
+        `Ok (Misc.Lists.take_drop n_ty args)
+      else if n_args = n_t then
+        `Ok (Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args)
+      else
+        `Bad_arity ([n_t; n_ty + n_t], n_args)
+
+
   (* wrapper for builtin application *)
-  let builtin_apply env b ast args =
-    _wrap2 env ast b ast args
+  let builtin_apply env b ast args : res =
+    match (b : builtin_res) with
+    | `Ttype f -> _wrap2 env ast f ast args; Ttype
+    | `Ty f -> Ty (_wrap2 env ast f ast args)
+    | `Term f -> Term (_wrap2 env ast f ast args)
+    | `Tags f -> Tags (_wrap2 env ast f ast args)
 
   (* Wrapper around record creation *)
   let create_record env ast l =
@@ -662,7 +707,8 @@ module Make
   (* Tag application *)
   (* ************************************************************************ *)
 
-  let apply_tag env ast tag v = function
+  let apply_tag env ast tag v res =
+    match (res : res) with
     | Ttype -> _error env (Ast ast) Cannot_tag_ttype
     | Tags _ -> _error env (Ast ast) Cannot_tag_tag
     | Ty ty -> Ty.tag ty tag v
@@ -679,8 +725,8 @@ module Make
   let expect_prop env =
     expect env (Typed Ty.prop)
 
-  let rec parse_expr (env : env) t =
-    let res = match t with
+  let rec parse_expr (env : env) t : res =
+    let res : res = match t with
 
       (* Ttype & builtin types *)
       | { Ast.term = Ast.Builtin Ast.Ttype; _ } ->
@@ -1004,30 +1050,24 @@ module Make
     Ty (Ty.apply f l)
 
   and parse_app_term env ast f args =
-    let n_args = List.length args in
     let n_ty, n_t = T.Const.arity f in
     let ty_l, t_l =
-      if n_args = n_ty + n_t then
-        Misc.Lists.take_drop n_ty args
-      else if n_args = n_t then
-        Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args
-      else
-        _bad_term_arity env f (n_ty, n_t) ast
+      match split_args env n_ty n_t args with
+      | `Ok (l, l') -> l, l'
+      | `Bad_arity (expected, actual) ->
+        _bad_term_arity env f expected actual ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
     Term (_wrap3 env ast T.apply f ty_args t_args)
 
   and parse_app_cstr env ast c args =
-    let n_args = List.length args in
     let n_ty, n_t = T.Cstr.arity c in
     let ty_l, t_l =
-      if n_args = n_ty + n_t then
-        Misc.Lists.take_drop n_ty args
-      else if n_args = n_t then
-        Misc.Lists.init n_ty (fun _ -> Ast.wildcard ()), args
-      else
-        _bad_cstr_arity env c n_args ast
+      match split_args env n_ty n_t args with
+      | `Ok (l, l') -> l, l'
+      | `Bad_arity (expected, actual) ->
+        _bad_cstr_arity env c expected actual ast
     in
     let ty_args = List.map (parse_ty env) ty_l in
     let t_args = List.map (parse_term env) t_l in
@@ -1049,18 +1089,14 @@ module Make
 
   and parse_builtin env ast b args =
     match env.builtins env (Builtin b) with
-    | None -> _unknown_builtin env ast b
-    | Some b -> builtin_apply env b ast args
+    | `Not_found -> _unknown_builtin env ast b
+    | #builtin_res as b -> builtin_apply env b ast args
 
   and parse_ty env ast =
-    match parse_expr (expect env Type) ast with
-    | Ty ty -> ty
-    | res -> _expected env "type" ast (Some res)
+    unwrap_ty env ast (parse_expr (expect env Type) ast)
 
   and parse_term env ast =
-    match parse_expr (expect_base env) ast with
-    | Term t -> t
-    | res -> _expected env "term" ast (Some res)
+    unwrap_term env ast (parse_expr (expect_base env) ast)
 
   and parse_prop env ast =
     match parse_expr (expect_prop env) ast with
@@ -1093,7 +1129,8 @@ module Make
             | (h, _) :: _ ->
               _error env (Ast h) Type_var_in_type_constructor
             | [] ->
-              let aux n = function
+              let aux n arg =
+                match (arg : _ * res) with
                 | (_, Ttype) -> n + 1
                 | (ast, res) -> raise (Found (ast, res))
               in
@@ -1105,7 +1142,8 @@ module Make
               end
           end
         | Ty ret ->
-          let aux acc = function
+          let aux acc arg =
+            match (arg : _ * res) with
             | (_, Ty t) -> t :: acc
             | (ast, res) -> raise (Found (ast, res))
           in

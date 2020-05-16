@@ -49,14 +49,14 @@ module Subst
     | Id id ->
       begin match H.find definitions id with
         | `Ty (vars, body) ->
-          Some (Base.make_opn (List.length vars)
-                  (module Type) env (Id.full_name id) (fun _ args ->
-                      let ty_args = List.map (Type.parse_ty env) args in
-                      let l = List.map2 (fun x y -> x, y) vars ty_args in
-                      Type.Ty (T.ty_subst l body)
-                    ))
+          `Ty (Base.make_opn (List.length vars)
+                 (module Type) env (Id.full_name id) (fun _ args ->
+                     let ty_args = List.map (Type.parse_ty env) args in
+                     let l = List.map2 (fun x y -> x, y) vars ty_args in
+                     T.ty_subst l body
+                   ))
         | `Term (ty_vars, t_vars, body) ->
-          Some (fun ast args ->
+          `Term (fun ast args ->
               let n_args = List.length args in
               let n_ty = List.length ty_vars in
               let n_t = List.length t_vars in
@@ -73,11 +73,11 @@ module Subst
                   (List.map (Type.parse_ty env) ty_l) in
               let t_l = List.map2 (fun x y -> x, y) t_vars
                   (List.map (Type.parse_term env) t_l) in
-              Type.Term (T.term_subst ty_l t_l body)
+              T.term_subst ty_l t_l body
             )
-        | exception Not_found -> None
+        | exception Not_found -> `Not_found
       end
-    | Builtin _ -> None
+    | Builtin _ -> `Not_found
 
 end
 
@@ -107,13 +107,13 @@ module Declare(Type : Tff_intf.S) = struct
     match (symbol : Type.symbol) with
     | Id id ->
       begin match H.find definitions id with
-        | `Ty c ->
-          Some (fun ast args -> Type.parse_app_ty env ast c args)
-        | `Term c ->
-          Some (fun ast args -> Type.parse_app_term env ast c args)
-        | exception Not_found -> None
+        | `Ty c -> `Ty (fun ast args ->
+            Type.unwrap_ty env ast (Type.parse_app_ty env ast c args))
+        | `Term c -> `Term (fun ast args ->
+            Type.unwrap_term env ast (Type.parse_app_term env ast c args))
+        | exception Not_found -> `Not_found
       end
-    | Builtin _ -> None
+    | Builtin _ -> `Not_found
 
 end
 
