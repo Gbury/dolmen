@@ -60,6 +60,7 @@ module Bitv = struct
   exception Invalid_char of char
 
 
+
   (* Bitv in binary forms *)
 
   let check_bin = function
@@ -102,6 +103,8 @@ module Bitv = struct
         Bytes.blit_string (hex_to_bin c) 0 b (i * 4) 4
       ) s;
     Bytes.to_string b
+
+
 
 
   (* bitv in decimal form *)
@@ -157,10 +160,34 @@ module Bitv = struct
     else
       Some start
 
+  (* Starting from a bytes full of '0', fill it with bits
+     coming from the given integer. *)
+  let rec parse_int_aux b i n =
+    if i < 0 || n <= 0 then b
+    else begin
+      if n mod 2 = 1 then Bytes.set b i '1';
+      parse_int_aux b (i - 1) (n / 2)
+    end
+
+  (* Size (in characters) of a decimal integer under which
+     int_of_string will work *)
+  let int_size_threshold =
+    match Sys.int_size with
+    (* max_int should be 2147483647 (length 10) *)
+    | 31 -> 9
+    (* max_int should be 9,223,372,036,854,775,807 (length 19) *)
+    | 63 -> 18
+    (* weird case, be safe before anyting *)
+    | _ -> 0
+
   let rec parse_decimal_aux res idx b start =
     if idx < 0 then
       res
-    else begin
+    else if (Bytes.length b - start) <= int_size_threshold then begin
+      match int_of_string (Bytes.to_string b) with
+      | i -> parse_int_aux res idx i
+      | exception Failure _ -> assert false
+    end else begin
       (* if b is odd, set the bit in res to 1 *)
       let c = int_of_char (Bytes.get b (Bytes.length b - 1)) in
       if c mod 2 = 1 then Bytes.set res idx '1';
