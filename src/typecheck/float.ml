@@ -37,7 +37,7 @@ module Smtlib2 = struct
         Type._error env (Ast ast) (Invalid_bin_char c)
 
     let parse_hexa env s ast =
-      match Misc.Bitv.parse_binary s with
+      match Misc.Bitv.parse_hexa s with
       | s -> B.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)

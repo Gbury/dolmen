@@ -68,9 +68,9 @@ module Bitv = struct
 
   let parse_binary s =
     assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'b');
-    let s' = String.sub s 2 (String.length s - 2) in
-    String.iter check_bin s';
-    s'
+    let s = String.sub s 2 (String.length s - 2) in
+    String.iter check_bin s;
+    s
 
 
   (* Bitv in hexadecimal form *)
@@ -96,13 +96,12 @@ module Bitv = struct
 
   let parse_hexa s =
     assert (String.length s > 2 && s.[0] = '#' && s.[1] = 'x');
-    let s' = String.sub s 2 (String.length s - 2) in
-    let b = Bytes.create ((String.length s - 2) * 4) in
+    let s = String.sub s 2 (String.length s - 2) in
+    let b = Bytes.create (String.length s * 4) in
     String.iteri (fun i c ->
         Bytes.blit_string (hex_to_bin c) 0 b (i * 4) 4
-      ) s';
-    let s'' = Bytes.to_string b in
-    s''
+      ) s;
+    Bytes.to_string b
 
 
   (* bitv in decimal form *)
