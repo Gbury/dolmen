@@ -67,7 +67,8 @@ module Smtlib2 = struct
 
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t)
+      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
+                                          and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) = struct
 
@@ -77,6 +78,15 @@ module Smtlib2 = struct
         Id.full_name s
       | ast ->
         Type._error env (Ast ast) (Type.Expected ("symbol", None))
+
+    let parse_sexpr_list env = function
+      | { Ast.term = Ast.App (
+          { Ast.term = Ast.Symbol { Id.name = "$data"; ns = Id.Attr }; _ },
+          l); _} ->
+        l
+      | ast ->
+        Type._error env (Ast ast)
+          (Type.Expected ("a list of terms in a sexpr", None))
 
     let parse_f env ast cstr args =
       let loc = Ast.(ast.loc) in
@@ -121,6 +131,23 @@ module Smtlib2 = struct
             let name = parse_symbol env t in
             [Type.Any (Tag.named, name)]
           ))
+
+      (* Trigger annotations *)
+      | Type.Id { Id.name = ":pattern"; ns = Id.Attr } ->
+        `Tags (Base.make_op1 (module Type) env ":pattern" (fun _ t ->
+            let l = parse_sexpr_list env t in
+            let l = List.map (Type.parse_term env) l in
+            [Type.Any (Tag.triggers, l)]
+          ))
+
+      (* N-ary s-expressions in attributes *)
+      | Type.Id { Id.name = "$data"; ns = Id.Attr } ->
+        `Term (fun ast args ->
+            begin match args with
+              | f :: r -> parse_f env ast f r
+              | [] -> Type._error env (Ast ast)
+                        (Type.Expected ("a non-empty s-expr", None))
+            end)
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->

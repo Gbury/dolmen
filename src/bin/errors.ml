@@ -59,7 +59,10 @@ let exn st = function
     if Dolmen.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.ParseLocation.fmt_hint loc;
+        Dolmen.ParseLocation.fmt_hint loc
+    else if st.context then
+      Format.eprintf "@[<hv 2>While typing:@ @[<hov>%a@]@]@."
+        Typer.print_fragment fragment;
     State.error ~loc st "%a"
       Typer.report_error error
 

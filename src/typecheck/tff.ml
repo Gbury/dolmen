@@ -175,7 +175,7 @@ module Make
   (* Warnings *)
   (* ******** *)
 
-  (* Warnings, parameterized by the type of fragment they cna trigger on *)
+  (* Warnings, parameterized by the type of fragment they can trigger on *)
   type _ warn = ..
 
   type _ warn +=
@@ -233,7 +233,7 @@ module Make
     | Higher_order_application : Ast.t err
     | Higher_order_type : Ast.t err
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
-    | Uncaught_exn : exn -> Ast.t err
+    | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
 
@@ -354,8 +354,8 @@ module Make
   let _unknown_builtin env ast b =
     _error env (Ast ast) (Unhandled_builtin b)
 
-  let _uncaught_exn env ast exn =
-    _error env (Ast ast) (Uncaught_exn exn)
+  let _uncaught_exn env ast exn bt =
+    _error env (Ast ast) (Uncaught_exn (exn, bt))
 
   let _cannot_find env ast s =
     _error env (Ast ast) (Cannot_find s)
@@ -374,7 +374,8 @@ module Make
     | (Typing_error _) as exn ->
       raise exn
     | exn ->
-      _uncaught_exn env ast exn
+      let bt = Printexc.get_raw_backtrace () in
+      _uncaught_exn env ast exn bt
 
   let _wrap2 env ast f a b =
     _wrap env ast (fun () -> f a b) ()

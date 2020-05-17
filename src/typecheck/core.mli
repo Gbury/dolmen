@@ -36,7 +36,8 @@ module Smtlib2 : sig
   (** Builtins for smtlib's core theory *)
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t)
+      (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
+                                          and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) : sig
 

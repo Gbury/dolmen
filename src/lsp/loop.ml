@@ -66,6 +66,7 @@ let process path opt_contents =
   let file = Filename.basename path in
   let st = Dolmen.State.{
       debug = false;
+      context = false;
       time_limit = 0.; (* disable the timer *)
       size_limit = max_float;
       input_dir = dir;

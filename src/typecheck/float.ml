@@ -22,7 +22,7 @@ module Smtlib2 = struct
 
     let parse_int env ast s =
       match int_of_string s with
-      | i when i > 0 -> i
+      | i when i >= 0 -> i
       | _ ->
         Type._error env (Ast ast)
           (Type.Expected ("a positive integer", None))

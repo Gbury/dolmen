@@ -272,8 +272,8 @@ module Filter = struct
   type ty_filter = ty_const -> ty list -> status
   type term_filter = term_const -> ty list -> term list -> status
 
-  let ty : (string * bool ref * ty_filter) list tag = Tag.create ()
-  let term : (string * bool ref * term_filter) list tag = Tag.create ()
+  let ty : (string * bool ref * ty_filter) tag = Tag.create ()
+  let term : (string * bool ref * term_filter) tag = Tag.create ()
 
   module Quantifier = struct
 
@@ -449,6 +449,7 @@ module Tags = struct
   let prefix = Pretty.Prefix
 
   let named = Tag.create ()
+  let triggers = Tag.create ()
 
 end
 
@@ -471,7 +472,7 @@ module Print = struct
   let pp_index fmt (v : _ id) = Format.fprintf fmt "/%d" v.index
 
   let id fmt (v : _ id) =
-    match Tag.get v.tags name with
+    match Tag.last v.tags name with
     | Some (Pretty.Exact s | Pretty.Renamed s) -> Format.fprintf fmt "%s" s
     | None ->
       if !print_index then
@@ -483,7 +484,7 @@ module Print = struct
     | Var v -> id fmt v
     | App (f, []) -> id fmt f
     | App (f, l) ->
-      begin match Tag.get f.tags pos with
+      begin match Tag.last f.tags pos with
         | Some Pretty.Prefix ->
           Format.fprintf fmt "@[<hov 2>%a %a@]"
             id f (Format.pp_print_list ~pp_sep:(return "") ty) l
@@ -510,7 +511,7 @@ module Print = struct
   let fun_ttype = signature ttype
 
   let id_pretty fmt (v : _ id) =
-    match Tag.get v.tags pos with
+    match Tag.last v.tags pos with
     | None -> ()
     | Some Pretty.Infix -> Format.fprintf fmt "(%a)" id v
     | Some Pretty.Prefix -> Format.fprintf fmt "[%a]" id v
@@ -542,7 +543,7 @@ module Print = struct
       Format.fprintf fmt "@[<hv 2>%a%a@ %a@]" binder b binder_sep b term body
 
   and term_app fmt (f : _ id) tys args =
-    match Tag.get f.tags pos with
+    match Tag.last f.tags pos with
     | Some Pretty.Prefix ->
       begin match args with
         | [] -> id fmt f
@@ -617,9 +618,11 @@ module Id = struct
   let equal v v' = compare v v' = 0
 
   (* Tags *)
+  let tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
+
   let get_tag (id : _ id) k = Tag.get id.tags k
 
-  let tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
+  let get_tag_last (id : _ id) k = Tag.last id.tags k
 
   (* Creating ids *)
   let id_counter = ref 0
@@ -832,7 +835,7 @@ module Ty = struct
 
   let definition_tag : def Tag.t = Tag.create ()
 
-  let definition c = Id.get_tag c definition_tag
+  let definition c = Id.get_tag_last c definition_tag
 
   let is_record c =
     match definition c with
@@ -848,9 +851,11 @@ module Ty = struct
   let view = View.Ty.view
 
   (* Tags *)
+  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+
   let get_tag (t : t) k = Tag.get t.tags k
 
-  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+  let get_tag_last (t : t) k = Tag.last t.tags k
 
   (* printing *)
   let print = Print.ty
@@ -890,6 +895,7 @@ module Ty = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
     let mk name = Id.mk name Type
   end
 
@@ -900,6 +906,7 @@ module Ty = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
     let mk name n = Id.const name [] (replicate n Type) Type
     let arity (c : t) = List.length c.ty.fun_args
 
@@ -943,9 +950,7 @@ module Ty = struct
       raise (Bad_ty_arity (f, args))
     else begin
       let res = mk (App (f, args)) in
-      match Const.get_tag f Filter.ty with
-      | None -> res
-      | Some l -> check_filters res f args l
+      check_filters res f args (Const.get_tag f Filter.ty)
     end
 
   (* Builtin types *)
@@ -1081,9 +1086,11 @@ module Term = struct
   let print = Print.term
 
   (* Tags *)
+  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+
   let get_tag (t : t) k = Tag.get t.tags k
 
-  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+  let get_tag_last (t : t) k = Tag.last t.tags k
 
   (* Hash *)
   let rec hash_aux t =
@@ -1207,6 +1214,7 @@ module Term = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
     let ty ({ ty; _ } : t) = ty
     let mk name ty = Id.mk name ty
   end
@@ -1219,6 +1227,7 @@ module Term = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
     let mk name vars args ret = Id.const name vars args ret
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
@@ -1314,13 +1323,13 @@ module Term = struct
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
     let linear_gen_tags =
-      Tag.(add empty) Filter.term [Filter.Linear.gen]
+      Tag.(add empty) Filter.term Filter.Linear.gen
 
     let linear_div_tags =
-      Tag.(add empty) Filter.term [Filter.Linear.div]
+      Tag.(add empty) Filter.term Filter.Linear.div
 
     let linear_mul_tags =
-      Tag.(add empty) Filter.term [Filter.Linear.mul]
+      Tag.(add empty) Filter.term Filter.Linear.mul
 
     module Int = struct
 
@@ -1680,37 +1689,44 @@ module Term = struct
 
       let and_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_and "bvand" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_and "bvand" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_or "bvor" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_or "bvor" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_nand "bvnand" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_nand "bvnand" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_nor "bvnor" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_nor "bvnor" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_xor "bvxor" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_xor "bvxor" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_xnor "bvxnor" [] [Ty.bitv n] (Ty.bitv n)
+            Id.const ~builtin:Bitv_xnor "bvxnor" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_comp "bvcomp" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
+            Id.const ~builtin:Bitv_comp "bvcomp" []
+              [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
@@ -1925,6 +1941,7 @@ module Term = struct
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
 
@@ -2044,9 +2061,9 @@ module Term = struct
   (* Application typechecking *)
   and instantiate (f : term_const) tys args =
     if List.length f.ty.fun_vars <> List.length tys ||
-       List.length f.ty.fun_args <> List.length args then
+       List.length f.ty.fun_args <> List.length args then begin
       raise (Bad_term_arity (f, tys, args))
-    else begin
+    end else begin
       let map = List.fold_left2 Subst.Var.bind Subst.empty f.ty.fun_vars tys in
       let expected_types = List.map (Ty.subst map) f.ty.fun_args in
       let s = List.fold_left2 (fun s expected term ->
@@ -2063,9 +2080,7 @@ module Term = struct
   and apply f tys args =
     let tys, args, ret = instantiate f tys args in
     let res = mk (App (f, tys, args)) ret in
-    match Const.get_tag f Filter.term with
-    | None -> res
-    | Some l -> check_filters res f tys args l
+    check_filters res f tys args (Const.get_tag f Filter.term)
 
   let apply_cstr = apply
 

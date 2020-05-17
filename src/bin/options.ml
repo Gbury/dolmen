@@ -32,7 +32,7 @@ let mk_state
     time_limit size_limit
     input_lang input_mode input
     type_check type_infer type_shadow
-    debug
+    debug context
   =
   (* Side-effects *)
   let () = Gc.set gc_opt in
@@ -45,7 +45,7 @@ let mk_state
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Bin_state.t = {
-    debug;
+    debug; context;
 
     time_limit; size_limit;
 
@@ -277,9 +277,14 @@ let state =
         "Print the parsed dolmen statement (after expansion of includes)" in
     Arg.(value & flag & info ["debug"] ~docs ~doc)
   in
+  let context =
+    let doc = Format.asprintf
+        "Print the context / fragment of parsed AST with errors" in
+    Arg.(value & flag & info ["context"] ~docs ~doc)
+  in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
         typing $ infer $ shadow $
-        debug)
+        debug $ context)
 
 

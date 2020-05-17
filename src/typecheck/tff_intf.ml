@@ -208,7 +208,7 @@ module type S = sig
     (** *)
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Dolmen.Term.t err
     (** *)
-    | Uncaught_exn : exn -> Dolmen.Term.t err
+    | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Term.t err
     (** *)
     | Unhandled_ast : Dolmen.Term.t err
     (** *)

@@ -28,6 +28,8 @@ module type S = sig
 
   val new_state : unit -> type_st
 
+  val print_fragment : Format.formatter -> 'a T.fragment -> unit
+
   val report_error : Format.formatter -> T.error -> unit
   val report_warning : T.warning -> (Format.formatter -> unit -> unit) option
 
@@ -162,7 +164,7 @@ module Make(S : State_intf.Typer) = struct
       )
     | T.Error_in_attribute exn -> Some (fun fmt () ->
         Format.fprintf fmt
-          "Error while typing attribute:@ %s" (Printexc.to_string exn)
+          "Exception while typing attribute:@ %s" (Printexc.to_string exn)
       )
     | T.Superfluous_destructor _ -> None
 
@@ -228,6 +230,13 @@ module Make(S : State_intf.Typer) = struct
     | T.Decls l -> Dolmen.Statement.print_decls fmt l
     | T.Located loc ->
       Format.fprintf fmt "<located at %a>" Dolmen.ParseLocation.fmt loc
+
+  let print_bt fmt bt =
+    if Printexc.backtrace_status () then begin
+      let s = Printexc.raw_backtrace_to_string bt in
+      Format.fprintf fmt "@ @[<h>%a@]" Format.pp_print_text s
+    end
+
 
   let report_error fmt (T.Error (_env, fragment, err)) =
     match err with
@@ -376,23 +385,25 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Linear arithmetic *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _)
       when name = Dolmen.Expr.Filter.Linear.name ->
       Format.fprintf fmt "Non-linear expressions are forbidden by the logic."
     (* Quantifier free formulas *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t))
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _)
       when name = Dolmen.Expr.Filter.Quantifier.name ->
       Format.fprintf fmt "Quantified expressions are forbidden by the logic."
 
     (* Expression filters *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty)) ->
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty), _) ->
       Format.fprintf fmt "Filter '%s' failed for the given type." name
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t)) ->
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _) ->
       Format.fprintf fmt "Filter '%s' failed for the given term." name
 
     (* Uncaught exception during type-checking *)
-    | T.Uncaught_exn exn ->
-      Format.fprintf fmt "Uncaught exception: %s" (Printexc.to_string exn)
+    | T.Uncaught_exn (exn, bt) ->
+      Format.fprintf fmt
+        "@[<v 2>Uncaught exception: %s%a@]"
+          (Printexc.to_string exn) print_bt bt
 
     (* Warnings as errors *)
     | Warning_as_error w ->

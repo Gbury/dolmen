@@ -32,6 +32,11 @@ let pp b { name ; _ } =
   Printf.bprintf b "%s" name
 
 let print fmt { name ; _ } =
+  let name = String.map (function
+      | '\000' -> ':'
+      | c -> c
+    ) name
+  in
   Format.fprintf fmt "%s" name
 
 (* Tracked hashtbl *)

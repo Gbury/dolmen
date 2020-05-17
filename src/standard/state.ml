@@ -13,6 +13,7 @@ type ('lang, 'typer, 'solver) state = {
 
   (* Debug option *)
   debug             : bool;
+  context           : bool;
 
   (* Limits for time and size *)
   time_limit        : float;

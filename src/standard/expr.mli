@@ -412,9 +412,9 @@ type builtin +=
       [Bitv_or (Bitv_and s t)
                (Bitv_and (Bitv_not s) (Bitv_not t))]. *)
   | Bitv_comp
-  (** [Bitv_comp: Bitv(n) -> Bitv(n) -> Bitv(n)]:
-      TODO: is there a short legible definition of this operator ?
-      see SMTLIB's 2.7 spec *)
+  (** [Bitv_comp: Bitv(n) -> Bitv(n) -> Bitv(1)]:
+      Returns the constant bitvector ["1"] is all bits are equal,
+      and the bitvector ["0"] if not. *)
   | Bitv_neg
   (** [Bitv_neg: Bitv(n) -> Bitv(n)]:
       2's complement unary minus. *)
@@ -586,6 +586,7 @@ module Tags : sig
   (** Polymorphic tags *)
 
   include Dolmen_intf.Tag.Smtlib_Base with type 'a t := 'a t
+                                       and type term := term
   (** Satsify the Smtlib interface. *)
 
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
@@ -869,8 +870,11 @@ module Ty : sig
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a variable. *)
 
-    val get_tag : t -> 'a tag -> 'a option
-    (** Return the value associated to the tag (if any). *)
+    val get_tag : t -> 'a tag -> 'a list
+    (** Return the list of value associated to the tag. *)
+
+    val get_tag_last : t -> 'a tag -> 'a option
+    (** Return the last value associated to the tag (if any). *)
 
   end
 
@@ -898,8 +902,11 @@ module Ty : sig
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a variable. *)
 
-    val get_tag : t -> 'a tag -> 'a option
-    (** Return the value associated to the tag (if any). *)
+    val get_tag : t -> 'a tag -> 'a list
+    (** Return the list of values associated to the tag. *)
+
+    val get_tag_last : t -> 'a tag -> 'a option
+    (** Return the last value associated to the tag (if any). *)
 
     val int : t
     (** The type constant for integers *)
@@ -971,8 +978,11 @@ module Ty : sig
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
 
-  val get_tag : t -> 'a tag -> 'a option
-  (** Return the value associated to the tag (if any). *)
+  val get_tag : t -> 'a tag -> 'a list
+  (** Return the list of value associated to the tag. *)
+
+  val get_tag_last : t -> 'a tag -> 'a option
+  (** Return the last value associated to the tag (if any). *)
 
   val subst : ?fix:bool -> subst -> t -> t
   (** Substitution on types. *)
@@ -1040,9 +1050,11 @@ module Term : sig
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a variable. *)
 
-    val get_tag : t -> 'a tag -> 'a option
-    (** Return the value associated to the tag (if any). *)
+    val get_tag : t -> 'a tag -> 'a list
+    (** Return the list of value associated to the tag. *)
 
+    val get_tag_last : t -> 'a tag -> 'a option
+    (** Return the last value associated to the tag (if any). *)
   end
 
   (** A module for constant symbols that occur in terms. *)
@@ -1069,9 +1081,11 @@ module Term : sig
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
-    val get_tag : t -> 'a tag -> 'a option
-    (** Return the value associated to the tag (if any). *)
+    val get_tag : t -> 'a tag -> 'a list
+    (** Return the list of values associated to the tag. *)
 
+    val get_tag_last : t -> 'a tag -> 'a option
+    (** Return the last value associated to the tag (if any). *)
   end
 
   (** A module for Algebraic datatype constructors. *)
@@ -1102,8 +1116,11 @@ module Term : sig
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
-    val get_tag : t -> 'a tag -> 'a option
-    (** Return the value associated to the tag (if any). *)
+    val get_tag : t -> 'a tag -> 'a list
+    (** Return the list of values associated to the tag. *)
+
+    val get_tag_last : t -> 'a tag -> 'a option
+    (** Return the last value associated to the tag (if any). *)
 
   end
 
@@ -1274,8 +1291,11 @@ module Term : sig
   val tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given formula wiht the tag and value. *)
 
-  val get_tag : t -> 'a tag -> 'a option
-  (** Return the value associated to the tag (if any). *)
+  val get_tag : t -> 'a tag -> 'a list
+  (** Return the list of values associated to the tag. *)
+
+  val get_tag_last : t -> 'a tag -> 'a option
+  (** Return the last value associated to the tag (if any). *)
 
   val fv : t -> ty_var list * Var.t list
   (** Returns the list of free variables in the formula. *)

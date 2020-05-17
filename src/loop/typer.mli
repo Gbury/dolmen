@@ -29,7 +29,10 @@ module type S = sig
      and type formula := Dolmen.Expr.formula
 
   val new_state : unit -> type_st
-  (* Generate a fresh typing state. *)
+  (** Generate a fresh typing state. *)
+
+  val print_fragment : Format.formatter -> 'a T.fragment -> unit
+  (** Print a code fragment *)
 
   val report_error : Format.formatter -> T.error -> unit
   (** Report a typing error on the given formatter. *)

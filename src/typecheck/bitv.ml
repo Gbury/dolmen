@@ -18,7 +18,7 @@ module Smtlib2 = struct
 
     let parse_int env ast s =
       match int_of_string s with
-      | i when i > 0 -> i
+      | i when i >= 0 -> i
       | _ ->
         Type._error env (Ast ast)
           (Type.Expected ("a positive integer", None))
@@ -101,6 +101,7 @@ module Smtlib2 = struct
               | [s; n] when (String.length s >= 2 &&
                              s.[0] = 'b' && s.[1] = 'v') ->
                 `Term (parse_extended_lit env s n)
+
               | ["bvnot"] ->
                 `Term (Base.term_app1 (module Type) env "bvnot" T.not)
               | ["bvand"] ->
@@ -115,8 +116,10 @@ module Smtlib2 = struct
                 `Term (Base.term_app_left (module Type) env "bvxor" T.xor)
               | ["bvxnor"] ->
                 `Term (Base.term_app_left (module Type) env "bvxnor" T.xnor)
+
               | ["bvcomp"] ->
                 `Term (Base.term_app2 (module Type) env "bvcomp" T.comp)
+
               | ["bvneg"] ->
                 `Term (Base.term_app1 (module Type) env "bvneg" T.neg)
               | ["bvadd"] ->
@@ -125,16 +128,44 @@ module Smtlib2 = struct
                 `Term (Base.term_app2 (module Type) env "bvsub" T.sub)
               | ["bvmul"] ->
                 `Term (Base.term_app_left (module Type) env "bvmul" T.mul)
+
               | ["bvudiv"] ->
                 `Term (Base.term_app2 (module Type) env "bvudiv" T.udiv)
               | ["bvurem"] ->
                 `Term (Base.term_app2 (module Type) env "bvurem" T.urem)
+
+              | ["bvsdiv"] ->
+                `Term (Base.term_app2 (module Type) env "bvsdiv" T.sdiv)
+              | ["bvsrem"] ->
+                `Term (Base.term_app2 (module Type) env "bvsrem" T.srem)
+              | ["bvsmod"] ->
+                `Term (Base.term_app2 (module Type) env "bvsmod" T.smod)
+
               | ["bvshl"] ->
                 `Term (Base.term_app2 (module Type) env "bvshl" T.shl)
               | ["bvlshr"] ->
                 `Term (Base.term_app2 (module Type) env "bvlshr" T.lshr)
+              | ["bvashr"] ->
+                `Term (Base.term_app2 (module Type) env "bvashr" T.ashr)
+
               | ["bvult"] ->
                 `Term (Base.term_app2 (module Type) env "bvult" T.ult)
+              | ["bvule"] ->
+                `Term (Base.term_app2 (module Type) env "bvule" T.ule)
+              | ["bvugt"] ->
+                `Term (Base.term_app2 (module Type) env "bvugt" T.ugt)
+              | ["bvuge"] ->
+                `Term (Base.term_app2 (module Type) env "bvuge" T.uge)
+
+              | ["bvslt"] ->
+                `Term (Base.term_app2 (module Type) env "bvslt" T.slt)
+              | ["bvsle"] ->
+                `Term (Base.term_app2 (module Type) env "bvsle" T.sle)
+              | ["bvsgt"] ->
+                `Term (Base.term_app2 (module Type) env "bvsgt" T.sgt)
+              | ["bvsge"] ->
+                `Term (Base.term_app2 (module Type) env "bvsge" T.sge)
+
               | ["concat"] ->
                 `Term (Base.term_app2 (module Type) env "concat" T.concat)
               | _ -> `Not_found

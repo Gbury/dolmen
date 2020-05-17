@@ -15,6 +15,9 @@ end
 (** Minium required signature for tags to typecheck smtlib's core/base theory. *)
 module type Smtlib_Base = sig
 
+    type term
+    (** The type of terms *)
+
     type 'a t
     (** Polymorphic tags *)
 
@@ -22,8 +25,12 @@ module type Smtlib_Base = sig
     (** A tag used to named formulas in smtlib.
         Should correspond to the `:named` attribute. *)
 
+    val triggers : term list t
+    (** Multi-triggers (typically annotated on the body of
+        a quantified formula and not the quantified formula itself). *)
+
     val rwrt : unit t
-    (** A flag (i.e. unit tag), indicatgin that the tagged term/formula
+    (** A flag (i.e. unit tag), indicating that the tagged term/formula
         is to be considered as a rewrite rule. *)
 
 end
