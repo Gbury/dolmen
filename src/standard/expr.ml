@@ -187,8 +187,8 @@ type builtin +=
 exception Bad_ty_arity of ty_const * ty list
 exception Bad_term_arity of term_const * ty list * term list
 
-exception Filter_failed_ty of string * ty
-exception Filter_failed_term of string * term
+exception Filter_failed_ty of string * ty * string
+exception Filter_failed_term of string * term * string
 
 exception Type_already_defined of ty_const
 exception Record_type_expected of ty_const
@@ -267,7 +267,7 @@ module Filter = struct
   type status = [
     | `Pass
     | `Warn
-    | `Error
+    | `Error of string
   ]
   type ty_filter = ty_const -> ty list -> status
   type term_filter = term_const -> ty list -> term list -> status
@@ -293,6 +293,14 @@ module Filter = struct
     let is_ty_rat t = (View.Ty.view t = `Rat)
     let is_ty_real t = (View.Ty.view t = `Real)
 
+    (* Fine-grained classification of terms into:
+       - constants or variables
+       - arithmetic literals aka values
+       - negation of another term
+       - division of two terms
+       - exprssion with an arithmetic operation as head symbol
+       - other expressions
+    *)
     let classify_term (t : term) =
       match View.Term.view t with
       | `Var _ -> `Const
@@ -307,50 +315,94 @@ module Filter = struct
       (* Rational values *)
       | `App (`Builtin Div, _, [a; b]) ->
         `Div (a, b)
+      (* Other Arithmetic constructions *)
+      | `App (`Builtin (Minus | Add | Sub | Mul |
+                        Div | Div_e | Div_t | Div_f |
+                        Modulo | Modulo_t | Modulo_f | Abs ), _, _) ->
+        `Arith
       (* Fallback *)
       | _ -> `Other
 
+    (* Classify a term into these categories :
+       - Values aka arithmetic litterals
+       - complex arithmetic expressions (i.e. expresisons which are not
+         values but whose head symbol is an arithmetic one)
+       - other values (i.e. constants symbols
+    *)
     let classify t =
       match classify_term t with
       | `Value _ -> `Value
-      | `Const -> `Constant
+      | `Other -> `Other
+      | `Const -> `Other
+      | `Arith -> `Arith
       | `Negated t' ->
         begin match classify_term t' with
           | `Value _ -> `Value
-          | _ -> `Other
+          | _ -> `Arith
         end
       | `Coerced t' ->
         begin match classify_term t' with
           | `Value _ -> `Value
-          | _ -> `Other
+          | _ -> `Arith
         end
       | `Div (a, b) ->
         begin match classify_term a, classify_term b with
           | `Value `Integer, `Value `Integer -> `Value
-          | _ -> `Other
+          | _ -> `Arith
         end
-      | _ -> `Other
 
-    let gen_wrapper _ _ _ = `Error
+    (* Error messages for filters that fail *)
+    let classify_term_to_string = function
+      | `Value `Integer -> "an integer literal"
+      | `Value `Rational -> "a rational literal"
+      | `Value `Decimal -> "a real literal"
+      | `Coerced _ -> "a coerced term"
+      | `Const -> "a constant"
+      | `Negated _ -> "a negated term"
+      | `Div _ -> "a division"
+      | `Arith -> "a complex arithmetic expression"
+      | `Other -> "an arbitrary term"
+
+    let classify_term_error c c' expected =
+      Format.asprintf "expects %s but was given:\n- %s\ -%s"
+        expected (classify_term_to_string c) (classify_term_to_string c')
+
+    let classify_to_string = function
+      | `Value -> "an arithmetic literal"
+      | `Other -> "an arbitrary (non arithmetic) term"
+      | `Arith -> "an arithmetic expression"
+
+    let classify_error c c' expected =
+      Format.asprintf "expects %s but was given:\n- %s\n- %s"
+        expected (classify_to_string c) (classify_to_string c')
+
+    (* Wrappers *)
+
+    let gen_wrapper _ _ _ =
+      `Error "this operator is forbidden in linear arithmetic"
 
     let div_wrapper _ _ ts =
       match ts with
       | [a; b] ->
         begin match classify_term a, classify_term b with
           | `Value `Integer, `Value `Integer -> `Pass
-          | _ -> `Error
+          | c, c' -> `Error (
+              Format.asprintf "division in linear arithmetic %s"
+                (classify_term_error c c' "two integer literals"))
         end
-      | _ -> `Error
+      | _ -> `Error "bad arity for multiplication"
 
     let mul_wrapper _ _ ts =
       match ts with
       | [a; b] ->
         begin match classify a, classify b with
-          | `Value, `Constant
-          | `Constant, `Value -> `Pass
-          | _ -> `Error
+          | `Value, `Other
+          | `Other, `Value -> `Pass
+          | c, c' -> `Error (
+              Format.asprintf "multiplication in linear arithmetic %s"
+                (classify_error c c' "a literal and a non arithmetic expression"))
         end
-      | _ -> `Error
+      | _ -> `Error "bad arity for multiplication"
 
     let gen = name, active, gen_wrapper
     let div = name, active, div_wrapper
@@ -940,7 +992,7 @@ module Ty = struct
       if !active then match (check f args) with
         | `Pass -> check_filters res f args r
         | `Warn -> check_filters res f args r
-        | `Error -> raise (Filter_failed_ty (name, res))
+        | `Error msg -> raise (Filter_failed_ty (name, res, msg))
       else
         check_filters res f args r
 
@@ -1967,7 +2019,7 @@ module Term = struct
       if !active then match (check f tys args) with
         | `Pass -> check_filters res f tys args r
         | `Warn -> check_filters res f tys args r
-        | `Error -> raise (Filter_failed_term (name, res))
+        | `Error msg -> raise (Filter_failed_term (name, res, msg))
       else
         check_filters res f tys args r
 
@@ -1983,7 +2035,7 @@ module Term = struct
     | true, _
     | _, (Letin _) -> res
     | false, (Exists _ | Forall _) ->
-      raise (Filter_failed_term (Filter.Quantifier.name, res))
+      raise (Filter_failed_term (Filter.Quantifier.name, res, ""))
 
   (* Substitutions *)
   let rec ty_var_list_subst ty_var_map = function

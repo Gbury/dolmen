@@ -203,6 +203,11 @@ module Make(S : State_intf.Typer) = struct
          arguments when none are given in an application."
     | _ -> ()
 
+  let filter_hint fmt = function
+    | "" -> ()
+    | msg ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]"
+        Format.pp_print_text msg
 
   (* Report type errors *)
   (* ************************************************************************ *)
@@ -385,19 +390,22 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
 
     (* Linear arithmetic *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
       when name = Dolmen.Expr.Filter.Linear.name ->
-      Format.fprintf fmt "Non-linear expressions are forbidden by the logic."
+      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
+        filter_hint msg
     (* Quantifier free formulas *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, _), _)
       when name = Dolmen.Expr.Filter.Quantifier.name ->
       Format.fprintf fmt "Quantified expressions are forbidden by the logic."
 
     (* Expression filters *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given type." name
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given term." name
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty, msg), _) ->
+      Format.fprintf fmt "Filter '%s' failed for the given type.%a"
+        name filter_hint msg
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _) ->
+      Format.fprintf fmt "Filter '%s' failed for the given term.%a"
+        name filter_hint msg
 
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn (exn, bt) ->

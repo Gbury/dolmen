@@ -101,8 +101,8 @@ exception Bad_ty_arity of ty_const * ty list
 exception Bad_term_arity of term_const * ty list * term list
 exception Type_already_defined of ty_const
 
-exception Filter_failed_ty of string * ty
-exception Filter_failed_term of string * term
+exception Filter_failed_ty of string * ty * string
+exception Filter_failed_term of string * term * string
 
 (* {2 Builtins} *)
 (* ************************************************************************* *)
