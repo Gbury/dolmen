@@ -44,7 +44,7 @@ let mk_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   (* State creation *)
   let input_dir, input_source = split_input input in
-  let st : Bin_state.t = {
+  let st : Loop.State.t = {
     debug; context;
 
     time_limit; size_limit;
@@ -52,7 +52,7 @@ let mk_state
     input_dir; input_lang;
     input_mode; input_source;
 
-    type_state = Typer.new_state ();
+    type_state = Loop.Typer.new_state ();
     type_check; type_infer; type_shadow;
 
     solve_state = ();
