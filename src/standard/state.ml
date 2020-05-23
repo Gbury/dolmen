@@ -31,6 +31,7 @@ type ('lang, 'typer, 'solver) state = {
   (* Typechecking state *)
   type_state        : 'typer;
   type_check        : bool;
+  type_strict       : bool;
   type_infer        : perm option;
   type_shadow       : perm option;
 

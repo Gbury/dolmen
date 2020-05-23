@@ -174,6 +174,16 @@ module Make(S : State_intf.Typer) = struct
           Dolmen.Id.print id print_reason (T.binding_reason old)
       )
 
+    | Smtlib2_Float.Real_lit -> Some (fun fmt () ->
+        Format.fprintf fmt
+          "Real literals are not part of the Floats specification."
+      )
+    | Smtlib2_Float.Bitv_extended_lit -> Some (fun fmt () ->
+        Format.fprintf fmt
+          "Bitvector decimal literals are not part of the Floats specification."
+      )
+
+
     | _ -> Some (fun fmt () ->
         Format.fprintf fmt
           "Unknown warning, please report upstream, ^^"
@@ -382,16 +392,20 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
     | Smtlib2_Bitv.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
+    | Smtlib2_Bitv.Invalid_dec_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
 
     (* Smtlib Float errors *)
     | Smtlib2_Float.Invalid_bin_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
     | Smtlib2_Float.Invalid_hex_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
+    | Smtlib2_Float.Invalid_dec_char c ->
+      Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
 
     (* Linear arithmetic *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
-      when name = Dolmen.Expr.Filter.Linear.name ->
+      when name = Dolmen.Expr.Filter.Smtlib2.Linear.name ->
       Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
         filter_hint msg
     (* Quantifier free formulas *)
@@ -476,6 +490,7 @@ module Make(S : State_intf.Typer) = struct
     add, add_raw, get
 
   type warning_conf = {
+    strict_typing : bool;
     smtlib2_6_shadow_rules : bool;
   }
 
@@ -488,6 +503,11 @@ module Make(S : State_intf.Typer) = struct
     | T.Shadowing (_, `Builtin _, `Constant _), fragment
     | T.Shadowing (_, `Constant _, `Constant _), fragment
       when conf.smtlib2_6_shadow_rules ->
+      T._error env fragment (Warning_as_error w)
+
+    | Smtlib2_Float.Real_lit, fragment
+    | Smtlib2_Float.Bitv_extended_lit, fragment
+      when conf.strict_typing ->
       T._error env fragment (Warning_as_error w)
 
     (* general case *)
@@ -518,11 +538,14 @@ module Make(S : State_intf.Typer) = struct
     (* Arithmetic restrictions *)
     begin match l.features.arithmetic with
       | `Regular -> ()
-      | `Linear -> Dolmen.Expr.Filter.Linear.active := true
-      | `Difference -> (* TODO *) ()
+      | `Linear ->
+        Dolmen.Expr.Filter.Smtlib2.Linear.active := true
+      | `Difference ->
+        Dolmen.Expr.Filter.Smtlib2.IDL.active := true;
+        Dolmen.Expr.Filter.Smtlib2.RDL.active := true
     end;
     (* Quantifiers restrictions *)
-    Dolmen.Expr.Filter.Quantifier.allow := l.features.quantifiers;
+    Dolmen.Expr.Filter.Quantifier.active := not l.features.quantifiers;
     ()
 
   let typing_env
@@ -547,6 +570,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.prop in
       let warnings = warnings {
+          strict_typing = st.type_strict;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.noop in
@@ -562,6 +586,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
+          strict_typing = st.type_strict;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -582,6 +607,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
+          strict_typing = st.type_strict;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -604,6 +630,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.base in
       let warnings = warnings {
+          strict_typing = st.type_strict;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -628,6 +655,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
+          strict_typing = st.type_strict;
           smtlib2_6_shadow_rules = match v with
             | `Latest | `V2_6 -> true;
         } in
@@ -657,7 +685,8 @@ module Make(S : State_intf.Typer) = struct
     Dolmen_type.Logic.Smtlib2.theories =
       [ `Core; `Reals_Ints; `Arrays; `Bitvectors; ];
     features = {
-      uninterpreted = true;
+      free_sorts = true;
+      free_functions = true;
       datatypes = true;
       quantifiers = true;
       arithmetic = `Regular;
@@ -695,7 +724,7 @@ module Make(S : State_intf.Typer) = struct
 
   let allow_function_decl (st : _ Dolmen.State.state) =
     match st.type_state.logic with
-      | Smtlib2 logic -> logic.features.uninterpreted
+      | Smtlib2 logic -> logic.features.free_functions
       | Auto -> true
 
   let allow_data_type_decl (st : _ Dolmen.State.state) =
@@ -705,7 +734,7 @@ module Make(S : State_intf.Typer) = struct
 
   let allow_abstract_type_decl (st : _ Dolmen.State.state) =
     match st.type_state.logic with
-      | Smtlib2 logic -> logic.features.uninterpreted
+      | Smtlib2 logic -> logic.features.free_sorts
       | Auto -> true
 
   let check_decl st env d = function

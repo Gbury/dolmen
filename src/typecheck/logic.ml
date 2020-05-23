@@ -15,7 +15,8 @@ module Smtlib2 = struct
   ]
 
   type features = {
-    uninterpreted   : bool;
+    free_sorts      : bool;
+    free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
     arithmetic      : [ `Linear | `Difference | `Regular ];
@@ -44,16 +45,18 @@ module Smtlib2 = struct
     let default = {
       theories = [ `Core ];
       features = {
-        uninterpreted = false;
+        free_sorts = false;
+        free_functions = false;
         datatypes = false;
         quantifiers = true;
         arithmetic = `Regular;
       };
     } in
     let all = {
-      theories = [ `Core; ];
+      theories = [ `Core; `Arrays; `Bitvectors; `Floats; `Reals_Ints ];
       features = {
-        uninterpreted = true;
+        free_sorts = true;
+        free_functions = true;
         datatypes = true;
         quantifiers = true;
         arithmetic = `Regular;
@@ -61,7 +64,8 @@ module Smtlib2 = struct
     } in
     let add_theory t c = { c with theories = t :: c.theories } in
     let set_features c f = { c with features = f c.features } in
-    let set_uf c = set_features c (fun f -> { f with uninterpreted = true}) in
+    let set_uf c = set_features c (fun f ->
+        { f with free_sorts = true; free_functions = true; }) in
     let set_qf c = set_features c (fun f -> { f with quantifiers = false}) in
     let set_dt c = set_features c (fun f -> { f with datatypes = true}) in
     let set_dl c = set_features c (fun f -> { f with arithmetic = `Difference}) in
@@ -119,7 +123,19 @@ module Smtlib2 = struct
       | [] -> Some c
       | _ -> None
     in
-    parse_logic default (Misc.Strings.to_list s)
+    (* default/base logic with some special cases *)
+    let base =
+      match s with
+      (* QF_AX allows free sort and **constant** symbols (not functions) *)
+      | "QF_AX" ->
+        set_features default (fun f -> { f with free_sorts = true; })
+      (* end of special cases *)
+      | _ -> default
+    in
+    (* Parse the logic name *)
+    let res = parse_logic base (Misc.Strings.to_list s) in
+    (* Return *)
+    res
 
 end
 

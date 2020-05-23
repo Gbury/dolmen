@@ -787,7 +787,7 @@ module type Smtlib_Int = sig
 
   include Smtlib_Arith_Common
 
-  val int : string -> t
+  val mk : string -> t
   (** Build an integer constant. The integer is passed
           as a string, and not an [int], to avoid overflow caused
           by the limited precision of native intgers. *)
@@ -809,7 +809,7 @@ module type Smtlib_Real = sig
 
   include Smtlib_Arith_Common
 
-  val real : string -> t
+  val mk : string -> t
   (** Build a real constant. The string should respect
       smtlib's syntax for INTEGER or DECIMAL. *)
 
@@ -1019,6 +1019,17 @@ module type Smtlib_Float_Bitv = sig
 
 end
 
+(** Real part of the smtlib float requirements *)
+module type Smtlib_Float_Real = sig
+
+  type t
+  (** the type of terms *)
+
+  val mk : string -> t
+  (** Bitvector litteral. *)
+
+end
+
 (** Float part of the smtlib float requirements *)
 module type Smtlib_Float_Float = sig
 
@@ -1181,6 +1192,10 @@ module type Smtlib_Float = sig
 
   val ty : t -> ty
   (** Type of a term. *)
+
+  module Real : Smtlib_Float_Real with type t := t
+  (** Sub-module used for namespacing the real part
+      of the theory requirements *)
 
   module Bitv : Smtlib_Float_Bitv with type t := t
   (** Sub-module used for namespacing the bitvector part

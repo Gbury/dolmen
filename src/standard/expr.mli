@@ -602,28 +602,50 @@ module Filter : sig
   val reset : unit -> unit
   (** Reset all filters. *)
 
-  module Linear : sig
+  (** The common external signature for filters. *)
+  module type S = sig
+
+    val name : string
+    (** The name of the filter. *)
 
     val active : bool ref
-    (** If [true], only linear terms may be created.
-        Trying to create a non-linear term will raise
-        a [Filter_failed_ty] or [Filter_failed_term]
-        exception. *)
+    (** Whether the filter is active *)
 
-    val name : string
-    (** Name of the filter for linear expressions. *)
-
+    val reset : unit -> unit
+    (** Reset the filter to its default state. *)
   end
 
-  module Quantifier : sig
 
-    val allow : bool ref
-    (** If [false], trying to build a quantified term
-        (i.e. contianing a forall or exists), will raise
-        a [Filter_failed_term] exception. *)
+  module Quantifier : S
+  (** Filter for quantifiers.
+      Default is inactive (i.e. [!active = false]).
+      If active, trying to build a quantified term (i.e. containing a forall
+      or exists), will raise a [Filter_failed_term] exception. *)
 
-    val name : string
-    (** Name of the filter for qunatifier-free expressions. *)
+  (** Smtlib2 filters *)
+  module Smtlib2 : sig
+
+    module Linear : S
+    (** Filter for linear arithmetic.
+        Default is inactive (i.e. [!active = false]).
+        If active, only linear terms may be created. This affects both integer
+        and real arithmetic terms, but does not affect rational arithmetic
+        (as it is not in the scope of SMTLIB), nor does it affect
+        non-arithmetic terms. *)
+
+    module IDL : S
+    (** Filter for Integer Difference Logic.
+        Default is inactive (i.e. [!active = false]).
+        If active only arithmetic term conforming to SMTLIB2's QF_IDL
+        ":language" specification will be accepted. Terms outside
+        of integer arithmetic are not affected by this filter. *)
+
+    module RDL : S
+    (** Filter for Real Difference Logic.
+        Default is inactive (i.e. [!active = false]).
+        If active only arithmetic term conforming to SMTLIB2's QF_RDL
+        ":language" specification will be accepted. Non-arithmetic
+        terms are not affected. *)
 
   end
 
@@ -1369,6 +1391,9 @@ module Term : sig
 
     include Dolmen_intf.Term.Tptp_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic over reals *)
+
+    include Dolmen_intf.Term.Smtlib_Float_Real with type t := t
+    (** Satisfy the real part of the SMTLIB's Float requirements *)
 
   end
 

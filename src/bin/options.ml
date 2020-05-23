@@ -31,7 +31,8 @@ let mk_state
     gc gc_opt bt colors
     time_limit size_limit
     input_lang input_mode input
-    type_check type_infer type_shadow
+    type_check type_strict
+    type_infer type_shadow
     debug context
   =
   (* Side-effects *)
@@ -53,7 +54,7 @@ let mk_state
     input_mode; input_source;
 
     type_state = Loop.Typer.new_state ();
-    type_check; type_infer; type_shadow;
+    type_check; type_strict; type_infer; type_shadow;
 
     solve_state = ();
 
@@ -262,6 +263,10 @@ let state =
                is done. " in
     Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
+  let strict =
+    let doc = "Be strict or more lenient wrt to typing" in
+    Arg.(value & opt bool true & info ["strict"] ~doc ~docs)
+  in
   let infer =
     let doc = Format.asprintf
         "Decide the permissions for type inference" in
@@ -284,7 +289,7 @@ let state =
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
-        typing $ infer $ shadow $
+        typing $ strict $ infer $ shadow $
         debug $ context)
 
 

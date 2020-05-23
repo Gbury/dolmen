@@ -20,7 +20,7 @@ module Smtlib2 = struct
           `Ty (Base.app0 (module Type) env "Int" Ty.int)
         (* values *)
         | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-          `Term (Base.app0 (module Type) env name (T.int name))
+          `Term (Base.app0 (module Type) env name (T.mk name))
         (* terms *)
         | Type.Id { Id.ns = Id.Term; name; } ->
           begin match name with
@@ -66,7 +66,7 @@ module Smtlib2 = struct
           `Ty (Base.app0 (module Type) env "Real" Ty.real)
         (* values *)
         | Type.Id { Id.ns = Id.Value (Id.Integer | Id.Real); name; } ->
-          `Term (Base.app0 (module Type) env name (T.real name))
+          `Term (Base.app0 (module Type) env name (T.mk name))
         (* terms *)
         | Type.Id { Id.ns = Id.Term; name; } ->
           begin match name with
@@ -147,9 +147,9 @@ module Smtlib2 = struct
 
         (* values *)
         | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-          `Term (Base.app0 (module Type) env name (T.Int.int name))
+          `Term (Base.app0 (module Type) env name (T.Int.mk name))
         | Type.Id { Id.ns = Id.Value Id.Real; name; } ->
-          `Term (Base.app0 (module Type) env name (T.Real.real name))
+          `Term (Base.app0 (module Type) env name (T.Real.mk name))
 
         (* terms *)
         | Type.Id { Id.ns = Id.Term; name; } ->

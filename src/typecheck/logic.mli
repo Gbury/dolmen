@@ -21,7 +21,8 @@ module Smtlib2 : sig
   (** Smtlib theories. *)
 
   type features = {
-    uninterpreted   : bool;
+    free_sorts      : bool;
+    free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
     arithmetic      : [ `Linear | `Difference | `Regular ];

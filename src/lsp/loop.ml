@@ -78,6 +78,7 @@ let process path opt_contents =
       end;
       type_state = State.Typer.new_state ();
       type_check = true;
+      type_strict = true;
       type_infer = None;
       type_shadow = None;
       solve_state = [];
