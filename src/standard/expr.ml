@@ -513,7 +513,7 @@ module View = struct
           Format.fprintf fmt "an arbitrary term"
 
       let expect_error v v' expected =
-        Format.asprintf "expects %s but was given:\n- %a\ -%a"
+        Format.asprintf "expects %s but was given:\n- %a\n- %a"
           expected print v print v'
 
     end
