@@ -98,8 +98,10 @@ type builtin +=
   | Real | Decimal of string
   | Lt | Leq | Gt | Geq
   | Minus | Add | Sub | Mul
-  | Div | Div_e | Div_t | Div_f
-  | Modulo | Modulo_t | Modulo_f
+  | Div
+  | Div_e | Modulo_e
+  | Div_t | Modulo_t
+  | Div_f | Modulo_f
   | Abs | Divisible
   | Is_int | Is_rat
   | Floor | Ceiling | Truncate | Round
@@ -214,16 +216,7 @@ module Tags = struct
   let named = Tag.create ()
   let triggers = Tag.create ()
 
-
-  type any = Any : 'a t * 'a -> any
-
-  let of_list l =
-    let rec aux acc = function
-      | [] -> acc
-      | Any (tag, value) :: r ->
-        aux (Tag.add acc tag value) r
-    in
-    aux Tag.empty l
+  let bound = Tag.create ()
 
 end
 
@@ -467,7 +460,11 @@ module View = struct
 
       let rec view (t : term) : term t =
         match Term.view t with
-        | `Var v -> `Var v
+        | `Var v ->
+          begin match Tag.last v.tags Tags.bound with
+            | None -> `Var v
+            | Some t' -> view t'
+          end
         | `App (`Builtin Integer s, _, _) -> `Value (`Int, s)
         | `App (`Builtin Rational s, _, _) -> `Value (`Rat, s)
         | `App (`Builtin Decimal s, _, _) -> `Value (`Real, s)
@@ -488,9 +485,9 @@ module View = struct
             | _ -> `Other
           end
         (* Other Arithmetic constructions *)
-        | `App (`Builtin (Minus | Add | Sub | Mul |
-                          Div | Div_e | Div_t | Div_f |
-                          Modulo | Modulo_t | Modulo_f | Abs as b), _, l) ->
+        | `App (`Builtin (Minus | Add | Sub | Mul | Div | Abs
+                         | Div_e | Div_t | Div_f |
+                          Modulo_e | Modulo_t | Modulo_f as b), _, l) ->
           `Arith (b, l)
         (* Constants *)
         | `App (`Generic c, [], []) -> `Cst c
@@ -556,7 +553,8 @@ module Filter = struct
   end
 
   module Smtlib2 = struct
-    module Linear = struct
+
+    module Linear_strict = struct
 
       let active = ref false
       let name = "linear"
@@ -564,7 +562,7 @@ module Filter = struct
 
       (* Local view of arithmetic expressions in the terms of the smtlib
          spec, in:
-         + Free constants (this includes variables and constants of arity 0)
+         + Free constants (no need to check their types)
          + Integer coeficients, i.e.:
          - either raw integer literals, or
          - the negation of a raw integer literal
@@ -579,7 +577,6 @@ module Filter = struct
            + Other expressions *)
       let view (t : term) =
         match View.Arith.Shallow.view t with
-        | `Var _
         | `Cst _ -> `Symbol
         | `Value (`Int, _) -> `Int_coef
         | `Value (`Real, _) -> `Real_coef
@@ -598,7 +595,7 @@ module Filter = struct
 
       (* Generic wrapper for arithmetic operations not permitted
          in linear arithmetic *)
-      let gen_wrapper _ _ _ =
+      let forbidden_wrapper _ _ _ =
         `Error "this operator is forbidden in linear arithmetic"
 
       (* Division wrapper *)
@@ -648,9 +645,110 @@ module Filter = struct
           end
         | _ -> `Error "bad arity for multiplication"
 
-      let gen = name, active, gen_wrapper
       let div = name, active, div_wrapper
       let mul = name, active, mul_wrapper
+      let forbidden = name, active, forbidden_wrapper
+
+    end
+
+    module Linear_large = struct
+
+      let active = ref false
+      let name = "linear"
+      let reset () = active := false
+
+      (* Local view of arithmetic expressions in the terms of the smtlib
+         spec, in:
+         + Generic terms allowed to be multiplied, i.e.:
+           - constants
+           - term with top symbol not in Ints (i.e. not an Int builtin operation)
+         + Integer coeficients, i.e.:
+           - either raw integer literals, or
+           - the negation of a raw integer literal
+         + Rational coeficients (but are used for Real SMTLIb arithmetic,
+           since there is no rational arithmetci in SMTLIB contrary to
+           TPTP), which are:
+           - a raw decimal literal
+           - the negation of a raw decimal literal
+           - a division of an integer coeficient by a strictly positive
+             integer literal (i.e. non-zero, since integer literals in SMTLIB
+             cannot have a minus sign, and hence are always non-negative).
+          + Other expressions *)
+      let view (t : term) =
+        match View.Arith.Shallow.view t with
+        | `Value (`Int, _) -> `Int_coef
+        | `Value (`Real, _) -> `Real_coef
+        | `Arith (Minus, [t']) ->
+          begin match View.Arith.Shallow.view t' with
+            | `Value (`Int, _) -> `Int_coef
+            | `Value (`Real, _) -> `Real_coef
+            | _ -> `Complex_arith
+          end
+        (* We can assume the filters for linear arithmetic are used, hence
+           a division must conform to the {div} filter, and thus can only
+           be a rational/real coeficient *)
+        | `Arith (Div, _) -> `Real_coef
+        (* Terms with a head symbol in Arith must be distinguished
+           from the rest *)
+        | `Arith _ -> `Complex_arith
+        (* Anything else is technically a generic term *)
+        | _ -> `Generic
+
+      (* Generic wrapper for arithmetic operations not permitted
+         in linear arithmetic *)
+      let forbidden_wrapper _ _ _ =
+        `Error "this operator is forbidden in linear arithmetic"
+
+      (* Division wrapper *)
+
+      let div_wrapper _ _ ts =
+        match ts with
+        | [a; b] ->
+          begin match view a with
+            | `Int_coef ->
+              begin match View.Arith.Shallow.view b with
+                | `Value (`Int, "0") -> `Error (
+                    Format.asprintf "division in linear arithmetic \
+                                     expects a non-zero denominator")
+                | `Value (`Int, _) -> `Pass
+                | v -> `Error (
+                    Format.asprintf "division in linear arithmetic \
+                                     expects a constant positive \
+                                     integer literal as denominator, \
+                                     but was given %a"
+                      View.Arith.Shallow.print v)
+              end
+            | _ -> `Error (
+                Format.asprintf "division in linear arithmetic \
+                                 expects as first argument an integer \
+                                 coeficient, i.e. either a raw integer \
+                                 literal, or the negation of one, but \
+                                 here was given a %a"
+                  View.Arith.Shallow.print (View.Arith.Shallow.view a))
+          end
+        | _ -> `Error "bad arity for multiplication"
+
+
+      (* Multiplication wrappers *)
+
+      let mul_wrapper _ _ ts =
+        match ts with
+        | [a; b] ->
+          begin match view a, view b with
+            | (`Int_coef | `Real_coef), `Generic
+            | `Generic, (`Int_coef | `Real_coef)
+              -> `Pass
+            | _ -> `Error (
+                Format.asprintf "multiplication in linear arithmetic %s"
+                  (View.Arith.Shallow.(expect_error (view a) (view b)
+                                         "an integer or rational literal \
+                                          and a symbol (variable or constant)")))
+          end
+        | _ -> `Error "bad arity for multiplication"
+
+      let div = name, active, div_wrapper
+      let mul = name, active, mul_wrapper
+      let forbidden = name, active, forbidden_wrapper
 
     end
 
@@ -660,7 +758,7 @@ module Filter = struct
       let name = "integer difference logic"
       let reset () = active := false
 
-      let gen_wrapper _ _ _ =
+      let forbidden_wrapper _ _ _ =
         `Error "this operator is forbidden in difference logic"
 
       let minus_wrapper _ _ ts =
@@ -709,10 +807,10 @@ module Filter = struct
           end
         | _ -> `Error "bad arity for comparison"
 
-      let gen = name, active, gen_wrapper
       let sub = name, active, sub_wrapper
       let minus = name, active, minus_wrapper
       let comp = name, active, comp_wrapper
+      let forbidden = name, active, forbidden_wrapper
 
     end
 
@@ -722,7 +820,7 @@ module Filter = struct
       let name = "real difference logic"
       let reset () = active := false
 
-      let gen_wrapper _ _ _ =
+      let forbidden_wrapper _ _ _ =
         `Error "this operator is forbidden in difference logic"
 
       let minus_wrapper _ _ ts =
@@ -871,12 +969,12 @@ module Filter = struct
           end
         | _ -> `Error "bad arity for comparison"
 
-      let gen = name, active, gen_wrapper
       let add = name, active, add_wrapper
       let sub = name, active, sub_wrapper
       let div = name, active, div_wrapper
       let minus = name, active, minus_wrapper
       let comp = name, active, comp_wrapper
+      let forbidden = name, active, forbidden_wrapper
 
     end
 
@@ -886,7 +984,8 @@ module Filter = struct
     Quantifier.reset ();
     Smtlib2.IDL.reset ();
     Smtlib2.RDL.reset ();
-    Smtlib2.Linear.reset ();
+    Smtlib2.Linear_large.reset ();
+    Smtlib2.Linear_strict.reset ();
     ()
 
 end
@@ -1685,15 +1784,6 @@ module Term = struct
 
     module Int = struct
 
-      let gen_tags = Tags.of_list [
-          Any (Filter.term, Filter.Smtlib2.Linear.gen);
-          Any (Filter.term, Filter.Smtlib2.IDL.gen);
-        ]
-
-      let comp_tags = Tags.of_list [
-          Any (Filter.term, Filter.Smtlib2.IDL.comp);
-        ]
-
       let int =
         with_cache ~cache:(Hashtbl.create 113) (fun s ->
             Id.const ~builtin:(Integer s) s [] [] Ty.int
@@ -1706,7 +1796,7 @@ module Term = struct
 
       let add = Id.const
           ~pos:Pretty.Infix ~name:"+" ~builtin:Add
-          ~term_filters:[Filter.Smtlib2.IDL.gen]
+          ~term_filters:[Filter.Smtlib2.IDL.forbidden]
           "Add" [] [Ty.int; Ty.int] Ty.int
 
       let sub = Id.const
@@ -1716,89 +1806,90 @@ module Term = struct
 
       let mul = Id.const
           ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
-          ~term_filters:[Filter.Smtlib2.Linear.mul;
-                         Filter.Smtlib2.IDL.gen]
+          ~term_filters:[Filter.Smtlib2.Linear_large.mul;
+                         Filter.Smtlib2.Linear_strict.mul;
+                         Filter.Smtlib2.IDL.forbidden]
           "Mul" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/e"
-          ~builtin:Div_e ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
+          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
+                         Filter.Smtlib2.Linear_strict.forbidden;
+                         Filter.Smtlib2.IDL.forbidden]
           "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t"
-          ~builtin:Div_t ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
           "Div_t" [] [Ty.int; Ty.int] Ty.int
       let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f"
-          ~builtin:Div_f ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
           "Div_f" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo
-          ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
+          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
+                         Filter.Smtlib2.Linear_strict.forbidden;
+                         Filter.Smtlib2.IDL.forbidden]
           "Modulo" [] [Ty.int; Ty.int] Ty.int
       let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%"
-          ~builtin:Modulo_t ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%e" ~builtin:Modulo_t
           "Modulo" [] [Ty.int; Ty.int] Ty.int
       let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%"
-          ~builtin:Modulo_f ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%f" ~builtin:Modulo_f
           "Modulo" [] [Ty.int; Ty.int] Ty.int
 
       let abs = Id.const
-          ~name:"abs" ~builtin:Abs ~tags:gen_tags
+          ~name:"abs" ~builtin:Abs
+          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
+                         Filter.Smtlib2.Linear_strict.forbidden;
+                         Filter.Smtlib2.IDL.forbidden]
           "Abs" [] [Ty.int] Ty.int
 
       let lt = Id.const
-          ~pos:Pretty.Infix ~name:"<"
-          ~builtin:Lt ~tags:comp_tags
+          ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
+          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "LessThan" [] [Ty.int; Ty.int] Ty.prop
 
       let le = Id.const
-          ~pos:Pretty.Infix ~name:"<="
-          ~builtin:Leq ~tags:comp_tags
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
+          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let gt = Id.const
-          ~pos:Pretty.Infix ~name:">"
-          ~builtin:Gt ~tags:comp_tags
+          ~pos:Pretty.Infix ~name:">" ~builtin:Gt
+          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
 
       let ge = Id.const
-          ~pos:Pretty.Infix ~name:">="
-          ~builtin:Geq ~tags:comp_tags
+          ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
+          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let floor = Id.const
-          ~name:"floor" ~builtin:Floor ~tags:gen_tags
+          ~name:"floor" ~builtin:Floor
           "Floor" [] [Ty.int] Ty.int
 
       let ceiling = Id.const
-          ~name:"ceiling" ~builtin:Ceiling ~tags:gen_tags
+          ~name:"ceiling" ~builtin:Ceiling
           "Ceiling" [] [Ty.int] Ty.int
 
       let truncate = Id.const
-          ~name:"truncate" ~builtin:Truncate ~tags:gen_tags
+          ~name:"truncate" ~builtin:Truncate
           "Truncate" [] [Ty.int] Ty.int
 
       let round = Id.const
-          ~name:"round" ~builtin:Round ~tags:gen_tags
+          ~name:"round" ~builtin:Round
           "Round" [] [Ty.int] Ty.int
 
       let is_int = Id.const
           ~name:"is_int" ~builtin:Is_int
-          ~term_filters:[Filter.Smtlib2.IDL.gen]
           "Is_int" [] [Ty.int] Ty.prop
 
       let is_rat = Id.const
           ~name:"is_rat" ~builtin:Is_rat
-          ~term_filters:[Filter.Smtlib2.IDL.gen]
           "Is_rat" [] [Ty.int] Ty.prop
 
       let divisible = Id.const
           ~builtin:Divisible "Divisible"
-          ~term_filters:[Filter.Smtlib2.IDL.gen]
           [] [Ty.int; Ty.int] Ty.prop
 
     end
@@ -1840,7 +1931,7 @@ module Term = struct
           "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_t = Id.const
           ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
@@ -1892,11 +1983,6 @@ module Term = struct
 
     module Real = struct
 
-      let gen_tags = Tags.of_list [
-          Any (Filter.term, Filter.Smtlib2.Linear.gen);
-          Any (Filter.term, Filter.Smtlib2.RDL.gen);
-        ]
-
       let real =
         with_cache ~cache:(Hashtbl.create 113) (fun s ->
             Id.const ~builtin:(Decimal s) s [] [] Ty.real
@@ -1919,39 +2005,36 @@ module Term = struct
 
       let mul = Id.const
           ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
-          ~term_filters:[Filter.Smtlib2.Linear.mul;
-                         Filter.Smtlib2.RDL.gen]
+          ~term_filters:[Filter.Smtlib2.Linear_large.mul;
+                         Filter.Smtlib2.Linear_strict.mul;
+                         Filter.Smtlib2.RDL.forbidden]
           "Mul" [] [Ty.real; Ty.real] Ty.real
 
       let div = Id.const
           ~pos:Pretty.Infix ~name:"/" ~builtin:Div
-          ~term_filters:[Filter.Smtlib2.Linear.div;
+          ~term_filters:[Filter.Smtlib2.Linear_large.div;
+                         Filter.Smtlib2.Linear_strict.div;
                          Filter.Smtlib2.RDL.div]
           "Div" [] [Ty.real; Ty.real] Ty.real
+
       let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/"
-          ~builtin:Div_e ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
           "Div_e" [] [Ty.real; Ty.real] Ty.real
       let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t"
-          ~builtin:Div_t ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
           "Div_t" [] [Ty.real; Ty.real] Ty.real
       let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f"
-          ~builtin:Div_f ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
           "Div_f" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%"
-          ~builtin:Modulo ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
           "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%"
-          ~builtin:Modulo_t ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
           "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%"
-          ~builtin:Modulo_f ~tags:gen_tags
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
           "Modulo" [] [Ty.real; Ty.real] Ty.real
 
       let lt = Id.const
@@ -1975,27 +2058,27 @@ module Term = struct
           "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let floor = Id.const
-          ~name:"floor" ~builtin:Floor ~tags:gen_tags
+          ~name:"floor" ~builtin:Floor
           "Floor" [] [Ty.real] Ty.real
 
       let ceiling = Id.const
-          ~name:"ceiling" ~builtin:Ceiling ~tags:gen_tags
+          ~name:"ceiling" ~builtin:Ceiling
           "Ceiling" [] [Ty.real] Ty.real
 
       let truncate = Id.const
-          ~name:"truncate" ~builtin:Truncate ~tags:gen_tags
+          ~name:"truncate" ~builtin:Truncate
           "Truncate" [] [Ty.real] Ty.real
 
       let round = Id.const
-          ~name:"round" ~builtin:Round ~tags:gen_tags
+          ~name:"round" ~builtin:Round
           "Round" [] [Ty.real] Ty.real
 
       let is_int = Id.const
-          ~name:"is_int" ~builtin:Is_int ~tags:gen_tags
+          ~name:"is_int" ~builtin:Is_int
           "Is_int" [] [Ty.real] Ty.prop
 
       let is_rat = Id.const
-          ~name:"is_rat" ~builtin:Is_rat ~tags:gen_tags
+          ~name:"is_rat" ~builtin:Is_rat
           "Is_rat" [] [Ty.real] Ty.prop
     end
 
@@ -2343,7 +2426,7 @@ module Term = struct
   let of_var v = mk (Var v) v.ty
 
   (* This function does not check types enough, do not export outside the module *)
-  let bind b body =
+  let mk_bind b body =
     let res = mk (Binder (b, body)) (ty body) in
     match !Filter.Quantifier.active, b with
     | false, _
@@ -2386,7 +2469,7 @@ module Term = struct
       else apply f new_tys new_args
     | Binder (b, body) ->
       let b', ty_var_map, t_var_map = binder_subst ~fix ty_var_map t_var_map b in
-      bind b' (subst_aux ~fix ty_var_map t_var_map body)
+      mk_bind b' (subst_aux ~fix ty_var_map t_var_map body)
 
   and binder_subst ~fix ty_var_map t_var_map = function
     | Exists (tys, ts) ->
@@ -2963,22 +3046,28 @@ module Term = struct
 
   (* Wrappers for the tff typechecker *)
   let all _ (tys, ts) body =
-    if Ty.(equal prop) (ty body) then bind (Forall (tys, ts)) body
+    if Ty.(equal prop) (ty body) then mk_bind (Forall (tys, ts)) body
     else raise (Wrong_type (body, Ty.prop))
 
   let ex _ (tys, ts) body =
-    if Ty.(equal prop) (ty body) then bind (Exists (tys, ts)) body
+    if Ty.(equal prop) (ty body) then mk_bind (Exists (tys, ts)) body
     else raise (Wrong_type (body, Ty.prop))
+
+  let ite cond t_then t_else =
+    let ty = ty t_then in
+    apply Const.ite [ty] [cond; t_then; t_else]
+
+  (* let-bindings *)
+
+  let bind v t =
+    let () = Id.tag v Tags.bound t in
+    t
 
   let letin l body =
     List.iter (fun ((v : Var.t), t) ->
         if not (Ty.equal v.ty (ty t)) then raise (Wrong_type (t, v.ty))
       ) l;
-    bind (Letin l) body
-
-  let ite cond t_then t_else =
-    let ty = ty t_then in
-    apply Const.ite [ty] [cond; t_then; t_else]
+    mk_bind (Letin l) body
 
 
   (** free variables *)

@@ -562,8 +562,15 @@ module type Tff = sig
       The first pair of arguments are the variables that are free in the resulting
       quantified formula, and the second pair are the variables bound. *)
 
+  val bind : Var.t -> t -> t
+  (** Bind a variable to an expressions. This function is called when typing
+      a let-binding, before the body of the let-binding is typed. The returned
+      expressions is used to replace the variable everywhere in the body of the
+      let-binding being typed. *)
+
   val letin : (Var.t * t) list -> t -> t
-  (** Let-binding. Variabels can be bound to either terms or formulas. *)
+  (** Create a let-binding. This funciton is called after the body of the
+      let-binding has been typed. *)
 
   val ite : t -> t -> t -> t
   (** [ite condition then_t else_t] creates a conditional branch. *)
@@ -751,6 +758,11 @@ module type Smtlib_Arith_Common = sig
   type t
   (** The type of terms *)
 
+  val mk : string -> t
+  (** Build a constant. The literal is passed
+      as a string to avoid overflow caused
+      by the limited precision of native number formats. *)
+
   val minus : t -> t
   (** Arithmetic unary minus/negation. *)
 
@@ -762,9 +774,6 @@ module type Smtlib_Arith_Common = sig
 
   val mul : t -> t -> t
   (** Arithmetic multiplication *)
-
-  val div : t -> t -> t
-  (** Division. See Smtlib theory for a full description. *)
 
   val lt : t -> t -> t
   (** Arithmetic "less than" comparison. *)
@@ -787,13 +796,11 @@ module type Smtlib_Int = sig
 
   include Smtlib_Arith_Common
 
-  val mk : string -> t
-  (** Build an integer constant. The integer is passed
-          as a string, and not an [int], to avoid overflow caused
-          by the limited precision of native intgers. *)
+  val div : t -> t -> t
+  (** Euclidian division. See Smtlib theory for a full description. *)
 
   val rem : t -> t -> t
-  (** Integer remainder See Smtlib theory for a full description. *)
+  (** Euclidiane integer remainder See Smtlib theory for a full description. *)
 
   val abs : t -> t
   (** Arithmetic absolute value. *)
@@ -809,9 +816,8 @@ module type Smtlib_Real = sig
 
   include Smtlib_Arith_Common
 
-  val mk : string -> t
-  (** Build a real constant. The string should respect
-      smtlib's syntax for INTEGER or DECIMAL. *)
+  val div : t -> t -> t
+  (** Real division. See Smtlib theory for a full description. *)
 
 end
 

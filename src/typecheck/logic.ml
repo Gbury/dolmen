@@ -19,7 +19,8 @@ module Smtlib2 = struct
     free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
-    arithmetic      : [ `Linear | `Difference | `Regular ];
+    arithmetic      : [ `Linear_large | `Linear_strict
+                      | `Difference | `Regular ];
   }
 
   type t = {
@@ -69,7 +70,7 @@ module Smtlib2 = struct
     let set_qf c = set_features c (fun f -> { f with quantifiers = false}) in
     let set_dt c = set_features c (fun f -> { f with datatypes = true}) in
     let set_dl c = set_features c (fun f -> { f with arithmetic = `Difference}) in
-    let set_la c = set_features c (fun f -> { f with arithmetic = `Linear}) in
+    let set_la c = set_features c (fun f -> { f with arithmetic = `Linear_strict}) in
     (* Entry-point for a best effort at parsing a logic name into a
        structured representation of what theories the logic includes and
        what restrictions it imposes. *)
@@ -123,19 +124,28 @@ module Smtlib2 = struct
       | [] -> Some c
       | _ -> None
     in
-    (* default/base logic with some special cases *)
-    let base =
-      match s with
-      (* QF_AX allows free sort and **constant** symbols (not functions) *)
-      | "QF_AX" ->
-        set_features default (fun f -> { f with free_sorts = true; })
-      (* end of special cases *)
-      | _ -> default
-    in
     (* Parse the logic name *)
-    let res = parse_logic base (Misc.Strings.to_list s) in
+    let res = parse_logic default (Misc.Strings.to_list s) in
     (* Return *)
-    res
+    match res with
+    | None -> res
+    | Some res ->
+      (* Some special cases *)
+      let res =
+        match s with
+        (* QF_AX allows free sort and **constant** symbols (not functions) *)
+        | "QF_AX"
+          ->
+          set_features res (fun f -> { f with free_sorts = true; })
+        (* Some logics allow more linear expressions than others *)
+        | "QF_AUFLIA" | "AUFLIA"
+        | "QF_ALIA" | "ALIA"
+          ->
+          set_features res (fun f -> { f with arithmetic = `Linear_large})
+        (* Default case (for non-special cases) *)
+        | _ -> res
+      in
+      Some res
 
 end
 

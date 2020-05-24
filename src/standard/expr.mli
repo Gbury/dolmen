@@ -279,8 +279,8 @@ type builtin +=
       (whether integers, rationals, or reals).
       [Div_t (N,D)] is the floor of the real
       division [N/D]. *)
-  | Modulo
-  (** [Modulo:{a=(Int|Rational|Real)} a -> a -> a]:
+  | Modulo_e
+  (** [Modulo_e:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer euclidian remainder
       (whether integers, rationals, or reals).
       It is defined by the following equation:
@@ -585,6 +585,10 @@ module Tags : sig
   type 'a t = 'a tag
   (** Polymorphic tags *)
 
+  val bound : term tag
+  (** Tag used one let-bound variables to reference the defining term for
+      the variable (i.e. the term to which it is let-bound). *)
+
   include Dolmen_intf.Tag.Smtlib_Base with type 'a t := 'a t
                                        and type term := term
   (** Satsify the Smtlib interface. *)
@@ -625,13 +629,26 @@ module Filter : sig
   (** Smtlib2 filters *)
   module Smtlib2 : sig
 
-    module Linear : S
+    module Linear_large : S
     (** Filter for linear arithmetic.
         Default is inactive (i.e. [!active = false]).
         If active, only linear terms may be created. This affects both integer
         and real arithmetic terms, but does not affect rational arithmetic
         (as it is not in the scope of SMTLIB), nor does it affect
-        non-arithmetic terms. *)
+        non-arithmetic terms.
+        This filters allows to multiply a literal and a terme with a head
+        symbol that is not a builtin arithmetic operator.
+    *)
+
+    module Linear_strict : S
+    (** Filter for linear arithmetic.
+        Default is inactive (i.e. [!active = false]).
+        If active, only linear terms may be created. This affects both integer
+        and real arithmetic terms, but does not affect rational arithmetic
+        (as it is not in the scope of SMTLIB), nor does it affect
+        non-arithmetic terms.
+        This filters only allows constant symbols to be multiplied by a literal.
+    *)
 
     module IDL : S
     (** Filter for Integer Difference Logic.
@@ -1303,6 +1320,11 @@ module Term : sig
   (** Existencially quantify the given formula over the type and terms variables.
       The first pair of arguments are the variables that are free in the resulting
       quantified formula, and the second pair are the variables bound. *)
+
+  val bind : Var.t -> t -> t
+  (** Tag the given variable with the term, to mark it has been let-bound.
+      Views might use that information to transparently replace a let-bound
+      variable with its defining term. *)
 
   val letin : (Var.t * t) list -> t -> t
   (** Let-binding. Variabels can be bound to either terms or formulas. *)

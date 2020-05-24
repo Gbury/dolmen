@@ -405,8 +405,15 @@ module Make(S : State_intf.Typer) = struct
 
     (* Linear arithmetic *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
-      when name = Dolmen.Expr.Filter.Smtlib2.Linear.name ->
+      when name = Dolmen.Expr.Filter.Smtlib2.Linear_large.name ||
+           name = Dolmen.Expr.Filter.Smtlib2.Linear_strict.name ->
       Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
+        filter_hint msg
+    (* Difference logic *)
+    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
+      when name = Dolmen.Expr.Filter.Smtlib2.IDL.name ||
+           name = Dolmen.Expr.Filter.Smtlib2.RDL.name ->
+      Format.fprintf fmt "Non-conforming expression for difference logic.%a"
         filter_hint msg
     (* Quantifier free formulas *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, _), _)
@@ -538,8 +545,10 @@ module Make(S : State_intf.Typer) = struct
     (* Arithmetic restrictions *)
     begin match l.features.arithmetic with
       | `Regular -> ()
-      | `Linear ->
-        Dolmen.Expr.Filter.Smtlib2.Linear.active := true
+      | `Linear_large ->
+        Dolmen.Expr.Filter.Smtlib2.Linear_large.active := true
+      | `Linear_strict ->
+        Dolmen.Expr.Filter.Smtlib2.Linear_strict.active := true
       | `Difference ->
         Dolmen.Expr.Filter.Smtlib2.IDL.active := true;
         Dolmen.Expr.Filter.Smtlib2.RDL.active := true
