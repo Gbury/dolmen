@@ -68,10 +68,14 @@ module Make
     | Id of Id.t
     | Builtin of Ast.builtin
 
+  (* Not found result *)
+  type not_found = [ `Not_found ]
+
   (* Variable that can be bound to a dolmen identifier *)
   type var = [
     | `Ty_var of Ty.Var.t
     | `Term_var of T.Var.t
+    | `Letin of T.Var.t * T.t
   ]
 
   (* Constants that can be bound to a dolmen identifier. *)
@@ -82,20 +86,12 @@ module Make
     | `Term_cst of T.Const.t
   ]
 
-  (* Not founs result *)
-  type not_found = [ `Not_found ]
-
   (* Result of parsing a symbol by the theory *)
   type builtin_res = [
     | `Ttype of (Ast.t -> Ast.t list -> unit)
     | `Ty    of (Ast.t -> Ast.t list -> Ty.t)
     | `Term  of (Ast.t -> Ast.t list -> T.t)
     | `Tags  of (Ast.t -> Ast.t list -> tag list)
-  ]
-
-  type builtin_res_or_not_found = [
-    | builtin_res
-    | not_found
   ]
 
   (* Names that are bound to a dolmen identifier by the builtins *)
@@ -105,7 +101,6 @@ module Make
 
   (* Either a bound variable or a bound constant *)
   type bound = [ var | cst | builtin ]
-  type bound_or_not_found = [ bound | not_found ]
 
   type reason =
     | Builtin
@@ -261,9 +256,17 @@ module Make
     type_locs : reason E.t;
     term_locs : reason F.t;
 
+    (* bound variables *)
+    vars : var M.t;
+
+    (*
     (* local variables (mostly quantified variables) *)
     type_vars : Ty.Var.t  M.t;
     term_vars : T.Var.t   M.t;
+
+    (* let-bound variables *)
+    let_vars  : T.t       M.t;
+    *)
 
     (* The current builtin symbols *)
     builtins : builtin_symbols;
@@ -282,7 +285,7 @@ module Make
   (* Builtin symbols, i.e symbols understood by some theories,
      but which do not have specific syntax, so end up as special
      cases of application. *)
-  and builtin_symbols = env -> symbol -> builtin_res_or_not_found
+  and builtin_symbols = env -> symbol -> [ builtin_res | not_found ]
 
   (* Existencial wrapper for wranings. *)
   and warning =
@@ -391,6 +394,7 @@ module Make
       | `Builtin _ -> Builtin
       | `Ty_var v -> E.find v env.type_locs
       | `Term_var v -> F.find v env.term_locs
+      | `Letin (v, _) -> F.find v env.term_locs
       | `Ty_cst c -> R.find env.st.ttype_locs c
       | `Term_cst c -> S.find env.st.const_locs c
       | `Cstr c -> U.find env.st.cstrs_locs c
@@ -398,7 +402,7 @@ module Make
     with Not_found -> assert false
 
   let with_reason reason bound : binding =
-    match (bound : bound_or_not_found) with
+    match (bound : [ bound | not_found ]) with
     | `Not_found -> `Not_found
     | `Builtin `Ttype _ -> `Builtin `Ttype
     | `Builtin `Ty _ -> `Builtin `Ty
@@ -406,6 +410,7 @@ module Make
     | `Builtin `Tags _ -> `Builtin `Tag
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
+    | `Letin (v, _) -> `Variable (`Term (v, reason))
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
@@ -426,9 +431,9 @@ module Make
   let _shadow env fragment id
       (old : bound) reason (bound : [< bound]) =
     let old_binding =
-      with_reason (find_reason env old) (old :> bound_or_not_found)
+      with_reason (find_reason env old) (old :> [bound | not_found])
     in
-    let new_binding = with_reason reason (bound :> bound_or_not_found) in
+    let new_binding = with_reason reason (bound :> [bound | not_found]) in
     _warn env fragment (Shadowing (id, old_binding, new_binding))
 
 
@@ -441,27 +446,17 @@ module Make
     try (H.find env.st.csts id :> cst_or_not_found)
     with Not_found -> `Not_found
 
-  type var_or_not_found = [
-    | var
-    | `Not_found
-  ]
+  let find_var env name : [var | not_found] =
+    match M.find env.vars name with
+    | #var as res -> res
+    | exception Not_found -> `Not_found
 
-  let find_var env name : var_or_not_found =
-    try `Ty_var (M.find env.type_vars name)
-    with Not_found ->
-      begin
-        try
-          `Term_var (M.find env.term_vars name)
-        with Not_found ->
-          `Not_found
-      end
-
-  let find_bound env id : bound_or_not_found =
+  let find_bound env id : [ bound | not_found ] =
     match find_var env id with
-    | #var as res -> (res :> bound_or_not_found)
+    | #var as res -> (res :> [ bound | not_found ])
     | `Not_found ->
       begin match find_global env id with
-        | #cst as res -> (res :> bound_or_not_found)
+        | #cst as res -> (res :> [ bound | not_found ])
         | `Not_found ->
           begin match env.builtins env (Id id) with
             | `Not_found -> `Not_found
@@ -522,8 +517,7 @@ module Make
       builtins = {
     type_locs = E.empty;
     term_locs = F.empty;
-    type_vars = M.empty;
-    term_vars = M.empty;
+    vars = M.empty;
     st; builtins; warnings;
     poly; expect; infer_hook; infer_base;
   }
@@ -552,7 +546,7 @@ module Make
         v'
     in
     v', { env with
-          type_vars = M.add env.type_vars id v';
+          vars = M.add env.vars id (`Ty_var v');
           type_locs = E.add v' reason env.type_locs;
         }
 
@@ -573,17 +567,34 @@ module Make
         v'
     in
     v', { env with
-          term_vars = M.add env.term_vars id v';
+          vars = M.add env.vars id (`Term_var v');
           term_locs = F.add v' reason env.term_locs;
         }
+
+  let bind_term_var env id v t ast =
+    let reason = Bound ast in
+    let v' =
+      match find_bound env id with
+      | `Not_found -> v
+      | #bound as old ->
+        let v' = T.Var.mk (new_term_name ()) (T.Var.ty v) in
+        _shadow env (Ast ast) id old reason (`Term_var v');
+        v'
+    in
+    let t' = T.bind v' t in
+    v', { env with
+          vars = M.add env.vars id (`Letin (v', t'));
+          term_locs = F.add v' reason env.term_locs;
+        }
+
+
 
   (* Typo suggestion *)
   (* ************************************************************************ *)
 
   let suggest ~limit env id =
-    M.suggest env.type_vars ~limit id @
-    M.suggest env.term_vars ~limit id @
-    H.suggest env.st.csts ~limit id
+    H.suggest env.st.csts ~limit id @
+    M.suggest env.vars ~limit id
 
 
   (* Typing explanation *)
@@ -969,9 +980,8 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
-          let v', env' = add_term_var env s v w in
-          let t' = T.bind v' t in
-          parse_let env' ((v', t') :: acc) f r
+          let v', env' = bind_term_var env s v t w in
+          parse_let env' ((v', t) :: acc) f r
         | t -> _expected env "variable binding" t None
       end
 
@@ -1027,6 +1037,9 @@ module Make
       else _ty_var_app env v ast
     | `Term_var v ->
       if args = [] then Term (T.of_var v)
+      else _var_app env v ast
+    | `Letin (v, t) ->
+      if args = [] then Term t
       else _var_app env v ast
     | `Ty_cst f ->
       parse_app_ty env ast f args

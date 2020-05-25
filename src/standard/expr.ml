@@ -507,8 +507,33 @@ module View = struct
           Format.fprintf fmt "a rational literal"
         | `Value (`Real, _) ->
           Format.fprintf fmt "a real literal"
+        | `Arith (Minus, _) ->
+          Format.fprintf fmt "a unary negation"
+        | `Arith (Add, _) ->
+          Format.fprintf fmt "an addition"
+        | `Arith (Sub, _) ->
+          Format.fprintf fmt "a substraction"
+        | `Arith (Mul, _) ->
+          Format.fprintf fmt "a multiplication"
+        | `Arith (Div, _) ->
+          Format.fprintf fmt "an exact division"
+        | `Arith (Abs, _) ->
+          Format.fprintf fmt "an absolute value"
+        | `Arith (Div_e, _) ->
+          Format.fprintf fmt "a euclidian division"
+        | `Arith (Div_t, _) ->
+          Format.fprintf fmt "a truncated division"
+        | `Arith (Div_f, _) ->
+          Format.fprintf fmt "a floored division"
+        | `Arith (Modulo_e, _) ->
+          Format.fprintf fmt "a euclidian remainder"
+        | `Arith (Modulo_t, _) ->
+          Format.fprintf fmt "a truncated remainder"
+        | `Arith (Modulo_f, _) ->
+          Format.fprintf fmt "a floored remainder"
         | `Arith _ ->
-          Format.fprintf fmt "a complex arithmetic expression"
+          Format.fprintf fmt "an unknown complex arithmetic expression \
+                              (please report upstream, ^^)"
         | `Other ->
           Format.fprintf fmt "an arbitrary term"
 
@@ -943,7 +968,7 @@ module Filter = struct
           (* If the first argument is a substraction, it must have passed
              the sub_wrapper filter, which means both its side must be
              constants, so no need to check it here again. *)
-          | `Arith (Sub, _), `Value (`Int, _) -> `Pass
+          | `Arith (Sub, _), `Value (`Real, _) -> `Pass
           | `Arith (Sub, _), `Arith (Minus, _) -> `Pass
           (* Syntaxic sugar *)
           | `Arith (Sub, [x; y]), `Arith (Div, _) ->
@@ -3061,7 +3086,7 @@ module Term = struct
 
   let bind v t =
     let () = Id.tag v Tags.bound t in
-    t
+    of_var v
 
   let letin l body =
     List.iter (fun ((v : Var.t), t) ->
