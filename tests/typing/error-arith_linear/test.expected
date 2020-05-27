@@ -1,6 +1,6 @@
 File "tests/typing/error-arith_linear/test.smt2", line 4, character 13-20:
 [1m[91mError[0;1m[0m Non-linear expressions are forbidden by the logic.
-      Hint: multiplication in linear arithmetic expects a literal and a non
-      arithmetic expression but was given:
-      - an arbitrary (non arithmetic) term
-      - an arbitrary (non arithmetic) term
+      Hint: multiplication in linear arithmetic expects an integer or
+      rational literal and a symbol (variable or constant) but was given:
+      - the constant a
+      - the constant b
