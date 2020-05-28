@@ -499,7 +499,7 @@ type builtin +=
      size [e] and significand of size [s] (hidden bit included). Those size are
      greater than 1 *)
   | Fp of int * int
-  (** [Fp(e, s): Bitv(1) -> Bitv(e) -> Bitv(s) -> Fp(e,s+1)]: bitvector literal.
+  (** [Fp(e, s): Bitv(1) -> Bitv(e) -> Bitv(s-1) -> Fp(e,s)]: bitvector literal.
       The IEEE-format is used for the conversion [sb^se^ss].
       All the NaN are converted to the same value. *)
   | Plus_infinity of int * int

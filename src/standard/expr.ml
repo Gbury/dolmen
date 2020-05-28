@@ -2310,7 +2310,7 @@ module Term = struct
       let fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (e, s) ->
             Id.const ~builtin:(Fp(e, s)) "fp" []
-              [Ty.bitv 1; Ty.bitv e; Ty.bitv s] (Ty.float e (s + 1))
+              [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
 
       let roundNearestTiesToEven =
@@ -2960,7 +2960,7 @@ module Term = struct
     let fp sign exp significand =
       let e = Bitv.match_bitv_type exp in
       let s = Bitv.match_bitv_type significand in
-      apply (Const.Float.fp (e, s)) [] [sign; exp; significand]
+      apply (Const.Float.fp (e, s+1)) [] [sign; exp; significand]
 
     let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
     let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
