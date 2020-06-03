@@ -33,6 +33,8 @@ module type S = sig
   val report_error : Format.formatter -> T.error -> unit
   val report_warning : T.warning -> (Format.formatter -> unit -> unit) option
 
+  val additional_builtins : T.builtin_symbols ref
+
 end
 
 module Make(S : State_intf.Typer) = struct
@@ -557,6 +559,8 @@ module Make(S : State_intf.Typer) = struct
     Dolmen.Expr.Filter.Quantifier.active := not l.features.quantifiers;
     ()
 
+  let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
+
   let typing_env
       ?(loc=no_loc)
       (st : (Parser.language, type_st, _) Dolmen.State.state) =
@@ -564,6 +568,9 @@ module Make(S : State_intf.Typer) = struct
        functions are used to type different inputs conccurrently *)
     reset_restrictions ();
 
+    let additional_builtins env args =
+      !additional_builtins env args
+    in
 
     (* Match the language to determine bultins and other options *)
     match st.input_lang with
@@ -601,6 +608,7 @@ module Make(S : State_intf.Typer) = struct
       let builtins = Dolmen_type.Base.merge [
           Ae_Core.parse;
           Decl.parse; Subst.parse;
+          additional_builtins
         ] in
       T.empty_env
         ~st:st.type_state.typer
@@ -622,6 +630,7 @@ module Make(S : State_intf.Typer) = struct
       let builtins = Dolmen_type.Base.merge [
           Decl.parse;
           Subst.parse;
+          additional_builtins;
           Zf_Core.parse;
         ] in
       T.empty_env
@@ -645,6 +654,7 @@ module Make(S : State_intf.Typer) = struct
       let builtins = Dolmen_type.Base.merge [
           Decl.parse;
           Subst.parse;
+          additional_builtins;
           Tptp_Core.parse v;
           Tptp_Arith.parse v;
         ] in
@@ -677,7 +687,7 @@ module Make(S : State_intf.Typer) = struct
           T._error env (Located loc) Missing_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
-              Decl.parse :: Subst.parse ::
+              Decl.parse :: Subst.parse :: additional_builtins ::
               builtins_of_smtlib2_logic v logic
             ) in
           let () = restrictions_of_smtlib2_logic v logic in

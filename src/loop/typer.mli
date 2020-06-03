@@ -42,6 +42,12 @@ module type S = sig
   (** Return a reporter for the given warning, if the warning should be
       reported. *)
 
+  val additional_builtins : T.builtin_symbols ref
+  (** This reference can be modified to parse new builtin symbols. By default no
+      additional builtin symbols are parsed. It is added for all the languages
+      except Dimacs, and iCNF.
+  *)
+
 end
 
 module Make(S : State_intf.Typer) : S with type solve_st := S.solve_st
