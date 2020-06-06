@@ -606,6 +606,9 @@ module Filter : sig
   val reset : unit -> unit
   (** Reset all filters. *)
 
+  type ty_filter
+  type term_filter
+
   (** The common external signature for filters. *)
   module type S = sig
 
@@ -629,7 +632,12 @@ module Filter : sig
   (** Smtlib2 filters *)
   module Smtlib2 : sig
 
-    module Linear_large : S
+    module Linear_large : sig
+      include S
+      val div: term_filter
+      val mul: term_filter
+      val forbidden: term_filter
+    end
     (** Filter for linear arithmetic.
         Default is inactive (i.e. [!active = false]).
         If active, only linear terms may be created. This affects both integer
@@ -640,7 +648,12 @@ module Filter : sig
         symbol that is not a builtin arithmetic operator.
     *)
 
-    module Linear_strict : S
+    module Linear_strict :  sig
+      include S
+      val div: term_filter
+      val mul: term_filter
+      val forbidden: term_filter
+    end
     (** Filter for linear arithmetic.
         Default is inactive (i.e. [!active = false]).
         If active, only linear terms may be created. This affects both integer
@@ -650,14 +663,28 @@ module Filter : sig
         This filters only allows constant symbols to be multiplied by a literal.
     *)
 
-    module IDL : S
+    module IDL :  sig
+      include S
+      val sub: term_filter
+      val minus: term_filter
+      val comp: term_filter
+      val forbidden: term_filter
+    end
     (** Filter for Integer Difference Logic.
         Default is inactive (i.e. [!active = false]).
         If active only arithmetic term conforming to SMTLIB2's QF_IDL
         ":language" specification will be accepted. Terms outside
         of integer arithmetic are not affected by this filter. *)
 
-    module RDL : S
+    module RDL : sig
+      include S
+      val add: term_filter
+      val sub: term_filter
+      val div: term_filter
+      val minus: term_filter
+      val comp: term_filter
+      val forbidden: term_filter
+    end
     (** Filter for Real Difference Logic.
         Default is inactive (i.e. [!active = false]).
         If active only arithmetic term conforming to SMTLIB2's QF_RDL
@@ -1418,5 +1445,47 @@ module Term : sig
     (** Satisfy the real part of the SMTLIB's Float requirements *)
 
   end
+
+end
+
+module Id : sig
+
+  type 'a t = 'a id
+  (** The type of identifiers *)
+
+  val hash : 'a t -> int
+  (** Hash function. *)
+
+  val equal : 'a t -> 'b t -> bool
+  (** Equality function. *)
+
+  val compare : 'a t -> 'b t -> int
+  (** Comparison function. *)
+
+  val print : Format.formatter -> 'a t -> unit
+  (** Printing function *)
+
+  val tag : 'a t -> 'b Tag.t -> 'b -> unit
+  (** Add a tag to an identifier *)
+
+  val get_tag : 'a t -> 'b Tag.t -> 'b list
+  (** Get all the tags added to the identifier *)
+
+  val get_tag_last : 'a t -> 'b Tag.t -> 'b option
+  (** Get the last tag added to the identifier *)
+
+  val mk :
+    ?builtin:builtin -> ?tags:Tag.map -> string -> 'a -> 'a t
+  (** Create a new fresh identifier *)
+
+  val const :
+    ?pos:Pretty.pos ->
+    ?name:string ->
+    ?builtin:builtin ->
+    ?tags:Tag.map ->
+    ?ty_filters:Filter.ty_filter list ->
+    ?term_filters:Filter.term_filter list ->
+    string -> 'a t list -> 'b list -> 'b -> ('a, 'b) function_type t
+  (** Create a new function or type constructor identifier *)
 
 end

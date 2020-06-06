@@ -557,11 +557,11 @@ module Filter = struct
     | `Warn
     | `Error of string
   ]
-  type ty_filter = ty_const -> ty list -> status
-  type term_filter = term_const -> ty list -> term list -> status
+  type ty_filter = string * bool ref * (ty_const -> ty list -> status)
+  type term_filter = string * bool ref * (term_const -> ty list -> term list -> status)
 
-  let ty : (string * bool ref * ty_filter) tag = Tag.create ()
-  let term : (string * bool ref * term_filter) tag = Tag.create ()
+  let ty : ty_filter tag = Tag.create ()
+  let term : term_filter tag = Tag.create ()
 
   module type S = sig
     val name : string
@@ -1095,6 +1095,8 @@ module Id = struct
   let compare v v' = compare v.index v'.index
 
   let equal v v' = compare v v' = 0
+
+  let print fmt id = Format.pp_print_string fmt id.name
 
   (* Tags *)
   let tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
