@@ -2123,7 +2123,7 @@ module Term = struct
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            Id.const ~builtin:(Bitv_extract (j, i))
+            Id.const ~builtin:(Bitv_extract (i, j))
               (Format.asprintf "bitv_extract_%d_%d" i j) []
               [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
