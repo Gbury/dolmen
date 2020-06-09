@@ -557,11 +557,11 @@ module Filter = struct
     | `Warn
     | `Error of string
   ]
-  type ty_filter = ty_const -> ty list -> status
-  type term_filter = term_const -> ty list -> term list -> status
+  type ty_filter = string * bool ref * (ty_const -> ty list -> status)
+  type term_filter = string * bool ref * (term_const -> ty list -> term list -> status)
 
-  let ty : (string * bool ref * ty_filter) tag = Tag.create ()
-  let term : (string * bool ref * term_filter) tag = Tag.create ()
+  let ty : ty_filter tag = Tag.create ()
+  let term : term_filter tag = Tag.create ()
 
   module type S = sig
     val name : string
@@ -1095,6 +1095,8 @@ module Id = struct
   let compare v v' = compare v.index v'.index
 
   let equal v v' = compare v v' = 0
+
+  let print fmt id = Format.pp_print_string fmt id.name
 
   (* Tags *)
   let tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
@@ -2121,7 +2123,7 @@ module Term = struct
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            Id.const ~builtin:(Bitv_extract (j, i))
+            Id.const ~builtin:(Bitv_extract (i, j))
               (Format.asprintf "bitv_extract_%d_%d" i j) []
               [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
@@ -2310,7 +2312,7 @@ module Term = struct
       let fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (e, s) ->
             Id.const ~builtin:(Fp(e, s)) "fp" []
-              [Ty.bitv 1; Ty.bitv e; Ty.bitv s] (Ty.float e (s + 1))
+              [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
 
       let roundNearestTiesToEven =
@@ -2960,7 +2962,7 @@ module Term = struct
     let fp sign exp significand =
       let e = Bitv.match_bitv_type exp in
       let s = Bitv.match_bitv_type significand in
-      apply (Const.Float.fp (e, s)) [] [sign; exp; significand]
+      apply (Const.Float.fp (e, s+1)) [] [sign; exp; significand]
 
     let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
     let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []

@@ -831,7 +831,7 @@ module Make
         parse_quant T.all Ast.All env t [] [] t
 
       | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
-        parse_quant T.all Ast.Ex env t [] [] t
+        parse_quant T.ex Ast.Ex env t [] [] t
 
       (* (Dis)Equality *)
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _ }, l); _ } as t ->

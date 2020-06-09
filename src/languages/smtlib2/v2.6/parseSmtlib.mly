@@ -84,15 +84,16 @@ attribute:
     }
 ;
 
+/*
+The [(as id ty)] doesn't specify the type of the function [id]
+but only its result type
+*/
 qual_identifier:
   | s=identifier
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+    { let loc = L.mk_pos $startpos $endpos in `NoAs (T.const ~loc I.(mk term s)) }
   | OPEN AS s=identifier ty=sort CLOSE
-    { let c =
-        let loc = L.mk_pos $startpos(s) $endpos(s) in
-        T.const ~loc I.(mk term s)
-      in
-      let loc = L.mk_pos $startpos $endpos in T.colon ~loc c ty }
+    { let loc = L.mk_pos $startpos $endpos in
+      `As (T.const ~loc I.(mk term s),ty) }
 ;
 
 var_binding:
@@ -137,9 +138,15 @@ term:
   | c=spec_constant
     { c I.term }
   | s=qual_identifier
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc s [] }
-  | OPEN f=qual_identifier args=term+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+    { let loc = L.mk_pos $startpos $endpos in
+      match s with
+      | `NoAs f -> T.apply ~loc f []
+      | `As (f,ty) -> T.colon ~loc (T.apply ~loc f []) ty }
+  | OPEN s=qual_identifier args=term+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in
+      match s with
+      | `NoAs f -> T.apply ~loc f args
+      | `As (f,ty) -> T.colon (T.apply ~loc f args) ty }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.letin ~loc l t }
   | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE
