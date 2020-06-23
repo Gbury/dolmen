@@ -1,0 +1,46 @@
+%------------------------------------------------------------------------------
+% File     : SYN000^0 : TPTP v6.3.0. Released v3.7.0.
+% Domain   : Syntactic
+% Axioms   : A simple include file for THF
+% Version  : Biased.
+% English  :
+
+% Refs     :
+% Source   : [TPTP]
+% Names    :
+
+% Status   : Satisfiable
+% Syntax   : Number of formulae    :    6 (   6 unit;   3 type;   0 defn)
+%            Number of atoms       :    6 (   0 equality;   0 variable)
+%            Maximal formula depth :    2 (   2 average)
+%            Number of connectives :    0 (   0   ~;   0   |;   0   &;   0   @)
+%                                         (   0 <=>;   0  =>;   0  <=;   0 <~>)
+%                                         (   0  ~|;   0  ~&;   0  !!;   0  ??)
+%            Number of type conns  :    0 (   0   >;   0   *;   0   +)
+%            Number of symbols     :    4 (   3   :;   0  :=)
+%            Number of variables   :    0 (   0 sgn;   0   !;   0   ?;   0   ^)
+%                                         (   0   :;   0  :=;   0  !>;   0  ?*)
+% SPC      : 
+
+% Comments :
+%------------------------------------------------------------------------------
+%----Some axioms to include
+thf(ia1_type,type,(
+    ia1: $o )).
+
+thf(ia2_type,type,(
+    ia2: $o )).
+
+thf(ia3_type,type,(
+    ia3: $o )).
+
+thf(ia1,axiom,(
+    ia1 )).
+
+thf(ia2,axiom,(
+    ia2 )).
+
+thf(ia3,axiom,(
+    ia3 )).
+
+%------------------------------------------------------------------------------

@@ -1,0 +1,37 @@
+%------------------------------------------------------------------------------
+% File     : SYN002+0 : TPTP v6.3.0. Released v3.6.0.
+% Domain   : Syntactic
+% Axioms   : Orevkov formula
+% Version  : [TS00] axioms : Especial.
+% English  : r(x,y,z)=y+2^x=z
+
+% Refs     : [TS00]  Troelska & Schwichtenberg (2000), Basic Proof Theory
+%          : [Rat08] Raths (2008), Email to G. Sutcliffe
+% Source   : [Rat08]
+% Names    :
+
+% Status   : Satisfiable
+% Syntax   : Number of formulae    :    2 (   1 unit)
+%            Number of atoms       :    4 (   0 equality)
+%            Maximal formula depth :    7 (   4 average)
+%            Number of connectives :    2 (   0 ~  ;   0  |;   0  &)
+%                                         (   0 <=>;   2 =>;   0 <=)
+%                                         (   0 <~>;   0 ~|;   0 ~&)
+%            Number of predicates  :    1 (   0 propositional; 3-3 arity)
+%            Number of functors    :    2 (   1 constant; 0-1 arity)
+%            Number of variables   :    5 (   0 singleton;   5 !;   0 ?)
+%            Maximal term depth    :    2 (   1 average)
+% SPC      : 
+
+% Comments :
+%------------------------------------------------------------------------------
+fof(hyp1,axiom,(
+    ! [Y] : r(Y,zero,succ(Y)) )).
+
+fof(hyp2,axiom,(
+    ! [Y,X,Z,Z1] :
+      ( r(Y,X,Z)
+     => ( r(Z,X,Z1)
+       => r(Y,succ(X),Z1) ) ) )).
+
+%------------------------------------------------------------------------------
