@@ -12,5 +12,8 @@ doc/index.html
 *.byte
 *.native
 
+# opam local switch
+_opam
+
 # swap files
 *.swp
