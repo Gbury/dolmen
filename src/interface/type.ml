@@ -185,8 +185,16 @@ module type Smtlib_Real_Int = sig
   include Smtlib_Int
   include Smtlib_Real with type t := t
 
-  val equal : t -> t -> bool
-  (** Equality function on types. *)
+  type view = private [>
+    | `Int
+    | `Real
+  ]
+  (** Partial view for types. These are used by the Reals_Ints theory
+      to perform type-based dispatch, and automatic conversion of Ints
+      to Reals when specified by the specification. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
 
 end
 

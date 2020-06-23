@@ -101,40 +101,25 @@ module Smtlib2 = struct
         | Expected_arith_type : Type.Ty.t -> Term.t Type.err
 
       let dispatch1 env (mk_int, mk_real) ast t =
-        let ty = T.ty t in
-        if Ty.(equal int) ty then mk_int t
-        else if Ty.(equal real) ty then mk_real t
-        else begin
-          Type._error env (Ast ast) (Expected_arith_type ty)
-        end
+        match Ty.view @@ T.ty t with
+        | `Int -> mk_int t
+        | `Real -> mk_real t
+        | _ -> Type._error env (Ast ast) (Expected_arith_type (T.ty t))
 
       let dispatch2 env (mk_int, mk_real) ast a b =
-        let a_ty = T.ty a in
-        let b_ty = T.ty b in
-        if Ty.(equal int) a_ty then
-          if Ty.(equal real) b_ty then
-            mk_real (T.Int.to_real a) b
-          else
-            mk_int a b
-        else if Ty.(equal real) a_ty then
-          if Ty.(equal int) b_ty then
-            mk_real a (T.Int.to_real b)
-          else
-            mk_real a b
-        else begin
-          Type._error env (Ast ast) (Expected_arith_type a_ty)
-        end
+        match Ty.view @@ T.ty a, Ty.view @@ T.ty b with
+        | `Int, `Int -> mk_int a b
+        | `Int, `Real -> mk_real (T.Int.to_real a) b
+        | `Real, `Int -> mk_real a (T.Int.to_real b)
+        | `Real, `Real -> mk_real a b
+        | (`Int | `Real), _ -> Type._error env (Ast ast) (Expected_arith_type (T.ty b))
+        | _, (`Int | `Real) -> Type._error env (Ast ast) (Expected_arith_type (T.ty a))
+        | _, _ -> Type._error env (Ast ast) (Expected_arith_type (T.ty a))
 
       let promote_int_to_real _env mk_real _ast a b =
-        let a_ty = T.ty a in
-        let b_ty = T.ty b in
-        let c, d =
-          if Ty.(equal int a_ty) && Ty.(equal int b_ty) then
-            (T.Int.to_real a), (T.Int.to_real b)
-          else
-            a, b
-        in
-        mk_real c d
+        match Ty.view @@ T.ty a, Ty.view @@ T.ty b with
+        | `Int, `Int -> mk_real (T.Int.to_real a) (T.Int.to_real b)
+        | _ -> mk_real a b
 
       let parse _version env s =
         match s with
