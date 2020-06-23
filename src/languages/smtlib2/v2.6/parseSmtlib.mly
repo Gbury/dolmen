@@ -219,7 +219,7 @@ selector_dec:
   | OPEN s=SYMBOL ty=sort CLOSE
     { let f =
       let loc = L.mk_pos $startpos $endpos in
-      T.const ~loc (I.mk I.sort s)
+      T.const ~loc (I.mk I.term s)
     in
     let loc = L.mk_pos $startpos $endpos in
     T.colon ~loc f ty }
