@@ -63,7 +63,30 @@ module type S = sig
   (** The result of parsing a symbol by the theory *)
 
   type not_found = [ `Not_found ]
-  (** Not found results *)
+  (** Not bound bindings *)
+
+  type var = [
+    | `Ty_var of Ty.Var.t
+    | `Term_var of T.Var.t
+    | `Letin of Dolmen.Term.t * T.Var.t * T.t
+  ]
+  (** Variable bindings *)
+
+  type cst = [
+    | `Cstr of T.Cstr.t
+    | `Field of T.Field.t
+    | `Ty_cst of Ty.Const.t
+    | `Term_cst of T.Const.t
+  ]
+  (** Constant bindings *)
+
+  type builtin = [
+    | `Builtin of builtin_res
+  ]
+  (** Builtin binding *)
+
+  type bound = [ var | cst | builtin ]
+  (* All internal bindings *)
 
   type inferred =
     | Ty_fun of Ty.Const.t
@@ -200,6 +223,8 @@ module type S = sig
     (** *)
     | Type_var_in_type_constructor : Dolmen.Term.t err
     (** *)
+    | Forbidden_quantifier : Dolmen.Term.t err
+    (** *)
     | Missing_destructor : Dolmen.Id.t -> Dolmen.Term.t err
     (** *)
     | Higher_order_application : Dolmen.Term.t err
@@ -258,7 +283,7 @@ module type S = sig
   val empty_env :
     ?st:state -> ?expect:expect ->
     ?infer_hook:(env -> inferred -> unit) ->
-    ?infer_base:Ty.t -> ?poly:poly ->
+    ?infer_base:Ty.t -> ?poly:poly -> ?quants:bool ->
     warnings:(warning -> unit) ->
     builtin_symbols -> env
   (** Create a new environment. *)
@@ -268,7 +293,7 @@ module type S = sig
       except if the environnement already except [Nothing]. *)
 
 
-  (** {2 Error helpers} *)
+  (** {2 Location helpers} *)
 
   val fragment_loc : _ fragment -> Dolmen.ParseLocation.t option
   (** Convenient function to get the location of a fragment. *)
@@ -276,6 +301,26 @@ module type S = sig
   val binding_reason : binding -> reason
   (** Extract the reason from a binding
       @raise Invalid_argument if the binding is [`Not_found] *)
+
+
+  (** {2 Builtin helpers} *)
+
+  val find_var : env -> Dolmen.Id.t -> [ var | not_found ]
+  (** Try and find the given id in the set of locally bound variables. *)
+
+  val find_global : env -> Dolmen.Id.t -> [ cst | not_found ]
+  (** Try and find the given id in the set of globally bound constants. *)
+
+  val find_builtin : env -> Dolmen.Id.t -> [ builtin | not_found ]
+  (** Try and find the given id in the set of bound builtin symbols. *)
+
+  val find_bound : env -> Dolmen.Id.t -> [ bound | not_found ]
+  (** Try and find a bound identifier in the env, whetehr it be locally bound
+      (such as bound variables), constants bound at top-level, or builtin
+      symbols bound by the builtin theory. *)
+
+
+  (** {2 Errors & Warnings} *)
 
   val _warn : env -> 'a fragment -> 'a warn -> unit
   (** Emit a warning *)

@@ -128,6 +128,36 @@ module Make(S : State_intf.Typer) = struct
     | Missing_logic : Dolmen.ParseLocation.t T.err
     | Illegal_decl : Dolmen.Statement.decl T.err
 
+  (* Hints for type errors *)
+  (* ************************************************************************ *)
+
+  let poly_hint fmt (c, expected, actual) =
+    let n_ty, n_t = Dolmen.Expr.Term.Const.arity c in
+    let total_arity = n_ty + n_t in
+    match expected with
+    | [x] when x = total_arity && actual = n_t ->
+      Format.fprintf fmt
+        "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "this is a polymorphic function, you probably forgot \
+         the type arguments@]"
+    | [x] when x = n_t && n_ty <> 0 ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "it looks like the language enforces implicit polymorphism, \
+         i.e. no type arguments are to be provided to applications \
+         (and instead type annotation/coercions should be used)."
+    | _ :: _ ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
+        "this is a polymorphic function, and multiple accepted arities \
+         are possible because the language supports inference of all type \
+         arguments when none are given in an application."
+    | _ -> ()
+
+  let filter_hint fmt = function
+    | "" -> ()
+    | msg ->
+      Format.fprintf fmt "@ @[<hov>Hint: %a@]"
+        Format.pp_print_text msg
+
   (* Report type warnings *)
   (* ************************************************************************ *)
 
@@ -168,12 +198,23 @@ module Make(S : State_intf.Typer) = struct
         Format.fprintf fmt
           "Exception while typing attribute:@ %s" (Printexc.to_string exn)
       )
-    | T.Superfluous_destructor _ -> None
+    | T.Superfluous_destructor _ -> Some (fun fmt () ->
+        Format.fprintf fmt "Internal warning, please report upstream, ^^"
+      )
 
     | T.Shadowing (id, old, _cur) -> Some (fun fmt () ->
         Format.fprintf fmt
           "Shadowing: %a was already %a"
           Dolmen.Id.print id print_reason (T.binding_reason old)
+      )
+
+    | Smtlib2_Ints.Restriction msg
+    | Smtlib2_Reals.Restriction msg
+    | Smtlib2_Reals_Ints.Restriction msg
+      -> Some (fun fmt () ->
+        Format.fprintf fmt
+          "This is a non-linear expression according to the smtlib spec.%a"
+          filter_hint msg
       )
 
     | Smtlib2_Float.Real_lit -> Some (fun fmt () ->
@@ -190,36 +231,6 @@ module Make(S : State_intf.Typer) = struct
         Format.fprintf fmt
           "Unknown warning, please report upstream, ^^"
       )
-
-  (* Hint sfor type errors *)
-  (* ************************************************************************ *)
-
-  let poly_hint fmt (c, expected, actual) =
-    let n_ty, n_t = Dolmen.Expr.Term.Const.arity c in
-    let total_arity = n_ty + n_t in
-    match expected with
-    | [x] when x = total_arity && actual = n_t ->
-      Format.fprintf fmt
-        "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "this is a polymorphic function, you probably forgot \
-         the type arguments@]"
-    | [x] when x = n_t && n_ty <> 0 ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "it looks like the language enforces implicit polymorphism, \
-         i.e. no type arguments are to be provided to applications \
-         (and instead type annotation/coercions should be used)."
-    | _ :: _ ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "this is a polymorphic function, and multiple accepted arities \
-         are possible because the language supports inference of all type \
-         arguments when none are given in an application."
-    | _ -> ()
-
-  let filter_hint fmt = function
-    | "" -> ()
-    | msg ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]"
-        Format.pp_print_text msg
 
   (* Report type errors *)
   (* ************************************************************************ *)
@@ -338,6 +349,9 @@ module Make(S : State_intf.Typer) = struct
     | T.Cannot_find id ->
       Format.fprintf fmt "Unbound identifier:@ '%a'" Dolmen.Id.print id
 
+    | T.Forbidden_quantifier ->
+      Format.fprintf fmt "Quantified expressions are forbidden by the logic."
+
     | T.Type_var_in_type_constructor ->
       Format.fprintf fmt "Type variables cannot appear in the signature of a type constant"
 
@@ -384,6 +398,11 @@ module Make(S : State_intf.Typer) = struct
         Dolmen.Expr.Ty.print ty
 
     (* Smtlib Arithmetic errors *)
+    | Smtlib2_Ints.Forbidden msg
+    | Smtlib2_Reals.Forbidden msg
+    | Smtlib2_Reals_Ints.Forbidden msg ->
+      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
+        filter_hint msg
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
@@ -404,23 +423,6 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
     | Smtlib2_Float.Invalid_dec_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
-
-    (* Linear arithmetic *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
-      when name = Dolmen.Expr.Filter.Smtlib2.Linear_large.name ||
-           name = Dolmen.Expr.Filter.Smtlib2.Linear_strict.name ->
-      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
-        filter_hint msg
-    (* Difference logic *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _)
-      when name = Dolmen.Expr.Filter.Smtlib2.IDL.name ||
-           name = Dolmen.Expr.Filter.Smtlib2.RDL.name ->
-      Format.fprintf fmt "Non-conforming expression for difference logic.%a"
-        filter_hint msg
-    (* Quantifier free formulas *)
-    | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, _), _)
-      when name = Dolmen.Expr.Filter.Quantifier.name ->
-      Format.fprintf fmt "Quantified expressions are forbidden by the logic."
 
     (* Expression filters *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty, msg), _) ->
@@ -514,6 +516,12 @@ module Make(S : State_intf.Typer) = struct
       when conf.smtlib2_6_shadow_rules ->
       T._error env fragment (Warning_as_error w)
 
+    | Smtlib2_Ints.Restriction _, fragment
+    | Smtlib2_Reals.Restriction _, fragment
+    | Smtlib2_Reals_Ints.Restriction _, fragment
+      when conf.strict_typing ->
+      T._error env fragment (Warning_as_error w)
+
     | Smtlib2_Float.Real_lit, fragment
     | Smtlib2_Float.Bitv_extended_lit, fragment
       when conf.strict_typing ->
@@ -527,46 +535,26 @@ module Make(S : State_intf.Typer) = struct
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
-  let builtins_of_smtlib2_logic v l =
+  let builtins_of_smtlib2_logic v (l : Dolmen_type.Logic.Smtlib2.t) =
     List.fold_left (fun acc th ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
         | `Core -> Smtlib2_Core.parse v :: acc
-        | `Ints -> Smtlib2_Ints.parse v :: acc
         | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
         | `Floats -> Smtlib2_Float.parse v :: acc
-        | `Reals -> Smtlib2_Reals.parse v :: acc
-        | `Reals_Ints -> Smtlib2_Reals_Ints.parse v :: acc
+        | `Ints ->
+          Smtlib2_Ints.parse ~arith:l.features.arithmetic v :: acc
+        | `Reals ->
+          Smtlib2_Reals.parse ~arith:l.features.arithmetic v :: acc
+        | `Reals_Ints ->
+          Smtlib2_Reals_Ints.parse ~arith:l.features.arithmetic v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories
-
-  let reset_restrictions () =
-    Dolmen.Expr.Filter.reset ();
-    ()
-
-  let restrictions_of_smtlib2_logic _v (l: Dolmen_type.Logic.Smtlib2.t) =
-    (* Arithmetic restrictions *)
-    begin match l.features.arithmetic with
-      | `Regular -> ()
-      | `Linear_large ->
-        Dolmen.Expr.Filter.Smtlib2.Linear_large.active := true
-      | `Linear_strict ->
-        Dolmen.Expr.Filter.Smtlib2.Linear_strict.active := true
-      | `Difference ->
-        Dolmen.Expr.Filter.Smtlib2.IDL.active := true;
-        Dolmen.Expr.Filter.Smtlib2.RDL.active := true
-    end;
-    (* Quantifiers restrictions *)
-    Dolmen.Expr.Filter.Quantifier.active := not l.features.quantifiers;
-    ()
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
   let typing_env
       ?(loc=no_loc)
       (st : (Parser.language, type_st, _) Dolmen.State.state) =
-    (* Reset restrictions (useful if multiple instances of the typing
-       functions are used to type different inputs conccurrently *)
-    reset_restrictions ();
 
     let additional_builtins env args =
       !additional_builtins env args
@@ -690,10 +678,10 @@ module Make(S : State_intf.Typer) = struct
               Decl.parse :: Subst.parse :: additional_builtins ::
               builtins_of_smtlib2_logic v logic
             ) in
-          let () = restrictions_of_smtlib2_logic v logic in
+          let quants = logic.features.quantifiers in
           T.empty_env
             ~st:st.type_state.typer
-            ~expect ?infer_base ~poly
+            ~expect ?infer_base ~poly ~quants
             ~warnings builtins
       end
 

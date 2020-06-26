@@ -25,8 +25,7 @@ module Smtlib2 : sig
     free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
-    arithmetic      : [ `Linear_large | `Linear_strict
-                      | `Difference | `Regular ];
+    arithmetic      : Arith.Smtlib2.arith;
   }
   (** Smtlib features. *)
 

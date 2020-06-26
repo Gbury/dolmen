@@ -19,8 +19,7 @@ module Smtlib2 = struct
     free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
-    arithmetic      : [ `Linear_large | `Linear_strict
-                      | `Difference | `Regular ];
+    arithmetic      : Arith.Smtlib2.arith;
   }
 
   type t = {
@@ -35,7 +34,7 @@ module Smtlib2 = struct
       free_functions = true;
       datatypes = true;
       quantifiers = true;
-      arithmetic = `Regular;
+      arithmetic = Regular;
     };
   }
 
@@ -61,7 +60,7 @@ module Smtlib2 = struct
         free_functions = false;
         datatypes = false;
         quantifiers = true;
-        arithmetic = `Regular;
+        arithmetic = Regular;
       };
     } in
     let add_theory t c = { c with theories = t :: c.theories } in
@@ -70,8 +69,9 @@ module Smtlib2 = struct
         { f with free_sorts = true; free_functions = true; }) in
     let set_qf c = set_features c (fun f -> { f with quantifiers = false}) in
     let set_dt c = set_features c (fun f -> { f with datatypes = true}) in
-    let set_dl c = set_features c (fun f -> { f with arithmetic = `Difference}) in
-    let set_la c = set_features c (fun f -> { f with arithmetic = `Linear_strict}) in
+    let set_idl c = set_features c (fun f -> { f with arithmetic = Difference `IDL}) in
+    let set_rdl c = set_features c (fun f -> { f with arithmetic = Difference `RDL}) in
+    let set_la c = set_features c (fun f -> { f with arithmetic = Linear `Strict}) in
     (* Entry-point for a best effort at parsing a logic name into a
        structured representation of what theories the logic includes and
        what restrictions it imposes. *)
@@ -103,8 +103,8 @@ module Smtlib2 = struct
        one of the BV or some arithmetic theory can be specified. *)
     and parse_arith c = function
       | 'B'::'V'::l -> parse_dt (add_theory `Bitvectors c) l
-      | 'I'::'D'::'L'::l -> parse_dt (add_theory `Ints (set_dl c)) l
-      | 'R'::'D'::'L'::l -> parse_dt (add_theory `Reals (set_dl c)) l
+      | 'I'::'D'::'L'::l -> parse_dt (add_theory `Ints (set_idl c)) l
+      | 'R'::'D'::'L'::l -> parse_dt (add_theory `Reals (set_rdl c)) l
       | 'L'::'I'::'A'::l -> parse_dt (add_theory `Ints (set_la c)) l
       | 'L'::'R'::'A'::l -> parse_dt (add_theory `Reals (set_la c)) l
       | 'L'::'I'::'R'::'A'::l -> parse_dt (add_theory `Reals_Ints (set_la c)) l
@@ -136,13 +136,14 @@ module Smtlib2 = struct
         match s with
         (* QF_AX allows free sort and **constant** symbols (not functions) *)
         | "QF_AX"
-          ->
-          set_features res (fun f -> { f with free_sorts = true; })
+          -> set_features res (fun f -> { f with free_sorts = true; })
         (* Some logics allow more linear expressions than others *)
         | "QF_AUFLIA" | "AUFLIA"
         | "QF_ALIA" | "ALIA"
-          ->
-          set_features res (fun f -> { f with arithmetic = `Linear_large})
+          -> set_features res (fun f -> { f with arithmetic = Linear `Large})
+        (* QF_UFIDL has a different spec for integer difference logic... *)
+        | "QF_UFIDL" | "UFIDL"
+          -> set_features res (fun f -> { f with arithmetic = Difference `UFIDL})
         (* Default case (for non-special cases) *)
         | _ -> res
       in

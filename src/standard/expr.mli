@@ -603,9 +603,6 @@ end
 
 module Filter : sig
 
-  val reset : unit -> unit
-  (** Reset all filters. *)
-
   type ty_filter
   type term_filter
 
@@ -620,77 +617,6 @@ module Filter : sig
 
     val reset : unit -> unit
     (** Reset the filter to its default state. *)
-  end
-
-
-  module Quantifier : S
-  (** Filter for quantifiers.
-      Default is inactive (i.e. [!active = false]).
-      If active, trying to build a quantified term (i.e. containing a forall
-      or exists), will raise a [Filter_failed_term] exception. *)
-
-  (** Smtlib2 filters *)
-  module Smtlib2 : sig
-
-    module Linear_large : sig
-      include S
-      val div: term_filter
-      val mul: term_filter
-      val forbidden: term_filter
-    end
-    (** Filter for linear arithmetic.
-        Default is inactive (i.e. [!active = false]).
-        If active, only linear terms may be created. This affects both integer
-        and real arithmetic terms, but does not affect rational arithmetic
-        (as it is not in the scope of SMTLIB), nor does it affect
-        non-arithmetic terms.
-        This filters allows to multiply a literal and a terme with a head
-        symbol that is not a builtin arithmetic operator.
-    *)
-
-    module Linear_strict :  sig
-      include S
-      val div: term_filter
-      val mul: term_filter
-      val forbidden: term_filter
-    end
-    (** Filter for linear arithmetic.
-        Default is inactive (i.e. [!active = false]).
-        If active, only linear terms may be created. This affects both integer
-        and real arithmetic terms, but does not affect rational arithmetic
-        (as it is not in the scope of SMTLIB), nor does it affect
-        non-arithmetic terms.
-        This filters only allows constant symbols to be multiplied by a literal.
-    *)
-
-    module IDL :  sig
-      include S
-      val sub: term_filter
-      val minus: term_filter
-      val comp: term_filter
-      val forbidden: term_filter
-    end
-    (** Filter for Integer Difference Logic.
-        Default is inactive (i.e. [!active = false]).
-        If active only arithmetic term conforming to SMTLIB2's QF_IDL
-        ":language" specification will be accepted. Terms outside
-        of integer arithmetic are not affected by this filter. *)
-
-    module RDL : sig
-      include S
-      val add: term_filter
-      val sub: term_filter
-      val div: term_filter
-      val minus: term_filter
-      val comp: term_filter
-      val forbidden: term_filter
-    end
-    (** Filter for Real Difference Logic.
-        Default is inactive (i.e. [!active = false]).
-        If active only arithmetic term conforming to SMTLIB2's QF_RDL
-        ":language" specification will be accepted. Non-arithmetic
-        terms are not affected. *)
-
   end
 
 end
