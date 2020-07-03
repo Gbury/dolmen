@@ -51,3 +51,19 @@ module type Logic = sig
   (** An identifier with an additional name for tracking purposes. *)
 
 end
+
+module type Escape = sig
+
+  type t
+  (** The type of identifiers. *)
+
+  val hash : t -> int
+  (** Hash function *)
+
+  val equal : t -> t -> bool
+  (** Equality function *)
+
+  val name : t -> string
+  (** The name / string to print for the identifier *)
+
+end
