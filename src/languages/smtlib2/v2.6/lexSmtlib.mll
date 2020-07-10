@@ -101,7 +101,7 @@ let symbol = simple_symbol | quoted_symbol
 
 let keyword = ':' simple_symbol
 
-let comment = ';' (printable_char # ['\r' '\n'])*
+let comment = ';' (white_space_or_printable # ['\r' '\n'])*
 
 rule token = parse
   (* Whitespace, newlines and comments *)
