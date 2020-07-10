@@ -17,16 +17,25 @@ module Smtlib2 = struct
        - x is a free constant or a term with top symbol not in Ints, and
        - c is a term of the form n or (- n) for some numeral n.
 
-     Additionally, even though it is never explicitly specified, we assume
-     that in the spec above, 'x' is also allowed to be a quantified variable
-     in logics which allow quantifiers.
+     Note that in this context "symbol" actually means a constant or
+     quantified variable.
+
+
+     Additionally, difference logic is a hell of specification. There are
+     about as many specs of difference logic than logics that use it.
+     Currently, there are three different difference logics:
+     - integer difference logic, as per the spec of QF_IDL
+     - real difference logic, as per the spec of QF_RDL
+     - UFIDL difference logic, as per the spec of QF_UFIDL
 
      There are therefore a few different "variants" of arithmetic that one
      can typecheck for:
      - regular arithmetic where everything is allowed
      - lenient linear arithmetic (as specified by AUFLIA)
      - strict linear arithmetic (as specified by other logics)
-     - difference logic
+     - integer difference logic
+     - real difference logic
+     - difference logic in UFIDL
   *)
   type arith =
     | Regular
