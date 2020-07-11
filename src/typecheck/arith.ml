@@ -330,7 +330,7 @@ module Smtlib2 = struct
                                     expects as first argument an integer \
                                     coeficient, i.e. either a raw integer \
                                     literal, or the negation of one, but \
-                                    here was given a %a"
+                                    here was given %a"
                      Classification.print c)
         end
       | _ -> bad_arity "division" "linear arithmetic" 2
