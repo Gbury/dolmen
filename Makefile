@@ -19,8 +19,8 @@ test: dune
 	dune exec -- tools/gentests.exe tests/
 	dune build $(FLAGS) @runtest
 
-test-promote:
-	dune exec -- tests/gentests.exe tests/
+test-promote: dune
+	dune exec -- tools/gentests.exe tests/
 	-dune build $(FLAGS) @runtest
 	dune promote $(FLAGS)
 

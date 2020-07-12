@@ -411,140 +411,6 @@ module View = struct
 
   end
 
-  module Term = struct
-
-    type t = [
-      | `Var of term_var
-      | `Binder of binder * term
-      | `App of [
-          | `Generic of term_const
-          | `Builtin of builtin
-        ] * ty list * term list
-    ]
-
-    let view (t : term) : t =
-      match t.descr with
-      | Var v -> `Var v
-      | App (({ builtin; _ } as c), tys, ts) ->
-        begin match builtin with
-          | Base -> `App (`Generic c, tys, ts)
-          | _ -> `App (`Builtin builtin, tys, ts)
-        end
-      | Binder (b, t) -> `Binder (b, t)
-
-  end
-
-  module Arith = struct
-
-    module Shallow = struct
-
-      (* Shallow classification of terms into:
-         - variables
-         - constants
-         - arithmetic literals aka values
-         - exprssion with an arithmetic operation as head symbol
-         - other expressions *)
-      type arith_ty = [
-        | `Int
-        | `Rat
-        | `Real
-      ]
-
-      type 'a t = [
-        | `Var of term_var
-        | `Cst of term_const
-        | `Value of arith_ty * string
-        | `Arith of builtin * 'a list
-        | `Other
-      ]
-
-      let rec view (t : term) : term t =
-        match Term.view t with
-        | `Var v ->
-          begin match Tag.last v.tags Tags.bound with
-            | None -> `Var v
-            | Some t' -> view t'
-          end
-        | `App (`Builtin Integer s, _, _) -> `Value (`Int, s)
-        | `App (`Builtin Rational s, _, _) -> `Value (`Rat, s)
-        | `App (`Builtin Decimal s, _, _) -> `Value (`Real, s)
-        | `App (`Builtin Coercion, [src; dst], [t']) ->
-          (* Only match lossless coercions, that likely have been added
-             as syntactic sugar because of syntax restrictions, e.g.
-             to allow integeer literals to be used in rational/real
-             equations.
-             For these coercions, simply ignore the coercion and
-             return the view of the coerced term. *)
-          begin match Ty.view src, Ty.view dst with
-            | `Int, ((`Rat | `Real) as dst)
-            | `Rat, (`Real as dst)
-              -> begin match view t' with
-                  | `Value (_, s) -> `Value (dst, s)
-                  | res -> res
-                end
-            | _ -> `Other
-          end
-        (* Other Arithmetic constructions *)
-        | `App (`Builtin (Minus | Add | Sub | Mul | Div | Abs
-                         | Div_e | Div_t | Div_f |
-                          Modulo_e | Modulo_t | Modulo_f as b), _, l) ->
-          `Arith (b, l)
-        (* Constants *)
-        | `App (`Generic c, [], []) -> `Cst c
-        (* Fallback *)
-        | _ -> `Other
-
-      (* Error messages for filters that fail *)
-      let print fmt v =
-        match v with
-        | `Var v ->
-          Format.fprintf fmt "the variable %a" Print.id v
-        | `Cst c ->
-          Format.fprintf fmt "the constant %a" Print.id c
-        | `Value (`Int, _) ->
-          Format.fprintf fmt "an integer literal"
-        | `Value (`Rat, _) ->
-          Format.fprintf fmt "a rational literal"
-        | `Value (`Real, _) ->
-          Format.fprintf fmt "a real literal"
-        | `Arith (Minus, _) ->
-          Format.fprintf fmt "a unary negation"
-        | `Arith (Add, _) ->
-          Format.fprintf fmt "an addition"
-        | `Arith (Sub, _) ->
-          Format.fprintf fmt "a substraction"
-        | `Arith (Mul, _) ->
-          Format.fprintf fmt "a multiplication"
-        | `Arith (Div, _) ->
-          Format.fprintf fmt "an exact division"
-        | `Arith (Abs, _) ->
-          Format.fprintf fmt "an absolute value"
-        | `Arith (Div_e, _) ->
-          Format.fprintf fmt "a euclidian division"
-        | `Arith (Div_t, _) ->
-          Format.fprintf fmt "a truncated division"
-        | `Arith (Div_f, _) ->
-          Format.fprintf fmt "a floored division"
-        | `Arith (Modulo_e, _) ->
-          Format.fprintf fmt "a euclidian remainder"
-        | `Arith (Modulo_t, _) ->
-          Format.fprintf fmt "a truncated remainder"
-        | `Arith (Modulo_f, _) ->
-          Format.fprintf fmt "a floored remainder"
-        | `Arith _ ->
-          Format.fprintf fmt "an unknown complex arithmetic expression \
-                              (please report upstream, ^^)"
-        | `Other ->
-          Format.fprintf fmt "an arbitrary term"
-
-      let expect_error v v' expected =
-        Format.asprintf "expects %s but was given:\n- %a\n- %a"
-          expected print v print v'
-
-    end
-
-  end
-
 end
 
 (* Flags and filters *)
@@ -568,450 +434,6 @@ module Filter = struct
     val active : bool ref
     val reset : unit -> unit
   end
-
-  module Quantifier = struct
-
-    let active = ref false
-    let name = "quantifier"
-    let reset () = active := false
-
-  end
-
-  module Smtlib2 = struct
-
-    module Linear_strict = struct
-
-      let active = ref false
-      let name = "linear"
-      let reset () = active := false
-
-      (* Local view of arithmetic expressions in the terms of the smtlib
-         spec, in:
-         + Free constants (no need to check their types)
-         + Integer coeficients, i.e.:
-         - either raw integer literals, or
-         - the negation of a raw integer literal
-           + Rational coeficients (but are used for Real SMTLIb arithmetic,
-           since there is no rational arithmetci in SMTLIB contrary to
-           TPTP), which are:
-         - a raw decimal literal
-         - the negation of a raw decimal literal
-         - a division of an integer coeficient by a strictly positive
-             integer literal (i.e. non-zero, since integer literals in SMTLIB
-             cannot have a minus sign, and hence are always non-negative).
-           + Other expressions *)
-      let view (t : term) =
-        match View.Arith.Shallow.view t with
-        | `Cst _ -> `Symbol
-        | `Value (`Int, _) -> `Int_coef
-        | `Value (`Real, _) -> `Real_coef
-        | `Arith (Minus, [t']) ->
-          begin match View.Arith.Shallow.view t' with
-            | `Value (`Int, _) -> `Int_coef
-            | `Value (`Real, _) -> `Real_coef
-            | _ -> `Other
-          end
-        (* We can assume the filters for linear arithmetic are used, hence
-           a division must conform to the {div} filter, and thus can only
-           be a rational/real coeficient *)
-        | `Arith (Div, _) -> `Real_coef
-        (* Anything else is in the other category *)
-        | _ -> `Other
-
-      (* Generic wrapper for arithmetic operations not permitted
-         in linear arithmetic *)
-      let forbidden_wrapper _ _ _ =
-        `Error "this operator is forbidden in linear arithmetic"
-
-      (* Division wrapper *)
-
-      let div_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match view a with
-            | `Int_coef ->
-              begin match View.Arith.Shallow.view b with
-                | `Value (`Int, "0") -> `Error (
-                    Format.asprintf "division in linear arithmetic \
-                                     expects a non-zero denominator")
-                | `Value (`Int, _) -> `Pass
-                | v -> `Error (
-                    Format.asprintf "division in linear arithmetic \
-                                     expects a constant positive \
-                                     integer literal as denominator, \
-                                     but was given %a"
-                      View.Arith.Shallow.print v)
-              end
-            | _ -> `Error (
-                Format.asprintf "division in linear arithmetic \
-                                 expects as first argument an integer \
-                                 coeficient, i.e. either a raw integer \
-                                 literal, or the negation of one, but \
-                                 here was given a %a"
-                  View.Arith.Shallow.print (View.Arith.Shallow.view a))
-          end
-        | _ -> `Error "bad arity for multiplication"
-
-
-      (* Multiplication wrappers *)
-
-      let mul_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match view a, view b with
-            | (`Int_coef | `Real_coef), `Symbol
-            | `Symbol, (`Int_coef | `Real_coef)
-              -> `Pass
-            | _ -> `Error (
-                Format.asprintf "multiplication in linear arithmetic %s"
-                  (View.Arith.Shallow.(expect_error (view a) (view b)
-                                         "an integer or rational literal \
-                                          and a symbol (variable or constant)")))
-          end
-        | _ -> `Error "bad arity for multiplication"
-
-      let div = name, active, div_wrapper
-      let mul = name, active, mul_wrapper
-      let forbidden = name, active, forbidden_wrapper
-
-    end
-
-    module Linear_large = struct
-
-      let active = ref false
-      let name = "linear"
-      let reset () = active := false
-
-      (* Local view of arithmetic expressions in the terms of the smtlib
-         spec, in:
-         + Generic terms allowed to be multiplied, i.e.:
-           - constants
-           - term with top symbol not in Ints (i.e. not an Int builtin operation)
-         + Integer coeficients, i.e.:
-           - either raw integer literals, or
-           - the negation of a raw integer literal
-         + Rational coeficients (but are used for Real SMTLIb arithmetic,
-           since there is no rational arithmetci in SMTLIB contrary to
-           TPTP), which are:
-           - a raw decimal literal
-           - the negation of a raw decimal literal
-           - a division of an integer coeficient by a strictly positive
-             integer literal (i.e. non-zero, since integer literals in SMTLIB
-             cannot have a minus sign, and hence are always non-negative).
-          + Other expressions *)
-      let view (t : term) =
-        match View.Arith.Shallow.view t with
-        | `Value (`Int, _) -> `Int_coef
-        | `Value (`Real, _) -> `Real_coef
-        | `Arith (Minus, [t']) ->
-          begin match View.Arith.Shallow.view t' with
-            | `Value (`Int, _) -> `Int_coef
-            | `Value (`Real, _) -> `Real_coef
-            | _ -> `Complex_arith
-          end
-        (* We can assume the filters for linear arithmetic are used, hence
-           a division must conform to the {div} filter, and thus can only
-           be a rational/real coeficient *)
-        | `Arith (Div, _) -> `Real_coef
-        (* Terms with a head symbol in Arith must be distinguished
-           from the rest *)
-        | `Arith _ -> `Complex_arith
-        (* Anything else is technically a generic term *)
-        | _ -> `Generic
-
-      (* Generic wrapper for arithmetic operations not permitted
-         in linear arithmetic *)
-      let forbidden_wrapper _ _ _ =
-        `Error "this operator is forbidden in linear arithmetic"
-
-      (* Division wrapper *)
-
-      let div_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match view a with
-            | `Int_coef ->
-              begin match View.Arith.Shallow.view b with
-                | `Value (`Int, "0") -> `Error (
-                    Format.asprintf "division in linear arithmetic \
-                                     expects a non-zero denominator")
-                | `Value (`Int, _) -> `Pass
-                | v -> `Error (
-                    Format.asprintf "division in linear arithmetic \
-                                     expects a constant positive \
-                                     integer literal as denominator, \
-                                     but was given %a"
-                      View.Arith.Shallow.print v)
-              end
-            | _ -> `Error (
-                Format.asprintf "division in linear arithmetic \
-                                 expects as first argument an integer \
-                                 coeficient, i.e. either a raw integer \
-                                 literal, or the negation of one, but \
-                                 here was given a %a"
-                  View.Arith.Shallow.print (View.Arith.Shallow.view a))
-          end
-        | _ -> `Error "bad arity for multiplication"
-
-
-      (* Multiplication wrappers *)
-
-      let mul_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match view a, view b with
-            | (`Int_coef | `Real_coef), `Generic
-            | `Generic, (`Int_coef | `Real_coef)
-              -> `Pass
-            | _ -> `Error (
-                Format.asprintf "multiplication in linear arithmetic %s"
-                  (View.Arith.Shallow.(expect_error (view a) (view b)
-                                         "an integer or rational literal \
-                                          and a symbol (variable or constant)")))
-          end
-        | _ -> `Error "bad arity for multiplication"
-
-      let div = name, active, div_wrapper
-      let mul = name, active, mul_wrapper
-      let forbidden = name, active, forbidden_wrapper
-
-    end
-
-    module IDL = struct
-
-      let active = ref false
-      let name = "integer difference logic"
-      let reset () = active := false
-
-      let forbidden_wrapper _ _ _ =
-        `Error "this operator is forbidden in difference logic"
-
-      let minus_wrapper _ _ ts =
-        match ts with
-        | [a] ->
-          begin match View.Arith.Shallow.view a with
-            | `Value (`Int, _) -> `Pass
-            | v -> `Error (
-                Format.asprintf
-                  "unary substraction in difference logic expects \
-                   an integer literal, but was given %a"
-                  View.Arith.Shallow.print v)
-          end
-        | _ -> `Error "bas arity for unary substraction"
-
-      let sub_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match View.Arith.Shallow.view a,
-                      View.Arith.Shallow.view b with
-          | (`Var _ | `Cst _), (`Var _ | `Cst _) -> `Pass
-          | v, v' -> `Error (
-              Format.asprintf "substraction in difference logic %s"
-                (View.Arith.Shallow.expect_error v v' "two constants/variables"))
-          end
-        | _ -> `Error "bad arity for substraction"
-
-      let comp_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match View.Arith.Shallow.view a,
-                      View.Arith.Shallow.view b with
-          (* Comparison of constants is allowed *)
-          | (`Var _ | `Cst _), (`Var _ | `Cst _) -> `Pass
-          (* If the first argument is a substraction, it must have passed
-             the sub_wrapper filter, which means both its side must be
-             constants, so no need to check it here again. *)
-          | `Arith (Sub, _), `Value (`Int, _) -> `Pass
-          | `Arith (Sub, _), `Arith(Minus, _) -> `Pass
-          (* Error case *)
-          | v, v' -> `Error (
-              Format.asprintf "comparison in difference logic %s"
-                (View.Arith.Shallow.expect_error v v'
-                   "a substraction on the left and a (possibly negated) \
-                    integer literal on the right"))
-          end
-        | _ -> `Error "bad arity for comparison"
-
-      let sub = name, active, sub_wrapper
-      let minus = name, active, minus_wrapper
-      let comp = name, active, comp_wrapper
-      let forbidden = name, active, forbidden_wrapper
-
-    end
-
-    module RDL = struct
-
-      let active = ref false
-      let name = "real difference logic"
-      let reset () = active := false
-
-      let forbidden_wrapper _ _ _ =
-        `Error "this operator is forbidden in difference logic"
-
-      let minus_wrapper _ _ ts =
-        match ts with
-        | [a] ->
-          begin match View.Arith.Shallow.view a with
-            | `Value (`Real, _) -> `Pass
-            | v -> `Error (
-                Format.asprintf
-                  "unary substraction in difference logic expects \
-                   a real literal, but was given %a"
-                  View.Arith.Shallow.print v)
-          end
-        | _ -> `Error "bas arity for unary substraction"
-
-      let div_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match View.Arith.Shallow.view a with
-            | `Value (`Real, _)
-            | `Arith (Minus, _) ->
-              begin match View.Arith.Shallow.view b with
-                | `Value (`Int, "0") -> `Error (
-                    Format.asprintf "division in real difference logic \
-                                     expects a non-zero denominator")
-                | `Value (`Int, _) -> `Pass
-                | v -> `Error (
-                    Format.asprintf "division in real difference logic \
-                                     expects a constant positive \
-                                     integer literal as denominator, \
-                                     but was given %a"
-                      View.Arith.Shallow.print v)
-              end
-            | v -> `Error (
-                Format.asprintf "division in real difference logic \
-                                 expects a real literal as numerator, \
-                                 but was given %a"
-                  View.Arith.Shallow.print v)
-          end
-        | _ -> `Error "bad arity for division"
-
-      (* Analyse a sum (or direct application) of n variables or constants
-         and return n and the variable/constant *)
-      let rec analyze t : [
-        `Ok of [`Var of term_var | `Cst of term_const] * int
-      | `Error of string
-      ] =
-        match View.Arith.Shallow.view t with
-        | ((`Var _) as res)
-        | ((`Cst _) as res) -> `Ok (res, 1)
-        | `Arith (Add, l) -> analyze_list l
-        | v -> `Error (
-            Format.asprintf "addition in real difference logic expects \
-                             either variables/constants or an addition of \
-                             variables/constants, but was here given %a"
-              View.Arith.Shallow.print v)
-
-      and analyze_list = function
-        | h :: r ->
-          begin match analyze h with
-            | (`Error _) as res -> res
-            | `Ok (symb, n) ->
-              analyze_list_aux n symb r
-          end
-        | [] -> `Error "bad arity for addition"
-
-      and analyze_list_aux n s = function
-        | [] -> `Ok (s, n)
-        | t :: r ->
-          begin match analyze t with
-            | (`Error _) as res -> res
-            | `Ok (s', n') ->
-              if equal_symb s s' then
-                analyze_list_aux (n + n') s r
-              else
-                `Error (
-                  Format.asprintf "addition in real difference logic expects
-                                 n-th times the same variable/constant, but was
-                                 here applied to %a and %a which are different"
-                    View.Arith.Shallow.print s
-                    View.Arith.Shallow.print s')
-          end
-
-      and equal_symb s s' =
-        match s, s' with
-        | `Var v, `Var v' -> v.index = v'.index
-        | `Cst c, `Cst c' -> c.index = c'.index
-        | _ -> false
-
-      let add_wrapper _ _ ts =
-        begin match analyze_list ts with
-          | `Ok _ -> `Pass
-          | (`Error _) as res -> res
-        end
-
-      let sub_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match analyze a,
-                      analyze b with
-          | ((`Error _) as res), _ -> res
-          | _, ((`Error _) as res) -> res
-          | `Ok (_, n), `Ok (_, n') ->
-            if n = n' then `Pass
-            else `Error (
-                Format.asprintf "substraction in real difference logic \
-                                 expects both sides to be sums of the same \
-                                 length, but here the sums have lengths \
-                                 %d and %d" n n')
-          end
-        | _ -> `Error "bad arity for substraction"
-
-      let comp_wrapper _ _ ts =
-        match ts with
-        | [a; b] ->
-          begin match View.Arith.Shallow.view a,
-                      View.Arith.Shallow.view b with
-          (* Comparison of constants is allowed *)
-          | (`Var _ | `Cst _), (`Var _ | `Cst _) -> `Pass
-          (* If the first argument is a substraction, it must have passed
-             the sub_wrapper filter, which means both its side must be
-             constants, so no need to check it here again. *)
-          | `Arith (Sub, _), `Value (`Real, _) -> `Pass
-          | `Arith (Sub, _), `Arith (Minus, _) -> `Pass
-          (* Syntaxic sugar *)
-          | `Arith (Sub, [x; y]), `Arith (Div, _) ->
-            begin match analyze x, analyze y with
-              | ((`Error _) as res), _ -> res
-              | _, ((`Error _) as res) -> res
-              | `Ok (_, n), `Ok (_, n') ->
-                (* since the sub filter passed, we should have n = n' *)
-                if n = 1 && n' = 1 then `Pass
-                else `Error (
-                    Format.asprintf "in real difference logic, when comparing \
-                                     the result of a substraction with a rational \
-                                     number, each side of the substraction can only \
-                                     contain a single variable/constant, but here there
-                                     was %d" n)
-            end
-          (* Error case *)
-          | v, v' -> `Error (
-              Format.asprintf "comparison in difference logic %s"
-                (View.Arith.Shallow.expect_error v v'
-                   "a substraction on the left and a (possibly negated) \
-                    integer literal on the right"))
-          end
-        | _ -> `Error "bad arity for comparison"
-
-      let add = name, active, add_wrapper
-      let sub = name, active, sub_wrapper
-      let div = name, active, div_wrapper
-      let minus = name, active, minus_wrapper
-      let comp = name, active, comp_wrapper
-      let forbidden = name, active, forbidden_wrapper
-
-    end
-
-  end
-
-  let reset () =
-    Quantifier.reset ();
-    Smtlib2.IDL.reset ();
-    Smtlib2.RDL.reset ();
-    Smtlib2.Linear_large.reset ();
-    Smtlib2.Linear_strict.reset ();
-    ()
 
 end
 
@@ -1818,31 +1240,22 @@ module Term = struct
 
       let minus = Id.const
           ~pos:Pretty.Prefix ~name:"-" ~builtin:Minus
-          ~term_filters:[Filter.Smtlib2.IDL.minus]
           "Minus" [] [Ty.int] Ty.int
 
       let add = Id.const
           ~pos:Pretty.Infix ~name:"+" ~builtin:Add
-          ~term_filters:[Filter.Smtlib2.IDL.forbidden]
           "Add" [] [Ty.int; Ty.int] Ty.int
 
       let sub = Id.const
           ~pos:Pretty.Infix ~name:"-" ~builtin:Sub
-          ~term_filters:[Filter.Smtlib2.IDL.sub]
           "Sub" [] [Ty.int; Ty.int] Ty.int
 
       let mul = Id.const
           ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
-          ~term_filters:[Filter.Smtlib2.Linear_large.mul;
-                         Filter.Smtlib2.Linear_strict.mul;
-                         Filter.Smtlib2.IDL.forbidden]
           "Mul" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = Id.const
           ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
-          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
-                         Filter.Smtlib2.Linear_strict.forbidden;
-                         Filter.Smtlib2.IDL.forbidden]
           "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = Id.const
           ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
@@ -1853,9 +1266,6 @@ module Term = struct
 
       let rem_e = Id.const
           ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
-          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
-                         Filter.Smtlib2.Linear_strict.forbidden;
-                         Filter.Smtlib2.IDL.forbidden]
           "Modulo" [] [Ty.int; Ty.int] Ty.int
       let rem_t = Id.const
           ~pos:Pretty.Infix ~name:"%e" ~builtin:Modulo_t
@@ -1866,29 +1276,22 @@ module Term = struct
 
       let abs = Id.const
           ~name:"abs" ~builtin:Abs
-          ~term_filters:[Filter.Smtlib2.Linear_large.forbidden;
-                         Filter.Smtlib2.Linear_strict.forbidden;
-                         Filter.Smtlib2.IDL.forbidden]
           "Abs" [] [Ty.int] Ty.int
 
       let lt = Id.const
           ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
-          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "LessThan" [] [Ty.int; Ty.int] Ty.prop
 
       let le = Id.const
           ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
-          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let gt = Id.const
           ~pos:Pretty.Infix ~name:">" ~builtin:Gt
-          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
 
       let ge = Id.const
           ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
-          ~term_filters:[Filter.Smtlib2.IDL.comp]
           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let floor = Id.const
@@ -2017,31 +1420,22 @@ module Term = struct
 
       let minus = Id.const
           ~pos:Pretty.Prefix ~name:"-" ~builtin:Minus
-          ~term_filters:[Filter.Smtlib2.RDL.minus]
           "Minus" [] [Ty.real] Ty.real
 
       let add = Id.const
           ~pos:Pretty.Infix ~name:"+" ~builtin:Add
-          ~term_filters:[Filter.Smtlib2.RDL.add]
           "Add" [] [Ty.real; Ty.real] Ty.real
 
       let sub = Id.const
           ~pos:Pretty.Infix ~name:"-" ~builtin:Sub
-          ~term_filters:[Filter.Smtlib2.RDL.sub]
           "Sub" [] [Ty.real; Ty.real] Ty.real
 
       let mul = Id.const
           ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
-          ~term_filters:[Filter.Smtlib2.Linear_large.mul;
-                         Filter.Smtlib2.Linear_strict.mul;
-                         Filter.Smtlib2.RDL.forbidden]
           "Mul" [] [Ty.real; Ty.real] Ty.real
 
       let div = Id.const
           ~pos:Pretty.Infix ~name:"/" ~builtin:Div
-          ~term_filters:[Filter.Smtlib2.Linear_large.div;
-                         Filter.Smtlib2.Linear_strict.div;
-                         Filter.Smtlib2.RDL.div]
           "Div" [] [Ty.real; Ty.real] Ty.real
 
       let div_e = Id.const
@@ -2066,22 +1460,18 @@ module Term = struct
 
       let lt = Id.const
           ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
-          ~term_filters:[Filter.Smtlib2.RDL.comp]
           "LessThan" [] [Ty.real; Ty.real] Ty.prop
 
       let le = Id.const
           ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
-          ~term_filters:[Filter.Smtlib2.RDL.comp]
           "LessOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let gt = Id.const
           ~pos:Pretty.Infix ~name:">" ~builtin:Gt
-          ~term_filters:[Filter.Smtlib2.RDL.comp]
           "GreaterThan" [] [Ty.real; Ty.real] Ty.prop
 
       let ge = Id.const
           ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
-          ~term_filters:[Filter.Smtlib2.RDL.comp]
           "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let floor = Id.const
@@ -2454,12 +1844,7 @@ module Term = struct
 
   (* This function does not check types enough, do not export outside the module *)
   let mk_bind b body =
-    let res = mk (Binder (b, body)) (ty body) in
-    match !Filter.Quantifier.active, b with
-    | false, _
-    | _, (Letin _) -> res
-    | true, (Exists _ | Forall _) ->
-      raise (Filter_failed_term (Filter.Quantifier.name, res, ""))
+    mk (Binder (b, body)) (ty body)
 
   (* Substitutions *)
   let rec ty_var_list_subst ty_var_map = function

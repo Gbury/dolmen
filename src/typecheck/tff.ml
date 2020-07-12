@@ -75,7 +75,7 @@ module Make
   type var = [
     | `Ty_var of Ty.Var.t
     | `Term_var of T.Var.t
-    | `Letin of T.Var.t * T.t
+    | `Letin of Ast.t * T.Var.t * T.t
   ]
 
   (* Constants that can be bound to a dolmen identifier. *)
@@ -224,6 +224,7 @@ module Make
     | Cannot_tag_ttype : Ast.t err
     | Cannot_find : Id.t -> Ast.t err
     | Type_var_in_type_constructor : Ast.t err
+    | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
     | Higher_order_application : Ast.t err
     | Higher_order_type : Ast.t err
@@ -259,15 +260,6 @@ module Make
     (* bound variables *)
     vars : var M.t;
 
-    (*
-    (* local variables (mostly quantified variables) *)
-    type_vars : Ty.Var.t  M.t;
-    term_vars : T.Var.t   M.t;
-
-    (* let-bound variables *)
-    let_vars  : T.t       M.t;
-    *)
-
     (* The current builtin symbols *)
     builtins : builtin_symbols;
 
@@ -276,6 +268,8 @@ module Make
 
     (* Additional typing info *)
     poly         : poly;
+    quants       : bool;
+
     expect       : expect;
     infer_base   : Ty.t option;
     infer_hook   : env -> inferred -> unit;
@@ -309,7 +303,7 @@ module Make
   exception Typing_error of error
 
 
-  (* Convenience functions *)
+  (* Warnings/Error helpers *)
   (* ************************************************************************ *)
 
   let _warn env fragment w =
@@ -317,6 +311,10 @@ module Make
 
   let _error env fragment e =
     raise (Typing_error (Error (env, fragment, e)))
+
+
+  (* Convenience functions *)
+  (* ************************************************************************ *)
 
   let _expected env s t res =
     _error env (Ast t) (Expected (s, res))
@@ -394,7 +392,7 @@ module Make
       | `Builtin _ -> Builtin
       | `Ty_var v -> E.find v env.type_locs
       | `Term_var v -> F.find v env.term_locs
-      | `Letin (v, _) -> F.find v env.term_locs
+      | `Letin (_, v, _) -> F.find v env.term_locs
       | `Ty_cst c -> R.find env.st.ttype_locs c
       | `Term_cst c -> S.find env.st.const_locs c
       | `Cstr c -> U.find env.st.cstrs_locs c
@@ -410,7 +408,7 @@ module Make
     | `Builtin `Tags _ -> `Builtin `Tag
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
-    | `Letin (v, _) -> `Variable (`Term (v, reason))
+    | `Letin (_, v, _) -> `Variable (`Term (v, reason))
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
@@ -437,19 +435,19 @@ module Make
     _warn env fragment (Shadowing (id, old_binding, new_binding))
 
 
-  type cst_or_not_found = [
-    | cst
-    | `Not_found
-  ]
-
-  let find_global env id : cst_or_not_found =
-    try (H.find env.st.csts id :> cst_or_not_found)
-    with Not_found -> `Not_found
-
   let find_var env name : [var | not_found] =
     match M.find env.vars name with
     | #var as res -> res
     | exception Not_found -> `Not_found
+
+  let find_global env id : [cst | not_found] =
+    try (H.find env.st.csts id :> [cst | not_found])
+    with Not_found -> `Not_found
+
+  let find_builtin env id : [builtin | not_found] =
+    match env.builtins env (Id id) with
+    | `Not_found -> `Not_found
+    | #builtin_res as res -> `Builtin res
 
   let find_bound env id : [ bound | not_found ] =
     match find_var env id with
@@ -458,10 +456,7 @@ module Make
       begin match find_global env id with
         | #cst as res -> (res :> [ bound | not_found ])
         | `Not_found ->
-          begin match env.builtins env (Id id) with
-            | `Not_found -> `Not_found
-            | #builtin_res as res -> `Builtin res
-          end
+          (find_builtin env id :> [ bound | not_found ])
       end
 
 
@@ -513,13 +508,15 @@ module Make
       ?(infer_hook=(fun _ _ -> ()))
       ?infer_base
       ?(poly=Flexible)
+      ?(quants=true)
       ~warnings
       builtins = {
     type_locs = E.empty;
     term_locs = F.empty;
     vars = M.empty;
     st; builtins; warnings;
-    poly; expect; infer_hook; infer_base;
+    poly; quants;
+    expect; infer_hook; infer_base;
   }
 
   let expect ?(force=false) env expect =
@@ -571,7 +568,7 @@ module Make
           term_locs = F.add v' reason env.term_locs;
         }
 
-  let bind_term_var env id v t ast =
+  let bind_term_var env id e v t ast =
     let reason = Bound ast in
     let v' =
       match find_bound env id with
@@ -583,7 +580,7 @@ module Make
     in
     let t' = T.bind v' t in
     v', { env with
-          vars = M.add env.vars id (`Letin (v', t'));
+          vars = M.add env.vars id (`Letin (e, v', t'));
           term_locs = F.add v' reason env.term_locs;
         }
 
@@ -676,21 +673,25 @@ module Make
     _wrap2 env ast_term T.eq a b
 
   let mk_quant env ast mk (ty_vars, t_vars) body =
-    let fv_ty, fv_t = T.fv body in
-    (* Emit warnings for quantified variables that are unused *)
-    List.iter (fun v ->
-        if not @@ List.exists (Ty.Var.equal v) fv_ty then _unused_type env v
-      ) ty_vars;
-    List.iter (fun v ->
-        if not @@ List.exists (T.Var.equal v) fv_t then _unused_term env v
-      ) t_vars;
-    (* Filter quantified variables from free_variables *)
-    let fv_ty = List.filter (fun v ->
-        not (List.exists (Ty.Var.equal v) ty_vars)) fv_ty in
-    let fv_t = List.filter (fun v ->
-        not (List.exists (T.Var.equal v) t_vars)) fv_t in
-    (* Create the quantified formula *)
-    _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
+    if not env.quants then
+      _error env (Ast ast) Forbidden_quantifier
+    else begin
+      let fv_ty, fv_t = T.fv body in
+      (* Emit warnings for quantified variables that are unused *)
+      List.iter (fun v ->
+          if not @@ List.exists (Ty.Var.equal v) fv_ty then _unused_type env v
+        ) ty_vars;
+      List.iter (fun v ->
+          if not @@ List.exists (T.Var.equal v) fv_t then _unused_term env v
+        ) t_vars;
+      (* Filter quantified variables from free_variables *)
+      let fv_ty = List.filter (fun v ->
+          not (List.exists (Ty.Var.equal v) ty_vars)) fv_ty in
+      let fv_t = List.filter (fun v ->
+          not (List.exists (T.Var.equal v) t_vars)) fv_t in
+      (* Create the quantified formula *)
+      _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
+    end
 
   let infer env ast s args s_ast =
     if Id.(s.ns = Var) then
@@ -980,7 +981,7 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
-          let v', env' = bind_term_var env s v t w in
+          let v', env' = bind_term_var env s e v t w in
           parse_let env' ((v', t) :: acc) f r
         | t -> _expected env "variable binding" t None
       end
@@ -1038,7 +1039,7 @@ module Make
     | `Term_var v ->
       if args = [] then Term (T.of_var v)
       else _var_app env v ast
-    | `Letin (v, t) ->
+    | `Letin (_, v, t) ->
       if args = [] then Term t
       else _var_app env v ast
     | `Ty_cst f ->

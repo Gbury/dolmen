@@ -119,127 +119,159 @@ val map_chain :
 
 val app0 :
   (module Tff_intf.S with type env = 'env) ->
+  ?check:(Dolmen.Term.t -> unit) ->
   'env -> string -> ('ret) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
 
 val app0_ast :
   (module Tff_intf.S with type env = 'env) ->
+  ?check:(Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'ret) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
 
 
 val ty_app1 :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val ty_app1_ast :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val term_app1 :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app1_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 
 val ty_app2 :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val ty_app2_ast :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val term_app2 :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app2_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 
 val ty_app3 :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('ty -> 'ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val ty_app3_ast :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val term_app3 :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('term -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app3_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 
 val ty_app4 :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('ty -> 'ty -> 'ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val ty_app4_ast :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'ty -> 'ty -> 'ty -> 'ty -> 'ty) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'ty)
 
 val term_app4 :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> ('term -> 'term -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app4_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t -> Dolmen.Term.t ->
+          Dolmen.Term.t -> Dolmen.Term.t -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 
 val term_app_left :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> ('term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app_left_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app_right :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> ('term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app_right_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 
 val term_app_chain :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> ('term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 
 val term_app_chain_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Term.t -> Dolmen.Term.t list -> unit) ->
   'env -> string -> (Dolmen.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Term.t -> Dolmen.Term.t list -> 'term)
 

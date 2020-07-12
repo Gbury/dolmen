@@ -2,6 +2,13 @@
 (** Smtlib Integer and Real Arithmetic *)
 module Smtlib2 : sig
 
+  type arith =
+    | Regular
+    | Linear of [ `Large | `Strict ]
+    | Difference of [ `IDL | `RDL | `UFIDL ] (**)
+  (** The different type of arithmetic restrictions, see the comment in
+      arith.ml for more information. *)
+
   (** Standalone Integer arithmetic *)
   module Int : sig
 
@@ -10,7 +17,19 @@ module Smtlib2 : sig
         (Ty : Dolmen.Intf.Ty.Smtlib_Int with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t) : sig
 
-      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
+      type _ Type.warn +=
+        | Restriction : string -> Dolmen.Term.t Type.warn
+        (** Warning for expressions which tecnically do not respect the strict
+            spec but respect the large spec. *)
+      (** Arithmetic type-checking warnings *)
+
+      type _ Type.err +=
+        | Forbidden : string -> Dolmen.Term.t Type.err
+        (** Error for expressions which do not respect the spec. *)
+      (** Arithmetic type-checking errors *)
+
+      val parse : arith:arith -> Dolmen_smtlib2.version -> Type.builtin_symbols
+      (** Parsing function for type-checking *)
     end
 
   end
@@ -23,7 +42,19 @@ module Smtlib2 : sig
         (Ty : Dolmen.Intf.Ty.Smtlib_Real with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t) : sig
 
-      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
+      type _ Type.warn +=
+        | Restriction : string -> Dolmen.Term.t Type.warn
+        (** Warning for expressions which tecnically do not respect the strict
+            spec but respect the large spec. *)
+      (** Arithmetic type-checking warnings *)
+
+      type _ Type.err +=
+        | Forbidden : string -> Dolmen.Term.t Type.err
+        (** Error for expressions which do not respect the spec. *)
+      (** Arithmetic type-checking errors *)
+
+      val parse : arith:arith -> Dolmen_smtlib2.version -> Type.builtin_symbols
+      (** Parsing function for type-checking *)
     end
 
   end
@@ -37,13 +68,22 @@ module Smtlib2 : sig
         (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
                                                and type ty := Type.Ty.t) : sig
 
+      type _ Type.warn +=
+        | Restriction : string -> Dolmen.Term.t Type.warn
+        (** Warning for expressions which tecnically do not respect the strict
+            spec but respect the large spec. *)
+      (** Arithmetic type-checking warnings *)
+
       type _ Type.err +=
+        | Forbidden : string -> Dolmen.Term.t Type.err
+        (** Error for expressions which do not respect the spec. *)
         | Expected_arith_type : Type.Ty.t -> Dolmen.Term.t Type.err
         (** Error raised when an arithmetic type was expected (i.e. either
             int or real), but another type was found. *)
       (** Additional errors specific to arithmetic typing. *)
 
-      val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
+      val parse : arith:arith -> Dolmen_smtlib2.version -> Type.builtin_symbols
+      (** Parsing function for type-checking *)
 
     end
 
