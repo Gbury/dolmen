@@ -97,28 +97,31 @@ module Smtlib2 = struct
       | l -> parse_uf c l
     (* The UF theory can be specified after the array theory *)
     and parse_uf c = function
-      | 'U'::'F'::l -> parse_arith (set_uf c) l
-      | l -> parse_arith c l
+      | 'U'::'F'::l -> parse_bv (set_uf c) l
+      | l -> parse_bv c l
     (* After the QF, Array and UF theories have been specified,
-       one of the BV or some arithmetic theory can be specified. *)
-    and parse_arith c = function
+       BV can be specified *)
+    and parse_bv c = function
       | 'B'::'V'::l -> parse_dt (add_theory `Bitvectors c) l
-      | 'I'::'D'::'L'::l -> parse_dt (add_theory `Ints (set_idl c)) l
-      | 'R'::'D'::'L'::l -> parse_dt (add_theory `Reals (set_rdl c)) l
-      | 'L'::'I'::'A'::l -> parse_dt (add_theory `Ints (set_la c)) l
-      | 'L'::'R'::'A'::l -> parse_dt (add_theory `Reals (set_la c)) l
-      | 'L'::'I'::'R'::'A'::l -> parse_dt (add_theory `Reals_Ints (set_la c)) l
-      | 'N'::'I'::'A'::l -> parse_dt (add_theory `Ints c) l
-      | 'N'::'R'::'A'::l -> parse_dt (add_theory `Reals c) l
-      | 'N'::'I'::'R'::'A'::l -> parse_dt (add_theory `Reals_Ints c) l
       | l -> parse_dt c l
-    (* TODO: where can the DT theory appear ? *)
+    (* DT *)
     and parse_dt c = function
       | 'D'::'T'::l -> parse_fp (set_dt c) l
       | l -> parse_fp c l
-    (* TODO: where cna the FP theory appear ? *)
+    (* FP theory *)
     and parse_fp c = function
-      | 'F'::'P'::l -> parse_end (add_theory `Floats c) l
+      | 'F'::'P'::l -> parse_arith (add_theory `Floats c) l
+      | l -> parse_arith c l
+    (* Some logics include both BV and arithmetic (e.g. AUFBVDTLIA) *)
+    and parse_arith c = function
+      | 'I'::'D'::'L'::l -> parse_end (add_theory `Ints (set_idl c)) l
+      | 'R'::'D'::'L'::l -> parse_end (add_theory `Reals (set_rdl c)) l
+      | 'L'::'I'::'A'::l -> parse_end (add_theory `Ints (set_la c)) l
+      | 'L'::'R'::'A'::l -> parse_end (add_theory `Reals (set_la c)) l
+      | 'L'::'I'::'R'::'A'::l -> parse_end (add_theory `Reals_Ints (set_la c)) l
+      | 'N'::'I'::'A'::l -> parse_end (add_theory `Ints c) l
+      | 'N'::'R'::'A'::l -> parse_end (add_theory `Reals c) l
+      | 'N'::'I'::'R'::'A'::l -> parse_end (add_theory `Reals_Ints c) l
       | l -> parse_end c l
     (* End of list *)
     and parse_end c = function

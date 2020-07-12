@@ -30,9 +30,13 @@ module Make
     loc : Dolmen.ParseLocation.t option;
   }
 
-  type defs = [
+  type def = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
+  ]
+
+  type defs = [
+    | `Defs of def list
   ]
 
   type decl = [
@@ -330,10 +334,11 @@ module Make
         `Continue (st, simple (other_id c) c.S.loc (`Set_option t))
 
       (* Declarations and definitions *)
-      | { S.descr = S.Def (id, t); _ } ->
-        let st, ret, w = Typer.def st ?attr:c.S.attr id t in
+      | { S.descr = S.Defs d; _ } ->
+        let st, l, w = Typer.defs st ?attr:c.S.attr d in
         let st = add_warnings st w in
-        `Continue (st, (simple (def_id c) c.S.loc (ret :> typechecked)))
+        let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
+        `Continue (st, res)
       | { S.descr = S.Decls l; _ } ->
         let st, l, w = Typer.decls st ?attr:c.S.attr l in
         let st = add_warnings st w in

@@ -427,6 +427,11 @@ module type Tff = sig
     val arity : t -> int * int
     (** Returns the arity of a constructor. *)
 
+    val pattern_arity : t -> ty -> ty list -> ty list
+    (** Used in the type-checking of pattern matching.
+        [pattern_arity cstr ret ty_args] should return the types of the expected arguments
+        [args] such that [apply_cstr cstr ty_args args] has type [ret]. *)
+
   end
 
   module Field : sig
@@ -479,6 +484,10 @@ module type Tff = sig
   (** Exception raised in case of typing error during term construction.
       [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
       is expected to have type [ty], but does not have that type. *)
+
+  exception Wrong_sum_type of Cstr.t * ty
+  (** Raised when some constructor was expected to belong to some type but does not
+      belong to the given type. *)
 
   exception Wrong_record_type of Field.t * ty_const
   (** Exception raised in case of typing error during term construction.
@@ -569,8 +578,13 @@ module type Tff = sig
       let-binding being typed. *)
 
   val letin : (Var.t * t) list -> t -> t
-  (** Create a let-binding. This funciton is called after the body of the
+  (** Create a let-binding. This function is called after the body of the
       let-binding has been typed. *)
+
+  val pattern_match : t -> (t * t) list -> t
+  (** [pattern_match scrutinee branches] creates a pattern match expression
+      on the scrutinee with the given branches, each of the form
+      [(pattern, body)] *)
 
   val ite : t -> t -> t -> t
   (** [ite condition then_t else_t] creates a conditional branch. *)
@@ -747,8 +761,15 @@ module type Smtlib_Base = sig
   type t
   (** The type of terms. *)
 
+  type cstr
+  (** The type of ADT constructor *)
+
   val eqs : t list -> t
   (** Create a chain of equalities. *)
+
+  val cstr_tester : cstr -> t -> t
+  (** Given a constructor [c] and a term [t], returns a terms that evaluates
+      to [true] iff [t] has [c] as head constructor. *)
 
 end
 

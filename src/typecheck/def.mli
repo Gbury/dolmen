@@ -10,6 +10,10 @@
 (** Handle definitions as declaring new constants. *)
 module Declare(Type : Tff_intf.S) : sig
 
+  val add_definition :
+    Dolmen.Id.t -> [ `Ty of Type.Ty.Const.t | `Term of Type.T.Const.t ] -> unit
+  (** Add a declaration binding. *)
+
   val define_ty :
     Dolmen.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> Type.Ty.Const.t
   (** Define a type constant. *)

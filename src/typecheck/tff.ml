@@ -106,6 +106,7 @@ module Make
     | Builtin
     | Bound of Ast.t
     | Inferred of Ast.t
+    | Defined of Stmt.def
     | Declared of Stmt.decl
   (** The type of reasons for constant typing *)
 
@@ -149,8 +150,10 @@ module Make
   (* Fragments of input that represent the sources of warnings/errors *)
   type _ fragment =
     | Ast : Ast.t -> Ast.t fragment
+    | Def : Stmt.def -> Stmt.def fragment
+    | Defs : Stmt.defs -> Stmt.defs fragment
     | Decl : Stmt.decl -> Stmt.decl fragment
-    | Decls : Stmt.decl list -> Stmt.decl list fragment
+    | Decls : Stmt.decls -> Stmt.decls fragment
     | Located : Dolmen.ParseLocation.t -> Dolmen.ParseLocation.t fragment
 
   let decl_loc d =
@@ -162,9 +165,12 @@ module Make
   let fragment_loc :
     type a. a fragment -> Dolmen.ParseLocation.t option = function
     | Ast { loc; _ } -> loc
+    | Def d -> d.loc
+    | Defs { contents = []; _ } -> None
+    | Defs { contents = d :: _; _ } -> d.loc
     | Decl d -> decl_loc d
-    | Decls [] -> None
-    | Decls (d :: _) -> decl_loc d
+    | Decls { contents = []; _ } -> None
+    | Decls { contents = d :: _; _ } -> decl_loc d
     | Located l -> Some l
 
   (* Warnings *)
@@ -200,7 +206,7 @@ module Make
 
   (* Errors that occur on declaration(s) *)
   type _ err +=
-    | Not_well_founded_datatypes : Stmt.decl list err
+    | Not_well_founded_datatypes : Stmt.decl list -> Stmt.decls err
     (* Not well-dounded datatypes definitions. *)
 
   (* Errors that occur on term fragments, i.e. Ast.t fragments *)
@@ -226,6 +232,7 @@ module Make
     | Type_var_in_type_constructor : Ast.t err
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
+    | Type_def_rec : Stmt.def -> Stmt.defs err
     | Higher_order_application : Ast.t err
     | Higher_order_type : Ast.t err
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
@@ -603,7 +610,7 @@ module Make
     | Bound t | Inferred t ->
       _warn env (Ast t) (Unused_type_variable v)
     (* variables should not be declare-able nor builtin *)
-    | Builtin | Declared _ ->
+    | Builtin | Declared _ | Defined _ ->
       assert false
 
   let _unused_term env v =
@@ -612,7 +619,7 @@ module Make
     | Bound t | Inferred t ->
       _warn env (Ast t) (Unused_term_variable v)
     (* variables should not be declare-able nor builtin *)
-    | Builtin | Declared _ ->
+    | Builtin | Declared _ | Defined _ ->
       assert false
 
 
@@ -834,6 +841,10 @@ module Make
       | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
         parse_quant T.ex Ast.Ex env t [] [] t
 
+      (* Pattern matching *)
+      | { Ast.term = Ast.Match (scrutinee, branches); _ } ->
+        parse_match env t scrutinee branches
+
       (* (Dis)Equality *)
       | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _ }, l); _ } as t ->
         begin match l with
@@ -964,6 +975,66 @@ module Make
       let body = parse_prop env body_ast in
       let f = mk_quant env ast mk (ttype_acc, ty_acc) body in
       Term f
+
+  and parse_match env ast scrutinee branches =
+    let t = parse_term env scrutinee in
+    let l = List.map (parse_branch (T.ty t) env) branches in
+    Term (_wrap2 env ast T.pattern_match t l)
+
+  and parse_branch ty env (pattern, body) =
+    let p, env = parse_pattern ty env pattern in
+    let b = parse_term env body in
+    (p, b)
+
+  and parse_pattern ty env t =
+    match t with
+    | { Ast.term = Ast.Symbol s; _ } as ast_s ->
+      parse_pattern_app ty env t ast_s s []
+    | { Ast.term = Ast.App (
+        ({ Ast.term = Ast.Symbol s; _ } as ast_s), args); _ } ->
+      parse_pattern_app ty env t ast_s s args
+    | _ -> _expected env "pattern" t None
+
+  and parse_pattern_app ty env ast ast_s s args =
+    match find_bound env s with
+    | `Cstr c -> parse_pattern_app_cstr ty env ast c args
+    | _ ->
+      begin match args with
+        | [] -> parse_pattern_var ty env ast_s s
+        | _ -> _expected env "a variable (or an ADT constructor)" ast_s None
+      end
+
+  and parse_pattern_var ty env ast s =
+    let v = T.Var.mk (Id.full_name s) ty in
+    let v, env = add_term_var env s v ast in
+    T.of_var v, env
+
+  and parse_pattern_app_cstr ty env t c args =
+    (* Inlined version of parse_app_cstr *)
+    let n_ty, n_t = T.Cstr.arity c in
+    let ty_l, t_l =
+      match split_args env n_ty n_t args with
+      | `Ok (l, l') -> l, l'
+      | `Bad_arity (expected, actual) ->
+        _bad_cstr_arity env c expected actual t
+    in
+    (* We can't allow binding new type variables here *)
+    let ty_args = List.map (parse_ty env) ty_l in
+    (* Compute the expected types of arguments *)
+    let ty_arity = _wrap3 env t T.Cstr.pattern_arity c ty ty_args in
+    (* Pattern args are allowed to introduce new variables *)
+    let t_args, env = parse_pattern_app_cstr_args env t_l ty_arity in
+    let res = _wrap3 env t T.apply_cstr c ty_args t_args in
+    res, env
+
+  and parse_pattern_app_cstr_args env args args_ty =
+    let l, env =
+      List.fold_left2 (fun (l, env) arg ty ->
+        let arg, env = parse_pattern ty env arg in
+        (arg :: l, env)
+        ) ([], env) args args_ty
+    in
+    List.rev l, env
 
   and parse_let env acc f = function
     | [] -> (* TODO: use continuation to avoid stack overflow on packs of let-bindings ? *)
@@ -1243,7 +1314,7 @@ module Make
             ) l)
         ) fields
 
-  let rec check_well_founded env l =
+  let rec check_well_founded env d l =
     match (l : Stmt.decl list) with
     | [] -> ()
     | _ ->
@@ -1254,9 +1325,9 @@ module Make
           not b
         ) l in
       if !has_progressed then
-        check_well_founded env l'
+        check_well_founded env d l'
       else
-        _error env (Decls l') Not_well_founded_datatypes
+        _error env (Decls d) (Not_well_founded_datatypes l')
 
   let record env d ty_cst { Stmt.vars; fields; _ } =
     let ttype_vars = List.map (parse_ttype_var env) vars in
@@ -1305,7 +1376,7 @@ module Make
           ) pargs targs
       ) cstrs_with_ids defined_cstrs
 
-  let decl env cst t =
+  let define_decl env (_, cst) t =
     match cst, (t : Stmt.decl) with
     | _, Abstract _ -> ()
     | `Term_decl _, Inductive _ -> assert false
@@ -1313,57 +1384,100 @@ module Make
     | `Term_decl _, Record _ -> assert false
     | `Type_decl c, Record r -> record env t c r
 
-  let decls env ?attr l =
-    let tags = match attr with
-      | None -> []
-      | Some a -> parse_attr_and env a
-    in
-    (* Check well-foundedness *)
-    check_well_founded env l;
-    (* First create (in the global env) the type const for each adt *)
-    let l_decl = List.map (fun (t : Stmt.decl) ->
-        match t with
-        | Abstract { id; ty; _ } ->
-          begin match parse_sig env ty with
-            | `Ty_cstr n ->
-              let c = Ty.Const.mk (Id.full_name id) n in
-              List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-              decl_ty_const env (Decl t) id c (Declared t);
-              `Type_decl c
-            | `Fun_ty (vars, args, ret) ->
-              let f = T.Const.mk (Id.full_name id) vars args ret in
-              List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
-              decl_term_const env (Decl t) id f (Declared t);
-              `Term_decl f
-          end
-        | Record { id; vars; _ }
-        | Inductive { id; vars; _ } ->
-          let n = List.length vars in
+  let parse_decl env tags (t : Stmt.decl) =
+    match t with
+    | Abstract { id; ty; _ } ->
+      begin match parse_sig env ty with
+        | `Ty_cstr n ->
           let c = Ty.Const.mk (Id.full_name id) n in
           List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
-          decl_ty_const env (Decl t) id c (Declared t);
-          `Type_decl c
-      ) l in
-    (* Parse each definition
-       TODO: parse (and thus define them with T) in the topological order
-             defined by the well-founded check ? *)
-    List.iter2 (decl env) l_decl l;
-    (* Return the defined types *)
-    l_decl
+          id, `Type_decl c
+        | `Fun_ty (vars, args, ret) ->
+          let f = T.Const.mk (Id.full_name id) vars args ret in
+          List.iter (fun (Any (tag, v)) -> T.Const.tag f tag v) tags;
+          id, `Term_decl f
+      end
+    | Record { id; vars; _ }
+    | Inductive { id; vars; _ } ->
+      let n = List.length vars in
+      let c = Ty.Const.mk (Id.full_name id) n in
+      List.iter (fun (Any (tag, v)) -> Ty.Const.tag c tag v) tags;
+      id, `Type_decl c
 
-  (* High-level parsing functions *)
-  (* ************************************************************************ *)
+  let record_decl env (id, tdecl) (t : Stmt.decl) =
+    match tdecl with
+    | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared t)
+    | `Term_decl f -> decl_term_const env (Decl t) id f (Declared t)
 
-  let new_def env t ?attr id =
+  let decls env ?attr (d: Dolmen.Statement.decl Dolmen.Statement.group) =
     let tags = match attr with
       | None -> []
       | Some a -> parse_attr_and env a
     in
-    match parse_fun [] [] env t with
-    | `Ty (ty_args, body) ->
-      `Type_def (id, tags, ty_args, body)
-    | `Term (ty_args, t_args, body) ->
-      `Term_def (id, tags, ty_args, t_args, body)
+    if d.recursive then begin
+      (* Check well-foundedness *)
+      check_well_founded env d d.contents;
+      (* First pre-parse all definitions and generate the typed symbols for them *)
+      let parsed = List.map (parse_decl env tags) d.contents in
+      (* Then, since the decls are recursive, register in the global env the type
+         const for each decl before fully parsing and defining them. *)
+      let () = List.iter2 (record_decl env) parsed d.contents in
+      (* Then parse the complete type definition and define them.
+         TODO: parse (and thus define them with T) in the topological order
+             defined by the well-founded check ? *)
+      List.iter2 (define_decl env) parsed d.contents;
+      (* Return the defined types *)
+      List.map snd parsed
+    end else begin
+      List.map (fun t ->
+          (* First pre-parse all definitions and generate the typed symbols for them *)
+          let parsed = parse_decl env tags t in
+          (* Then parse the complete type definition and define them. *)
+          let () = define_decl env parsed t in
+          (* Finally record them in the state *)
+          let () = record_decl env parsed t in
+          (* return *)
+          snd parsed
+        ) d.contents
+    end
+
+  (* Definitions *)
+  (* ************************************************************************ *)
+
+  let parse_def_sig env tags (d: Stmt.def) =
+    parse_decl env tags (Abstract { id = d.id; ty = d.ty; loc = d.loc; })
+
+  let record_def d env (id, tdecl) (t : Stmt.def) =
+    match tdecl with
+    | `Type_decl _ -> _error env (Defs d) (Type_def_rec t)
+    | `Term_decl f -> decl_term_const env (Def t) id f (Defined t)
+
+  let parse_def env (_, ssig) (d : Stmt.def) =
+    match ssig, parse_fun [] [] env d.body with
+    | `Type_decl c, `Ty (ty_args, body) ->
+      `Type_def (d.id, c, ty_args, body)
+    | `Term_decl f, `Term (ty_args, t_args, body) ->
+      `Term_def (d.id, f, ty_args, t_args, body)
+    | `Term_decl _, `Ty _ -> assert false
+    | `Type_decl _, `Term _ -> assert false
+
+  let defs env ?attr (d : Stmt.defs) =
+    let tags = match attr with
+      | None -> []
+      | Some a -> parse_attr_and env a
+    in
+    if d.recursive then begin
+      let sigs = List.map (parse_def_sig env tags) d.contents in
+      let () = List.iter2 (record_def d env) sigs d.contents in
+      List.map2 (parse_def env) sigs d.contents
+    end else begin
+      List.map (fun t ->
+          parse_def env (parse_def_sig env tags t) t
+        ) d.contents
+    end
+
+  (* High-level parsing function *)
+  (* ************************************************************************ *)
 
   let parse env ast =
     let res = parse_prop env ast in

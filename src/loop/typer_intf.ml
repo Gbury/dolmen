@@ -30,16 +30,17 @@ module type S = sig
     state -> ?loc:Dolmen.ParseLocation.t -> string ->
     state * (Dolmen.ParseLocation.t * string) list
 
-  val def :
-    state -> ?attr:Dolmen.Term.t -> Dolmen.Id.t -> Dolmen.Term.t ->
+  val defs :
+    state -> ?attr:Dolmen.Term.t ->
+    Dolmen.Statement.defs ->
     state * [
      | `Type_def of Dolmen.Id.t * ty_var list * ty
      | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
-    ] * (Dolmen.ParseLocation.t * string) list
+    ] list * (Dolmen.ParseLocation.t * string) list
 
   val decls :
     state -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.decl list ->
+    Dolmen.Statement.decls ->
     state * [
       | `Type_decl of ty_const
       | `Term_decl of term_const

@@ -91,16 +91,19 @@ module Declare(Type : Tff_intf.S) = struct
 
   let definitions = H.create 13
 
+  let add_definition id def =
+    H.add definitions id def
+
   let define_ty id vars _body =
     let c = Type.Ty.Const.mk (Id.full_name id) (List.length vars) in
-    let () = H.add definitions id (`Ty c) in
+    let () = add_definition id (`Ty c) in
     c
 
   let define_term id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
     let c = Type.T.Const.mk (Id.full_name id) vars args_ty ret_ty in
-    let () = H.add definitions id (`Term c) in
+    let () = add_definition id (`Term c) in
     c
 
   let parse env symbol =

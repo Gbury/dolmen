@@ -179,6 +179,8 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "bound at %a" pp_opt_loc ast.loc
     | Inferred ast ->
       Format.fprintf fmt "inferred at %a" pp_opt_loc ast.loc
+    | Defined d ->
+      Format.fprintf fmt "defined at %a" pp_opt_loc d.loc
     | Declared d ->
       Format.fprintf fmt "declared at %a" pp_opt_loc (decl_loc d)
 
@@ -254,8 +256,12 @@ module Make(S : State_intf.Typer) = struct
   let print_fragment (type a) fmt (fragment : a T.fragment) =
     match fragment with
     | T.Ast ast -> Dolmen.Term.print fmt ast
+    | T.Def d -> Dolmen.Statement.print_def fmt d
     | T.Decl d -> Dolmen.Statement.print_decl fmt d
-    | T.Decls l -> Dolmen.Statement.print_decls fmt l
+    | T.Defs d ->
+      Dolmen.Statement.print_group Dolmen.Statement.print_def fmt d
+    | T.Decls d ->
+      Dolmen.Statement.print_group Dolmen.Statement.print_decl fmt d
     | T.Located loc ->
       Format.fprintf fmt "<located at %a>" Dolmen.ParseLocation.fmt loc
 
@@ -270,7 +276,7 @@ module Make(S : State_intf.Typer) = struct
     match err with
 
     (* Datatype definition not well founded *)
-    | T.Not_well_founded_datatypes ->
+    | T.Not_well_founded_datatypes _ ->
       Format.fprintf fmt "Not well founded datatype declaration"
 
     (* Inference of the type of a bound variable *)
@@ -750,28 +756,34 @@ module Make(S : State_intf.Typer) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls st ?attr l =
+  let decls st ?attr d =
     let env = typing_env st in
-    let decls = T.decls env ?attr l in
-    let () = check_decls st env l decls in
+    let decls = T.decls env ?attr d in
+    let () = check_decls st env d.contents decls in
     st, decls, get_warnings ()
 
+
+  (* Definitions *)
+  (* ************************************************************************ *)
+
+  let defs st ?attr d =
+    let env = typing_env st in
+    let l = T.defs env ?attr d in
+    let l = List.map (function
+        | `Type_def (id, _, vars, body) ->
+          let () = if not d.recursive then Subst.define_ty id vars body in
+          `Type_def (id, vars, body)
+        | `Term_def (id, f, vars, args, body) ->
+          let () = Decl.add_definition id (`Term f) in
+          `Term_def (id, f, vars, args, body)
+      ) l
+    in
+    st, l, get_warnings ()
 
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
   let typecheck (st : _ Dolmen.State.state) = st.type_check
-
-  let def st ?attr id (t : Dolmen.Term.t) =
-    let env = typing_env ?loc:t.loc st in
-    begin match T.new_def ?attr env t id with
-      | `Type_def (id, _, vars, body) ->
-        let () = Subst.define_ty id vars body in
-        st, `Type_def (id, vars, body), get_warnings ()
-      | `Term_def (id, _, vars, args, body) ->
-        let expr_id = Decl.define_term id vars args body in
-        st, `Term_def (id, expr_id, vars, args, body), get_warnings ()
-    end
 
   let terms st ?attr:_ l =
     let res = List.map (fun (t : Dolmen.Term.t) ->

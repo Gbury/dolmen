@@ -54,7 +54,25 @@ type decl =
   | Abstract of abstract
   | Record of record
   | Inductive of inductive (**)
-(** Type definitions. *)
+(** Type definitions, type declarations, and term declaration. *)
+
+type def = {
+  id : Id.t;
+  ty : term;
+  body : term;
+  loc : location option;
+}
+(** Term definition. *)
+
+type 'a group = {
+  contents : 'a list;
+  recursive : bool;
+}
+(** Groups of declarations or definitions, which can be recursive or not. *)
+
+type defs = def group
+type decls = decl group
+(** Convenient aliases *)
 
 type descr =
   | Pack of t list
@@ -96,9 +114,9 @@ type descr =
   | Set_option of term
   (** Set the option value. *)
 
-  | Def of Id.t * term
+  | Defs of def group
   (** Symbol definition, i.e the symbol is equal to the given term. *)
-  | Decls of decl list
+  | Decls of decl group
   (** A list of potentially recursive type definitions. *)
 
   | Get_proof
@@ -144,6 +162,23 @@ include Dolmen_intf.Stmt.Logic
 
 (** {2 Additional functions} *)
 
+val mk_decls :
+  ?loc:location -> ?attr:term -> recursive:bool -> decl list -> t
+(** Create a group of declarations *)
+
+val mk_defs :
+  ?loc:location -> ?attr:term -> recursive:bool -> def list -> t
+(** Create a group of declarations *)
+
+val prove : ?loc:location -> unit -> t
+(** Emit a [Prove] statement. *)
+
+val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
+(** Pack a list of statements into a single one. *)
+
+
+(** {2 Printing functions} *)
+
 val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions for statements. *)
@@ -152,16 +187,13 @@ val pp_decl : Buffer.t -> decl -> unit
 val print_decl : Format.formatter -> decl -> unit
 (* Printer for declarations. *)
 
-val pp_decls : Buffer.t -> decl list -> unit
-val print_decls : Format.formatter -> decl list -> unit
-(* Printer for declaration lists. *)
+val pp_def : Buffer.t -> def -> unit
+val print_def : Format.formatter -> def -> unit
+(* Printer for declarations. *)
 
-val prove : ?loc:location -> unit -> t
-(** Emit a [Prove] statement. *)
-
-val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
-(** Pack a list of statements into a single one. *)
-
-val normalize : (Term.t -> Term.t) -> t -> t
-(** Normalize statements with regards to a normalization function on terms. *)
+val pp_group : (Buffer.t -> 'a -> unit) -> Buffer.t -> 'a group -> unit
+val print_group :
+  (Format.formatter -> 'a -> unit) ->
+  Format.formatter -> 'a group -> unit
+(* Printer for groups. *)
 

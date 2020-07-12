@@ -70,10 +70,14 @@ type term_var = ty id
 and term_const = (ttype, ty) function_type id
 (** Term symbols, which encode their expected type and term argument lists lengths. *)
 
+and pattern = term
+(** patterns are simply terms *)
+
 and term_descr =
   | Var of term_var                                         (** Variables *)
   | App of term_const * ty list * term list                 (** Application *)
   | Binder of binder * term                                 (** Binders *)
+  | Match of term * (pattern * term) list                   (** Pattern matching *)
 (** Term descriptions. *)
 
 and binder =
@@ -194,12 +198,25 @@ type builtin +=
   (** [Ite: 'a. Prop -> 'a -> 'a -> 'a]: branching operator. *)
 
 type builtin +=
-  | Constructor of ty_const * int
-  (** [Constructor (t, n)] is the n-th constructor of the algebraic datatype
-      defined by [t]. *)
-  | Destructor of ty_const * term_const * int * int
-  (** [Destructor (t, c, n, k)] is the destructor retuning the k-th argument
-      of the n-th constructor of type [t] which should be [c]. *)
+  | Tester of {
+      cstr : term_const;
+    }
+  (** [Tester { cstr; }] is the tester for constructor [cstr]. *)
+  | Constructor of {
+      adt : ty_const;
+      case : int;
+    }
+  (** [Constructor { adt; case}] is the case-th constructor of the algebraic
+      datatype defined by [adt]. *)
+  | Destructor of {
+      adt : ty_const;
+      cstr : term_const;
+      case : int;
+      field: int;
+    }
+  (** [Destructor { adt; cstr; case; field; }] is the destructor retuning the
+      field-th argument of the case-th constructor of type [adt] which should
+      be [cstr]. *)
 
 type builtin +=
   | Int
@@ -819,6 +836,7 @@ module Ty : sig
 
   type adt_case = {
     cstr : term_const;
+    tester : term_const;
     dstrs : term_const option array;
   }
   (** One case of an algebraic datatype definition. *)
@@ -828,7 +846,7 @@ module Ty : sig
     | Adt of {
         ty : ty_const;
         record : bool;
-        cstrs : adt_case list;
+        cases : adt_case array;
       } (** *)
   (** The various ways to define a type inside the solver. *)
 
@@ -1105,6 +1123,14 @@ module Term : sig
     val void : t
     (** Only constructor for the type unit. *)
 
+    val pattern_arity : t -> ty -> ty list -> ty list
+    (** Used in the type-checking of pattern matching.
+        [pattern_arity cstr ret ty_args] should return the types of the expected arguments
+        [args] such that [apply_cstr cstr ty_args args] has type [ret].
+        @raise Wrong_sum_type if [ret] cannot be unified with the type of [c]
+        @raise Bad_term_arity if the provided type argument list is not of the correct length
+    *)
+
     val tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
@@ -1168,6 +1194,10 @@ module Term : sig
       [Wrong_type (t, ty)] should be raised by term constructor functions when some term [t]
       is expected to have type [ty], but does not have that type. *)
 
+  exception Wrong_sum_type of Cstr.t * ty
+  (** Raised when some constructor was expected to belong to some type but does not
+      belong to the given type. *)
+
   exception Wrong_record_type of Field.t * ty_const
   (** Exception raised in case of typing error during term construction.
       This should be raised when the returned field was expected to be a field
@@ -1196,6 +1226,12 @@ module Term : sig
 
   val apply_field : Field.t -> t -> t
   (** Field access for a record. *)
+
+  val cstr_tester : Cstr.t -> t -> t
+  (** Test expression for a constructor. *)
+
+  val pattern_match : t -> (pattern * t) list -> t
+  (** Create a pattern match. *)
 
   val void : t
   (** The only inhabitant of type unit. *)

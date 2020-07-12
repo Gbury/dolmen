@@ -40,11 +40,16 @@ module Make
   ]
   (** A list of type declarations. *)
 
-  type defs = [
+  type def = [
     | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
   (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
+
+  type defs = [
+    | `Defs of def list
+  ]
+  (** A list of definitions *)
 
   type assume = [
     | `Hyp of Expr.formula

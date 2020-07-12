@@ -97,6 +97,7 @@ module type S = sig
     | Builtin
     | Bound of Dolmen.Term.t
     | Inferred of Dolmen.Term.t
+    | Defined of Dolmen.Statement.def
     | Declared of Dolmen.Statement.decl
   (** The type of reasons for constant typing *)
 
@@ -126,8 +127,10 @@ module type S = sig
 
   type _ fragment =
     | Ast : Dolmen.Term.t -> Dolmen.Term.t fragment
+    | Def : Dolmen.Statement.def -> Dolmen.Statement.def fragment
+    | Defs : Dolmen.Statement.defs -> Dolmen.Statement.defs fragment
     | Decl : Dolmen.Statement.decl -> Dolmen.Statement.decl fragment
-    | Decls : Dolmen.Statement.decl list -> Dolmen.Statement.decl list fragment
+    | Decls : Dolmen.Statement.decls -> Dolmen.Statement.decls fragment
     | Located : Dolmen.ParseLocation.t -> Dolmen.ParseLocation.t fragment (**)
   (** Fragments of input that represent the sources of warnings/errors *)
 
@@ -161,7 +164,8 @@ module type S = sig
       trigger on *)
 
   type _ err +=
-    | Not_well_founded_datatypes : Dolmen.Statement.decl list err
+    | Not_well_founded_datatypes :
+        Dolmen.Statement.decl list -> Dolmen.Statement.decls err
     (** Not well-dounded datatypes definitions. *)
   (** Errors that occur on declaration(s) *)
 
@@ -226,6 +230,8 @@ module type S = sig
     | Forbidden_quantifier : Dolmen.Term.t err
     (** *)
     | Missing_destructor : Dolmen.Id.t -> Dolmen.Term.t err
+    (** *)
+    | Type_def_rec : Dolmen.Statement.def -> Dolmen.Statement.defs err
     (** *)
     | Higher_order_application : Dolmen.Term.t err
     (** *)
@@ -359,17 +365,18 @@ module type S = sig
 
   val decls :
     env -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.decl list ->
-    [ `Type_decl of Ty.Const.t
-    | `Term_decl of T.Const.t
+    Dolmen.Statement.decls -> [
+      | `Type_decl of Ty.Const.t
+      | `Term_decl of T.Const.t
     ] list
   (** Parse a list of potentially mutually recursive declarations. *)
 
-  val new_def :
-    (?attr:Dolmen.Term.t -> Dolmen.Id.t ->
-     [ `Type_def of Dolmen.Id.t * tag list * Ty.Var.t list * Ty.t
-     | `Term_def of Dolmen.Id.t * tag list * Ty.Var.t list * T.Var.t list * T.t
-     ]) typer
+  val defs :
+    env -> ?attr:Dolmen.Term.t ->
+    Dolmen.Statement.defs -> [
+      | `Type_def of Dolmen.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
+      | `Term_def of Dolmen.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
+    ] list
   (** Parse a definition *)
 
   val parse : T.t typer

@@ -70,7 +70,8 @@ module Smtlib2 = struct
       (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
                                           and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t) = struct
+      (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
+                                         and type cstr := Type.T.Cstr.t) = struct
 
     let parse_symbol env = function
       | { Ast.term = Ast.Symbol s; _ }
@@ -152,6 +153,19 @@ module Smtlib2 = struct
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
         `Tags (fun _ast _args -> [Type.Any (Tag.rwrt, ())])
+
+      (* ADT testers *)
+      | Type.Id { Id.ns = Id.Term; name; } ->
+        Base.parse_id name [
+          "is", `Unary (function s ->
+              let id = Id.mk Id.Term s in
+              begin match Type.find_bound env id with
+                | `Cstr c ->
+                  `Term (Base.term_app1 (module Type) env "is" (T.cstr_tester c))
+                | _ -> `Not_found
+              end);
+        ] ~err:(Base.bad_term_index_arity (module Type) env)
+          ~k:(fun _ -> `Not_found)
 
       | _ -> `Not_found
 

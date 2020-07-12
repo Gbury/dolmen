@@ -32,6 +32,21 @@ type decl =
   | Record of record
   | Inductive of inductive
 
+type def = {
+  id : Id.t;
+  ty : term;
+  body : term;
+  loc : location option;
+}
+
+type 'a group = {
+  contents : 'a list;
+  recursive : bool;
+}
+
+type defs = def group
+type decls = decl group
+
 (* Description of statements. *)
 type descr =
   | Pack of t list
@@ -56,8 +71,8 @@ type descr =
   | Get_option of string
   | Set_option of term
 
-  | Def of Id.t * term
-  | Decls of decl list
+  | Defs of def group
+  | Decls of decl group
 
   | Get_proof
   | Get_unsat_core
@@ -108,8 +123,15 @@ let pp_decl b = function
   | Record r -> pp_record b r
   | Inductive i -> pp_inductive b i
 
-let pp_decls b l =
-  Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp:pp_decl b l
+let pp_def b (d : def) =
+  Printf.bprintf b "def: %a = %a" Id.pp d.id Term.pp d.body
+
+let pp_group pp b (d: _ group) =
+  let aux = Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"\n" ~pp in
+  if d.recursive then
+    Printf.bprintf b "rec (\n%a)" aux d.contents
+  else
+    aux b d.contents
 
 let rec pp_descr b = function
   | Pack l ->
@@ -137,16 +159,13 @@ let rec pp_descr b = function
   | Set_logic s -> Printf.bprintf b "set-logic: %s" s
 
   | Get_info s -> Printf.bprintf b "get-info: %s" s
-  | Set_info t ->
-    Printf.bprintf b "set-info: %a" Term.pp t
+  | Set_info t -> Printf.bprintf b "set-info: %a" Term.pp t
 
   | Get_option s -> Printf.bprintf b "get-option: %s" s
-  | Set_option t ->
-    Printf.bprintf b "set-option: %a" Term.pp t
+  | Set_option t -> Printf.bprintf b "set-option: %a" Term.pp t
 
-  | Def (id, t) -> Printf.bprintf b "def: %a = %a" Id.pp id Term.pp t
-  | Decls [t] -> pp_decl b t
-  | Decls l -> pp_decls b l
+  | Defs p -> pp_group pp_def b p
+  | Decls p -> pp_group pp_decl b p
 
   | Get_proof -> Printf.bprintf b "get-proof"
   | Get_unsat_core -> Printf.bprintf b "get-unsat-core"
@@ -193,8 +212,15 @@ let print_decl fmt = function
   | Record r -> print_record fmt r
   | Inductive i -> print_inductive fmt i
 
-let print_decls fmt l =
-  (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:print_decl) fmt l
+let print_def fmt (d : def) =
+  Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print d.id Term.print d.body
+
+let print_group print fmt (d: _ group) =
+  let aux = Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print in
+  if d.recursive then
+    Format.fprintf fmt "@[<v 2>rec@ %a@]" aux d.contents
+  else
+    aux fmt d.contents
 
 let rec print_descr fmt = function
   | Pack l ->
@@ -235,12 +261,8 @@ let rec print_descr fmt = function
   | Set_option t ->
     Format.fprintf fmt "@[<hov 2>set-option:@ %a@]" Term.print t
 
-  | Def (id, t) ->
-    Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print id Term.print t
-  | Decls [t] ->
-    print_decl fmt t
-  | Decls l ->
-    Format.fprintf fmt "@[<v 2>rec_types:@ %a@]" print_decls l
+  | Defs d -> print_group print_def fmt d
+  | Decls d -> print_group print_decl fmt d
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
@@ -307,6 +329,44 @@ let echo ?loc s = mk ?loc (Echo s)
 let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
 
+(* grouping of decls/defs *)
+let mk_decls ?loc ?attr ~recursive decls =
+  mk ?loc ?attr (Decls { recursive; contents = decls; })
+
+let group_decls ?loc ?attr ~recursive l =
+  let decls, others = List.fold_left (fun (decls, others) s ->
+      match s with
+      | { descr = Decls d; _ } ->
+        List.rev_append d.contents decls, others
+      | _ -> decls, s :: others
+    ) ([], []) l in
+  let new_decls = mk_decls ?loc ?attr ~recursive (List.rev decls) in
+  match others with
+  | [] -> new_decls
+  | l -> pack ?loc (new_decls :: List.rev l)
+
+let mk_defs ?loc ?attr ~recursive defs =
+  mk ?loc ?attr (Defs { recursive; contents = defs; })
+
+let group_defs ?loc ?attr ~recursive l =
+  let defs, others = List.fold_left (fun (defs, others) s ->
+      match s with
+      | { descr = Defs d; _ } ->
+        List.rev_append d.contents defs, others
+      | _ -> defs, s :: others
+    ) ([], []) l in
+  let new_defs = mk_defs ?loc ?attr ~recursive (List.rev defs) in
+  match others with
+  | [] -> new_defs
+  | l -> pack ?loc (new_defs :: List.rev l)
+
+
+(* Some helpers *)
+let extract_type = function
+  | { Term.term = Colon (_, ty); _ } -> ty
+  | _ -> assert false
+
+
 (* Alt-ergo wrappers *)
 let logic ?loc ~ac ids ty =
   let attr = if ac then Some (Term.const ?loc Id.ac_symbol) else None in
@@ -319,25 +379,22 @@ let logic ?loc ~ac ids ty =
       Term.pi ?loc l ty
   in
   let l = List.map (fun id -> Abstract { id; ty; loc; }) ids in
-  mk ?loc ?attr (Decls l)
+  mk_decls ?loc ?attr ~recursive:true l
 
 let abstract_type ?loc id vars =
   let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
-  mk ?loc (Decls [Abstract { id; ty; loc; }])
+  mk_decls ?loc ~recursive:false [Abstract { id; ty; loc; }]
 
 let record_type ?loc id vars fields =
-  mk ?loc (Decls [Record { id; vars; fields; loc; attr = None; }])
+  mk_decls ?loc ~recursive:false
+    [ Record { id; vars; fields; loc; attr = None; }]
 
 let algebraic_type ?loc id vars cstrs =
-  mk ?loc (Decls [Inductive { id; vars; cstrs; loc; attr = None; }])
+  mk_decls ?loc ~recursive:false
+    [Inductive { id; vars; cstrs; loc; attr = None; }]
 
 let rec_types ?loc l =
-  let l = List.map (function
-      | { descr = Decls l'; _ } -> l'
-      | _ -> assert false
-    ) l in
-  let l = List.flatten l in
-  mk ?loc (Decls l)
+  group_decls ?loc ~recursive:true l
 
 let axiom ?loc id t =
   mk ~id ?loc (Antecedent t)
@@ -380,32 +437,40 @@ let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
-  mk ?loc (Decls [ Abstract { id; ty; loc; }])
+  mk_decls ?loc ~recursive:false [ Abstract { id; ty; loc; }]
 
 let fun_decl ?loc id l t' =
   let ty = Term.fun_ty ?loc l t' in
-  mk ?loc (Decls [ Abstract { id; ty; loc; }])
+  mk_decls ?loc ~recursive:false [ Abstract { id; ty; loc; }]
 
 let type_def ?loc id args body =
   let l = List.map (fun id -> Term.colon (Term.const id) @@ Term.tType ()) args in
-  let t = Term.lambda l body in
-  mk ?loc (Def (id, t))
+  let ty = Term.pi l (Term.tType ()) in
+  let body = Term.lambda l body in
+  mk_defs ?loc ~recursive:false [ { id; ty; body; loc; } ]
 
 let datatypes ?loc l =
   let l' = List.map (fun (id, vars, cstrs) ->
       Inductive {id; vars; cstrs; loc; attr = None;}
     ) l in
-  mk ?loc (Decls l')
+  mk_decls ?loc ~recursive:true l'
+
+let fun_def_aux id args ty_ret body =
+  let ty = Term.fun_ty (List.map extract_type args) ty_ret in
+  let t = Term.lambda args (Term.colon body ty_ret) in
+  id, ty, t
 
 let fun_def ?loc id args ty_ret body =
-  let t = Term.lambda args (Term.colon body ty_ret) in
-  mk ?loc (Def (id, t))
+  let id, ty, body = fun_def_aux id args ty_ret body in
+  mk_defs ?loc ~recursive:false [{ id; ty; body; loc; }]
 
 let funs_def_rec ?loc l =
-  let l' = List.map (fun (id, args, ty_ret, body) ->
-      fun_def ?loc id args ty_ret body
+  let contents = List.map (fun (id, args, ty_ret, body) ->
+      let id, ty, body = fun_def_aux id args ty_ret body in
+      { id; ty; body; loc; }
     ) l in
-  pack ?loc l'
+  mk_defs ?loc ~recursive:true contents
+
 
 (* Wrappers for Zf *)
 let zf_attr ?loc = function
@@ -416,7 +481,7 @@ let import ?loc s = mk ?loc (Include s)
 
 let defs ?loc ?attrs l =
   let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Pack l)
+  group_defs ?loc ?attr ~recursive:true l
 
 let rewrite ?loc ?attrs t =
   let attr = zf_attr ?loc attrs in
@@ -439,7 +504,7 @@ let lemma ?loc ?attrs t =
 
 let decl ?loc ?attrs id ty =
   let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Decls [Abstract { id; ty; loc; }])
+  mk_decls ?loc ?attr ~recursive:true [Abstract { id; ty; loc; }]
 
 let definition ?loc ?attrs s ty l =
   let attr = zf_attr ?loc attrs in
@@ -450,17 +515,12 @@ let definition ?loc ?attrs s ty l =
 
 let inductive ?loc ?attrs id vars cstrs =
   let attr = zf_attr ?loc attrs in
-  mk ?loc (Decls [Inductive {id; vars; cstrs; loc; attr; }])
+  mk_decls ?loc ~recursive:true [Inductive {id; vars; cstrs; loc; attr; }]
 
 let data ?loc ?attrs l =
   (* this is currently only used for mutually recursive datatypes *)
   let attr = zf_attr ?loc attrs in
-  let l = List.map (function
-      | { descr = Decls l'; _ } -> l'
-      | _ -> assert false
-    ) l in
-  let l = List.flatten l in
-  mk ?loc ?attr (Decls l)
+  group_decls ?loc ?attr ~recursive:true l
 
 
 (* Wrappers for tptp *)
@@ -500,7 +560,8 @@ let tptp ?loc ?annot id role body =
     | "type" ->
       begin match body with
         | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
-          Decls [Abstract { id = s; ty; loc }]
+          Decls { recursive = false;
+                  contents = [Abstract { id = s; ty; loc }]; }
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
           Pack []
@@ -532,44 +593,5 @@ let cnf ?loc ?annot id role t =
     | _ -> [t]
   in
   tptp ?loc ?annot id role (`Clause (t, l))
-
-(* normalization *)
-let normalize_inductive f i =
-  { i with cstrs = List.map (fun (x, l) -> (x, List.map f l)) i.cstrs; }
-
-let normalize_record f r =
-  { r with fields = List.map (fun (id, ty) -> (id, f ty)) r.fields; }
-
-let normalize_type_def f = function
-  | Abstract { id; ty; loc; } -> Abstract { id; ty = f ty; loc; }
-  | Record r -> Record (normalize_record f r)
-  | Inductive i -> Inductive (normalize_inductive f i)
-
-let rec normalize_descr f = function
-  | Pack l -> Pack (List.map (normalize f) l)
-
-  | Plain t -> Plain (f t)
-
-  | Prove l -> Prove (List.map f l)
-  | Clause l -> Clause (List.map f l)
-  | Antecedent t -> Antecedent (f t)
-  | Consequent t -> Consequent (f t)
-
-  | Set_info t -> Set_info (f t)
-
-  | Set_option t -> Set_option (f t)
-
-  | Def (id, t) -> Def (id, f t)
-  | Decls l -> Decls (List.map (normalize_type_def f) l)
-
-  | Get_value l -> Get_value (List.map f l)
-
-  | descr -> descr
-
-and normalize f s =
-  { s with
-    attr = (match s.attr with
-        | None -> None | Some t -> Some (f t));
-    descr = normalize_descr f s.descr; }
 
 

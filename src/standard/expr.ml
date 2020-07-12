@@ -53,10 +53,13 @@ type term_var = ty id
 
 and term_const = (ttype, ty) function_type id
 
+and pattern = term
+
 and term_descr =
   | Var of term_var
   | App of term_const * ty list * term list
   | Binder of binder * term
+  | Match of term * (pattern * term) list
 
 and binder =
   | Exists of ty_var list * term_var list
@@ -88,8 +91,19 @@ type builtin +=
   | Imply | Equiv
 type builtin += Ite
 type builtin +=
-  | Constructor of ty_const * int
-  | Destructor of ty_const * term_const * int * int
+  | Tester of {
+      cstr : term_const;
+    }
+  | Constructor of {
+      adt : ty_const;
+      case : int;
+    }
+  | Destructor of {
+      adt : ty_const;
+      cstr : term_const;
+      case : int;
+      field: int;
+    }
 
 (* arithmetic *)
 type builtin +=
@@ -309,6 +323,10 @@ module Print = struct
     | App (f, tys, args) -> term_app fmt f tys args
     | Binder (b, body) ->
       Format.fprintf fmt "@[<hv 2>%a%a@ %a@]" binder b binder_sep b term body
+    | Match (scrutinee, branches) ->
+      Format.fprintf fmt "@[<hv 2>match %a with@ %a@]"
+        term scrutinee
+        (Format.pp_print_list ~pp_sep:(return "@ ") branch) branches
 
   and term_app fmt (f : _ id) tys args =
     match Tag.last f.tags pos with
@@ -362,6 +380,9 @@ module Print = struct
 
   and binding fmt (v, t) =
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
+
+  and branch fmt (pattern, body) =
+    Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a" term pattern term body
 
   let iter ~sep pp fmt k =
     let first = ref true in
@@ -601,6 +622,15 @@ module FV = struct
   let remove s l =
     List.fold_left (fun acc v -> del v acc) s l
 
+  let diff s s' =
+    Mi.merge (fun _ o o' ->
+        match o, o' with
+        | None, None -> None
+        | None, Some _ -> None
+        | (Some _ as res), None -> res
+        | Some _, Some _ -> None
+      ) s s'
+
   let merge s s' =
     Mi.merge (fun _ o o' ->
         match o, o' with
@@ -731,6 +761,7 @@ module Ty = struct
 
   type adt_case = {
     cstr : term_const;
+    tester : term_const;
     dstrs : term_const option array;
   }
 
@@ -739,7 +770,7 @@ module Ty = struct
     | Adt of {
         ty : ty_const;
         record : bool;
-        cstrs : adt_case list;
+        cases : adt_case array;
       }
 
   let definition_tag : def Tag.t = Tag.create ()
@@ -987,10 +1018,14 @@ module Term = struct
   type 'a tag = 'a Tag.t
 
   exception Wrong_type of t * ty
+  exception Wrong_sum_type of term_const * ty
   exception Wrong_record_type of term_const * ty_const
+
   exception Field_repeated of term_const
   exception Field_missing of term_const
   exception Field_expected of term_const
+
+  exception Constructor_expected of term_const
 
   let print = Print.term
 
@@ -1009,6 +1044,8 @@ module Term = struct
       hash4 5 (Id.hash f) (hash_list Ty.hash tys) (hash_list hash args)
     | Binder (b, body) ->
       hash3 7 (hash_binder b) (hash body)
+    | Match (scrutinee, branches) ->
+      hash3 11 (hash scrutinee) (hash_branches branches)
 
   and hash t =
     if t.hash <= 0 then t.hash <- hash_aux t;
@@ -1023,12 +1060,19 @@ module Term = struct
       let aux (v, t) = hash2 (Id.hash v) (hash t) in
       hash2 7 (hash_list aux l)
 
+  and hash_branch (pattern, body) =
+    hash2 (hash pattern) (hash body)
+
+  and hash_branches l =
+    hash_list hash_branch l
+
   (* Comparison *)
   let discr t =
     match t.descr with
     | Var _ -> 1
     | App _ -> 2
     | Binder _ -> 3
+    | Match _ -> 4
 
   let binder_discr = function
     | Exists _ -> 1
@@ -1048,6 +1092,9 @@ module Term = struct
         | Binder (b, body), Binder (b', body') ->
           compare_binder b b'
           <?> (compare, body, body')
+        | Match (s, l), Match (s', l') ->
+          compare s s'
+          <?> (lexicographic compare_branch, l, l')
         | _, _ -> (discr u) - (discr v)
     end
 
@@ -1064,14 +1111,56 @@ module Term = struct
       lexicographic aux l l'
     | _, _ -> (binder_discr b) - (binder_discr b')
 
+  and compare_branch (p, b) (p', b') =
+    compare p p' <?> (compare, b, b')
+
   let equal u v = compare u v = 0
 
   (* Inspection *)
   let ty { ty; _ } = ty
 
+  (* free variables *)
+  let rec free_vars acc (t : t) = match t.descr with
+    | Var v -> FV.add (FV.Term v) (Ty.free_vars acc v.ty)
+    | App (_, tys, ts) ->
+      List.fold_left free_vars (
+        List.fold_left Ty.free_vars acc tys
+      ) ts
+    | Binder ((Exists (tys, ts) | Forall (tys, ts)), body) ->
+      let fv = free_vars FV.empty body in
+      let fv = FV.remove fv tys in
+      let fv = FV.remove fv ts in
+      FV.merge fv acc
+    | Binder (Letin l, body) ->
+      let fv = free_vars FV.empty body in
+      let fv = List.fold_right (fun (v, t) acc ->
+          let acc = free_vars acc t in
+          let acc = FV.del v acc in
+          let acc = Ty.free_vars acc v.ty in
+          acc
+        ) l fv in
+      FV.merge fv acc
+    | Match (scrutinee, branches) ->
+      let acc = free_vars acc scrutinee in
+      List.fold_left (fun fv (pat, body) ->
+          let free = free_vars FV.empty body in
+          let bound = free_vars FV.empty pat in
+          FV.merge fv (FV.diff free bound)
+        ) acc branches
+
+  let fv t =
+    let s = free_vars FV.empty t in
+    FV.to_list s
+
   (* Helpers for adt definition *)
   let mk_cstr ty_c name i vars args ret =
-    Id.const ~builtin:(Constructor (ty_c, i)) name vars args ret
+    Id.const name vars args ret
+      ~builtin:(Constructor { adt = ty_c; case = i; })
+
+  let mk_cstr_tester cstr =
+    let name = Format.asprintf "is:%a" Print.id cstr in
+    Id.const ~builtin:(Tester { cstr })
+      name cstr.ty.fun_vars [cstr.ty.fun_ret] Ty.prop
 
   (* ADT definition *)
   let define_adt_aux ~record ty_const vars l =
@@ -1080,23 +1169,26 @@ module Term = struct
     let l' = List.mapi (fun i (cstr_name, args) ->
         let args_ty = List.map fst args in
         let cstr = mk_cstr ty_const cstr_name i vars args_ty ty in
+        let tester = mk_cstr_tester cstr in
         let dstrs = Array.make (List.length args) None in
         let l' = List.mapi (fun j -> function
             | (arg_ty, None) -> (arg_ty, None)
             | (arg_ty, Some name) ->
               let dstr =
-                Id.const
-                  ~builtin:(Destructor (ty_const, cstr, i, j))
-                  name vars [ty] arg_ty
+                Id.const name vars [ty] arg_ty
+                  ~builtin:(Destructor {
+                      adt = ty_const; cstr;
+                      case = i; field = j; })
               in
               dstrs.(j) <- Some dstr;
               (arg_ty, Some dstr)
           ) args in
-        cases := { Ty.cstr; dstrs; } :: !cases;
+        cases := { Ty.cstr; tester; dstrs; } :: !cases;
         cstr, l'
       ) l in
     assert (not record || List.length !cases = 1);
-    Ty.define ty_const (Adt { ty = ty_const; record; cstrs = List.rev !cases; });
+    Ty.define ty_const (Adt { ty = ty_const; record;
+                              cases = Array.of_list @@ List.rev !cases; });
     l'
 
   let define_adt = define_adt_aux ~record:false
@@ -1114,6 +1206,10 @@ module Term = struct
           | _, None -> assert false
         ) l''
     | _ -> assert false
+
+  (* Exhaustivity check
+     TODO: implement this *)
+  let check_exhaustivity _ty _pats = ()
 
   (* Variables *)
   module Var = struct
@@ -1811,10 +1907,28 @@ module Term = struct
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
 
+    let tester c =
+      match c.builtin with
+      | Constructor { adt; case; } ->
+        begin match Ty.definition adt with
+          | Some Adt { cases; _ } -> cases.(case).tester
+          | _ -> assert false
+        end
+      | _ -> raise (Constructor_expected c)
+
     let void =
       match define_adt Ty.Const.unit [] ["void", []] with
       | [void, _] -> void
       | _ -> assert false
+
+    let pattern_arity (c : t) ret tys =
+      try
+        let s = List.fold_left2 Subst.Var.bind Subst.empty c.ty.fun_vars tys in
+        let s = Ty.robinson s c.ty.fun_ret ret in
+        List.map (Ty.subst s) c.ty.fun_args
+      with
+      | Ty.Impossible_unification _ -> raise (Wrong_sum_type (c, ret))
+      | Invalid_argument _ -> raise (Bad_term_arity (c, tys, []))
 
   end
 
@@ -1823,6 +1937,30 @@ module Term = struct
     type t = term_const
     let hash = Id.hash
     let equal = Id.equal
+
+    (* Record field getter *)
+    let find ty_c i =
+      match Ty.definition ty_c with
+      | Some Adt { record = true; cases = [| { dstrs; _ } |]; _ } ->
+        begin match dstrs.(i) with
+          | Some c -> c
+          | None -> assert false
+        end
+      | _ ->
+        raise (Record_type_expected ty_c)
+
+    (* Record creation *)
+    let index ty_c f =
+      match f.builtin with
+      | Destructor { adt = ty_d; case = i; field = j; _ } ->
+        if Id.equal ty_c ty_d then begin
+          assert (i = 0);
+          j
+        end else
+          raise (Wrong_record_type (f, ty_c))
+      | _ ->
+        raise (Field_expected f)
+
   end
 
 
@@ -1882,6 +2020,10 @@ module Term = struct
     | Binder (b, body) ->
       let b', ty_var_map, t_var_map = binder_subst ~fix ty_var_map t_var_map b in
       mk_bind b' (subst_aux ~fix ty_var_map t_var_map body)
+    | Match (scrutinee, branches) ->
+      let scrutinee = subst_aux ~fix ty_var_map t_var_map scrutinee in
+      let branches = List.map (branch_subst ~fix ty_var_map t_var_map) branches in
+      pattern_match scrutinee branches
 
   and binder_subst ~fix ty_var_map t_var_map = function
     | Exists (tys, ts) ->
@@ -1913,6 +2055,12 @@ module Term = struct
         binding_list_subst ~fix ty_var_map t_var_map acc r
       end
 
+  and branch_subst ~fix ty_var_map t_var_map (pattern, body) =
+    let _, l = fv pattern in
+    let _, t_var_map = term_var_list_subst ty_var_map t_var_map [] l in
+    (subst_aux ~fix ty_var_map t_var_map pattern,
+     subst_aux ~fix ty_var_map t_var_map body)
+
   and subst ?(fix=true) ty_var_map t_var_map t =
     if Subst.is_empty ty_var_map && Subst.is_empty t_var_map then
       t
@@ -1943,6 +2091,38 @@ module Term = struct
     let res = mk (App (f, tys, args)) ret in
     check_filters res f tys args (Const.get_tag f Filter.term)
 
+  (* Pattern matching *)
+  and pattern_match scrutinee branches =
+    let scrutinee_ty = ty scrutinee in
+    (* first,
+       unify the type of the scrutinee and all patterns,
+       and unify the type of all bodies *)
+    let body_ty = Ty.wildcard () in
+    let s = List.fold_left (fun acc (pattern, body) ->
+        let acc =
+          try Ty.robinson acc scrutinee_ty (ty pattern)
+          with Ty.Impossible_unification _ -> raise (Wrong_type (pattern, scrutinee_ty))
+        in
+        let acc =
+          try Ty.robinson acc body_ty (ty body)
+          with Ty.Impossible_unification _ -> raise (Wrong_type (body, body_ty))
+        in
+        acc
+      ) Subst.empty branches
+    in
+    (* Apply the substitution to the scrutinee, patterns and bodies *)
+    let scrutinee = subst s Subst.empty scrutinee in
+    let branches = List.map (fun (pat, body) ->
+        (subst s Subst.empty pat, subst s Subst.empty body)
+      ) branches in
+    (* Check exhaustivity *)
+    let () = check_exhaustivity (ty scrutinee) (List.map fst branches) in
+    (* Build the pattern matching *)
+    mk (Match (scrutinee, branches)) (Ty.subst s body_ty)
+
+
+  (* Wrappers around application *)
+
   let apply_cstr = apply
 
   let apply_field (f : term_const) t =
@@ -1952,39 +2132,26 @@ module Term = struct
     in
     apply f tys [t]
 
-  (* Record field getter *)
-  let record_field ty_c i =
-    match Ty.definition ty_c with
-    | Some Adt { record = true; cstrs = [ { dstrs; _ } ]; _ } ->
-      begin match dstrs.(i) with
-        | Some c -> c
-        | None -> assert false
-      end
-    | _ ->
-      raise (Record_type_expected ty_c)
+  (* ADT constructor tester *)
+  let cstr_tester c t =
+    let tester = Cstr.tester c in
+    let ty_args = init_list
+        (List.length tester.ty.fun_vars)
+        (fun _ -> Ty.wildcard ())
+    in
+    apply tester ty_args [t]
 
-  (* Record creation *)
-  let record_field_id ty_c f =
-    match f.builtin with
-    | Destructor (ty_d, _, i, j) ->
-      if Id.equal ty_c ty_d then begin
-        assert (i = 0);
-        j
-      end else
-        raise (Wrong_record_type (f, ty_c))
-    | _ ->
-      raise (Field_expected f)
-
+  (* Recor creation *)
   let build_record_fields ty_c l =
     let n =
       match Ty.definition ty_c with
-      | Some Adt { record = true; cstrs = [ { dstrs; _ } ]; _ } ->
+      | Some Adt { record = true; cases = [| { dstrs; _ } |]; _ } ->
         Array.length dstrs
       | _ -> raise (Record_type_expected ty_c)
     in
     let fields = Array.make n None in
     List.iter (fun (field, value) ->
-        let i = record_field_id ty_c field in
+        let i = Field.index ty_c field in
         match fields.(i) with
         | Some _ -> raise (Field_repeated field)
         | None -> fields.(i) <- Some value
@@ -1995,7 +2162,7 @@ module Term = struct
     | [] -> raise (Invalid_argument "Dolmen.Expr.record")
     | ((f, _) :: _) as l ->
       begin match f.builtin with
-        | Destructor (ty_c, c, _, _) when Ty.is_record ty_c ->
+        | Destructor { adt = ty_c; cstr = c; _ } when Ty.is_record ty_c ->
           let fields = build_record_fields ty_c l in
           (* Check that all fields are indeed present, and create the list
              of term arguments *)
@@ -2015,13 +2182,13 @@ module Term = struct
       end
 
   let record l =
-    mk_record (fun ty_c i -> raise (Field_missing (record_field ty_c i))) l
+    mk_record (fun ty_c i -> raise (Field_missing (Field.find ty_c i))) l
 
   let record_with t = function
     | [] -> t
     | l ->
       let aux ty_c i =
-        let f = record_field ty_c i in
+        let f = Field.find ty_c i in
         apply_field f t
       in
       mk_record aux l
@@ -2481,32 +2648,6 @@ module Term = struct
       ) l;
     mk_bind (Letin l) body
 
-
-  (** free variables *)
-  let rec free_vars acc (t : t) = match t.descr with
-    | Var v -> FV.add (FV.Term v) (Ty.free_vars acc v.ty)
-    | App (_, tys, ts) ->
-      List.fold_left free_vars (
-        List.fold_left Ty.free_vars acc tys
-      ) ts
-    | Binder ((Exists (tys, ts) | Forall (tys, ts)), body) ->
-      let fv = free_vars FV.empty body in
-      let fv = FV.remove fv tys in
-      let fv = FV.remove fv ts in
-      FV.merge fv acc
-    | Binder (Letin l, body) ->
-      let fv = free_vars FV.empty body in
-      let fv = List.fold_right (fun (v, t) acc ->
-          let acc = free_vars acc t in
-          let acc = FV.del v acc in
-          let acc = Ty.free_vars acc v.ty in
-          acc
-        ) l fv in
-      FV.merge fv acc
-
-  let fv t =
-    let s = free_vars FV.empty t in
-    FV.to_list s
 
 
 end
