@@ -12,10 +12,6 @@ val merge :
 
 (** {2 Smtlib Indexed id helpers} *)
 
-val split_id : string -> string list
-(** Split the given strings on the ['`000'] character used to
-    squash smtlib indexed family into a single string. *)
-
 type 'ret indexed = [
   | `Unary of (string -> 'ret)
   | `Binary of (string -> string -> 'ret)
@@ -24,7 +20,7 @@ type 'ret indexed = [
 ]
 (** The type of indexed family of operators. *)
 
-val parse_id : string ->
+val parse_id : Dolmen.Id.t ->
   (string * 'ret indexed) list ->
   err:(string -> int -> int -> 'ret) ->
   k:(string list -> 'ret) ->

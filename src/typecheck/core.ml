@@ -155,8 +155,8 @@ module Smtlib2 = struct
         `Tags (fun _ast _args -> [Type.Any (Tag.rwrt, ())])
 
       (* ADT testers *)
-      | Type.Id { Id.ns = Id.Term; name; } ->
-        Base.parse_id name [
+      | Type.Id ({ Id.ns = Id.Term; _ } as id) ->
+        Base.parse_id id [
           "is", `Unary (function s ->
               let id = Id.mk Id.Term s in
               begin match Type.find_bound env id with

@@ -23,8 +23,6 @@ type 'ret indexed = [
   | `Nary of int * (string list -> 'ret)
 ]
 
-let split_id = Dolmen_std.Misc.split_on_char '\000'
-
 let parse_id id l ~err ~k =
   let rec aux h r r_l = function
     | [] -> k (h :: r)
@@ -47,7 +45,7 @@ let parse_id id l ~err ~k =
       if r_l = n then f r else err s n r_l
     | _ :: l' -> aux h r r_l l'
   in
-  match split_id id with
+  match Dolmen.Id.split id with
   | h :: r -> aux h r (List.length r) l
   | r -> k r
 

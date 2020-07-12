@@ -28,16 +28,33 @@ let hash = Hashtbl.hash
 let compare = Stdlib.compare
 let equal = Stdlib.(=)
 
-let pp b { name ; _ } =
-  Printf.bprintf b "%s" name
+(* Name&Printing *)
 
-let print fmt { name ; _ } =
-  let name = String.map (function
-      | '\000' -> ':'
-      | c -> c
-    ) name
-  in
-  Format.fprintf fmt "%s" name
+let split { name; _ } =
+  Misc.split_on_char '\000' name
+
+let to_string ({ name; _} as id) =
+  match split id with
+  | [s] -> s
+  | l ->
+    let b = Buffer.create (String.length name + List.length l + 3) in
+    Buffer.add_string b "(_";
+    List.iter (fun s -> Buffer.add_char b ' '; Buffer.add_string b s) l;
+    Buffer.add_char b ')';
+    Buffer.contents b
+
+let pp b id =
+  Printf.bprintf b "%s" (to_string id)
+
+let print fmt id =
+  Format.fprintf fmt "%s" (to_string id)
+
+let full_name = function
+  | { ns = Module m; _ } as id ->
+    Printf.sprintf "%s.%s" m (to_string id)
+  | id ->
+    to_string id
+
 
 (* Tracked hashtbl *)
 let trackers = Hashtbl.create 13
@@ -60,12 +77,6 @@ let tracked ~track ns name =
   Hashtbl.add trackers track id;
   Hashtbl.add trackeds id track;
   id
-
-let full_name =function
-  | { name; ns = Module m; } ->
-    Printf.sprintf "%s.%s" m name
-  | { name; _ } ->
-    name
 
 (* Standard attributes *)
 let ac_symbol = mk Attr "ac"

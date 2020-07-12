@@ -76,6 +76,10 @@ val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions. *)
 
+val split : t -> string list
+(** Split an id into a list of strings (used notably for SMTLIb). *)
+
+
 
 (** {2 Standard attributes} *)
 

@@ -530,7 +530,7 @@ module Smtlib2 = struct
         | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
           `Term (Base.app0 (module Type) env name (T.mk name))
         (* terms *)
-        | Type.Id { Id.ns = Id.Term; name; } ->
+        | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
           begin match name with
             | "-" ->
               `Term (fun ast args -> match args with
@@ -568,7 +568,7 @@ module Smtlib2 = struct
             | ">" ->
               `Term (Base.term_app_chain (module Type) env ">" T.gt
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
-            | _ -> Base.parse_id name
+            | _ -> Base.parse_id id
                      ~k:(function _ -> `Not_found)
                      ~err:(Base.bad_ty_index_arity (module Type) env)
                      [
@@ -716,7 +716,7 @@ module Smtlib2 = struct
           `Term (Base.app0 (module Type) env name (T.Real.mk name))
 
         (* terms *)
-        | Type.Id { Id.ns = Id.Term; name; } ->
+        | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
           begin match name with
             | "-" -> `Term (fun ast args ->
                 match args with
@@ -766,7 +766,7 @@ module Smtlib2 = struct
               `Term (Base.term_app_chain_ast (module Type) env ">"
                        (dispatch2 env (T.Int.gt, T.Real.gt))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
-            | _ -> Base.parse_id name
+            | _ -> Base.parse_id id
                      ~k:(function _ -> `Not_found)
                      ~err:(Base.bad_ty_index_arity (module Type) env)
                      [

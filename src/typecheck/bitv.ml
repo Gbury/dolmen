@@ -61,8 +61,8 @@ module Smtlib2 = struct
       match s with
 
       (* Bitvector sort *)
-      | Type.Id { Id.ns = Id.Sort; name; } ->
-        Base.parse_id name [
+      | Type.Id ({ Id.ns = Id.Sort; _ } as id) ->
+        Base.parse_id id [
           "BitVec", `Unary (function n_s ->
               `Ty (Base.app0_ast (module Type) env "BitVec" (fun ast ->
                   Ty.bitv (parse_int env ast n_s))));
@@ -76,8 +76,8 @@ module Smtlib2 = struct
         `Term (Base.app0_ast (module Type) env name (parse_hexa env name))
 
       (* terms *)
-      | Type.Id { Id.ns = Id.Term; name; } ->
-        Base.parse_id name [
+      | Type.Id ({ Id.ns = Id.Term; _ } as id) ->
+        Base.parse_id id [
           "repeat", `Unary (function i_s ->
               `Term (Base.term_app1_ast (module Type) env "repeat"
                        (indexed1 env T.repeat i_s)));

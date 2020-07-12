@@ -89,8 +89,8 @@ module Smtlib2 = struct
       match s with
 
       (* sort *)
-      | Type.Id { Id.ns = Id.Sort; name; } ->
-        Base.parse_id name [
+      | Type.Id ({ Id.ns = Id.Sort; _ } as id) ->
+        Base.parse_id id [
           "BitVec", `Unary (function n_s ->
               `Ty (Base.app0_ast (module Type) env "BitVec"
                      (indexed1 env Ty.bitv n_s)));
@@ -124,7 +124,7 @@ module Smtlib2 = struct
             Base.app0 (module Type) env name (R.mk name) ast args)
 
       (* terms *)
-      | Type.Id { Id.ns = Id.Term; name; } ->
+      | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
         begin match name with
           | "fp" ->
             `Term (Base.term_app3 (module Type) env name F.fp)
@@ -188,7 +188,7 @@ module Smtlib2 = struct
             `Term (Base.term_app1 (module Type) env name F.isPositive)
           | "fp.to_real" ->
             `Term (Base.term_app1 (module Type) env name F.to_real)
-          | _ -> Base.parse_id name [
+          | _ -> Base.parse_id id [
               "+oo", `Binary (fun e s ->
                   `Term (Base.app0_ast (module Type) env "plus_infinity"
                            (indexed2 env F.plus_infinity e s)));
