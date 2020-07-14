@@ -8,6 +8,7 @@ type value =
   | Binary
   | Hexadecimal
   | Bitvector
+  | String
 
 type namespace =
   | Var

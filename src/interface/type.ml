@@ -248,3 +248,20 @@ module type Smtlib_Float = sig
   (** Partial view of a type. *)
 
 end
+
+(* Signature required for types for typing the smtlib string theory *)
+module type Smtlib_String = sig
+
+  type t
+  (** The type of types *)
+
+  val int : t
+  (** The type of ints *)
+
+  val string : t
+  (** The type of strings *)
+
+  val string_reg_lang : t
+  (** The type of regular languages over strings *)
+
+end

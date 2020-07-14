@@ -196,6 +196,50 @@ type builtin +=
   | To_sbv of int * int * int
   | To_real of int * int
 
+(* Strings *)
+type builtin +=
+  | String
+  | Str of string
+  | Str_length
+  | Str_at
+  | Str_to_code
+  | Str_of_code
+  | Str_is_digit
+  | Str_to_int
+  | Str_of_int
+  | Str_concat
+  | Str_sub
+  | Str_index_of
+  | Str_replace
+  | Str_replace_all
+  | Str_replace_re
+  | Str_replace_re_all
+  | Str_is_prefix
+  | Str_is_suffix
+  | Str_contains
+  | Str_lexicographic_strict
+  | Str_lexicographic_large
+  | Str_in_re
+
+(* String Regular languages *)
+type builtin +=
+  | String_RegLan
+  | Re_empty
+  | Re_all
+  | Re_allchar
+  | Re_of_string
+  | Re_range
+  | Re_concat
+  | Re_union
+  | Re_inter
+  | Re_star
+  | Re_cross
+  | Re_complement
+  | Re_diff
+  | Re_option
+  | Re_power of int
+  | Re_loop of int * int
+
 
 (* Exceptions *)
 (* ************************************************************************* *)
@@ -391,6 +435,7 @@ module Print = struct
         pp fmt x
       )
 end
+
 (* Views *)
 (* ************************************************************************* *)
 
@@ -404,6 +449,8 @@ module View = struct
       | `Array of ty * ty
       | `Bitv of int
       | `Float of int * int
+      | `String
+      | `String_reg_lang
       (* Generic cases *)
       | `Var of ty_var
       | `App of [
@@ -426,6 +473,8 @@ module View = struct
               | [src; dst] -> `Array (src, dst)
               | _ -> assert false (* not possible *)
             end
+          | String -> `String
+          | String_RegLan -> `String_reg_lang
           | Base -> `App (`Generic c, l)
           | _ -> `App (`Builtin builtin, l)
         end
@@ -856,6 +905,8 @@ module Ty = struct
     let int = Id.const ~builtin:Int "int" [] [] Type
     let rat = Id.const ~builtin:Rat "rat" [] [] Type
     let real = Id.const ~builtin:Real "real" [] [] Type
+    let string = Id.const ~builtin:String "string" [] [] Type
+    let string_reg_lang = Id.const ~builtin:String_RegLan "string_reglang" [] [] Type
     let array = Id.const ~builtin:Array "array" [] [Type; Type] Type
     let bitv =
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
@@ -900,6 +951,8 @@ module Ty = struct
   let int = apply Const.int []
   let rat = apply Const.rat []
   let real = apply Const.real []
+  let string = apply Const.string []
+  let string_reg_lang = apply Const.string_reg_lang []
   let array src dst = apply Const.array [src; dst]
   let bitv i = apply (Const.bitv i) []
   let float' es = apply (Const.float es) []
@@ -1893,6 +1946,133 @@ module Term = struct
           )
 
     end
+
+    module String = struct
+
+      let string =
+        with_cache ~cache:(Hashtbl.create 13) (fun s ->
+            Id.const ~builtin:(Str s) (Format.asprintf {|"%s"|} s) [] [] Ty.string
+          )
+
+      let length =
+        Id.const ~builtin:Str_length "length"
+          [] [Ty.string] Ty.int
+      let at =
+        Id.const ~builtin:Str_at "at"
+          [] [Ty.string; Ty.int] Ty.string
+      let to_code =
+        Id.const ~builtin:Str_to_code "to_code"
+          [] [Ty.string] Ty.int
+      let of_code =
+        Id.const ~builtin:Str_of_code "of_code"
+          [] [Ty.int] Ty.string
+      let is_digit =
+        Id.const ~builtin:Str_is_digit "is_digit"
+          [] [Ty.string] Ty.prop
+      let to_int =
+        Id.const ~builtin:Str_to_int "to_int"
+          [] [Ty.string] Ty.int
+      let of_int =
+        Id.const ~builtin:Str_of_int "of_int"
+          [] [Ty.int] Ty.string
+      let concat =
+        Id.const ~builtin:Str_concat ~pos:Pretty.Infix "++"
+          [] [Ty.string; Ty.string] Ty.string
+      let sub =
+        Id.const ~builtin:Str_sub "sub"
+          [] [Ty.string; Ty.int; Ty.int] Ty.string
+      let index_of =
+        Id.const ~builtin:Str_index_of "index_of"
+          [] [Ty.string; Ty.string; Ty.int] Ty.int
+      let replace =
+        Id.const ~builtin:Str_replace "replace"
+          [] [Ty.string; Ty.string; Ty.string] Ty.string
+      let replace_all =
+        Id.const ~builtin:Str_replace_all "replace_all"
+          [] [Ty.string; Ty.string; Ty.string] Ty.string
+      let replace_re =
+        Id.const ~builtin:Str_replace_re "replace_re"
+          [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
+      let replace_re_all =
+        Id.const ~builtin:Str_replace_re_all "replace_re_all"
+          [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
+      let is_prefix =
+        Id.const ~builtin:Str_is_prefix "is_prefix"
+          [] [Ty.string; Ty.string] Ty.prop
+      let is_suffix =
+        Id.const ~builtin:Str_is_suffix "is_suffix"
+          [] [Ty.string; Ty.string] Ty.prop
+      let contains =
+        Id.const ~builtin:Str_contains "contains"
+          [] [Ty.string; Ty.string] Ty.prop
+      let lt =
+        Id.const ~builtin:Str_lexicographic_strict
+          ~pos:Pretty.Infix "lt"
+          [] [Ty.string; Ty.string] Ty.prop
+      let leq =
+        Id.const ~builtin:Str_lexicographic_large
+          ~pos:Pretty.Infix "leq"
+          [] [Ty.string; Ty.string] Ty.prop
+      let in_re =
+        Id.const ~builtin:Str_in_re "in_re"
+          [] [Ty.string; Ty.string_reg_lang] Ty.prop
+
+      module Reg_Lang = struct
+
+        let empty =
+          Id.const ~builtin:Re_empty "empty"
+            [] [] Ty.string_reg_lang
+        let all =
+          Id.const ~builtin:Re_all "all"
+            [] [] Ty.string_reg_lang
+        let allchar =
+          Id.const ~builtin:Re_allchar "allchar"
+            [] [] Ty.string_reg_lang
+        let of_string =
+          Id.const ~builtin:Re_of_string "of_string"
+            [] [Ty.string] Ty.string_reg_lang
+        let range =
+          Id.const ~builtin:Re_range "range"
+            [] [Ty.string; Ty.string] Ty.string_reg_lang
+        let concat =
+          Id.const ~builtin:Re_concat ~pos:Pretty.Infix "++"
+            [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
+        let union =
+          Id.const ~builtin:Re_union ~pos:Pretty.Infix "∪"
+            [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
+        let inter =
+          Id.const ~builtin:Re_inter ~pos:Pretty.Infix "∩"
+            [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
+        let diff =
+          Id.const ~builtin:Re_diff ~pos:Pretty.Infix "-"
+            [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
+        let star =
+          Id.const ~builtin:Re_star ~pos:Pretty.Prefix "*"
+            [] [Ty.string_reg_lang] Ty.string_reg_lang
+        let cross =
+          Id.const ~builtin:Re_cross ~pos:Pretty.Prefix "+"
+            [] [Ty.string_reg_lang] Ty.string_reg_lang
+        let complement =
+          Id.const ~builtin:Re_complement "complement"
+            [] [Ty.string_reg_lang] Ty.string_reg_lang
+        let option =
+          Id.const ~builtin:Re_option "option"
+            [] [Ty.string_reg_lang] Ty.string_reg_lang
+        let power =
+          with_cache ~cache:(Hashtbl.create 13) (fun n ->
+              Id.const ~builtin:(Re_power n) (Format.asprintf "power_%d" n)
+                [] [Ty.string_reg_lang] Ty.string_reg_lang
+            )
+        let loop =
+          with_cache ~cache:(Hashtbl.create 13) (fun (n1, n2) ->
+              Id.const ~builtin:(Re_loop (n1, n2)) (Format.asprintf "loop_%d_%d" n1 n2)
+                [] [Ty.string_reg_lang] Ty.string_reg_lang
+            )
+
+      end
+
+    end
+
   end
 
   (* Constructors are simply constants *)
@@ -2621,6 +2801,50 @@ module Term = struct
     let to_sbv m rm x =
       let (e,s) = match_float_type x in
       apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
+  end
+
+  module String = struct
+
+    let of_ustring s = apply (Const.String.string s) [] []
+    let length s = apply Const.String.length [] [s]
+    let at s i = apply Const.String.at [] [s; i]
+    let is_digit s = apply Const.String.is_digit [] [s]
+    let to_code s = apply Const.String.to_code [] [s]
+    let of_code i = apply Const.String.of_code [] [i]
+    let to_int s = apply Const.String.to_int [] [s]
+    let of_int i = apply Const.String.of_int [] [i]
+    let concat s s' = apply Const.String.concat [] [s;s']
+    let sub s i n = apply Const.String.sub [] [s; i; n]
+    let index_of s s' i = apply Const.String.index_of [] [s; s'; i]
+    let replace s pat by = apply Const.String.replace [] [s; pat; by]
+    let replace_all s pat by = apply Const.String.replace_all [] [s; pat; by]
+    let replace_re s pat by = apply Const.String.replace_re [] [s; pat; by]
+    let replace_re_all s pat by = apply Const.String.replace_re_all [] [s; pat; by]
+    let is_prefix s s' = apply Const.String.is_prefix [] [s; s']
+    let is_suffix s s' = apply Const.String.is_suffix [] [s; s']
+    let contains s s' = apply Const.String.contains [] [s; s']
+    let lt s s' = apply Const.String.lt [] [s; s']
+    let leq s s' = apply Const.String.leq [] [s; s']
+    let in_re s re = apply Const.String.in_re [] [s; re]
+
+    module RegLan = struct
+      let empty = apply Const.String.Reg_Lang.empty [] []
+      let all = apply Const.String.Reg_Lang.all [] []
+      let allchar = apply Const.String.Reg_Lang.allchar [] []
+      let of_string s = apply Const.String.Reg_Lang.of_string [] [s]
+      let range s s' = apply Const.String.Reg_Lang.range [] [s; s']
+      let concat re re' = apply Const.String.Reg_Lang.concat [] [re; re']
+      let union re re' = apply Const.String.Reg_Lang.union [] [re; re']
+      let inter re re' = apply Const.String.Reg_Lang.inter [] [re; re']
+      let diff re re' = apply Const.String.Reg_Lang.diff [] [re; re']
+      let star re = apply Const.String.Reg_Lang.star [] [re]
+      let cross re = apply Const.String.Reg_Lang.cross [] [re]
+      let complement re = apply Const.String.Reg_Lang.complement [] [re]
+      let option re = apply Const.String.Reg_Lang.option [] [re]
+      let power n re = apply (Const.String.Reg_Lang.power n) [] [re]
+      let loop n1 n2 re = apply (Const.String.Reg_Lang.loop (n1, n2)) [] [re]
+    end
+
   end
 
   (* Wrappers for the tff typechecker *)

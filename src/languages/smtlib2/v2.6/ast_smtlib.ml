@@ -46,6 +46,10 @@ module type Term = sig
   (** Constants, i.e non predefined symbols. This includes both constants
       defined by theories, defined locally in a problem, and also quantified variables. *)
 
+  val str     : ?loc:location -> string -> t
+  (** Quoted strings. According to the smtlib manual, these can be interpreted as
+      either string literals (when the String theory is used), or simply constants *)
+
   val int     : ?loc:location -> string -> t
   val real    : ?loc:location -> string -> t
   val hexa    : ?loc:location -> string -> t

@@ -125,13 +125,16 @@ module type Logic = sig
       so in the example above, [const] would be called with ["Apple"] as
       string argument, while [distinct] would be called with the string ["\"Apple\""] *)
 
+  val str      : ?loc:location -> string -> t
   val int      : ?loc:location -> string -> t
   val rat      : ?loc:location -> string -> t
   val real     : ?loc:location -> string -> t
   val hexa     : ?loc:location -> string -> t
   val binary   : ?loc:location -> string -> t
-  (** Constructors for words defined as numeric formats by the languages
-      specifications. These also can be safely aliased to [const]. *)
+  (** Constructors for words defined as numeric or string formats by the languages
+      specifications. These also can be safely aliased to [const], but then the
+      provenance information is lost, which might complicate the task of a
+      type-checker. *)
 
   val bitv     : ?loc:location -> string -> t
   (** Bitvetor litteral, defined as a specific token in Alt-ergo;
@@ -1231,6 +1234,151 @@ module type Smtlib_Float = sig
   module Float : Smtlib_Float_Float with type t := t
   (** Sub-module used for namespacing the floating number part
       of the theory requirements *)
+
+end
+
+module type Smtlib_String_RegLan = sig
+
+  type t
+  (** The type of terms *)
+
+  val empty : t
+  (** The empty regular language. *)
+
+  val all : t
+  (** The language that contains all strings *)
+
+  val allchar : t
+  (** The language that contains all strings of length 1 *)
+
+  val of_string : t -> t
+  (** Singleton language containing a single string. *)
+
+  val range : t -> t -> t
+  (** [range s1 s2] is the language containing all singleton strings
+      (i.e. string of length 1) that are lexicographically beetween
+      [s1] and [s2], **assuming [s1] and [s2] are singleton strings**.
+      Else it is the empty language. *)
+
+  val concat : t -> t -> t
+  (** Language concatenation. *)
+
+  val union : t -> t -> t
+  (** Language union. *)
+
+  val inter : t -> t -> t
+  (** language intersection. *)
+
+  val star : t -> t
+  (** Kleene closure. *)
+
+  val cross : t -> t
+  (** Kleene cross. [cross e] abreviates [concat e (star e)] *)
+
+  val complement : t -> t
+  (** Complement. *)
+
+  val diff : t -> t -> t
+  (** Difference *)
+
+  val option : t -> t
+  (** Option. [option e] abbreviates [union e (of_string "")] *)
+
+  val power : int -> t -> t
+  (** [power n e] is [n]-th power of [e]. *)
+
+  val loop : int -> int -> t -> t
+  (** Loop. See SMTLIb documentation. *)
+
+end
+
+module type Smtlib_String_String = sig
+
+  type t
+  (** The type of terms *)
+
+  val of_ustring : string -> t
+  (** Create a string from a unicode UTF-8 encoded string (with escape sequences
+      already interpreted as unicode characters). *)
+
+  val length : t -> t
+  (** Length of a string expression. *)
+
+  val at : t -> t -> t
+  (** Get the char at the given position. *)
+
+  val is_digit : t -> t
+  (** Is the string a singleton string with a single digit character ? *)
+
+  val to_code : t -> t
+  (** Returns the code point of the single character of the string,
+      or [(-1)] is the string is not a singleton. *)
+
+  val of_code : t -> t
+  (** Returns the singleton string whose only character is the given
+      code point. *)
+
+  val to_int : t -> t
+  (** Evaluates the string as a decimal natural number, or [(-1)] if
+      it's not possible. *)
+
+  val of_int : t -> t
+  (** Convert an int expression to a string in decimal representation. *)
+
+  val concat : t -> t -> t
+  (** String concatenation. *)
+
+  val sub : t -> t -> t -> t
+  (** Substring extraction. *)
+
+  val index_of : t -> t -> t -> t
+  (** Index of the first occurrence of the second string in
+      first one, starting at the position of the third argument. *)
+
+  val replace : t -> t -> t -> t
+  (** Replace the first occurrence. *)
+
+  val replace_all : t -> t -> t -> t
+  (** Replace all occurrences. *)
+
+  val replace_re : t -> t -> t -> t
+  (** Replace the leftmost, shortest re ocurrence. *)
+
+  val replace_re_all : t -> t -> t -> t
+  (** Replace left-to-right, each shortest non empty re occurrence. *)
+
+  val is_prefix : t -> t -> t
+  (** First string is a prefix of the second one. *)
+
+  val is_suffix : t -> t -> t
+  (** First string is a suffix of the second one. *)
+
+  val contains : t -> t -> t
+  (** First string contains the second one. *)
+
+  val lt : t -> t -> t
+  (** Lexicographic strict ordering. *)
+
+  val leq : t -> t -> t
+  (** Lexicographic large ordering. *)
+
+  val in_re : t -> t -> t
+  (** String Regular languager membership *)
+
+  module RegLan : Smtlib_String_RegLan with type t := t
+  (** Sub-module used for namespacing for the regular language part
+      of the theory requirements. *)
+
+end
+
+module type Smtlib_String = sig
+
+  type t
+  (** The type of terms *)
+
+  module String : Smtlib_String_String with type t := t
+  (** Sub-module used for namespacing for the string part
+      of the theory requirements. *)
 
 end
 

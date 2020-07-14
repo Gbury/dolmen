@@ -14,6 +14,7 @@ module Smtlib2 : sig
     | `Arrays
     | `Bitvectors
     | `Floats
+    | `String
     | `Ints
     | `Reals
     | `Reals_Ints

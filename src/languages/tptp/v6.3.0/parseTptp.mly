@@ -818,7 +818,7 @@ general_terms:
 /*
   name: atomic_word | integer
 
-  this porduction has been expanded to
+  this production has been expanded to
   produce ids instead of terms
 */
 name:

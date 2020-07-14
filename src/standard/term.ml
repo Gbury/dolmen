@@ -544,6 +544,7 @@ let atom ?loc i =
 
 (* {2 Wrappers for smtlib} *)
 
+let str ?loc s = const ?loc Id.(mk (Value String) s)
 let int ?loc s = const ?loc Id.(mk (Value Integer) s)
 let real ?loc s = const ?loc Id.(mk (Value Real) s)
 let hexa ?loc s = const ?loc Id.(mk (Value Hexadecimal) s)

@@ -594,6 +594,155 @@ type builtin +=
   | To_real of int * int
   (** [To_real(s,e,m): RoundingMode -> Fp(s,e) -> Real]: Convert to real *)
 
+(* Strings *)
+type builtin +=
+  | String
+  (** [String: ttype]: type constructor for strings. *)
+  | Str of string
+  (** [Str s: String]: string literals. *)
+  | Str_length
+  (** [Str_length: String -> Int]: string length. *)
+  | Str_at
+  (** [Str_at: String -> Int -> String]:
+      Singleton string containing a character at given position
+      or empty string when position is out of range.
+      The leftmost position is 0. *)
+  | Str_to_code
+  (** [Str_to_code: String -> Int]:
+      [Str_to_code s] is the code point of the only character of s,
+      if s is a singleton string; otherwise, it is -1. *)
+  | Str_of_code
+  (** [Str_of_code: Int -> String]:
+      [Str_of_code n] is the singleton string whose only character is
+      code point n if n is in the range [0, 196607]; otherwise, it is the
+      empty string. *)
+  | Str_is_digit
+  (** [Str_is_digit: String -> Prop]: Digit check
+      [Str.is_digit s] is true iff s consists of a single character which is
+      a decimal digit, that is, a code point in the range 0x0030 ... 0x0039. *)
+  | Str_to_int
+  (** [Str_to_int: String -> Int]: Conversion to integers
+      [Str.to_int s] with s consisting of digits (in the sense of str.is_digit)
+      evaluates to the positive integer denoted by s when seen as a number in
+      base 10 (possibly with leading zeros).
+      It evaluates to -1 if s is empty or contains non-digits. *)
+  | Str_of_int
+  (** [Str_of_int : Int -> String]: Conversion from integers.
+      [Str.from_int n] with n non-negative is the corresponding string in
+      decimal notation, with no leading zeros. If n < 0, it is the empty string. *)
+  | Str_concat
+  (** [Str_concat: String -> String -> String]: string concatenation. *)
+  | Str_sub
+  (** [Str_sub: String -> Int -> Int -> String]:
+      [Str_sub s i n] evaluates to the longest (unscattered) substring
+      of s of length at most n starting at position i.
+      It evaluates to the empty string if n is negative or i is not in
+      the interval [0,l-1] where l is the length of s. *)
+  | Str_index_of
+  (** [Str_index_of: String -> String -> Int -> Int]:
+      Index of first occurrence of second string in first one starting at
+      the position specified by the third argument.
+      [Str_index_of s t i], with 0 <= i <= |s| is the position of the first
+      occurrence of t in s at or after position i, if any.
+      Otherwise, it is -1. Note that the result is i whenever i is within
+      the range [0, |s|] and t is empty. *)
+  | Str_replace
+  (** [Str_replace: String -> String -> String -> String]: Replace
+      [Str_replace s t t'] is the string obtained by replacing the first
+      occurrence of t in s, if any, by t'. Note that if t is empty, the
+      result is to prepend t' to s; also, if t does not occur in s then
+      the result is s. *)
+  | Str_replace_all
+  (** [Str_replace_all: String -> String -> String -> String]:
+      [Str_replace_all s t t’] is s if t is the empty string. Otherwise, it
+      is the string obtained from s by replacing all occurrences of t in s
+      by t’, starting with the first occurrence and proceeding in
+      left-to-right order. *)
+  | Str_replace_re
+  (** [Str_replace_re: String -> String_RegLan -> String -> String]:
+      [Str_replace_re s r t] is the string obtained by replacing the
+      shortest leftmost non-empty match of r in s, if any, by t.
+      Note that if t is empty, the result is to prepend t to s. *)
+  | Str_replace_re_all
+  (** [Str_replace_re_all: String -> String_RegLan -> String -> String]:
+      [Str_replace_re_all s r t] is the string obtained by replacing,
+      left-to right, each shortest *non-empty* match of r in s by t. *)
+  | Str_is_prefix
+  (** [Str_is_prefix: String -> String -> Prop]: Prefix check
+      [Str_is_prefix s t] is true iff s is a prefix of t. *)
+  | Str_is_suffix
+  (** [Str_is_suffix: String -> String -> Prop]: Suffix check
+      [Str_is_suffix s t] is true iff s is a suffix of t. *)
+  | Str_contains
+  (** [Str_contains: String -> String -> Prop]: Inclusion check
+      [Str_contains s t] is true iff s contains t. *)
+  | Str_lexicographic_strict
+  (** [Str_lexicographic_strict: String -> String -> Prop]:
+      lexicographic ordering (strict). *)
+  | Str_lexicographic_large
+  (** [Str_lexicographic_large: String -> String -> Prop]:
+      reflexive closure of the lexicographic ordering. *)
+  | Str_in_re
+  (** [Str_in_re: String -> String_RegLan -> Prop]: set membership. *)
+
+(* String Regular languages *)
+type builtin +=
+  | String_RegLan
+  (** [String_RegLan: ttype]:
+      type constructor for Regular languages over strings. *)
+  | Re_empty
+  (** [Re_empty: String_RegLan]:
+      the empty language. *)
+  | Re_all
+  (** [Re_all: String_RegLan]:
+      the language of all strings. *)
+  | Re_allchar
+  (** [Re_allchar: String_RegLan]:
+      the language of all singleton strings. *)
+  | Re_of_string
+  (** [Re_of_string: String -> String_RegLan]:
+      the singleton language with a single string. *)
+  | Re_range
+  (** [Re_range: String -> String -> String_RegLan]: Language range
+      [Re_range s1 s2] is the set of all *singleton* strings [s] such that
+      [Str_lexicographic_large s1 s s2] provided [s1] and [s1] are singleton.
+      Otherwise, it is the empty language. *)
+  | Re_concat
+  (** [Re_concat: String_RegLan -> String_RegLan -> String_RegLan]:
+      language concatenation. *)
+  | Re_union
+  (** [Re_union: String_RegLan -> String_RegLan -> String_RegLan]:
+      language union. *)
+  | Re_inter
+  (** [Re_inter: String_RegLan -> String_RegLan -> String_RegLan]:
+      language intersection. *)
+  | Re_star
+  (** [Re_star: String_RegLan -> String_RegLan]: Kleen star. *)
+  | Re_cross
+  (** [Re_cross: String_RegLan -> String_RegLan]: Kleen cross. *)
+  | Re_complement
+  (** [Re_complement: String_RegLan -> String_RegLan]: language complement. *)
+  | Re_diff
+  (** [Re_diff: String_RegLan -> String_RegLan -> String_RegLan]:
+      language difference. *)
+  | Re_option
+  (** [Re_option: String_RegLan -> String_RegLan]: language option
+      [Re_option e] abbreviates [Re_union e (Str_to_re "")]. *)
+  | Re_power of int
+  (** [Re_power(n): String_RegLan -> String_RegLan]:
+      [Re_power(n) e] is the nth power of e:
+      - [Re_power(0) e] is [Str_to_re ""]
+      - [Re_power(n+1) e] is [Re_concat e (Re_power(n) e)] *)
+  | Re_loop of int * int
+  (** [Re_loop(n1,n2): String_RegLan -> String_RegLan]:
+      Defined as:
+      - [Re_loop(n₁, n₂) e] is [Re_empty]                   if n₁ > n₂
+      - [Re_loop(n₁, n₂) e] is [Re_power(n₁) e]             if n₁ = n₂
+      - [Re_loop(n₁, n₂) e] is
+        [Re_union ((Re_power(n₁) e) ... (Re_power(n₂) e))]  if n₁ < n₂
+  *)
+
+
 (** {2 Native Tags} *)
 (*  ************************************************************************* *)
 
@@ -773,6 +922,51 @@ module Subst : sig
   module Var : S with type 'a key = 'a id
 end
 
+(** {2 Identifiers} *)
+(*  ************************************************************************* *)
+
+module Id : sig
+
+  type 'a t = 'a id
+  (** The type of identifiers *)
+
+  val hash : 'a t -> int
+  (** Hash function. *)
+
+  val equal : 'a t -> 'b t -> bool
+  (** Equality function. *)
+
+  val compare : 'a t -> 'b t -> int
+  (** Comparison function. *)
+
+  val print : Format.formatter -> 'a t -> unit
+  (** Printing function *)
+
+  val tag : 'a t -> 'b Tag.t -> 'b -> unit
+  (** Add a tag to an identifier *)
+
+  val get_tag : 'a t -> 'b Tag.t -> 'b list
+  (** Get all the tags added to the identifier *)
+
+  val get_tag_last : 'a t -> 'b Tag.t -> 'b option
+  (** Get the last tag added to the identifier *)
+
+  val mk :
+    ?builtin:builtin -> ?tags:Tag.map -> string -> 'a -> 'a t
+  (** Create a new fresh identifier *)
+
+  val const :
+    ?pos:Pretty.pos ->
+    ?name:string ->
+    ?builtin:builtin ->
+    ?tags:Tag.map ->
+    ?ty_filters:Filter.ty_filter list ->
+    ?term_filters:Filter.term_filter list ->
+    string -> 'a t list -> 'b list -> 'b -> ('a, 'b) function_type t
+  (** Create a new function or type constructor identifier *)
+
+end
+
 (** {2 Types} *)
 (*  ************************************************************************* *)
 
@@ -818,6 +1012,10 @@ module Ty : sig
     (** Bitvectors of fixed length. *)
     | `Float of int * int
     (** Floating points. *)
+    | `String
+    (** Strings *)
+    | `String_reg_lang
+    (** Regular languages over strings *)
     | `Var of ty_var
     (** Variables *)
     | `App of [
@@ -942,6 +1140,12 @@ module Ty : sig
     val bitv : int -> t
     (** Bitvectors of the given length. *)
 
+    val string : t
+    (** The type constant for strings *)
+
+    val string_reg_lang : t
+    (** The type constant for regular languages over strings. *)
+
   end
 
   val prop : t
@@ -964,6 +1168,12 @@ module Ty : sig
 
   val real : t
   (** The type of reals. *)
+
+  val string : t
+  (** The type of strings *)
+
+  val string_reg_lang : t
+  (** The type of regular language over strings. *)
 
   val wildcard : unit -> t
   (** Type wildcard *)
@@ -1408,46 +1618,13 @@ module Term : sig
 
   end
 
-end
+  (** String operations *)
+  module String : sig
 
-module Id : sig
+    include Dolmen_intf.Term.Smtlib_String_String with type t := t
+    (** Satisfy the required interface for the typing of smtlib's strings. *)
 
-  type 'a t = 'a id
-  (** The type of identifiers *)
-
-  val hash : 'a t -> int
-  (** Hash function. *)
-
-  val equal : 'a t -> 'b t -> bool
-  (** Equality function. *)
-
-  val compare : 'a t -> 'b t -> int
-  (** Comparison function. *)
-
-  val print : Format.formatter -> 'a t -> unit
-  (** Printing function *)
-
-  val tag : 'a t -> 'b Tag.t -> 'b -> unit
-  (** Add a tag to an identifier *)
-
-  val get_tag : 'a t -> 'b Tag.t -> 'b list
-  (** Get all the tags added to the identifier *)
-
-  val get_tag_last : 'a t -> 'b Tag.t -> 'b option
-  (** Get the last tag added to the identifier *)
-
-  val mk :
-    ?builtin:builtin -> ?tags:Tag.map -> string -> 'a -> 'a t
-  (** Create a new fresh identifier *)
-
-  val const :
-    ?pos:Pretty.pos ->
-    ?name:string ->
-    ?builtin:builtin ->
-    ?tags:Tag.map ->
-    ?ty_filters:Filter.ty_filter list ->
-    ?term_filters:Filter.term_filter list ->
-    string -> 'a t list -> 'b list -> 'b -> ('a, 'b) function_type t
-  (** Create a new function or type constructor identifier *)
+  end
 
 end
+

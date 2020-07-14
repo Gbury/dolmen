@@ -95,6 +95,9 @@ module Make(S : State_intf.Typer) = struct
   module Smtlib2_Float =
     Dolmen_type.Float.Smtlib2.Tff(T)
       (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+  module Smtlib2_String =
+    Dolmen_type.Strings.Smtlib2.Tff(T)
+      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
   (* Zf *)
   module Zf_Core =
@@ -548,6 +551,7 @@ module Make(S : State_intf.Typer) = struct
         | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
         | `Floats -> Smtlib2_Float.parse v :: acc
+        | `String -> Smtlib2_String.parse v :: acc
         | `Ints ->
           Smtlib2_Ints.parse ~arith:l.features.arithmetic v :: acc
         | `Reals ->

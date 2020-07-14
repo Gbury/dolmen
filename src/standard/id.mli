@@ -19,6 +19,9 @@ type value =
   (** Bitvector in hexadecimal notation, e.g. ["0x9a23e5f"] *)
   | Bitvector
   (** Bitvector litteral. *)
+  | String
+  (** String litterals. *)
+(** Types of lexical values typically encountered. *)
 
 type namespace =
   | Var

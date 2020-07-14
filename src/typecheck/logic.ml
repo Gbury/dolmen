@@ -9,6 +9,7 @@ module Smtlib2 = struct
     | `Arrays
     | `Bitvectors
     | `Floats
+    | `String
     | `Ints
     | `Reals
     | `Reals_Ints
@@ -110,7 +111,11 @@ module Smtlib2 = struct
       | l -> parse_fp c l
     (* FP theory *)
     and parse_fp c = function
-      | 'F'::'P'::l -> parse_arith (add_theory `Floats c) l
+      | 'F'::'P'::l -> parse_str (add_theory `Floats c) l
+      | l -> parse_str c l
+    (* String theory *)
+    and parse_str c = function
+      | 'S' :: l -> parse_arith (add_theory `String c) l
       | l -> parse_arith c l
     (* Some logics include both BV and arithmetic (e.g. AUFBVDTLIA) *)
     and parse_arith c = function

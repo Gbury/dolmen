@@ -1,12 +1,12 @@
 (library
   (name           dolmen_type)
   (public_name    dolmen_type)
-  (libraries      dolmen spelll)
+  (libraries      dolmen spelll uutf)
   (modules
     ; TFF typechecking
     Tff_intf Tff
     ; Builtins
-    Core Def Arith Arrays Bitv Float
+    Core Def Arith Arrays Bitv Float Strings
     ; Helpers
     Base Logic Misc)
 )

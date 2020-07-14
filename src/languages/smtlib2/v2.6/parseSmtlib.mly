@@ -14,20 +14,20 @@
 
 spec_constant:
   | s=NUM
-    { fun _ -> let loc = L.mk_pos $startpos $endpos in T.int ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.int ~loc s }
   | s=DEC
-    { fun _ -> let loc = L.mk_pos $startpos $endpos in T.real ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.real ~loc s }
   | s=HEX
-    { fun _ -> let loc = L.mk_pos $startpos $endpos in T.hexa ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.hexa ~loc s }
   | s=BIN
-    { fun _ -> let loc = L.mk_pos $startpos $endpos in T.binary ~loc s }
+    { let loc = L.mk_pos $startpos $endpos in T.binary ~loc s }
   | s=STR
-    { fun ns -> let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk ns s) }
+    { let loc = L.mk_pos $startpos $endpos in T.str ~loc s }
 ;
 
 s_expr:
   | c=spec_constant
-    { c I.attr }
+    { c }
   | s=SYMBOL
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
   | s=KEYWORD
@@ -39,6 +39,9 @@ s_expr:
 index:
   | s=NUM
   | s=SYMBOL
+    { s }
+  /* Small language extension to support string char literals */
+  | s=HEX
     { s }
 ;
 
@@ -62,7 +65,7 @@ sort:
 
 attribute_value:
   | v=spec_constant
-    { v I.attr }
+    { v }
   | v=SYMBOL
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk attr v) }
   | OPEN l=s_expr* CLOSE
@@ -136,7 +139,7 @@ match_case:
 
 term:
   | c=spec_constant
-    { c I.term }
+    { c }
   | s=qual_identifier
     { let loc = L.mk_pos $startpos $endpos in
       match s with
