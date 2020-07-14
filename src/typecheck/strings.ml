@@ -16,11 +16,13 @@ module Smtlib2 = struct
       | Invalid_string_char : char -> Term.t Type.err
       | Invalid_escape_sequence : string * int -> Term.t Type.err
 
+    let int_of_string_hexa s = int_of_string ("0x" ^ s)
+
     let parse_uchar_hexa env ast s =
       if String.length s < 3 then raise Exit;
       if not (s.[0] = '#' && s.[1] = 'x') then raise Exit;
-      let s' = "0x" ^ (String.sub s 2 (String.length s - 2)) in
-      match int_of_string s' with
+      let s' = String.sub s 2 (String.length s - 2) in
+      match int_of_string_hexa s' with
       | i when 0 <= i && i <= 0x2FFFF ->
         let b = Buffer.create 5 in
         let e = Uutf.encoder (`UTF_8) (`Buffer b) in
@@ -59,12 +61,12 @@ module Smtlib2 = struct
                   assert (n > 0);
                   if n > 5 then raise Exit;
                   let s' = String.sub s (i + 3) n in
-                  let u = Uchar.of_int (int_of_string s') in
+                  let u = Uchar.of_int (int_of_string_hexa s') in
                   let () = encode (`Uchar u) in
                   aux (j + 1)
                 | _ ->
                   let s' = String.sub s (i + 2) 4 in
-                  let u = Uchar.of_int (int_of_string s') in
+                  let u = Uchar.of_int (int_of_string_hexa s') in
                   let () = encode (`Uchar u) in
                   aux (i + 6)
               with
