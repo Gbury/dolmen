@@ -433,6 +433,15 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Float.Invalid_dec_char c ->
       Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
 
+    (* Smtlib String errors *)
+    | Smtlib2_String.Invalid_hexadecimal s ->
+      Format.fprintf fmt "The following is not a valid hexadecimal character: '%s'" s
+    | Smtlib2_String.Invalid_string_char c ->
+      Format.fprintf fmt "The following character is not allowed in string literals: '%c'" c
+    | Smtlib2_String.Invalid_escape_sequence (s, i) ->
+      Format.fprintf fmt "The escape sequence starting at index %d in the \
+                          following string is not allowed: '%s'" i s
+
     (* Expression filters *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty, msg), _) ->
       Format.fprintf fmt "Filter '%s' failed for the given type.%a"
