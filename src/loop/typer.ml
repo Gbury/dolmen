@@ -769,8 +769,8 @@ module Make(S : State_intf.Typer) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls st ?attr d =
-    let env = typing_env st in
+  let decls st ?loc ?attr d =
+    let env = typing_env ?loc st in
     let decls = T.decls env ?attr d in
     let () = check_decls st env d.contents decls in
     st, decls, get_warnings ()
@@ -779,8 +779,8 @@ module Make(S : State_intf.Typer) = struct
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs st ?attr d =
-    let env = typing_env st in
+  let defs st ?loc ?attr d =
+    let env = typing_env ?loc st in
     let l = T.defs env ?attr d in
     let l = List.map (function
         | `Type_def (id, _, vars, body) ->
@@ -798,21 +798,21 @@ module Make(S : State_intf.Typer) = struct
 
   let typecheck (st : _ Dolmen.State.state) = st.type_check
 
-  let terms st ?attr:_ l =
+  let terms st ?loc ?attr:_ l =
     let res = List.map (fun (t : Dolmen.Term.t) ->
-        let env = typing_env ?loc:t.loc st in
+        let env = typing_env ?loc st in
         T.parse_term env t
       ) l in
     st, res, get_warnings ()
 
-  let formula st ?attr:_ ~goal:_ (t : Dolmen.Term.t) =
-    let env = typing_env ?loc:t.loc st in
+  let formula st ?loc ?attr:_ ~goal:_ (t : Dolmen.Term.t) =
+    let env = typing_env ?loc st in
     let res = T.parse env t in
     st, res, get_warnings ()
 
-  let formulas st ?attr:_ l =
+  let formulas st ?loc ?attr:_ l =
     let l' = List.map (fun (t : Dolmen.Term.t) ->
-        let env = typing_env ?loc:t.loc st in
+        let env = typing_env ?loc st in
         T.parse env t
       ) l in
     st, l', get_warnings ()

@@ -31,31 +31,34 @@ module type S = sig
     state * (Dolmen.ParseLocation.t * string) list
 
   val defs :
-    state -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.defs ->
+    state -> ?loc:Dolmen.ParseLocation.t ->
+    ?attr:Dolmen.Term.t -> Dolmen.Statement.defs ->
     state * [
      | `Type_def of Dolmen.Id.t * ty_var list * ty
      | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
     ] list * (Dolmen.ParseLocation.t * string) list
 
   val decls :
-    state -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.decls ->
+    state -> ?loc:Dolmen.ParseLocation.t ->
+    ?attr:Dolmen.Term.t -> Dolmen.Statement.decls ->
     state * [
       | `Type_decl of ty_const
       | `Term_decl of term_const
     ] list * (Dolmen.ParseLocation.t * string) list
 
   val terms :
-    state -> ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
+    state -> ?loc:Dolmen.ParseLocation.t ->
+    ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
     state * term list * (Dolmen.ParseLocation.t * string) list
 
   val formula :
-    state -> ?attr:Dolmen.Term.t -> goal:bool -> Dolmen.Term.t ->
+    state -> ?loc:Dolmen.ParseLocation.t ->
+    ?attr:Dolmen.Term.t -> goal:bool -> Dolmen.Term.t ->
     state * formula * (Dolmen.ParseLocation.t * string) list
 
   val formulas :
-    state -> ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
+    state -> ?loc:Dolmen.ParseLocation.t ->
+    ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
     state * formula list * (Dolmen.ParseLocation.t * string) list
 
 end

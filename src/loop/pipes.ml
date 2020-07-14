@@ -269,7 +269,7 @@ module Make
 
       (* Hypotheses and goal statements *)
       | { S.descr = S.Prove l; _ } ->
-        let st, l, w = Typer.formulas st ?attr:c.S.attr l in
+        let st, l, w = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
         let st = add_warnings st w in
         `Continue (st, simple (prove_id c) c.S.loc (`Solve l))
 
@@ -277,7 +277,7 @@ module Make
       | { S.descr = S.Clause l; _ } ->
         begin match fv_list l with
           | [] -> (* regular clauses *)
-            let st, res, w = Typer.formulas st ?attr:c.S.attr l in
+            let st, res, w = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
             let st = add_warnings st w in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Clause res)
@@ -293,7 +293,7 @@ module Make
                 | [p] -> p
                 | _ -> Dolmen.Term.apply ?loc (Dolmen.Term.or_t ?loc ()) l
               ) in
-            let st, res, w = Typer.formula st ?attr:c.S.attr ~goal:false f in
+            let st, res, w = Typer.formula st ?loc ?attr:c.S.attr ~goal:false f in
             let st = add_warnings st w in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Hyp res)
@@ -301,14 +301,14 @@ module Make
             `Continue (st, stmt)
         end
       | { S.descr = S.Antecedent t; _ } ->
-        let st, ret, w = Typer.formula st ?attr:c.S.attr ~goal:false t in
+        let st, ret, w = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:false t in
         let st = add_warnings st w in
         let stmt : typechecked stmt =
           simple (hyp_id c) c.S.loc (`Hyp ret)
         in
         `Continue (st, stmt)
       | { S.descr = S.Consequent t; _ } ->
-        let st, ret, w = Typer.formula st ?attr:c.S.attr ~goal:true t in
+        let st, ret, w = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:true t in
         let st = add_warnings st w in
         let stmt : typechecked stmt =
           simple (goal_id c) c.S.loc (`Goal ret)
@@ -335,12 +335,12 @@ module Make
 
       (* Declarations and definitions *)
       | { S.descr = S.Defs d; _ } ->
-        let st, l, w = Typer.defs st ?attr:c.S.attr d in
+        let st, l, w = Typer.defs st ?loc:c.S.loc ?attr:c.S.attr d in
         let st = add_warnings st w in
         let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
         `Continue (st, res)
       | { S.descr = S.Decls l; _ } ->
-        let st, l, w = Typer.decls st ?attr:c.S.attr l in
+        let st, l, w = Typer.decls st ?loc:c.S.loc ?attr:c.S.attr l in
         let st = add_warnings st w in
         let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
         `Continue (st, res)
@@ -355,7 +355,7 @@ module Make
       | { S.descr = S.Get_model; _ } ->
         `Continue (st, simple (other_id c) c.S.loc `Get_model)
       | { S.descr = S.Get_value l; _ } ->
-        let st, l, w = Typer.terms st ?attr:c.S.attr l in
+        let st, l, w = Typer.terms st ?loc:c.S.loc ?attr:c.S.attr l in
         let st = add_warnings st w in
         `Continue (st, simple (other_id c) c.S.loc (`Get_value l))
       | { S.descr = S.Get_assignment; _ } ->
