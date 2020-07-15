@@ -12,6 +12,7 @@ depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen"
   "spelll"
+  "uutf"
   "dune"
 ]
 tags: [ "logic" "type" "typechecking" "first order" ]
