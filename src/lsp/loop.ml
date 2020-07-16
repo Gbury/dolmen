@@ -29,28 +29,28 @@ let handle_exn st = function
 
   (* lexing error *)
   | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
-    Ok (State.error st loc "Lexing error: %s" msg)
+    Ok (State.error ~loc st "Lexing error: %s" msg)
   (* Parsing error *)
   | Dolmen.ParseLocation.Syntax_error (loc, "") ->
-    Ok (State.error st loc "Syntax error")
+    Ok (State.error ~loc st "Syntax error")
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
-    Ok (State.error st loc "%s" msg)
+    Ok (State.error ~loc st "%s" msg)
   (* Typing error *)
   | State.Typer.T.Typing_error (
       State.Typer.T.Error (_env, fragment, _err) as error) ->
     let loc = get_loc (State.Typer.T.fragment_loc fragment) in
-    Ok (State.error st loc "Typing error: %a" State.Typer.report_error error)
+    Ok (State.error ~loc st "Typing error: %a" State.Typer.report_error error)
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->
-    Ok (State.error st (get_loc l) "File not found: '%s' in directory '%s'" f dir)
+    Ok (State.error ~loc:(get_loc l) st "File not found: '%s' in directory '%s'" f dir)
   (* Input lang changed *)
   | State.Input_lang_changed _ ->
-    Ok (State.error st no_loc "Language changed because of an include")
+    Ok (State.error st "Language changed because of an include")
 
   (* Fallback *)
   | exn ->
-    Ok (State.error st no_loc
+    Ok (State.error st
           "Internal error, please report upstream: %s"
           (Printexc.to_string exn))
 

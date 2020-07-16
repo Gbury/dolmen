@@ -106,7 +106,7 @@ module Make(S : State_intf.Typer) = struct
   (* Typing state *)
   (* ************************************************************************ *)
 
-  (* This is here to define the typing state (not ot confuse with the state
+  (* This is here to define the typing state (not to confuse with the state
      passed in the pipes, which will contain the typing state. *)
 
   type type_st = {
@@ -155,10 +155,10 @@ module Make(S : State_intf.Typer) = struct
          arguments when none are given in an application."
     | _ -> ()
 
-  let filter_hint fmt = function
+  let pp_hint fmt = function
     | "" -> ()
     | msg ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]"
+      Format.fprintf fmt "@ @[<hov 2>Hint: %a@]"
         Format.pp_print_text msg
 
   (* Report type warnings *)
@@ -219,7 +219,7 @@ module Make(S : State_intf.Typer) = struct
       -> Some (fun fmt () ->
         Format.fprintf fmt
           "This is a non-linear expression according to the smtlib spec.%a"
-          filter_hint msg
+          pp_hint msg
       )
 
     | Smtlib2_Float.Real_lit -> Some (fun fmt () ->
@@ -410,8 +410,7 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Ints.Forbidden msg
     | Smtlib2_Reals.Forbidden msg
     | Smtlib2_Reals_Ints.Forbidden msg ->
-      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a"
-        filter_hint msg
+      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a" pp_hint msg
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
         Dolmen.Expr.Ty.print ty
@@ -444,11 +443,9 @@ module Make(S : State_intf.Typer) = struct
 
     (* Expression filters *)
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_ty (name, _ty, msg), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given type.%a"
-        name filter_hint msg
+      Format.fprintf fmt "Filter '%s' failed for the given type.%a" name pp_hint msg
     | T.Uncaught_exn (Dolmen.Expr.Filter_failed_term (name, _t, msg), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given term.%a"
-        name filter_hint msg
+      Format.fprintf fmt "Filter '%s' failed for the given term.%a" name pp_hint msg
 
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn (exn, bt) ->
@@ -483,40 +480,8 @@ module Make(S : State_intf.Typer) = struct
         | _ -> None
       )
 
-  (* Warning reporting *)
+  (* Warning reporting and wrappers *)
   (* ************************************************************************ *)
-
-  (* Transform a warning into an option loc and message *)
-  let warning_to_loc_msg (T.Warning (_, fg, _) as w) =
-    let loc =
-      match T.fragment_loc fg with
-      | Some l -> l
-      | None -> no_loc
-    in
-    match report_warning w with
-    | None -> None
-    | Some pp ->
-      let msg = Format.asprintf "%a" pp () in
-      Some (loc, msg)
-
-  let add_warning, add_raw_warning, get_warnings =
-    (* List ref to store a list of warnings *)
-    let l = ref [] in
-    (* Directly add a loc and message *)
-    let add_raw loc msg = l := (loc, msg) :: !l in
-    (* Add a warning *)
-    let add w =
-      match warning_to_loc_msg w with
-      | None -> ()
-      | Some (loc, msg) -> add_raw loc msg
-    in
-    (* Get back the list of warnings as a list loc * message *)
-    let get () =
-      let res = List.rev !l in
-      l := [];
-      res
-    in
-    add, add_raw, get
 
   type warning_conf = {
     strict_typing : bool;
@@ -525,7 +490,7 @@ module Make(S : State_intf.Typer) = struct
 
   (* Warning reporter, sent to the typechecker.
      This is responsible for turning fatal warnings into errors *)
-  let warnings conf ((T.Warning (env, fragment, warn)) as w) =
+  let warnings_aux report conf ((T.Warning (env, fragment, warn)) as w) =
     match warn, fragment with
     (* Warnings as errors *)
     | T.Shadowing (_, `Builtin `Term, `Variable _), fragment
@@ -546,9 +511,7 @@ module Make(S : State_intf.Typer) = struct
       T._error env fragment (Warning_as_error w)
 
     (* general case *)
-    | _ -> add_warning w
-
-
+    | _ -> report w
 
   (* Generate typing env from state *)
   (* ************************************************************************ *)
@@ -571,16 +534,14 @@ module Make(S : State_intf.Typer) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env
-      ?(loc=no_loc)
-      (st : (Parser.language, type_st, _) Dolmen.State.state) =
+  let typing_env ?(loc=no_loc) warnings (st : _ Dolmen.State.state) =
 
     let additional_builtins env args =
       !additional_builtins env args
     in
 
     (* Match the language to determine bultins and other options *)
-    match st.input_lang with
+    match (st.input_lang : Parser.language option) with
     | None -> assert false
 
     (* Dimacs & iCNF
@@ -704,10 +665,22 @@ module Make(S : State_intf.Typer) = struct
             ~warnings builtins
       end
 
+  let typing_wrap ?loc st ~f =
+    let st = ref st in
+    let report (T.Warning (_, fg, _) as w) =
+      let loc = T.fragment_loc fg in
+      match report_warning w with
+      | None -> ()
+      | Some pp -> st := S.warn ?loc !st "%a" pp ()
+    in
+    let env = typing_env ?loc (warnings_aux report) !st in
+    let res = f env in
+    !st, res
+
   (* Setting the logic *)
   (* ************************************************************************ *)
 
-  let set_logic (st : _ Dolmen.State.state) ?(loc=no_loc) s =
+  let set_logic (st : _ Dolmen.State.state) ?loc s =
     (* auxiliary funciton/lens to set the logic in the state *)
     let set (st : _ Dolmen.State.state) logic = {
       st with type_state = {
@@ -717,20 +690,17 @@ module Make(S : State_intf.Typer) = struct
     (* *)
     match (st.input_lang : Parser.language option) with
     | Some Smtlib2 _ ->
-      let l =
+      let st, l =
         match Dolmen_type.Logic.Smtlib2.parse s with
-        | Some l -> l
+        | Some l -> st, l
         | None ->
-          add_raw_warning loc (Format.asprintf "Unknown logic %s" s);
-          Dolmen_type.Logic.Smtlib2.all
+          let st = S.warn ?loc st "Unknown logic %s" s in
+          st, Dolmen_type.Logic.Smtlib2.all
       in
-      set st (Smtlib2 l), get_warnings ()
+      set st (Smtlib2 l)
     | _ ->
-      add_raw_warning loc (
-        Format.asprintf "Set logic is not supported for the current language"
-      );
-      st, get_warnings ()
-
+      S.warn ?loc st
+        "Set logic is not supported for the current language"
 
 
   (* Declarations *)
@@ -769,29 +739,31 @@ module Make(S : State_intf.Typer) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls st ?loc ?attr d =
-    let env = typing_env ?loc st in
-    let decls = T.decls env ?attr d in
-    let () = check_decls st env d.contents decls in
-    st, decls, get_warnings ()
+  let decls (st : _ Dolmen.State.state) ?loc ?attr d =
+    typing_wrap ?loc st ~f:(fun env ->
+        let decls = T.decls env ?attr d in
+        let () = check_decls st env d.contents decls in
+        decls
+      )
 
 
   (* Definitions *)
   (* ************************************************************************ *)
 
   let defs st ?loc ?attr d =
-    let env = typing_env ?loc st in
-    let l = T.defs env ?attr d in
-    let l = List.map (function
-        | `Type_def (id, _, vars, body) ->
-          let () = if not d.recursive then Subst.define_ty id vars body in
-          `Type_def (id, vars, body)
-        | `Term_def (id, f, vars, args, body) ->
-          let () = Decl.add_definition id (`Term f) in
-          `Term_def (id, f, vars, args, body)
-      ) l
-    in
-    st, l, get_warnings ()
+    typing_wrap ?loc st ~f:(fun env ->
+        let l = T.defs env ?attr d in
+        let l = List.map (function
+            | `Type_def (id, _, vars, body) ->
+              let () = if not d.recursive then Subst.define_ty id vars body in
+              `Type_def (id, vars, body)
+            | `Term_def (id, f, vars, args, body) ->
+              let () = Decl.add_definition id (`Term f) in
+              `Term_def (id, f, vars, args, body)
+          ) l
+        in
+        l
+      )
 
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
@@ -799,23 +771,19 @@ module Make(S : State_intf.Typer) = struct
   let typecheck (st : _ Dolmen.State.state) = st.type_check
 
   let terms st ?loc ?attr:_ l =
-    let res = List.map (fun (t : Dolmen.Term.t) ->
-        let env = typing_env ?loc st in
-        T.parse_term env t
-      ) l in
-    st, res, get_warnings ()
+    typing_wrap ?loc st ~f:(fun env ->
+        List.map (T.parse_term env) l
+      )
 
   let formula st ?loc ?attr:_ ~goal:_ (t : Dolmen.Term.t) =
-    let env = typing_env ?loc st in
-    let res = T.parse env t in
-    st, res, get_warnings ()
+    typing_wrap ?loc st ~f:(fun env ->
+        T.parse env t
+      )
 
   let formulas st ?loc ?attr:_ l =
-    let l' = List.map (fun (t : Dolmen.Term.t) ->
-        let env = typing_env ?loc st in
-        T.parse env t
-      ) l in
-    st, l', get_warnings ()
+    typing_wrap ?loc st ~f:(fun env ->
+        List.map (T.parse env) l
+      )
 
 end
 

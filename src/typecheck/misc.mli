@@ -43,6 +43,9 @@ module Strings : sig
   val to_list : string -> char list
   (** Explode the string into a list of characters. *)
 
+  val is_suffix : suffix:string -> string -> bool
+  (** Check whether a string is a suffix of another. *)
+
 end
 
 (** Fuzzy search maps *)

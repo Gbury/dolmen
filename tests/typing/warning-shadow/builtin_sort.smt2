@@ -1,4 +1,4 @@
-(set-logic QF_LIADT)
+(set-logic QF_DTLIA)
 (declare-datatypes ((list 1)) (
   (par (Int) (
     (nil)

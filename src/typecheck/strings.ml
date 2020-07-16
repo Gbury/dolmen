@@ -53,22 +53,29 @@ module Smtlib2 = struct
           (* escape sequence *)
           | '\\' ->
             begin try
-                if not (s.[i + 1] = 'u') then raise Exit;
-                match s.[i + 2] with
-                | '{' ->
-                  let j = String.index_from s (i + 3) '}' in
-                  let n = j - (i + 3) in
-                  assert (n > 0);
-                  if n > 5 then raise Exit;
-                  let s' = String.sub s (i + 3) n in
-                  let u = Uchar.of_int (int_of_string_hexa s') in
-                  let () = encode (`Uchar u) in
-                  aux (j + 1)
-                | _ ->
-                  let s' = String.sub s (i + 2) 4 in
-                  let u = Uchar.of_int (int_of_string_hexa s') in
-                  let () = encode (`Uchar u) in
-                  aux (i + 6)
+                if i + 1 >= String.length s then begin
+                  let () = encode (`Uchar (Uchar.of_char '\\')) in
+                  aux (i + 1)
+                end else if s.[i + 1] <> 'u' then begin
+                  let () = encode (`Uchar (Uchar.of_char '\\')) in
+                  let () = encode (`Uchar (Uchar.of_char s.[i + 1])) in
+                  aux (i + 2)
+                end else
+                  match s.[i + 2] with
+                  | '{' ->
+                    let j = String.index_from s (i + 3) '}' in
+                    let n = j - (i + 3) in
+                    assert (n > 0);
+                    if n > 5 then raise Exit;
+                    let s' = String.sub s (i + 3) n in
+                    let u = Uchar.of_int (int_of_string_hexa s') in
+                    let () = encode (`Uchar u) in
+                    aux (j + 1)
+                  | _ ->
+                    let s' = String.sub s (i + 2) 4 in
+                    let u = Uchar.of_int (int_of_string_hexa s') in
+                    let () = encode (`Uchar u) in
+                    aux (i + 6)
               with
               | Exit
               | Failure _

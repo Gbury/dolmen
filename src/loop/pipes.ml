@@ -236,11 +236,6 @@ module Make
     let l' = List.map Dolmen.Term.fv l in
     List.sort_uniq Dolmen.Id.compare (List.flatten l')
 
-  let add_warnings st l =
-    List.fold_left (fun st (loc, msg) ->
-        State.warn st loc msg
-      ) st l
-
   let typecheck (st, c) =
     State.start `Typing;
     let res =
@@ -269,16 +264,14 @@ module Make
 
       (* Hypotheses and goal statements *)
       | { S.descr = S.Prove l; _ } ->
-        let st, l, w = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
-        let st = add_warnings st w in
+        let st, l = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
         `Continue (st, simple (prove_id c) c.S.loc (`Solve l))
 
       (* Hypotheses & Goals *)
       | { S.descr = S.Clause l; _ } ->
         begin match fv_list l with
           | [] -> (* regular clauses *)
-            let st, res, w = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
-            let st = add_warnings st w in
+            let st, res = Typer.formulas st ?loc:c.S.loc ?attr:c.S.attr l in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Clause res)
             in
@@ -293,23 +286,20 @@ module Make
                 | [p] -> p
                 | _ -> Dolmen.Term.apply ?loc (Dolmen.Term.or_t ?loc ()) l
               ) in
-            let st, res, w = Typer.formula st ?loc ?attr:c.S.attr ~goal:false f in
-            let st = add_warnings st w in
+            let st, res = Typer.formula st ?loc ?attr:c.S.attr ~goal:false f in
             let stmt : typechecked stmt =
               simple (hyp_id c) c.S.loc (`Hyp res)
             in
             `Continue (st, stmt)
         end
       | { S.descr = S.Antecedent t; _ } ->
-        let st, ret, w = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:false t in
-        let st = add_warnings st w in
+        let st, ret = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:false t in
         let stmt : typechecked stmt =
           simple (hyp_id c) c.S.loc (`Hyp ret)
         in
         `Continue (st, stmt)
       | { S.descr = S.Consequent t; _ } ->
-        let st, ret, w = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:true t in
-        let st = add_warnings st w in
+        let st, ret = Typer.formula st ?loc:c.S.loc ?attr:c.S.attr ~goal:true t in
         let stmt : typechecked stmt =
           simple (goal_id c) c.S.loc (`Goal ret)
         in
@@ -317,8 +307,7 @@ module Make
 
       (* Other set_logics should check whether corresponding plugins are activated ? *)
       | { S.descr = S.Set_logic s; _ } ->
-        let st, w = Typer.set_logic st ?loc:c.S.loc s in
-        let st = add_warnings st w in
+        let st = Typer.set_logic st ?loc:c.S.loc s in
         `Continue (st, simple (other_id c) c.S.loc (`Set_logic s))
 
       (* Set/Get info *)
@@ -335,13 +324,11 @@ module Make
 
       (* Declarations and definitions *)
       | { S.descr = S.Defs d; _ } ->
-        let st, l, w = Typer.defs st ?loc:c.S.loc ?attr:c.S.attr d in
-        let st = add_warnings st w in
+        let st, l = Typer.defs st ?loc:c.S.loc ?attr:c.S.attr d in
         let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
         `Continue (st, res)
       | { S.descr = S.Decls l; _ } ->
-        let st, l, w = Typer.decls st ?loc:c.S.loc ?attr:c.S.attr l in
-        let st = add_warnings st w in
+        let st, l = Typer.decls st ?loc:c.S.loc ?attr:c.S.attr l in
         let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
         `Continue (st, res)
 
@@ -355,8 +342,7 @@ module Make
       | { S.descr = S.Get_model; _ } ->
         `Continue (st, simple (other_id c) c.S.loc `Get_model)
       | { S.descr = S.Get_value l; _ } ->
-        let st, l, w = Typer.terms st ?loc:c.S.loc ?attr:c.S.attr l in
-        let st = add_warnings st w in
+        let st, l = Typer.terms st ?loc:c.S.loc ?attr:c.S.attr l in
         `Continue (st, simple (other_id c) c.S.loc (`Get_value l))
       | { S.descr = S.Get_assignment; _ } ->
         `Continue (st, simple (other_id c) c.S.loc `Get_assignment)

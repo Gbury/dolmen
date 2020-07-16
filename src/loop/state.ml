@@ -10,11 +10,33 @@ exception File_not_found of
 exception Input_lang_changed of
     Parser.language * Parser.language
 
+(* Warning and error printers *)
+(* ************************************************************************* *)
+
+let pp_loc fmt o =
+  match o with
+  | None -> ()
+  | Some loc ->
+    Format.fprintf fmt "%a:@ " Dolmen.ParseLocation.fmt loc
+
+let error ?loc _ format =
+  Format.kfprintf (fun _ -> exit 1) Format.err_formatter
+    ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
+    pp_loc loc
+    Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
+
+let warn ?loc st format =
+  Format.kfprintf (fun _ -> st) Format.err_formatter
+    ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
+    pp_loc loc
+    Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+
 (* Type information to close the state type in the typer functor *)
 (* ************************************************************************* *)
 
 module Aux = struct
   type solve_st = unit
+  let warn = warn
 end
 
 (* Full state *)
@@ -25,26 +47,8 @@ module Make(T : Typer_intf.T) = struct
 
   type t = (Parser.language, T.type_st, unit) Dolmen.State.state
 
-  let pp_loc fmt o =
-    match o with
-    | None -> ()
-    | Some loc ->
-      Format.fprintf fmt "%a:@ " Dolmen.ParseLocation.fmt loc
-
-  let error ?loc _ format =
-    Format.kfprintf (fun _ -> exit 1) Format.err_formatter
-      ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
-      pp_loc loc
-      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
-
-  let warn_aux st loc msg =
-    Format.eprintf "@[<v>%a%a @[<hov>%s@]@]@."
-      pp_loc loc
-      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
-      msg;
-    st
-
-  let warn st loc msg = warn_aux st (Some loc) msg
+  let warn = warn
+  let error = error
 
   let start _ = ()
   let stop _ = ()
@@ -60,7 +64,7 @@ module Make(T : Typer_intf.T) = struct
       let t = Dolmen.State.set_mode t `Full in
       begin match old_mode with
         | Some `Incremental ->
-          warn_aux t None
+          warn t
             "The Alt-ergo format does not support incremental mode, switching to full mode"
         | _ -> t
       end

@@ -13,11 +13,23 @@ exception Input_lang_changed of
     Dolmen_loop.Parser.language * Dolmen_loop.Parser.language
 
 
+(* Warnings *)
+(* ************************************************************************* *)
+
+let add_diag d (st : _ Dolmen.State.state) =
+  { st with solve_state = d :: st.solve_state; }
+
+let warn ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0) t format =
+  Format.kasprintf (fun msg ->
+      let d = Diagnostic.warn ~loc msg in
+      add_diag d t) format
+
 (* Module Instantiation *)
 (* ************************************************************************* *)
 
 module Aux = struct
   type solve_st = Diagnostic.t list
+  let warn = warn
 end
 
 module Typer = Dolmen_loop.Typer.Make(Aux)
@@ -31,17 +43,7 @@ type solver_st = Diagnostic.t list
 
 type t = (lang, typer_st, solver_st) Dolmen.State.state
 
-(* Warnings *)
-(* ************************************************************************* *)
-
-let add_diag d (st : t) =
-  { st with solve_state = d :: st.solve_state; }
-
-let warn t loc msg =
-  let d = Diagnostic.warn ~loc msg in
-  add_diag d t
-
-let error t loc format =
+let error ?(loc=Dolmen.ParseLocation.mk "" 0 0 0 0) t format =
   (* Flush the str formatter to clear any unflushed leftover *)
   let _ = Format.flush_str_formatter () in
   (* Set the str formatter out functions to not emit newline characters *)

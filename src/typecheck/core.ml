@@ -164,7 +164,7 @@ module Smtlib2 = struct
                   `Term (Base.term_app1 (module Type) env "is" (T.cstr_tester c))
                 | _ -> `Not_found
               end);
-        ] ~err:(Base.bad_term_index_arity (module Type) env)
+        ] ~err:(fun _ _ _ -> `Not_found)
           ~k:(fun _ -> `Not_found)
 
       | _ -> `Not_found

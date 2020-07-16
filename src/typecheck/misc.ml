@@ -50,6 +50,15 @@ module Strings = struct
     in
     aux s (String.length s - 1) []
 
+  let is_suffix ~suffix s =
+    let k = String.length suffix in
+    let n = String.length s in
+    if n < k then false
+    else begin
+      let s' = String.sub s (n - k) k in
+      String.equal suffix s'
+    end
+
 end
 
 (* Bitvector manipulation *)

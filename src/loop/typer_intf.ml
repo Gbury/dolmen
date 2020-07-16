@@ -27,8 +27,7 @@ module type S = sig
   val typecheck : state -> bool
 
   val set_logic :
-    state -> ?loc:Dolmen.ParseLocation.t -> string ->
-    state * (Dolmen.ParseLocation.t * string) list
+    state -> ?loc:Dolmen.ParseLocation.t -> string -> state
 
   val defs :
     state -> ?loc:Dolmen.ParseLocation.t ->
@@ -36,7 +35,7 @@ module type S = sig
     state * [
      | `Type_def of Dolmen.Id.t * ty_var list * ty
      | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
-    ] list * (Dolmen.ParseLocation.t * string) list
+    ] list
 
   val decls :
     state -> ?loc:Dolmen.ParseLocation.t ->
@@ -44,21 +43,21 @@ module type S = sig
     state * [
       | `Type_decl of ty_const
       | `Term_decl of term_const
-    ] list * (Dolmen.ParseLocation.t * string) list
+    ] list
 
   val terms :
     state -> ?loc:Dolmen.ParseLocation.t ->
     ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
-    state * term list * (Dolmen.ParseLocation.t * string) list
+    state * term list
 
   val formula :
     state -> ?loc:Dolmen.ParseLocation.t ->
     ?attr:Dolmen.Term.t -> goal:bool -> Dolmen.Term.t ->
-    state * formula * (Dolmen.ParseLocation.t * string) list
+    state * formula
 
   val formulas :
     state -> ?loc:Dolmen.ParseLocation.t ->
     ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
-    state * formula list * (Dolmen.ParseLocation.t * string) list
+    state * formula list
 
 end

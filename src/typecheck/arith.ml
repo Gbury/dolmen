@@ -106,24 +106,9 @@ module Smtlib2 = struct
       | App ({ term = Symbol { Id.ns = Id.Term; name = "/"; }; _ }, [a; b])
         -> Division (a, b)
 
-      (* Here, we assume that the arguments are coherent with the result of the
-         lookup (e.g. no arguments if Type.find_var returns a bound variables).
-         This is reasonable as this function should only be called on raw terms
-         that have been typechecked. *)
-      | Symbol id | App ({ term = Symbol id; _}, _) ->
-        begin match Type.find_var env id with
-          | `Letin (e, _, _) -> view ~parse version env e
-          | #Type.var -> Variable id
-          | #Type.not_found ->
-            begin match Type.find_global env id with
-              | #Type.cst -> Constant id
-              | #Type.not_found ->
-                begin match parse version env (Type.Id id) with
-                  | #Type.builtin_res -> Complex_arith
-                  | #Type.not_found -> Top_symbol_not_in_arith
-                end
-            end
-        end
+      | Symbol id -> view_id ~parse version env id []
+      | App ({ term = Symbol id; _}, args) -> view_id ~parse version env id args
+
       | Builtin b | App ({ term = Builtin b; _ }, _) ->
         begin match parse version env (Type.Builtin b) with
           | #Type.builtin_res -> Complex_arith
@@ -132,6 +117,31 @@ module Smtlib2 = struct
 
       (* Catch-all *)
       | _ -> Top_symbol_not_in_arith
+
+    (* We here use the fact that smtlib forbids shadowing, hence the order
+       of the lookups does not matter. *)
+    and view_id ~parse version env id args =
+      match Type.find_var env id with
+      | `Letin (e, _, _) -> view ~parse version env e
+      | #Type.var ->
+        begin match args with
+          | [] -> Variable id
+          | _ -> Top_symbol_not_in_arith
+        end
+      | #Type.not_found ->
+        begin match Type.find_global env id with
+          | #Type.cst ->
+            begin match args with
+              | [] -> Constant id
+              | _ -> Top_symbol_not_in_arith
+            end
+          | #Type.not_found ->
+            begin match parse version env (Type.Id id) with
+              | #Type.builtin_res -> Complex_arith
+              | #Type.not_found -> Top_symbol_not_in_arith
+            end
+        end
+
 
     let rec difference_count view t :
       [ `Ok of Dolmen.Id.t * int | `Error of string ] =
@@ -325,13 +335,20 @@ module Smtlib2 = struct
                                         but was given %a"
                          V.print v)
             end
-          | c ->
-            Error (Format.asprintf "division in linear arithmetic \
-                                    expects as first argument an integer \
-                                    coeficient, i.e. either a raw integer \
-                                    literal, or the negation of one, but \
-                                    here was given %a"
-                     Classification.print c)
+          | _ ->
+            let v = V.view ~parse version env a in
+            let msg =
+              Format.asprintf "division in linear arithmetic \
+                               expects as first argument an integer \
+                               coeficient, i.e. either an integer  \
+                               numeral or the negation of one, but \
+                               here was given %a" V.print v
+            in
+            begin match v with
+              (* Allow "xxx.0" rationals with a warning *)
+              | Decimal s when Misc.Strings.is_suffix s ~suffix:".0" -> Warn msg
+              | _ -> Error msg
+            end
         end
       | _ -> bad_arity "division" "linear arithmetic" 2
 
@@ -354,7 +371,11 @@ module Smtlib2 = struct
         | (Top_symbol_not_in_arith as c), ((Int_coefficient | Rat_coefficient) as c')
           ->
           if strict then Warn (mul_linear_msg ~strict c c') else Ok
-        | c, c' -> Error (mul_linear_msg ~strict c c')
+        | ((Int_coefficient | Rat_coefficient) as c), (Complex_arith as c')
+        | (Complex_arith as c'), ((Int_coefficient | Rat_coefficient) as c) ->
+          Warn (mul_linear_msg ~strict c c')
+        | c, c' ->
+          Error (mul_linear_msg ~strict c c')
         end
       | _ -> bad_arity "multiplication" "linear arithmetic" 2
 
@@ -766,6 +787,13 @@ module Smtlib2 = struct
               `Term (Base.term_app_chain_ast (module Type) env ">"
                        (dispatch2 env (T.Int.gt, T.Real.gt))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
+            | "to_real" ->
+              `Term (Base.term_app1 (module Type) env "to_real" T.Int.to_real)
+            | "to_int" ->
+              `Term (Base.term_app1 (module Type) env "to_int" T.Real.to_int)
+            | "is_int" ->
+              `Term (Base.term_app1 (module Type) env "is_int" T.Real.is_int)
+
             | _ -> Base.parse_id id
                      ~k:(function _ -> `Not_found)
                      ~err:(Base.bad_ty_index_arity (module Type) env)

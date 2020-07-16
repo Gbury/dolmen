@@ -12,7 +12,7 @@ module Intf = struct
 end
 
 module State = Dolmen_std.State
-module Misc = Dolmen_std.Misc
+(* module Misc = Dolmen_std.Misc *)
 module Id = Dolmen_std.Id
 module Tag = Dolmen_std.Tag
 module Term = Dolmen_std.Term

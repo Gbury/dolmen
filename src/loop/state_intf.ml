@@ -34,6 +34,13 @@ module type Typer = sig
   type solve_st
   (** The type used to store results of solving. *)
 
+  val warn :
+    ?loc:Dolmen.ParseLocation.t ->
+    ((_, _, solve_st) Dolmen.State.state as 't)
+    -> ('a, Format.formatter, unit, 't) format4 ->
+    'a
+  (** Emit a warning *)
+
 end
 
 (** This modules defines the smallest signatures for a solver state that allow
@@ -61,7 +68,10 @@ module type S = sig
   type term
   (** The type of solver terms. *)
 
-  val warn : t -> Dolmen.ParseLocation.t -> string -> t
+  val warn :
+    ?loc:Dolmen.ParseLocation.t ->
+    t -> ('a, Format.formatter, unit, t) format4 ->
+    'a
   (** Emit a warning *)
 
   val start : phase -> unit
