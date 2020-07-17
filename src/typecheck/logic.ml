@@ -21,6 +21,7 @@ module Smtlib2 = struct
     datatypes       : bool;
     quantifiers     : bool;
     arithmetic      : Arith.Smtlib2.arith;
+    arrays          : Arrays.Smtlib2.arrays;
   }
 
   type t = {
@@ -35,6 +36,7 @@ module Smtlib2 = struct
       free_functions = true;
       datatypes = true;
       quantifiers = true;
+      arrays = All;
       arithmetic = Regular;
     };
   }
@@ -61,6 +63,7 @@ module Smtlib2 = struct
         free_functions = false;
         datatypes = false;
         quantifiers = true;
+        arrays = All;
         arithmetic = Regular;
       };
     } in
@@ -144,14 +147,29 @@ module Smtlib2 = struct
         match s with
         (* QF_AX allows free sort and **constant** symbols (not functions) *)
         | "QF_AX"
-          -> set_features res (fun f -> { f with free_sorts = true; })
-        (* Some logics allow more linear expressions than others *)
+          -> set_features res (fun f -> { f with
+                                          free_sorts = true; })
+        (* QF_ABV has some array restrictions *)
+        | "QF_ABV" | "QF_AUFBV"
+          -> set_features res (fun f -> { f with
+                                          arrays = Only_bitvec; })
+        (* {QF_}AUFLIRA has specific array restrictions *)
+        | "QF_AUFLIRA" | "AUFLIRA"
+          -> set_features res (fun f -> { f with
+                                          arrays = Only_ints_real; })
+        (* {QF_}AUFLIA has some different arithmetic and array restrictions *)
         | "QF_AUFLIA" | "AUFLIA"
+          -> set_features res (fun f -> { f with
+                                          arrays = Only_int_int;
+                                          arithmetic = Linear `Large; })
+        (* QF_ALI has the large arithmetic semantics *)
         | "QF_ALIA" | "ALIA"
-          -> set_features res (fun f -> { f with arithmetic = Linear `Large})
+          -> set_features res (fun f -> { f with
+                                          arithmetic = Linear `Large})
         (* QF_UFIDL has a different spec for integer difference logic... *)
         | "QF_UFIDL" | "UFIDL"
-          -> set_features res (fun f -> { f with arithmetic = Difference `UFIDL})
+          -> set_features res (fun f -> { f with
+                                          arithmetic = Difference `UFIDL})
         (* Default case (for non-special cases) *)
         | _ -> res
       in

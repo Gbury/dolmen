@@ -27,6 +27,7 @@ module Smtlib2 : sig
     datatypes       : bool;
     quantifiers     : bool;
     arithmetic      : Arith.Smtlib2.arith;
+    arrays          : Arrays.Smtlib2.arrays;
   }
   (** Smtlib features. *)
 

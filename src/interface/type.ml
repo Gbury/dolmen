@@ -207,6 +207,19 @@ module type Smtlib_Array = sig
   val array : t -> t -> t
   (** The type of functionnal arrays from one type to another. *)
 
+  type view = private [>
+    | `Int
+    | `Real
+    | `Bitv of int
+    | `Array of t * t
+  ]
+  (** Partial views for types. These are used in the Array theory
+      to enforce some restrictions logics impose on the types of
+      arrays that cna occur. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
+
 end
 
 (** Signature required for types for typing smtlib bitvectors *)

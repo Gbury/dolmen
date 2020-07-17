@@ -406,6 +406,10 @@ module Make(S : State_intf.Typer) = struct
       Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
         Dolmen.Expr.Ty.print ty
 
+    (* Smtlib Arrya errors *)
+    | Smtlib2_Arrays.Forbidden msg ->
+      Format.fprintf fmt "Forbidden array sort.%a" pp_hint msg
+
     (* Smtlib Arithmetic errors *)
     | Smtlib2_Ints.Forbidden msg
     | Smtlib2_Reals.Forbidden msg
@@ -520,10 +524,11 @@ module Make(S : State_intf.Typer) = struct
     List.fold_left (fun acc th ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
         | `Core -> Smtlib2_Core.parse v :: acc
-        | `Arrays -> Smtlib2_Arrays.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
         | `Floats -> Smtlib2_Float.parse v :: acc
         | `String -> Smtlib2_String.parse v :: acc
+        | `Arrays ->
+          Smtlib2_Arrays.parse ~arrays:l.features.arrays v :: acc
         | `Ints ->
           Smtlib2_Ints.parse ~arith:l.features.arithmetic v :: acc
         | `Reals ->
