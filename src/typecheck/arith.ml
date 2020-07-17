@@ -371,7 +371,8 @@ module Smtlib2 = struct
         | (Top_symbol_not_in_arith as c), ((Int_coefficient | Rat_coefficient) as c')
           ->
           if strict then Warn (mul_linear_msg ~strict c c') else Ok
-        | ((Int_coefficient | Rat_coefficient) as c), (Complex_arith as c')
+        | ((Int_coefficient | Rat_coefficient) as c),
+          ((Int_coefficient | Rat_coefficient | Complex_arith) as c')
         | (Complex_arith as c'), ((Int_coefficient | Rat_coefficient) as c) ->
           Warn (mul_linear_msg ~strict c c')
         | c, c' ->
