@@ -11,8 +11,6 @@ module Intf = struct
   module Language = Dolmen_intf.Language
 end
 
-module State = Dolmen_std.State
-(* module Misc = Dolmen_std.Misc *)
 module Id = Dolmen_std.Id
 module Tag = Dolmen_std.Tag
 module Term = Dolmen_std.Term

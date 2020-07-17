@@ -32,7 +32,6 @@ let mk_state
     time_limit size_limit
     input_lang input_mode input
     type_check type_strict
-    type_infer type_shadow
     debug context
   =
   (* Side-effects *)
@@ -53,8 +52,8 @@ let mk_state
     input_dir; input_lang;
     input_mode; input_source;
 
-    type_state = Loop.Typer.new_state ();
-    type_check; type_strict; type_infer; type_shadow;
+    type_check; type_strict;
+    type_state = Dolmen_loop.Typer.new_state ();
 
     solve_state = ();
 
@@ -81,9 +80,9 @@ let input_source_conv =
 
 (* Converter for permissions *)
 let perm_conv = Arg.enum [
-    "allow", Dolmen.State.Allow;
-    "warn", Dolmen.State.Warn;
-    "error", Dolmen.State.Error;
+    "allow", Dolmen_loop.State.Allow;
+    "warn", Dolmen_loop.State.Warn;
+    "error", Dolmen_loop.State.Error;
   ]
 
 (* Converter for input modes *)
@@ -267,16 +266,6 @@ let state =
     let doc = "Be strict or more lenient wrt to typing" in
     Arg.(value & opt bool true & info ["strict"] ~doc ~docs)
   in
-  let infer =
-    let doc = Format.asprintf
-        "Decide the permissions for type inference" in
-    Arg.(value & opt (some perm_conv) None & info ["infer"] ~docs ~doc)
-  in
-  let shadow =
-    let doc = Format.asprintf
-        "Decide the permissions for shadowing of symbols" in
-    Arg.(value & opt (some perm_conv) None & info ["shadow"] ~doc ~docs)
-  in
   let debug =
     let doc = Format.asprintf
         "Print the parsed dolmen statement (after expansion of includes)" in
@@ -289,7 +278,6 @@ let state =
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
-        typing $ strict $ infer $ shadow $
-        debug $ context)
+        typing $ strict $ debug $ context)
 
 

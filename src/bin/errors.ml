@@ -29,42 +29,42 @@ let exn st = function
 
   (* Sigint, potentially wrapped by the typechecker *)
   | Loop.Pipeline.Sigint
-  | Loop.Typer.T.Typing_error (
-      Loop.Typer.T.Error (_, _, Loop.Typer.T.Uncaught_exn (
+  | Dolmen_loop.Typer.T.Typing_error (
+      Dolmen_loop.Typer.T.Error (_, _, Dolmen_loop.Typer.T.Uncaught_exn (
           Loop.Pipeline.Sigint, _))) ->
     Format.pp_print_flush Format.std_formatter ();
     Loop.State.error st "User Interrupt"
 
   (* Timeout, potentially wrapped by the typechecker *)
   | Loop.Pipeline.Out_of_time
-  | Loop.Typer.T.Typing_error (
-      Loop.Typer.T.Error (_, _, Loop.Typer.T.Uncaught_exn (
+  | Dolmen_loop.Typer.T.Typing_error (
+      Dolmen_loop.Typer.T.Error (_, _, Dolmen_loop.Typer.T.Uncaught_exn (
           Loop.Pipeline.Out_of_time, _))) ->
     Format.pp_print_flush Format.std_formatter ();
     Loop.State.error st "Time limit reached"
 
   | Loop.Pipeline.Out_of_space
-  | Loop.Typer.T.Typing_error (
-      Loop.Typer.T.Error (_, _, Loop.Typer.T.Uncaught_exn (
+  | Dolmen_loop.Typer.T.Typing_error (
+      Dolmen_loop.Typer.T.Error (_, _, Dolmen_loop.Typer.T.Uncaught_exn (
           Loop.Pipeline.Out_of_space, _))) ->
     Format.pp_print_flush Format.std_formatter ();
     Loop.State.error st "Memory limit reached"
 
   (* Parsing errors *)
   | Dolmen.ParseLocation.Uncaught (loc, exn) ->
-    if Dolmen.State.is_interactive st then
+    if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     Loop.State.error ~loc st "%s" (Printexc.to_string exn)
   | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
-    if Dolmen.State.is_interactive st then
+    if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
     Loop.State.error ~loc st "Lexing error: invalid character '%s'" msg
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
-    if Dolmen.State.is_interactive st then
+    if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc;
@@ -73,10 +73,10 @@ let exn st = function
 
 
   (* Typing errors *)
-  | Loop.Typer.T.Typing_error (
-      Loop.Typer.T.Error (_env, fragment, _err) as error) ->
-    let loc = get_loc st (Loop.Typer.T.fragment_loc fragment) in
-    if Dolmen.State.is_interactive st then
+  | Dolmen_loop.Typer.T.Typing_error (
+      Dolmen_loop.Typer.T.Error (_env, fragment, _err) as error) ->
+    let loc = get_loc st (Dolmen_loop.Typer.T.fragment_loc fragment) in
+    if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
         (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
         Dolmen.ParseLocation.fmt_hint loc

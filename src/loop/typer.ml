@@ -1,125 +1,92 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module type S = sig
+(* Dolmen_type functors instantiation *)
+(* ************************************************************************ *)
 
-  type type_st
-  type solve_st
+module T = Dolmen_type.Tff.Make
+    (Dolmen.Tag)(Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
-  module T : Dolmen_type.Tff.S
-    with type 'a Tag.t = 'a Dolmen.Tag.t
-     and type Ty.t = Dolmen.Expr.ty
-     and type Ty.Var.t = Dolmen.Expr.ty_var
-     and type Ty.Const.t = Dolmen.Expr.ty_const
-     and type T.t = Dolmen.Expr.term
-     and type T.Var.t = Dolmen.Expr.term_var
-     and type T.Const.t = Dolmen.Expr.term_const
-     and type T.Cstr.t = Dolmen.Expr.term_const
+(* Definitions builtin *)
+module Decl = Dolmen_type.Def.Declare(T)
+module Subst = Dolmen_type.Def.Subst(T)(struct
+    let of_list l =
+      let aux acc (k, v) = Dolmen.Expr.Subst.Var.bind acc k v in
+      List.fold_left aux Dolmen.Expr.Subst.empty l
+    let ty_subst l ty =
+      Dolmen.Expr.Ty.subst (of_list l) ty
+    let term_subst tys terms t =
+      Dolmen.Expr.Term.subst (of_list tys) (of_list terms) t
+  end)
 
-  include Typer_intf.S
-    with type state := (Parser.language, type_st, solve_st) Dolmen.State.state
-     and type ty := Dolmen.Expr.ty
-     and type ty_var := Dolmen.Expr.ty_var
-     and type ty_const := Dolmen.Expr.ty_const
-     and type term := Dolmen.Expr.term
-     and type term_var := Dolmen.Expr.term_var
-     and type term_const := Dolmen.Expr.term_const
-     and type formula := Dolmen.Expr.formula
+(* AE builtins *)
+module Ae_Core =
+  Dolmen_type.Core.Ae.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
-  val new_state : unit -> type_st
+(* Tptp builtins *)
+module Tptp_Core =
+  Dolmen_type.Core.Tptp.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+module Tptp_Arith =
+  Dolmen_type.Arith.Tptp.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
-  val print_fragment : Format.formatter -> 'a T.fragment -> unit
+(* Stmlib theories *)
+module Smtlib2_Core =
+  Dolmen_type.Core.Smtlib2.Tff(T)(Dolmen.Expr.Tags)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+module Smtlib2_Ints =
+  Dolmen_type.Arith.Smtlib2.Int.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Int)
+module Smtlib2_Reals =
+  Dolmen_type.Arith.Smtlib2.Real.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Real)
+module Smtlib2_Reals_Ints =
+  Dolmen_type.Arith.Smtlib2.Real_Int.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+module Smtlib2_Arrays =
+  Dolmen_type.Arrays.Smtlib2.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+module Smtlib2_Bitv =
+  Dolmen_type.Bitv.Smtlib2.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Bitv)
+module Smtlib2_Float =
+  Dolmen_type.Float.Smtlib2.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
+module Smtlib2_String =
+  Dolmen_type.Strings.Smtlib2.Tff(T)
+    (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
-  val report_error : Format.formatter -> T.error -> unit
-  val report_warning : T.warning -> (Format.formatter -> unit -> unit) option
+(* Zf *)
+module Zf_Core =
+  Dolmen_type.Core.Zf.Tff(T)(Dolmen.Expr.Tags)
 
-  val additional_builtins : T.builtin_symbols ref
+(* Typing state *)
+(* ************************************************************************ *)
 
-end
+(* This is here to define the typing state (not to confuse with the state
+   passed in the pipes, which will contain the typing state. *)
 
-module Make(S : State_intf.Typer) = struct
+type ty_state = {
+  (* typechecker global state *)
+  typer : T.state;
+  (* logic used *)
+  logic : Dolmen_type.Logic.t;
+}
 
-  (* Dolmen_type functors instantiation *)
-  (* ************************************************************************ *)
+let new_state () = {
+  typer = T.new_state ();
+  logic = Auto;
+}
 
-  module T = Dolmen_type.Tff.Make
-      (Dolmen.Tag)(Dolmen.Expr.Ty)(Dolmen.Expr.Term)
 
-  (* Definitions builtin *)
-  module Decl = Dolmen_type.Def.Declare(T)
-  module Subst = Dolmen_type.Def.Subst(T)(struct
+(* Make functor *)
+(* ************************************************************************ *)
 
-      let of_list l =
-        let aux acc (k, v) = Dolmen.Expr.Subst.Var.bind acc k v in
-        List.fold_left aux Dolmen.Expr.Subst.empty l
+module type S = Typer_intf.S
 
-      let ty_subst l ty =
-        Dolmen.Expr.Ty.subst (of_list l) ty
-
-      let term_subst tys terms t =
-        Dolmen.Expr.Term.subst (of_list tys) (of_list terms) t
-    end)
-
-  (* AE builtins *)
-  module Ae_Core =
-    Dolmen_type.Core.Ae.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-
-  (* Tptp builtins *)
-  module Tptp_Core =
-    Dolmen_type.Core.Tptp.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Tptp_Arith =
-    Dolmen_type.Arith.Tptp.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-
-  (* Stmlib theories *)
-  module Smtlib2_Core =
-    Dolmen_type.Core.Smtlib2.Tff(T)(Dolmen.Expr.Tags)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib2_Ints =
-    Dolmen_type.Arith.Smtlib2.Int.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Int)
-  module Smtlib2_Reals =
-    Dolmen_type.Arith.Smtlib2.Real.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Real)
-  module Smtlib2_Reals_Ints =
-    Dolmen_type.Arith.Smtlib2.Real_Int.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib2_Arrays =
-    Dolmen_type.Arrays.Smtlib2.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib2_Bitv =
-    Dolmen_type.Bitv.Smtlib2.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term.Bitv)
-  module Smtlib2_Float =
-    Dolmen_type.Float.Smtlib2.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-  module Smtlib2_String =
-    Dolmen_type.Strings.Smtlib2.Tff(T)
-      (Dolmen.Expr.Ty)(Dolmen.Expr.Term)
-
-  (* Zf *)
-  module Zf_Core =
-    Dolmen_type.Core.Zf.Tff(T)(Dolmen.Expr.Tags)
-
-  (* Typing state *)
-  (* ************************************************************************ *)
-
-  (* This is here to define the typing state (not to confuse with the state
-     passed in the pipes, which will contain the typing state. *)
-
-  type type_st = {
-    (* typechecker global state *)
-    typer : T.state;
-    (* logic used *)
-    logic : Dolmen_type.Logic.t;
-  }
-
-  let new_state () = {
-    typer = T.new_state ();
-    logic = Auto;
-  }
+module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   (* New warnings & errors *)
   (* ************************************************************************ *)
@@ -217,10 +184,10 @@ module Make(S : State_intf.Typer) = struct
     | Smtlib2_Reals.Restriction msg
     | Smtlib2_Reals_Ints.Restriction msg
       -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "This is a non-linear expression according to the smtlib spec.%a"
-          pp_hint msg
-      )
+          Format.fprintf fmt
+            "This is a non-linear expression according to the smtlib spec.%a"
+            pp_hint msg
+        )
 
     | Smtlib2_Float.Real_lit -> Some (fun fmt () ->
         Format.fprintf fmt
@@ -455,7 +422,7 @@ module Make(S : State_intf.Typer) = struct
     | T.Uncaught_exn (exn, bt) ->
       Format.fprintf fmt
         "@[<v 2>Uncaught exception: %s%a@]"
-          (Printexc.to_string exn) print_bt bt
+        (Printexc.to_string exn) print_bt bt
 
     (* Warnings as errors *)
     | Warning_as_error w ->
@@ -539,14 +506,14 @@ module Make(S : State_intf.Typer) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env ?(loc=no_loc) warnings (st : _ Dolmen.State.state) =
+  let typing_env ?(loc=no_loc) warnings (st : S.t) =
 
     let additional_builtins env args =
       !additional_builtins env args
     in
 
     (* Match the language to determine bultins and other options *)
-    match (st.input_lang : Parser.language option) with
+    match (S.input_lang st : Parser.language option) with
     | None -> assert false
 
     (* Dimacs & iCNF
@@ -559,23 +526,23 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.prop in
       let warnings = warnings {
-          strict_typing = st.type_strict;
+          strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.noop in
       T.empty_env
-        ~st:st.type_state.typer
+        ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
         ~warnings builtins
 
     (* Alt-Ergo format
-       *)
+    *)
     | Some Alt_ergo ->
       let poly = T.Flexible in
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          strict_typing = st.type_strict;
+          strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -584,7 +551,7 @@ module Make(S : State_intf.Typer) = struct
           additional_builtins
         ] in
       T.empty_env
-        ~st:st.type_state.typer
+        ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
         ~warnings builtins
 
@@ -597,7 +564,7 @@ module Make(S : State_intf.Typer) = struct
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          strict_typing = st.type_strict;
+          strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -607,7 +574,7 @@ module Make(S : State_intf.Typer) = struct
           Zf_Core.parse;
         ] in
       T.empty_env
-        ~st:st.type_state.typer
+        ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
         ~warnings builtins
 
@@ -615,13 +582,13 @@ module Make(S : State_intf.Typer) = struct
        - tptp has inference of constants
        - 2 base theories (Core and Arith) + the builtin Decl and Subst
          for explicit declaration and definitions
-       *)
+    *)
     | Some Tptp v ->
       let poly = T.Explicit in
       let expect = T.Typed Dolmen.Expr.Ty.prop in
       let infer_base = Some Dolmen.Expr.Ty.base in
       let warnings = warnings {
-          strict_typing = st.type_strict;
+          strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
@@ -632,7 +599,7 @@ module Make(S : State_intf.Typer) = struct
           Tptp_Arith.parse v;
         ] in
       T.empty_env
-        ~st:st.type_state.typer
+        ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
         ~warnings builtins
 
@@ -641,21 +608,21 @@ module Make(S : State_intf.Typer) = struct
        - see the dedicated function for the builtins
        - restrictions come from the logic declaration
        - shadowing is forbidden
-       *)
+    *)
     | Some Smtlib2 v ->
       let poly = T.Implicit in
       let expect = T.Nothing in
       let infer_base = None in
       let warnings = warnings {
-          strict_typing = st.type_strict;
+          strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = match v with
             | `Latest | `V2_6 -> true;
         } in
-      begin match st.type_state.logic with
+      begin match (S.ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env = T.empty_env
-              ~st:st.type_state.typer ~poly ~expect ~warnings builtins
+              ~st:(S.ty_state st).typer ~poly ~expect ~warnings builtins
           in
           T._error env (Located loc) Missing_logic
         | Smtlib2 logic ->
@@ -665,7 +632,7 @@ module Make(S : State_intf.Typer) = struct
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env
-            ~st:st.type_state.typer
+            ~st:(S.ty_state st).typer
             ~expect ?infer_base ~poly ~quants
             ~warnings builtins
       end
@@ -685,15 +652,9 @@ module Make(S : State_intf.Typer) = struct
   (* Setting the logic *)
   (* ************************************************************************ *)
 
-  let set_logic (st : _ Dolmen.State.state) ?loc s =
-    (* auxiliary funciton/lens to set the logic in the state *)
-    let set (st : _ Dolmen.State.state) logic = {
-      st with type_state = {
-        st.type_state with logic;
-      };
-    } in
-    (* *)
-    match (st.input_lang : Parser.language option) with
+  let set_logic (st : S.t) ?loc s =
+    match (S.input_lang st : Parser.language option) with
+    | Some Dimacs -> st
     | Some Smtlib2 _ ->
       let st, l =
         match Dolmen_type.Logic.Smtlib2.parse s with
@@ -702,7 +663,7 @@ module Make(S : State_intf.Typer) = struct
           let st = S.warn ?loc st "Unknown logic %s" s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
-      set st (Smtlib2 l)
+      S.set_ty_state st { (S.ty_state st) with logic = Smtlib2 l; }
     | _ ->
       S.warn ?loc st
         "Set logic is not supported for the current language"
@@ -711,20 +672,20 @@ module Make(S : State_intf.Typer) = struct
   (* Declarations *)
   (* ************************************************************************ *)
 
-  let allow_function_decl (st : _ Dolmen.State.state) =
-    match st.type_state.logic with
-      | Smtlib2 logic -> logic.features.free_functions
-      | Auto -> true
+  let allow_function_decl (st : S.t) =
+    match (S.ty_state st).logic with
+    | Smtlib2 logic -> logic.features.free_functions
+    | Auto -> true
 
-  let allow_data_type_decl (st : _ Dolmen.State.state) =
-    match st.type_state.logic with
-      | Smtlib2 logic -> logic.features.datatypes
-      | Auto -> true
+  let allow_data_type_decl (st : S.t) =
+    match (S.ty_state st).logic with
+    | Smtlib2 logic -> logic.features.datatypes
+    | Auto -> true
 
-  let allow_abstract_type_decl (st : _ Dolmen.State.state) =
-    match st.type_state.logic with
-      | Smtlib2 logic -> logic.features.free_sorts
-      | Auto -> true
+  let allow_abstract_type_decl (st : S.t) =
+    match (S.ty_state st).logic with
+    | Smtlib2 logic -> logic.features.free_sorts
+    | Auto -> true
 
   let check_decl st env d = function
     | `Type_decl (c : Dolmen.Expr.ty_const) ->
@@ -744,7 +705,7 @@ module Make(S : State_intf.Typer) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls (st : _ Dolmen.State.state) ?loc ?attr d =
+  let decls (st : S.t) ?loc ?attr d =
     typing_wrap ?loc st ~f:(fun env ->
         let decls = T.decls env ?attr d in
         let () = check_decls st env d.contents decls in
@@ -773,7 +734,7 @@ module Make(S : State_intf.Typer) = struct
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
-  let typecheck (st : _ Dolmen.State.state) = st.type_check
+  let typecheck = S.typecheck
 
   let terms st ?loc ?attr:_ l =
     typing_wrap ?loc st ~f:(fun env ->

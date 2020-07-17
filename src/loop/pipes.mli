@@ -7,10 +7,10 @@
 
 module Make
     (Expr : Expr_intf.S)
-    (State : State_intf.S
+    (State : State_intf.Pipes
      with type term := Expr.term)
-    (Typer : Typer_intf.S
-     with type state := State.t
+    (Typer : Typer_intf.Pipes
+     with type t := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_const := Expr.ty_const

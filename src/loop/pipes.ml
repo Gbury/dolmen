@@ -1,11 +1,14 @@
 (* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
+(* Parsing and typing pipes *)
+(* ************************************************************************ *)
+
 module Make
     (Expr : Expr_intf.S)
-    (State : State_intf.S
+    (State : State_intf.Pipes
      with type term := Expr.term)
-    (Typer : Typer_intf.S
-     with type state := State.t
+    (Typer : Typer_intf.Pipes
+     with type t := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_const := Expr.ty_const
@@ -360,4 +363,43 @@ module Make
     in
     State.stop `Typing;
     res
+
+(*
+  (* Header & Automation flow checking *)
+  (* ************************************************************************ *)
+
+  type header =
+    | Lang_Version
+    | Problem_Logic
+    | Problem_Source
+    | Problem_License
+    | Problem_Category
+    | Problem_Status
+
+  type mode =
+    | Start of { expect : header; }
+    | Assert
+    | Sat_or_unsat
+    | Exited
+
+  let first_mode ~check_headers lang =
+    match (lang: Parser.language) with
+    | Smtlib2 _ when check_headers -> Start { expect = Lang_Version; }
+    | _ -> Assert
+
+  let next_header lang current_header =
+    match (lang: Parser.language) with
+    | Smtlib2 _ ->
+      begin match (current_header : header) with
+        | Lang_Version -> Some Problem_Logic
+        | Problem_Logic -> Some Problem_Source
+        | Problem_Source -> Some Problem_License
+        | Problem_License -> Some Problem_Category
+        | Problem_Category -> Some Problem_Status
+        | Problem_Status -> None
+      end
+    | _ -> None
+*)
+
 end
+

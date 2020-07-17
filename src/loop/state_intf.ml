@@ -31,15 +31,31 @@ type mode = [
     to instantiate the {Typer.Make} functor. *)
 module type Typer = sig
 
-  type solve_st
-  (** The type used to store results of solving. *)
+  type ty_state
+  (** The type of state used by the typer. *)
+
+  type t
+  (** The type for the global state. *)
 
   val warn :
-    ?loc:Dolmen.ParseLocation.t ->
-    ((_, _, solve_st) Dolmen.State.state as 't)
-    -> ('a, Format.formatter, unit, 't) format4 ->
-    'a
+    ?loc:Dolmen.ParseLocation.t -> t ->
+    ('a, Format.formatter, unit, t) format4 -> 'a
   (** Emit a warning *)
+
+  val input_lang : t -> Parser.language option
+  (** The current input language. *)
+
+  val typecheck : t -> bool
+  (** Whether to type-check expressions. *)
+
+  val strict_typing : t -> bool
+  (** Whether to be strict about typing warnings/errors *)
+
+  val ty_state : t -> ty_state
+  (** Returns the typing state associated. *)
+
+  val set_ty_state : t -> ty_state -> t
+  (** Set the typing state. *)
 
 end
 
@@ -60,7 +76,7 @@ end
 
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Pipes.Make} functor. *)
-module type S = sig
+module type Pipes = sig
 
   type t
   (** The type of state *)

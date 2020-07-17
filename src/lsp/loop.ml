@@ -1,8 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+module Typer = Dolmen_loop.Typer.Make(State)
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
-module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(State.Typer)
+module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(Typer)
 
 exception Finished of (State.t, string) result
 
@@ -36,10 +37,10 @@ let handle_exn st = function
   | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
     Ok (State.error ~loc st "%s" msg)
   (* Typing error *)
-  | State.Typer.T.Typing_error (
-      State.Typer.T.Error (_env, fragment, _err) as error) ->
-    let loc = get_loc (State.Typer.T.fragment_loc fragment) in
-    Ok (State.error ~loc st "Typing error: %a" State.Typer.report_error error)
+  | Dolmen_loop.Typer.T.Typing_error (
+      Dolmen_loop.Typer.T.Error (_env, fragment, _err) as error) ->
+    let loc = get_loc (Dolmen_loop.Typer.T.fragment_loc fragment) in
+    Ok (State.error ~loc st "Typing error: %a" Typer.report_error error)
 
   (* File not found *)
   | State.File_not_found (l, dir, f) ->
@@ -64,7 +65,7 @@ let finally st e =
 let process path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
-  let st = Dolmen.State.{
+  let st = State.{
       debug = false;
       context = false;
       time_limit = 0.; (* disable the timer *)
@@ -76,11 +77,9 @@ let process path opt_contents =
         | None -> `File file
         | Some contents -> `Raw (file, contents)
       end;
-      type_state = State.Typer.new_state ();
+      type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;
       type_strict = true;
-      type_infer = None;
-      type_shadow = None;
       solve_state = [];
       export_lang = [];
     } in

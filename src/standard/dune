@@ -7,7 +7,7 @@
     ; Parsing structures
     ParseLocation Id Term Statement Normalize
     ; Typing & Loop stuff
-    Tag Pretty Expr State
+    Tag Pretty Expr
     ; Helpers
     Escape Misc Transformer)
 )
