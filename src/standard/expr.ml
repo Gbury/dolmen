@@ -2117,6 +2117,7 @@ module Term = struct
     type t = term_const
     let hash = Id.hash
     let equal = Id.equal
+    let compare = Id.compare
 
     (* Record field getter *)
     let find ty_c i =

@@ -7,7 +7,9 @@ type ty_state
 (** The type of state used by the {!Make} functor. *)
 
 val new_state : unit -> ty_state
-(** Generate a fresh typing state. *)
+(** Generate a fresh typing state.
+    The bool argument given decides whether locations are kept (provides
+      better error messages, but uses more memory when running). *)
 
 module T : Dolmen_type.Tff.S
   with type 'a Tag.t = 'a Dolmen.Tag.t

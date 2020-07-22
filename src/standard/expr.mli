@@ -1359,10 +1359,13 @@ module Term : sig
     (** A record field. *)
 
     val hash : t -> int
-    (** A hash function for adt constructors, should be suitable to create hashtables. *)
+    (** A hash function for adt destructors. *)
 
     val equal : t -> t -> bool
-    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+    (** An equality function on adt destructors. *)
+
+    val compare : t -> t -> int
+    (** A comparison function on adt constructors. *)
 
   end
 

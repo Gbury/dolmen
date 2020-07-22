@@ -266,6 +266,14 @@ let state =
     let doc = "Be strict or more lenient wrt to typing" in
     Arg.(value & opt bool true & info ["strict"] ~doc ~docs)
   in
+  (*
+  let locs =
+    let doc = "Whether to keep location information during typing. \
+               Setting this to true results in better warning/error \
+               messages, but will use more memory when running." in
+    Arg.(value & opt bool true & info ["locs"] ~doc ~docs)
+  in
+  *)
   let debug =
     let doc = Format.asprintf
         "Print the parsed dolmen statement (after expansion of includes)" in

@@ -154,6 +154,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Declared d ->
       Format.fprintf fmt "declared at %a" pp_opt_loc (decl_loc d)
 
+  let print_reason_opt fmt = function
+    | Some r -> print_reason fmt r
+    | None -> Format.fprintf fmt "<location missing>"
+
   let report_warning (T.Warning (_env, _fragment, warn)) =
     match warn with
     | T.Unused_type_variable v -> Some (fun fmt () ->
@@ -177,7 +181,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Shadowing (id, old, _cur) -> Some (fun fmt () ->
         Format.fprintf fmt
           "Shadowing: %a was already %a"
-          Dolmen.Id.print id print_reason (T.binding_reason old)
+          Dolmen.Id.print id
+          print_reason_opt (T.binding_reason old)
       )
 
     | Smtlib2_Ints.Restriction msg
@@ -464,9 +469,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let warnings_aux report conf ((T.Warning (env, fragment, warn)) as w) =
     match warn, fragment with
     (* Warnings as errors *)
-    | T.Shadowing (_, `Builtin `Term, `Variable _), fragment
-    | T.Shadowing (_, `Builtin _, `Constant _), fragment
-    | T.Shadowing (_, `Constant _, `Constant _), fragment
+    | T.Shadowing (_, (`Builtin `Term | `Not_found), `Variable _), fragment
+    | T.Shadowing (_, (`Constant _ | `Builtin _ | `Not_found), `Constant _), fragment
       when conf.smtlib2_6_shadow_rules ->
       T._error env fragment (Warning_as_error w)
 

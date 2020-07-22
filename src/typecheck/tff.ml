@@ -119,14 +119,14 @@ module Make
         | `Tag
       ]
     | `Variable of [
-        | `Ty of Ty.Var.t * reason
-        | `Term of T.Var.t * reason
+        | `Ty of Ty.Var.t * reason option
+        | `Term of T.Var.t * reason option
       ]
     | `Constant of [
-        | `Ty of Ty.Const.t * reason
-        | `Cstr of T.Cstr.t * reason
-        | `Term of T.Const.t * reason
-        | `Field of T.Field.t * reason
+        | `Ty of Ty.Const.t * reason option
+        | `Cstr of T.Cstr.t * reason option
+        | `Term of T.Const.t * reason option
+        | `Field of T.Field.t * reason option
       ]
   ]
   (** The bindings that can occur. *)
@@ -134,15 +134,14 @@ module Make
   (* Maps & Hashtbls *)
   (* ************************************************************************ *)
 
-  module M = Misc.Fuzzy_Map
-  module H = Misc.Fuzzy_Hashtbl
+  module M = Map.Make(Dolmen.Id)
 
   module E = Map.Make(Ty.Var)
   module F = Map.Make(T.Var)
-  module R = Hashtbl.Make(Ty.Const)
-  module S = Hashtbl.Make(T.Const)
-  module U = Hashtbl.Make(T.Cstr)
-  module V = Hashtbl.Make(T.Field)
+  module R = Map.Make(Ty.Const)
+  module S = Map.Make(T.Const)
+  module U = Map.Make(T.Cstr)
+  module V = Map.Make(T.Field)
 
   (* Warnings & Errors *)
   (* ************************************************************************ *)
@@ -245,13 +244,18 @@ module Make
 
   (* Global, mutable state. *)
   type state = {
-    csts          : cst H.t;    (* association between dolmen ids and
-                                   types/terms constants. *)
-    ttype_locs    : reason R.t; (* stores reasons for typing of type
-                                   constructors *)
-    const_locs    : reason S.t; (* stores reasons for typing of constants *)
-    cstrs_locs    : reason U.t; (* stores reasons for typing constructors *)
-    field_locs    : reason V.t; (* stores reasons for typing record fields *)
+
+    mutable csts : cst M.t;
+    (* association between dolmen ids and types/terms constants. *)
+
+    mutable ttype_locs : reason R.t;
+    (* stores reasons for typing of type constructors *)
+    mutable const_locs : reason S.t;
+    (* stores reasons for typing of constants *)
+    mutable cstrs_locs : reason U.t;
+    (* stores reasons for typing constructors *)
+    mutable field_locs : reason V.t;
+    (* stores reasons for typing record fields *)
   }
 
   (* The local environments used for type-checking. *)
@@ -395,15 +399,19 @@ module Make
   (* ************************************************************************ *)
 
   let find_reason env (v : bound) =
-    try match v with
-      | `Builtin _ -> Builtin
-      | `Ty_var v -> E.find v env.type_locs
-      | `Term_var v -> F.find v env.term_locs
-      | `Letin (_, v, _) -> F.find v env.term_locs
-      | `Ty_cst c -> R.find env.st.ttype_locs c
-      | `Term_cst c -> S.find env.st.const_locs c
-      | `Cstr c -> U.find env.st.cstrs_locs c
-      | `Field f -> V.find env.st.field_locs f
+    try
+      let r =
+        match v with
+        | `Builtin _ -> Builtin
+        | `Ty_var v -> E.find v env.type_locs
+        | `Term_var v -> F.find v env.term_locs
+        | `Letin (_, v, _) -> F.find v env.term_locs
+        | `Ty_cst c -> R.find c env.st.ttype_locs
+        | `Term_cst c -> S.find c env.st.const_locs
+        | `Cstr c -> U.find c env.st.cstrs_locs
+        | `Field f -> V.find f env.st.field_locs
+      in
+      Some r
     with Not_found -> assert false
 
   let with_reason reason bound : binding =
@@ -421,10 +429,10 @@ module Make
     | `Cstr c -> `Constant (`Cstr (c, reason))
     | `Field f -> `Constant (`Field (f, reason))
 
-  let binding_reason binding : reason =
+  let binding_reason binding : reason option =
     match (binding : binding) with
     | `Not_found -> assert false
-    | `Builtin _ -> Builtin
+    | `Builtin _ -> Some Builtin
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -438,17 +446,17 @@ module Make
     let old_binding =
       with_reason (find_reason env old) (old :> [bound | not_found])
     in
-    let new_binding = with_reason reason (bound :> [bound | not_found]) in
+    let new_binding = with_reason (Some reason) (bound :> [bound | not_found]) in
     _warn env fragment (Shadowing (id, old_binding, new_binding))
 
 
   let find_var env name : [var | not_found] =
-    match M.find env.vars name with
+    match M.find name env.vars with
     | #var as res -> res
     | exception Not_found -> `Not_found
 
   let find_global env id : [cst | not_found] =
-    try (H.find env.st.csts id :> [cst | not_found])
+    try (M.find id env.st.csts :> [cst | not_found])
     with Not_found -> `Not_found
 
   let find_builtin env id : [builtin | not_found] =
@@ -471,11 +479,11 @@ module Make
   (* ************************************************************************ *)
 
   let new_state () = {
-    csts = H.create ();
-    ttype_locs = R.create 13;
-    const_locs = S.create 4013;
-    cstrs_locs = U.create 13;
-    field_locs = V.create 13;
+    csts = M.empty;
+    ttype_locs = R.empty;
+    const_locs = S.empty;
+    cstrs_locs = U.empty;
+    field_locs = V.empty;
   }
 
   let add_global env fragment id reason (v : cst) =
@@ -483,24 +491,24 @@ module Make
       | `Not_found -> ()
       | #bound as old -> _shadow env fragment id old reason v
     end;
-    H.add env.st.csts id v
+    env.st.csts <- M.add id v env.st.csts
 
   (* Symbol declarations *)
   let decl_ty_const env fg id c reason =
     add_global env fg id reason (`Ty_cst c);
-    R.add env.st.ttype_locs c reason
+    env.st.ttype_locs <- R.add c reason env.st.ttype_locs
 
   let decl_term_const env fg id c reason =
     add_global env fg id reason (`Term_cst c);
-    S.add env.st.const_locs c reason
+    env.st.const_locs <- S.add c reason env.st.const_locs
 
   let decl_term_cstr env fg id c reason =
     add_global env fg id reason (`Cstr c);
-    U.add env.st.cstrs_locs c reason
+    env.st.cstrs_locs <- U.add c reason env.st.cstrs_locs
 
   let decl_term_field env fg id f reason =
     add_global env fg id reason (`Field f);
-    V.add env.st.field_locs f reason
+    env.st.field_locs <- V.add f reason env.st.field_locs
 
 
   (* Local Environment *)
@@ -550,7 +558,7 @@ module Make
         v'
     in
     v', { env with
-          vars = M.add env.vars id (`Ty_var v');
+          vars = M.add id (`Ty_var v') env.vars;
           type_locs = E.add v' reason env.type_locs;
         }
 
@@ -571,7 +579,7 @@ module Make
         v'
     in
     v', { env with
-          vars = M.add env.vars id (`Term_var v');
+          vars = M.add id (`Term_var v') env.vars;
           term_locs = F.add v' reason env.term_locs;
         }
 
@@ -587,18 +595,22 @@ module Make
     in
     let t' = T.bind v' t in
     v', { env with
-          vars = M.add env.vars id (`Letin (e, v', t'));
+          vars = M.add id (`Letin (e, v', t')) env.vars;
           term_locs = F.add v' reason env.term_locs;
         }
-
 
 
   (* Typo suggestion *)
   (* ************************************************************************ *)
 
   let suggest ~limit env id =
-    H.suggest env.st.csts ~limit id @
-    M.suggest env.vars ~limit id
+    let automaton = Spelll.of_string ~limit Dolmen.Id.(id.name) in
+    let aux id _ acc =
+      if Spelll.match_with automaton Dolmen.Id.(id.name)
+      then id :: acc
+      else acc
+    in
+    M.fold aux env.st.csts (M.fold aux env.vars [])
 
 
   (* Typing explanation *)
@@ -679,6 +691,9 @@ module Make
   let make_eq env ast_term a b =
     _wrap2 env ast_term T.eq a b
 
+  let ty_var_equal v v' = Ty.Var.compare v v' = 0
+  let t_var_equal v v' = T.Var.compare v v' = 0
+
   let mk_quant env ast mk (ty_vars, t_vars) body =
     if not env.quants then
       _error env (Ast ast) Forbidden_quantifier
@@ -686,16 +701,16 @@ module Make
       let fv_ty, fv_t = T.fv body in
       (* Emit warnings for quantified variables that are unused *)
       List.iter (fun v ->
-          if not @@ List.exists (Ty.Var.equal v) fv_ty then _unused_type env v
+          if not @@ List.exists (ty_var_equal v) fv_ty then _unused_type env v
         ) ty_vars;
       List.iter (fun v ->
-          if not @@ List.exists (T.Var.equal v) fv_t then _unused_term env v
+          if not @@ List.exists (t_var_equal v) fv_t then _unused_term env v
         ) t_vars;
       (* Filter quantified variables from free_variables *)
       let fv_ty = List.filter (fun v ->
-          not (List.exists (Ty.Var.equal v) ty_vars)) fv_ty in
+          not (List.exists (ty_var_equal v) ty_vars)) fv_ty in
       let fv_t = List.filter (fun v ->
-          not (List.exists (T.Var.equal v) t_vars)) fv_t in
+          not (List.exists (t_var_equal v) t_vars)) fv_t in
       (* Create the quantified formula *)
       _wrap3 env ast mk (fv_ty, fv_t) (ty_vars, t_vars) body
     end

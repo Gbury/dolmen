@@ -18,23 +18,11 @@ module type Tff = sig
   type 'a tag
   (** A type for tags to attach to arbitrary types. *)
 
-  val hash : t -> int
-  (** A hash function for types, should be suitable to create hashtables. *)
-
-  val equal : t -> t -> bool
-  (** An equality function on types. Should be compatible with the hash function. *)
-
   (** A module for variables that occur in types. *)
   module Var : sig
 
     type t
     (** The type of variables the can occur in types *)
-
-    val hash : t -> int
-    (** A hash function for type variables, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on type variables. Should be compatible with the hash function. *)
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)
@@ -50,11 +38,8 @@ module type Tff = sig
     type t
     (** The type of constant symbols the can occur in types *)
 
-    val hash : t -> int
-    (** A hash function for type constants, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on type constants. Should be compatible with the hash function. *)
+    val compare : t -> t -> int
+    (** Comparison function on type constants. *)
 
     val arity : t -> int
     (** Return the arity of the given symbol. *)

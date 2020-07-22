@@ -371,12 +371,6 @@ module type Tff = sig
     type t
     (** The type of variables the can occur in terms *)
 
-    val hash : t -> int
-    (** A hash function for term variables, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on term variables. Should be compatible with the hash function. *)
-
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
@@ -394,11 +388,8 @@ module type Tff = sig
     type t
     (** The type of constant symbols that can occur in terms *)
 
-    val hash : t -> int
-    (** A hash function for term constants, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on term constants. Should be compatible with the hash function. *)
+    val compare : t -> t -> int
+    (** Comparison function on constant symbols. *)
 
     val arity : t -> int * int
     (** Returns the arity of a term constant. *)
@@ -421,11 +412,8 @@ module type Tff = sig
         constructors, while [list] would be a type constant of arity 1 used to
         name the type. *)
 
-    val hash : t -> int
-    (** A hash function for adt constructors, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+    val compare : t -> t -> int
+    (** Comparison function on constant symbols. *)
 
     val arity : t -> int * int
     (** Returns the arity of a constructor. *)
@@ -442,11 +430,8 @@ module type Tff = sig
     type t
     (** A field of a record. *)
 
-    val hash : t -> int
-    (** A hash function for adt constructors, should be suitable to create hashtables. *)
-
-    val equal : t -> t -> bool
-    (** An equality function on adt constructors. Should be compatible with the hash function. *)
+    val compare : t -> t -> int
+    (** Comparison function on constant symbols. *)
 
   end
 

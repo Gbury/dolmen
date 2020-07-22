@@ -110,14 +110,14 @@ module type S = sig
         | `Tag
       ]
     | `Variable of [
-        | `Ty of Ty.Var.t * reason
-        | `Term of T.Var.t * reason
+        | `Ty of Ty.Var.t * reason option
+        | `Term of T.Var.t * reason option
       ]
     | `Constant of [
-        | `Ty of Ty.Const.t * reason
-        | `Cstr of T.Cstr.t * reason
-        | `Term of T.Const.t * reason
-        | `Field of T.Field.t * reason
+        | `Ty of Ty.Const.t * reason option
+        | `Cstr of T.Cstr.t * reason option
+        | `Term of T.Const.t * reason option
+        | `Field of T.Field.t * reason option
       ]
   ]
   (** The bindings that can occur. *)
@@ -284,7 +284,10 @@ module type S = sig
   (** Exception for typing errors *)
 
   val new_state : unit -> state
-  (** Create a new state. *)
+  (** Create a new state.
+      @locs: if true then locations for the definition of symbols will be kept,
+             and provided in error and warnings.
+  *)
 
   val empty_env :
     ?st:state -> ?expect:expect ->
@@ -304,7 +307,7 @@ module type S = sig
   val fragment_loc : _ fragment -> Dolmen.ParseLocation.t option
   (** Convenient function to get the location of a fragment. *)
 
-  val binding_reason : binding -> reason
+  val binding_reason : binding -> reason option
   (** Extract the reason from a binding
       @raise Invalid_argument if the binding is [`Not_found] *)
 
