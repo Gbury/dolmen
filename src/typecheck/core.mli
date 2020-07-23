@@ -24,7 +24,7 @@ module Tptp : sig
       (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) : sig
 
-    val parse : Dolmen_tptp.version -> Type.builtin_symbols
+    val parse : Dolmen.Tptp.version -> Type.builtin_symbols
 
   end
 end
@@ -42,7 +42,7 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
-    val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
+    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
 end
 

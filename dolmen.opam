@@ -16,7 +16,7 @@ depends: [
   "seq"
 ]
 
-tags: [ "parser" "tptp" "logic" "smtlib" "dimacs" ]
+tags: [ "parser" "logic" "tptp" "smtlib" "dimacs" ]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"

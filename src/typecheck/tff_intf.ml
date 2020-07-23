@@ -12,10 +12,10 @@
 module type S = sig
 
   (** {2 Module aliases} *)
-  module Tag: Dolmen_intf.Tag.S
-  module Ty: Dolmen_intf.Type.Tff
+  module Tag: Dolmen.Intf.Tag.S
+  module Ty: Dolmen.Intf.Ty.Tff
     with type 'a tag := 'a Tag.t
-  module T: Dolmen_intf.Term.Tff
+  module T: Dolmen.Intf.Term.Tff
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
      and type ty_const := Ty.Const.t

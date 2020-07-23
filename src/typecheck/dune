@@ -1,7 +1,7 @@
 (library
   (name           dolmen_type)
   (public_name    dolmen_type)
-  (libraries      dolmen spelll uutf)
+  (libraries      dolmen dolmen.intf dolmen.std spelll uutf)
   (modules
     ; TFF typechecking
     Tff_intf Tff

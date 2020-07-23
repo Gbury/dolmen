@@ -13,7 +13,7 @@ module Smtlib2 : sig
       | Invalid_string_char : char -> Dolmen.Term.t Type.err
       | Invalid_escape_sequence : string * int -> Dolmen.Term.t Type.err
 
-    val parse : Dolmen_smtlib2.version -> Type.builtin_symbols
+    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
 
   end
 

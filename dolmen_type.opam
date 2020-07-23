@@ -15,7 +15,7 @@ depends: [
   "uutf"
   "dune"
 ]
-tags: [ "logic" "type" "typechecking" "first order" ]
+tags: [ "logic" "type" "typechecking" "first order" "polymorphism" ]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"

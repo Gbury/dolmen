@@ -7,10 +7,10 @@ module type S = Tff_intf.S
 (* ************************************************************************ *)
 
 module Make
-    (Tag: Dolmen_intf.Tag.S)
-    (Ty: Dolmen_intf.Type.Tff
+    (Tag: Dolmen.Intf.Tag.S)
+    (Ty: Dolmen.Intf.Ty.Tff
      with type 'a tag := 'a Tag.t)
-    (T: Dolmen_intf.Term.Tff
+    (T: Dolmen.Intf.Term.Tff
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
