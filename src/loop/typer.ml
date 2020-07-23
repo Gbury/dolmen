@@ -69,15 +69,18 @@ module Zf_Core =
    passed in the pipes, which will contain the typing state. *)
 
 type ty_state = {
-  (* typechecker global state *)
-  typer : T.state;
   (* logic used *)
   logic : Dolmen_type.Logic.t;
+  (* current typechecker global state *)
+  typer : T.state;
+  (* typechecker state stack *)
+  stack : T.state list;
 }
 
 let new_state () = {
-  typer = T.new_state ();
   logic = Auto;
+  typer = T.new_state ();
+  stack = [];
 }
 
 
@@ -97,6 +100,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Warning_as_error : T.warning -> _ T.err
     | Missing_logic : Dolmen.ParseLocation.t T.err
     | Illegal_decl : Dolmen.Statement.decl T.err
+    | Invalid_push_n : Dolmen.ParseLocation.t T.err
+    | Invalid_pop_n : Dolmen.ParseLocation.t T.err
+    | Pop_with_empty_stack : Dolmen.ParseLocation.t T.err
 
   (* Hints for type errors *)
   (* ************************************************************************ *)
@@ -445,6 +451,15 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Illegal_decl ->
       Format.fprintf fmt "Illegal declaration. Hint: check your logic"
 
+    (* Push/Pop errors *)
+    | Invalid_push_n ->
+      Format.fprintf fmt "Invalid push payload (payload must be positive)"
+    | Invalid_pop_n ->
+      Format.fprintf fmt "Invalid pop payload (payload must be positive)"
+    | Pop_with_empty_stack ->
+      Format.fprintf fmt "Pop instruction with an empty stack (likely a \
+                          result of a missing push or excessive pop)"
+
     (* Catch-all *)
     | _ ->
       Format.fprintf fmt "Unknown typing error,@ please report upstream, ^^"
@@ -652,6 +667,45 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     let env = typing_env ?loc (warnings_aux report) !st in
     let res = f env in
     !st, res
+
+  (* Push&Pop *)
+  (* ************************************************************************ *)
+
+  let reset st ?loc:_ () =
+    S.set_ty_state st (new_state ())
+
+  let rec push st ?(loc=no_loc) = function
+    | 0 -> st
+    | i ->
+      if i <= 0 then
+        let env = typing_env ~loc (fun _ _ -> ()) st in
+        T._error env (Located loc) Invalid_push_n
+      else begin
+        let t = S.ty_state st in
+        let st' = T.copy_state t.typer in
+        let t' = { t with stack = st' :: t.stack; } in
+        let st' = S.set_ty_state st t' in
+        push st' (i - 1)
+      end
+
+  let rec pop st ?(loc=no_loc) = function
+    | 0 -> st
+    | i ->
+      if i <= 0 then
+        let env = typing_env ~loc (fun _ _ -> ()) st in
+        T._error env (Located loc) Invalid_pop_n
+      else begin
+        let t = S.ty_state st in
+        match t.stack with
+        | [] ->
+          let env = typing_env ~loc (fun _ _ -> ()) st in
+          T._error env (Located loc) Pop_with_empty_stack
+        | ty :: r ->
+          let t' = { t with typer = ty; stack = r; } in
+          let st' = S.set_ty_state st t' in
+          pop st' (i - 1)
+      end
+
 
   (* Setting the logic *)
   (* ************************************************************************ *)

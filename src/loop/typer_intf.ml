@@ -21,6 +21,15 @@ module type Pipes = sig
 
   val typecheck : t -> bool
 
+  val reset :
+    t -> ?loc:Dolmen.ParseLocation.t -> unit -> t
+
+  val push :
+    t -> ?loc:Dolmen.ParseLocation.t -> int -> t
+
+  val pop :
+    t -> ?loc:Dolmen.ParseLocation.t -> int -> t
+
   val set_logic :
     t -> ?loc:Dolmen.ParseLocation.t -> string -> t
 

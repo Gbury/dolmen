@@ -246,10 +246,19 @@ module type S = sig
   (** Errors that occur on regular parsed terms. *)
 
 
-  (** {2 State & Environment} *)
+  (** {2 Global State} *)
 
   type state
   (** The type of mutable state for typechecking. *)
+
+  val new_state : unit -> state
+  (** Create a new state. *)
+
+  val copy_state : state -> state
+  (** Make a copy of the global state included in the env *)
+
+
+  (** {2 Typing Environment} *)
 
   type env
   (** The type of environments for typechecking. *)
@@ -282,12 +291,6 @@ module type S = sig
 
   exception Typing_error of error
   (** Exception for typing errors *)
-
-  val new_state : unit -> state
-  (** Create a new state.
-      @locs: if true then locations for the definition of symbols will be kept,
-             and provided in error and warnings.
-  *)
 
   val empty_env :
     ?st:state -> ?expect:expect ->

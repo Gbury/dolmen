@@ -486,6 +486,15 @@ module Make
     field_locs = V.empty;
   }
 
+  let copy_state st = {
+    csts = st.csts;
+    ttype_locs = st.ttype_locs;
+    const_locs = st.const_locs;
+    cstrs_locs = st.cstrs_locs;
+    field_locs = st.field_locs;
+  }
+
+
   let add_global env fragment id reason (v : cst) =
     begin match find_bound env id with
       | `Not_found -> ()

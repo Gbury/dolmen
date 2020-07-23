@@ -214,6 +214,29 @@ module Make
     State.stop `Include;
     ret
 
+(*
+  (* Header & Automaton flow checking *)
+  (* ************************************************************************ *)
+
+
+  let first_mode ~check_headers lang =
+    match (lang: Parser.language) with
+    | Smtlib2 _ when check_headers -> Start { expect = Lang_Version; }
+    | _ -> Assert
+
+  let next_header lang current_header =
+    match (lang: Parser.language) with
+    | Smtlib2 _ ->
+      begin match (current_header : header) with
+        | Lang_Version -> Some Problem_Logic
+        | Problem_Logic -> Some Problem_Source
+        | Problem_Source -> Some Problem_License
+        | Problem_License -> Some Problem_Category
+        | Problem_Category -> Some Problem_Status
+        | Problem_Status -> None
+      end
+    | _ -> None
+*)
 
   (* Typechecking & Statement execution *)
   (* ************************************************************************ *)
@@ -254,10 +277,13 @@ module Make
 
       (* Assertion stack Management *)
       | { S.descr = S.Pop i; _ } ->
+        let st = Typer.pop st ?loc:c.S.loc i in
         `Continue (st, simple (other_id c) c.S.loc (`Pop i))
       | { S.descr = S.Push i; _ } ->
+        let st = Typer.push st ?loc:c.S.loc i in
         `Continue (st, simple (other_id c) c.S.loc (`Push i))
       | { S.descr = S.Reset_assertions; _ } ->
+        let st = Typer.reset st ?loc:c.S.loc () in
         `Continue (st, simple (other_id c) c.S.loc `Reset_assertions)
 
       (* Plain statements
@@ -364,42 +390,6 @@ module Make
     State.stop `Typing;
     res
 
-(*
-  (* Header & Automation flow checking *)
-  (* ************************************************************************ *)
-
-  type header =
-    | Lang_Version
-    | Problem_Logic
-    | Problem_Source
-    | Problem_License
-    | Problem_Category
-    | Problem_Status
-
-  type mode =
-    | Start of { expect : header; }
-    | Assert
-    | Sat_or_unsat
-    | Exited
-
-  let first_mode ~check_headers lang =
-    match (lang: Parser.language) with
-    | Smtlib2 _ when check_headers -> Start { expect = Lang_Version; }
-    | _ -> Assert
-
-  let next_header lang current_header =
-    match (lang: Parser.language) with
-    | Smtlib2 _ ->
-      begin match (current_header : header) with
-        | Lang_Version -> Some Problem_Logic
-        | Problem_Logic -> Some Problem_Source
-        | Problem_Source -> Some Problem_License
-        | Problem_License -> Some Problem_Category
-        | Problem_Category -> Some Problem_Status
-        | Problem_Status -> None
-      end
-    | _ -> None
-*)
 
 end
 
