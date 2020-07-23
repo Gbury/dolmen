@@ -26,7 +26,11 @@ type 'solve state = {
 
   (* Debug option *)
   debug             : bool;
+
+  (* Warning/Error options *)
   context           : bool;
+  max_warn          : int;
+  cur_warn          : int;
 
   (* Limits for time and size *)
   time_limit        : float;
@@ -68,14 +72,30 @@ let pp_loc fmt o =
 let error ?loc _ format =
   Format.kfprintf (fun _ -> exit 1) Format.err_formatter
     ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
-    pp_loc loc
+    Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
 
 let warn ?loc st format =
-  Format.kfprintf (fun _ -> st) Format.err_formatter
-    ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
-    pp_loc loc
-    Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+  let aux _ = { st with cur_warn = st.cur_warn + 1; } in
+  if st.cur_warn >= st.max_warn then
+    Format.ikfprintf aux Format.err_formatter format
+  else
+    Format.kfprintf aux Format.err_formatter
+      ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+
+let flush st () =
+  let aux _ = { st with cur_warn = 0; } in
+  if st.cur_warn <= st.max_warn then
+    aux ()
+  else
+    Format.kfprintf aux Format.err_formatter
+      ("@[<v>%a @[<hov>%s@ %d@ %swarnings@]@]@.")
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+      (if st.max_warn = 0 then "Counted" else "Plus")
+      (st.cur_warn - st.max_warn)
+      (if st.max_warn = 0 then "" else "additional ")
 
 (* Getting/Setting options *)
 (* ************************************************************************* *)

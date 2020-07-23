@@ -32,7 +32,7 @@ let mk_state
     time_limit size_limit
     input_lang input_mode input
     type_check type_strict
-    debug context
+    debug context max_warn
   =
   (* Side-effects *)
   let () = Gc.set gc_opt in
@@ -45,7 +45,10 @@ let mk_state
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Loop.State.t = {
-    debug; context;
+    debug;
+
+    context; max_warn;
+    cur_warn = 0;
 
     time_limit; size_limit;
 
@@ -284,8 +287,14 @@ let state =
         "Print the context / fragment of parsed AST with errors" in
     Arg.(value & flag & info ["context"] ~docs ~doc)
   in
+  let max_warn =
+    let doc = Format.asprintf
+        "Maximum number of warnings to display (excess warnings will be
+         counted and a count of silenced warnings repoted at the end)." in
+    Arg.(value & opt int max_int & info ["max-warn"] ~docs ~doc)
+  in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
-        typing $ strict $ debug $ context)
+        typing $ strict $ debug $ context $ max_warn)
 
 

@@ -36,7 +36,7 @@ let () =
     try Loop.Pipe.parse [] st
     with exn -> handle_exn st exn
   in
-  let _st =
+  let st =
     let open Loop.Pipeline in
     run ~finally g st (
       (fix (apply ~name:"expand" Loop.Pipe.expand) (
@@ -47,5 +47,6 @@ let () =
       )
     )
   in
+  let _st = Dolmen_loop.State.flush st () in
   ()
 
