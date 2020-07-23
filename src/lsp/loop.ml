@@ -3,16 +3,16 @@
 
 module Typer = Dolmen_loop.Typer.Make(State)
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
-module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Expr)(State)(Typer)
+module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Std.Expr)(State)(Typer)
 
 exception Finished of (State.t, string) result
 
-let no_loc = Dolmen.ParseLocation.mk "" 1 1 1 1
+let no_loc = Dolmen.Std.ParseLocation.mk "" 1 1 1 1
 let get_loc = function
   | Some l -> l
   | None -> no_loc
 let get_decl_loc d =
-  match (d : Dolmen.Statement.decl) with
+  match (d : Dolmen.Std.Statement.decl) with
   | Abstract { loc; _ }
   | Record { loc; _ }
   | Inductive { loc; _ } -> get_loc loc
@@ -24,17 +24,17 @@ let handle_exn st = function
   | Pipeline.Out_of_time -> Error "timeout"
   | Pipeline.Out_of_space -> Error "memoryout"
   (* Exn during parsing *)
-  | Dolmen.ParseLocation.Uncaught (loc, exn) ->
+  | Dolmen.Std.ParseLocation.Uncaught (loc, exn) ->
     Error (Format.asprintf "%a: %s"
-             Dolmen.ParseLocation.fmt loc (Printexc.to_string exn))
+             Dolmen.Std.ParseLocation.fmt loc (Printexc.to_string exn))
 
   (* lexing error *)
-  | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
+  | Dolmen.Std.ParseLocation.Lexing_error (loc, msg) ->
     Ok (State.error ~loc st "Lexing error: %s" msg)
   (* Parsing error *)
-  | Dolmen.ParseLocation.Syntax_error (loc, "") ->
+  | Dolmen.Std.ParseLocation.Syntax_error (loc, "") ->
     Ok (State.error ~loc st "Syntax error")
-  | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
+  | Dolmen.Std.ParseLocation.Syntax_error (loc, msg) ->
     Ok (State.error ~loc st "%s" msg)
   (* Typing error *)
   | Dolmen_loop.Typer.T.Typing_error (

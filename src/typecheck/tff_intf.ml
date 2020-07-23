@@ -55,10 +55,10 @@ module type S = sig
   (** The results of parsing an untyped term.  *)
 
   type builtin_res = [
-    | `Ttype of (Dolmen.Term.t -> Dolmen.Term.t list -> unit)
-    | `Ty    of (Dolmen.Term.t -> Dolmen.Term.t list -> Ty.t)
-    | `Term  of (Dolmen.Term.t -> Dolmen.Term.t list -> T.t)
-    | `Tags  of (Dolmen.Term.t -> Dolmen.Term.t list -> tag list)
+    | `Ttype of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit)
+    | `Ty    of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> Ty.t)
+    | `Term  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> T.t)
+    | `Tags  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list)
   ]
   (** The result of parsing a symbol by the theory *)
 
@@ -68,7 +68,7 @@ module type S = sig
   type var = [
     | `Ty_var of Ty.Var.t
     | `Term_var of T.Var.t
-    | `Letin of Dolmen.Term.t * T.Var.t * T.t
+    | `Letin of Dolmen.Std.Term.t * T.Var.t * T.t
   ]
   (** Variable bindings *)
 
@@ -95,10 +95,10 @@ module type S = sig
 
   type reason =
     | Builtin
-    | Bound of Dolmen.Term.t
-    | Inferred of Dolmen.Term.t
-    | Defined of Dolmen.Statement.def
-    | Declared of Dolmen.Statement.decl
+    | Bound of Dolmen.Std.Term.t
+    | Inferred of Dolmen.Std.Term.t
+    | Defined of Dolmen.Std.Statement.def
+    | Declared of Dolmen.Std.Statement.decl
   (** The type of reasons for constant typing *)
 
   type binding = [
@@ -126,12 +126,12 @@ module type S = sig
   (** {2 Errors and warnings} *)
 
   type _ fragment =
-    | Ast : Dolmen.Term.t -> Dolmen.Term.t fragment
-    | Def : Dolmen.Statement.def -> Dolmen.Statement.def fragment
-    | Defs : Dolmen.Statement.defs -> Dolmen.Statement.defs fragment
-    | Decl : Dolmen.Statement.decl -> Dolmen.Statement.decl fragment
-    | Decls : Dolmen.Statement.decls -> Dolmen.Statement.decls fragment
-    | Located : Dolmen.ParseLocation.t -> Dolmen.ParseLocation.t fragment (**)
+    | Ast : Dolmen.Std.Term.t -> Dolmen.Std.Term.t fragment
+    | Def : Dolmen.Std.Statement.def -> Dolmen.Std.Statement.def fragment
+    | Defs : Dolmen.Std.Statement.defs -> Dolmen.Std.Statement.defs fragment
+    | Decl : Dolmen.Std.Statement.decl -> Dolmen.Std.Statement.decl fragment
+    | Decls : Dolmen.Std.Statement.decls -> Dolmen.Std.Statement.decls fragment
+    | Located : Dolmen.Std.ParseLocation.t -> Dolmen.Std.ParseLocation.t fragment (**)
   (** Fragments of input that represent the sources of warnings/errors *)
 
   type _ warn = ..
@@ -139,20 +139,20 @@ module type S = sig
       trigger on *)
 
   type _ warn +=
-    | Unused_type_variable : Ty.Var.t -> Dolmen.Term.t warn
+    | Unused_type_variable : Ty.Var.t -> Dolmen.Std.Term.t warn
     (** Unused quantified type variable *)
-    | Unused_term_variable : T.Var.t -> Dolmen.Term.t warn
+    | Unused_term_variable : T.Var.t -> Dolmen.Std.Term.t warn
     (** Unused quantified term variable *)
-    | Error_in_attribute : exn -> Dolmen.Term.t warn
+    | Error_in_attribute : exn -> Dolmen.Std.Term.t warn
     (** An error occurred wile parsing an attribute *)
     | Superfluous_destructor :
-        Dolmen.Id.t * Dolmen.Id.t * T.Const.t -> Dolmen.Term.t warn
+        Dolmen.Std.Id.t * Dolmen.Std.Id.t * T.Const.t -> Dolmen.Std.Term.t warn
     (** The user implementation of typed terms returned a destructor where
         was asked for. This warning can very safely be ignored. *)
   (** Warnings that cna trigger on regular parsed terms. *)
 
   type _ warn +=
-    | Shadowing : Dolmen.Id.t * binding * binding -> _ warn
+    | Shadowing : Dolmen.Std.Id.t * binding * binding -> _ warn
     (** Shadowing of the given identifier,
         together with the old and current binding. *)
   (** Special case of warnings for shadowing, as it can happen both from a
@@ -165,83 +165,83 @@ module type S = sig
 
   type _ err +=
     | Not_well_founded_datatypes :
-        Dolmen.Statement.decl list -> Dolmen.Statement.decls err
+        Dolmen.Std.Statement.decl list -> Dolmen.Std.Statement.decls err
     (** Not well-dounded datatypes definitions. *)
   (** Errors that occur on declaration(s) *)
 
   type _ err +=
-    | Infer_type_variable : Dolmen.Term.t err
+    | Infer_type_variable : Dolmen.Std.Term.t err
     (** The type of a bound variable had to be inferred which is forbidden. *)
-    | Expected : string * res option -> Dolmen.Term.t err
+    | Expected : string * res option -> Dolmen.Std.Term.t err
     (** The parsed term didn't match the expected shape *)
-    | Bad_index_arity : string * int * int -> Dolmen.Term.t err
+    | Bad_index_arity : string * int * int -> Dolmen.Std.Term.t err
     (** [Bad_index_arity (name, expected, actual)] denotes an error where
         an indexed family of operators (based on [name]) expect to be indexed
         by [expected] arguments but got [actual] instead. *)
-    | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Term.t err
+    | Bad_ty_arity : Ty.Const.t * int -> Dolmen.Std.Term.t err
     (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
         to [actual] arguments, but which has a different arity (which should
         be accessible by getting its type/sort/arity). *)
-    | Bad_op_arity : string * int list * int -> Dolmen.Term.t err
+    | Bad_op_arity : string * int list * int -> Dolmen.Std.Term.t err
     (** [Bad_op_arity (name, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which
         is being subtituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
-    | Bad_cstr_arity : T.Cstr.t * int list * int -> Dolmen.Term.t err
+    | Bad_cstr_arity : T.Cstr.t * int list * int -> Dolmen.Std.Term.t err
     (** [Bad_cstr_arity (cstr, expected, actual)] denotes an ADT constructor,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
-    | Bad_term_arity : T.Const.t * int list * int -> Dolmen.Term.t err
+    | Bad_term_arity : T.Const.t * int list * int -> Dolmen.Std.Term.t err
     (** [Bad_term_arity (func, expected, actual)] denotes a funciton symbol,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
-    | Repeated_record_field : T.Field.t -> Dolmen.Term.t err
+    | Repeated_record_field : T.Field.t -> Dolmen.Std.Term.t err
     (** [Repeated_record_field f] denotes an error within an expression
         that builds a record by giving values to all fields, but where the
         field [f] appears more than once. *)
-    | Missing_record_field : T.Field.t -> Dolmen.Term.t err
+    | Missing_record_field : T.Field.t -> Dolmen.Std.Term.t err
     (** [Missing_record_field f] denotes an error within an expression
         that builds a record by giving values to all fields, but where the
         field [f] does not appear. *)
-    | Mismatch_record_type : T.Field.t * Ty.Const.t -> Dolmen.Term.t err
+    | Mismatch_record_type : T.Field.t * Ty.Const.t -> Dolmen.Std.Term.t err
     (** [Mismatch_record_type (f, r)] denotes an error where while building
         a record expression for a record of type [c], a field [f] belonging
         to another record type was used. *)
-    | Var_application : T.Var.t -> Dolmen.Term.t err
+    | Var_application : T.Var.t -> Dolmen.Std.Term.t err
     (** [Var_application v] denotes a variable which was applied to other
         terms, which is forbidden in first-order formulas. *)
-    | Ty_var_application : Ty.Var.t -> Dolmen.Term.t err
+    | Ty_var_application : Ty.Var.t -> Dolmen.Std.Term.t err
     (** [Ty_var_application v] denotes a type variable which was applied to
         other terms, which is forbidden in first-order formulas. *)
-    | Type_mismatch : T.t * Ty.t -> Dolmen.Term.t err
+    | Type_mismatch : T.t * Ty.t -> Dolmen.Std.Term.t err
     (** *)
-    | Quantified_var_inference : Dolmen.Term.t err
+    | Quantified_var_inference : Dolmen.Std.Term.t err
     (** Quantified variable without a type *)
-    | Unhandled_builtin : Dolmen.Term.builtin -> Dolmen.Term.t err
+    | Unhandled_builtin : Dolmen.Std.Term.builtin -> Dolmen.Std.Term.t err
     (** *)
-    | Cannot_tag_tag : Dolmen.Term.t err
+    | Cannot_tag_tag : Dolmen.Std.Term.t err
     (** *)
-    | Cannot_tag_ttype : Dolmen.Term.t err
+    | Cannot_tag_ttype : Dolmen.Std.Term.t err
     (** *)
-    | Cannot_find : Dolmen.Id.t -> Dolmen.Term.t err
+    | Cannot_find : Dolmen.Std.Id.t -> Dolmen.Std.Term.t err
     (** *)
-    | Type_var_in_type_constructor : Dolmen.Term.t err
+    | Type_var_in_type_constructor : Dolmen.Std.Term.t err
     (** *)
-    | Forbidden_quantifier : Dolmen.Term.t err
+    | Forbidden_quantifier : Dolmen.Std.Term.t err
     (** *)
-    | Missing_destructor : Dolmen.Id.t -> Dolmen.Term.t err
+    | Missing_destructor : Dolmen.Std.Id.t -> Dolmen.Std.Term.t err
     (** *)
-    | Type_def_rec : Dolmen.Statement.def -> Dolmen.Statement.defs err
+    | Type_def_rec : Dolmen.Std.Statement.def -> Dolmen.Std.Statement.defs err
     (** *)
-    | Higher_order_application : Dolmen.Term.t err
+    | Higher_order_application : Dolmen.Std.Term.t err
     (** *)
-    | Higher_order_type : Dolmen.Term.t err
+    | Higher_order_type : Dolmen.Std.Term.t err
     (** *)
-    | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Dolmen.Term.t err
+    | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Dolmen.Std.Term.t err
     (** *)
-    | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Term.t err
+    | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
-    | Unhandled_ast : Dolmen.Term.t err
+    | Unhandled_ast : Dolmen.Std.Term.t err
     (** *)
   (** Errors that occur on regular parsed terms. *)
 
@@ -263,15 +263,15 @@ module type S = sig
   type env
   (** The type of environments for typechecking. *)
 
-  type 'a typer = env -> Dolmen.Term.t -> 'a
+  type 'a typer = env -> Dolmen.Std.Term.t -> 'a
   (** A general type for typers. Takes a local environment and the current untyped term,
       and return a value. The typer may need additional information for parsing,
       in which case the return value will be a function.
       @raise Typing_error *)
 
   type symbol =
-    | Id of Dolmen.Id.t
-    | Builtin of Dolmen.Term.builtin
+    | Id of Dolmen.Std.Id.t
+    | Builtin of Dolmen.Std.Term.builtin
     (** Wrapper around potential function symbols from the Dolmen AST. *)
 
   type builtin_symbols = env -> symbol -> [ builtin_res | not_found ]
@@ -307,7 +307,7 @@ module type S = sig
 
   (** {2 Location helpers} *)
 
-  val fragment_loc : _ fragment -> Dolmen.ParseLocation.t option
+  val fragment_loc : _ fragment -> Dolmen.Std.ParseLocation.t option
   (** Convenient function to get the location of a fragment. *)
 
   val binding_reason : binding -> reason option
@@ -317,16 +317,16 @@ module type S = sig
 
   (** {2 Builtin helpers} *)
 
-  val find_var : env -> Dolmen.Id.t -> [ var | not_found ]
+  val find_var : env -> Dolmen.Std.Id.t -> [ var | not_found ]
   (** Try and find the given id in the set of locally bound variables. *)
 
-  val find_global : env -> Dolmen.Id.t -> [ cst | not_found ]
+  val find_global : env -> Dolmen.Std.Id.t -> [ cst | not_found ]
   (** Try and find the given id in the set of globally bound constants. *)
 
-  val find_builtin : env -> Dolmen.Id.t -> [ builtin | not_found ]
+  val find_builtin : env -> Dolmen.Std.Id.t -> [ builtin | not_found ]
   (** Try and find the given id in the set of bound builtin symbols. *)
 
-  val find_bound : env -> Dolmen.Id.t -> [ bound | not_found ]
+  val find_bound : env -> Dolmen.Std.Id.t -> [ bound | not_found ]
   (** Try and find a bound identifier in the env, whetehr it be locally bound
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
@@ -340,7 +340,7 @@ module type S = sig
   val _error : env -> 'a fragment -> 'a err -> _
   (** Raise an error *)
 
-  val suggest : limit:int -> env -> Dolmen.Id.t -> Dolmen.Id.t list
+  val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** From a dolmen identifier, return a list of existing bound identifiers
       in the env that are up to [~limit] in terms of distance of edition. *)
 
@@ -356,13 +356,13 @@ module type S = sig
   (** Wrappers around {parse_expr} to set the expect field of the env,
       and unwrap an expected return value. *)
 
-  val parse_app_ty : (Ty.Const.t -> Dolmen.Term.t list -> res) typer
-  val parse_app_term : (T.Const.t -> Dolmen.Term.t list -> res) typer
+  val parse_app_ty : (Ty.Const.t -> Dolmen.Std.Term.t list -> res) typer
+  val parse_app_term : (T.Const.t -> Dolmen.Std.Term.t list -> res) typer
   (** Function used for parsing applications. The first dolmen term given
       is the application term being parsed (used for reporting errors). *)
 
-  val unwrap_ty : env -> Dolmen.Term.t -> res -> Ty.t
-  val unwrap_term : env -> Dolmen.Term.t -> res -> T.t
+  val unwrap_ty : env -> Dolmen.Std.Term.t -> res -> Ty.t
+  val unwrap_term : env -> Dolmen.Std.Term.t -> res -> T.t
   (** Unwrap a result, raising the adequate typing error
       if the result if not as expected. *)
 
@@ -370,18 +370,18 @@ module type S = sig
   (** {2 High-level functions} *)
 
   val decls :
-    env -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.decls -> [
+    env -> ?attr:Dolmen.Std.Term.t ->
+    Dolmen.Std.Statement.decls -> [
       | `Type_decl of Ty.Const.t
       | `Term_decl of T.Const.t
     ] list
   (** Parse a list of potentially mutually recursive declarations. *)
 
   val defs :
-    env -> ?attr:Dolmen.Term.t ->
-    Dolmen.Statement.defs -> [
-      | `Type_def of Dolmen.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
-      | `Term_def of Dolmen.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
+    env -> ?attr:Dolmen.Std.Term.t ->
+    Dolmen.Std.Statement.defs -> [
+      | `Type_def of Dolmen.Std.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
+      | `Term_def of Dolmen.Std.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
     ] list
   (** Parse a definition *)
 

@@ -12,7 +12,7 @@ let finally st e =
 
 let debug_pipe ((st, c) as res) =
   if st.Loop.State.debug then
-    Format.eprintf "%a@." Dolmen.Statement.print c;
+    Format.eprintf "%a@." Dolmen.Std.Statement.print c;
   res
 
 let () =

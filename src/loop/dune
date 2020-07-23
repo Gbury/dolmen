@@ -1,7 +1,14 @@
 (library
   (name           dolmen_loop)
   (public_name    dolmen_loop)
-  (libraries      dolmen dolmen_type gen unix)
+  (libraries
+    ; External deps
+    gen unix fmt
+    ; dolmen deps
+    dolmen dolmen_intf dolmen_std dolmen_class dolmen_type
+    ; versioned languages deps
+    dolmen_smtlib2 dolmen_tptp
+    )
   (modules
     ; Interfaces
     Expr_intf Typer_intf State_intf

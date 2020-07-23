@@ -16,6 +16,6 @@
 (library
   (name           dolmen_icnf)
   (public_name    dolmen.icnf)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_iCNF LexiCNF ParseiCNF Ast_iCNF Dolmen_icnf)
 )

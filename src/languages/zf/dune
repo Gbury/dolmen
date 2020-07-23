@@ -16,6 +16,6 @@
 (library
   (name           dolmen_zf)
   (public_name    dolmen.zf)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_zf LexZf ParseZf Ast_zf Dolmen_zf)
 )

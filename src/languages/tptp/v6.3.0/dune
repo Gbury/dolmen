@@ -16,6 +16,6 @@
 (library
   (name           dolmen_tptp_v6_3_0)
   (public_name    dolmen.tptp.v6_3_0)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Dolmen_tptp_v6_3_0)
 )

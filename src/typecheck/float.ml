@@ -1,6 +1,6 @@
 
-module Id = Dolmen.Id
-module Ast = Dolmen.Term
+module Id = Dolmen.Std.Id
+module Ast = Dolmen.Std.Term
 
 (* Smtlib Floating Point *)
 (* ************************************************************************ *)
@@ -18,13 +18,13 @@ module Smtlib2 = struct
     module F = T.Float
 
     type _ Type.warn +=
-      | Real_lit : Dolmen.Term.t Type.warn
-      | Bitv_extended_lit : Dolmen.Term.t Type.warn
+      | Real_lit : Ast.t Type.warn
+      | Bitv_extended_lit : Ast.t Type.warn
 
     type _ Type.err +=
-      | Invalid_bin_char : char -> Dolmen.Term.t Type.err
-      | Invalid_hex_char : char -> Dolmen.Term.t Type.err
-      | Invalid_dec_char : char -> Dolmen.Term.t Type.err
+      | Invalid_bin_char : char -> Ast.t Type.err
+      | Invalid_hex_char : char -> Ast.t Type.err
+      | Invalid_dec_char : char -> Ast.t Type.err
 
     let parse_int env ast s =
       match int_of_string s with

@@ -45,7 +45,7 @@ let parse_id id l ~err ~k =
       if r_l = n then f r else err s n r_l
     | _ :: l' -> aux h r r_l l'
   in
-  match Dolmen.Id.split id with
+  match Dolmen.Std.Id.split id with
   | h :: r -> aux h r (List.length r) l
   | r -> k r
 
@@ -71,8 +71,8 @@ let bad_term_index_arity (type env term)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
-  'env -> string -> (Dolmen.Term.t -> 'args -> 'ret) ->
-  (Dolmen.Term.t -> Dolmen.Term.t list -> 'ret)
+  'env -> string -> (Dolmen.Std.Term.t -> 'args -> 'ret) ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'ret)
 
 let make_op0
     (type env) (module Type: Tff_intf.S with type env = env)

@@ -15,6 +15,6 @@
 (library
   (name           dolmen_dimacs)
   (public_name    dolmen.dimacs)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_dimacs LexDimacs ParseDimacs Ast_dimacs Dolmen_dimacs)
 )

@@ -226,9 +226,9 @@ module Fuzzy_Map = struct
   (** We use fuzzy maps in order to give suggestions in case of typos.
         Since such maps are not trivial to extend to Dolmen identifiers,
         we map strings (identifier names) to list of associations. *)
-  type 'a t = (Dolmen.Id.t * 'a) list I.t
+  type 'a t = (Dolmen.Std.Id.t * 'a) list I.t
 
-  let eq id (x, _) = Dolmen.Id.equal id x
+  let eq id (x, _) = Dolmen.Std.Id.equal id x
 
   let empty = I.empty
 
@@ -237,7 +237,7 @@ module Fuzzy_Map = struct
     | Seq.Cons (x,y) -> x :: seq_to_list_ y
 
   let get t id =
-    let s = Dolmen.Id.(id.name) in
+    let s = Dolmen.Std.Id.(id.name) in
     match seq_to_list_ (I.retrieve ~limit:0 t s) with
     | [l] -> l
     | [] -> []
@@ -255,11 +255,11 @@ module Fuzzy_Map = struct
       if List.exists (eq id) (get t id) then l
       else (id, v) :: l
     in
-    I.add t Dolmen.Id.(id.name) l'
+    I.add t Dolmen.Std.Id.(id.name) l'
 
   (** Return a list of suggestions for an identifier. *)
   let suggest t ~limit id =
-    let s = Dolmen.Id.(id.name) in
+    let s = Dolmen.Std.Id.(id.name) in
     let l = seq_to_list_ (I.retrieve ~limit t s) in
     List.flatten @@ List.map (List.map fst) l
 

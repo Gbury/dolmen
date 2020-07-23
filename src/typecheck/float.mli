@@ -9,13 +9,13 @@ module Smtlib2 : sig
                                           and type ty := Type.Ty.t) : sig
 
     type _ Type.warn +=
-      | Real_lit : Dolmen.Term.t Type.warn
-      | Bitv_extended_lit : Dolmen.Term.t Type.warn
+      | Real_lit : Dolmen.Std.Term.t Type.warn
+      | Bitv_extended_lit : Dolmen.Std.Term.t Type.warn
 
     type _ Type.err +=
-      | Invalid_bin_char : char -> Dolmen.Term.t Type.err
-      | Invalid_hex_char : char -> Dolmen.Term.t Type.err
-      | Invalid_dec_char : char -> Dolmen.Term.t Type.err
+      | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+      | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
+      | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err
 
     val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
   end

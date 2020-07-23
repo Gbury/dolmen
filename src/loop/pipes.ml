@@ -21,21 +21,21 @@ module Make
   (* Module alias & Helper functions *)
   (* ************************************************************************ *)
 
-  module S = Dolmen.Statement
+  module S = Dolmen.Std.Statement
 
   (* Types used in Pipes *)
   (* ************************************************************************ *)
 
   (* Used for representing typed statements *)
   type +'a stmt = {
-    id : Dolmen.Id.t;
+    id : Dolmen.Std.Id.t;
     contents  : 'a;
-    loc : Dolmen.ParseLocation.t option;
+    loc : Dolmen.Std.ParseLocation.t option;
   }
 
   type def = [
-    | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
-    | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Type_def of Dolmen.Std.Id.t * Expr.ty_var list * Expr.ty
+    | `Term_def of Dolmen.Std.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
   type defs = [
@@ -72,13 +72,13 @@ module Make
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Plain of Dolmen.Statement.term
+    | `Plain of Dolmen.Std.Statement.term
   ]
 
   type set_info = [
     | `Set_logic of string
-    | `Set_info of Dolmen.Statement.term
-    | `Set_option of Dolmen.Statement.term
+    | `Set_info of Dolmen.Std.Statement.term
+    | `Set_option of Dolmen.Std.Statement.term
   ]
 
   type stack_control = [
@@ -144,7 +144,7 @@ module Make
             ~language:lang (`Raw (filename, lang, contents)) in
         State.set_lang st lang, gen_finally gen cl
       | `File f ->
-        let s = Dolmen.Statement.include_ f [] in
+        let s = Dolmen.Std.Statement.include_ f [] in
         (* Auto-detect input format *)
         let lang =
           match State.input_lang st with
@@ -163,7 +163,7 @@ module Make
           | Parser.Alt_ergo -> s
           | Parser.Dimacs
           | Parser.Tptp _ ->
-            Dolmen.Statement.pack [s; Dolmen.Statement.prove ()]
+            Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
         in
         State.set_lang st lang,
         (Gen.singleton s')
@@ -244,11 +244,11 @@ module Make
   let stmt_id ref_name =
     let counter = ref 0 in
     (fun c ->
-       match c.Dolmen.Statement.id with
-       | { Dolmen.Id.ns = Dolmen.Id.Decl; name = "" } ->
+       match c.Dolmen.Std.Statement.id with
+       | { Dolmen.Std.Id.ns = Dolmen.Std.Id.Decl; name = "" } ->
          let () = incr counter in
          let name = Format.sprintf "%s_%d" ref_name !counter in
-         Dolmen.Id.mk Dolmen.Id.decl name
+         Dolmen.Std.Id.mk Dolmen.Std.Id.decl name
        | id -> id)
 
   let def_id   = stmt_id "def"
@@ -259,8 +259,8 @@ module Make
   let other_id = stmt_id "other"
 
   let fv_list l =
-    let l' = List.map Dolmen.Term.fv l in
-    List.sort_uniq Dolmen.Id.compare (List.flatten l')
+    let l' = List.map Dolmen.Std.Term.fv l in
+    List.sort_uniq Dolmen.Std.Id.compare (List.flatten l')
 
   let typecheck (st, c) =
     State.start `Typing;
@@ -308,12 +308,12 @@ module Make
           | free_vars -> (* if there are free variables, these must be quantified
                             or else the typchecker will raise an error. *)
             let loc = c.S.loc in
-            let vars = List.map (Dolmen.Term.const ?loc) free_vars in
-            let f = Dolmen.Term.forall ?loc vars (
+            let vars = List.map (Dolmen.Std.Term.const ?loc) free_vars in
+            let f = Dolmen.Std.Term.forall ?loc vars (
                 match l with
                 | [] -> assert false
                 | [p] -> p
-                | _ -> Dolmen.Term.apply ?loc (Dolmen.Term.or_t ?loc ()) l
+                | _ -> Dolmen.Std.Term.apply ?loc (Dolmen.Std.Term.or_t ?loc ()) l
               ) in
             let st, res = Typer.formula st ?loc ?attr:c.S.attr ~goal:false f in
             let stmt : typechecked stmt =

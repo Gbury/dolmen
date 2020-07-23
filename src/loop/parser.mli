@@ -2,5 +2,5 @@
 
 (** This is an instanciation of the Logic class with the standard
     implementation of parsed terms and statements of Dolmen. *)
-include Dolmen.Logic.S with type statement := Dolmen.Statement.t
+include Dolmen.Class.Logic.S with type statement := Dolmen.Std.Statement.t
 

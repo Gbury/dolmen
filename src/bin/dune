@@ -3,7 +3,12 @@
   (name           main)
   (public_name    dolmen)
   (package        dolmen_bin)
-  (libraries      dolmen dolmen_type dolmen_loop cmdliner fmt)
+  (libraries
+    ; external deps
+    cmdliner fmt gen
+    ; dolmen deps
+    dolmen dolmen_intf dolmen_std dolmen_type dolmen_loop
+    )
 )
 
 ; Rule to generate a man page for dolmen

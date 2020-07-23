@@ -23,9 +23,9 @@ module Make
   (** {2 Types} *)
 
   type +'a stmt = {
-    id          : Dolmen.Id.t;
+    id          : Dolmen.Std.Id.t;
     contents    : 'a;
-    loc         : Dolmen.ParseLocation.t option;
+    loc         : Dolmen.Std.ParseLocation.t option;
   }
   (** Wrapper around statements. It records implicit type declarations. *)
 
@@ -41,8 +41,8 @@ module Make
   (** A list of type declarations. *)
 
   type def = [
-    | `Type_def of Dolmen.Id.t * Expr.ty_var list * Expr.ty
-    | `Term_def of Dolmen.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Type_def of Dolmen.Std.Id.t * Expr.ty_var list * Expr.ty
+    | `Term_def of Dolmen.Std.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
   (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
 
@@ -74,13 +74,13 @@ module Make
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Plain of Dolmen.Statement.term
+    | `Plain of Dolmen.Std.Statement.term
   ]
 
   type set_info = [
     | `Set_logic of string
-    | `Set_info of Dolmen.Statement.term
-    | `Set_option of Dolmen.Statement.term
+    | `Set_info of Dolmen.Std.Statement.term
+    | `Set_option of Dolmen.Std.Statement.term
   ]
 
   type stack_control = [
@@ -98,14 +98,14 @@ module Make
   (** {2 Pipes} *)
 
   val parse :
-    Dolmen.Statement.t list -> State.t ->
-    State.t * (State.t -> Dolmen.Statement.t option)
+    Dolmen.Std.Statement.t list -> State.t ->
+    State.t * (State.t -> Dolmen.Std.Statement.t option)
   (** Parsing function. Reads a list of prelude statements, and the state and
       returns a tuple of the new state (including the detected input language),
       together with a statement generator. *)
 
-  val expand : State.t * Dolmen.Statement.t ->
-    State.t * [ `Ok | `Gen of bool * Dolmen.Statement.t Gen.gen ]
+  val expand : State.t * Dolmen.Std.Statement.t ->
+    State.t * [ `Ok | `Gen of bool * Dolmen.Std.Statement.t Gen.t ]
   (** Expand statements (such as includes). Returns the new state, and either:
       - [ `Ok ], which means the statement can be propagated as is
       - [ `Gen (flat, g) ], if the statement expands into a generator [g]. The bool [flat]
@@ -113,7 +113,7 @@ module Make
         statements (with regards to timeouts, etc...), or as a list of independant statements
         (each with its own timeout...). *)
 
-  val typecheck : State.t * Dolmen.Statement.t ->
+  val typecheck : State.t * Dolmen.Std.Statement.t ->
     [ `Continue of (State.t * typechecked stmt) | `Done of State.t ]
   (** Typechecks a statement. *)
 

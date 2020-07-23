@@ -27,9 +27,10 @@ module Make
 
   (* Non-exported module alias to avoid confusing
      untyped Terms and typed terms *)
-  module Id = Dolmen.Id
-  module Ast = Dolmen.Term
-  module Stmt = Dolmen.Statement
+  module Id = Dolmen.Std.Id
+  module Ast = Dolmen.Std.Term
+  module Stmt = Dolmen.Std.Statement
+  module Loc = Dolmen.Std.ParseLocation
 
   (* Types *)
   (* ************************************************************************ *)
@@ -134,7 +135,7 @@ module Make
   (* Maps & Hashtbls *)
   (* ************************************************************************ *)
 
-  module M = Map.Make(Dolmen.Id)
+  module M = Map.Make(Id)
 
   module E = Map.Make(Ty.Var)
   module F = Map.Make(T.Var)
@@ -153,16 +154,16 @@ module Make
     | Defs : Stmt.defs -> Stmt.defs fragment
     | Decl : Stmt.decl -> Stmt.decl fragment
     | Decls : Stmt.decls -> Stmt.decls fragment
-    | Located : Dolmen.ParseLocation.t -> Dolmen.ParseLocation.t fragment
+    | Located : Loc.t -> Loc.t fragment
 
   let decl_loc d =
-    match (d : Dolmen.Statement.decl) with
+    match (d : Stmt.decl) with
     | Record { loc; _ }
     | Abstract { loc; _ }
     | Inductive { loc; _ } -> loc
 
   let fragment_loc :
-    type a. a fragment -> Dolmen.ParseLocation.t option = function
+    type a. a fragment -> Loc.t option = function
     | Ast { loc; _ } -> loc
     | Def d -> d.loc
     | Defs { contents = []; _ } -> None
@@ -613,9 +614,9 @@ module Make
   (* ************************************************************************ *)
 
   let suggest ~limit env id =
-    let automaton = Spelll.of_string ~limit Dolmen.Id.(id.name) in
+    let automaton = Spelll.of_string ~limit Id.(id.name) in
     let aux id _ acc =
-      if Spelll.match_with automaton Dolmen.Id.(id.name)
+      if Spelll.match_with automaton Id.(id.name)
       then id :: acc
       else acc
     in
@@ -1433,7 +1434,7 @@ module Make
     | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared t)
     | `Term_decl f -> decl_term_const env (Decl t) id f (Declared t)
 
-  let decls env ?attr (d: Dolmen.Statement.decl Dolmen.Statement.group) =
+  let decls env ?attr (d: Stmt.decl Stmt.group) =
     let tags = match attr with
       | None -> []
       | Some a -> parse_attr_and env a

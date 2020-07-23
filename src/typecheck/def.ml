@@ -1,6 +1,4 @@
 
-open Dolmen
-
 (* Definitions by Substitution *)
 (* ************************************************************************ *)
 
@@ -26,7 +24,7 @@ module Subst
                     and type term := Type.T.t
                     and type term_var := Type.T.Var.t) = struct
 
-  module H = Hashtbl.Make(Id)
+  module H = Hashtbl.Make(Dolmen.Std.Id)
 
   let take_drop n l =
     let rec aux acc n = function
@@ -50,7 +48,7 @@ module Subst
       begin match H.find definitions id with
         | `Ty (vars, body) ->
           `Ty (Base.make_opn (List.length vars)
-                 (module Type) env (Id.full_name id) (fun _ args ->
+                 (module Type) env (Dolmen.Std.Id.full_name id) (fun _ args ->
                      let ty_args = List.map (Type.parse_ty env) args in
                      let l = List.map2 (fun x y -> x, y) vars ty_args in
                      T.ty_subst l body
@@ -65,7 +63,7 @@ module Subst
                   take_drop n_ty args
                 else begin
                   Type._error env (Ast ast)
-                    (Type.Bad_op_arity (Id.full_name id,
+                    (Type.Bad_op_arity (Dolmen.Std.Id.full_name id,
                                         [n_ty + n_t], n_args))
                 end
               in
@@ -87,7 +85,7 @@ end
 
 module Declare(Type : Tff_intf.S) = struct
 
-  module H = Hashtbl.Make(Id)
+  module H = Hashtbl.Make(Dolmen.Std.Id)
 
   let definitions = H.create 13
 
@@ -95,14 +93,14 @@ module Declare(Type : Tff_intf.S) = struct
     H.add definitions id def
 
   let define_ty id vars _body =
-    let c = Type.Ty.Const.mk (Id.full_name id) (List.length vars) in
+    let c = Type.Ty.Const.mk (Dolmen.Std.Id.full_name id) (List.length vars) in
     let () = add_definition id (`Ty c) in
     c
 
   let define_term id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
-    let c = Type.T.Const.mk (Id.full_name id) vars args_ty ret_ty in
+    let c = Type.T.Const.mk (Dolmen.Std.Id.full_name id) vars args_ty ret_ty in
     let () = add_definition id (`Term c) in
     c
 

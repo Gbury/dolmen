@@ -2,9 +2,16 @@
 (library
   (name            dolmen_class)
   (public_name     dolmen.class)
-  (libraries       dolmen_intf dolmen_std
-                   dolmen_ae dolmen_dimacs dolmen_icnf
-                   dolmen_smtlib2 dolmen_tptp dolmen_zf
-                   menhirLib)
+  (libraries
+    ;
+    dolmen_intf dolmen_std
+    ; Languages without versions
+    dolmen_ae dolmen_dimacs dolmen_icnf dolmen_zf
+    ; Smtlib2 & versions
+    dolmen_smtlib2 dolmen_smtlib2_v6
+    ; TPTP & versions
+    dolmen_tptp dolmen_tptp_v6_3_0
+    ; Menhir deps
+    menhirLib)
   (modules Logic)
 )

@@ -16,6 +16,6 @@
 (library
   (name           dolmen_ae)
   (public_name    dolmen.ae)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_ae LexAe ParseAe Ast_ae Dolmen_ae)
 )

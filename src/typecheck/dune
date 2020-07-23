@@ -1,12 +1,20 @@
 (library
   (name           dolmen_type)
   (public_name    dolmen_type)
-  (libraries      dolmen dolmen.intf dolmen.std spelll uutf)
+  (libraries
+    ; external deps
+    spelll uutf
+    ; dolmen standard deps
+    dolmen dolmen.std dolmen.intf
+    ; some additional explicit deps for version types
+    dolmen.smtlib2 dolmen.tptp
+  )
   (modules
     ; TFF typechecking
     Tff_intf Tff
     ; Builtins
     Core Def Arith Arrays Bitv Float Strings
     ; Helpers
-    Base Logic Misc)
+    Base Logic Misc
+  )
 )

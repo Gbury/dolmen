@@ -22,46 +22,46 @@ module type Pipes = sig
   val typecheck : t -> bool
 
   val reset :
-    t -> ?loc:Dolmen.ParseLocation.t -> unit -> t
+    t -> ?loc:Dolmen.Std.ParseLocation.t -> unit -> t
 
   val push :
-    t -> ?loc:Dolmen.ParseLocation.t -> int -> t
+    t -> ?loc:Dolmen.Std.ParseLocation.t -> int -> t
 
   val pop :
-    t -> ?loc:Dolmen.ParseLocation.t -> int -> t
+    t -> ?loc:Dolmen.Std.ParseLocation.t -> int -> t
 
   val set_logic :
-    t -> ?loc:Dolmen.ParseLocation.t -> string -> t
+    t -> ?loc:Dolmen.Std.ParseLocation.t -> string -> t
 
   val defs :
-    t -> ?loc:Dolmen.ParseLocation.t ->
-    ?attr:Dolmen.Term.t -> Dolmen.Statement.defs ->
+    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.defs ->
     t * [
-     | `Type_def of Dolmen.Id.t * ty_var list * ty
-     | `Term_def of Dolmen.Id.t * term_const * ty_var list * term_var list * term
+     | `Type_def of Dolmen.Std.Id.t * ty_var list * ty
+     | `Term_def of Dolmen.Std.Id.t * term_const * ty_var list * term_var list * term
     ] list
 
   val decls :
-    t -> ?loc:Dolmen.ParseLocation.t ->
-    ?attr:Dolmen.Term.t -> Dolmen.Statement.decls ->
+    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.decls ->
     t * [
       | `Type_decl of ty_const
       | `Term_decl of term_const
     ] list
 
   val terms :
-    t -> ?loc:Dolmen.ParseLocation.t ->
-    ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
+    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
     t * term list
 
   val formula :
-    t -> ?loc:Dolmen.ParseLocation.t ->
-    ?attr:Dolmen.Term.t -> goal:bool -> Dolmen.Term.t ->
+    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    ?attr:Dolmen.Std.Term.t -> goal:bool -> Dolmen.Std.Term.t ->
     t * formula
 
   val formulas :
-    t -> ?loc:Dolmen.ParseLocation.t ->
-    ?attr:Dolmen.Term.t -> Dolmen.Term.t list ->
+    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
     t * formula list
 
 end
@@ -89,13 +89,13 @@ module type S = sig
 
   include Pipes
     with type t := t
-     and type ty := Dolmen.Expr.ty
-     and type ty_var := Dolmen.Expr.ty_var
-     and type ty_const := Dolmen.Expr.ty_const
-     and type term := Dolmen.Expr.term
-     and type term_var := Dolmen.Expr.term_var
-     and type term_const := Dolmen.Expr.term_const
-     and type formula := Dolmen.Expr.formula
+     and type ty := Dolmen.Std.Expr.ty
+     and type ty_var := Dolmen.Std.Expr.ty_var
+     and type ty_const := Dolmen.Std.Expr.ty_const
+     and type term := Dolmen.Std.Expr.term
+     and type term_var := Dolmen.Std.Expr.term_var
+     and type term_const := Dolmen.Std.Expr.term_const
+     and type formula := Dolmen.Std.Expr.formula
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 

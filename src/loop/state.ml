@@ -10,7 +10,7 @@ type perm =
   | Error
 
 exception File_not_found of
-    Dolmen.ParseLocation.t option * string * string
+    Dolmen.Std.ParseLocation.t option * string * string
 
 exception Input_lang_changed of
     Parser.language * Parser.language
@@ -67,7 +67,7 @@ let pp_loc fmt o =
   match o with
   | None -> ()
   | Some loc ->
-    Format.fprintf fmt "%a:@ " Dolmen.ParseLocation.fmt loc
+    Format.fprintf fmt "%a:@ " Dolmen.Std.ParseLocation.fmt loc
 
 let error ?loc _ format =
   Format.kfprintf (fun _ -> exit 1) Format.err_formatter

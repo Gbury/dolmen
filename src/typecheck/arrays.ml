@@ -1,5 +1,5 @@
 
-open Dolmen
+module Id = Dolmen.Std.Id
 
 (* Smtlib arrays *)
 (* ************************************************************************ *)
@@ -27,7 +27,7 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) = struct
 
     type _ Type.err +=
-      | Forbidden : string -> Dolmen.Term.t Type.err
+      | Forbidden : string -> Dolmen.Std.Term.t Type.err
 
     let msg = function
       | All -> assert false

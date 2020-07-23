@@ -2,5 +2,12 @@
   (name         main)
   (public_name  dolmenls)
   (package      dolmen_lsp)
-  (libraries    dolmen dolmen_type dolmen_loop lsp)
+  (libraries
+    ; ocaml deps
+    threads.posix
+    ; external deps
+    lsp gen
+    ; dolmen deps
+    dolmen dolmen_std dolmen_type dolmen_loop
+    )
  )

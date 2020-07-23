@@ -15,7 +15,7 @@ let prelude_space st =
 (* ************************************************************************ *)
 
 let default_loc (st : Loop.State.t) =
-  Dolmen.ParseLocation.mk
+  Dolmen.Std.ParseLocation.mk
     (Options.input_to_string st.input_source) 0 0 0 0
 
 let get_loc st = function
@@ -51,23 +51,23 @@ let exn st = function
     Loop.State.error st "Memory limit reached"
 
   (* Parsing errors *)
-  | Dolmen.ParseLocation.Uncaught (loc, exn) ->
+  | Dolmen.Std.ParseLocation.Uncaught (loc, exn) ->
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.ParseLocation.fmt_hint loc;
+        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
+        Dolmen.Std.ParseLocation.fmt_hint loc;
     Loop.State.error ~loc st "%s" (Printexc.to_string exn)
-  | Dolmen.ParseLocation.Lexing_error (loc, msg) ->
+  | Dolmen.Std.ParseLocation.Lexing_error (loc, msg) ->
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.ParseLocation.fmt_hint loc;
+        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
+        Dolmen.Std.ParseLocation.fmt_hint loc;
     Loop.State.error ~loc st "Lexing error: invalid character '%s'" msg
-  | Dolmen.ParseLocation.Syntax_error (loc, msg) ->
+  | Dolmen.Std.ParseLocation.Syntax_error (loc, msg) ->
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.ParseLocation.fmt_hint loc;
+        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
+        Dolmen.Std.ParseLocation.fmt_hint loc;
     Loop.State.error ~loc st "%s@."
       (match msg with "" -> "Syntax error" | x -> x)
 
@@ -78,8 +78,8 @@ let exn st = function
     let loc = get_loc st (Dolmen_loop.Typer.T.fragment_loc fragment) in
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.ParseLocation.fmt_hint loc
+        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
+        Dolmen.Std.ParseLocation.fmt_hint loc
     else if st.context then
       Format.eprintf "@[<hv 2>While typing:@ @[<hov>%a@]@]@."
         Loop.Typer.print_fragment fragment;
@@ -95,23 +95,23 @@ let exn st = function
       (Dolmen_loop.Parser.string_of_language l')
 
   (* Internal Dolmen Expr errors *)
-  | Dolmen.Expr.Bad_ty_arity (c, l) ->
+  | Dolmen.Std.Expr.Bad_ty_arity (c, l) ->
     let pp_sep fmt () = Format.fprintf fmt ";@ " in
     Loop.State.error st "@[<hv>Internal error: Bad arity for type constant '%a',@ which was provided arguments:@ [@[<hv>%a@]]@]"
-      Dolmen.Expr.Print.ty_const c (Format.pp_print_list ~pp_sep Dolmen.Expr.Ty.print) l
-  | Dolmen.Expr.Bad_term_arity (c, tys, ts) ->
+      Dolmen.Std.Expr.Print.ty_const c (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) l
+  | Dolmen.Std.Expr.Bad_term_arity (c, tys, ts) ->
     let pp_sep fmt () = Format.fprintf fmt ";@ " in
     Loop.State.error st "@[<hv>Internal error: Bad arity for type constant '%a',@ which was provided arguments:@ [@[<hv>%a;@ %a@]]@]"
-      Dolmen.Expr.Print.term_const c
-      (Format.pp_print_list ~pp_sep Dolmen.Expr.Ty.print) tys
-      (Format.pp_print_list ~pp_sep Dolmen.Expr.Term.print) ts
-  | Dolmen.Expr.Type_already_defined c ->
+      Dolmen.Std.Expr.Print.term_const c
+      (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) tys
+      (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Term.print) ts
+  | Dolmen.Std.Expr.Type_already_defined c ->
     Loop.State.error st "@[<hv>Internal error: Type constant '%a' was already defined earlier,@ cannot re-define it.@]"
-      Dolmen.Expr.Print.id c
+      Dolmen.Std.Expr.Print.id c
 
-  | Dolmen.Expr.Term.Wrong_type (t, ty) ->
+  | Dolmen.Std.Expr.Term.Wrong_type (t, ty) ->
     Loop.State.error st "@[<hv>Internal error: A term of type@ %a@ was expected but instead got a term of type@ %a@]"
-      Dolmen.Expr.Ty.print ty Dolmen.Expr.Ty.print (Dolmen.Expr.Term.ty t)
+      Dolmen.Std.Expr.Ty.print ty Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.ty t)
 
   (* File format auto-detect *)
   | Dolmen_loop.Parser.Extension_not_found ext ->

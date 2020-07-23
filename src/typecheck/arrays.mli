@@ -16,7 +16,7 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) : sig
 
     type _ Type.err +=
-      | Forbidden : string -> Dolmen.Term.t Type.err
+      | Forbidden : string -> Dolmen.Std.Term.t Type.err
       (** Raised when a restriction on the sort of arrays is breached. *)
     (** Errors for array type-checking. *)
 

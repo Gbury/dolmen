@@ -26,7 +26,7 @@
 (library
   (name           dolmen_smtlib2_v6)
   (public_name    dolmen.smtlib2.v6)
-  (libraries      dolmen_std menhirLib)
+  (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_smtlib LexSmtlib ParseSmtlib Ast_smtlib Syntax_messages Dolmen_smtlib2_v6)
 )
 

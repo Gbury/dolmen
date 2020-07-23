@@ -58,17 +58,17 @@ module Fuzzy_Map : sig
   val empty : _ t
   (** The empty fuzzy search map. *)
 
-  val mem : 'a t -> Dolmen.Id.t -> bool
+  val mem : 'a t -> Dolmen.Std.Id.t -> bool
   (** Test whether the given id is bound in the map. *)
 
-  val find : 'a t -> Dolmen.Id.t -> 'a
+  val find : 'a t -> Dolmen.Std.Id.t -> 'a
   (** Find the value bound to an id.
       @raise Not_found if the id is not bound. *)
 
-  val add : 'a t -> Dolmen.Id.t -> 'a -> 'a t
+  val add : 'a t -> Dolmen.Std.Id.t -> 'a -> 'a t
   (** Add a new binding to the map. *)
 
-  val suggest : 'a t -> limit:int -> Dolmen.Id.t -> Dolmen.Id.t list
+  val suggest : 'a t -> limit:int -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** Return a list of bound identifiers in the map that are close
       (up to [limit] in terms of edition distance) to the given id. *)
 
@@ -85,14 +85,14 @@ module Fuzzy_Hashtbl : sig
   val create : unit -> _ t
   (** Create a new fuzzy hashtable. *)
 
-  val find : 'a t -> Dolmen.Id.t -> 'a
+  val find : 'a t -> Dolmen.Std.Id.t -> 'a
   (** Find the value bound to the given Identifier
       @raise Not_found if the id is not bound. *)
 
-  val add : 'a t -> Dolmen.Id.t -> 'a -> unit
+  val add : 'a t -> Dolmen.Std.Id.t -> 'a -> unit
   (** Add a new binding to the hashtable. *)
 
-  val suggest : 'a t -> limit:int -> Dolmen.Id.t -> Dolmen.Id.t list
+  val suggest : 'a t -> limit:int -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** Return a list of bound identifiers in the hashtbl that are close
       (up to [limit] in terms of edition distance) to the given id. *)
 

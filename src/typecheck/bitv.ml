@@ -1,5 +1,5 @@
 
-module Id = Dolmen.Id
+module Id = Dolmen.Std.Id
 
 (* Smtlib Bitvector *)
 (* ************************************************************************ *)
@@ -12,9 +12,9 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Bitv with type t := Type.T.t) = struct
 
     type _ Type.err +=
-      | Invalid_bin_char : char -> Dolmen.Term.t Type.err
-      | Invalid_hex_char : char -> Dolmen.Term.t Type.err
-      | Invalid_dec_char : char -> Dolmen.Term.t Type.err
+      | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+      | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
+      | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err
 
     let parse_int env ast s =
       match int_of_string s with

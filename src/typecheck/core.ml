@@ -1,6 +1,6 @@
 
-module Id = Dolmen.Id
-module Ast = Dolmen.Term
+module Id = Dolmen.Std.Id
+module Ast = Dolmen.Std.Term
 
 (* Alt-ergo builtins *)
 (* ************************************************************************ *)

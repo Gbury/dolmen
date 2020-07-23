@@ -1,5 +1,5 @@
 
-open Dolmen
+module Id = Dolmen.Std.Id
 
 (* Smtlib Unicode Strings *)
 (* ************************************************************************ *)
@@ -12,9 +12,9 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_String with type t := Type.T.t) = struct
 
     type _ Type.err +=
-      | Invalid_hexadecimal : string -> Term.t Type.err
-      | Invalid_string_char : char -> Term.t Type.err
-      | Invalid_escape_sequence : string * int -> Term.t Type.err
+      | Invalid_hexadecimal : string -> Dolmen.Std.Term.t Type.err
+      | Invalid_string_char : char -> Dolmen.Std.Term.t Type.err
+      | Invalid_escape_sequence : string * int -> Dolmen.Std.Term.t Type.err
 
     let int_of_string_hexa s = int_of_string ("0x" ^ s)
 

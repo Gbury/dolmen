@@ -1,5 +1,6 @@
 
-open Dolmen
+module Id = Dolmen.Std.Id
+module Term = Dolmen.Std.Term
 
 (* Smtlib arithmetic (integer and reals) *)
 (* ************************************************************************ *)
@@ -53,8 +54,8 @@ module Smtlib2 = struct
     | Subtraction of Term.t list
     | Division of Term.t * Term.t
     | Complex_arith
-    | Variable of Dolmen.Id.t
-    | Constant of Dolmen.Id.t
+    | Variable of Id.t
+    | Constant of Id.t
     | Top_symbol_not_in_arith
 
   (* Results of filters that enforce restrictions such as linearity. Due to the
@@ -80,8 +81,8 @@ module Smtlib2 = struct
       | Subtraction _ -> Format.fprintf fmt "a subtraction"
       | Division _ -> Format.fprintf fmt "a division"
       | Complex_arith -> Format.fprintf fmt "a complex arithmetic expression"
-      | Variable v -> Format.fprintf fmt "the quantified variable %a" Dolmen.Id.print v
-      | Constant c -> Format.fprintf fmt "the constant symbol %a" Dolmen.Id.print c
+      | Variable v -> Format.fprintf fmt "the quantified variable %a" Id.print v
+      | Constant c -> Format.fprintf fmt "the constant symbol %a" Id.print c
       | Top_symbol_not_in_arith ->
         Format.fprintf fmt "an arbitrary (not arithmetic) expression"
 
@@ -144,7 +145,7 @@ module Smtlib2 = struct
 
 
     let rec difference_count view t :
-      [ `Ok of Dolmen.Id.t * int | `Error of string ] =
+      [ `Ok of Id.t * int | `Error of string ] =
       match (view t : view) with
       | Variable v -> `Ok (v, 1)
       | Constant c -> `Ok (c, 1)
@@ -169,14 +170,14 @@ module Smtlib2 = struct
         begin match difference_count view t with
           | (`Error _) as res -> res
           | `Ok (s', n') ->
-            if Dolmen.Id.equal s s' then
+            if Id.equal s s' then
               difference_count_list_aux view (n + n') s r
             else
               `Error (
                 Format.asprintf "addition in real difference logic expects
                                  n-th times the same variable/constant, but was
                                  here applied to %a and %a which are different"
-                  Dolmen.Id.print s Dolmen.Id.print s')
+                  Id.print s Id.print s')
         end
 
 
@@ -529,10 +530,10 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Term.t Type.warn
+        | Restriction : string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Term.t Type.err
+        | Forbidden : string -> Term.t Type.err
 
       let check env filter ast args =
         match filter args with
@@ -616,10 +617,10 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Term.t Type.warn
+        | Restriction : string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Term.t Type.err
+        | Forbidden : string -> Term.t Type.err
 
       let check env filter ast args =
         match filter args with
@@ -686,10 +687,10 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Term.t Type.warn
+        | Restriction : string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Term.t Type.err
+        | Forbidden : string -> Term.t Type.err
         | Expected_arith_type : Type.Ty.t -> Term.t Type.err
 
       let check env filter ast args =

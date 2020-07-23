@@ -12,14 +12,14 @@ val new_state : unit -> ty_state
       better error messages, but uses more memory when running). *)
 
 module T : Dolmen_type.Tff.S
-  with type 'a Tag.t = 'a Dolmen.Tag.t
-   and type Ty.t = Dolmen.Expr.ty
-   and type Ty.Var.t = Dolmen.Expr.ty_var
-   and type Ty.Const.t = Dolmen.Expr.ty_const
-   and type T.t = Dolmen.Expr.term
-   and type T.Var.t = Dolmen.Expr.term_var
-   and type T.Const.t = Dolmen.Expr.term_const
-   and type T.Cstr.t = Dolmen.Expr.term_const
+  with type 'a Tag.t = 'a Dolmen.Std.Tag.t
+   and type Ty.t = Dolmen.Std.Expr.ty
+   and type Ty.Var.t = Dolmen.Std.Expr.ty_var
+   and type Ty.Const.t = Dolmen.Std.Expr.ty_const
+   and type T.t = Dolmen.Std.Expr.term
+   and type T.Var.t = Dolmen.Std.Expr.term_var
+   and type T.Const.t = Dolmen.Std.Expr.term_const
+   and type T.Cstr.t = Dolmen.Std.Expr.term_const
 (** The raw type-checker module. *)
 
 
