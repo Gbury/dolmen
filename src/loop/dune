@@ -4,10 +4,12 @@
   (libraries
     ; External deps
     gen unix fmt
-    ; dolmen deps
-    dolmen dolmen_intf dolmen_std dolmen_class dolmen_type
-    ; versioned languages deps
-    dolmen_smtlib2 dolmen_tptp
+    ; main dolmen deps , with versioned languages deps
+    dolmen
+    dolmen.intf dolmen.std dolmen.class
+    dolmen.smtlib2 dolmen.tptp
+    ; typechecker
+    dolmen_type
     )
   (modules
     ; Interfaces

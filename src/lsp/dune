@@ -8,6 +8,7 @@
     ; external deps
     lsp gen
     ; dolmen deps
-    dolmen dolmen_std dolmen_type dolmen_loop
+    dolmen dolmen.std
+    dolmen_type dolmen_loop
     )
  )

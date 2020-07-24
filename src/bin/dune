@@ -7,7 +7,8 @@
     ; external deps
     cmdliner fmt gen
     ; dolmen deps
-    dolmen dolmen_intf dolmen_std dolmen_type dolmen_loop
+    dolmen dolmen.intf dolmen.std
+    dolmen_type dolmen_loop
     )
 )
 
