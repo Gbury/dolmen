@@ -1,2 +1,2 @@
-File "tests/regression/pr36/shadow.smt2", line 3, character 0-23:
-[1m[91mError[0;1m[0m Shadowing: f was already declared at line 2, character 0-23
+[1m[97mFile "tests/regression/pr36/shadow.smt2", line 3, character 0-23:
+[0;1m[0m[1m[91mError[0;1m[0m Shadowing: f was already declared at line 2, character 0-23

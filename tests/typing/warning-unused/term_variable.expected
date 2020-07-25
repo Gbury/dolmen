@@ -1,2 +1,2 @@
-File "tests/typing/warning-unused/term_variable.p", line 3, character 22-28:
-[1m[95mWarning[0;1m[0m Quantified term variable `A : $i` is unused
+[1m[97mFile "tests/typing/warning-unused/term_variable.p", line 3, character 22-28:
+[0;1m[0m[1m[95mWarning[0;1m[0m Quantified term variable `A : $i` is unused

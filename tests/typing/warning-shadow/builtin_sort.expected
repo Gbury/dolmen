@@ -1,2 +1,2 @@
-File "tests/typing/warning-shadow/builtin_sort.smt2", line 3, character 8-11:
-[1m[95mWarning[0;1m[0m Shadowing: Int was already defined by a builtin theory
+[1m[97mFile "tests/typing/warning-shadow/builtin_sort.smt2", line 3, character 8-11:
+[0;1m[0m[1m[95mWarning[0;1m[0m Shadowing: Int was already defined by a builtin theory

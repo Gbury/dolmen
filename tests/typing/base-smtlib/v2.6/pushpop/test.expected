@@ -1,2 +1,2 @@
-File "tests/typing/base-smtlib/v2.6/pushpop/test.smt2", line 8, character 14-15:
-[1m[91mError[0;1m[0m Unbound identifier: 'b'
+[1m[97mFile "tests/typing/base-smtlib/v2.6/pushpop/test.smt2", line 8, character 14-15:
+[0;1m[0m[1m[91mError[0;1m[0m Unbound identifier: 'b'
