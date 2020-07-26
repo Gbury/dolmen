@@ -32,7 +32,6 @@ type ('ttype, 'ty) function_type = {
   fun_ret : 'ty;
 }
 
-
 (* Representation of types *)
 type ty_var = ttype id
 
@@ -43,7 +42,8 @@ and ty_descr =
   | App of ty_const * ty list
 
 and ty = {
-  descr : ty_descr;
+  as_ : ty_var option;
+  mutable descr : ty_descr;
   mutable hash : hash; (* lazy hash *)
   mutable tags : Tag.map;
 }
@@ -306,7 +306,8 @@ module Print = struct
       else
         Format.fprintf fmt "%s" v.name
 
-  let rec ty fmt (t : ty) = match t.descr with
+  let rec ty_descr fmt (descr : ty_descr) =
+    match descr with
     | Var v -> id fmt v
     | App (f, []) -> id fmt f
     | App (f, l) ->
@@ -321,6 +322,11 @@ module Print = struct
           Format.fprintf fmt "@[<hov 2>%a(%a)@]"
             id f (Format.pp_print_list ~pp_sep:(return ",@ ") ty) l
       end
+
+  and ty fmt (t: ty) =
+    match t.as_ with
+    | None -> ty_descr fmt t.descr
+    | Some v -> Format.fprintf fmt "(%a@ as@ %a)" ty_descr t.descr id v
 
   let params fmt = function
     | [] -> ()
@@ -806,6 +812,66 @@ module Ty = struct
 
   type 'a tag = 'a Tag.t
 
+  (* printing *)
+  let print = Print.ty
+
+  (* hash function *)
+  let rec hash_aux (t : t) = match t.descr with
+    | Var v -> hash2 3 (Id.hash v)
+    | App (f, args) -> hash3 5 (Id.hash f) (hash_list hash args)
+
+  and hash (t : t) =
+    if t.hash < 0 then t.hash <- hash_aux t;
+    t.hash
+
+  (* comparison *)
+  let discr (t: t) = match t.descr with
+    | Var _ -> 1
+    | App _ -> 2
+
+  let rec compare (u : t) (v : t) =
+    if u == v || u.descr == v.descr then 0 else begin
+      let hu = hash u and hv = hash v in
+      if hu <> hv then hu - hv (* safe since both are positive *)
+      else match u.descr, v.descr with
+        | Var v, Var v' -> Id.compare v v'
+        | App (f, args), App (f', args') ->
+          Id.compare f f'
+          <?> (lexicographic compare, args, args')
+        | _, _ -> Stdlib.compare (discr u) (discr v)
+    end
+
+  let equal u v = compare u v = 0
+
+  (* Set a wildcard/hole to a concrete type
+
+     Wildcard can be set to point to another type by mutating the
+     descr field of types (this is the only operation that mutates
+     this field).
+     In order to be correct, when we set a wildcard v to point at
+     another wildcard w, we must remember that, so that when we set
+     w to something, we also need to update v. *)
+
+  let wildcard_tbl = ref Subst.empty
+
+  let wildcard_get v =
+    match Subst.Var.get v !wildcard_tbl with
+    | l -> l
+    | exception Not_found -> []
+
+  let wildcard_add v l =
+    let l' = wildcard_get v in
+    wildcard_tbl := Subst.Var.bind !wildcard_tbl v (List.rev_append l l')
+
+  let set_wildcard v (t: t) =
+    let set_descr (t : t) (s: t) = s.descr <- t.descr in
+    let l = wildcard_get v in
+    List.iter (set_descr t) l;
+    match t.descr with
+    | Var ({ builtin = Wildcard; _ } as w) -> wildcard_add w l;
+    | _ -> ()
+
+
   (* Types definitions *)
 
   type adt_case = {
@@ -846,37 +912,7 @@ module Ty = struct
 
   let get_tag_last (t : t) k = Tag.last t.tags k
 
-  (* printing *)
-  let print = Print.ty
-
-  (* hash function *)
-  let rec hash_aux (t : t) = match t.descr with
-    | Var v -> hash2 3 (Id.hash v)
-    | App (f, args) -> hash3 5 (Id.hash f) (hash_list hash args)
-
-  and hash (t : t) =
-    if t.hash < 0 then t.hash <- hash_aux t;
-    t.hash
-
-  (* comparison *)
-  let discr (t: t) = match t.descr with
-    | Var _ -> 1
-    | App _ -> 2
-
-  let rec compare u v =
-    if u == v then 0 else begin
-      let hu = hash u and hv = hash v in
-      if hu <> hv then hu - hv (* safe since both are positive *)
-      else match u.descr, v.descr with
-        | Var v, Var v' -> Id.compare v v'
-        | App (f, args), App (f', args') ->
-          Id.compare f f'
-          <?> (lexicographic compare, args, args')
-        | _, _ -> Stdlib.compare (discr u) (discr v)
-    end
-
-  let equal u v = compare u v = 0
-
+  (* Module for namespacing *)
   module Var = struct
     type t = ty_var
     let tag = Id.tag
@@ -919,11 +955,17 @@ module Ty = struct
     let roundingMode = Id.const ~builtin:RoundingMode "RoundingMode" [] [] Type
   end
 
-  let mk descr = { descr; hash = -1; tags = Tag.empty; }
+  let mk descr = { as_ = None; descr; hash = -1; tags = Tag.empty; }
+
+  let as_ t v = { t with as_ = Some v; }
 
   let of_var v = mk (Var v)
 
-  let wildcard () = of_var (Id.mk ~builtin:Wildcard "_" Type)
+  let wildcard () =
+    let v = Id.mk ~builtin:Wildcard "_" Type in
+    let t = of_var v in
+    wildcard_add v [t];
+    t
 
   let rec check_filters res f args = function
     | [] -> res
@@ -1006,18 +1048,25 @@ module Ty = struct
     | { descr = App (_, tys); _ } ->
       List.exists (occurs subst l) tys
 
+  let robinson_bind subst m v u =
+    if occurs subst [v] u then
+      raise (Impossible_unification (m, u))
+    else
+      Subst.Var.bind subst v u
+
+  let robinson_as subst s t =
+    match s.as_ with
+    | None -> subst
+    | Some v -> robinson_bind subst s v t
+
   let rec robinson subst s t =
+    let subst = robinson_as (robinson_as subst s t) t s in
     let s = follow subst s in
     let t = follow subst t in
     match s, t with
     | ({ descr = Var ({ builtin = Wildcard; _ } as v); _ } as m), u
     | u, ({ descr = Var ({ builtin = Wildcard; _ } as v); _ } as m) ->
-      if equal m u then
-        subst
-      else if occurs subst [v] u then
-        raise (Impossible_unification (m, u))
-      else
-        Subst.Var.bind subst v u
+      if equal m u then subst else robinson_bind subst m v u
     | ({ descr = Var v; _}, { descr = Var v'; _ }) ->
       if Id.equal v v' then subst
       else raise (Impossible_unification (s, t))
@@ -1286,7 +1335,22 @@ module Term = struct
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
-    let mk name vars args ret = Id.const name vars args ret
+
+    let mk name vars args ret =
+      let r = ref ret in
+      let b = ref true in
+      let args = List.map (fun ty ->
+          if !b || not (Ty.equal ty ret) then ty
+          else begin
+            let v = Ty.Var.mk "'ret" in
+            r := Ty.of_var v;
+            b := true;
+            Ty.as_ ty v
+          end
+        ) args
+      in
+      Id.const name vars args !r
+
     let arity (c : t) =
       List.length c.ty.fun_vars, List.length c.ty.fun_args
 
@@ -2255,20 +2319,19 @@ module Term = struct
       raise (Bad_term_arity (f, tys, args))
     end else begin
       let map = List.fold_left2 Subst.Var.bind Subst.empty f.ty.fun_vars tys in
-      let expected_types = List.map (Ty.subst map) f.ty.fun_args in
       let s = List.fold_left2 (fun s expected term ->
           try Ty.robinson s expected (ty term)
-          with Ty.Impossible_unification _ -> raise (Wrong_type (term, expected))
-        ) map expected_types args
+          with Ty.Impossible_unification _ ->
+            raise (Wrong_type (term, Ty.subst s expected))
+        ) map f.ty.fun_args args
       in
-      let actual_ty_args = List.map (Ty.subst s) tys in
-      let actual_args = List.map (subst s Subst.empty) args in
-      actual_ty_args, actual_args, Ty.subst s f.ty.fun_ret
+      Subst.iter Ty.set_wildcard s;
+      Ty.subst s f.ty.fun_ret
     end
 
   (* Application *)
   and apply f tys args =
-    let tys, args, ret = instantiate f tys args in
+    let ret = instantiate f tys args in
     let res = mk (App (f, tys, args)) ret in
     check_filters res f tys args (Const.get_tag f Filter.term)
 

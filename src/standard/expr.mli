@@ -56,7 +56,8 @@ and ty_descr =
 (** Type descriptions. *)
 
 and ty = {
-  descr : ty_descr;
+  as_ : ty_var option;
+  mutable descr : ty_descr;
   mutable hash : hash; (* lazy hash *)
   mutable tags : Tag.map;
 }
@@ -1177,6 +1178,9 @@ module Ty : sig
 
   val wildcard : unit -> t
   (** Type wildcard *)
+
+  val as_ : t -> Var.t -> t
+  (** Add a pattern ascription to a type. *)
 
   val of_var : Var.t -> t
   (** Create a type from a variable. *)
