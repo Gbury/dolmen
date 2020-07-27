@@ -91,7 +91,7 @@ module Smtlib2 = struct
 
     let parse_f env ast cstr args =
       let loc = Ast.(ast.loc) in
-      let t = Ast.apply ?loc cstr args in
+      let t = Ast.apply ~loc cstr args in
       Type.parse_term env t
 
     let parse _version env s =

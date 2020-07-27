@@ -2,5 +2,11 @@
 (executable
   (name       gentests)
   (libraries  unix)
+  (modules    gentests)
 )
 
+(executable
+  (name       count)
+  (libraries  unix)
+  (modules    count)
+)

@@ -14,14 +14,6 @@ let prelude_space st =
 (* Location functions *)
 (* ************************************************************************ *)
 
-let default_loc (st : Loop.State.t) =
-  Dolmen.Std.ParseLocation.mk
-    (Options.input_to_string st.input_source) 0 0 0 0
-
-let get_loc st = function
-  | Some l -> l
-  | None -> default_loc st
-
 (* Exceptions *)
 (* ************************************************************************* *)
 
@@ -51,44 +43,49 @@ let exn st = function
     Loop.State.error st "Memory limit reached"
 
   (* Parsing errors *)
-  | Dolmen.Std.ParseLocation.Uncaught (loc, exn) ->
+  | Dolmen.Std.Loc.Uncaught (loc, exn) ->
+    let file = Dolmen_loop.State.input_file_loc st in
+    let l = Dolmen.Std.Loc.loc file loc in
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.Std.ParseLocation.fmt_hint loc;
-    Loop.State.error ~loc st "%s" (Printexc.to_string exn)
-  | Dolmen.Std.ParseLocation.Lexing_error (loc, msg) ->
+        (if l.Dolmen.Std.Loc.start_line = 1 &&
+            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
+        Dolmen.Std.Loc.fmt_hint l;
+    Loop.State.error ~loc:{ file; loc; } st "%s" (Printexc.to_string exn)
+  | Dolmen.Std.Loc.Lexing_error (loc, msg) ->
+    let file = Dolmen_loop.State.input_file_loc st in
+    let l = Dolmen.Std.Loc.loc file loc in
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.Std.ParseLocation.fmt_hint loc;
-    Loop.State.error ~loc st "Lexing error: invalid character '%s'" msg
-  | Dolmen.Std.ParseLocation.Syntax_error (loc, msg) ->
+        (if l.Dolmen.Std.Loc.start_line = 1 &&
+            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
+        Dolmen.Std.Loc.fmt_hint l;
+    Loop.State.error ~loc:{ file; loc; } st "Lexing error: invalid character '%s'" msg
+  | Dolmen.Std.Loc.Syntax_error (loc, msg) ->
+    let file = Dolmen_loop.State.input_file_loc st in
+    let l = Dolmen.Std.Loc.loc file loc in
     if Dolmen_loop.State.is_interactive st then
       Format.eprintf "%s%a@\n"
-        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.Std.ParseLocation.fmt_hint loc;
-    Loop.State.error ~loc st "%s@."
+        (if l.Dolmen.Std.Loc.start_line = 1 &&
+            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
+        Dolmen.Std.Loc.fmt_hint l;
+    Loop.State.error ~loc: { file; loc; } st "%s@."
       (match msg with "" -> "Syntax error" | x -> x)
 
 
   (* Typing errors *)
   | Dolmen_loop.Typer.T.Typing_error (
-      Dolmen_loop.Typer.T.Error (_env, fragment, _err) as error) ->
-    let loc = get_loc st (Dolmen_loop.Typer.T.fragment_loc fragment) in
-    if Dolmen_loop.State.is_interactive st then
-      Format.eprintf "%s%a@\n"
-        (if Dolmen.Std.ParseLocation.(loc.start_line = 1) then prelude_space st else "")
-        Dolmen.Std.ParseLocation.fmt_hint loc
-    else if st.context then
+      Dolmen_loop.Typer.T.Error (env, fragment, _err) as error) ->
+    let loc = Dolmen_loop.Typer.T.fragment_loc env fragment in
+    if st.context then
       Format.eprintf "@[<hv 2>While typing:@ @[<hov>%a@]@]@."
-        Loop.Typer.print_fragment fragment;
+        Loop.Typer.print_fragment (env, fragment);
     Loop.State.error ~loc st "%a"
       Loop.Typer.report_error error
 
   (* State errors *)
   | Dolmen_loop.State.File_not_found (loc, dir, f) ->
-    Loop.State.error ?loc st "File not found: '%s' in directory '%s'" f dir
+    Loop.State.error ~loc st "File not found: '%s' in directory '%s'" f dir
   | Dolmen_loop.State.Input_lang_changed (l, l') ->
     Loop.State.error st "Input language changed from %s to %s (probably because of an include statement)"
       (Dolmen_loop.Parser.string_of_language l)

@@ -11,7 +11,7 @@ module type S = sig
   exception Error
   (** The exception raised by the lexer when it cannot produce a token. *)
 
-  val token : Lexing.lexbuf -> token
+  val token : (Lexing.lexbuf -> unit) -> Lexing.lexbuf -> token
   (** The function producing token from a lexbuf. *)
 
 end

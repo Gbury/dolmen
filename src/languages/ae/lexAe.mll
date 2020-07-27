@@ -30,9 +30,9 @@ let hex = digit | ['a'-'f''A'-'F']
 let hex_exp = ['p' 'P'] signed_integer
 let real_hex = "0x" hex+ '.' hex* hex_exp
 
-rule token = parse
-  | '\n'                      { Lexing.new_line lexbuf; token lexbuf }
-  | [' ' '\t' '\r']+          { token lexbuf }
+rule token newline = parse
+  | '\n'                      { newline lexbuf; token newline lexbuf }
+  | [' ' '\t' '\r']+          { token newline lexbuf }
   | '?'                       { QM }
   | '?' identifier as id      { QM_ID id }
   | identifier as i           { match i with
@@ -79,7 +79,7 @@ rule token = parse
   | integer as s              { INTEGER s }
   | real as s                 { DECIMAL s }
   | real_hex as s             { HEXADECIMAL s }
-  | "(*"                      { parse_comment lexbuf; token lexbuf }
+  | "(*"                      { parse_comment newline lexbuf; token newline lexbuf }
   | "'"                       { QUOTE }
   | ","                       { COMMA }
   | ";"                       { PV }
@@ -112,26 +112,25 @@ rule token = parse
   | "|"                       { BAR }
   | "^"                       { HAT }
   | "|->"                     { MAPS_TO }
-  | "\""                      { parse_string (Buffer.create 1024) lexbuf }
+  | "\""                      { parse_string newline (Buffer.create 1024) lexbuf }
   | eof                       { EOF }
   | _ { raise Error }
 
-and parse_comment = parse
+and parse_comment newline = parse
   | "*)"    { () }
-  | "(*"    { parse_comment lexbuf; parse_comment lexbuf }
+  | "(*"    { parse_comment newline lexbuf; parse_comment newline lexbuf }
   | eof     { raise Error }
-  | _ as c  { if c = '\n' then Lexing.new_line lexbuf;
-              parse_comment lexbuf }
+  | _ as c  { if c = '\n' then newline lexbuf; parse_comment newline lexbuf }
 
-and parse_string str_buf = parse
+and parse_string newline str_buf = parse
   | "\""          { STRING (Buffer.contents str_buf) }
   | "\\" (_ as c) { Buffer.add_char str_buf (escaped_char c);
-                    parse_string str_buf lexbuf }
-  | '\n'          { Lexing.new_line lexbuf;
+                    parse_string newline str_buf lexbuf }
+  | '\n'          { newline lexbuf;
                     Buffer.add_char str_buf '\n';
-                    parse_string str_buf lexbuf }
+                    parse_string newline str_buf lexbuf }
   | eof           { raise Error }
   | _ as c        { Buffer.add_char str_buf c;
-                    parse_string str_buf lexbuf }
+                    parse_string newline str_buf lexbuf }
 
 

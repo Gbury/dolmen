@@ -78,19 +78,6 @@ val smaller : t -> t -> bool
 
 (** {2 Lexbuf} *)
 
-val set_file : Lexing.lexbuf -> string -> unit
-(** Change the file name used for positions in this lexbuf *)
-
-val mk_lexbuf :
-  [ `Stdin | `File of string | `Contents of string * string ] ->
-  Lexing.lexbuf * (unit -> unit)
-(** Returns the lexbuf associetd with the given file or stdin,
-    with the correct filename, together with a function to close
-    the associated file descriptor.
-    The [`Contents] constructor expect first a name for the input
-    stream (to report errors), and then a string with the actual
-    contents to be parsed. *)
-
 val of_lexbuf : Lexing.lexbuf -> t
 (** Recover a position from a lexbuf *)
 

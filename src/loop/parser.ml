@@ -4,7 +4,7 @@
 (* ************************************************************************ *)
 
 module P = Dolmen.Class.Logic.Make
-    (Dolmen.Std.ParseLocation)
+    (Dolmen.Std.Loc)
     (Dolmen.Std.Id)
     (Dolmen.Std.Term)
     (Dolmen.Std.Statement)

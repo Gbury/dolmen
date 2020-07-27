@@ -38,9 +38,12 @@ module type Typer = sig
   (** The type for the global state. *)
 
   val warn :
-    ?loc:Dolmen.Std.ParseLocation.t -> t ->
+    ?loc:Dolmen.Std.Loc.full -> t ->
     ('a, Format.formatter, unit, t) format4 -> 'a
   (** Emit a warning *)
+
+  val input_file_loc : t -> Dolmen.Std.Loc.file
+  (** CUrrent input file location meta-data. *)
 
   val input_lang : t -> Parser.language option
   (** The current input language. *)
@@ -85,10 +88,16 @@ module type Pipes = sig
   (** The type of solver terms. *)
 
   val warn :
-    ?loc:Dolmen.Std.ParseLocation.t ->
+    ?loc:Dolmen.Std.Loc.full ->
     t -> ('a, Format.formatter, unit, t) format4 ->
     'a
   (** Emit a warning *)
+
+  val input_file_loc : t -> Dolmen.Std.Loc.file
+  (** CUrrent input file location meta-data. *)
+
+  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
+  (** Set the input file location meta-data. *)
 
   val start : phase -> unit
   (** Hook at the start of a phase *)
@@ -122,7 +131,7 @@ module type Pipes = sig
   (** Return the input source. *)
 
   val file_not_found :
-    ?loc:Dolmen.Std.ParseLocation.t -> dir:string -> file:string -> 'a
+    loc:Dolmen.Std.Loc.full -> dir:string -> file:string -> 'a
   (** Callback for when a file specified by the input source is not found. *)
 
 end

@@ -9,8 +9,7 @@ type perm =
   | Warn
   | Error
 
-exception File_not_found of
-    Dolmen.Std.ParseLocation.t option * string * string
+exception File_not_found of Dolmen.Std.Loc.full * string * string
 
 exception Input_lang_changed of
     Parser.language * Parser.language
@@ -45,6 +44,8 @@ type 'solve state = {
                       | `File of string
                       | `Raw of string * string ];
 
+  input_file_loc    : Dolmen.Std.Loc.file;
+
   (* Typechecking state *)
   type_state        : ty_state;
   type_check        : bool;
@@ -60,22 +61,25 @@ type 'solve state = {
 
 type t = solve_state state
 
-(* Warning and error printers *)
+(* State and locations *)
 (* ************************************************************************* *)
 
 let pp_loc fmt o =
   match o with
   | None -> ()
   | Some loc ->
-    Format.fprintf fmt "%a:@ " Dolmen.Std.ParseLocation.fmt loc
+    Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
+
 
 let error ?loc _ format =
+  let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   Format.kfprintf (fun _ -> exit 1) Format.err_formatter
     ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
 
 let warn ?loc st format =
+  let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   let aux _ = { st with cur_warn = st.cur_warn + 1; } in
   if st.cur_warn >= st.max_warn then
     Format.ikfprintf aux Format.err_formatter format
@@ -107,6 +111,9 @@ let input_dir t = t.input_dir
 let input_mode t = t.input_mode
 let input_lang t = t.input_lang
 let input_source t = t.input_source
+
+let input_file_loc st = st.input_file_loc
+let set_input_file_loc st f = { st with input_file_loc = f; }
 
 let set_mode t m = { t with input_mode = Some m; }
 
@@ -153,7 +160,6 @@ let set_lang t l =
 let start _ = ()
 let stop _ = ()
 
-
-let file_not_found ?loc ~dir ~file =
+let file_not_found ~loc ~dir ~file =
   raise (File_not_found (loc, dir, file))
 

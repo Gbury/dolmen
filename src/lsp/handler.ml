@@ -15,8 +15,6 @@ module Res_ = struct
     | Ok x -> f x
 end
 
-module Loc = Dolmen.Std.ParseLocation
-
 module N = Lsp.Client_notification
 module Doc = Lsp.Text_document
 

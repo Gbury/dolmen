@@ -65,9 +65,9 @@
     "set-option", SET_OPTION;
   ]
 
-  let symbol lexbuf s =
+  let symbol newline lexbuf s =
     (* register the newlines in quoted symbols to maintain correct locations.*)
-    String.iter (function '\n' -> Lexing.new_line lexbuf | _ -> ()) s;
+    String.iter (function '\n' -> newline lexbuf | _ -> ()) s;
     (* Check whetehr the symbol is a reserved word. *)
     try M.find s reserved_words
     with Not_found -> SYMBOL s
@@ -103,12 +103,12 @@ let keyword = ':' simple_symbol
 
 let comment = ';' (white_space_or_printable # ['\r' '\n'])*
 
-rule token = parse
+rule token newline = parse
   (* Whitespace, newlines and comments *)
   | eof                 { EOF }
-  | [' ' '\t' '\r']+    { token lexbuf }
-  | '\n'                { Lexing.new_line lexbuf; token lexbuf }
-  | comment             { token lexbuf }
+  | [' ' '\t' '\r']+    { token newline lexbuf }
+  | '\n'                { newline lexbuf; token newline lexbuf }
+  | comment             { token newline lexbuf }
 
   (* SMTLIB tokens *)
   | '('                 { OPEN }
@@ -117,14 +117,14 @@ rule token = parse
   | decimal as s        { DEC s }
   | hexadecimal as s    { HEX s }
   | binary as s         { BIN s }
-  | '"'                 { string (Buffer.create 42) lexbuf }
+  | '"'                 { string newline (Buffer.create 42) lexbuf }
   | keyword as s        { KEYWORD s }
-  | symbol as s         { symbol lexbuf s }
+  | symbol as s         { symbol newline lexbuf s }
 
-and string b = parse
-  | '"' '"'             { Buffer.add_char b '"'; string b lexbuf }
+and string newline b = parse
+  | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
   | '"'                 { STR (Buffer.contents b) }
   | (printable_char | white_space_char) as c
-    { if c = '\n' then Lexing.new_line lexbuf;
-      Buffer.add_char b c; string b lexbuf }
+    { if c = '\n' then newline lexbuf;
+      Buffer.add_char b c; string newline b lexbuf }
 

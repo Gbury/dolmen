@@ -55,6 +55,8 @@ let mk_state
     input_dir; input_lang;
     input_mode; input_source;
 
+    input_file_loc = Dolmen.Std.Loc.mk_file "";
+
     type_check; type_strict;
     type_state = Dolmen_loop.Typer.new_state ();
 

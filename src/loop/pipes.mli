@@ -25,7 +25,7 @@ module Make
   type +'a stmt = {
     id          : Dolmen.Std.Id.t;
     contents    : 'a;
-    loc         : Dolmen.Std.ParseLocation.t option;
+    loc         : Dolmen.Std.Loc.t;
   }
   (** Wrapper around statements. It records implicit type declarations. *)
 

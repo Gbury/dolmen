@@ -14,13 +14,13 @@
 (** {2 Type definitions} *)
 
 type term = Term.t
-type location = ParseLocation.t
+type location = Loc.t
 (** Type aliases for readability. *)
 
 type abstract = {
   id : Id.t;
   ty : term;
-  loc : location option;
+  loc : location;
 }
 (** The type for abstract type definitions. *)
 
@@ -28,7 +28,7 @@ type inductive = {
   id : Id.t;
   vars : term list;
   cstrs : (Id.t * term list) list;
-  loc : location option;
+  loc : location;
   attr : term option;
 }
 (** The type for inductive type declarations. The "vars" field if used
@@ -45,7 +45,7 @@ type record = {
   id : Id.t;
   vars : term list;
   fields : (Id.t * term) list;
-  loc : location option;
+  loc : location;
   attr : term option;
 }
 (** The type of record definitions. *)
@@ -60,7 +60,7 @@ type def = {
   id : Id.t;
   ty : term;
   body : term;
-  loc : location option;
+  loc : location;
 }
 (** Term definition. *)
 
@@ -146,7 +146,7 @@ and t = {
   id : Id.t;
   descr : descr;
   attr : term option;
-  loc : location option;
+  loc : location;
 }
 (** The type of statements. Statements have optional location and attributes (or annotations).
     Additionally the each have a name (which mainly comes from tptp statements), that can

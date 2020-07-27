@@ -5,7 +5,7 @@
 
 (** {2 Type definitions} *)
 
-type location = ParseLocation.t
+type location = Loc.t
 
 type builtin =
   | Wildcard
@@ -191,7 +191,7 @@ type descr =
 and t = {
   term : descr;
   attr : t list;
-  loc : location option;
+  loc : location;
 }
 (** The type of terms. A record containing an optional location,
     and a description of the term. *)
@@ -263,12 +263,12 @@ val set_attrs : t list -> t -> t
 *)
 
 type 'a mapper = {
-  symbol    : 'a mapper -> attr:t list -> loc:location option -> Id.t -> 'a;
-  builtin   : 'a mapper -> attr:t list -> loc:location option -> builtin -> 'a;
-  colon     : 'a mapper -> attr:t list -> loc:location option -> t -> t -> 'a;
-  app       : 'a mapper -> attr:t list -> loc:location option -> t -> t list -> 'a;
-  binder    : 'a mapper -> attr:t list -> loc:location option -> binder -> t list -> t -> 'a;
-  pmatch    : 'a mapper -> attr:t list -> loc:location option -> t -> (t * t) list -> 'a;
+  symbol    : 'a mapper -> attr:t list -> loc:location -> Id.t -> 'a;
+  builtin   : 'a mapper -> attr:t list -> loc:location -> builtin -> 'a;
+  colon     : 'a mapper -> attr:t list -> loc:location -> t -> t -> 'a;
+  app       : 'a mapper -> attr:t list -> loc:location -> t -> t list -> 'a;
+  binder    : 'a mapper -> attr:t list -> loc:location -> binder -> t list -> t -> 'a;
+  pmatch    : 'a mapper -> attr:t list -> loc:location -> t -> (t * t) list -> 'a;
 }
 (** The type of a mapper on terms. *)
 

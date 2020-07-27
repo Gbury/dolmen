@@ -29,5 +29,9 @@ module type S = sig
   val mk_pos : Lexing.position -> Lexing.position -> t
   (** Make a position from two lewing positions. *)
 
+  val newline : string -> (Lexing.lexbuf -> unit)
+  (** A function first given the name of the file, and which should return a
+      closure that will be called on each new_line. *)
+
 end
 

@@ -137,30 +137,6 @@ let fmt_pos fmt pos =
       pos.stop_line pos.stop_column
 
 
-(* Operations on Lexing.lexbuf *)
-let set_file buf filename =
-  let open Lexing in
-  buf.lex_curr_p <- {buf.lex_curr_p with pos_fname=filename;};
-  ()
-
-let mk_lexbuf i =
-  match i with
-  | `Contents (file, s) ->
-    let buf = Lexing.from_string s in
-    set_file buf file;
-    buf, (fun () -> ())
-  | `Stdin ->
-    let s, ch, cl = "<stdin>", stdin, (fun () -> ()) in
-    let buf = Lexing.from_channel ch in
-    set_file buf s;
-    buf, cl
-  | `File s ->
-    let ch = open_in s in
-    let cl = (fun () -> close_in ch) in
-    let buf = Lexing.from_channel ch in
-    set_file buf s;
-    buf, cl
-
 let of_lexbuf lexbuf =
   let start = Lexing.lexeme_start_p lexbuf in
   let end_ = Lexing.lexeme_end_p lexbuf in

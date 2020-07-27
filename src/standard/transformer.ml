@@ -2,7 +2,7 @@
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
 module Make
-    (Loc    : ParseLocation.S)
+    (Loc    : Loc.S)
     (Ty     : sig
        type token
        type statement
@@ -72,10 +72,10 @@ module Make
   (* Parsing loop
      ------------ *)
 
-   let parse_aux ~k_exn lexbuf checkpoint =
+   let parse_aux ~k_exn newline lexbuf checkpoint =
     (* Token supplier *)
     let supplier = Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
-        Lexer.token lexbuf in
+        (Lexer.token newline) lexbuf in
     (* Incremental loop *)
     let succeed res = res in
     let fail checkpoint =
@@ -114,22 +114,24 @@ module Make
      ---------------------------------- *)
 
   let parse_file file =
-    let lexbuf, cleanup = ParseLocation.mk_lexbuf (`File file) in
+    let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
+    let newline = Loc.newline file in
     let k_exn () = cleanup () in
-    let aux = parse_aux ~k_exn lexbuf Parse.Incremental.file in
+    let aux = parse_aux ~k_exn newline lexbuf Parse.Incremental.file in
     let res = aux () in
     let () = cleanup () in
     res
 
   let parse_input i =
-    let lexbuf, cleanup = ParseLocation.mk_lexbuf i in
+    let lexbuf, cleanup = Misc.mk_lexbuf i in
+    let newline = Loc.newline (Misc.filename_of_input i) in
     if not Ty.incremental then
       (* If incremental mode is not supported, raise an error rather than
          do weird things. *)
       raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf,
                                "Input format does not support incrmental parsing"));
     let k_exn () = Dolmen_line.consume lexbuf in
-    let aux = parse_aux ~k_exn lexbuf Parse.Incremental.input in
+    let aux = parse_aux ~k_exn newline lexbuf Parse.Incremental.input in
     aux, cleanup
 
 end

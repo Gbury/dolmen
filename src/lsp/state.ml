@@ -15,13 +15,22 @@ type t = solve_state state
 let add_diag d (st : t) =
   { st with solve_state = d :: st.solve_state; }
 
-let warn ?(loc=Dolmen.Std.ParseLocation.mk "" 0 0 0 0) t format =
+let full_loc t = function
+  | Some full ->
+    Dolmen.Std.Loc.full_loc full
+  | None ->
+    let file = input_file_loc t in
+    Dolmen.Std.Loc.loc file Dolmen.Std.Loc.no_loc
+
+let warn ?loc t format =
+  let loc = full_loc t loc in
   Format.kasprintf (fun msg ->
       let d = Diagnostic.warn ~loc msg in
       add_diag d t) format
 
 
-let error ?(loc=Dolmen.Std.ParseLocation.mk "" 0 0 0 0) t format =
+let error ?loc t format =
+  let loc = full_loc t loc in
   (* Flush the str formatter to clear any unflushed leftover *)
   let _ = Format.flush_str_formatter () in
   (* Set the str formatter out functions to not emit newline characters *)

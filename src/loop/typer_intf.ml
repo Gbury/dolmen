@@ -22,19 +22,19 @@ module type Pipes = sig
   val typecheck : t -> bool
 
   val reset :
-    t -> ?loc:Dolmen.Std.ParseLocation.t -> unit -> t
+    t -> ?loc:Dolmen.Std.Loc.t -> unit -> t
 
   val push :
-    t -> ?loc:Dolmen.Std.ParseLocation.t -> int -> t
+    t -> ?loc:Dolmen.Std.Loc.t -> int -> t
 
   val pop :
-    t -> ?loc:Dolmen.Std.ParseLocation.t -> int -> t
+    t -> ?loc:Dolmen.Std.Loc.t -> int -> t
 
   val set_logic :
-    t -> ?loc:Dolmen.Std.ParseLocation.t -> string -> t
+    t -> ?loc:Dolmen.Std.Loc.t -> string -> t
 
   val defs :
-    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    t -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.defs ->
     t * [
      | `Type_def of Dolmen.Std.Id.t * ty_var list * ty
@@ -42,7 +42,7 @@ module type Pipes = sig
     ] list
 
   val decls :
-    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    t -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.decls ->
     t * [
       | `Type_decl of ty_const
@@ -50,17 +50,17 @@ module type Pipes = sig
     ] list
 
   val terms :
-    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    t -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
     t * term list
 
   val formula :
-    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    t -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> goal:bool -> Dolmen.Std.Term.t ->
     t * formula
 
   val formulas :
-    t -> ?loc:Dolmen.Std.ParseLocation.t ->
+    t -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
     t * formula list
 
@@ -74,6 +74,9 @@ module type S = sig
 
   type ty_state
   (** The type for the state of the typer. *)
+
+  type env
+  (** The type of the typechecker environment. *)
 
   type 'a fragment
   (** The type of fragments on which error/warning can occur. *)
@@ -99,7 +102,7 @@ module type S = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
-  val print_fragment : Format.formatter -> 'a fragment -> unit
+  val print_fragment : Format.formatter -> env * 'a fragment -> unit
   (** Print a code fragment *)
 
   val report_error : Format.formatter -> error -> unit

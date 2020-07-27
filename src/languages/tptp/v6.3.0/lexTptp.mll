@@ -72,16 +72,16 @@ let lower_word = lower_alpha alpha_numeric*
 let dollar_word = '$' lower_word
 let dollar_dollar_word = "$$" lower_word
 
-rule token = parse
+rule token newline = parse
   | comment
     { String.iter (function
-        | '\n' -> Lexing.new_line lexbuf
+        | '\n' -> newline lexbuf
         | _ -> ()
       ) (Lexing.lexeme lexbuf);
-      token lexbuf }
+      token newline lexbuf }
 
-  | '\n' { Lexing.new_line lexbuf; token lexbuf }
-  | [' ' '\t' '\r'] { token lexbuf }
+  | '\n' { newline lexbuf; token newline lexbuf }
+  | [' ' '\t' '\r'] { token newline lexbuf }
   | eof { EOF }
 
   | '.'   { DOT }

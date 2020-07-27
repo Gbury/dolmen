@@ -94,15 +94,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* New warnings & errors *)
   (* ************************************************************************ *)
 
-  let no_loc = Dolmen.Std.ParseLocation.mk "" 0 0 0 0
-
   type _ T.err +=
     | Warning_as_error : T.warning -> _ T.err
-    | Missing_logic : Dolmen.Std.ParseLocation.t T.err
+    | Missing_logic : Dolmen.Std.Loc.t T.err
     | Illegal_decl : Dolmen.Std.Statement.decl T.err
-    | Invalid_push_n : Dolmen.Std.ParseLocation.t T.err
-    | Invalid_pop_n : Dolmen.Std.ParseLocation.t T.err
-    | Pop_with_empty_stack : Dolmen.Std.ParseLocation.t T.err
+    | Invalid_push_n : Dolmen.Std.Loc.t T.err
+    | Invalid_pop_n : Dolmen.Std.Loc.t T.err
+    | Pop_with_empty_stack : Dolmen.Std.Loc.t T.err
 
   (* Hints for type errors *)
   (* ************************************************************************ *)
@@ -137,10 +135,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Report type warnings *)
   (* ************************************************************************ *)
 
-  let pp_opt_loc fmt = function
-    | None -> Format.fprintf fmt "<location missing>"
-    | Some loc -> Dolmen.Std.ParseLocation.fmt_pos fmt loc
-
   let decl_loc d =
     match (d : Dolmen.Std.Statement.decl) with
     | Record { loc; _ }
@@ -151,14 +145,18 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     match (r : T.reason) with
     | Builtin ->
       Format.fprintf fmt "defined by a builtin theory"
-    | Bound ast ->
-      Format.fprintf fmt "bound at %a" pp_opt_loc ast.loc
-    | Inferred ast ->
-      Format.fprintf fmt "inferred at %a" pp_opt_loc ast.loc
-    | Defined d ->
-      Format.fprintf fmt "defined at %a" pp_opt_loc d.loc
-    | Declared d ->
-      Format.fprintf fmt "declared at %a" pp_opt_loc (decl_loc d)
+    | Bound (file, ast) ->
+      Format.fprintf fmt "bound at %a"
+        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+    | Inferred (file, ast) ->
+      Format.fprintf fmt "inferred at %a"
+        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+    | Defined (file, d) ->
+      Format.fprintf fmt "defined at %a"
+        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
+    | Declared (file, d) ->
+      Format.fprintf fmt "declared at %a"
+        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
 
   let print_reason_opt fmt = function
     | Some r -> print_reason fmt r
@@ -234,7 +232,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | x :: [] -> Format.fprintf fmt "%d" x
     | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
 
-  let print_fragment (type a) fmt (fragment : a T.fragment) =
+  let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
     match fragment with
     | T.Ast ast -> Dolmen.Std.Term.print fmt ast
     | T.Def d -> Dolmen.Std.Statement.print_def fmt d
@@ -243,8 +241,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_def fmt d
     | T.Decls d ->
       Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_decl fmt d
-    | T.Located loc ->
-      Format.fprintf fmt "<located at %a>" Dolmen.Std.ParseLocation.fmt loc
+    | T.Located _ ->
+      let full = T.fragment_loc env fragment in
+      let loc = Dolmen.Std.Loc.full_loc full in
+      Format.fprintf fmt "<located at %a>" Dolmen.Std.Loc.fmt loc
 
   let print_bt fmt bt =
     if Printexc.backtrace_status () then begin
@@ -253,7 +253,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     end
 
 
-  let report_error fmt (T.Error (_env, fragment, err)) =
+  let report_error fmt (T.Error (env, fragment, err)) =
     match err with
 
     (* Datatype definition not well founded *)
@@ -373,7 +373,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt
         "The typechecker did not know what to do with the following term.@ \
          Please report upstream.@\n%a"
-        print_fragment fragment
+        print_fragment (env, fragment)
 
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
@@ -525,11 +525,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env ?(loc=no_loc) warnings (st : S.t) =
+  let typing_env ~loc warnings (st : S.t) =
+
+    let file = S.input_file_loc st in
 
     let additional_builtins env args =
       !additional_builtins env args
     in
+
 
     (* Match the language to determine bultins and other options *)
     match (S.input_lang st : Parser.language option) with
@@ -552,7 +555,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       T.empty_env
         ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
-        ~warnings builtins
+        ~warnings ~file builtins
 
     (* Alt-Ergo format
     *)
@@ -572,7 +575,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       T.empty_env
         ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
-        ~warnings builtins
+        ~warnings ~file builtins
 
     (* Zipperposition Format
        - no inference of constants
@@ -595,7 +598,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       T.empty_env
         ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
-        ~warnings builtins
+        ~warnings ~file builtins
 
     (* TPTP
        - tptp has inference of constants
@@ -620,7 +623,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       T.empty_env
         ~st:(S.ty_state st).typer
         ~expect ?infer_base ~poly
-        ~warnings builtins
+        ~warnings ~file builtins
 
     (* SMTLib v2
        - no inference
@@ -640,8 +643,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       begin match (S.ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
-          let env = T.empty_env
-              ~st:(S.ty_state st).typer ~poly ~expect ~warnings builtins
+          let env =
+            T.empty_env
+              ~st:(S.ty_state st).typer
+              ~poly ~expect ~warnings ~file builtins
           in
           T._error env (Located loc) Missing_logic
         | Smtlib2 logic ->
@@ -653,18 +658,18 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           T.empty_env
             ~st:(S.ty_state st).typer
             ~expect ?infer_base ~poly ~quants
-            ~warnings builtins
+            ~warnings ~file builtins
       end
 
-  let typing_wrap ?loc st ~f =
+  let typing_wrap ?(loc=Dolmen.Std.Loc.no_loc) st ~f =
     let st = ref st in
-    let report (T.Warning (_, fg, _) as w) =
-      let loc = T.fragment_loc fg in
+    let report (T.Warning (env, fg, _) as w) =
+      let loc = T.fragment_loc env fg in
       match report_warning w with
       | None -> ()
-      | Some pp -> st := S.warn ?loc !st "%a" pp ()
+      | Some pp -> st := S.warn ~loc !st "%a" pp ()
     in
-    let env = typing_env ?loc (warnings_aux report) !st in
+    let env = typing_env ~loc (warnings_aux report) !st in
     let res = f env in
     !st, res
 
@@ -674,7 +679,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let reset st ?loc:_ () =
     S.set_ty_state st (new_state ())
 
-  let rec push st ?(loc=no_loc) = function
+  let rec push st ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
       if i <= 0 then
@@ -688,7 +693,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         push st' (i - 1)
       end
 
-  let rec pop st ?(loc=no_loc) = function
+  let rec pop st ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
       if i <= 0 then
@@ -710,7 +715,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Setting the logic *)
   (* ************************************************************************ *)
 
-  let set_logic (st : S.t) ?loc s =
+  let set_logic (st : S.t) ?(loc=Dolmen.Std.Loc.no_loc) s =
+    let file = S.input_file_loc st in
+    let loc : Dolmen.Std.Loc.full = { file; loc; } in
     match (S.input_lang st : Parser.language option) with
     | Some Dimacs -> st
     | Some Smtlib2 _ ->
@@ -718,12 +725,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         match Dolmen_type.Logic.Smtlib2.parse s with
         | Some l -> st, l
         | None ->
-          let st = S.warn ?loc st "Unknown logic %s" s in
+          let st = S.warn ~loc st "Unknown logic %s" s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
       S.set_ty_state st { (S.ty_state st) with logic = Smtlib2 l; }
     | _ ->
-      S.warn ?loc st
+      S.warn ~loc st
         "Set logic is not supported for the current language"
 
 

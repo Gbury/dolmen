@@ -29,6 +29,11 @@ let split_on_char sep s =
   done;
   String.sub s 0 !j :: !r
 
+let opt_map o f =
+  match o with
+  | None -> None
+  | Some x -> Some (f x)
+
 
 (* Option printing *)
 
@@ -58,4 +63,40 @@ let rec print_list ~print_sep ~sep ~print fmt = function
     Format.fprintf fmt "%a%a%a"
       print h print_sep sep
       (print_list ~print_sep ~sep ~print) r
+
+
+(* Operations on Lexing.lexbuf *)
+let set_file buf filename =
+  let open Lexing in
+  buf.lex_curr_p <- {buf.lex_curr_p with pos_fname=filename;};
+  ()
+
+let filename_of_input = function
+  | `Contents (file, _) -> file
+  | `File file -> file
+  | `Stdin -> "<stdin>"
+
+let filename_of_input_source = function
+  | `Raw (file, _) -> file
+  | `File file -> file
+  | `Stdin -> "<stdin>"
+
+let mk_lexbuf i =
+  let filename = filename_of_input i in
+  match i with
+  | `Contents (_, s) ->
+    let buf = Lexing.from_string s in
+    set_file buf filename;
+    buf, (fun () -> ())
+  | `Stdin ->
+    let ch, cl = stdin, (fun () -> ()) in
+    let buf = Lexing.from_channel ch in
+    set_file buf filename;
+    buf, cl
+  | `File s ->
+    let ch = open_in s in
+    let cl = (fun () -> close_in ch) in
+    let buf = Lexing.from_channel ch in
+    set_file buf filename;
+    buf, cl
 

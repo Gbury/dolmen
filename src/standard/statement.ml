@@ -3,19 +3,19 @@
 
 (* Type definitions *)
 type term = Term.t
-type location = ParseLocation.t
+type location = Loc.t
 
 type abstract = {
   id : Id.t;
   ty : term;
-  loc : location option;
+  loc : location;
 }
 
 type inductive = {
   id : Id.t;
   vars : term list;
   cstrs : (Id.t * term list) list;
-  loc : location option;
+  loc : location;
   attr : term option;
 }
 
@@ -23,7 +23,7 @@ type record = {
   id : Id.t;
   vars : term list;
   fields : (Id.t * term) list;
-  loc : location option;
+  loc : location;
   attr : term option;
 }
 
@@ -36,7 +36,7 @@ type def = {
   id : Id.t;
   ty : term;
   body : term;
-  loc : location option;
+  loc : location;
 }
 
 type 'a group = {
@@ -92,8 +92,12 @@ and t = {
   id : Id.t;
   descr : descr;
   attr : term option;
-  loc : location option;
+  loc : location;
 }
+
+(* Dummy location *)
+
+let no_loc = Loc.no_loc
 
 (* Debug printing *)
 
@@ -285,7 +289,7 @@ and print fmt = function { descr; _ } ->
 let annot = Term.apply
 
 (* Internal shortcut. *)
-let mk ?(id=Id.(mk decl "")) ?loc ?attr descr =
+let mk ?(id=Id.(mk decl "")) ?(loc=Loc.no_loc) ?attr descr =
   { id; descr; loc; attr; }
 
 (* Pack *)
@@ -328,6 +332,19 @@ let get_assertions ?loc () = mk ?loc Get_assertions
 let echo ?loc s = mk ?loc (Echo s)
 let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
+
+(* decl/def *)
+let def ?(loc=no_loc) id ty body =
+  { id; ty; body; loc; }
+
+let abstract ?(loc=no_loc) id ty =
+  Abstract { id; ty; loc; }
+
+let record ?(attr=None) ?(loc=no_loc) id vars fields =
+  Record { id; vars; fields; loc; attr; }
+
+let inductive ?(attr=None) ?(loc=no_loc) id vars cstrs =
+  Inductive { id; vars; cstrs; loc; attr; }
 
 (* grouping of decls/defs *)
 let mk_decls ?loc ?attr ~recursive decls =
@@ -378,20 +395,18 @@ let logic ?loc ~ac ids ty =
         ) vars in
       Term.pi ?loc l ty
   in
-  let l = List.map (fun id -> Abstract { id; ty; loc; }) ids in
+  let l = List.map (fun id -> abstract ?loc id ty) ids in
   mk_decls ?loc ?attr ~recursive:true l
 
 let abstract_type ?loc id vars =
   let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
-  mk_decls ?loc ~recursive:false [Abstract { id; ty; loc; }]
+  mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let record_type ?loc id vars fields =
-  mk_decls ?loc ~recursive:false
-    [ Record { id; vars; fields; loc; attr = None; }]
+  mk_decls ?loc ~recursive:false [ record ?loc id vars fields]
 
 let algebraic_type ?loc id vars cstrs =
-  mk_decls ?loc ~recursive:false
-    [Inductive { id; vars; cstrs; loc; attr = None; }]
+  mk_decls ?loc ~recursive:false [inductive ?loc id vars cstrs]
 
 let rec_types ?loc l =
   group_decls ?loc ~recursive:true l
@@ -437,21 +452,21 @@ let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
-  mk_decls ?loc ~recursive:false [ Abstract { id; ty; loc; }]
+  mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let fun_decl ?loc id l t' =
   let ty = Term.fun_ty ?loc l t' in
-  mk_decls ?loc ~recursive:false [ Abstract { id; ty; loc; }]
+  mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let type_def ?loc id args body =
   let l = List.map (fun id -> Term.colon (Term.const id) @@ Term.tType ()) args in
   let ty = Term.pi l (Term.tType ()) in
   let body = Term.lambda l body in
-  mk_defs ?loc ~recursive:false [ { id; ty; body; loc; } ]
+  mk_defs ?loc ~recursive:false [def ?loc id ty body]
 
 let datatypes ?loc l =
   let l' = List.map (fun (id, vars, cstrs) ->
-      Inductive {id; vars; cstrs; loc; attr = None;}
+      inductive ?loc id vars cstrs
     ) l in
   mk_decls ?loc ~recursive:true l'
 
@@ -462,12 +477,12 @@ let fun_def_aux id args ty_ret body =
 
 let fun_def ?loc id args ty_ret body =
   let id, ty, body = fun_def_aux id args ty_ret body in
-  mk_defs ?loc ~recursive:false [{ id; ty; body; loc; }]
+  mk_defs ?loc ~recursive:false [def ?loc id ty body]
 
 let funs_def_rec ?loc l =
   let contents = List.map (fun (id, args, ty_ret, body) ->
       let id, ty, body = fun_def_aux id args ty_ret body in
-      { id; ty; body; loc; }
+      def ?loc id ty body
     ) l in
   mk_defs ?loc ~recursive:true contents
 
@@ -504,7 +519,7 @@ let lemma ?loc ?attrs t =
 
 let decl ?loc ?attrs id ty =
   let attr = zf_attr ?loc attrs in
-  mk_decls ?loc ?attr ~recursive:true [Abstract { id; ty; loc; }]
+  mk_decls ?loc ?attr ~recursive:true [abstract ?loc id ty]
 
 let definition ?loc ?attrs s ty l =
   let attr = zf_attr ?loc attrs in
@@ -515,7 +530,7 @@ let definition ?loc ?attrs s ty l =
 
 let inductive ?loc ?attrs id vars cstrs =
   let attr = zf_attr ?loc attrs in
-  mk_decls ?loc ~recursive:true [Inductive {id; vars; cstrs; loc; attr; }]
+  mk_decls ?loc ~recursive:true [inductive ?loc ~attr id vars cstrs]
 
 let data ?loc ?attrs l =
   (* this is currently only used for mutually recursive datatypes *)
@@ -561,7 +576,7 @@ let tptp ?loc ?annot id role body =
       begin match body with
         | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
           Decls { recursive = false;
-                  contents = [Abstract { id = s; ty; loc }]; }
+                  contents = [abstract ?loc s ty]; }
         | _ ->
           Format.eprintf "WARNING: unexpected type declaration@.";
           Pack []

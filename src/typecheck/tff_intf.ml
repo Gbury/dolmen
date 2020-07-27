@@ -95,10 +95,10 @@ module type S = sig
 
   type reason =
     | Builtin
-    | Bound of Dolmen.Std.Term.t
-    | Inferred of Dolmen.Std.Term.t
-    | Defined of Dolmen.Std.Statement.def
-    | Declared of Dolmen.Std.Statement.decl
+    | Bound of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
+    | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
+    | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
+    | Declared of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
   (** The type of reasons for constant typing *)
 
   type binding = [
@@ -131,7 +131,7 @@ module type S = sig
     | Defs : Dolmen.Std.Statement.defs -> Dolmen.Std.Statement.defs fragment
     | Decl : Dolmen.Std.Statement.decl -> Dolmen.Std.Statement.decl fragment
     | Decls : Dolmen.Std.Statement.decls -> Dolmen.Std.Statement.decls fragment
-    | Located : Dolmen.Std.ParseLocation.t -> Dolmen.Std.ParseLocation.t fragment (**)
+    | Located : Dolmen.Std.Loc.t -> Dolmen.Std.Loc.t fragment (**)
   (** Fragments of input that represent the sources of warnings/errors *)
 
   type _ warn = ..
@@ -297,6 +297,7 @@ module type S = sig
     ?infer_hook:(env -> inferred -> unit) ->
     ?infer_base:Ty.t -> ?poly:poly -> ?quants:bool ->
     warnings:(warning -> unit) ->
+    file:Dolmen.Std.Loc.file ->
     builtin_symbols -> env
   (** Create a new environment. *)
 
@@ -307,7 +308,7 @@ module type S = sig
 
   (** {2 Location helpers} *)
 
-  val fragment_loc : _ fragment -> Dolmen.Std.ParseLocation.t option
+  val fragment_loc : env -> _ fragment -> Dolmen.Std.Loc.full
   (** Convenient function to get the location of a fragment. *)
 
   val binding_reason : binding -> reason option

@@ -31,6 +31,7 @@ module Make
     (S : State_intf.Typer with type ty_state := ty_state)
   : S with type t := S.t
        and type ty_state := ty_state
+       and type env := T.env
        and type 'a fragment := 'a T.fragment
        and type error := T.error
        and type warning := T.warning

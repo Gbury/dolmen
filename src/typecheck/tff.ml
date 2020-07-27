@@ -30,7 +30,7 @@ module Make
   module Id = Dolmen.Std.Id
   module Ast = Dolmen.Std.Term
   module Stmt = Dolmen.Std.Statement
-  module Loc = Dolmen.Std.ParseLocation
+  module Loc = Dolmen.Std.Loc
 
   (* Types *)
   (* ************************************************************************ *)
@@ -105,10 +105,10 @@ module Make
 
   type reason =
     | Builtin
-    | Bound of Ast.t
-    | Inferred of Ast.t
-    | Defined of Stmt.def
-    | Declared of Stmt.decl
+    | Bound of Loc.file * Ast.t
+    | Inferred of Loc.file * Ast.t
+    | Defined of Loc.file * Stmt.def
+    | Declared of Loc.file * Stmt.decl
   (** The type of reasons for constant typing *)
 
   type binding = [
@@ -161,17 +161,6 @@ module Make
     | Record { loc; _ }
     | Abstract { loc; _ }
     | Inductive { loc; _ } -> loc
-
-  let fragment_loc :
-    type a. a fragment -> Loc.t option = function
-    | Ast { loc; _ } -> loc
-    | Def d -> d.loc
-    | Defs { contents = []; _ } -> None
-    | Defs { contents = d :: _; _ } -> d.loc
-    | Decl d -> decl_loc d
-    | Decls { contents = []; _ } -> None
-    | Decls { contents = d :: _; _ } -> decl_loc d
-    | Located l -> Some l
 
   (* Warnings *)
   (* ******** *)
@@ -262,6 +251,9 @@ module Make
   (* The local environments used for type-checking. *)
   type env = {
 
+    (* current file *)
+    file : Loc.file;
+
     (* global state *)
     st        : state;
 
@@ -323,6 +315,22 @@ module Make
 
   let _error env fragment e =
     raise (Typing_error (Error (env, fragment, e)))
+
+  let fragment_loc :
+    type a. env -> a fragment -> Loc.full = fun env fg ->
+    let loc =
+      match fg with
+      | Ast { loc; _ } -> loc
+      | Def d -> d.loc
+      | Defs { contents = []; _ } -> Loc.no_loc
+      | Defs { contents = d :: _; _ } -> d.loc
+      | Decl d -> decl_loc d
+      | Decls { contents = []; _ } -> Loc.no_loc
+      | Decls { contents = d :: _; _ } -> decl_loc d
+      | Located l -> l
+    in
+    { file = env.file;
+      loc = loc; }
 
 
   (* Convenience functions *)
@@ -534,14 +542,13 @@ module Make
       ?infer_base
       ?(poly=Flexible)
       ?(quants=true)
-      ~warnings
+      ~warnings ~file
       builtins = {
+    file; st; builtins; warnings;
+    poly; quants; expect; infer_hook; infer_base;
+    vars = M.empty;
     type_locs = E.empty;
     term_locs = F.empty;
-    vars = M.empty;
-    st; builtins; warnings;
-    poly; quants;
-    expect; infer_hook; infer_base;
   }
 
   let expect ?(force=false) env expect =
@@ -558,7 +565,7 @@ module Make
 
   (* Add local variables to environment *)
   let add_type_var env id v ast =
-    let reason = Bound ast in
+    let reason = Bound (env.file, ast) in
     let v' =
       match find_bound env id with
       | `Not_found -> v
@@ -579,7 +586,7 @@ module Make
     List.rev l', env'
 
   let add_term_var env id v ast =
-    let reason = Bound ast in
+    let reason = Bound (env.file, ast) in
     let v' =
       match find_bound env id with
       | `Not_found -> v
@@ -594,7 +601,7 @@ module Make
         }
 
   let bind_term_var env id e v t ast =
-    let reason = Bound ast in
+    let reason = Bound (env.file, ast) in
     let v' =
       match find_bound env id with
       | `Not_found -> v
@@ -629,7 +636,7 @@ module Make
   let _unused_type env v =
     match E.find v env.type_locs with
     (* Variable bound or inferred *)
-    | Bound t | Inferred t ->
+    | Bound (_, t) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_type_variable v)
     (* variables should not be declare-able nor builtin *)
     | Builtin | Declared _ | Defined _ ->
@@ -638,7 +645,7 @@ module Make
   let _unused_term env v =
     match F.find v env.term_locs with
     (* Variable bound or inferred *)
-    | Bound t | Inferred t ->
+    | Bound (_, t) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_term_variable v)
     (* variables should not be declare-able nor builtin *)
     | Builtin | Declared _ | Defined _ ->
@@ -735,7 +742,7 @@ module Make
       let ret = Ty.Const.mk (Id.full_name s) n in
       let res = Ty_fun ret in
       env.infer_hook env res;
-      decl_ty_const env (Ast ast) s ret (Inferred s_ast);
+      decl_ty_const env (Ast ast) s ret (Inferred (env.file, s_ast));
       Some res
     | Typed _, None -> None
     | Typed ty, Some base ->
@@ -745,7 +752,7 @@ module Make
       in
       let res = Term_fun ret in
       env.infer_hook env res;
-      decl_term_const env (Ast ast) s ret (Inferred s_ast);
+      decl_term_const env (Ast ast) s ret (Inferred (env.file, s_ast));
       Some res
 
 
@@ -1363,7 +1370,7 @@ module Make
       ) fields in
     let field_list = T.define_record ty_cst ty_vars l in
     List.iter2 (fun (id, _) field ->
-        decl_term_field env (Decl d) id field (Declared d)
+        decl_term_field env (Decl d) id field (Declared (env.file, d))
       ) fields field_list
 
   let inductive env d ty_cst { Stmt.id; vars; cstrs; _ } =
@@ -1388,14 +1395,14 @@ module Make
     let defined_cstrs = T.define_adt ty_cst ty_vars cstrs_with_strings in
     (* Register the constructors and destructors in the global env. *)
     List.iter2 (fun (cid, pargs) (c, targs) ->
-        decl_term_cstr env (Decl d) cid c (Declared d);
+        decl_term_cstr env (Decl d) cid c (Declared (env.file, d));
         List.iter2 (fun (t, _, dstr) (_, o) ->
             match dstr, o with
             | None, None -> ()
             | None, Some c ->
               _warn env (Ast t) (Superfluous_destructor (id, cid, c))
             | Some id, Some const ->
-              decl_term_const env (Decl d) id const (Declared d)
+              decl_term_const env (Decl d) id const (Declared (env.file, d))
             | Some id, None ->
               _error env (Ast t) (Missing_destructor id)
           ) pargs targs
@@ -1431,8 +1438,8 @@ module Make
 
   let record_decl env (id, tdecl) (t : Stmt.decl) =
     match tdecl with
-    | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared t)
-    | `Term_decl f -> decl_term_const env (Decl t) id f (Declared t)
+    | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared (env.file, t))
+    | `Term_decl f -> decl_term_const env (Decl t) id f (Declared (env.file, t))
 
   let decls env ?attr (d: Stmt.decl Stmt.group) =
     let tags = match attr with
@@ -1475,7 +1482,7 @@ module Make
   let record_def d env (id, tdecl) (t : Stmt.def) =
     match tdecl with
     | `Type_decl _ -> _error env (Defs d) (Type_def_rec t)
-    | `Term_decl f -> decl_term_const env (Def t) id f (Defined t)
+    | `Term_decl f -> decl_term_const env (Def t) id f (Defined (env.file, t))
 
   let parse_def env (_, ssig) (d : Stmt.def) =
     match ssig, parse_fun [] [] env d.body with

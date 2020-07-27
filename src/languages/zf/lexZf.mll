@@ -34,11 +34,11 @@ let unsigned_integer = decimal
 let signed_integer = sign unsigned_integer
 let integer = signed_integer | unsigned_integer
 
-rule token = parse
+rule token newline = parse
   | eof { EOF }
-  | '\n' { Lexing.new_line lexbuf; token lexbuf }
-  | [' ' '\t' '\r'] { token lexbuf }
-  | comment_line { token lexbuf }
+  | '\n' { newline lexbuf; token newline lexbuf }
+  | [' ' '\t' '\r'] { token newline lexbuf }
+  | comment_line { token newline lexbuf }
   | '(' { LEFT_PAREN }
   | ')' { RIGHT_PAREN }
   | '[' { LEFT_BRACKET }
@@ -93,13 +93,13 @@ rule token = parse
   | lower_word { LOWER_WORD(Lexing.lexeme lexbuf) }
   | upper_word { UPPER_WORD(Lexing.lexeme lexbuf) }
   | integer { INTEGER(Lexing.lexeme lexbuf) }
-  | '"' { quoted (Buffer.create 42) lexbuf }
+  | '"' { quoted newline (Buffer.create 42) lexbuf }
   | _ { raise Error }
 
 (* we unquote during lexing rather then during the parsing *)
-and quoted b = parse
+and quoted newline b = parse
   | '"'       { QUOTED(Buffer.contents b) }
-  | '\\' '"'  { Buffer.add_char b '"'; quoted b lexbuf }
-  | _ as c    { if c = '\n' then Lexing.new_line lexbuf;
-                Buffer.add_char b c; quoted b lexbuf }
+  | '\\' '"'  { Buffer.add_char b '"'; quoted newline b lexbuf }
+  | _ as c    { if c = '\n' then newline lexbuf;
+                Buffer.add_char b c; quoted newline b lexbuf }
 

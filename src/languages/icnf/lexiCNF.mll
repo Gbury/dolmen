@@ -18,19 +18,19 @@ let number = positive_number | negative_number
 let printable_char = [^ '\n']
 let comment = ['c'] printable_char* ['\n']
 
-rule token = parse
-  | "c"             { comment lexbuf }
+rule token newline = parse
+  | "c"             { comment newline lexbuf }
   | "p"             { P }
   | "a"             { A }
   | "inccnf"        { INCCNF }
   | eof             { EOF }
   | zero_numeric    { ZERO }
-  | [' ' '\t' '\r'] { token lexbuf }
+  | [' ' '\t' '\r'] { token newline lexbuf }
   | number          { INT (int_of_string @@ Lexing.lexeme lexbuf) }
-  | '\n'            { Lexing.new_line lexbuf; NEWLINE }
+  | '\n'            { newline lexbuf; NEWLINE }
   | _               { raise Error }
 
-and comment = parse
-  | '\n'  { Lexing.new_line lexbuf; token lexbuf }
-  | printable_char { comment lexbuf }
+and comment newline = parse
+  | '\n'  { newline lexbuf; token newline lexbuf }
+  | printable_char { comment newline lexbuf }
 

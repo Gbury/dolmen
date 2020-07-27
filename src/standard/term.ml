@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-type location = ParseLocation.t
+type location = Loc.t
 
 type builtin =
   | Wildcard
@@ -68,7 +68,7 @@ type descr =
 and t = {
   term : descr;
   attr : t list;
-  loc : location option;
+  loc : location;
 }
 
 (* Printing info *)
@@ -300,7 +300,7 @@ let set_attrs l t =
   { t with attr = l }
 
 (* Make a term from its description *)
-let make ?loc ?(attr=[]) term = { term; attr; loc; }
+let make ?(loc=Loc.no_loc) ?(attr=[]) term = { term; attr; loc; }
 
 let builtin b ?loc () = make ?loc (Builtin b)
 
@@ -309,7 +309,7 @@ let mk_bind binder ?loc vars t =
   make ?loc (Binder (binder, vars, t))
 
 (* Attach an attribute list to a term *)
-let annot ?loc t l =
+let annot ?(loc=Loc.no_loc) t l =
   { t with attr = t.attr @ l; loc }
 
 (* Create a constant and/or variable, that is a leaf
@@ -578,12 +578,12 @@ let quoted ?loc name =
 (* {2 Term traversal} *)
 
 type 'a mapper = {
-  symbol    : 'a mapper -> attr:t list -> loc:location option -> Id.t -> 'a;
-  builtin   : 'a mapper -> attr:t list -> loc:location option -> builtin -> 'a;
-  colon     : 'a mapper -> attr:t list -> loc:location option -> t -> t -> 'a;
-  app       : 'a mapper -> attr:t list -> loc:location option -> t -> t list -> 'a;
-  binder    : 'a mapper -> attr:t list -> loc:location option -> binder -> t list -> t -> 'a;
-  pmatch    : 'a mapper -> attr:t list -> loc:location option -> t -> (t * t) list -> 'a;
+  symbol    : 'a mapper -> attr:t list -> loc:location -> Id.t -> 'a;
+  builtin   : 'a mapper -> attr:t list -> loc:location -> builtin -> 'a;
+  colon     : 'a mapper -> attr:t list -> loc:location -> t -> t -> 'a;
+  app       : 'a mapper -> attr:t list -> loc:location -> t -> t list -> 'a;
+  binder    : 'a mapper -> attr:t list -> loc:location -> binder -> t list -> t -> 'a;
+  pmatch    : 'a mapper -> attr:t list -> loc:location -> t -> (t * t) list -> 'a;
 }
 
 let map mapper t =
@@ -597,16 +597,18 @@ let map mapper t =
   | Match (e, l) -> wrap mapper.pmatch e l
 
 let id_mapper = {
-  symbol = (fun m ~attr ~loc id -> set_attrs (List.map (map m) attr) @@ const ?loc id);
-  builtin = (fun m ~attr ~loc b -> set_attrs (List.map (map m) attr) @@ builtin ?loc b ());
+  symbol = (fun m ~attr ~loc id ->
+      set_attrs (List.map (map m) attr) @@ const ~loc id);
+  builtin = (fun m ~attr ~loc b ->
+      set_attrs (List.map (map m) attr) @@ builtin ~loc b ());
   colon = (fun m ~attr ~loc u v ->
-      set_attrs (List.map (map m) attr) @@ colon ?loc (map m u) (map m v));
+      set_attrs (List.map (map m) attr) @@ colon ~loc (map m u) (map m v));
   app = (fun m ~attr ~loc f args ->
-      set_attrs (List.map (map m) attr) @@ apply ?loc (map m f) (List.map (map m) args));
+      set_attrs (List.map (map m) attr) @@ apply ~loc (map m f) (List.map (map m) args));
   binder = (fun m ~attr ~loc b vars body ->
-      set_attrs (List.map (map m) attr) @@ mk_bind ?loc b (List.map (map m) vars) (map m body));
+      set_attrs (List.map (map m) attr) @@ mk_bind ~loc b (List.map (map m) vars) (map m body));
   pmatch = (fun m ~attr ~loc e l ->
-      set_attrs (List.map (map m) attr) @@ match_ ?loc (map m e)
+      set_attrs (List.map (map m) attr) @@ match_ ~loc (map m e)
         (List.map (fun (pat, body) -> (map m pat, map m body)) l));
 }
 

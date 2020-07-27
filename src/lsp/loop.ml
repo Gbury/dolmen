@@ -7,16 +7,6 @@ module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Std.Expr)(State)(Typer)
 
 exception Finished of (State.t, string) result
 
-let no_loc = Dolmen.Std.ParseLocation.mk "" 1 1 1 1
-let get_loc = function
-  | Some l -> l
-  | None -> no_loc
-let get_decl_loc d =
-  match (d : Dolmen.Std.Statement.decl) with
-  | Abstract { loc; _ }
-  | Record { loc; _ }
-  | Inductive { loc; _ } -> get_loc loc
-
 let handle_exn st = function
 
   (* Simple error cases *)
@@ -24,27 +14,35 @@ let handle_exn st = function
   | Pipeline.Out_of_time -> Error "timeout"
   | Pipeline.Out_of_space -> Error "memoryout"
   (* Exn during parsing *)
-  | Dolmen.Std.ParseLocation.Uncaught (loc, exn) ->
+  | Dolmen.Std.Loc.Uncaught (loc, exn) ->
+    let file = State.input_file_loc st in
+    let loc = Dolmen.Std.Loc.loc file loc in
     Error (Format.asprintf "%a: %s"
-             Dolmen.Std.ParseLocation.fmt loc (Printexc.to_string exn))
+             Dolmen.Std.Loc.fmt loc (Printexc.to_string exn))
 
   (* lexing error *)
-  | Dolmen.Std.ParseLocation.Lexing_error (loc, msg) ->
+  | Dolmen.Std.Loc.Lexing_error (loc, msg) ->
+    let file = State.input_file_loc st in
+    let loc = { Dolmen.Std.Loc.file; loc; } in
     Ok (State.error ~loc st "Lexing error: %s" msg)
   (* Parsing error *)
-  | Dolmen.Std.ParseLocation.Syntax_error (loc, "") ->
+  | Dolmen.Std.Loc.Syntax_error (loc, "") ->
+    let file = State.input_file_loc st in
+    let loc = { Dolmen.Std.Loc.file; loc; } in
     Ok (State.error ~loc st "Syntax error")
-  | Dolmen.Std.ParseLocation.Syntax_error (loc, msg) ->
+  | Dolmen.Std.Loc.Syntax_error (loc, msg) ->
+    let file = State.input_file_loc st in
+    let loc = { Dolmen.Std.Loc.file; loc; } in
     Ok (State.error ~loc st "%s" msg)
   (* Typing error *)
   | Dolmen_loop.Typer.T.Typing_error (
-      Dolmen_loop.Typer.T.Error (_env, fragment, _err) as error) ->
-    let loc = get_loc (Dolmen_loop.Typer.T.fragment_loc fragment) in
+      Dolmen_loop.Typer.T.Error (env, fragment, _err) as error) ->
+    let loc = Dolmen_loop.Typer.T.fragment_loc env fragment in
     Ok (State.error ~loc st "Typing error: %a" Typer.report_error error)
 
   (* File not found *)
-  | State.File_not_found (l, dir, f) ->
-    Ok (State.error ~loc:(get_loc l) st "File not found: '%s' in directory '%s'" f dir)
+  | State.File_not_found (loc, dir, f) ->
+    Ok (State.error ~loc st "File not found: '%s' in directory '%s'" f dir)
   (* Input lang changed *)
   | State.Input_lang_changed _ ->
     Ok (State.error st "Language changed because of an include")
@@ -79,6 +77,7 @@ let process path opt_contents =
         | None -> `File file
         | Some contents -> `Raw (file, contents)
       end;
+      input_file_loc = Dolmen.Std.Loc.mk_file "";
       type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;
       type_strict = true;
