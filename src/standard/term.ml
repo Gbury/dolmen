@@ -483,9 +483,11 @@ let rec free_vars acc t =
     List.fold_left free_vars (free_vars acc t) l
   | Binder (_, l, t) ->
     let s = free_vars S.empty t in
-    let bound = List.fold_left free_vars S.empty l in
+    let bound, free =
+      List.fold_left free_vars_bound (S.empty, S.empty) l
+    in
     let s' = S.filter (fun x -> not (S.mem x bound)) s in
-    S.union acc s'
+    S.union acc (S.union s' free)
   | Match (t, l) ->
     let acc = List.fold_left (fun acc (pattern, branch) ->
         let s = free_vars S.empty branch in
@@ -494,6 +496,11 @@ let rec free_vars acc t =
         S.union s' acc
       ) acc l in
     free_vars acc t
+
+and free_vars_bound (bound, free) t =
+  match t.term with
+  | Colon (v, ty) -> free_vars bound v, free_vars free ty
+  | _ -> free_vars bound t, free
 
 let fv t =
   S.elements (free_vars S.empty t)

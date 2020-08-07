@@ -265,12 +265,67 @@ module Make
     let l' = List.map Dolmen.Std.Term.fv l in
     List.sort_uniq Dolmen.Std.Id.compare (List.flatten l')
 
+  let quantify ~loc var_ty vars f =
+    let vars = List.map (fun v ->
+        let c = Dolmen.Std.Term.const ~loc v in
+        match var_ty v with
+        | None -> c
+        | Some ty -> Dolmen.Std.Term.colon c ty
+      ) vars in
+    Dolmen.Std.Term.forall ~loc vars f
+
+  let normalize st c =
+    match c with
+    (* Clauses without free variables can be typechecked as is
+       without worry, but if there are free variables, these must
+       be quantified or else the typchecker will raise an error. *)
+    | { S.descr = S.Clause l; _ } ->
+      begin match fv_list l with
+        | [] -> c
+
+        | free_vars ->
+          let loc = c.S.loc in
+          let f = match l with
+            | [] -> assert false
+            | [p] -> p
+            | _ -> Dolmen.Std.Term.apply ~loc (Dolmen.Std.Term.or_t ~loc ()) l
+          in
+          let f = quantify ~loc (fun _ -> None) free_vars f in
+          { c with descr = S.Antecedent f; }
+      end
+    (* Axioms and goals in alt-ergo have their type variables
+       implicitly quantified. *)
+    | { S.descr = S.Antecedent t; _ }
+      when State.input_lang st = Some Parser.Alt_ergo ->
+      begin match fv_list [t] with
+        | [] -> c
+        | free_vars ->
+          let loc = c.S.loc in
+          let var_ttype _ = Some (Dolmen.Std.Term.tType ~loc ()) in
+          let f = quantify ~loc var_ttype free_vars t in
+          { c with descr = S.Antecedent f; }
+      end
+    | { S.descr = S.Consequent t; _ }
+      when State.input_lang st = Some Parser.Alt_ergo ->
+      begin match fv_list [t] with
+        | [] -> c
+        | free_vars ->
+          let loc = c.S.loc in
+          let var_ttype _ = Some (Dolmen.Std.Term.tType ~loc ()) in
+          let f = quantify ~loc var_ttype free_vars t in
+          { c with descr = S.Consequent f; }
+      end
+
+
+    (* catch all *)
+    | _ -> c
+
   let typecheck (st, c) =
     State.start `Typing;
     let res =
       if not (Typer.typecheck st) then
         `Done st
-      else match c with
+      else match normalize st c with
 
       (* Pack and includes.
          These should have been filtered out before this point.
@@ -301,40 +356,16 @@ module Make
 
       (* Hypotheses & Goals *)
       | { S.descr = S.Clause l; _ } ->
-        begin match fv_list l with
-          | [] -> (* regular clauses *)
-            let st, res = Typer.formulas st ~loc:c.S.loc ?attr:c.S.attr l in
-            let stmt : typechecked stmt =
-              simple (hyp_id c) c.S.loc (`Clause res)
-            in
-            `Continue (st, stmt)
-          | free_vars -> (* if there are free variables, these must be quantified
-                            or else the typchecker will raise an error. *)
-            let loc = c.S.loc in
-            let vars = List.map (Dolmen.Std.Term.const ~loc) free_vars in
-            let f = Dolmen.Std.Term.forall ~loc vars (
-                match l with
-                | [] -> assert false
-                | [p] -> p
-                | _ -> Dolmen.Std.Term.apply ~loc (Dolmen.Std.Term.or_t ~loc ()) l
-              ) in
-            let st, res = Typer.formula st ~loc ?attr:c.S.attr ~goal:false f in
-            let stmt : typechecked stmt =
-              simple (hyp_id c) c.S.loc (`Hyp res)
-            in
-            `Continue (st, stmt)
-        end
+        let st, res = Typer.formulas st ~loc:c.S.loc ?attr:c.S.attr l in
+        let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
+        `Continue (st, stmt)
       | { S.descr = S.Antecedent t; _ } ->
         let st, ret = Typer.formula st ~loc:c.S.loc ?attr:c.S.attr ~goal:false t in
-        let stmt : typechecked stmt =
-          simple (hyp_id c) c.S.loc (`Hyp ret)
-        in
+        let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
         `Continue (st, stmt)
       | { S.descr = S.Consequent t; _ } ->
         let st, ret = Typer.formula st ~loc:c.S.loc ?attr:c.S.attr ~goal:true t in
-        let stmt : typechecked stmt =
-          simple (goal_id c) c.S.loc (`Goal ret)
-        in
+        let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
         `Continue (st, stmt)
 
       (* Other set_logics should check whether corresponding plugins are activated ? *)

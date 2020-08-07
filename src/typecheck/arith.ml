@@ -120,7 +120,10 @@ module Smtlib2 = struct
       | _ -> Top_symbol_not_in_arith
 
     (* We here use the fact that smtlib forbids shadowing, hence the order
-       of the lookups does not matter. *)
+       of the lookups does not matter.
+       Additionally, we do not want the lookup to go through all the
+       builtins as it is not necessary, hence the manual unfolding of
+       the Type.find_bound function. *)
     and view_id ~parse version env id args =
       match Type.find_var env id with
       | `Letin (e, _, _) -> view ~parse version env e
@@ -142,7 +145,6 @@ module Smtlib2 = struct
               | #Type.not_found -> Top_symbol_not_in_arith
             end
         end
-
 
     let rec difference_count view t :
       [ `Ok of Id.t * int | `Error of string ] =
@@ -960,7 +962,9 @@ module Ae = struct
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
-                                        and type ty := Type.Ty.t) = struct
+                                      and type ty := Type.Ty.t) = struct
+
+
 
   end
 end
