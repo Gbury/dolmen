@@ -6,7 +6,7 @@ let prelude (st : Loop.State.t) =
   match st.input_lang with
   | None -> "prompt> @?"
   | Some l ->
-    Format.asprintf "(%s)# @?" (Dolmen_loop.Parser.string_of_language l)
+    Format.asprintf "(%s)# @?" (Dolmen_loop.Logic.string_of_language l)
 
 let prelude_space st =
   String.make (String.length (prelude st) - 8) ' '
@@ -88,8 +88,8 @@ let exn st = function
     Loop.State.error ~loc st "File not found: '%s' in directory '%s'" f dir
   | Dolmen_loop.State.Input_lang_changed (l, l') ->
     Loop.State.error st "Input language changed from %s to %s (probably because of an include statement)"
-      (Dolmen_loop.Parser.string_of_language l)
-      (Dolmen_loop.Parser.string_of_language l')
+      (Dolmen_loop.Logic.string_of_language l)
+      (Dolmen_loop.Logic.string_of_language l')
 
   (* Internal Dolmen Expr errors *)
   | Dolmen.Std.Expr.Bad_ty_arity (c, l) ->
@@ -111,7 +111,7 @@ let exn st = function
       Dolmen.Std.Expr.Ty.print ty Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.ty t)
 
   (* File format auto-detect *)
-  | Dolmen_loop.Parser.Extension_not_found ext ->
+  | Dolmen_loop.Logic.Extension_not_found ext ->
     Loop.State.error st "@[<hv>The following extension was not recognized: '%s'.@ %s" ext
       "Please use a recognised extension or specify an input language on the command line"
 

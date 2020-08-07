@@ -27,40 +27,6 @@ type mode = [
 
 (** {1 Signatures} *)
 
-(** This modules defines the smallest signatures for a solver state that allow
-    to instantiate the {Typer.Make} functor. *)
-module type Typer = sig
-
-  type ty_state
-  (** The type of state used by the typer. *)
-
-  type t
-  (** The type for the global state. *)
-
-  val warn :
-    ?loc:Dolmen.Std.Loc.full -> t ->
-    ('a, Format.formatter, unit, t) format4 -> 'a
-  (** Emit a warning *)
-
-  val input_file_loc : t -> Dolmen.Std.Loc.file
-  (** CUrrent input file location meta-data. *)
-
-  val input_lang : t -> Parser.language option
-  (** The current input language. *)
-
-  val typecheck : t -> bool
-  (** Whether to type-check expressions. *)
-
-  val strict_typing : t -> bool
-  (** Whether to be strict about typing warnings/errors *)
-
-  val ty_state : t -> ty_state
-  (** Returns the typing state associated. *)
-
-  val set_ty_state : t -> ty_state -> t
-  (** Set the typing state. *)
-
-end
 
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Pipeline.Make} functor. *)
@@ -78,8 +44,8 @@ module type Pipeline = sig
 end
 
 (** This modules defines the smallest signatures for a solver state that allow
-    to instantiate the {Pipes.Make} functor. *)
-module type Pipes = sig
+    to instantiate the {Parser.Pipe} functor. *)
+module type Parser = sig
 
   type t
   (** The type of state *)
@@ -114,13 +80,13 @@ module type Pipes = sig
   val set_mode : t -> mode -> t
   (* Set the input mode. *)
 
-  val set_lang : t -> Parser.language -> t
+  val set_lang : t -> Logic.language -> t
   (** Set the input language. *)
 
   val input_mode : t -> mode option
   (** Return the current mode (if any). *)
 
-  val input_lang : t -> Parser.language option
+  val input_lang : t -> Logic.language option
   (** Return the input language (if any). *)
 
   val input_dir : t -> string
@@ -133,5 +99,52 @@ module type Pipes = sig
   val file_not_found :
     loc:Dolmen.Std.Loc.full -> dir:string -> file:string -> 'a
   (** Callback for when a file specified by the input source is not found. *)
+
+end
+
+(** This modules defines the smallest signatures for a solver state that allow
+    to instantiate the {Typer.Make} functor. *)
+module type Typer = sig
+
+  type ty_state
+  (** The type of state used by the typer. *)
+
+  type t
+  (** The type for the global state. *)
+
+  val warn :
+    ?loc:Dolmen.Std.Loc.full -> t ->
+    ('a, Format.formatter, unit, t) format4 -> 'a
+  (** Emit a warning *)
+
+  val input_file_loc : t -> Dolmen.Std.Loc.file
+  (** CUrrent input file location meta-data. *)
+
+  val input_lang : t -> Logic.language option
+  (** The current input language. *)
+
+  val typecheck : t -> bool
+  (** Whether to type-check expressions. *)
+
+  val strict_typing : t -> bool
+  (** Whether to be strict about typing warnings/errors *)
+
+  val ty_state : t -> ty_state
+  (** Returns the typing state associated. *)
+
+  val set_ty_state : t -> ty_state -> t
+  (** Set the typing state. *)
+
+end
+
+(** This modules defines the smallest signatures for a solver state that allow
+    to instantiate the {Typer.Pipe} functor. *)
+module type Typer_pipe = sig
+
+  type t
+  (** The type of state *)
+
+  val input_lang : t -> Logic.language option
+  (** Return the input language (if any). *)
 
 end

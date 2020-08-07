@@ -70,7 +70,7 @@ let mk_state
 (* ************************************************************************* *)
 
 (* Converter for input formats/languages *)
-let input_format_conv = Arg.enum Dolmen_loop.Parser.enum
+let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
 
 (* Converter for input file/stdin *)
 let input_to_string = function
@@ -247,7 +247,7 @@ let state =
   let in_lang =
     let doc = Format.asprintf
         "Set the input language to $(docv) (%s)."
-        (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Parser.enum) in
+        (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Logic.enum) in
     Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
   in
   let in_mode =

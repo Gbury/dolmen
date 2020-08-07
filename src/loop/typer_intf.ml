@@ -2,12 +2,9 @@
 
 (** Typer *)
 
+module type Pipe_types = sig
 
-(** This modules defines the smallest signatures for a typechecker that allow
-    to instantiate the {Pipes.Make} functor. *)
-module type Pipes = sig
-
-  type t
+  type state
 
   type ty
   type ty_var
@@ -19,57 +16,66 @@ module type Pipes = sig
 
   type formula
 
-  val typecheck : t -> bool
+end
+
+(** This modules defines the smallest signatures for a typechecker that allow
+    to instantiate the {Typer.Pipe} functor. *)
+module type Pipe_arg = sig
+
+  include Pipe_types
+
+  val typecheck :
+    state -> bool
 
   val reset :
-    t -> ?loc:Dolmen.Std.Loc.t -> unit -> t
+    state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
   val push :
-    t -> ?loc:Dolmen.Std.Loc.t -> int -> t
+    state -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val pop :
-    t -> ?loc:Dolmen.Std.Loc.t -> int -> t
+    state -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val set_logic :
-    t -> ?loc:Dolmen.Std.Loc.t -> string -> t
+    state -> ?loc:Dolmen.Std.Loc.t -> string -> state
 
   val defs :
-    t -> ?loc:Dolmen.Std.Loc.t ->
+    state -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.defs ->
-    t * [
+    state * [
      | `Type_def of Dolmen.Std.Id.t * ty_var list * ty
      | `Term_def of Dolmen.Std.Id.t * term_const * ty_var list * term_var list * term
     ] list
 
   val decls :
-    t -> ?loc:Dolmen.Std.Loc.t ->
+    state -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Statement.decls ->
-    t * [
+    state * [
       | `Type_decl of ty_const
       | `Term_decl of term_const
     ] list
 
   val terms :
-    t -> ?loc:Dolmen.Std.Loc.t ->
+    state -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
-    t * term list
+    state * term list
 
   val formula :
-    t -> ?loc:Dolmen.Std.Loc.t ->
+    state -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> goal:bool -> Dolmen.Std.Term.t ->
-    t * formula
+    state * formula
 
   val formulas :
-    t -> ?loc:Dolmen.Std.Loc.t ->
+    state -> ?loc:Dolmen.Std.Loc.t ->
     ?attr:Dolmen.Std.Term.t -> Dolmen.Std.Term.t list ->
-    t * formula list
+    state * formula list
 
 end
 
 (** This modules defines the result signature of the {Typer.Make} functor *)
 module type S = sig
 
-  type t
+  type state
   (** The type of state for a whole pipeline. *)
 
   type ty_state
@@ -90,8 +96,8 @@ module type S = sig
   type builtin_symbols
   (** The type of builint symbols for the type-checker. *)
 
-  include Pipes
-    with type t := t
+  include Pipe_arg
+    with type state := state
      and type ty := Dolmen.Std.Expr.ty
      and type ty_var := Dolmen.Std.Expr.ty_var
      and type ty_const := Dolmen.Std.Expr.ty_const
@@ -119,3 +125,92 @@ module type S = sig
       except Dimacs, and iCNF. *)
 
 end
+
+(** This modules defines the result signature of the {Typer.Pipe} functor *)
+module type Pipe_res = sig
+
+  include Pipe_types
+
+  (** {2 Types} *)
+
+  type +'a stmt = {
+    id          : Dolmen.Std.Id.t;
+    loc         : Dolmen.Std.Loc.t;
+    contents    : 'a;
+  }
+  (** Wrapper around statements. It records implicit type declarations. *)
+
+  type decl = [
+    | `Type_decl of ty_const
+    | `Term_decl of term_const
+  ]
+  (** The type of top-level type declarations. *)
+
+  type decls = [
+    | `Decls of decl list
+  ]
+  (** A list of type declarations. *)
+
+  type def = [
+    | `Type_def of Dolmen.Std.Id.t * ty_var list * ty
+    | `Term_def of Dolmen.Std.Id.t * term_const * ty_var list * term_var list * term
+  ]
+  (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
+
+  type defs = [
+    | `Defs of def list
+  ]
+  (** A list of definitions *)
+
+  type assume = [
+    | `Hyp of formula
+    | `Goal of formula
+    | `Clause of formula list
+  ]
+  (** The type of top-level assertion statements *)
+
+  type solve = [
+    | `Solve of formula list
+  ]
+  (** Top-level solve instruction *)
+
+  type get_info = [
+    | `Get_info of string
+    | `Get_option of string
+    | `Get_proof
+    | `Get_unsat_core
+    | `Get_unsat_assumptions
+    | `Get_model
+    | `Get_value of term list
+    | `Get_assignment
+    | `Get_assertions
+    | `Echo of string
+    | `Plain of Dolmen.Std.Statement.term
+  ]
+  (** Various info getters *)
+
+  type set_info = [
+    | `Set_logic of string
+    | `Set_info of Dolmen.Std.Statement.term
+    | `Set_option of Dolmen.Std.Statement.term
+  ]
+  (** Info setters *)
+
+  type stack_control = [
+    | `Pop of int
+    | `Push of int
+    | `Reset_assertions
+    | `Reset
+    | `Exit
+  ]
+  (** Stack control *)
+
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
+  (** The type of statements after typechecking *)
+
+  val typecheck : state * Dolmen.Std.Statement.t ->
+    [ `Continue of (state * typechecked stmt) | `Done of state ]
+  (** Typechecks a statement. *)
+
+end
+

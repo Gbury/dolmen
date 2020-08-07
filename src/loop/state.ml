@@ -11,13 +11,12 @@ type perm =
 
 exception File_not_found of Dolmen.Std.Loc.full * string * string
 
-exception Input_lang_changed of
-    Parser.language * Parser.language
+exception Input_lang_changed of Logic.language * Logic.language
 
 (* Type definition *)
 (* ************************************************************************* *)
 
-type lang = Parser.language
+type lang = Logic.language
 type ty_state = Typer.ty_state
 type solve_state = unit
 
@@ -135,7 +134,7 @@ let prelude _ = "prompt>"
 let set_lang_aux t l =
   let t = { t with input_lang = Some l; } in
   match l with
-  | Parser.Alt_ergo ->
+  | Logic.Alt_ergo ->
     let old_mode = input_mode t in
     let t = set_mode t `Full in
     begin match old_mode with

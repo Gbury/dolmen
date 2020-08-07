@@ -29,11 +29,39 @@ module type S = Typer_intf.S
 
 module Make
     (S : State_intf.Typer with type ty_state := ty_state)
-  : S with type t := S.t
+  : S with type state := S.t
        and type ty_state := ty_state
        and type env := T.env
        and type 'a fragment := 'a T.fragment
        and type error := T.error
        and type warning := T.warning
        and type builtin_symbols := T.builtin_symbols
+
+(** {2 Typechecker Pipe} *)
+
+module type Pipe_arg = Typer_intf.Pipe_arg
+module type Pipe_res = Typer_intf.Pipe_res
+
+module Pipe
+    (Expr : Expr_intf.S)
+    (State : State_intf.Typer_pipe)
+    (Typer : Pipe_arg
+     with type state := State.t
+      and type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_const := Expr.ty_const
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_const := Expr.term_const
+      and type formula := Expr.formula)
+  : Pipe_res
+    with type state := State.t
+     and type ty := Expr.ty
+     and type ty_var := Expr.ty_var
+     and type ty_const := Expr.ty_const
+     and type term := Expr.term
+     and type term_var := Expr.term_var
+     and type term_const := Expr.term_const
+     and type formula := Expr.formula
+
 

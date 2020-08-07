@@ -1,9 +1,15 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module Typer = Dolmen_loop.Typer.Make(State)
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
-module Pipe = Dolmen_loop.Pipes.Make(Dolmen.Std.Expr)(State)(Typer)
+
+module Parser = Dolmen_loop.Parser.Pipe(Dolmen.Std.Expr)(State)
+
+module Typer = struct
+  module T = Dolmen_loop.Typer.Make(State)
+  include T
+  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(State)(T)
+end
 
 exception Finished of (State.t, string) result
 
@@ -85,11 +91,11 @@ let process path opt_contents =
       export_lang = [];
     } in
   try
-    let st, g = Pipe.parse [] st in
+    let st, g = Parser.parse [] st in
     let open Pipeline in
     let st = run ~finally g st (
-        (fix (apply ~name:"expand" Pipe.expand) (
-            (apply ~name:"typecheck" Pipe.typecheck)
+        (fix (apply ~name:"expand" Parser.expand) (
+            (apply ~name:"typecheck" Typer.typecheck)
             @>|> ((apply fst) @>>> _end)
           )
         )

@@ -33,15 +33,15 @@ let () =
     | `Ok opt -> opt
   in
   let st, g =
-    try Loop.Pipe.parse [] st
+    try Loop.Parser.parse [] st
     with exn -> handle_exn st exn
   in
   let st =
     let open Loop.Pipeline in
     run ~finally g st (
-      (fix (apply ~name:"expand" Loop.Pipe.expand) (
+      (fix (apply ~name:"expand" Loop.Parser.expand) (
           (apply ~name:"debug" debug_pipe)
-          @>>> (apply ~name:"typecheck" Loop.Pipe.typecheck)
+          @>>> (apply ~name:"typecheck" Loop.Typer.typecheck)
           @>|> ((apply fst) @>>> _end)
         )
       )
