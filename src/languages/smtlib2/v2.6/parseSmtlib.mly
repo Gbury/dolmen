@@ -143,8 +143,8 @@ term:
   | s=qual_identifier
     { let loc = L.mk_pos $startpos $endpos in
       match s with
-      | `NoAs f -> T.apply ~loc f []
-      | `As (f,ty) -> T.colon ~loc (T.apply ~loc f []) ty }
+      | `NoAs f -> f
+      | `As (f,ty) -> T.colon ~loc f ty }
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
