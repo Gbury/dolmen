@@ -62,8 +62,12 @@ module Field = struct
       | { Id.ns = Id.Attr; Id.name = ":smt-lib-version"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-                Id.ns = Id.Value Id.Real; Id.name = version }; _ } ] ->
-            Ok (Lang_version, version)
+              Id.ns = Id.Value Id.Real; Id.name = version }; _ } ] ->
+            if String.length version <> 3 ||
+               version.[0] <> '2' || version.[1] <> '.' then
+              Error (loc, ":smt-lib-version number must be in the form 2.X")
+            else
+              Ok (Lang_version, version)
           | [] -> Error (loc, "empty value for :smt-lib-version")
           | { Ast.loc; _ } :: _ -> Error (loc, "Expected a version number")
         end
@@ -92,10 +96,12 @@ module Field = struct
       | { Id.ns = Id.Attr; Id.name = ":category"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Id.Value Id.String; Id.name = category }; _ } ] ->
+              Id.ns = Id.Value Id.String;
+              Id.name = (("crafted"|"random"|"industrial") as category) }; _ } ] ->
             Ok (Problem_category, category)
           | [] -> Error (loc, "empty value for :category")
-          | { Ast.loc; _ } :: _ -> Error (loc, "Expected a single string in quotes")
+          | { Ast.loc; _ } :: _ ->
+            Error (loc, {|Expected "crafted", "random", or "industrial" (in quotes)|})
         end
 
 
