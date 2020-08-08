@@ -153,12 +153,15 @@ let mem h f =
 (* Required headers for languages *)
 (* ************************************************************************ *)
 
-let smtlib2_fields_required : Field.t list = [
+let smtlib2_required : Field.t list = [
   Lang_version;
   Problem_source;
-  Problem_license;
   Problem_category;
   (* Problem_status is checked for every check-sat *)
+]
+
+let smtlib2_wanted : Field.t list = [
+  Problem_license;
 ]
 
 
@@ -171,11 +174,26 @@ module Pipe(State : State_intf.Header_pipe
 
   (* Final check for headers *)
 
+  let check_wanted st h =
+    let lang = State.input_lang st in
+    let wanted =
+      match lang with
+      | Some Logic.Smtlib2 _ -> smtlib2_wanted
+      | _ -> []
+    in
+    match List.filter (fun f -> not (mem h f)) wanted with
+    | [] -> st
+    | missing ->
+      let pp_sep fmt () = Format.fprintf fmt ",@ " in
+      State.warn st "The following header fields are missing and thus \
+                     default values will be assumed: %a"
+        (Format.pp_print_list ~pp_sep (Field.print ?lang)) missing
+
   let check_required st h =
     let lang = State.input_lang st in
     let required =
       match lang with
-      | Some Logic.Smtlib2 _ -> smtlib2_fields_required
+      | Some Logic.Smtlib2 _ -> smtlib2_required
       | _ -> []
     in
     match List.filter (fun f -> not (mem h f)) required with
@@ -189,7 +207,9 @@ module Pipe(State : State_intf.Header_pipe
     if not (State.check_headers st) then st
     else begin
       let h = State.header_state st in
-      check_required st h
+      let st = check_wanted st h in
+      let st = check_required st h in
+      st
     end
 
 

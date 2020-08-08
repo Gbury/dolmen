@@ -159,6 +159,12 @@ module type Header_pipe = sig
   type header_state
   (** The type of state used for the header check*)
 
+  val warn :
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> ('a, Format.formatter, unit, t) format4 ->
+    'a
+  (** Emit an error. *)
+
   val error :
     ?loc:Dolmen.Std.Loc.full ->
     t -> ('a, Format.formatter, unit, t) format4 ->
