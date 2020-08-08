@@ -13,7 +13,7 @@
     )
   (modules
     ; Interfaces
-    Expr_intf Typer_intf State_intf
+    Expr_intf Typer_intf Headers_intf State_intf
     ; Implementations
-    Logic State Parser Typer Pipeline)
+    Logic State Parser Typer Headers Pipeline)
 )

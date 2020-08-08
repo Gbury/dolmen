@@ -6,7 +6,7 @@
 
 module Pipe
     (Expr : Expr_intf.S)
-    (State : State_intf.Parser
+    (State : State_intf.Parser_pipe
      with type term := Expr.term)
 = struct
 
@@ -94,6 +94,8 @@ module Pipe
   (* Expand dolmen statements *)
   (* ************************************************************************ *)
 
+  let merge _ st = st
+
   let gen_of_list l =
     let l = ref l in
     (fun () -> match !l with
@@ -105,7 +107,7 @@ module Pipe
     State.start `Include;
     let ret = match c with
       | { S.descr = S.Pack l; _ } ->
-        st, `Gen (true, Gen.of_list l)
+        st, `Gen (merge, Gen.of_list l)
       (* TODO: filter the statements by passing some stions *)
       | { S.descr = S.Include file; _ } ->
         let loc = c.loc in
@@ -124,11 +126,11 @@ module Pipe
               | Some `Incremental ->
                 let lang, gen, cl = Logic.parse_input ?language (`File file) in
                 let st = State.set_lang st lang in
-                st, `Gen (true, gen_finally gen cl)
+                st, `Gen (merge, gen_finally gen cl)
               | Some `Full ->
                 let lang, l = Logic.parse_file ?language file in
                 let st = State.set_lang st lang in
-                st, `Gen (true, gen_of_list l)
+                st, `Gen (merge, gen_of_list l)
             end
         end
       | _ -> (st, `Ok)

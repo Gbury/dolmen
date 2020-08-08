@@ -4,7 +4,7 @@
 (** This module provides convenient pipes for parsing and dealing with inlcudes. *)
 module Pipe
     (Expr : Expr_intf.S)
-    (State : State_intf.Parser
+    (State : State_intf.Parser_pipe
      with type term := Expr.term)
   : sig
 
@@ -18,7 +18,7 @@ module Pipe
       together with a statement generator. *)
 
   val expand : State.t * Dolmen.Std.Statement.t ->
-    State.t * [ `Ok | `Gen of bool * Dolmen.Std.Statement.t Gen.t ]
+    State.t * [ `Ok | `Gen of (State.t -> State.t -> State.t) * Dolmen.Std.Statement.t Gen.t ]
   (** Expand statements (such as includes). Returns the new state, and either:
       - [ `Ok ], which means the statement can be propagated as is
       - [ `Gen (flat, g) ], if the statement expands into a generator [g]. The bool [flat]

@@ -4,7 +4,7 @@
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
 
 module Parser = Dolmen_loop.Parser.Pipe(Dolmen.Std.Expr)(State)
-
+module Header = Dolmen_loop.Headers.Pipe(State)
 module Typer = struct
   module T = Dolmen_loop.Typer.Make(State)
   include T
@@ -84,6 +84,9 @@ let process path opt_contents =
         | Some contents -> `Raw (file, contents)
       end;
       input_file_loc = Dolmen.Std.Loc.mk_file "";
+      header_check = true;
+      header_licenses = [];
+      header_state = Dolmen_loop.Headers.empty;
       type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;
       type_strict = true;

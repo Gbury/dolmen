@@ -25,7 +25,10 @@ module Make(State : State_intf.Pipeline) : sig
   type ('a, 'b) t
   (** The type of pipelines from values of type ['a] to values of type ['b]. *)
 
-  type 'a fix = [ `Ok | `Gen of bool * 'a Gen.t ]
+  type 'st merge = 'st -> 'st -> 'st
+  (** Merge function used at the end of a fixpoint to get the resulting state. *)
+
+  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a Gen.t ]
   (** Type used to fixpoint expanding statements such as includes. *)
 
   type ('a, 'b) cont = [ `Continue of 'a | `Done of 'b ]
@@ -63,7 +66,7 @@ module Make(State : State_intf.Pipeline) : sig
   (** Concatenate two pipeline. Whenever possible it is best to use [(@>>>)],
       which creates tail-rec pipelines. *)
 
-  val fix : ('a * 'b, 'a * 'b fix) op -> ('a * 'b, 'a) t -> ('a * 'b, 'a) t
+  val fix : ('a * 'b, 'a * ('a, 'b) fix) op -> ('a * 'b, 'a) t -> ('a * 'b, 'a) t
   (** Perform a fixpoint expansion *)
 
 

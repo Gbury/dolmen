@@ -27,7 +27,6 @@ type mode = [
 
 (** {1 Signatures} *)
 
-
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Pipeline.Make} functor. *)
 module type Pipeline = sig
@@ -45,7 +44,7 @@ end
 
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Parser.Pipe} functor. *)
-module type Parser = sig
+module type Parser_pipe = sig
 
   type t
   (** The type of state *)
@@ -146,5 +145,42 @@ module type Typer_pipe = sig
 
   val input_lang : t -> Logic.language option
   (** Return the input language (if any). *)
+
+end
+
+
+(** This modules defines the smallest signatures for a solver state that allow
+    to instantiate the {Headers.Pipe} functor. *)
+module type Header_pipe = sig
+
+  type t
+  (** The type of state *)
+
+  type header_state
+  (** The type of state used for the header check*)
+
+  val error :
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> ('a, Format.formatter, unit, t) format4 ->
+    'a
+  (** Emit an error. *)
+
+  val input_file_loc : t -> Dolmen.Std.Loc.file
+  (** CUrrent input file location meta-data. *)
+
+  val input_lang : t -> Logic.language option
+  (** Return the input language (if any). *)
+
+  val header_state : t -> header_state
+  (** Get the header-check state. *)
+
+  val set_header_state : t -> header_state -> t
+  (** Set the header-check state. *)
+
+  val check_headers : t -> bool
+  (** Whether to check the headers. *)
+
+  val allowed_licenses : t -> string list
+  (** Licenses allowed. An empty list means all licenses are allowed. *)
 
 end

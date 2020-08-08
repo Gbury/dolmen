@@ -41,12 +41,14 @@ let () =
     run ~finally g st (
       (fix (apply ~name:"expand" Loop.Parser.expand) (
           (apply ~name:"debug" debug_pipe)
+          @>>> (apply ~name:"headers" Loop.Header.inspect)
           @>>> (apply ~name:"typecheck" Loop.Typer.typecheck)
           @>|> ((apply fst) @>>> _end)
         )
       )
     )
   in
+  let st = Loop.Header.check st in
   let _st = Dolmen_loop.State.flush st () in
   ()
 

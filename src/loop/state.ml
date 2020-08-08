@@ -45,6 +45,11 @@ type 'solve state = {
 
   input_file_loc    : Dolmen.Std.Loc.file;
 
+  (* Header check *)
+  header_check      : bool;
+  header_state      : Headers.t;
+  header_licenses   : string list;
+
   (* Typechecking state *)
   type_state        : ty_state;
   type_check        : bool;
@@ -115,6 +120,12 @@ let input_file_loc st = st.input_file_loc
 let set_input_file_loc st f = { st with input_file_loc = f; }
 
 let set_mode t m = { t with input_mode = Some m; }
+
+let header_state { header_state; _ } = header_state
+let set_header_state st header_state = { st with header_state; }
+
+let check_headers { header_check; _ } = header_check
+let allowed_licenses { header_licenses; _ } = header_licenses
 
 let ty_state { type_state; _ } = type_state
 let set_ty_state st type_state = { st with type_state; }

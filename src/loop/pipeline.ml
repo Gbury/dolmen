@@ -53,7 +53,8 @@ module Make(State : State_intf.Pipeline) = struct
   (* ************************************************************************ *)
 
   type 'a gen = 'a Gen.t
-  type 'a fix = [ `Ok | `Gen of bool * 'a gen ]
+  type 'st merge = 'st -> 'st -> 'st
+  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a gen ]
   type ('a, 'b) cont = [ `Continue of 'a | `Done of 'b ]
 
   type ('a, 'b) op = {
@@ -79,7 +80,7 @@ module Make(State : State_intf.Pipeline) = struct
         ('a, 'b) t * ('b, 'c) t -> ('a, 'c) t
     (* Fixpoint expansion *)
     | Fix :
-        ('st * 'a, 'st * 'a fix) op * ('st * 'a, 'st) t -> ('st * 'a, 'st) t
+        ('st * 'a, 'st * ('st, 'a) fix) op * ('st * 'a, 'st) t -> ('st * 'a, 'st) t
 
   (* Creating pipelines. *)
 
@@ -117,10 +118,10 @@ module Make(State : State_intf.Pipeline) = struct
       let st, y = x in
       begin match op.f x with
         | st', `Ok -> eval t (st', y)
-        | st', `Gen (flat, g) ->
+        | st', `Gen (merge, g) ->
           let aux st c = eval pipe (st, c) in
           let st'' = Gen.fold aux st' g in
-          if flat then st'' else st
+          merge st st''
       end
 
   (* Aux function to eval a pipeline on the current value of a generator. *)

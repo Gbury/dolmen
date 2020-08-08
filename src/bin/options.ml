@@ -31,6 +31,7 @@ let mk_state
     gc gc_opt bt colors
     time_limit size_limit
     input_lang input_mode input
+    header_check header_licenses
     type_check type_strict
     debug context max_warn
   =
@@ -54,8 +55,10 @@ let mk_state
 
     input_dir; input_lang;
     input_mode; input_source;
-
     input_file_loc = Dolmen.Std.Loc.mk_file "";
+
+    header_check; header_licenses;
+    header_state = Dolmen_loop.Headers.empty;
 
     type_check; type_strict;
     type_state = Dolmen_loop.Typer.new_state ();
@@ -262,6 +265,16 @@ let state =
                dolmen will enter interactive mode and read on stdin." in
     Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
   in
+  let header_check =
+    let doc = "If true, then the presence of headers will be checked in the
+               input file (and errors raised if they are not present)." in
+    Arg.(value & opt bool false & info ["check-headers"] ~doc ~docs)
+  in
+  let header_licenses =
+    let doc = "Set the allowed set of licenses in the headers.
+               An empty list means allow everything." in
+    Arg.(value & opt (list string) [] & info ["header-licenses"] ~doc ~docs)
+  in
   let typing =
     let doc = "Decide whether to type-check input expressions. If false, only parsing
                is done. " in
@@ -297,6 +310,7 @@ let state =
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
+        header_check $ header_licenses $
         typing $ strict $ debug $ context $ max_warn)
 
 
