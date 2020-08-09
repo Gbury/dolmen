@@ -86,6 +86,7 @@ let process path opt_contents =
       input_file_loc = Dolmen.Std.Loc.mk_file "";
       header_check = true;
       header_licenses = [];
+      header_lang_version = None;
       header_state = Dolmen_loop.Headers.empty;
       type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;

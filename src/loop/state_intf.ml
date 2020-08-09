@@ -189,4 +189,7 @@ module type Header_pipe = sig
   val allowed_licenses : t -> string list
   (** Licenses allowed. An empty list means all licenses are allowed. *)
 
+  val allowed_lang_version : t -> string option
+  (** Language version number allowed. [None] means allowing everything. *)
+
 end

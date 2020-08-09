@@ -32,6 +32,7 @@ let mk_state
     time_limit size_limit
     input_lang input_mode input
     header_check header_licenses
+    header_lang_version
     type_check type_strict
     debug context max_warn
   =
@@ -57,7 +58,7 @@ let mk_state
     input_mode; input_source;
     input_file_loc = Dolmen.Std.Loc.mk_file "";
 
-    header_check; header_licenses;
+    header_check; header_licenses; header_lang_version;
     header_state = Dolmen_loop.Headers.empty;
 
     type_check; type_strict;
@@ -275,6 +276,11 @@ let state =
                An empty list means allow everything." in
     Arg.(value & opt (list string) [] & info ["header-licenses"] ~doc ~docs)
   in
+  let header_lang_version =
+    let doc = "Set the only allowed language verison for headers. If not set,
+               all conforming version numbers are allowed." in
+    Arg.(value & opt (some string) None & info ["header-lang-version"] ~docs ~doc)
+  in
   let typing =
     let doc = "Decide whether to type-check input expressions. If false, only parsing
                is done. " in
@@ -310,7 +316,7 @@ let state =
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $
         time $ size $ in_lang $ in_mode $ input $
-        header_check $ header_licenses $
+        header_check $ header_licenses $ header_lang_version $
         typing $ strict $ debug $ context $ max_warn)
 
 

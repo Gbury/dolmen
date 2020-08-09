@@ -49,6 +49,7 @@ type 'solve state = {
   header_check      : bool;
   header_state      : Headers.t;
   header_licenses   : string list;
+  header_lang_version : string option;
 
   (* Typechecking state *)
   type_state        : ty_state;
@@ -126,6 +127,7 @@ let set_header_state st header_state = { st with header_state; }
 
 let check_headers { header_check; _ } = header_check
 let allowed_licenses { header_licenses; _ } = header_licenses
+let allowed_lang_version { header_lang_version; _ } = header_lang_version
 
 let ty_state { type_state; _ } = type_state
 let set_ty_state st type_state = { st with type_state; }

@@ -49,6 +49,19 @@ module Field = struct
 
   module Smtlib2 = struct
 
+    let check_version_number version =
+      if String.length version >= 3 &&
+         String.sub version 0 2 = "2." then begin
+        try
+          let s = String.sub version 2 (String.length version - 2) in
+          let _ = int_of_string s in
+          true
+        with Failure _ ->
+          false
+      end else
+        false
+
+
     let rec parse = function
       | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, args); loc; _ } ->
         parse_aux loc s args
@@ -63,11 +76,10 @@ module Field = struct
         begin match args with
           | [ { Ast.term = Ast.Symbol {
               Id.ns = Id.Value Id.Real; Id.name = version }; _ } ] ->
-            if String.length version <> 3 ||
-               version.[0] <> '2' || version.[1] <> '.' then
-              Error (loc, ":smt-lib-version number must be in the form 2.X")
+            if check_version_number version then
+                Ok (Lang_version, version)
             else
-              Ok (Lang_version, version)
+              Error (loc, ":smt-lib-version number must be in the form 2.X")
           | [] -> Error (loc, "empty value for :smt-lib-version")
           | { Ast.loc; _ } :: _ -> Error (loc, "Expected a version number")
         end
@@ -228,6 +240,13 @@ module Pipe(State : State_intf.Header_pipe
 
   let check_header st loc field value =
     match (field : Field.t) with
+    | Lang_version ->
+      begin match State.allowed_lang_version st with
+        | None -> st
+        | Some v ->
+          if v = value then st
+          else error st loc "This language version must be: %s" v
+      end
     | Problem_license ->
       begin match State.allowed_licenses st with
         | [] -> st
