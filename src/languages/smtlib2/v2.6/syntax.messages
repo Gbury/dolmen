@@ -348,7 +348,8 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN pattern_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+'_' is not a valid pattern, but a reserved keyword. Patterns should be
+variables, nullary constructors, or n-ary constructor applications.
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ##
