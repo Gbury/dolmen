@@ -348,7 +348,7 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN pattern_symbol
 ##
 
-'_' is not a valid pattern, but a reserved keyword. Patterns should be
+"(_)" is not a valid pattern, but a reserved keyword. Patterns should be
 variables, nullary constructors, or n-ary constructor applications.
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
@@ -361,7 +361,8 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+'_' is not a valid pattern, but a reserved keyword. Patterns should be
+variables, nullary constructors, or n-ary constructor applications.
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -422,7 +423,8 @@ term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+'_' is not a valid pattern, but a reserved keyword. Patterns should be
+variables, nullary constructors, or n-ary constructor applications.
 
 term: OPEN MATCH SYMBOL OPEN UNDERSCORE
 ##
@@ -531,7 +533,8 @@ term: OPEN OPEN UNDERSCORE UNDERSCORE
 ## OPEN UNDERSCORE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+'_' is not a valid pattern, but a reserved keyword. Patterns should be
+variables, nullary constructors, or n-ary constructor applications.
 
 term: OPEN STR
 ##
