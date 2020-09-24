@@ -69,8 +69,8 @@ let exn st = function
         (if l.Dolmen.Std.Loc.start_line = 1 &&
             l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
         Dolmen.Std.Loc.fmt_hint l;
-    Loop.State.error ~loc: { file; loc; } st "%s@."
-      (match msg with "" -> "Syntax error" | x -> x)
+    Loop.State.error ~loc: { file; loc; } st "%a@."
+      Format.pp_print_text (match msg with "" -> "Syntax error" | x -> x)
 
 
   (* Typing errors *)

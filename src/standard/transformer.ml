@@ -66,7 +66,7 @@ module Make
     match String.trim (Ty.error s) with
     | exception Not_found -> ""
     | "<YOUR SYNTAX ERROR MESSAGE HERE>" -> ""
-    | msg -> msg
+    | msg -> String.map (function '\n' -> ' ' | c -> c) msg
 
 
   (* Parsing loop
