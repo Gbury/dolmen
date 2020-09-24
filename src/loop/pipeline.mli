@@ -36,6 +36,10 @@ module Make(State : State_intf.Pipeline) : sig
   type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
   (** Type used for continuation operators, allowing to leave the pipeline early. *)
 
+  type 'st k_exn = { k : 'a. 'st -> Printexc.raw_backtrace -> exn -> 'a; }
+  (** Exception continuation to provide when evaluating a pipeline manually,
+      in order to evaluate an exception handler with the most up-to-date state. *)
+
 
   (** {2 Creating operators} *)
 
@@ -78,7 +82,7 @@ module Make(State : State_intf.Pipeline) : sig
 
   (** {2 Evaluating pipelines} *)
 
-  val eval : ('st, 'a, 'b) t -> 'st -> 'a -> 'st * 'b
+  val eval : exn:'st k_exn -> ('st, 'a, 'b) t -> 'st -> 'a -> 'st * 'b
   (** Evaluate a pipeline to a function. *)
 
   val run :

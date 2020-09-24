@@ -56,6 +56,7 @@ module Make(State : State_intf.Pipeline) = struct
   type 'st merge = 'st -> 'st -> 'st
   type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
   type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a gen ]
+  type 'st k_exn = { k : 'a. 'st -> Printexc.raw_backtrace -> exn -> 'a; }
 
   type ('st, 'a, 'b) op = {
     name : string;
@@ -109,47 +110,61 @@ module Make(State : State_intf.Pipeline) = struct
 
   let fix op t = Fix(op, t)
 
+  (* Eval an operator *)
+  let eval_op ~exn op st x =
+    try op.f st x
+    with e ->
+      let bt = Printexc.get_raw_backtrace () in
+      exn.k st bt e
+
   (* Eval a pipeline into the corresponding function *)
   let rec eval : type st a b.
-    (st, a, b) t -> st -> a -> st * b =
-    fun pipe st x ->
+    exn:st k_exn -> (st, a, b) t -> st -> a -> st * b =
+    fun ~exn pipe st x ->
     match pipe with
     | End -> st, x
     | Map (op, t) ->
-      let st', y = op.f st x in
-      eval t st' y
+      let st', y = eval_op ~exn op st x in
+      eval ~exn t st' y
     | Cont (op, t) ->
-      let st', y = op.f st x in
+      let st', y = eval_op ~exn op st x in
       begin match y with
-        | `Continue res -> eval t st' res
+        | `Continue res -> eval ~exn t st' res
         | `Done res -> st', res
       end
     | Concat (t, t') ->
-      let st', y = eval t st x in
-      eval t' st' y
+      let st', y = eval ~exn t st x in
+      eval ~exn t' st' y
     | Fix (op, t) ->
-      let st', y = op.f st x in
+      let st', y = eval_op ~exn op st x in
       begin match y with
-        | `Ok -> eval t st' x
+        | `Ok -> eval ~exn t st' x
         | `Gen (merge, g) ->
-          let aux st c =
-            let st', () = eval pipe st c in
-            st'
-          in
-          let st'' = Gen.fold aux st' g in
+          let st'' = eval_gen_fold ~exn pipe st' g in
           let st''' = merge st st'' in
           st''', ()
       end
 
+  and eval_gen_fold : type st a.
+    exn: st k_exn -> (st, a, unit) t -> st -> a gen -> st =
+    fun ~exn pipe st g ->
+    match g () with
+    | None -> st
+    | Some x ->
+      let st', () = eval ~exn pipe st x in
+      eval_gen_fold ~exn pipe st' g
+    | exception e ->
+      let bt = Printexc.get_raw_backtrace () in
+      exn.k st bt e
+
   (* Aux function to eval a pipeline on the current value of a generator. *)
-  let run_aux : type st a b.
-    (st, a, b) t ->
-    (st -> a option) ->
-    st -> (st * b) option =
-    fun pipe g st ->
+  let run_aux ~exn pipe g st =
     match g st with
     | None -> None
-    | Some x -> Some (eval pipe st x)
+    | Some x -> Some (eval ~exn pipe st x)
+    | exception e ->
+      let bt = Printexc.get_raw_backtrace () in
+      exn.k st bt e
 
   (* Effectively run a pipeline on all values that come from a generator.
      Time/size limits apply for the complete evaluation of each input
@@ -159,30 +174,64 @@ module Make(State : State_intf.Pipeline) = struct
     finally:(State.t -> exn option -> State.t) ->
     (State.t -> a option) -> State.t -> (State.t, a, unit) t -> State.t
     = fun ~finally g st pipe ->
+      let exception Exn of State.t * Printexc.raw_backtrace * exn in
       let time = State.time_limit st in
       let size = State.size_limit st in
       let al = setup_alarm time size in
+      let exn = { k = fun st bt e ->
+          (* delete alamr as soon as possible *)
+          let () = delete_alarm al in
+          (* go the the correct handler *)
+          raise (Exn (st, bt, e));
+        }
+      in
       begin
-        match run_aux pipe g st with
+        match run_aux ~exn pipe g st with
+
+        (* End of the run, yay ! *)
         | None ->
           let () = delete_alarm al in
           st
+
+        (* Regular case, we finished running the pipeline on one input
+           value, let's get to the next one. *)
         | Some (st', ()) ->
           let () = delete_alarm al in
           let st'' = try finally st' None with _ -> st' in
           run ~finally g st'' pipe
-        | exception exn ->
+
+        (* "Normal" exception case: the exn was raised by an operator, and caught
+           then re-raised by the {exn} cotinuation passed to run_aux *)
+        | exception Exn (st, bt, e) ->
+          (* Flush stdout and print a newline in case the exn was
+             raised in the middle of printing *)
+          Format.pp_print_flush Format.std_formatter ();
+          Format.pp_print_flush Format.err_formatter ();
+          (* Print the backtrace if requested *)
+          if Printexc.backtrace_status () then
+            Printexc.print_raw_backtrace stdout bt;
+          (* Go on running the rest of the pipeline. *)
+          let st' = finally st (Some e) in
+          run ~finally g st' pipe
+
+        (* Exception case for exceptions, that can realisically occur for all
+           asynchronous exceptions, or if some operator was not properly wrapped.
+           In this error case, we might use a rather old and outdate state, but
+           this should not happen often, and should not matter for asynchronous
+           exceptions. *)
+        | exception e ->
           let bt = Printexc.get_raw_backtrace () in
           (* delete alarm *)
           let () = delete_alarm al in
           (* Flush stdout and print a newline in case the exn was
              raised in the middle of printing *)
           Format.pp_print_flush Format.std_formatter ();
+          Format.pp_print_flush Format.err_formatter ();
           (* Print the backtrace if requested *)
           if Printexc.backtrace_status () then
             Printexc.print_raw_backtrace stdout bt;
           (* Go on running the rest of the pipeline. *)
-          let st' = finally st (Some exn) in
+          let st' = finally st (Some e) in
           run ~finally g st' pipe
       end
 
