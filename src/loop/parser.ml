@@ -103,7 +103,7 @@ module Pipe
        | x :: r -> l := r; Some x
     )
 
-  let expand (st, c) =
+  let expand st c =
     State.start `Include;
     let ret = match c with
       | { S.descr = S.Pack l; _ } ->

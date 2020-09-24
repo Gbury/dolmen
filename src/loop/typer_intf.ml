@@ -208,8 +208,8 @@ module type Pipe_res = sig
   type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
   (** The type of statements after typechecking *)
 
-  val typecheck : state * Dolmen.Std.Statement.t ->
-    [ `Continue of (state * typechecked stmt) | `Done of state ]
+  val typecheck : state -> Dolmen.Std.Statement.t ->
+    state * [ `Continue of typechecked stmt | `Done of unit ]
   (** Typechecks a statement. *)
 
 end

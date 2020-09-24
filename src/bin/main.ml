@@ -2,6 +2,10 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
 let handle_exn st exn =
+  if st.Loop.State.debug then
+    Format.eprintf "%a@\n%s@."
+      Loop.State.debug st
+      (Printexc.to_string exn);
   let () = Errors.exn st exn in
   exit 1
 
@@ -10,10 +14,12 @@ let finally st e =
   | None -> st
   | Some exn -> handle_exn st exn
 
-let debug_pipe ((st, c) as res) =
+let debug_pipe st c =
   if st.Loop.State.debug then
-    Format.eprintf "%a@." Dolmen.Std.Statement.print c;
-  res
+    Format.eprintf "%a@\n%a@."
+      Loop.State.debug st
+      Dolmen.Std.Statement.print c;
+  st, c
 
 let () =
   let man = [
@@ -39,11 +45,11 @@ let () =
   let st =
     let open Loop.Pipeline in
     run ~finally g st (
-      (fix (apply ~name:"expand" Loop.Parser.expand) (
-          (apply ~name:"debug" debug_pipe)
-          @>>> (apply ~name:"headers" Loop.Header.inspect)
-          @>>> (apply ~name:"typecheck" Loop.Typer.typecheck)
-          @>|> ((apply fst) @>>> _end)
+      (fix (op ~name:"expand" Loop.Parser.expand) (
+          (op ~name:"debug" debug_pipe)
+          @>>> (op ~name:"headers" Loop.Header.inspect)
+          @>>> (op ~name:"typecheck" Loop.Typer.typecheck)
+          @>|> (op (fun st _ -> st, ())) @>>> _end
         )
       )
     )

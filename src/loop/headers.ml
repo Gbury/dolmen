@@ -256,7 +256,7 @@ module Pipe(State : State_intf.Header_pipe
       end
     | _ -> st
 
-  let inspect (st, c) =
+  let inspect st c =
     if not (State.check_headers st) then (st, c)
     else begin
       let lang = State.input_lang st in

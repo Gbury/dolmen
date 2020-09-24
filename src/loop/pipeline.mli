@@ -19,11 +19,13 @@ module Make(State : State_intf.Pipeline) : sig
 
   (** {2 Type definitions } *)
 
-  type ('a, 'b) op
-  (** An operator from values of type ['a] to value sof type ['b]. *)
+  type ('st, 'a, 'b) op
+  (** An operator from values of type ['a] to value sof type ['b],
+      and where a state value of type ['st] is carried throughout. *)
 
-  type ('a, 'b) t
-  (** The type of pipelines from values of type ['a] to values of type ['b]. *)
+  type ('st, 'a, 'b) t
+  (** The type of pipelines from values of type ['a] to values of type ['b],
+      with state values of type ['st]. *)
 
   type 'st merge = 'st -> 'st -> 'st
   (** Merge function used at the end of a fixpoint to get the resulting state. *)
@@ -31,55 +33,58 @@ module Make(State : State_intf.Pipeline) : sig
   type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a Gen.t ]
   (** Type used to fixpoint expanding statements such as includes. *)
 
-  type ('a, 'b) cont = [ `Continue of 'a | `Done of 'b ]
+  type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
   (** Type used for continuation operators, allowing to leave the pipeline early. *)
 
 
   (** {2 Creating operators} *)
 
-  val apply : ?name:string -> ('a -> 'b) -> ('a, 'b) op
+  val op : ?name:string -> ('st -> 'a -> 'st * 'b) -> ('st, 'a, 'b) op
+  (** Base constructor function for operators. *)
+
+  val apply : ?name:string -> ('a -> 'b) -> (_, 'a, 'b) op
   (** Create an operator from a function *)
+
+  val iter_ : ?name:string -> ('a -> unit) -> (_, 'a, 'a) op
+  (** Perform the function's side-effect and return the same input. *)
 
   val f_map :
     ?name:string ->
-    ?test:('a -> bool) ->
-    ('a * 'b -> 'a * 'c) ->
-    ('a * 'b, ('a * 'c, 'a) cont) op
+    ?test:('st -> 'a -> bool) ->
+    ('st -> 'a -> 'st * 'b) ->
+    ('st, 'a, ('a, 'b) cont) op
   (** TODO: doc *)
 
-  val iter_ : ?name:string -> ('a -> unit) -> ('a, 'a) op
-  (** Perform the function's side-effect and return the same input. *)
 
 
   (** {2 Creating pipelines} *)
 
-  val _end : ('a, 'a) t
+  val _end : (_, 'a, 'a) t
 
-  val (@>>>) : ('a, 'b) op -> ('b, 'c) t -> ('a, 'c) t
+  val (@>>>) : ('st, 'a, 'b) op -> ('st, 'b, 'c) t -> ('st, 'a, 'c) t
   (** Add an operator at the beginning of a pipeline. *)
 
-  val (@>|>) : ('a, ('b, 'c) cont) op -> ('b, 'c) t -> ('a, 'c) t
+  val (@>|>) : ('st, 'a, ('b, 'c) cont) op -> ('st, 'c, 'b) t -> ('st, 'a, 'b) t
   (** Add a continuation operator, allowing to stop evaluation of the
       pipeline early. *)
 
-  val (@|||) : ('a, 'b) t -> ('b, 'c) t -> ('a, 'c) t
+  val (@|||) : ('st, 'a, 'b) t -> ('st, 'b, 'c) t -> ('st, 'a, 'c) t
   (** Concatenate two pipeline. Whenever possible it is best to use [(@>>>)],
       which creates tail-rec pipelines. *)
 
-  val fix : ('a * 'b, 'a * ('a, 'b) fix) op -> ('a * 'b, 'a) t -> ('a * 'b, 'a) t
+  val fix : ('st, 'a, ('st, 'a) fix) op -> ('st, 'a, unit) t -> ('st, 'a, unit) t
   (** Perform a fixpoint expansion *)
 
 
   (** {2 Evaluating pipelines} *)
 
-  val eval : ('a, 'b) t -> 'a -> 'b
+  val eval : ('st, 'a, 'b) t -> 'st -> 'a -> 'st * 'b
   (** Evaluate a pipeline to a function. *)
 
   val run :
     finally:(State.t -> exn option -> State.t) ->
     (State.t -> 'a option) -> State.t ->
-    (State.t * 'a, State.t) t ->
-    State.t
+    (State.t, 'a, unit) t -> State.t
     (** Loop the evaluation of a pipeline over a generator, and starting options.
         @param finally a function called at the end of every iteration (even if
         an exception has been raised) *)

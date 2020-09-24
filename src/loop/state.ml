@@ -66,6 +66,14 @@ type 'solve state = {
 
 type t = solve_state state
 
+(* Debug/print the state *)
+(* ************************************************************************* *)
+
+let debug fmt st =
+  Format.fprintf fmt
+    "@[<hv 2>{@ file: %s; }@]" (Dolmen.Std.Loc.file_name st.input_file_loc)
+
+
 (* State and locations *)
 (* ************************************************************************* *)
 

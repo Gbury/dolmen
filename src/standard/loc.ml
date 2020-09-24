@@ -89,6 +89,8 @@ let mk_compact offset length =
 
 let tables = Hashtbl.create 5
 
+let file_name { name; _ } = name
+
 let mk_file name =
   try Hashtbl.find tables name
   with Not_found ->

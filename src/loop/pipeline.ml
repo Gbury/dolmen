@@ -54,43 +54,53 @@ module Make(State : State_intf.Pipeline) = struct
 
   type 'a gen = 'a Gen.t
   type 'st merge = 'st -> 'st -> 'st
+  type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
   type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a gen ]
-  type ('a, 'b) cont = [ `Continue of 'a | `Done of 'b ]
 
-  type ('a, 'b) op = {
+  type ('st, 'a, 'b) op = {
     name : string;
-    f : 'a -> 'b;
+    f : 'st -> 'a -> 'st * 'b;
   }
 
   (* Type for pipelines, i.e a series of transformations to
-      apply to the input. An ('a, 'b) t is a pipeline that
+      apply to the input. An ('st, 'a, 'b) t is a pipeline that
       takes an input of type ['a] and returns a value of type
       ['b]. *)
-  type (_, _) t =
+  type (_, _, _) t =
     (* The end of the pipeline, the identity/reflexive constructor *)
     | End :
-        ('a, 'a) t
+        ('st, 'a, 'a) t
     (* Apply a single function and then proceed with the rest of the pipeline *)
     | Map :
-        ('a, 'c) op * ('c, 'b) t -> ('a, 'b) t
+        ('st, 'a, 'c) op * ('st, 'c, 'b) t -> ('st, 'a, 'b) t
+    (* Allow early exiting from the loop *)
     | Cont :
-        ('a, ('c, 'b) cont) op * ('c, 'b) t -> ('a, 'b) t
+        ('st, 'a, ('b, 'c) cont) op * ('st, 'c, 'b) t -> ('st, 'a, 'b) t
     (* Concat two pipeline. Not tail recursive. *)
     | Concat :
-        ('a, 'b) t * ('b, 'c) t -> ('a, 'c) t
+        ('st, 'a, 'b) t * ('st, 'b, 'c) t -> ('st, 'a, 'c) t
     (* Fixpoint expansion *)
     | Fix :
-        ('st * 'a, 'st * ('st, 'a) fix) op * ('st * 'a, 'st) t -> ('st * 'a, 'st) t
+        ('st, 'a, ('st, 'a) fix) op * ('st, 'a, unit) t -> ('st, 'a, unit) t
+
+  (* Creating operators. *)
+
+  let op ?(name="") f = { name; f; }
+
+  let apply ?name f = op ?name (fun st x -> st, f x)
+
+  let iter_ ?name f = op ?name (fun st x -> f x; st, x)
+
+  let f_map ?name ?(test=(fun _ _ -> true)) f =
+    op ?name (fun st x ->
+        if test st x then begin
+          let st', y = f st x in
+          st', `Continue y
+        end else
+          st, `Done x
+      )
 
   (* Creating pipelines. *)
-
-  let apply ?(name="") f =
-    { name; f; }
-  let iter_ ?(name="") f =
-    { name; f = (fun x -> f x; x); }
-  let f_map ?(name="") ?(test=(fun _ -> true)) f =
-    { name; f = (fun ((st, _) as x) ->
-          if test st then `Continue (f x) else `Done st); }
 
   let _end = End
   let (@>>>) op t = Map(op, t)
@@ -100,39 +110,46 @@ module Make(State : State_intf.Pipeline) = struct
   let fix op t = Fix(op, t)
 
   (* Eval a pipeline into the corresponding function *)
-  let rec eval : type a b. (a, b) t -> a -> b =
-    fun pipe x ->
+  let rec eval : type st a b.
+    (st, a, b) t -> st -> a -> st * b =
+    fun pipe st x ->
     match pipe with
-    | End -> x
+    | End -> st, x
     | Map (op, t) ->
-      eval t (op.f x)
+      let st', y = op.f st x in
+      eval t st' y
     | Cont (op, t) ->
-      begin match op.f x with
-        | `Continue res -> eval t res
-        | `Done res -> res
+      let st', y = op.f st x in
+      begin match y with
+        | `Continue res -> eval t st' res
+        | `Done res -> st', res
       end
     | Concat (t, t') ->
-      let y = eval t x in
-      eval t' y
+      let st', y = eval t st x in
+      eval t' st' y
     | Fix (op, t) ->
-      let st, y = x in
-      begin match op.f x with
-        | st', `Ok -> eval t (st', y)
-        | st', `Gen (merge, g) ->
-          let aux st c = eval pipe (st, c) in
+      let st', y = op.f st x in
+      begin match y with
+        | `Ok -> eval t st' x
+        | `Gen (merge, g) ->
+          let aux st c =
+            let st', () = eval pipe st c in
+            st'
+          in
           let st'' = Gen.fold aux st' g in
-          merge st st''
+          let st''' = merge st st'' in
+          st''', ()
       end
 
   (* Aux function to eval a pipeline on the current value of a generator. *)
-  let run_aux : type a.
-    (State.t * a, State.t) t ->
-    (State.t -> a option) ->
-    State.t -> State.t option =
+  let run_aux : type st a b.
+    (st, a, b) t ->
+    (st -> a option) ->
+    st -> (st * b) option =
     fun pipe g st ->
     match g st with
     | None -> None
-    | Some x -> Some (eval pipe (st, x))
+    | Some x -> Some (eval pipe st x)
 
   (* Effectively run a pipeline on all values that come from a generator.
      Time/size limits apply for the complete evaluation of each input
@@ -140,7 +157,7 @@ module Make(State : State_intf.Pipeline) = struct
   let rec run :
     type a.
     finally:(State.t -> exn option -> State.t) ->
-    (State.t -> a option) -> State.t -> (State.t * a, State.t) t -> State.t
+    (State.t -> a option) -> State.t -> (State.t, a, unit) t -> State.t
     = fun ~finally g st pipe ->
       let time = State.time_limit st in
       let size = State.size_limit st in
@@ -150,7 +167,7 @@ module Make(State : State_intf.Pipeline) = struct
         | None ->
           let () = delete_alarm al in
           st
-        | Some st' ->
+        | Some (st', ()) ->
           let () = delete_alarm al in
           let st'' = try finally st' None with _ -> st' in
           run ~finally g st'' pipe

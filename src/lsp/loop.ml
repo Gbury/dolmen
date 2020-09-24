@@ -98,9 +98,10 @@ let process path opt_contents =
     let st, g = Parser.parse [] st in
     let open Pipeline in
     let st = run ~finally g st (
-        (fix (apply ~name:"expand" Parser.expand) (
-            (apply ~name:"typecheck" Typer.typecheck)
-            @>|> ((apply fst) @>>> _end)
+        (fix (op ~name:"expand" Parser.expand) (
+            (op ~name:"headers" Header.inspect)
+            @>>> (op ~name:"typecheck" Typer.typecheck)
+            @>|> (op (fun st _ -> st, ())) @>>> _end
           )
         )
       ) in

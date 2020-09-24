@@ -9,7 +9,7 @@ module type S = sig
       has been completed *)
 
   val inspect :
-    state * Dolmen.Std.Statement.t -> state * Dolmen.Std.Statement.t
+    state -> Dolmen.Std.Statement.t -> state * Dolmen.Std.Statement.t
   (** Check the headers *)
 
 end

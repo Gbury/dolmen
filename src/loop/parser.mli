@@ -17,7 +17,7 @@ module Pipe
       returns a tuple of the new state (including the detected input language),
       together with a statement generator. *)
 
-  val expand : State.t * Dolmen.Std.Statement.t ->
+  val expand : State.t -> Dolmen.Std.Statement.t ->
     State.t * [ `Ok | `Gen of (State.t -> State.t -> State.t) * Dolmen.Std.Statement.t Gen.t ]
   (** Expand statements (such as includes). Returns the new state, and either:
       - [ `Ok ], which means the statement can be propagated as is
