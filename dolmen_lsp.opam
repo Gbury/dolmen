@@ -10,9 +10,9 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.02.3"}
-  "dolmen"
-  "dolmen_type"
-  "dolmen_loop"
+  "dolmen" {= version }
+  "dolmen_type" {= version }
+  "dolmen_loop" { = version }
   "lsp"
   "dune"
   "ocaml-syntax-shims"

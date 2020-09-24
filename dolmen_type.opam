@@ -10,7 +10,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.02.3"}
-  "dolmen"
+  "dolmen" {= version }
   "spelll"
   "uutf"
   "dune"
