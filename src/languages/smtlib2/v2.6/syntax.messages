@@ -8,7 +8,11 @@ term: OPEN AS OPEN SYMBOL
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+An underscore was expected here. More precisely, including the opening parenthesis,
+an identifier is expected here, and identifiers starting with an opening parenthesis
+must be indexed identifiers, of the form (_ symbol index+), so we expect an
+underscore here.
+
 
 term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
@@ -20,7 +24,7 @@ term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ## OPEN AS identifier sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+Missing closing parenthesis
 
 term: OPEN AS SYMBOL UNDERSCORE
 ##
