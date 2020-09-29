@@ -17,6 +17,9 @@ val replicate : int -> 'a -> 'a list
 val opt_map : 'a option -> ('a -> 'b) -> 'b option
 (** Map on option. *)
 
+val opt_bind : 'a option -> ('a -> 'b option) -> 'b option
+(** Bind on option. *)
+
 
 (** {2 Printing helpers} *)
 

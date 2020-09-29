@@ -11,6 +11,9 @@ module type S = sig
   exception Error
   (** The exception raised by the lexer when it cannot produce a token. *)
 
+  val descr : token -> Tok.descr
+  (** Asspcoate a description to each token, to help with error messages. *)
+
   val token : (Lexing.lexbuf -> unit) -> Lexing.lexbuf -> token
   (** The function producing token from a lexbuf. *)
 

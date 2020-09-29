@@ -2,9 +2,12 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more details. *)
 
 {
+  exception Error
+
   open Tokens_dimacs
 
-  exception Error
+  let descr _ = assert false
+
 }
 
 let zero_numeric = '0'

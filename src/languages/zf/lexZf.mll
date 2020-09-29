@@ -4,9 +4,11 @@
 (** {1 Lexer for Zipperposition Formulas} *)
 
 {
+  exception Error
+
   open Tokens_zf
 
-  exception Error
+  let descr _ = assert false
 }
 
 let printable_char = [^ '\n']

@@ -32,14 +32,10 @@ let handle_exn st = function
     let loc = { Dolmen.Std.Loc.file; loc; } in
     Ok (State.error ~loc st "Lexing error: %s" msg)
   (* Parsing error *)
-  | Dolmen.Std.Loc.Syntax_error (loc, "") ->
-    let file = State.input_file_loc st in
-    let loc = { Dolmen.Std.Loc.file; loc; } in
-    Ok (State.error ~loc st "Syntax error")
   | Dolmen.Std.Loc.Syntax_error (loc, msg) ->
     let file = State.input_file_loc st in
     let loc = { Dolmen.Std.Loc.file; loc; } in
-    Ok (State.error ~loc st "%s" msg)
+    Ok (State.error ~loc st "Syntax error %t" msg)
   (* Typing error *)
   | Dolmen_loop.Typer.T.Typing_error (
       Dolmen_loop.Typer.T.Error (env, fragment, _err) as error) ->

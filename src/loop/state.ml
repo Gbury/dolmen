@@ -81,8 +81,8 @@ let pp_loc fmt o =
   match o with
   | None -> ()
   | Some loc ->
-    Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
-
+    if Dolmen.Std.Loc.is_dummy loc then ()
+    else Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
 
 let error ?loc _ format =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in

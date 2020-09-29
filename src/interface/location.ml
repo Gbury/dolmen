@@ -20,7 +20,7 @@ module type S = sig
   exception Lexing_error of t * string
   (** The exception to be raised when the lexer cannot parse the input. *)
 
-  exception Syntax_error of t * string
+  exception Syntax_error of t * Msg.t
   (** The exception to be raised whenever a syntax error is encountered by the parser. *)
 
   val of_lexbuf : Lexing.lexbuf -> t

@@ -34,6 +34,11 @@ let opt_map o f =
   | None -> None
   | Some x -> Some (f x)
 
+let opt_bind o f =
+  match o with
+  | None -> None
+  | Some x -> f x
+
 
 (* Option printing *)
 

@@ -1,0 +1,7 @@
+[1m[97mFile "tests/parsing/smtlib/v2.6/errors/pattern_1.smt2", line 3, character 41-42:
+[0;1m[0m[1m[91mError[0;1m[0m while parsing This is not a valid pattern. Patterns should be variables,,
+      read the reserved word '_',
+      but expected nullary constructors, or n-ary constructor applications.
+        Note that keywords (such as '_', 'as', ...) are none of these, and
+        thus are not allowed here.
+

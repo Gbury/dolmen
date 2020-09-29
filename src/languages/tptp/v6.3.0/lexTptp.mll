@@ -27,9 +27,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 TPTP Lexer} *)
 
 {
+  exception Error
+
   open Tokens_tptp
 
-  exception Error
+  let descr _ = assert false
 }
 
 let printable_char = [^ '\n']

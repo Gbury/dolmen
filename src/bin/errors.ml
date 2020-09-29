@@ -45,32 +45,13 @@ let exn st = function
   (* Parsing errors *)
   | Dolmen.Std.Loc.Uncaught (loc, exn) ->
     let file = Dolmen_loop.State.input_file_loc st in
-    let l = Dolmen.Std.Loc.loc file loc in
-    if Dolmen_loop.State.is_interactive st then
-      Format.eprintf "%s%a@\n"
-        (if l.Dolmen.Std.Loc.start_line = 1 &&
-            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
-        Dolmen.Std.Loc.fmt_hint l;
     Loop.State.error ~loc:{ file; loc; } st "%s" (Printexc.to_string exn)
-  | Dolmen.Std.Loc.Lexing_error (loc, msg) ->
+  | Dolmen.Std.Loc.Lexing_error (loc, lex) ->
     let file = Dolmen_loop.State.input_file_loc st in
-    let l = Dolmen.Std.Loc.loc file loc in
-    if Dolmen_loop.State.is_interactive st then
-      Format.eprintf "%s%a@\n"
-        (if l.Dolmen.Std.Loc.start_line = 1 &&
-            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
-        Dolmen.Std.Loc.fmt_hint l;
-    Loop.State.error ~loc:{ file; loc; } st "Lexing error: invalid character '%s'" msg
+    Loop.State.error ~loc:{ file; loc; } st "Lexing error: invalid character '%s'" lex
   | Dolmen.Std.Loc.Syntax_error (loc, msg) ->
     let file = Dolmen_loop.State.input_file_loc st in
-    let l = Dolmen.Std.Loc.loc file loc in
-    if Dolmen_loop.State.is_interactive st then
-      Format.eprintf "%s%a@\n"
-        (if l.Dolmen.Std.Loc.start_line = 1 &&
-            l.Dolmen.Std.Loc.stop_line = 1 then prelude_space st else "")
-        Dolmen.Std.Loc.fmt_hint l;
-    Loop.State.error ~loc: { file; loc; } st "%a@."
-      Format.pp_print_text (match msg with "" -> "Syntax error" | x -> x)
+    Loop.State.error ~loc: { file; loc; } st "%t@." msg
 
 
   (* Typing errors *)
@@ -85,7 +66,10 @@ let exn st = function
 
   (* State errors *)
   | Dolmen_loop.State.File_not_found (loc, dir, f) ->
-    Loop.State.error ~loc st "File not found: '%s' in directory '%s'" f dir
+    if dir = "." then
+      Loop.State.error ~loc st "File not found: '%s'" f
+    else
+      Loop.State.error ~loc st "File not found: '%s' in directory '%s'" f dir
   | Dolmen_loop.State.Input_lang_changed (l, l') ->
     Loop.State.error st "Input language changed from %s to %s (probably because of an include statement)"
       (Dolmen_loop.Logic.string_of_language l)

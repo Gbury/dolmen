@@ -9,5 +9,5 @@
     ; Typing & Loop stuff
     Tag Pretty Expr
     ; Helpers
-    Escape Vec Misc Transformer)
+    Msg Tok Vec Misc Escape Transformer)
 )

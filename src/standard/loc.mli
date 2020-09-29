@@ -12,7 +12,10 @@ type loc = {
   stop_line : int;
   stop_column : int;
 }
-(** A full location, including file, start position and end position. *)
+(** A full location, including file, start position and end position.
+    Dummy positions (i.e. with [start_line = stop_line] and
+    [start_column = stop_column]) are allowed to represent unknown
+    locations. *)
 
 type file
 (** Meta-data about files to enable more compact location storage. *)
@@ -45,6 +48,9 @@ val eq : t -> t -> bool
 val no_loc : t
 (** An dummy location pointing at the first byte of a file. *)
 
+val is_dummy : loc -> bool
+(** Is the location ana ctual location, or a dummy one ? *)
+
 
 (** {2 Compact location handling} *)
 
@@ -59,8 +65,7 @@ val new_line : file -> int -> unit
 
 val loc : file -> t -> loc
 val full_loc : full -> loc
-(** Return a complete location from a compact location and meta-data.
-    Returns [None] is the location was a dummy one (i.e. length = 0). *)
+(** Return a complete location from a compact location and meta-data. *)
 
 val compact : loc -> file * t
 (** Compactify a full location into a compact representation. *)

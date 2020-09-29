@@ -1,0 +1,6 @@
+[1m[97mFile "tests/parsing/smtlib/v2.6/errors/003_qual_identifier_bad_sort_2.smt2", line 2, character 16-17:
+[0;1m[0m[1m[91mError[0;1m[0m while parsing a qualified identifier, read the reserved word '!',
+      but expected a sort, i.e. either an identifier, or a sort constructor
+        application. Note that keywords (such as '_', 'as', ...) are none of
+        these, and thus are not allowed here.
+

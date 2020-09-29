@@ -54,7 +54,7 @@ type loc = {
 
 exception Uncaught of t * exn
 exception Lexing_error of t * string
-exception Syntax_error of t * string
+exception Syntax_error of t * Msg.t
 (** Exceptions that may occur during parsing *)
 
 (* Compact locations *)
@@ -149,6 +149,10 @@ let mk_pos start stop =
   let length = stop_offset - start_offset in
   mk_compact start_offset length
 
+let is_dummy loc =
+  loc.start_line = loc.stop_line &&
+  loc.start_column = loc.stop_column
+
 (* location from a lexbuf *)
 let of_lexbuf lexbuf =
   let start = Lexing.lexeme_start_p lexbuf in
@@ -160,12 +164,16 @@ let of_lexbuf lexbuf =
 
 let loc file c =
   let start_offset, length = split_compact c in
-  let stop_offset = start_offset + length in
-  let start_line_offset, start_line = find_line file start_offset in
-  let start_column = start_offset - start_line_offset - 1 in
-  let stop_line_offset, stop_line = find_line file stop_offset in
-  let stop_column = stop_offset - stop_line_offset - 1 in
-  mk file.name start_line start_column stop_line stop_column
+  if length = 0 then
+    mk file.name 0 0 0 0
+  else begin
+    let stop_offset = start_offset + length in
+    let start_line_offset, start_line = find_line file start_offset in
+    let start_column = start_offset - start_line_offset - 1 in
+    let stop_line_offset, stop_line = find_line file stop_offset in
+    let stop_column = stop_offset - stop_line_offset - 1 in
+    mk file.name start_line start_column stop_line stop_column
+  end
 
 let full_loc { file; loc = l; } = loc file l
 
@@ -185,7 +193,10 @@ let compact (t : loc) =
 let pp buf pos =
   if pos.start_line = pos.stop_line then
     if pos.start_column = pos.stop_column then
-      Printf.bprintf buf "File \"%s\", <location missing>" pos.file
+      if pos.file = "" then
+        Printf.bprintf buf "<location missing>"
+      else
+        Printf.bprintf buf "File \"%s\", <location missing>" pos.file
     else
       Printf.bprintf buf "File \"%s\", line %d, character %d-%d"
         pos.file pos.start_line pos.start_column pos.stop_column
@@ -198,7 +209,10 @@ let pp buf pos =
 let fmt fmt pos =
   if pos.start_line = pos.stop_line then
     if pos.start_column = pos.stop_column then
-      Format.fprintf fmt "File \"%s\", <location missing>" pos.file
+      if pos.file = "" then
+        Format.fprintf fmt "<location missing>"
+      else
+        Format.fprintf fmt "File \"%s\", <location missing>" pos.file
     else
       Format.fprintf fmt "File \"%s\", line %d, character %d-%d"
         pos.file pos.start_line pos.start_column pos.stop_column

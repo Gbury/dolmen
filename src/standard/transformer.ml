@@ -56,35 +56,64 @@ module Make
      --------------------------------------- *)
 
   let state checkpoint =
-     match (checkpoint : _ Parse.MenhirInterpreter.checkpoint) with
+     match (checkpoint : _ Parser.MenhirInterpreter.checkpoint) with
      | HandlingError env ->
-       Parse.MenhirInterpreter.current_state_number env
+       Parser.MenhirInterpreter.current_state_number env
      | _ -> assert false (* this cannot happen, I promise *)
 
-  let error_message checkpoint =
+  let error_message token checkpoint =
     let s = state checkpoint in
     match String.trim (Ty.error s) with
-    | exception Not_found -> ""
-    | "<YOUR SYNTAX ERROR MESSAGE HERE>" -> ""
-    | msg -> String.map (function '\n' -> ' ' | c -> c) msg
+    | exception Not_found ->
+      Format.dprintf "Syntax error"
+    | "<YOUR SYNTAX ERROR MESSAGE HERE>" ->
+      Format.dprintf "Syntax error"
+    | msg ->
+      begin match Misc.split_on_char '\n' msg with
+        | production :: l ->
+          let expected = String.concat " " l in
+          begin match token with
+            | Some tok ->
+              let tok_descr = Lexer.descr tok in
+              Format.dprintf
+                "@[<v>@[<hv>while parsing %s,@ read %a,@]@ @[<hov 2>but expected %a@]@]"
+                production Tok.print tok_descr
+                Format.pp_print_text expected
+            | None ->
+              Format.dprintf
+                "@[<v>while parsing %s@ @[<hov 2>expected %a@]@ but got %a@]"
+                production Format.pp_print_text expected Format.pp_print_text
+                "no token (this is weird, please report upstream, ^^)"
+          end
+        | _ ->
+          Format.dprintf "Syntax error"
+      end
 
 
   (* Parsing loop
      ------------ *)
 
-   let parse_aux ~k_exn newline lexbuf checkpoint =
+  let parse_aux ~k_exn newline lexbuf checkpoint =
     (* Token supplier *)
-    let supplier = Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
-        (Lexer.token newline) lexbuf in
+    let last_token = ref None in
+    let aux =
+      Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
+        (Lexer.token newline) lexbuf
+    in
+    let supplier () =
+      let (t, _, _) as res = aux () in
+      last_token := Some t;
+      res
+    in
     (* Incremental loop *)
     let succeed res = res in
     let fail checkpoint =
       let pos = Loc.of_lexbuf lexbuf in
-      let msg = error_message checkpoint in
+      let msg = error_message !last_token checkpoint in
       let () = k_exn () in
       raise (Loc.Syntax_error (pos, msg))
     in
-    let loop = Parse.MenhirInterpreter.loop_handle succeed fail supplier in
+    let loop = Parser.MenhirInterpreter.loop_handle succeed fail supplier in
     (* Run the loop *)
     let aux () =
       begin match loop (checkpoint Lexing.(lexbuf.lex_curr_p)) with
@@ -100,8 +129,9 @@ module Make
           raise (Loc.Lexing_error (pos, err))
         | exception Parser.Error ->
           let pos = Loc.of_lexbuf lexbuf in
+          let msg = Format.dprintf "" in
           let () = k_exn () in
-          raise (Loc.Syntax_error (pos, ""))
+          raise (Loc.Syntax_error (pos, msg))
         | exception e ->
           let pos = Loc.of_lexbuf lexbuf in
           let () = k_exn () in
@@ -117,7 +147,7 @@ module Make
     let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
     let newline = Loc.newline file in
     let k_exn () = cleanup () in
-    let aux = parse_aux ~k_exn newline lexbuf Parse.Incremental.file in
+    let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.file in
     let res = aux () in
     let () = cleanup () in
     res
@@ -125,13 +155,16 @@ module Make
   let parse_input i =
     let lexbuf, cleanup = Misc.mk_lexbuf i in
     let newline = Loc.newline (Misc.filename_of_input i) in
-    if not Ty.incremental then
+    if not Ty.incremental then begin
       (* If incremental mode is not supported, raise an error rather than
          do weird things. *)
-      raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf,
-                               "Input format does not support incrmental parsing"));
+      let msg = Format.dprintf ": @[<hov>%a@]"
+          Format.pp_print_text "Input format does not support incremental parsing"
+      in
+      raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf, msg))
+    end;
     let k_exn () = Dolmen_line.consume lexbuf in
-    let aux = parse_aux ~k_exn newline lexbuf Parse.Incremental.input in
+    let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.input in
     aux, cleanup
 
 end

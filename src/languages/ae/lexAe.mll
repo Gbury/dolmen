@@ -4,7 +4,65 @@
 (** {1 Alt-ergo Lexer} *)
 
 {
+  exception Error
+
+  module T = Dolmen_std.Tok
+
   open Tokens_ae
+
+  (* Token printing *)
+
+  let reserved s =
+    T.descr s
+      ~kind:"reserved word"
+      ~hint:"reserved words cannot be used as identifiers"
+
+  let descr token : T.descr =
+    match (token : token) with
+    | ID s -> T.descr ~kind:"identifier" s
+    | QM_ID s -> T.descr ~kind:"variable id" s
+    | INTEGER s -> T.descr ~kind:"integer" s
+    | DECIMAL s -> T.descr ~kind:"decimal" s
+    | HEXADECIMAL s -> T.descr ~kind:"hexadecimal" s
+    | STRING s -> T.descr ~kind:"string" s
+    | MATCH -> reserved "match"
+    | WITH -> reserved "with"
+    | THEORY -> reserved "theory"
+    | EXTENDS -> reserved "extends"
+    | END -> reserved "end"
+    | QM -> reserved "?"
+    | AND -> reserved "and"
+    | LEFTARROW -> reserved "<-"
+                     (*
+    | RIGHTARROW AC AT AXIOM CASESPLIT REWRITING
+%token BAR HAT
+%token BOOL COLON COMMA PV DISTINCT DOT SHARP ELSE OF EOF EQUAL
+%token EXISTS FALSE VOID FORALL FUNC GE GOAL GT CHECK CUT
+%token IF IN INT BITV MAPS_TO
+%token LE LET LEFTPAR LEFTSQ LEFTBR LOGIC LRARROW XOR LT MINUS
+%token NOT NOTEQ OR PERCENT PLUS PRED PROP
+%token QUOTE REAL UNIT
+%token RIGHTPAR RIGHTSQ RIGHTBR
+%token SLASH POW POWDOT
+%token THEN TIMES TRUE TYPE
+%nonassoc IN
+%nonassoc prec_forall prec_exists
+%right RIGHTARROW LRARROW XOR
+%right OR
+%right AND
+%nonassoc prec_ite
+%left prec_relation EQUAL NOTEQ LT LE GT GE
+%left PLUS MINUS
+%left TIMES SLASH PERCENT POW POWDOT AT
+%nonassoc HAT
+%nonassoc uminus
+%nonassoc NOT
+%right prec_named
+%nonassoc CHECK CUT
+*)
+    | _ -> assert false
+
+  (* Token parsing *)
 
   let escaped_char = function
     | 'n' -> '\n'
@@ -12,7 +70,6 @@
     | 't' -> '\t'
     | c -> c
 
-  exception Error
 }
 
 let letter = ['a'-'z' 'A'-'Z']

@@ -4,11 +4,77 @@
 (** {1 Smtlib Lexer} *)
 
 {
-  open Tokens_smtlib
-
   exception Error
 
+  module T = Dolmen_std.Tok
   module M = Map.Make(String)
+
+  open Tokens_smtlib
+
+  (* Token printing *)
+
+  let keyword_descr s =
+    T.descr s
+      ~kind:"reserved word"
+      ~hint:"keywords cannot be used as symbols"
+
+  let reserved_descr s =
+    T.descr s
+      ~kind:"reserved word"
+      ~hint:"reserved words cannot be used as symbols"
+
+  let descr token : T.descr =
+    match (token : token) with
+    | EOF -> T.descr ~kind:"end of file token" ""
+    | OPEN -> T.descr ~article:"an" ~kind:"opening partenthesis" ""
+    | CLOSE -> T.descr ~article:"a" ~kind:"closing parenthesise" ""
+    | NUM s -> T.descr ~kind:"integer" s
+    | DEC s -> T.descr ~kind:"decimal" s
+    | HEX s -> T.descr ~kind:"hexadecimal" s
+    | BIN s -> T.descr ~kind:"binary" s
+    | STR s -> T.descr ~kind:"string" s
+    | SYMBOL s -> T.descr ~kind:"symbol" s
+    | KEYWORD s -> keyword_descr s
+    | UNDERSCORE -> reserved_descr "_"
+    | ATTRIBUTE -> reserved_descr "!"
+    | AS -> reserved_descr "as"
+    | LET -> reserved_descr "let"
+    | EXISTS -> reserved_descr "exists"
+    | FORALL -> reserved_descr "forall"
+    | MATCH -> reserved_descr "match"
+    | PAR -> reserved_descr "par"
+    | ASSERT -> reserved_descr "assert"
+    | CHECK_SAT -> reserved_descr "check-sat"
+    | CHECK_SAT_ASSUMING -> reserved_descr "check-sat-assuming"
+    | DECLARE_CONST -> reserved_descr "declare-const"
+    | DECLARE_DATATYPE -> reserved_descr "declare-datatype"
+    | DECLARE_DATATYPES -> reserved_descr "declare-datatypes"
+    | DECLARE_FUN -> reserved_descr "declare-fun"
+    | DECLARE_SORT -> reserved_descr "declare-sort"
+    | DEFINE_FUN -> reserved_descr "define-fun"
+    | DEFINE_FUN_REC -> reserved_descr "define-fun-rec"
+    | DEFINE_FUNS_REC -> reserved_descr "define-funs-rec"
+    | DEFINE_SORT -> reserved_descr "define-sort"
+    | ECHO -> reserved_descr "echo"
+    | EXIT -> reserved_descr "exit"
+    | GET_ASSERTIONS -> reserved_descr "get-assertions"
+    | GET_ASSIGNMENT -> reserved_descr "gert-assignment"
+    | GET_INFO -> reserved_descr "get-info"
+    | GET_MODEL -> reserved_descr "get-model"
+    | GET_OPTION -> reserved_descr "get-option"
+    | GET_PROOF -> reserved_descr "get-proof"
+    | GET_UNSAT_ASSUMPTIONS -> reserved_descr "get-unsat-assumptions"
+    | GET_UNSAT_CORE -> reserved_descr "get-unsat-core"
+    | GET_VALUE -> reserved_descr "get-value"
+    | POP -> reserved_descr "pop"
+    | PUSH -> reserved_descr "push"
+    | RESET -> reserved_descr "reset"
+    | RESET_ASSERTIONS -> reserved_descr "reset-assertions"
+    | SET_INFO -> reserved_descr "set-info"
+    | SET_LOGIC -> reserved_descr "set-logic"
+    | SET_OPTION -> reserved_descr "set-option"
+
+  (* Token parsing *)
 
   let bind map (x, v) = M.add x v map
 
@@ -43,7 +109,7 @@
     "declare-sort", DECLARE_SORT;
     "define-fun", DEFINE_FUN;
     "define-fun-rec", DEFINE_FUN_REC;
-    "define-funs-res", DEFINE_FUNS_REC;
+    "define-funs-rec", DEFINE_FUNS_REC;
     "define-sort", DEFINE_SORT;
     "echo", ECHO;
     "exit", EXIT;

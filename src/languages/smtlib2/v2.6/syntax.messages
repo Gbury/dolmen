@@ -1,3 +1,12 @@
+#
+# Syntax Error Messages for smtlib v2.6
+#
+# Notes:
+# - some error messages are shared among more than one error case,
+#   in such cases, the error number is the same, so when modifying
+#   an error message, be sure to modify all occurrences of the same
+#   error number
+
 term: OPEN AS OPEN SYMBOL
 ##
 ## Ends in an error in state: 57.
@@ -8,11 +17,10 @@ term: OPEN AS OPEN SYMBOL
 ## OPEN
 ##
 
-An underscore was expected here. More precisely, including the opening parenthesis,
-an identifier is expected here, and identifiers starting with an opening parenthesis
-must be indexed identifiers, of the form (_ symbol index+), so we expect an
-underscore here.
-
+# Error 001
+an identifier
+an underscore: identifiers starting with an opening parenthesis must be
+indexed identifiers, of the form "(_ symbol index+)"
 
 term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
@@ -24,7 +32,9 @@ term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ## OPEN AS identifier sort
 ##
 
-Missing closing parenthesis
+# Error 002
+a qualified identifier
+a closing parenthesis
 
 term: OPEN AS SYMBOL UNDERSCORE
 ##
@@ -36,7 +46,11 @@ term: OPEN AS SYMBOL UNDERSCORE
 ## OPEN AS identifier
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 003
+a qualified identifier
+a sort, i.e. either an identifier, or a sort constructor application.
+Note that keywords (such as '_', 'as', ...) are none of these, and thus
+are not allowed here.
 
 term: OPEN AS UNDERSCORE
 ##
@@ -48,7 +62,11 @@ term: OPEN AS UNDERSCORE
 ## OPEN AS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 004
+a qualified identifier
+an identifier.
+Note that keywords (such as '_', 'as', ...) are not identifiers,
+and thus are not allowed here.
 
 term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
 ##
@@ -61,7 +79,10 @@ term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
 ## attribute
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 005
+an attribute list
+either a closing parenthesis, or another attribute of the form
+":symbol value".
 
 term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ##
@@ -73,7 +94,9 @@ term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ## OPEN ATTRIBUTE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 006
+a term
+an attribute of the form ":symbol value".
 
 term: OPEN ATTRIBUTE UNDERSCORE
 ##
@@ -85,7 +108,9 @@ term: OPEN ATTRIBUTE UNDERSCORE
 ## OPEN ATTRIBUTE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 007
+a term with attribute
+a term.
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
@@ -97,7 +122,9 @@ term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 008
+a term
+a closing parenthesis to end the existencially quantified formula
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -109,7 +136,9 @@ term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 009
+a term
+a term (body for the existencial quantification)
 
 term: OPEN EXISTS OPEN UNDERSCORE
 ##
@@ -121,7 +150,9 @@ term: OPEN EXISTS OPEN UNDERSCORE
 ## OPEN EXISTS OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 010
+a term
+a sorted variable of the form "(var sort)"
 
 term: OPEN EXISTS UNDERSCORE
 ##
@@ -133,7 +164,9 @@ term: OPEN EXISTS UNDERSCORE
 ## OPEN EXISTS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 011
+a term
+a list of sorted variables, starting with an opening parenthesis
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
@@ -145,7 +178,9 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 012
+a term
+a closing parenthesis to end the universally quantified formula
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -157,7 +192,9 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 013
+a term
+a term (body for the universal quantification)
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
@@ -352,8 +389,10 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN pattern_symbol
 ##
 
-"(_)" is not a valid pattern, but a reserved keyword. Patterns should be
-variables, nullary constructors, or n-ary constructor applications.
+This is not a valid pattern. Patterns should be variables,
+nullary constructors, or n-ary constructor applications.
+Note that keywords (such as '_', 'as', ...) are none of these,
+and thus are not allowed here.
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ##
@@ -365,8 +404,10 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-'_' is not a valid pattern, but a reserved keyword. Patterns should be
-variables, nullary constructors, or n-ary constructor applications.
+This is not a valid pattern. Patterns should be variables,
+nullary constructors, or n-ary constructor applications.
+Note that keywords (such as '_', 'as', ...) are none of these,
+and thus are not allowed here.
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -427,8 +468,10 @@ term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-'_' is not a valid pattern, but a reserved keyword. Patterns should be
-variables, nullary constructors, or n-ary constructor applications.
+This is not a valid pattern. Patterns should be variables,
+nullary constructors, or n-ary constructor applications.
+Note that keywords (such as '_', 'as', ...) are none of these,
+and thus are not allowed here.
 
 term: OPEN MATCH SYMBOL OPEN UNDERSCORE
 ##
@@ -466,6 +509,7 @@ term: OPEN MATCH UNDERSCORE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
+
 term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
 ## Ends in an error in state: 66.
@@ -476,7 +520,10 @@ term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
 ## OPEN AS identifier sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 002
+a qualified identifier
+a closing parenthesis
+
 
 term: OPEN OPEN AS SYMBOL UNDERSCORE
 ##
@@ -488,7 +535,12 @@ term: OPEN OPEN AS SYMBOL UNDERSCORE
 ## OPEN AS identifier
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 003
+a qualified identifier
+a sort, i.e. either an identifier, or a sort constructor application.
+Note that keywords (such as '_', 'as', ...) are none of these, and thus
+are not allowed here.
+
 
 term: OPEN OPEN AS UNDERSCORE
 ##
@@ -500,7 +552,11 @@ term: OPEN OPEN AS UNDERSCORE
 ## OPEN AS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 004
+a qualified identifier
+an identifier.
+Note that keywords (such as '_', 'as', ...) are not identifiers,
+and thus are not allowed here.
 
 term: OPEN OPEN SYMBOL
 ##
@@ -537,8 +593,7 @@ term: OPEN OPEN UNDERSCORE UNDERSCORE
 ## OPEN UNDERSCORE
 ##
 
-'_' is not a valid pattern, but a reserved keyword. Patterns should be
-variables, nullary constructors, or n-ary constructor applications.
+TODO
 
 term: OPEN STR
 ##
@@ -1516,7 +1571,9 @@ file: OPEN ASSERT OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ## OPEN ATTRIBUTE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 006
+a term
+an attribute of the form ":symbol value".
 
 file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
 ##
@@ -1528,7 +1585,9 @@ file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
 ## OPEN ATTRIBUTE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 007
+a term with attribute
+a term.
 
 file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
@@ -1540,7 +1599,9 @@ file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSC
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 008
+a term
+a closing parenthesis to end the existencially quantified formula
 
 file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -1552,7 +1613,9 @@ file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 009
+a term
+a term (body for the existencial quantification)
 
 file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
 ##
@@ -1564,7 +1627,9 @@ file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
 ## OPEN EXISTS OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 010
+a term
+a sorted variable of the form "(var sort)"
 
 file: OPEN ASSERT OPEN EXISTS UNDERSCORE
 ##
@@ -1576,7 +1641,9 @@ file: OPEN ASSERT OPEN EXISTS UNDERSCORE
 ## OPEN EXISTS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 011
+a term
+a list of sorted variables, starting with an opening parenthesis
 
 file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
@@ -1588,7 +1655,9 @@ file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSC
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 012
+a term
+a closing parenthesis to end the universally quantified formula
 
 file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -1600,7 +1669,9 @@ file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+# Error 013
+a term
+a term (body for the universal quantification)
 
 file: OPEN ASSERT OPEN FORALL OPEN UNDERSCORE
 ##
