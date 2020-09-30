@@ -1,4 +1,4 @@
-File "", line 1, character 34-36:
+File "tests/parsing/smtlib/v2.6/errors/017_sorted_var_bad_name_2.smt2", line 2, character 18-20:
 Error (017) while parsing a sorted variable, read the reserved word 'as',
       but expected a symbol, i.e. a variable name.
 

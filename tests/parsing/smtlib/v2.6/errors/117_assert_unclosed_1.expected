@@ -1,4 +1,0 @@
-File "", line 1, character 29-30:
-Error (117) while parsing an assert command, read the reserved word '_',
-      but expected a closing parenthesis.
-

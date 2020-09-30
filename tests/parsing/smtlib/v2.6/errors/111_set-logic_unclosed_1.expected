@@ -1,3 +1,4 @@
-File "", line 1, character 15-16:
-Error Syntax error (state 28) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/111_set-logic_unclosed_1.smt2", line 1, character 15-16:
+Error (111) while parsing a set-logic command, read the reserved word '_',
+      but expected a closing parenthesis.
 

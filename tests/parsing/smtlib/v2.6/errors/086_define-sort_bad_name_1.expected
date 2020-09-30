@@ -1,3 +1,4 @@
-File "", line 1, character 29-30:
-Error Syntax error (state 160) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/086_define-sort_bad_name_1.smt2", line 2, character 13-14:
+Error (086) while parsing a sort definition, read the reserved word '_',
+      but expected a symbol for the defined sort's name.
 

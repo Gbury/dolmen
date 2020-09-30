@@ -1,2 +1,2 @@
 (set-logic ALL)
-(assert ((_ !)))
+(assert (_ _))

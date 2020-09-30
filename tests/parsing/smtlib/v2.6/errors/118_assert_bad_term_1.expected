@@ -1,4 +1,6 @@
-File "", line 1, character 8-9:
-Error (118) while parsing an assert command, read the reserved word '_',
-      but expected a term.
+File "tests/parsing/smtlib/v2.6/errors/118_assert_bad_term_1.smt2", line 1, character 8-9:
+Error (048) while parsing a term, read the reserved word '_',
+      but expected a term construction (symbol, function application, match,
+      let binding, ...); note that keywords and reserved words (such as '_',
+      'as', ...) are not symbols, and thus are not allowed here.
 

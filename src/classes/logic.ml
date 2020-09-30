@@ -146,7 +146,6 @@ module Make
     in
     l, lazy (P.parse_file file)
 
-
   let parse_input ?language = function
     | `File file ->
       let l, _, (module P : S) =

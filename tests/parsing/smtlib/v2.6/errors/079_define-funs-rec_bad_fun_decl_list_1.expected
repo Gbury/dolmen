@@ -1,3 +1,6 @@
-File "", line 1, character 33-34:
-Error Syntax error (state 180) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/079_define-funs-rec_bad_fun_decl_list_1.smt2", line 2, character 17-18:
+Error (079) while parsing a recursive functions declaration,
+      read the reserved word '_',
+      but expected an opening parenthesis to start a list of function
+      declaration.
 

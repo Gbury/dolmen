@@ -1,4 +1,4 @@
-File "", line 1, character 36-37:
+File "tests/parsing/smtlib/v2.6/errors/016_sorted_var_bad_sort_2.smt2", line 2, character 20-21:
 Error (016) while parsing a sorted variable, read the reserved word '!',
       but expected a sort, i.e. either an identifier, or a sort constructor
       application; note that keywords and reserved words (such as '_', 'as',

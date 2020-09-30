@@ -1,4 +1,4 @@
-File "", line 1, character 37-40:
+File "tests/parsing/smtlib/v2.6/errors/022_var_binding_list_unclosed_2.smt2", line 2, character 21-24:
 Error (022) while parsing a list of variable binding, read the symbol 'foo',
       but expected a closing parenthesis or a variable binding of the form
       "(var term)".

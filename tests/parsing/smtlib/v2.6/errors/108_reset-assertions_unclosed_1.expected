@@ -1,3 +1,5 @@
-File "", line 1, character 18-19:
-Error Syntax error (state 33) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/108_reset-assertions_unclosed_1.smt2", line 1, character 18-19:
+Error (108) while parsing a reset-assertions command,
+      read the reserved word '_',
+      but expected a closing parenthesis.
 

@@ -1,3 +1,4 @@
-File "", line 1, character 29-30:
-Error Syntax error (state 204) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/069_declare-fun_bad_name_1.smt2", line 2, character 13-14:
+Error (069) while parsing a function declaration, read the reserved word '_',
+      but expected a symbol for the function's name.
 

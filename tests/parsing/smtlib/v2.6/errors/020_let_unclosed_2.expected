@@ -1,4 +1,4 @@
-File "", line 1, character 46-52:
+File "tests/parsing/smtlib/v2.6/errors/020_let_unclosed_2.smt2", line 2, character 30-36:
 Error (020) while parsing a term, read the symbol 'blabla',
       but expected a closing parenthesis to end the let binding.
 

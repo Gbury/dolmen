@@ -1,4 +1,4 @@
-File "", line 1, character 145-146:
+File "tests/parsing/smtlib/v2.6/errors/031_match_unclosed_2.smt2", line 3, character 44-45:
 Error (031) while parsing a match, read the integer '5',
       but expected a closing parenthesis to close the match.
 

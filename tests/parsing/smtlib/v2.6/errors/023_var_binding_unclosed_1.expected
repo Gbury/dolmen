@@ -1,4 +1,4 @@
-File "", line 1, character 36-37:
+File "tests/parsing/smtlib/v2.6/errors/023_var_binding_unclosed_1.smt2", line 2, character 20-21:
 Error (023) while parsing a variable binding, read the reserved word '_',
       but expected a closing parenthesis.
 

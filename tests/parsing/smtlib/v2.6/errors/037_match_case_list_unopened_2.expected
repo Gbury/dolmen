@@ -1,4 +1,4 @@
-File "", line 1, character 97-101:
+File "tests/parsing/smtlib/v2.6/errors/037_match_case_list_unopened_2.smt2", line 3, character 33-37:
 Error (037) while parsing a match, read the symbol 'with',
       but expected a match case list, starting with an opening parenthesis.
 

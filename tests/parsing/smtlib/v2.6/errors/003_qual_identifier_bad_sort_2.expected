@@ -1,4 +1,4 @@
-File "", line 1, character 32-33:
+File "tests/parsing/smtlib/v2.6/errors/003_qual_identifier_bad_sort_2.smt2", line 2, character 16-17:
 Error (003) while parsing a qualified identifier, read the reserved word '!',
       but expected a sort, i.e. either an identifier, or a sort constructor
       application; note that keywords (such as '_', 'as', ...) are none of

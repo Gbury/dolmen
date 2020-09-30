@@ -1,3 +1,6 @@
-File "", line 1, character 49-50:
-Error Syntax error (state 190) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/077_define-funs-rec_bad_body_list_1.smt2", line 2, character 33-34:
+Error (077) while parsing a recursive functions definition,
+      read the reserved word '_',
+      but expected an opening parenthesis to start a list the function's
+      bodies.
 

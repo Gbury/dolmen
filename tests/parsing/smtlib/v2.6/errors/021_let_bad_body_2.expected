@@ -1,4 +1,4 @@
-File "", line 1, character 38-40:
+File "tests/parsing/smtlib/v2.6/errors/021_let_bad_body_2.smt2", line 2, character 22-24:
 Error (021) while parsing a term, read the reserved word 'as',
       but expected a term (body for the let binding).
 

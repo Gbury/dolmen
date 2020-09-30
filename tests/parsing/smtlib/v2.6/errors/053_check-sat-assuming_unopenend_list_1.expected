@@ -1,3 +1,6 @@
-File "", line 1, character 36-37:
-Error Syntax error (state 263) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/053_check-sat-assuming_unopenend_list_1.smt2", line 2, character 20-21:
+Error (053) while parsing a check-sat-assuming command,
+      read the reserved word '_',
+      but expected a list of propositional literals, starting with an opening
+      parenthesis.
 

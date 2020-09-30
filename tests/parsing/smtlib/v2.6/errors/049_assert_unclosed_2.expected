@@ -1,4 +1,4 @@
-File "tests/parsing/smtlib/v2.6/errors/049_assert_unclosed_1.smt2", line 2, character 13-14:
+File "tests/parsing/smtlib/v2.6/errors/049_assert_unclosed_2.smt2", line 2, character 13-14:
 Error (049) while parsing an assertion, read the reserved word '_',
       but expected a closing parenthesis.
 

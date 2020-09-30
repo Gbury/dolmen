@@ -1,3 +1,4 @@
-File "", line 1, character 39-40:
-Error Syntax error (state 261) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/054_declare-const_unclosed_1.smt2", line 2, character 23-24:
+Error (054) while parsing a constant declaration, read the reserved word '_',
+      but expected a closing parenthesis.
 

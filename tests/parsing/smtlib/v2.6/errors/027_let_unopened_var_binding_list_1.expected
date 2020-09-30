@@ -1,4 +1,4 @@
-File "", line 1, character 29-30:
+File "tests/parsing/smtlib/v2.6/errors/027_let_unopened_var_binding_list_1.smt2", line 2, character 13-14:
 Error (027) while parsing a term, read the reserved word '_',
       but expected a variable binding list, starting with an opening
       parenthesis.

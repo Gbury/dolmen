@@ -755,11 +755,11 @@ term: OPEN UNDERSCORE SYMBOL UNDERSCORE
 ## OPEN UNDERSCORE SYMBOL
 ##
 
-046
+040
 an indexed identifier
-an index (i.e. a numeral, a symbol, or a hexadecimal);
-note that keywords and reserved words (such as '_', 'as', ...) are
-not symbols, and thus are not allowed here
+an index, i.e. either a numeral, a symbol, or a hexadecimal number;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN UNDERSCORE UNDERSCORE
 ##
@@ -771,11 +771,11 @@ term: OPEN UNDERSCORE UNDERSCORE
 ## OPEN UNDERSCORE
 ##
 
-047
+041
 an indexed identifier
 a symbol;
-note that keywords and reserved words (such as '_', 'as', ...) are
-not symbols, and thus are not allowed here
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: UNDERSCORE
 ##
@@ -787,7 +787,7 @@ term: UNDERSCORE
 ##
 ##
 
-048
+046
 a term
 a term construction (symbol, function application, match, let binding, ...);
 note that keywords and reserved words (such as '_', 'as', ...) are
@@ -949,7 +949,7 @@ input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 
 058
 a datatype declaration
-a list of datatype constructor, starting with an opening parenthesis
+a list of datatype constructors, starting with an opening parenthesis
 
 input: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
@@ -1216,7 +1216,7 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDER
 
 077
 a recursive functions definition
-a list of terms for the function's bodies
+an opening parenthesis to start a list the function's bodies
 
 input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
@@ -2113,8 +2113,8 @@ file: OPEN ASSERT SYMBOL UNDERSCORE
 ## OPEN ASSERT term
 ##
 
-117
-an assert command
+049
+an assertion
 a closing parenthesis
 
 file: OPEN ASSERT UNDERSCORE
@@ -2127,9 +2127,11 @@ file: OPEN ASSERT UNDERSCORE
 ## OPEN ASSERT
 ##
 
-118
-an assert command
+048
 a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 file: OPEN CHECK_SAT UNDERSCORE
 ##
@@ -2141,7 +2143,9 @@ file: OPEN CHECK_SAT UNDERSCORE
 ## OPEN CHECK_SAT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+050
+a check-sat command
+a closing parenthesis
 
 file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 ##
@@ -2153,7 +2157,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+051
+a check-sat-assuming command
+a closing parenthesis
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2213,7 +2219,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+052
+a list of propositional literals
+a propositional literal, i.e. either a symbol or the negation of a symbol
 
 file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 ##
@@ -2225,7 +2233,9 @@ file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+053
+a check-sat-assuming command
+a list of propositional literals, starting with an opening parenthesis
 
 file: OPEN DECLARE_CONST SYMBOL OPEN STR
 ##
@@ -2275,7 +2285,9 @@ file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 ## OPEN DECLARE_CONST SYMBOL sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+054
+a constant declaration
+a closing parenthesis
 
 file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 ##
@@ -2287,7 +2299,9 @@ file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 ## OPEN DECLARE_CONST SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+055
+a constant declaration
+a sort
 
 file: OPEN DECLARE_CONST UNDERSCORE
 ##
@@ -2299,7 +2313,11 @@ file: OPEN DECLARE_CONST UNDERSCORE
 ## OPEN DECLARE_CONST
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+056
+a constant declaration
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -2311,7 +2329,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+057
+a datatype declaration
+a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
 ##
@@ -2494,7 +2514,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 ## OPEN DECLARE_DATATYPE SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+058
+a datatype declaration
+a list of datatype constructors, starting with an opening parenthesis
 
 file: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
@@ -2506,7 +2528,9 @@ file: OPEN DECLARE_DATATYPE UNDERSCORE
 ## OPEN DECLARE_DATATYPE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+059
+a datatype declaration
+a symbol
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
 ##
@@ -2518,7 +2542,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYM
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+060
+a datatypes declaration
+a closing parenthesis
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -2543,7 +2569,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+061
+a datatypes definition
+an opening parenthesis to start a list of constructors for the first defined datatype
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 ##
@@ -2555,7 +2583,10 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+062
+a datatypes declaration
+an opening parenthesis to start a list of datatype definitions,
+one for each of the sorts being declared
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
 ##
@@ -2616,7 +2647,9 @@ file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+063
+a datatypes declaration
+a parametric sort declaration of the form "(symbol num)"
 
 file: OPEN DECLARE_DATATYPES UNDERSCORE
 ##
@@ -2628,7 +2661,9 @@ file: OPEN DECLARE_DATATYPES UNDERSCORE
 ## OPEN DECLARE_DATATYPES
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+064
+a datatypes declaration
+a list of sort declaration, starting with an opening parenthesis
 
 file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
@@ -2640,7 +2675,9 @@ file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+065
+a function declaration
+a closing parenthesis
 
 file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 ##
@@ -2652,7 +2689,9 @@ file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+066
+a function declaration
+a sort for the return type of the function
 
 file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
 ##
@@ -2676,7 +2715,9 @@ file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+067
+a function declaration
+a closing parenthesis, or a list of sorts for the arguments of the function
 
 file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 ##
@@ -2688,7 +2729,9 @@ file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+068
+a function declaration
+an opening parenthesis to start the list of sorts for the function's arguments
 
 file: OPEN DECLARE_FUN UNDERSCORE
 ##
@@ -2700,7 +2743,9 @@ file: OPEN DECLARE_FUN UNDERSCORE
 ## OPEN DECLARE_FUN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+069
+a function declaration
+a symbol for the function's name
 
 file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 ##
@@ -2712,7 +2757,9 @@ file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 ## OPEN DECLARE_SORT SYMBOL NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+070
+a sort declaration
+a closing parenthesis
 
 file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 ##
@@ -2724,7 +2771,9 @@ file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 ## OPEN DECLARE_SORT SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+071
+a sort declaration
+a numeral for the arity of the sort being declared
 
 file: OPEN DECLARE_SORT UNDERSCORE
 ##
@@ -2736,7 +2785,9 @@ file: OPEN DECLARE_SORT UNDERSCORE
 ## OPEN DECLARE_SORT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+072
+a sort declaration
+a symbol for the sort name
 
 file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2748,7 +2799,9 @@ file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ## OPEN DEFINE_FUN function_def
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+073
+a function definition
+a closing parenthesis
 
 file: OPEN DEFINE_FUN UNDERSCORE
 ##
@@ -2760,7 +2813,9 @@ file: OPEN DEFINE_FUN UNDERSCORE
 ## OPEN DEFINE_FUN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+074
+a function definition
+a symbol for the function's name
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
 ##
@@ -2772,7 +2827,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN S
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+075
+a recursive functions definition
+a closing parenthesis
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
 ##
@@ -2784,7 +2841,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN U
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+076
+a recursive functions definition
+a term for the first function's body
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -2796,7 +2855,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERS
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+077
+a recursive functions definition
+an opening parenthesis to start a list the function's bodies
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
 ##
@@ -2881,7 +2942,9 @@ file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ## OPEN DEFINE_FUNS_REC OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+078
+a recursive functions definition
+a function declaration of the form "(name (sort*) sort)"
 
 file: OPEN DEFINE_FUNS_REC UNDERSCORE
 ##
@@ -2893,7 +2956,9 @@ file: OPEN DEFINE_FUNS_REC UNDERSCORE
 ## OPEN DEFINE_FUNS_REC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+079
+a recursive functions declaration
+an opening parenthesis to start a list of function declaration
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2905,7 +2970,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ## OPEN DEFINE_FUN_REC function_def
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+080
+a recursive function definition
+a closing parenthesis
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
@@ -2977,7 +3044,9 @@ file: OPEN DEFINE_FUN_REC UNDERSCORE
 ## OPEN DEFINE_FUN_REC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+081
+a recursive function definition
+a symbol for the function's name
 
 file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
@@ -2989,7 +3058,9 @@ file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+082
+a sort definition
+a closing parenthesis
 
 file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 ##
@@ -3001,7 +3072,9 @@ file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+083
+a sort definition
+a sort for the definition body
 
 file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
 ##
@@ -3025,7 +3098,9 @@ file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+084
+a sort definition
+a closing parenthesis, or a list of symbols for the definition arguments
 
 file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 ##
@@ -3037,7 +3112,9 @@ file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+085
+a sort definition
+an opening parenthesis to start a list of arguments
 
 file: OPEN DEFINE_SORT UNDERSCORE
 ##
@@ -3049,7 +3126,9 @@ file: OPEN DEFINE_SORT UNDERSCORE
 ## OPEN DEFINE_SORT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+086
+a sort definition
+a symbol for the defined sort's name
 
 file: OPEN ECHO STR UNDERSCORE
 ##
@@ -3061,7 +3140,9 @@ file: OPEN ECHO STR UNDERSCORE
 ## OPEN ECHO STR
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+087
+an echo command
+a closing parenthesis
 
 file: OPEN ECHO UNDERSCORE
 ##
@@ -3073,7 +3154,9 @@ file: OPEN ECHO UNDERSCORE
 ## OPEN ECHO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+088
+an echo command
+a string litteral
 
 file: OPEN EXIT UNDERSCORE
 ##
@@ -3085,7 +3168,9 @@ file: OPEN EXIT UNDERSCORE
 ## OPEN EXIT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+089
+an exit command
+a closing parenthesis
 
 file: OPEN GET_ASSERTIONS UNDERSCORE
 ##
@@ -3097,7 +3182,9 @@ file: OPEN GET_ASSERTIONS UNDERSCORE
 ## OPEN GET_ASSERTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+090
+a get-assertions command
+a closing parenthesis
 
 file: OPEN GET_ASSIGNMENT UNDERSCORE
 ##
@@ -3109,7 +3196,9 @@ file: OPEN GET_ASSIGNMENT UNDERSCORE
 ## OPEN GET_ASSIGNMENT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+091
+a get-assignment command
+a closing parenthesis
 
 file: OPEN GET_INFO KEYWORD UNDERSCORE
 ##
@@ -3121,7 +3210,9 @@ file: OPEN GET_INFO KEYWORD UNDERSCORE
 ## OPEN GET_INFO info_flag
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+092
+a get-info command
+a closing parenthesis
 
 file: OPEN GET_INFO UNDERSCORE
 ##
@@ -3133,7 +3224,9 @@ file: OPEN GET_INFO UNDERSCORE
 ## OPEN GET_INFO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+093
+a get-info command
+a keyword of the form ":symbol"
 
 file: OPEN GET_MODEL UNDERSCORE
 ##
@@ -3145,7 +3238,9 @@ file: OPEN GET_MODEL UNDERSCORE
 ## OPEN GET_MODEL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+094
+a get-model command
+a closing parenthesis
 
 file: OPEN GET_OPTION KEYWORD UNDERSCORE
 ##
@@ -3157,7 +3252,9 @@ file: OPEN GET_OPTION KEYWORD UNDERSCORE
 ## OPEN GET_OPTION KEYWORD
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+095
+a get-option command
+a closing parenthesis
 
 file: OPEN GET_OPTION UNDERSCORE
 ##
@@ -3169,7 +3266,9 @@ file: OPEN GET_OPTION UNDERSCORE
 ## OPEN GET_OPTION
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+096
+a get-option command
+a keyword of the form ":symbol"
 
 file: OPEN GET_PROOF UNDERSCORE
 ##
@@ -3181,7 +3280,9 @@ file: OPEN GET_PROOF UNDERSCORE
 ## OPEN GET_PROOF
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+097
+a get-proof command
+a closing parenthesis
 
 file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 ##
@@ -3193,7 +3294,9 @@ file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 ## OPEN GET_UNSAT_ASSUMPTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+098
+a get-unsat-assumptions command
+a closing parenthesis
 
 file: OPEN GET_UNSAT_CORE UNDERSCORE
 ##
@@ -3205,7 +3308,9 @@ file: OPEN GET_UNSAT_CORE UNDERSCORE
 ## OPEN GET_UNSAT_CORE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+099
+a get-unsat-core command
+a closing parenthesis
 
 file: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
 ##
@@ -3217,7 +3322,9 @@ file: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
 ## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+100
+a get-value command
+a closing parenthesis
 
 file: OPEN GET_VALUE OPEN UNDERSCORE
 ##
@@ -3229,7 +3336,9 @@ file: OPEN GET_VALUE OPEN UNDERSCORE
 ## OPEN GET_VALUE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+101
+a get-value command
+a term
 
 file: OPEN GET_VALUE UNDERSCORE
 ##
@@ -3241,7 +3350,9 @@ file: OPEN GET_VALUE UNDERSCORE
 ## OPEN GET_VALUE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+102
+a get-value command
+an opening parenthesis to start a list of terms
 
 file: OPEN POP NUM UNDERSCORE
 ##
@@ -3253,7 +3364,9 @@ file: OPEN POP NUM UNDERSCORE
 ## OPEN POP NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+103
+a pop command
+a closing parenthesis
 
 file: OPEN POP UNDERSCORE
 ##
@@ -3265,7 +3378,9 @@ file: OPEN POP UNDERSCORE
 ## OPEN POP
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+104
+a pop command
+a numeral
 
 file: OPEN PUSH NUM UNDERSCORE
 ##
@@ -3277,7 +3392,9 @@ file: OPEN PUSH NUM UNDERSCORE
 ## OPEN PUSH NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+105
+a push command
+a closing parenthesis
 
 file: OPEN PUSH UNDERSCORE
 ##
@@ -3289,7 +3406,9 @@ file: OPEN PUSH UNDERSCORE
 ## OPEN PUSH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+106
+a push command
+a numeral
 
 file: OPEN RESET UNDERSCORE
 ##
@@ -3301,7 +3420,9 @@ file: OPEN RESET UNDERSCORE
 ## OPEN RESET
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+107
+a reset command
+a closing parenthesis
 
 file: OPEN RESET_ASSERTIONS CLOSE UNDERSCORE
 ##
@@ -3325,7 +3446,9 @@ file: OPEN RESET_ASSERTIONS UNDERSCORE
 ## OPEN RESET_ASSERTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+108
+a reset-assertions command
+a closing parenthesis
 
 file: OPEN SET_INFO KEYWORD KEYWORD
 ##
@@ -3345,7 +3468,11 @@ file: OPEN SET_INFO KEYWORD KEYWORD
 ## In state 26, spurious reduction of production command_option -> attribute 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+109
+a set-info command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
 
 file: OPEN SET_INFO UNDERSCORE
 ##
@@ -3357,7 +3484,9 @@ file: OPEN SET_INFO UNDERSCORE
 ## OPEN SET_INFO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+110
+a set-info command
+an attribute of the form "keyword value?"
 
 file: OPEN SET_LOGIC SYMBOL UNDERSCORE
 ##
@@ -3369,7 +3498,9 @@ file: OPEN SET_LOGIC SYMBOL UNDERSCORE
 ## OPEN SET_LOGIC SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+111
+a set-logic command
+a closing parenthesis
 
 file: OPEN SET_LOGIC UNDERSCORE
 ##
@@ -3381,7 +3512,9 @@ file: OPEN SET_LOGIC UNDERSCORE
 ## OPEN SET_LOGIC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+112
+a set-logic command
+a symbol for the logic name
 
 file: OPEN SET_OPTION KEYWORD KEYWORD
 ##
@@ -3401,7 +3534,11 @@ file: OPEN SET_OPTION KEYWORD KEYWORD
 ## In state 26, spurious reduction of production command_option -> attribute 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+113
+a set-option command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
 
 file: OPEN SET_OPTION KEYWORD OPEN OPEN UNDERSCORE
 ##
@@ -3461,7 +3598,9 @@ file: OPEN SET_OPTION UNDERSCORE
 ## OPEN SET_OPTION
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+114
+a set-option command
+an attribute of the form "keyword value?"
 
 file: OPEN UNDERSCORE
 ##
@@ -3502,7 +3641,9 @@ file: OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+115
+a command
+a command name
 
 file: UNDERSCORE
 ##
@@ -3514,5 +3655,7 @@ file: UNDERSCORE
 ##
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+116
+an input statement
+an opening parenthesis to start a command
 

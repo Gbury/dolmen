@@ -1,4 +1,4 @@
-File "", line 1, character 33-34:
+File "tests/parsing/smtlib/v2.6/errors/043_term_bad_term_list_1.smt2", line 2, character 17-18:
 Error (043) while parsing a list of terms, read the reserved word '_',
       but expected either a closing parenthesis, or another term; note that
       keywords and reserved words (such as '_', 'as', ...) are not terms, and

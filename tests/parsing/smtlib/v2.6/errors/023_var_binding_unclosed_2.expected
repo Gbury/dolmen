@@ -1,4 +1,4 @@
-File "", line 1, character 36-38:
+File "tests/parsing/smtlib/v2.6/errors/023_var_binding_unclosed_2.smt2", line 2, character 20-22:
 Error (023) while parsing a variable binding, read the integer '53',
       but expected a closing parenthesis.
 

@@ -1,3 +1,6 @@
-File "", line 1, character 37-38:
-Error Syntax error (state 264) while reading the reserved word '!'.
+File "tests/parsing/smtlib/v2.6/errors/052_check-sat-assuming_bad_lit_2.smt2", line 2, character 21-22:
+Error (052) while parsing a list of propositional literals,
+      read the reserved word '!',
+      but expected a propositional literal, i.e. either a symbol or the
+      negation of a symbol.
 

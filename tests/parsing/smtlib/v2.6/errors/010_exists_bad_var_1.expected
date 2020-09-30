@@ -1,4 +1,4 @@
-File "", line 1, character 33-34:
+File "tests/parsing/smtlib/v2.6/errors/010_exists_bad_var_1.smt2", line 2, character 17-18:
 Error (010) while parsing a term, read the reserved word '_',
       but expected a sorted variable of the form "(var sort)".
 

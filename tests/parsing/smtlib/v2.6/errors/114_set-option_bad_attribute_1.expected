@@ -1,3 +1,4 @@
-File "", line 1, character 12-13:
-Error Syntax error (state 2) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/114_set-option_bad_attribute_1.smt2", line 1, character 12-13:
+Error (114) while parsing a set-option command, read the reserved word '_',
+      but expected an attribute of the form "keyword value?".
 

@@ -1,4 +1,4 @@
-File "", line 1, character 26-29:
+File "tests/parsing/smtlib/v2.6/errors/039_identifier_with_open_paren_1.smt2", line 2, character 10-13:
 Error (039) while parsing an identifier in parentheses,
       read the symbol 'foo',
       but expected either an indexed identifier (starting with an underscore)

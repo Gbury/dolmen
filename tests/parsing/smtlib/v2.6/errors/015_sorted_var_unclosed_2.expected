@@ -1,4 +1,4 @@
-File "", line 1, character 40-43:
+File "tests/parsing/smtlib/v2.6/errors/015_sorted_var_unclosed_2.smt2", line 2, character 24-27:
 Error (015) while parsing a sorted variable, read the symbol 'foo',
       but expected a closing parenthesis.
 

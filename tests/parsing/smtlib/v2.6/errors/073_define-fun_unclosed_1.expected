@@ -1,3 +1,4 @@
-File "", line 1, character 45-46:
-Error Syntax error (state 198) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/073_define-fun_unclosed_1.smt2", line 2, character 29-30:
+Error (073) while parsing a function definition, read the reserved word '_',
+      but expected a closing parenthesis.
 

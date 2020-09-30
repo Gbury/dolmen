@@ -1,3 +1,6 @@
-File "", line 1, character 35-36:
-Error Syntax error (state 213) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/064_declare-datatypes_bad_sort_dec_list_1.smt2", line 2, character 19-20:
+Error (064) while parsing a datatypes declaration,
+      read the reserved word '_',
+      but expected a list of sort declaration, starting with an opening
+      parenthesis.
 

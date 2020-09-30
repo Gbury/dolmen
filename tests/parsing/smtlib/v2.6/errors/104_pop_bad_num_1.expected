@@ -1,3 +1,4 @@
-File "", line 1, character 5-6:
-Error Syntax error (state 40) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/104_pop_bad_num_1.smt2", line 1, character 5-6:
+Error (104) while parsing a pop command, read the reserved word '_',
+      but expected a numeral.
 

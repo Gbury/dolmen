@@ -1,3 +1,5 @@
-File "", line 1, character 34-35:
-Error Syntax error (state 181) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/078_define-funs-rec_bad_fun_decl_1.smt2", line 2, character 18-19:
+Error (078) while parsing a recursive functions definition,
+      read the reserved word '_',
+      but expected a function declaration of the form "(name (sort*) sort)".
 

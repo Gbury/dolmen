@@ -1,4 +1,4 @@
-File "", line 1, character 46-47:
+File "tests/parsing/smtlib/v2.6/errors/020_let_unclosed_1.smt2", line 2, character 30-31:
 Error (020) while parsing a term, read the reserved word '_',
       but expected a closing parenthesis to end the let binding.
 

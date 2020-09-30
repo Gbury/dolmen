@@ -1,3 +1,4 @@
-File "", line 1, character 1-2:
-Error Syntax error (state 1) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/115_command_bad_name_1.smt2", line 1, character 1-2:
+Error (115) while parsing a command, read the reserved word '_',
+      but expected a command name.
 

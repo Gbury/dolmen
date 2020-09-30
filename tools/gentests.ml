@@ -5,11 +5,19 @@
 (* Helper functions *)
 (* ************************************************************************* *)
 
-let output_of_problem file =
-  Filename.chop_extension file ^ ".output"
+let incr_output_of_problem file =
+  Filename.chop_extension file ^ ".incremental"
+
+let full_output_of_problem file =
+  Filename.chop_extension file ^ ".full"
 
 let expected_of_problem file =
   Filename.chop_extension file ^ ".expected"
+
+let supports_incremental file =
+  match Filename.extension file with
+  | ".ae" -> false
+  | _ -> true
 
 let is_a_pb file =
   match Filename.extension file with
@@ -79,11 +87,8 @@ let rec pp_exit_codes fmt = function
   | [x] -> Format.fprintf fmt "%d" x
   | x :: r -> Format.fprintf fmt "(or %d %a)" x pp_exit_codes r
 
-let test_stanza fmt (exit_codes, pb_file) =
-  let output_file = output_of_problem pb_file in
-  let expected_file = expected_of_problem pb_file in
+let test_stanza_aux mode fmt (res_file, pb_file, exit_codes, expected_file) =
   Format.fprintf fmt {|
-; Test for %s
 (rule
   (target  %s)
   (deps    %s)
@@ -91,14 +96,30 @@ let test_stanza fmt (exit_codes, pb_file) =
   (action (chdir %%{workspace_root}
            (with-outputs-to %%{target}
             (with-accepted-exit-codes %a
-             (run dolmen --color=false %%{deps} %%{read-lines:flags.dune}))))))
+             (run dolmen --mode=%s --color=false %%{deps} %%{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff %s %s)))
 |}
-    pb_file output_file pb_file
+    res_file pb_file
     pp_exit_codes exit_codes
-    expected_file output_file
+    mode expected_file res_file
+
+let test_stanza_incr fmt ((_, pb_file, _, _) as data) =
+  if not (supports_incremental pb_file) then ()
+  else Format.fprintf fmt "; Incremental test@\n%a@\n" (test_stanza_aux "incremental") data
+
+let test_stanza_full fmt data =
+  Format.fprintf fmt "; Full mode test@\n%a@\n" (test_stanza_aux "full") data
+
+let test_stanza fmt (exit_codes, pb_file) =
+  let incr_file = incr_output_of_problem pb_file in
+  let full_file = full_output_of_problem pb_file in
+  let expected_file = expected_of_problem pb_file in
+  Format.fprintf fmt "; Test for %s@\n%a%a@\n" pb_file
+    test_stanza_incr (incr_file, pb_file, exit_codes, expected_file)
+    test_stanza_full (full_file, pb_file, exit_codes, expected_file)
+
 
 
 (* Generating a test case *)

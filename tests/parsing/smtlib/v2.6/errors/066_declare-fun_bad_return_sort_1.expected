@@ -1,3 +1,4 @@
-File "", line 1, character 36-37:
-Error Syntax error (state 210) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/066_declare-fun_bad_return_sort_1.smt2", line 2, character 20-21:
+Error (066) while parsing a function declaration, read the reserved word '_',
+      but expected a sort for the return type of the function.
 

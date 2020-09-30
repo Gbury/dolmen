@@ -1,3 +1,4 @@
-File "", line 1, character 34-35:
-Error Syntax error (state 201) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/071_declare-fun_bad_arity_1.smt2", line 2, character 18-19:
+Error (071) while parsing a sort declaration, read the reserved word '_',
+      but expected a numeral for the arity of the sort being declared.
 

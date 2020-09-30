@@ -1,3 +1,4 @@
-File "", line 1, character 11-12:
-Error Syntax error (state 27) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/112_set-logic_bad_symbol_1.smt2", line 1, character 11-12:
+Error (112) while parsing a set-logic command, read the reserved word '_',
+      but expected a symbol for the logic name.
 

@@ -1,3 +1,5 @@
-File "", line 1, character 38-39:
-Error Syntax error (state 256) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/058_declare-datatype_bad_cstr_list_1.smt2", line 2, character 22-23:
+Error (058) while parsing a datatype declaration, read the reserved word '_',
+      but expected a list of datatype constructors, starting with an opening
+      parenthesis.
 

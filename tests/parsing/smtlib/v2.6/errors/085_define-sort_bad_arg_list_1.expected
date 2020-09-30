@@ -1,3 +1,4 @@
-File "", line 1, character 33-34:
-Error Syntax error (state 161) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/085_define-sort_bad_arg_list_1.smt2", line 2, character 17-18:
+Error (085) while parsing a sort definition, read the reserved word '_',
+      but expected an opening parenthesis to start a list of arguments.
 

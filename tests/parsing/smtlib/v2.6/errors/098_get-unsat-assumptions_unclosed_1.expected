@@ -1,3 +1,5 @@
-File "", line 1, character 23-24:
-Error Syntax error (state 138) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/098_get-unsat-assumptions_unclosed_1.smt2", line 1, character 23-24:
+Error (098) while parsing a get-unsat-assumptions command,
+      read the reserved word '_',
+      but expected a closing parenthesis.
 

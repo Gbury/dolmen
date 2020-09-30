@@ -1,3 +1,4 @@
-File "", line 1, character 40-41:
-Error Syntax error (state 211) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/065-declare-fun_unclosed_1.smt2", line 2, character 24-25:
+Error (065) while parsing a function declaration, read the reserved word '_',
+      but expected a closing parenthesis.
 

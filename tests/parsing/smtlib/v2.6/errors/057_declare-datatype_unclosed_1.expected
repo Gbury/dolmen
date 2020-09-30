@@ -1,3 +1,4 @@
-File "", line 1, character 44-45:
-Error Syntax error (state 257) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/057_declare-datatype_unclosed_1.smt2", line 2, character 28-29:
+Error (057) while parsing a datatype declaration, read the reserved word '_',
+      but expected a closing parenthesis.
 

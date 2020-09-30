@@ -1,3 +1,4 @@
-File "", line 1, character 27-28:
-Error Syntax error (state 145) while reading the reserved word '_'.
+File "tests/parsing/smtlib/v2.6/errors/094_get-model_unclosed_1.smt2", line 2, character 11-12:
+Error (094) while parsing a get-model command, read the reserved word '_',
+      but expected a closing parenthesis.
 
