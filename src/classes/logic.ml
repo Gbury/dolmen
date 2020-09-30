@@ -23,6 +23,9 @@ module type S = sig
   val parse_file :
     ?language:language ->
     string -> language * statement list
+  val parse_file_lazy :
+    ?language:language ->
+    string -> language * statement list Lazy.t
 
   val parse_input :
     ?language:language ->
@@ -128,11 +131,21 @@ module Make
       P.find ~dir file
 
   let parse_file ?language file =
-    let l, _, (module P : S) = match language with
+    let l, _, (module P : S) =
+      match language with
       | None -> of_filename file
       | Some l -> of_language l
     in
     l, P.parse_file file
+
+  let parse_file_lazy ?language file =
+    let l, _, (module P : S) =
+      match language with
+      | None -> of_filename file
+      | Some l -> of_language l
+    in
+    l, lazy (P.parse_file file)
+
 
   let parse_input ?language = function
     | `File file ->

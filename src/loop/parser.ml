@@ -96,11 +96,12 @@ module Pipe
 
   let merge _ st = st
 
-  let gen_of_list l =
+  let gen_of_llist l =
     let l = ref l in
-    (fun () -> match !l with
+    (fun () -> match Lazy.force !l with
        | [] -> None
-       | x :: r -> l := r; Some x
+       | x :: r ->
+         l := (lazy r); Some x
     )
 
   let expand st c =
@@ -128,9 +129,9 @@ module Pipe
                 let st = State.set_lang st lang in
                 st, `Gen (merge, gen_finally gen cl)
               | Some `Full ->
-                let lang, l = Logic.parse_file ?language file in
+                let lang, l = Logic.parse_file_lazy ?language file in
                 let st = State.set_lang st lang in
-                st, `Gen (merge, gen_of_list l)
+                st, `Gen (merge, gen_of_llist l)
             end
         end
       | _ -> (st, `Ok)
