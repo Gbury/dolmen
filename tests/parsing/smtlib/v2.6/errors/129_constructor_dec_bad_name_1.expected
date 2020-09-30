@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/129_constructor_dec_bad_name_1.smt2", line 2, character 24-25:
+Error (129) while parsing a constructor declaration,
+      read the reserved word '_',
+      but expected a symbol for the constructor name.
+

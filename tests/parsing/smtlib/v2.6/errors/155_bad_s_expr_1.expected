@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/155_bad_s_expr_1.smt2", line 1, character 19-20:
+Error (155) while parsing an s-expression, read the reserved word '_',
+      but expected a literal, symbol, keyword, or another s-expression in
+      parentheses.
+

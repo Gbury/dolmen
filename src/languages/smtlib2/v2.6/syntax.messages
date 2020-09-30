@@ -949,7 +949,7 @@ input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 
 058
 a datatype declaration
-a list of datatype constructors, starting with an opening parenthesis
+an opening parenthesis to start the datatype declaration
 
 input: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
@@ -1370,7 +1370,7 @@ input: OPEN ECHO UNDERSCORE
 
 088
 an echo command
-a string litteral
+a string literal
 
 input: OPEN EXIT UNDERSCORE
 ##
@@ -2171,7 +2171,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ## OPEN not_symbol prop_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+046
+a propositional literal
+a closing parenthesis
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
 ##
@@ -2183,7 +2185,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN not_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+047
+a propositional literal
+a symbol
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
 ##
@@ -2195,7 +2199,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+117
+a propositional literal
+the "not" symbol
 
 file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
 ##
@@ -2207,7 +2213,9 @@ file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
 ## prop_literal
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+119
+a list of propositional literals
+a propositional literal of the form "symbol" or "(not symbol)"
 
 file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 ##
@@ -2248,7 +2256,10 @@ file: OPEN DECLARE_CONST SYMBOL OPEN STR
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+120
+a sort
+an identifier to make a sort function application (such as "f x y"),
+or an underscore to start an indexed identifier
 
 file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2261,7 +2272,9 @@ file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 ## sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+121
+a list of sorts
+a sort, or a closing parenthesis
 
 file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
 ##
@@ -2273,7 +2286,9 @@ file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
 ## OPEN identifier
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+122
+a sort
+a sort to start a non-empty list of arguments
 
 file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2344,7 +2359,10 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
 ## constructor_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+123
+a list of constructor declarations
+another constructor declaration of the form "(constructor selectors*)",
+or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
@@ -2356,7 +2374,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UND
 ## selector_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+124
+a list of selectors
+another selector of the form "(selector sort)", or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 ##
@@ -2368,7 +2388,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCOR
 ## OPEN SYMBOL sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+125
+a selector declaration
+a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
 ##
@@ -2380,7 +2402,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+126
+a selector declaration
+a sort for the return type of the selector
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
 ##
@@ -2392,7 +2416,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+127
+a selector declaration
+a symbol for the selector name
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 ##
@@ -2404,7 +2430,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+128
+a constructor declaration
+a selector declaration, of the form "(selector sort)", or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
 ##
@@ -2416,7 +2444,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+129
+a constructor declaration
+a symbol for the constructor name
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
@@ -2428,7 +2458,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL C
 ## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+130
+a datatype declaration
+a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
 ##
@@ -2440,7 +2472,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
 ## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+131
+a datatype declaration
+a constructor declaration of the form "(symbol selector*)"
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
 ##
@@ -2452,7 +2486,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
 ## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+132
+a datatype declaration
+an opening parenthesis to start the list of constructors
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
 ##
@@ -2465,7 +2501,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
 ## datatype_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+133
+a list of sort variables to parameterize a datatype
+another symbol, or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
 ##
@@ -2477,7 +2515,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
 ## OPEN PAR OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+134
+a list of sort variables to parameterize a datatype
+a symbol
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
 ##
@@ -2489,7 +2529,9 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
 ## OPEN PAR
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+135
+a datatype declaration
+an opening parenthesis to start a list of sort parameters for the datatype
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
 ##
@@ -2502,7 +2544,10 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+136
+a datatype declaration
+a list of constructor declarations of the form "(symbol selector*)",
+or a parameterization of the datatype of the form "par (sort+)"
 
 file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 ##
@@ -2516,7 +2561,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 
 058
 a datatype declaration
-a list of datatype constructors, starting with an opening parenthesis
+an opening parenthesis to start the datatype declaration
 
 file: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
@@ -2557,7 +2602,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYM
 ## datatype_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+137
+a list of datatype declarations
+another datatype declaration, or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 ##
@@ -2599,7 +2646,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
 ## sort_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+138
+a list of datatype arity declarations
+another datatype arity declaration, or a closing parenthesis
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
 ##
@@ -2611,7 +2660,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
 ## OPEN SYMBOL NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+139
+a datatype arity declaration
+a closing parenthesis
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
 ##
@@ -2623,7 +2674,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+140
+a datatype arity declaration
+a numeral for the datatype arity
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
 ##
@@ -2635,7 +2688,9 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+141
+a datatype arity declaration
+a symbol for the datatype name
 
 file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 ##
@@ -2703,7 +2758,9 @@ file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
 ## sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+142
+a list of sorts
+another sort or a closing parenthesis
 
 file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 ##
@@ -2870,7 +2927,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
 ## function_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+143
+a list of function declarations
+another function declaration, or a closing parenthesis
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
@@ -2882,7 +2941,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## OPEN SYMBOL OPEN list(sorted_var) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+144
+a function declaration
+a closing parenthesis
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
 ##
@@ -2894,7 +2955,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
 ## OPEN SYMBOL OPEN list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+145
+a function declaration
+a sort for the return type of the function
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
 ##
@@ -2906,7 +2969,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
 ## OPEN SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+146
+a function declaration
+either a sort for the first argument type, or a closing parenthesis
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
 ##
@@ -2918,7 +2983,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+147
+a function declaration
+an opening parenthesis to start the list of arguments sorts
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
 ##
@@ -2930,7 +2997,9 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+148
+a function declaration
+a symbol for the function name
 
 file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
@@ -2984,7 +3053,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## SYMBOL OPEN list(sorted_var) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+149
+a function definition
+a term for the body of the function
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
 ##
@@ -2996,7 +3067,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
 ## SYMBOL OPEN list(sorted_var) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+150
+a function definition
+a sort for the return type of the function
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
@@ -3008,7 +3081,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ## sorted_var
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+151
+a list of sorted variables
+another sorted variable of the form "(var sort)", or a closing parenthesis
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
 ##
@@ -3020,7 +3095,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
 ## SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+152
+a function definition
+a sorted variable of the form "(var sort)", or a closing parenthesis
 
 file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
 ##
@@ -3032,7 +3109,9 @@ file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
 ## SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+153
+a function definition
+an opening parenthesis to start the list of arguments
 
 file: OPEN DEFINE_FUN_REC UNDERSCORE
 ##
@@ -3086,7 +3165,9 @@ file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
 ## SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+154
+a list of symbols
+another symbol or a closing parenthesis
 
 file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 ##
@@ -3156,7 +3237,7 @@ file: OPEN ECHO UNDERSCORE
 
 088
 an echo command
-a string litteral
+a string literal
 
 file: OPEN EXIT UNDERSCORE
 ##
@@ -3434,7 +3515,9 @@ file: OPEN RESET_ASSERTIONS CLOSE UNDERSCORE
 ## command
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+116
+an input statement
+an opening parenthesis to start a command
 
 file: OPEN RESET_ASSERTIONS UNDERSCORE
 ##
@@ -3550,7 +3633,10 @@ file: OPEN SET_OPTION KEYWORD OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+155
+an s-expression
+a literal, symbol, keyword, or another s-expression in parentheses
+
 
 file: OPEN SET_OPTION KEYWORD OPEN SYMBOL UNDERSCORE
 ##
@@ -3562,7 +3648,10 @@ file: OPEN SET_OPTION KEYWORD OPEN SYMBOL UNDERSCORE
 ## s_expr
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+156
+a list of s-expressions
+a closing parenthesis, or another s-expression, i.e.
+a literal, symbol, keyword, or an s-expression in parentheses
 
 file: OPEN SET_OPTION KEYWORD OPEN UNDERSCORE
 ##
@@ -3574,7 +3663,10 @@ file: OPEN SET_OPTION KEYWORD OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+157
+an attribute value
+a closing parenthesis, or an s-expression, i.e.
+a literal, symbol, keyword, or an s-expression in parentheses
 
 file: OPEN SET_OPTION KEYWORD UNDERSCORE
 ##
@@ -3586,7 +3678,10 @@ file: OPEN SET_OPTION KEYWORD UNDERSCORE
 ## KEYWORD
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+158
+an attribute
+either an attribute value as s-expression,
+another attribute, or a closing parenthesis
 
 file: OPEN SET_OPTION UNDERSCORE
 ##

@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/v2.6/errors/149_function_def_bad_body_1.smt2", line 2, character 28-29:
+Error (149) while parsing a function definition, read the reserved word '_',
+      but expected a term for the body of the function.
+

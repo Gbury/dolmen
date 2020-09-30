@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.6/errors/138_datatype_arity_dec_list_unclosed_1.smt2", line 2, character 28-29:
+Error (138) while parsing a list of datatype arity declarations,
+      read the reserved word '_',
+      but expected another datatype arity declaration, or a closing
+      parenthesis.
+

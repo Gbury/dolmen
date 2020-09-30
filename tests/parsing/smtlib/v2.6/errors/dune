@@ -2460,6 +2460,66 @@
   (action (diff 045_index_list_unclosed_1.expected 045_index_list_unclosed_1.full)))
 
 
+; Test for 046_prop_lit_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  046_prop_lit_unclosed_1.incremental)
+  (deps    046_prop_lit_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 046_prop_lit_unclosed_1.expected 046_prop_lit_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  046_prop_lit_unclosed_1.full)
+  (deps    046_prop_lit_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 046_prop_lit_unclosed_1.expected 046_prop_lit_unclosed_1.full)))
+
+
+; Test for 047_prop_lit_bad_symbol_1.smt2
+; Incremental test
+
+(rule
+  (target  047_prop_lit_bad_symbol_1.incremental)
+  (deps    047_prop_lit_bad_symbol_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 047_prop_lit_bad_symbol_1.expected 047_prop_lit_bad_symbol_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  047_prop_lit_bad_symbol_1.full)
+  (deps    047_prop_lit_bad_symbol_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 047_prop_lit_bad_symbol_1.expected 047_prop_lit_bad_symbol_1.full)))
+
+
 ; Test for 048_term_bad_1.smt2
 ; Incremental test
 
@@ -4590,6 +4650,36 @@
   (action (diff 115_command_bad_name_1.expected 115_command_bad_name_1.full)))
 
 
+; Test for 116_bad_command_1.smt2
+; Incremental test
+
+(rule
+  (target  116_bad_command_1.incremental)
+  (deps    116_bad_command_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 116_bad_command_1.expected 116_bad_command_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  116_bad_command_1.full)
+  (deps    116_bad_command_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 116_bad_command_1.expected 116_bad_command_1.full)))
+
+
 ; Test for 116_input_bad_1.smt2
 ; Incremental test
 
@@ -4650,6 +4740,36 @@
   (action (diff 116_input_bad_2.expected 116_input_bad_2.full)))
 
 
+; Test for 117_prop_lit_bad_not_1.smt2
+; Incremental test
+
+(rule
+  (target  117_prop_lit_bad_not_1.incremental)
+  (deps    117_prop_lit_bad_not_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 117_prop_lit_bad_not_1.expected 117_prop_lit_bad_not_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  117_prop_lit_bad_not_1.full)
+  (deps    117_prop_lit_bad_not_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 117_prop_lit_bad_not_1.expected 117_prop_lit_bad_not_1.full)))
+
+
 ; Test for 118_assert_bad_term_1.smt2
 ; Incremental test
 
@@ -4678,6 +4798,1206 @@
 (rule
   (alias runtest)
   (action (diff 118_assert_bad_term_1.expected 118_assert_bad_term_1.full)))
+
+
+; Test for 119_prop_lit_list_bad_1.smt2
+; Incremental test
+
+(rule
+  (target  119_prop_lit_list_bad_1.incremental)
+  (deps    119_prop_lit_list_bad_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 119_prop_lit_list_bad_1.expected 119_prop_lit_list_bad_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  119_prop_lit_list_bad_1.full)
+  (deps    119_prop_lit_list_bad_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 119_prop_lit_list_bad_1.expected 119_prop_lit_list_bad_1.full)))
+
+
+; Test for 120_sort_open_wait_1.smt2
+; Incremental test
+
+(rule
+  (target  120_sort_open_wait_1.incremental)
+  (deps    120_sort_open_wait_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 120_sort_open_wait_1.expected 120_sort_open_wait_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  120_sort_open_wait_1.full)
+  (deps    120_sort_open_wait_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 120_sort_open_wait_1.expected 120_sort_open_wait_1.full)))
+
+
+; Test for 121_sort_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  121_sort_list_unclosed_1.incremental)
+  (deps    121_sort_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 121_sort_list_unclosed_1.expected 121_sort_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  121_sort_list_unclosed_1.full)
+  (deps    121_sort_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 121_sort_list_unclosed_1.expected 121_sort_list_unclosed_1.full)))
+
+
+; Test for 122_sort_app_empty_args_1.smt2
+; Incremental test
+
+(rule
+  (target  122_sort_app_empty_args_1.incremental)
+  (deps    122_sort_app_empty_args_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 122_sort_app_empty_args_1.expected 122_sort_app_empty_args_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  122_sort_app_empty_args_1.full)
+  (deps    122_sort_app_empty_args_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 122_sort_app_empty_args_1.expected 122_sort_app_empty_args_1.full)))
+
+
+; Test for 123_constructor_dec_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  123_constructor_dec_list_unclosed_1.incremental)
+  (deps    123_constructor_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 123_constructor_dec_list_unclosed_1.expected 123_constructor_dec_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  123_constructor_dec_list_unclosed_1.full)
+  (deps    123_constructor_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 123_constructor_dec_list_unclosed_1.expected 123_constructor_dec_list_unclosed_1.full)))
+
+
+; Test for 124_selector_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  124_selector_list_unclosed_1.incremental)
+  (deps    124_selector_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 124_selector_list_unclosed_1.expected 124_selector_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  124_selector_list_unclosed_1.full)
+  (deps    124_selector_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 124_selector_list_unclosed_1.expected 124_selector_list_unclosed_1.full)))
+
+
+; Test for 125_selector_dec_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  125_selector_dec_unclosed_1.incremental)
+  (deps    125_selector_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 125_selector_dec_unclosed_1.expected 125_selector_dec_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  125_selector_dec_unclosed_1.full)
+  (deps    125_selector_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 125_selector_dec_unclosed_1.expected 125_selector_dec_unclosed_1.full)))
+
+
+; Test for 126_selector_dec_bad_sort_1.smt2
+; Incremental test
+
+(rule
+  (target  126_selector_dec_bad_sort_1.incremental)
+  (deps    126_selector_dec_bad_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 126_selector_dec_bad_sort_1.expected 126_selector_dec_bad_sort_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  126_selector_dec_bad_sort_1.full)
+  (deps    126_selector_dec_bad_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 126_selector_dec_bad_sort_1.expected 126_selector_dec_bad_sort_1.full)))
+
+
+; Test for 127_selector_dec_bad_name_1.smt2
+; Incremental test
+
+(rule
+  (target  127_selector_dec_bad_name_1.incremental)
+  (deps    127_selector_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 127_selector_dec_bad_name_1.expected 127_selector_dec_bad_name_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  127_selector_dec_bad_name_1.full)
+  (deps    127_selector_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 127_selector_dec_bad_name_1.expected 127_selector_dec_bad_name_1.full)))
+
+
+; Test for 128_constructor_dec_bad_selector_1.smt2
+; Incremental test
+
+(rule
+  (target  128_constructor_dec_bad_selector_1.incremental)
+  (deps    128_constructor_dec_bad_selector_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 128_constructor_dec_bad_selector_1.expected 128_constructor_dec_bad_selector_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  128_constructor_dec_bad_selector_1.full)
+  (deps    128_constructor_dec_bad_selector_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 128_constructor_dec_bad_selector_1.expected 128_constructor_dec_bad_selector_1.full)))
+
+
+; Test for 129_constructor_dec_bad_name_1.smt2
+; Incremental test
+
+(rule
+  (target  129_constructor_dec_bad_name_1.incremental)
+  (deps    129_constructor_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 129_constructor_dec_bad_name_1.expected 129_constructor_dec_bad_name_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  129_constructor_dec_bad_name_1.full)
+  (deps    129_constructor_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 129_constructor_dec_bad_name_1.expected 129_constructor_dec_bad_name_1.full)))
+
+
+; Test for 130_datatype_dec_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  130_datatype_dec_unclosed_1.incremental)
+  (deps    130_datatype_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 130_datatype_dec_unclosed_1.expected 130_datatype_dec_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  130_datatype_dec_unclosed_1.full)
+  (deps    130_datatype_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 130_datatype_dec_unclosed_1.expected 130_datatype_dec_unclosed_1.full)))
+
+
+; Test for 131_datatype_dec_bad_constructor_list_1.smt2
+; Incremental test
+
+(rule
+  (target  131_datatype_dec_bad_constructor_list_1.incremental)
+  (deps    131_datatype_dec_bad_constructor_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 131_datatype_dec_bad_constructor_list_1.expected 131_datatype_dec_bad_constructor_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  131_datatype_dec_bad_constructor_list_1.full)
+  (deps    131_datatype_dec_bad_constructor_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 131_datatype_dec_bad_constructor_list_1.expected 131_datatype_dec_bad_constructor_list_1.full)))
+
+
+; Test for 132_datatype_dec_unopened_cstr_list_1.smt2
+; Incremental test
+
+(rule
+  (target  132_datatype_dec_unopened_cstr_list_1.incremental)
+  (deps    132_datatype_dec_unopened_cstr_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 132_datatype_dec_unopened_cstr_list_1.expected 132_datatype_dec_unopened_cstr_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  132_datatype_dec_unopened_cstr_list_1.full)
+  (deps    132_datatype_dec_unopened_cstr_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 132_datatype_dec_unopened_cstr_list_1.expected 132_datatype_dec_unopened_cstr_list_1.full)))
+
+
+; Test for 133_datatype_symbol_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  133_datatype_symbol_list_unclosed_1.incremental)
+  (deps    133_datatype_symbol_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 133_datatype_symbol_list_unclosed_1.expected 133_datatype_symbol_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  133_datatype_symbol_list_unclosed_1.full)
+  (deps    133_datatype_symbol_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 133_datatype_symbol_list_unclosed_1.expected 133_datatype_symbol_list_unclosed_1.full)))
+
+
+; Test for 134_datatype_symbol_list_start_1.smt2
+; Incremental test
+
+(rule
+  (target  134_datatype_symbol_list_start_1.incremental)
+  (deps    134_datatype_symbol_list_start_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 134_datatype_symbol_list_start_1.expected 134_datatype_symbol_list_start_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  134_datatype_symbol_list_start_1.full)
+  (deps    134_datatype_symbol_list_start_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 134_datatype_symbol_list_start_1.expected 134_datatype_symbol_list_start_1.full)))
+
+
+; Test for 135_datatype_dec_unopened_par_list_1.smt2
+; Incremental test
+
+(rule
+  (target  135_datatype_dec_unopened_par_list_1.incremental)
+  (deps    135_datatype_dec_unopened_par_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 135_datatype_dec_unopened_par_list_1.expected 135_datatype_dec_unopened_par_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  135_datatype_dec_unopened_par_list_1.full)
+  (deps    135_datatype_dec_unopened_par_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 135_datatype_dec_unopened_par_list_1.expected 135_datatype_dec_unopened_par_list_1.full)))
+
+
+; Test for 136_datatype_dec_ambiguous_1.smt2
+; Incremental test
+
+(rule
+  (target  136_datatype_dec_ambiguous_1.incremental)
+  (deps    136_datatype_dec_ambiguous_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 136_datatype_dec_ambiguous_1.expected 136_datatype_dec_ambiguous_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  136_datatype_dec_ambiguous_1.full)
+  (deps    136_datatype_dec_ambiguous_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 136_datatype_dec_ambiguous_1.expected 136_datatype_dec_ambiguous_1.full)))
+
+
+; Test for 137_datatype_dec_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  137_datatype_dec_list_unclosed_1.incremental)
+  (deps    137_datatype_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 137_datatype_dec_list_unclosed_1.expected 137_datatype_dec_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  137_datatype_dec_list_unclosed_1.full)
+  (deps    137_datatype_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 137_datatype_dec_list_unclosed_1.expected 137_datatype_dec_list_unclosed_1.full)))
+
+
+; Test for 138_datatype_arity_dec_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  138_datatype_arity_dec_list_unclosed_1.incremental)
+  (deps    138_datatype_arity_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 138_datatype_arity_dec_list_unclosed_1.expected 138_datatype_arity_dec_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  138_datatype_arity_dec_list_unclosed_1.full)
+  (deps    138_datatype_arity_dec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 138_datatype_arity_dec_list_unclosed_1.expected 138_datatype_arity_dec_list_unclosed_1.full)))
+
+
+; Test for 139_datatype_arity_dec_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  139_datatype_arity_dec_unclosed_1.incremental)
+  (deps    139_datatype_arity_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 139_datatype_arity_dec_unclosed_1.expected 139_datatype_arity_dec_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  139_datatype_arity_dec_unclosed_1.full)
+  (deps    139_datatype_arity_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 139_datatype_arity_dec_unclosed_1.expected 139_datatype_arity_dec_unclosed_1.full)))
+
+
+; Test for 140_datatype_arity_dec_bad_num_1.smt2
+; Incremental test
+
+(rule
+  (target  140_datatype_arity_dec_bad_num_1.incremental)
+  (deps    140_datatype_arity_dec_bad_num_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 140_datatype_arity_dec_bad_num_1.expected 140_datatype_arity_dec_bad_num_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  140_datatype_arity_dec_bad_num_1.full)
+  (deps    140_datatype_arity_dec_bad_num_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 140_datatype_arity_dec_bad_num_1.expected 140_datatype_arity_dec_bad_num_1.full)))
+
+
+; Test for 141_datatype_arity_dec_bad_name_1.smt2
+; Incremental test
+
+(rule
+  (target  141_datatype_arity_dec_bad_name_1.incremental)
+  (deps    141_datatype_arity_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 141_datatype_arity_dec_bad_name_1.expected 141_datatype_arity_dec_bad_name_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  141_datatype_arity_dec_bad_name_1.full)
+  (deps    141_datatype_arity_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 141_datatype_arity_dec_bad_name_1.expected 141_datatype_arity_dec_bad_name_1.full)))
+
+
+; Test for 142_declare-fun_arg_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  142_declare-fun_arg_list_unclosed_1.incremental)
+  (deps    142_declare-fun_arg_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 142_declare-fun_arg_list_unclosed_1.expected 142_declare-fun_arg_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  142_declare-fun_arg_list_unclosed_1.full)
+  (deps    142_declare-fun_arg_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 142_declare-fun_arg_list_unclosed_1.expected 142_declare-fun_arg_list_unclosed_1.full)))
+
+
+; Test for 143_define-funs-rec_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  143_define-funs-rec_list_unclosed_1.incremental)
+  (deps    143_define-funs-rec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 143_define-funs-rec_list_unclosed_1.expected 143_define-funs-rec_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  143_define-funs-rec_list_unclosed_1.full)
+  (deps    143_define-funs-rec_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 143_define-funs-rec_list_unclosed_1.expected 143_define-funs-rec_list_unclosed_1.full)))
+
+
+; Test for 144_function_dec_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  144_function_dec_unclosed_1.incremental)
+  (deps    144_function_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 144_function_dec_unclosed_1.expected 144_function_dec_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  144_function_dec_unclosed_1.full)
+  (deps    144_function_dec_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 144_function_dec_unclosed_1.expected 144_function_dec_unclosed_1.full)))
+
+
+; Test for 145_function_dec_bad_return_sort_1.smt2
+; Incremental test
+
+(rule
+  (target  145_function_dec_bad_return_sort_1.incremental)
+  (deps    145_function_dec_bad_return_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 145_function_dec_bad_return_sort_1.expected 145_function_dec_bad_return_sort_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  145_function_dec_bad_return_sort_1.full)
+  (deps    145_function_dec_bad_return_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 145_function_dec_bad_return_sort_1.expected 145_function_dec_bad_return_sort_1.full)))
+
+
+; Test for 146_function_dec_arg_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  146_function_dec_arg_list_unclosed_1.incremental)
+  (deps    146_function_dec_arg_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 146_function_dec_arg_list_unclosed_1.expected 146_function_dec_arg_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  146_function_dec_arg_list_unclosed_1.full)
+  (deps    146_function_dec_arg_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 146_function_dec_arg_list_unclosed_1.expected 146_function_dec_arg_list_unclosed_1.full)))
+
+
+; Test for 147_function_dec_unopened_arg_list_1.smt2
+; Incremental test
+
+(rule
+  (target  147_function_dec_unopened_arg_list_1.incremental)
+  (deps    147_function_dec_unopened_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 147_function_dec_unopened_arg_list_1.expected 147_function_dec_unopened_arg_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  147_function_dec_unopened_arg_list_1.full)
+  (deps    147_function_dec_unopened_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 147_function_dec_unopened_arg_list_1.expected 147_function_dec_unopened_arg_list_1.full)))
+
+
+; Test for 148_function_dec_bad_name_1.smt2
+; Incremental test
+
+(rule
+  (target  148_function_dec_bad_name_1.incremental)
+  (deps    148_function_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 148_function_dec_bad_name_1.expected 148_function_dec_bad_name_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  148_function_dec_bad_name_1.full)
+  (deps    148_function_dec_bad_name_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 148_function_dec_bad_name_1.expected 148_function_dec_bad_name_1.full)))
+
+
+; Test for 149_function_def_bad_body_1.smt2
+; Incremental test
+
+(rule
+  (target  149_function_def_bad_body_1.incremental)
+  (deps    149_function_def_bad_body_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 149_function_def_bad_body_1.expected 149_function_def_bad_body_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  149_function_def_bad_body_1.full)
+  (deps    149_function_def_bad_body_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 149_function_def_bad_body_1.expected 149_function_def_bad_body_1.full)))
+
+
+; Test for 150_function_def_bad_return_sort_1.smt2
+; Incremental test
+
+(rule
+  (target  150_function_def_bad_return_sort_1.incremental)
+  (deps    150_function_def_bad_return_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 150_function_def_bad_return_sort_1.expected 150_function_def_bad_return_sort_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  150_function_def_bad_return_sort_1.full)
+  (deps    150_function_def_bad_return_sort_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 150_function_def_bad_return_sort_1.expected 150_function_def_bad_return_sort_1.full)))
+
+
+; Test for 151_sorted_var_list_unclosed_1.smt2
+; Incremental test
+
+(rule
+  (target  151_sorted_var_list_unclosed_1.incremental)
+  (deps    151_sorted_var_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 151_sorted_var_list_unclosed_1.expected 151_sorted_var_list_unclosed_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  151_sorted_var_list_unclosed_1.full)
+  (deps    151_sorted_var_list_unclosed_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 151_sorted_var_list_unclosed_1.expected 151_sorted_var_list_unclosed_1.full)))
+
+
+; Test for 152_function_def_arg_list_1.smt2
+; Incremental test
+
+(rule
+  (target  152_function_def_arg_list_1.incremental)
+  (deps    152_function_def_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 152_function_def_arg_list_1.expected 152_function_def_arg_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  152_function_def_arg_list_1.full)
+  (deps    152_function_def_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 152_function_def_arg_list_1.expected 152_function_def_arg_list_1.full)))
+
+
+; Test for 153_function_def_unopened_arg_list_1.smt2
+; Incremental test
+
+(rule
+  (target  153_function_def_unopened_arg_list_1.incremental)
+  (deps    153_function_def_unopened_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 153_function_def_unopened_arg_list_1.expected 153_function_def_unopened_arg_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  153_function_def_unopened_arg_list_1.full)
+  (deps    153_function_def_unopened_arg_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 153_function_def_unopened_arg_list_1.expected 153_function_def_unopened_arg_list_1.full)))
+
+
+; Test for 154_symbol_list_1.smt2
+; Incremental test
+
+(rule
+  (target  154_symbol_list_1.incremental)
+  (deps    154_symbol_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 154_symbol_list_1.expected 154_symbol_list_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  154_symbol_list_1.full)
+  (deps    154_symbol_list_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 154_symbol_list_1.expected 154_symbol_list_1.full)))
+
+
+; Test for 155_bad_s_expr_1.smt2
+; Incremental test
+
+(rule
+  (target  155_bad_s_expr_1.incremental)
+  (deps    155_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 155_bad_s_expr_1.expected 155_bad_s_expr_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  155_bad_s_expr_1.full)
+  (deps    155_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 155_bad_s_expr_1.expected 155_bad_s_expr_1.full)))
+
+
+; Test for 156_s_expr_list_bad_s_expr_1.smt2
+; Incremental test
+
+(rule
+  (target  156_s_expr_list_bad_s_expr_1.incremental)
+  (deps    156_s_expr_list_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 156_s_expr_list_bad_s_expr_1.expected 156_s_expr_list_bad_s_expr_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  156_s_expr_list_bad_s_expr_1.full)
+  (deps    156_s_expr_list_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 156_s_expr_list_bad_s_expr_1.expected 156_s_expr_list_bad_s_expr_1.full)))
+
+
+; Test for 157_attribute_value_bad_s_expr_1.smt2
+; Incremental test
+
+(rule
+  (target  157_attribute_value_bad_s_expr_1.incremental)
+  (deps    157_attribute_value_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 157_attribute_value_bad_s_expr_1.expected 157_attribute_value_bad_s_expr_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  157_attribute_value_bad_s_expr_1.full)
+  (deps    157_attribute_value_bad_s_expr_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 157_attribute_value_bad_s_expr_1.expected 157_attribute_value_bad_s_expr_1.full)))
+
+
+; Test for 158_attribute_bad_value_1.smt2
+; Incremental test
+
+(rule
+  (target  158_attribute_bad_value_1.incremental)
+  (deps    158_attribute_bad_value_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 158_attribute_bad_value_1.expected 158_attribute_bad_value_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  158_attribute_bad_value_1.full)
+  (deps    158_attribute_bad_value_1.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 158_attribute_bad_value_1.expected 158_attribute_bad_value_1.full)))
 
 
 ; Auto-generated part end

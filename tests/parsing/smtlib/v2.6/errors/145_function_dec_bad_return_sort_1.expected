@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/v2.6/errors/145_function_dec_bad_return_sort_1.smt2", line 2, character 26-27:
+Error (145) while parsing a function declaration, read the reserved word '_',
+      but expected a sort for the return type of the function.
+

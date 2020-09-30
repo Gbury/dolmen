@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/047_prop_lit_bad_symbol_1.smt2", line 2, character 26-27:
+Error (047) while parsing a propositional literal,
+      read the reserved word '_',
+      but expected a symbol.
+

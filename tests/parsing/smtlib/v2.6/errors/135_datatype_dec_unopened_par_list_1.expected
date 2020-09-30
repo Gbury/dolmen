@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/135_datatype_dec_unopened_par_list_1.smt2", line 2, character 27-28:
+Error (135) while parsing a datatype declaration, read the reserved word '_',
+      but expected an opening parenthesis to start a list of sort parameters
+      for the datatype.
+

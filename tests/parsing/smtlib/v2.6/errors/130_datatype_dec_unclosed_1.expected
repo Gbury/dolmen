@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/v2.6/errors/130_datatype_dec_unclosed_1.smt2", line 2, character 37-38:
+Error (130) while parsing a datatype declaration, read the reserved word '_',
+      but expected a closing parenthesis.
+

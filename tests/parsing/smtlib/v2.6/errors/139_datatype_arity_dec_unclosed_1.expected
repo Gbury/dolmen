@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/139_datatype_arity_dec_unclosed_1.smt2", line 2, character 27-28:
+Error (139) while parsing a datatype arity declaration,
+      read the reserved word '_',
+      but expected a closing parenthesis.
+
