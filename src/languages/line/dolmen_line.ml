@@ -3,6 +3,7 @@
 
 let rec consume lexbuf =
   match LexLine.token lexbuf with
+  | LexLine.EOF -> ()
   | LexLine.CHAR '\n' -> Lexing.new_line lexbuf
   | _ -> consume lexbuf
 
