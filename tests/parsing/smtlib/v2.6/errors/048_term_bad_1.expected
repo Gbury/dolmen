@@ -1,0 +1,4 @@
+File "", line 1, character 24-25:
+Error (118) while parsing an assert command, read the reserved word '_',
+      but expected a term.
+

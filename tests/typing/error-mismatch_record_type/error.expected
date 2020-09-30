@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/error-mismatch_record_type/error.ae", line 6, character 19-49:
-[0;1m[0m[1m[91mError[0;1m[0m The field foobar does not belong to record type t
+File "tests/typing/error-mismatch_record_type/error.ae", line 6, character 19-49:
+Error The field foobar does not belong to record type t

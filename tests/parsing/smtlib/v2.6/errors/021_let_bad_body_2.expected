@@ -1,0 +1,4 @@
+File "", line 1, character 38-40:
+Error (021) while parsing a term, read the reserved word 'as',
+      but expected a term (body for the let binding).
+

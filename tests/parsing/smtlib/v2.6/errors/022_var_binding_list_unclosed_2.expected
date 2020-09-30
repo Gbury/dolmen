@@ -1,0 +1,5 @@
+File "", line 1, character 37-40:
+Error (022) while parsing a list of variable binding, read the symbol 'foo',
+      but expected a closing parenthesis or a variable binding of the form
+      "(var term)".
+

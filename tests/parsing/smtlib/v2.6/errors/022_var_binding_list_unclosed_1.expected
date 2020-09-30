@@ -1,0 +1,6 @@
+File "", line 1, character 37-38:
+Error (022) while parsing a list of variable binding,
+      read the reserved word '_',
+      but expected a closing parenthesis or a variable binding of the form
+      "(var term)".
+

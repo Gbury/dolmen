@@ -1,5 +1,5 @@
-[1m[97mFile "tests/typing/error-bad_cstr_arity/error.smt2", line 3, character 31-41:
-[0;1m[0m[1m[91mError[0;1m[0m Bad arity: expected 0 arguments but got 1 arguments for constructor
+File "tests/typing/error-bad_cstr_arity/error.smt2", line 3, character 31-41:
+Error Bad arity: expected 0 arguments but got 1 arguments for constructor
       nil : ∀ alpha. list(alpha)
       Hint: it looks like the language enforces implicit polymorphism, i.e.
       no type arguments are to be provided to applications (and instead type

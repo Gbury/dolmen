@@ -1,0 +1,4 @@
+File "", line 1, character 98-101:
+Error (036) while parsing a list of match cases, read the symbol 'foo',
+      but expected a match case of the form "(pattern term)".
+

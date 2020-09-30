@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/error-infer_variable_type/error.zf", line 7, character 14-15:
-[0;1m[0m[1m[91mError[0;1m[0m Cannot infer type for a quantified variable
+File "tests/typing/error-infer_variable_type/error.zf", line 7, character 14-15:
+Error Cannot infer type for a quantified variable

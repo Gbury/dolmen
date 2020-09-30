@@ -1,0 +1,4 @@
+File "", line 1, character 40-43:
+Error (015) while parsing a sorted variable, read the symbol 'foo',
+      but expected a closing parenthesis.
+

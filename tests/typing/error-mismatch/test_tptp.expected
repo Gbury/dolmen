@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/error-mismatch/test_tptp.p", line 6, character 18-22:
-[0;1m[0m[1m[91mError[0;1m[0m The term: a has type int but was expected to be of type $i
+File "tests/typing/error-mismatch/test_tptp.p", line 6, character 18-22:
+Error The term: a has type int but was expected to be of type $i

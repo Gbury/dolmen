@@ -1,2 +1,2 @@
 (set-logic ALL)
-(assert (foral ((x int)) _))
+(assert (forall ((x int)) _))

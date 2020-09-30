@@ -1,0 +1,4 @@
+File "", line 1, character 30-31:
+Error (026) while parsing a term, read the reserved word '!',
+      but expected a variable binding of the form "(var term)".
+

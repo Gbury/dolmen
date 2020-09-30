@@ -1,2 +1,2 @@
-[1m[97mFile "tests/regression/pr36/illegal_decl.smt2", line 2, character 0-27:
-[0;1m[0m[1m[91mError[0;1m[0m Illegal declaration. Hint: check your logic
+File "tests/regression/pr36/illegal_decl.smt2", line 2, character 0-27:
+Error Illegal declaration. Hint: check your logic

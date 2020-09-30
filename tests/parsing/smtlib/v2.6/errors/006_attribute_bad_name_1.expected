@@ -1,0 +1,4 @@
+File "", line 1, character 31-32:
+Error (006) while parsing attributes for a term, read the reserved word '_',
+      but expected an attribute of the form "keyword value".
+

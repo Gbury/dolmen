@@ -1,0 +1,5 @@
+File "", line 1, character 141-144:
+Error (032) while parsing a list of match cases, read the symbol 'foo',
+      but expected a closing parenthesis or a match case of the form
+      "(pattern body)".
+

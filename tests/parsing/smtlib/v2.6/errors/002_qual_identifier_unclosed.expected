@@ -1,4 +1,4 @@
-[1m[97mFile "tests/parsing/smtlib/v2.6/errors/002_qual_identifier_unclosed.smt2", line 2, character 20-21:
-[0;1m[0m[1m[91mError[0;1m[0m while parsing a qualified identifier, read the reserved word '_',
-      but expected a closing parenthesis
+File "", line 1, character 36-37:
+Error (002) while parsing a qualified identifier, read the reserved word '_',
+      but expected a closing parenthesis.
 

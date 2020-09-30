@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/error-shadow/builtin-sort.smt2", line 3, character 0-21:
-[0;1m[0m[1m[91mError[0;1m[0m Shadowing: Bool was already defined by a builtin theory
+File "tests/typing/error-shadow/builtin-sort.smt2", line 3, character 0-21:
+Error Shadowing: Bool was already defined by a builtin theory

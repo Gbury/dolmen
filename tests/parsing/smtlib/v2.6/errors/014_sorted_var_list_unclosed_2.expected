@@ -1,0 +1,6 @@
+File "", line 1, character 41-43:
+Error (014) while parsing a list of sorted variables,
+      read the reserved word 'as',
+      but expected either a closing parentheis, or a sorted var of the form
+      "(var sort)".
+

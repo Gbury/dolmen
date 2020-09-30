@@ -1,0 +1,4 @@
+File "", line 1, character 46-52:
+Error (020) while parsing a term, read the symbol 'blabla',
+      but expected a closing parenthesis to end the let binding.
+

@@ -9,7 +9,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes (or 0 1)
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test_smtlib.expected test_smtlib.output)))
@@ -22,7 +22,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes (or 0 1)
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test_tptp.expected test_tptp.output)))
@@ -35,7 +35,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes (or 0 1)
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test_tptp_infer.expected test_tptp_infer.output)))

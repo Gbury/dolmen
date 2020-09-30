@@ -1,0 +1,7 @@
+File "", line 1, character 35-36:
+Error (045) while parsing an index list, read the reserved word '_',
+      but expected either a closing parenthesis, or an index (i.e. a numeral,
+      a symbol, or a hexadecimal); note that keywords and reserved words
+      (such as '_', 'as', ...) are not symbols, and thus are not allowed
+      here.
+

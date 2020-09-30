@@ -1,0 +1,4 @@
+File "", line 1, character 33-34:
+Error (018) while parsing a term, read the reserved word '_',
+      but expected a sorted variable of the form "(var sort)".
+

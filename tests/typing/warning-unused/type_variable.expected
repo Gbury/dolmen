@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/warning-unused/type_variable.p", line 3, character 22-32:
-[0;1m[0m[1m[95mWarning[0;1m[0m Quantified type variable `A : Type` is unused
+File "tests/typing/warning-unused/type_variable.p", line 3, character 22-32:
+Warning Quantified type variable `A : Type` is unused

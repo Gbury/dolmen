@@ -1,0 +1,5 @@
+File "", line 1, character 32-33:
+Error (019) while parsing a term, read the reserved word '_',
+      but expected a list of sorted variables, starting with an opening
+      parenthesis.
+

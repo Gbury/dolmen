@@ -1,0 +1,4 @@
+File "", line 1, character 98-99:
+Error (036) while parsing a list of match cases, read the reserved word '_',
+      but expected a match case of the form "(pattern term)".
+

@@ -1,0 +1,6 @@
+File "", line 1, character 33-34:
+Error (043) while parsing a list of terms, read the reserved word '_',
+      but expected either a closing parenthesis, or another term; note that
+      keywords and reserved words (such as '_', 'as', ...) are not terms, and
+      thus are not allowed here.
+

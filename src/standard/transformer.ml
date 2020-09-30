@@ -63,30 +63,30 @@ module Make
 
   let error_message token checkpoint =
     let s = state checkpoint in
-    match String.trim (Ty.error s) with
-    | exception Not_found ->
-      Format.dprintf "Syntax error"
-    | "<YOUR SYNTAX ERROR MESSAGE HERE>" ->
-      Format.dprintf "Syntax error"
-    | msg ->
-      begin match Misc.split_on_char '\n' msg with
-        | production :: l ->
-          let expected = String.concat " " l in
-          begin match token with
-            | Some tok ->
-              let tok_descr = Lexer.descr tok in
+    match token with
+    | None ->
+      Format.dprintf "Syntax error@ with@ missing@ token@ read,@ \
+                      please@ report upstream,@ ^^"
+    | Some tok ->
+      let tok_descr = Lexer.descr tok in
+      begin match String.trim (Ty.error s) with
+        | exception Not_found ->
+          Format.dprintf "Missing@ syntax@ error@ message (state %d),@ \
+                          please@  report@ upstream,@ ^^" s
+        | "<YOUR SYNTAX ERROR MESSAGE HERE>" ->
+          Format.dprintf "Syntax error (state %d)@ while reading %a."
+            s Tok.print tok_descr
+        | msg ->
+          begin match Misc.split_on_char '\n' msg with
+            | error_no :: production :: l ->
+              let expected = String.concat " " l in
               Format.dprintf
-                "@[<v>@[<hv>while parsing %s,@ read %a,@]@ @[<hov 2>but expected %a@]@]"
-                production Tok.print tok_descr
+                "@[<v>@[<hv>(%s) while parsing %s,@ read %a,@]@ @[<hov>but expected %a.@]@]"
+                error_no production Tok.print tok_descr
                 Format.pp_print_text expected
-            | None ->
-              Format.dprintf
-                "@[<v>while parsing %s@ @[<hov 2>expected %a@]@ but got %a@]"
-                production Format.pp_print_text expected Format.pp_print_text
-                "no token (this is weird, please report upstream, ^^)"
+            | _ ->
+              Format.dprintf "Syntax error (state %d)." s
           end
-        | _ ->
-          Format.dprintf "Syntax error"
       end
 
 

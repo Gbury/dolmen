@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/error-quantifier_free/test.smt2", line 4, character 8-32:
-[0;1m[0m[1m[91mError[0;1m[0m Quantified expressions are forbidden by the logic.
+File "tests/typing/error-quantifier_free/test.smt2", line 4, character 8-32:
+Error Quantified expressions are forbidden by the logic.

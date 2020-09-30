@@ -14,14 +14,10 @@
   (* Token printing *)
 
   let keyword_descr s =
-    T.descr s
-      ~kind:"reserved word"
-      ~hint:"keywords cannot be used as symbols"
+    T.descr s ~kind:"keyword"
 
   let reserved_descr s =
-    T.descr s
-      ~kind:"reserved word"
-      ~hint:"reserved words cannot be used as symbols"
+    T.descr s ~kind:"reserved word"
 
   let descr token : T.descr =
     match (token : token) with

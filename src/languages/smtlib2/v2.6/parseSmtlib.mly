@@ -119,7 +119,7 @@ sorted_var:
 
 /* Additional rule for pattern symbols, useful for:
    1- locations in symbol lists in patterns,
-   2-menhir '+' syntax does'nt support raw tokens afaik */
+   2- menhir '+' syntax doesn't support raw tokens afaik */
 pattern_symbol:
   | s=SYMBOL
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }

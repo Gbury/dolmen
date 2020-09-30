@@ -1,0 +1,7 @@
+File "", line 1, character 105-107:
+Error (035) while parsing a match case, read the reserved word 'as',
+      but expected a pattern, i.e. either a symbol or a datatype pattern of
+      the form "(symbol symbol+)"; note that keywords and reserved words
+      (such as '_', 'as', ...) are not symbols, and thus are not allowed
+      here.
+

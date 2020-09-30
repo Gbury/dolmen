@@ -1,0 +1,5 @@
+File "", line 1, character 29-30:
+Error (027) while parsing a term, read the reserved word '_',
+      but expected a variable binding list, starting with an opening
+      parenthesis.
+

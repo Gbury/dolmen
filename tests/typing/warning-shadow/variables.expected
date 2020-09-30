@@ -1,2 +1,2 @@
-[1m[97mFile "tests/typing/warning-shadow/variables.smt2", line 2, character 21-22:
-[0;1m[0m[1m[95mWarning[0;1m[0m Shadowing: x was already bound at line 2, character 15-16
+File "tests/typing/warning-shadow/variables.smt2", line 2, character 21-22:
+Warning Shadowing: x was already bound at line 2, character 15-16

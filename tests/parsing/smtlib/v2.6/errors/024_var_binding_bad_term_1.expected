@@ -1,0 +1,4 @@
+File "", line 1, character 33-34:
+Error (024) while parsing a variable binding, read the reserved word '_',
+      but expected a term.
+

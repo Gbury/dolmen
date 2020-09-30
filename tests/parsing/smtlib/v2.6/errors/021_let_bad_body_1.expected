@@ -1,0 +1,4 @@
+File "", line 1, character 38-39:
+Error (021) while parsing a term, read the reserved word '_',
+      but expected a term (body for the let binding).
+

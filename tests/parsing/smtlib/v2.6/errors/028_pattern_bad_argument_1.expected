@@ -1,0 +1,7 @@
+File "", line 1, character 147-148:
+Error (028) while parsing arguments of a constructor in a pattern,
+      read the reserved word '_',
+      but expected a closing parenthesis, or a symbol to bind the argument;
+      note that keywords and reserved words (such as '_', 'as', ...) are not
+      symbols, and thus are not allowed here.
+

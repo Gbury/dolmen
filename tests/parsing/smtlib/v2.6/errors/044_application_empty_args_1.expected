@@ -1,0 +1,5 @@
+File "", line 1, character 29-30:
+Error (044) while parsing a function application, read the reserved word '_',
+      but expected a term as argument; note that keywords and reserved words
+      (such as '_', 'as', ...) are not terms, and thus are not allowed here.
+

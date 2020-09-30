@@ -9,7 +9,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-002.expected test-002.output)))
@@ -22,7 +22,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-003.expected test-003.output)))
@@ -35,7 +35,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-004.expected test-004.output)))
@@ -48,7 +48,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-005.expected test-005.output)))
@@ -61,7 +61,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-006.expected test-006.output)))
@@ -74,7 +74,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-007.expected test-007.output)))
@@ -87,7 +87,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-008.expected test-008.output)))
@@ -100,7 +100,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-009.expected test-009.output)))
@@ -113,7 +113,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-010.expected test-010.output)))
@@ -126,7 +126,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-011.expected test-011.output)))
@@ -139,7 +139,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-fun_def_1.expected test-fun_def_1.output)))
@@ -152,7 +152,7 @@
   (action (chdir %{workspace_root}
            (with-outputs-to %{target}
             (with-accepted-exit-codes 0
-             (run dolmen %{deps} %{read-lines:flags.dune}))))))
+             (run dolmen --color=false %{deps} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff test-fun_def_2.expected test-fun_def_2.output)))

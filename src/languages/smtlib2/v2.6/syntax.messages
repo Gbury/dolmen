@@ -1,6 +1,21 @@
 #
 # Syntax Error Messages for smtlib v2.6
 #
+# Each error message *must* follow the following format:
+#
+# """
+# XXX
+# production parsed (on a single line)
+# what is expected at that point,
+# possibly on multiple lines
+# """
+#
+# The error numbers can be pretty much arbitrary, but for each
+# error number XXX, a corresponding test case file must exists as
+# tests/parsing/smtlib/v2.6/errors/XXX_some_descr_of_the_error_Y.smt2
+# (Y is there to allow multiple example of the error test case to exist,
+# for instance with various different error tokens)
+#
 # Notes:
 # - some error messages are shared among more than one error case,
 #   in such cases, the error number is the same, so when modifying
@@ -9,7 +24,7 @@
 
 term: OPEN AS OPEN SYMBOL
 ##
-## Ends in an error in state: 57.
+## Ends in an error in state: 58.
 ##
 ## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL OPEN ]
 ##
@@ -17,14 +32,14 @@ term: OPEN AS OPEN SYMBOL
 ## OPEN
 ##
 
-# Error 001
+001
 an identifier
 an underscore: identifiers starting with an opening parenthesis must be
 indexed identifiers, of the form "(_ symbol index+)"
 
 term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 434.
+## Ends in an error in state: 435.
 ##
 ## qual_identifier -> OPEN AS identifier sort . CLOSE [ # ]
 ##
@@ -32,13 +47,13 @@ term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ## OPEN AS identifier sort
 ##
 
-# Error 002
+002
 a qualified identifier
 a closing parenthesis
 
 term: OPEN AS SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 433.
+## Ends in an error in state: 434.
 ##
 ## qual_identifier -> OPEN AS identifier . sort CLOSE [ # ]
 ##
@@ -46,15 +61,15 @@ term: OPEN AS SYMBOL UNDERSCORE
 ## OPEN AS identifier
 ##
 
-# Error 003
+003
 a qualified identifier
-a sort, i.e. either an identifier, or a sort constructor application.
-Note that keywords (such as '_', 'as', ...) are none of these, and thus
-are not allowed here.
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
 
 term: OPEN AS UNDERSCORE
 ##
-## Ends in an error in state: 432.
+## Ends in an error in state: 433.
 ##
 ## qual_identifier -> OPEN AS . identifier sort CLOSE [ # ]
 ##
@@ -62,15 +77,15 @@ term: OPEN AS UNDERSCORE
 ## OPEN AS
 ##
 
-# Error 004
+004
 a qualified identifier
-an identifier.
-Note that keywords (such as '_', 'as', ...) are not identifiers,
-and thus are not allowed here.
+an identifier;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
 
 term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
 ##
-## Ends in an error in state: 125.
+## Ends in an error in state: 126.
 ##
 ## nonempty_list(attribute) -> attribute . [ CLOSE ]
 ## nonempty_list(attribute) -> attribute . nonempty_list(attribute) [ CLOSE ]
@@ -79,14 +94,14 @@ term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
 ## attribute
 ##
 
-# Error 005
+005
 an attribute list
 either a closing parenthesis, or another attribute of the form
-":symbol value".
+"keyword value"
 
 term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 429.
+## Ends in an error in state: 430.
 ##
 ## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ # ]
 ##
@@ -94,13 +109,13 @@ term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ## OPEN ATTRIBUTE term
 ##
 
-# Error 006
+006
 a term
-an attribute of the form ":symbol value".
+an attribute of the form "keyword value"
 
 term: OPEN ATTRIBUTE UNDERSCORE
 ##
-## Ends in an error in state: 428.
+## Ends in an error in state: 429.
 ##
 ## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ # ]
 ##
@@ -108,13 +123,13 @@ term: OPEN ATTRIBUTE UNDERSCORE
 ## OPEN ATTRIBUTE
 ##
 
-# Error 007
+007
 a term with attribute
-a term.
+a term
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 426.
+## Ends in an error in state: 427.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
 ##
@@ -122,13 +137,13 @@ term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-# Error 008
+008
 a term
 a closing parenthesis to end the existencially quantified formula
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 425.
+## Ends in an error in state: 426.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
 ##
@@ -136,13 +151,13 @@ term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-# Error 009
+009
 a term
 a term (body for the existencial quantification)
 
 term: OPEN EXISTS OPEN UNDERSCORE
 ##
-## Ends in an error in state: 423.
+## Ends in an error in state: 424.
 ##
 ## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -150,13 +165,13 @@ term: OPEN EXISTS OPEN UNDERSCORE
 ## OPEN EXISTS OPEN
 ##
 
-# Error 010
+010
 a term
 a sorted variable of the form "(var sort)"
 
 term: OPEN EXISTS UNDERSCORE
 ##
-## Ends in an error in state: 422.
+## Ends in an error in state: 423.
 ##
 ## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -164,13 +179,13 @@ term: OPEN EXISTS UNDERSCORE
 ## OPEN EXISTS
 ##
 
-# Error 011
+011
 a term
 a list of sorted variables, starting with an opening parenthesis
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 420.
+## Ends in an error in state: 421.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
 ##
@@ -178,13 +193,13 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-# Error 012
+012
 a term
 a closing parenthesis to end the universally quantified formula
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 419.
+## Ends in an error in state: 420.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
 ##
@@ -192,13 +207,13 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-# Error 013
+013
 a term
 a term (body for the universal quantification)
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 109.
+## Ends in an error in state: 110.
 ##
 ## nonempty_list(sorted_var) -> sorted_var . [ CLOSE ]
 ## nonempty_list(sorted_var) -> sorted_var . nonempty_list(sorted_var) [ CLOSE ]
@@ -207,11 +222,13 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ## sorted_var
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+014
+a list of sorted variables
+either a closing parentheis, or a sorted var of the form "(var sort)"
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 107.
+## Ends in an error in state: 108.
 ##
 ## sorted_var -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
 ##
@@ -219,11 +236,13 @@ term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ## OPEN SYMBOL sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+015
+a sorted variable
+a closing parenthesis
 
 term: OPEN FORALL OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 106.
+## Ends in an error in state: 107.
 ##
 ## sorted_var -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
 ##
@@ -231,11 +250,15 @@ term: OPEN FORALL OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+016
+a sorted variable
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
 
 term: OPEN FORALL OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 106.
 ##
 ## sorted_var -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
 ##
@@ -243,11 +266,13 @@ term: OPEN FORALL OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+017
+a sorted variable
+a symbol, i.e. a variable name
 
 term: OPEN FORALL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 417.
+## Ends in an error in state: 418.
 ##
 ## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -255,11 +280,13 @@ term: OPEN FORALL OPEN UNDERSCORE
 ## OPEN FORALL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+018
+a term
+a sorted variable of the form "(var sort)"
 
 term: OPEN FORALL UNDERSCORE
 ##
-## Ends in an error in state: 416.
+## Ends in an error in state: 417.
 ##
 ## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -267,11 +294,13 @@ term: OPEN FORALL UNDERSCORE
 ## OPEN FORALL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+019
+a term
+a list of sorted variables, starting with an opening parenthesis
 
 term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 414.
+## Ends in an error in state: 415.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ # ]
 ##
@@ -279,11 +308,13 @@ term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+020
+a term
+a closing parenthesis to end the let binding
 
 term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 413.
+## Ends in an error in state: 414.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ # ]
 ##
@@ -291,11 +322,13 @@ term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ## OPEN LET OPEN nonempty_list(var_binding) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+021
+a term
+a term (body for the let binding)
 
 term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 97.
+## Ends in an error in state: 98.
 ##
 ## nonempty_list(var_binding) -> var_binding . [ CLOSE ]
 ## nonempty_list(var_binding) -> var_binding . nonempty_list(var_binding) [ CLOSE ]
@@ -304,11 +337,13 @@ term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE UNDERSCORE
 ## var_binding
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+022
+a list of variable binding
+a closing parenthesis or a variable binding of the form "(var term)"
 
 term: OPEN LET OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 95.
+## Ends in an error in state: 96.
 ##
 ## var_binding -> OPEN SYMBOL term . CLOSE [ OPEN CLOSE ]
 ##
@@ -316,11 +351,13 @@ term: OPEN LET OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ## OPEN SYMBOL term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+023
+a variable binding
+a closing parenthesis
 
 term: OPEN LET OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 94.
+## Ends in an error in state: 95.
 ##
 ## var_binding -> OPEN SYMBOL . term CLOSE [ OPEN CLOSE ]
 ##
@@ -328,11 +365,13 @@ term: OPEN LET OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+024
+a variable binding
+a term
 
 term: OPEN LET OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 93.
+## Ends in an error in state: 94.
 ##
 ## var_binding -> OPEN . SYMBOL term CLOSE [ OPEN CLOSE ]
 ##
@@ -340,11 +379,13 @@ term: OPEN LET OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+025
+a variable binding
+a symbol (i.e. variable name)
 
 term: OPEN LET OPEN UNDERSCORE
 ##
-## Ends in an error in state: 411.
+## Ends in an error in state: 412.
 ##
 ## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ # ]
 ##
@@ -352,11 +393,13 @@ term: OPEN LET OPEN UNDERSCORE
 ## OPEN LET OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+026
+a term
+a variable binding of the form "(var term)"
 
 term: OPEN LET UNDERSCORE
 ##
-## Ends in an error in state: 410.
+## Ends in an error in state: 411.
 ##
 ## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
 ##
@@ -364,11 +407,13 @@ term: OPEN LET UNDERSCORE
 ## OPEN LET
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+027
+a term
+a variable binding list, starting with an opening parenthesis
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 75.
+## Ends in an error in state: 76.
 ##
 ## nonempty_list(pattern_symbol) -> pattern_symbol . [ CLOSE ]
 ## nonempty_list(pattern_symbol) -> pattern_symbol . nonempty_list(pattern_symbol) [ CLOSE ]
@@ -377,11 +422,15 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ## pattern_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+028
+arguments of a constructor in a pattern
+a closing parenthesis, or a symbol to bind the argument;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 74.
+## Ends in an error in state: 75.
 ##
 ## pattern -> OPEN pattern_symbol . nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
 ##
@@ -389,14 +438,15 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN pattern_symbol
 ##
 
-This is not a valid pattern. Patterns should be variables,
-nullary constructors, or n-ary constructor applications.
-Note that keywords (such as '_', 'as', ...) are none of these,
-and thus are not allowed here.
+029
+arguments of a constructor in a pattern
+a symbol to bind the first constructor argument;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 73.
+## Ends in an error in state: 74.
 ##
 ## pattern -> OPEN . pattern_symbol nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
 ##
@@ -404,14 +454,15 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-This is not a valid pattern. Patterns should be variables,
-nullary constructors, or n-ary constructor applications.
-Note that keywords (such as '_', 'as', ...) are none of these,
-and thus are not allowed here.
+030
+a pattern
+a symbol (either a variable or a datatype constructor);
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 408.
+## Ends in an error in state: 409.
 ##
 ## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ # ]
 ##
@@ -419,11 +470,13 @@ term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+031
+a match
+a closing parenthesis to close the match
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 89.
+## Ends in an error in state: 90.
 ##
 ## nonempty_list(match_case) -> match_case . [ CLOSE ]
 ## nonempty_list(match_case) -> match_case . nonempty_list(match_case) [ CLOSE ]
@@ -432,11 +485,13 @@ term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ## match_case
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+032
+a list of match cases
+a closing parenthesis or a match case of the form "(pattern body)"
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 81.
+## Ends in an error in state: 82.
 ##
 ## match_case -> OPEN pattern term . CLOSE [ OPEN CLOSE ]
 ##
@@ -444,11 +499,13 @@ term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ## OPEN pattern term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+033
+a match case
+a closing parenthesis to close the match case
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 80.
+## Ends in an error in state: 81.
 ##
 ## match_case -> OPEN pattern . term CLOSE [ OPEN CLOSE ]
 ##
@@ -456,11 +513,13 @@ term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 ## OPEN pattern
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+034
+a match case
+a term for the case body
 
 term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 71.
+## Ends in an error in state: 72.
 ##
 ## match_case -> OPEN . pattern term CLOSE [ OPEN CLOSE ]
 ##
@@ -468,14 +527,16 @@ term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
 ## OPEN
 ##
 
-This is not a valid pattern. Patterns should be variables,
-nullary constructors, or n-ary constructor applications.
-Note that keywords (such as '_', 'as', ...) are none of these,
-and thus are not allowed here.
+035
+a match case
+a pattern, i.e. either a symbol or a datatype pattern of
+the form "(symbol symbol+)";
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 406.
+## Ends in an error in state: 407.
 ##
 ## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -483,11 +544,13 @@ term: OPEN MATCH SYMBOL OPEN UNDERSCORE
 ## OPEN MATCH term OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+036
+a list of match cases
+a match case of the form "(pattern term)"
 
 term: OPEN MATCH SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 405.
+## Ends in an error in state: 406.
 ##
 ## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -495,11 +558,13 @@ term: OPEN MATCH SYMBOL UNDERSCORE
 ## OPEN MATCH term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+037
+a match
+a match case list, starting with an opening parenthesis
 
 term: OPEN MATCH UNDERSCORE
 ##
-## Ends in an error in state: 404.
+## Ends in an error in state: 405.
 ##
 ## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -507,12 +572,13 @@ term: OPEN MATCH UNDERSCORE
 ## OPEN MATCH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
+038
+a match
+a term to match (i.e. the scrutinee of the match)
 
 term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 66.
+## Ends in an error in state: 67.
 ##
 ## qual_identifier -> OPEN AS identifier sort . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -520,14 +586,13 @@ term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
 ## OPEN AS identifier sort
 ##
 
-# Error 002
+002
 a qualified identifier
 a closing parenthesis
 
-
 term: OPEN OPEN AS SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 58.
+## Ends in an error in state: 59.
 ##
 ## qual_identifier -> OPEN AS identifier . sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -535,16 +600,15 @@ term: OPEN OPEN AS SYMBOL UNDERSCORE
 ## OPEN AS identifier
 ##
 
-# Error 003
+003
 a qualified identifier
-a sort, i.e. either an identifier, or a sort constructor application.
-Note that keywords (such as '_', 'as', ...) are none of these, and thus
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords (such as '_', 'as', ...) are none of these, and thus
 are not allowed here.
-
 
 term: OPEN OPEN AS UNDERSCORE
 ##
-## Ends in an error in state: 56.
+## Ends in an error in state: 57.
 ##
 ## qual_identifier -> OPEN AS . identifier sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -552,7 +616,7 @@ term: OPEN OPEN AS UNDERSCORE
 ## OPEN AS
 ##
 
-# Error 004
+004
 a qualified identifier
 an identifier.
 Note that keywords (such as '_', 'as', ...) are not identifiers,
@@ -560,7 +624,7 @@ and thus are not allowed here.
 
 term: OPEN OPEN SYMBOL
 ##
-## Ends in an error in state: 55.
+## Ends in an error in state: 56.
 ##
 ## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
 ## qual_identifier -> OPEN . AS identifier sort CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
@@ -569,7 +633,11 @@ term: OPEN OPEN SYMBOL
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+039
+an identifier in parentheses
+either an indexed identifier (starting with an underscore)
+or an 'as' type ascription;
+note that this is because of the preceding opening parenthesis
 
 term: OPEN OPEN UNDERSCORE SYMBOL UNDERSCORE
 ##
@@ -581,7 +649,11 @@ term: OPEN OPEN UNDERSCORE SYMBOL UNDERSCORE
 ## OPEN UNDERSCORE SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+040
+an indexed identifier
+an index, i.e. either a numeral, a symbol, or a hexadecimal number;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN OPEN UNDERSCORE UNDERSCORE
 ##
@@ -593,11 +665,15 @@ term: OPEN OPEN UNDERSCORE UNDERSCORE
 ## OPEN UNDERSCORE
 ##
 
-TODO
+041
+an indexed identifier
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN STR
 ##
-## Ends in an error in state: 399.
+## Ends in an error in state: 400.
 ##
 ## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ # ]
 ## qual_identifier -> OPEN . AS identifier sort CLOSE [ # ]
@@ -612,11 +688,15 @@ term: OPEN STR
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
+
 
 term: OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 128.
+## Ends in an error in state: 129.
 ##
 ## nonempty_list(term) -> term . [ CLOSE ]
 ## nonempty_list(term) -> term . nonempty_list(term) [ CLOSE ]
@@ -625,11 +705,15 @@ term: OPEN SYMBOL SYMBOL UNDERSCORE
 ## term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+043
+a list of terms
+either a closing parenthesis, or another term;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
 
 term: OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 436.
+## Ends in an error in state: 437.
 ##
 ## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ # ]
 ##
@@ -637,11 +721,15 @@ term: OPEN SYMBOL UNDERSCORE
 ## OPEN qual_identifier
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+044
+a function application
+a term as argument;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
 
 term: OPEN UNDERSCORE SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 53.
+## Ends in an error in state: 54.
 ##
 ## nonempty_list(index) -> index . [ CLOSE ]
 ## nonempty_list(index) -> index . nonempty_list(index) [ CLOSE ]
@@ -650,11 +738,16 @@ term: OPEN UNDERSCORE SYMBOL SYMBOL UNDERSCORE
 ## index
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+045
+an index list
+either a closing parenthesis, or an index (i.e. a numeral, a symbol,
+or a hexadecimal);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 term: OPEN UNDERSCORE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 401.
+## Ends in an error in state: 402.
 ##
 ## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ # ]
 ##
@@ -662,11 +755,15 @@ term: OPEN UNDERSCORE SYMBOL UNDERSCORE
 ## OPEN UNDERSCORE SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+046
+an indexed identifier
+an index (i.e. a numeral, a symbol, or a hexadecimal);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 term: OPEN UNDERSCORE UNDERSCORE
 ##
-## Ends in an error in state: 400.
+## Ends in an error in state: 401.
 ##
 ## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ # ]
 ##
@@ -674,11 +771,15 @@ term: OPEN UNDERSCORE UNDERSCORE
 ## OPEN UNDERSCORE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+047
+an indexed identifier
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 term: UNDERSCORE
 ##
-## Ends in an error in state: 396.
+## Ends in an error in state: 397.
 ##
 ## term' -> . term [ # ]
 ##
@@ -686,11 +787,15 @@ term: UNDERSCORE
 ##
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+048
+a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 input: OPEN ASSERT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 391.
+## Ends in an error in state: 392.
 ##
 ## command -> OPEN ASSERT term . CLOSE [ # ]
 ##
@@ -698,11 +803,13 @@ input: OPEN ASSERT SYMBOL UNDERSCORE
 ## OPEN ASSERT term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+049
+an assertion
+a closing parenthesis
 
 input: OPEN ASSERT UNDERSCORE
 ##
-## Ends in an error in state: 390.
+## Ends in an error in state: 391.
 ##
 ## command -> OPEN ASSERT . term CLOSE [ # ]
 ##
@@ -710,11 +817,15 @@ input: OPEN ASSERT UNDERSCORE
 ## OPEN ASSERT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+048
+a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
 
 input: OPEN CHECK_SAT UNDERSCORE
 ##
-## Ends in an error in state: 388.
+## Ends in an error in state: 389.
 ##
 ## command -> OPEN CHECK_SAT . CLOSE [ # ]
 ##
@@ -722,11 +833,13 @@ input: OPEN CHECK_SAT UNDERSCORE
 ## OPEN CHECK_SAT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+050
+a check-sat command
+a closing parenthesis
 
 input: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 386.
+## Ends in an error in state: 387.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ # ]
 ##
@@ -734,11 +847,13 @@ input: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+051
+a check-sat-assuming command
+a closing parenthesis
 
 input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 ##
-## Ends in an error in state: 384.
+## Ends in an error in state: 385.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ # ]
 ##
@@ -746,11 +861,13 @@ input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+052
+a list of propositional literals
+a propositional literal, i.e. either a symbol or the negation of a symbol
 
 input: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 ##
-## Ends in an error in state: 383.
+## Ends in an error in state: 384.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ # ]
 ##
@@ -758,11 +875,13 @@ input: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 ## OPEN CHECK_SAT_ASSUMING
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+053
+a check-sat-assuming command
+a list of propositional literals, starting with an opening parenthesis
 
 input: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 381.
+## Ends in an error in state: 382.
 ##
 ## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ # ]
 ##
@@ -770,11 +889,13 @@ input: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 ## OPEN DECLARE_CONST SYMBOL sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+054
+a constant declaration
+a closing parenthesis
 
 input: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 380.
+## Ends in an error in state: 381.
 ##
 ## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ # ]
 ##
@@ -782,11 +903,13 @@ input: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 ## OPEN DECLARE_CONST SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+055
+a constant declaration
+a sort
 
 input: OPEN DECLARE_CONST UNDERSCORE
 ##
-## Ends in an error in state: 379.
+## Ends in an error in state: 380.
 ##
 ## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ # ]
 ##
@@ -794,11 +917,15 @@ input: OPEN DECLARE_CONST UNDERSCORE
 ## OPEN DECLARE_CONST
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+056
+a constant declaration
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
 
 input: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 377.
+## Ends in an error in state: 378.
 ##
 ## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ # ]
 ##
@@ -806,11 +933,13 @@ input: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+057
+a datatype declaration
+a closing parenthesis
 
 input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 376.
+## Ends in an error in state: 377.
 ##
 ## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ # ]
 ##
@@ -818,11 +947,13 @@ input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 ## OPEN DECLARE_DATATYPE SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+058
+a datatype declaration
+a list of datatype constructor, starting with an opening parenthesis
 
 input: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
-## Ends in an error in state: 375.
+## Ends in an error in state: 376.
 ##
 ## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ # ]
 ##
@@ -830,11 +961,13 @@ input: OPEN DECLARE_DATATYPE UNDERSCORE
 ## OPEN DECLARE_DATATYPE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+059
+a datatype declaration
+a symbol
 
 input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 373.
+## Ends in an error in state: 374.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ # ]
 ##
@@ -842,11 +975,13 @@ input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SY
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+060
+a datatypes declaration
+a closing parenthesis
 
 input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 371.
+## Ends in an error in state: 372.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
 ##
@@ -854,11 +989,13 @@ input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+061
+a datatypes definition
+an opening parenthesis to start a list of constructors for the first defined datatype
 
 input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 370.
+## Ends in an error in state: 371.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
 ##
@@ -866,11 +1003,14 @@ input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+062
+a datatypes declaration
+an opening parenthesis to start a list of datatype definitions,
+one for each of the sorts being declared
 
 input: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 ##
-## Ends in an error in state: 368.
+## Ends in an error in state: 369.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
 ##
@@ -878,11 +1018,13 @@ input: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 ## OPEN DECLARE_DATATYPES OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+063
+a datatypes declaration
+a parametric sort declaration of the form "(symbol num)"
 
 input: OPEN DECLARE_DATATYPES UNDERSCORE
 ##
-## Ends in an error in state: 367.
+## Ends in an error in state: 368.
 ##
 ## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
 ##
@@ -890,11 +1032,13 @@ input: OPEN DECLARE_DATATYPES UNDERSCORE
 ## OPEN DECLARE_DATATYPES
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+064
+a datatypes declaration
+a list of sort declaration, starting with an opening parenthesis
 
 input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 365.
+## Ends in an error in state: 366.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ # ]
 ##
@@ -902,11 +1046,13 @@ input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+065
+a function declaration
+a closing parenthesis
 
 input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 364.
+## Ends in an error in state: 365.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ # ]
 ##
@@ -914,11 +1060,13 @@ input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+066
+a function declaration
+a sort for the return type of the function
 
 input: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 362.
+## Ends in an error in state: 363.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ # ]
 ##
@@ -926,11 +1074,13 @@ input: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+067
+a function declaration
+a closing parenthesis, or a list of sorts for the arguments of the function
 
 input: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 361.
+## Ends in an error in state: 362.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ # ]
 ##
@@ -938,11 +1088,13 @@ input: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 ## OPEN DECLARE_FUN SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+068
+a function declaration
+an opening parenthesis to start the list of sorts for the function's arguments
 
 input: OPEN DECLARE_FUN UNDERSCORE
 ##
-## Ends in an error in state: 360.
+## Ends in an error in state: 361.
 ##
 ## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ # ]
 ##
@@ -950,11 +1102,13 @@ input: OPEN DECLARE_FUN UNDERSCORE
 ## OPEN DECLARE_FUN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+069
+a function declaration
+a symbol for the function's name
 
 input: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 ##
-## Ends in an error in state: 358.
+## Ends in an error in state: 359.
 ##
 ## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ # ]
 ##
@@ -962,11 +1116,13 @@ input: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 ## OPEN DECLARE_SORT SYMBOL NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+070
+a sort declaration
+a closing parenthesis
 
 input: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 357.
+## Ends in an error in state: 358.
 ##
 ## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ # ]
 ##
@@ -974,11 +1130,13 @@ input: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 ## OPEN DECLARE_SORT SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+071
+a sort declaration
+a numeral for the arity of the sort being declared
 
 input: OPEN DECLARE_SORT UNDERSCORE
 ##
-## Ends in an error in state: 356.
+## Ends in an error in state: 357.
 ##
 ## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ # ]
 ##
@@ -986,11 +1144,13 @@ input: OPEN DECLARE_SORT UNDERSCORE
 ## OPEN DECLARE_SORT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+072
+a sort declaration
+a symbol for the sort name
 
 input: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 354.
+## Ends in an error in state: 355.
 ##
 ## command -> OPEN DEFINE_FUN function_def . CLOSE [ # ]
 ##
@@ -998,11 +1158,13 @@ input: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ## OPEN DEFINE_FUN function_def
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+073
+a function definition
+a closing parenthesis
 
 input: OPEN DEFINE_FUN UNDERSCORE
 ##
-## Ends in an error in state: 353.
+## Ends in an error in state: 354.
 ##
 ## command -> OPEN DEFINE_FUN . function_def CLOSE [ # ]
 ##
@@ -1010,11 +1172,13 @@ input: OPEN DEFINE_FUN UNDERSCORE
 ## OPEN DEFINE_FUN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+074
+a function definition
+a symbol for the function's name
 
 input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 351.
+## Ends in an error in state: 352.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ # ]
 ##
@@ -1022,11 +1186,13 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN 
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+075
+a recursive functions definition
+a closing parenthesis
 
 input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 349.
+## Ends in an error in state: 350.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ # ]
 ##
@@ -1034,11 +1200,13 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN 
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+076
+a recursive functions definition
+a term for the first function's body
 
 input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 348.
+## Ends in an error in state: 349.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ # ]
 ##
@@ -1046,11 +1214,13 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDER
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+077
+a recursive functions definition
+a list of terms for the function's bodies
 
 input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
-## Ends in an error in state: 346.
+## Ends in an error in state: 347.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
 ##
@@ -1058,11 +1228,13 @@ input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ## OPEN DEFINE_FUNS_REC OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+078
+a recursive functions definition
+a function declaration of the form "(name (sort*) sort)"
 
 input: OPEN DEFINE_FUNS_REC UNDERSCORE
 ##
-## Ends in an error in state: 345.
+## Ends in an error in state: 346.
 ##
 ## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
 ##
@@ -1070,11 +1242,13 @@ input: OPEN DEFINE_FUNS_REC UNDERSCORE
 ## OPEN DEFINE_FUNS_REC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+079
+a recursive functions declaration
+an opening parenthesis to start a list of function declaration
 
 input: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 343.
+## Ends in an error in state: 344.
 ##
 ## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ # ]
 ##
@@ -1082,11 +1256,13 @@ input: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ## OPEN DEFINE_FUN_REC function_def
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+080
+a recursive function definition
+a closing parenthesis
 
 input: OPEN DEFINE_FUN_REC UNDERSCORE
 ##
-## Ends in an error in state: 342.
+## Ends in an error in state: 343.
 ##
 ## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ # ]
 ##
@@ -1094,11 +1270,13 @@ input: OPEN DEFINE_FUN_REC UNDERSCORE
 ## OPEN DEFINE_FUN_REC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+081
+a recursive function definition
+a symbol for the function's name
 
 input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 340.
+## Ends in an error in state: 341.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ # ]
 ##
@@ -1106,11 +1284,13 @@ input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+082
+a sort definition
+a closing parenthesis
 
 input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 339.
+## Ends in an error in state: 340.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ # ]
 ##
@@ -1118,11 +1298,13 @@ input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+083
+a sort definition
+a sort for the definition body
 
 input: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 337.
+## Ends in an error in state: 338.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ # ]
 ##
@@ -1130,11 +1312,13 @@ input: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+084
+a sort definition
+a closing parenthesis, or a list of symbols for the definition arguments
 
 input: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 336.
+## Ends in an error in state: 337.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
 ##
@@ -1142,11 +1326,13 @@ input: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 ## OPEN DEFINE_SORT SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+085
+a sort definition
+an opening parenthesis to start a list of arguments
 
 input: OPEN DEFINE_SORT UNDERSCORE
 ##
-## Ends in an error in state: 335.
+## Ends in an error in state: 336.
 ##
 ## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
 ##
@@ -1154,11 +1340,13 @@ input: OPEN DEFINE_SORT UNDERSCORE
 ## OPEN DEFINE_SORT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+086
+a sort definition
+a symbol for the defined sort's name
 
 input: OPEN ECHO STR UNDERSCORE
 ##
-## Ends in an error in state: 333.
+## Ends in an error in state: 334.
 ##
 ## command -> OPEN ECHO STR . CLOSE [ # ]
 ##
@@ -1166,11 +1354,13 @@ input: OPEN ECHO STR UNDERSCORE
 ## OPEN ECHO STR
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+087
+an echo command
+a closing parenthesis
 
 input: OPEN ECHO UNDERSCORE
 ##
-## Ends in an error in state: 332.
+## Ends in an error in state: 333.
 ##
 ## command -> OPEN ECHO . STR CLOSE [ # ]
 ##
@@ -1178,11 +1368,13 @@ input: OPEN ECHO UNDERSCORE
 ## OPEN ECHO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+088
+an echo command
+a string litteral
 
 input: OPEN EXIT UNDERSCORE
 ##
-## Ends in an error in state: 330.
+## Ends in an error in state: 331.
 ##
 ## command -> OPEN EXIT . CLOSE [ # ]
 ##
@@ -1190,11 +1382,13 @@ input: OPEN EXIT UNDERSCORE
 ## OPEN EXIT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+089
+an exit command
+a closing parenthesis
 
 input: OPEN GET_ASSERTIONS UNDERSCORE
 ##
-## Ends in an error in state: 328.
+## Ends in an error in state: 329.
 ##
 ## command -> OPEN GET_ASSERTIONS . CLOSE [ # ]
 ##
@@ -1202,11 +1396,13 @@ input: OPEN GET_ASSERTIONS UNDERSCORE
 ## OPEN GET_ASSERTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+090
+a get-assertions command
+a closing parenthesis
 
 input: OPEN GET_ASSIGNMENT UNDERSCORE
 ##
-## Ends in an error in state: 326.
+## Ends in an error in state: 327.
 ##
 ## command -> OPEN GET_ASSIGNMENT . CLOSE [ # ]
 ##
@@ -1214,11 +1410,13 @@ input: OPEN GET_ASSIGNMENT UNDERSCORE
 ## OPEN GET_ASSIGNMENT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+091
+a get-assignment command
+a closing parenthesis
 
 input: OPEN GET_INFO KEYWORD UNDERSCORE
 ##
-## Ends in an error in state: 324.
+## Ends in an error in state: 325.
 ##
 ## command -> OPEN GET_INFO info_flag . CLOSE [ # ]
 ##
@@ -1226,11 +1424,13 @@ input: OPEN GET_INFO KEYWORD UNDERSCORE
 ## OPEN GET_INFO info_flag
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+092
+a get-info command
+a closing parenthesis
 
 input: OPEN GET_INFO UNDERSCORE
 ##
-## Ends in an error in state: 323.
+## Ends in an error in state: 324.
 ##
 ## command -> OPEN GET_INFO . info_flag CLOSE [ # ]
 ##
@@ -1238,11 +1438,13 @@ input: OPEN GET_INFO UNDERSCORE
 ## OPEN GET_INFO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+093
+a get-info command
+a keyword of the form ":symbol"
 
 input: OPEN GET_MODEL UNDERSCORE
 ##
-## Ends in an error in state: 321.
+## Ends in an error in state: 322.
 ##
 ## command -> OPEN GET_MODEL . CLOSE [ # ]
 ##
@@ -1250,11 +1452,13 @@ input: OPEN GET_MODEL UNDERSCORE
 ## OPEN GET_MODEL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+094
+a get-model command
+a closing parenthesis
 
 input: OPEN GET_OPTION KEYWORD UNDERSCORE
 ##
-## Ends in an error in state: 319.
+## Ends in an error in state: 320.
 ##
 ## command -> OPEN GET_OPTION KEYWORD . CLOSE [ # ]
 ##
@@ -1262,11 +1466,13 @@ input: OPEN GET_OPTION KEYWORD UNDERSCORE
 ## OPEN GET_OPTION KEYWORD
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+095
+a get-option command
+a closing parenthesis
 
 input: OPEN GET_OPTION UNDERSCORE
 ##
-## Ends in an error in state: 318.
+## Ends in an error in state: 319.
 ##
 ## command -> OPEN GET_OPTION . KEYWORD CLOSE [ # ]
 ##
@@ -1274,11 +1480,13 @@ input: OPEN GET_OPTION UNDERSCORE
 ## OPEN GET_OPTION
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+096
+a get-option command
+a keyword of the form ":symbol"
 
 input: OPEN GET_PROOF UNDERSCORE
 ##
-## Ends in an error in state: 316.
+## Ends in an error in state: 317.
 ##
 ## command -> OPEN GET_PROOF . CLOSE [ # ]
 ##
@@ -1286,11 +1494,13 @@ input: OPEN GET_PROOF UNDERSCORE
 ## OPEN GET_PROOF
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+097
+a get-proof command
+a closing parenthesis
 
 input: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 ##
-## Ends in an error in state: 314.
+## Ends in an error in state: 315.
 ##
 ## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ # ]
 ##
@@ -1298,11 +1508,13 @@ input: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 ## OPEN GET_UNSAT_ASSUMPTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+098
+a get-unsat-assumptions command
+a closing parenthesis
 
 input: OPEN GET_UNSAT_CORE UNDERSCORE
 ##
-## Ends in an error in state: 312.
+## Ends in an error in state: 313.
 ##
 ## command -> OPEN GET_UNSAT_CORE . CLOSE [ # ]
 ##
@@ -1310,11 +1522,13 @@ input: OPEN GET_UNSAT_CORE UNDERSCORE
 ## OPEN GET_UNSAT_CORE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+099
+a get-unsat-core command
+a closing parenthesis
 
 input: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 310.
+## Ends in an error in state: 311.
 ##
 ## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ # ]
 ##
@@ -1322,11 +1536,13 @@ input: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
 ## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+100
+a get-value command
+a closing parenthesis
 
 input: OPEN GET_VALUE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 308.
+## Ends in an error in state: 309.
 ##
 ## command -> OPEN GET_VALUE OPEN . nonempty_list(term) CLOSE CLOSE [ # ]
 ##
@@ -1334,11 +1550,13 @@ input: OPEN GET_VALUE OPEN UNDERSCORE
 ## OPEN GET_VALUE OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+101
+a get-value command
+a term
 
 input: OPEN GET_VALUE UNDERSCORE
 ##
-## Ends in an error in state: 307.
+## Ends in an error in state: 308.
 ##
 ## command -> OPEN GET_VALUE . OPEN nonempty_list(term) CLOSE CLOSE [ # ]
 ##
@@ -1346,11 +1564,13 @@ input: OPEN GET_VALUE UNDERSCORE
 ## OPEN GET_VALUE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+102
+a get-value command
+an opening parenthesis to start a list of terms
 
 input: OPEN POP NUM UNDERSCORE
 ##
-## Ends in an error in state: 305.
+## Ends in an error in state: 306.
 ##
 ## command -> OPEN POP NUM . CLOSE [ # ]
 ##
@@ -1358,11 +1578,13 @@ input: OPEN POP NUM UNDERSCORE
 ## OPEN POP NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+103
+a pop command
+a closing parenthesis
 
 input: OPEN POP UNDERSCORE
 ##
-## Ends in an error in state: 304.
+## Ends in an error in state: 305.
 ##
 ## command -> OPEN POP . NUM CLOSE [ # ]
 ##
@@ -1370,11 +1592,13 @@ input: OPEN POP UNDERSCORE
 ## OPEN POP
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+104
+a pop command
+a numeral
 
 input: OPEN PUSH NUM UNDERSCORE
 ##
-## Ends in an error in state: 302.
+## Ends in an error in state: 303.
 ##
 ## command -> OPEN PUSH NUM . CLOSE [ # ]
 ##
@@ -1382,11 +1606,13 @@ input: OPEN PUSH NUM UNDERSCORE
 ## OPEN PUSH NUM
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+105
+a push command
+a closing parenthesis
 
 input: OPEN PUSH UNDERSCORE
 ##
-## Ends in an error in state: 301.
+## Ends in an error in state: 302.
 ##
 ## command -> OPEN PUSH . NUM CLOSE [ # ]
 ##
@@ -1394,11 +1620,13 @@ input: OPEN PUSH UNDERSCORE
 ## OPEN PUSH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+106
+a push command
+a numeral
 
 input: OPEN RESET UNDERSCORE
 ##
-## Ends in an error in state: 299.
+## Ends in an error in state: 300.
 ##
 ## command -> OPEN RESET . CLOSE [ # ]
 ##
@@ -1406,11 +1634,13 @@ input: OPEN RESET UNDERSCORE
 ## OPEN RESET
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+107
+a reset command
+a closing parenthesis
 
 input: OPEN RESET_ASSERTIONS UNDERSCORE
 ##
-## Ends in an error in state: 297.
+## Ends in an error in state: 298.
 ##
 ## command -> OPEN RESET_ASSERTIONS . CLOSE [ # ]
 ##
@@ -1418,11 +1648,13 @@ input: OPEN RESET_ASSERTIONS UNDERSCORE
 ## OPEN RESET_ASSERTIONS
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+108
+a reset-assertions command
+a closing parenthesis
 
 input: OPEN SET_INFO KEYWORD KEYWORD
 ##
-## Ends in an error in state: 295.
+## Ends in an error in state: 296.
 ##
 ## command -> OPEN SET_INFO command_option . CLOSE [ # ]
 ##
@@ -1438,11 +1670,15 @@ input: OPEN SET_INFO KEYWORD KEYWORD
 ## In state 26, spurious reduction of production command_option -> attribute 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+109
+a set-info command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
 
 input: OPEN SET_INFO UNDERSCORE
 ##
-## Ends in an error in state: 294.
+## Ends in an error in state: 295.
 ##
 ## command -> OPEN SET_INFO . command_option CLOSE [ # ]
 ##
@@ -1450,11 +1686,13 @@ input: OPEN SET_INFO UNDERSCORE
 ## OPEN SET_INFO
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+110
+a set-info command
+an attribute of the form "keyword value?"
 
 input: OPEN SET_LOGIC SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 292.
+## Ends in an error in state: 293.
 ##
 ## command -> OPEN SET_LOGIC SYMBOL . CLOSE [ # ]
 ##
@@ -1462,11 +1700,13 @@ input: OPEN SET_LOGIC SYMBOL UNDERSCORE
 ## OPEN SET_LOGIC SYMBOL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+111
+a set-logic command
+a closing parenthesis
 
 input: OPEN SET_LOGIC UNDERSCORE
 ##
-## Ends in an error in state: 291.
+## Ends in an error in state: 292.
 ##
 ## command -> OPEN SET_LOGIC . SYMBOL CLOSE [ # ]
 ##
@@ -1474,11 +1714,13 @@ input: OPEN SET_LOGIC UNDERSCORE
 ## OPEN SET_LOGIC
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+112
+a set-logic command
+a symbol for the logic name
 
 input: OPEN SET_OPTION KEYWORD KEYWORD
 ##
-## Ends in an error in state: 289.
+## Ends in an error in state: 290.
 ##
 ## command -> OPEN SET_OPTION command_option . CLOSE [ # ]
 ##
@@ -1494,11 +1736,15 @@ input: OPEN SET_OPTION KEYWORD KEYWORD
 ## In state 26, spurious reduction of production command_option -> attribute 
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+113
+a set-option command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
 
 input: OPEN SET_OPTION UNDERSCORE
 ##
-## Ends in an error in state: 288.
+## Ends in an error in state: 289.
 ##
 ## command -> OPEN SET_OPTION . command_option CLOSE [ # ]
 ##
@@ -1506,11 +1752,13 @@ input: OPEN SET_OPTION UNDERSCORE
 ## OPEN SET_OPTION
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+114
+a set-option command
+an attribute of the form "keyword value?"
 
 input: OPEN UNDERSCORE
 ##
-## Ends in an error in state: 287.
+## Ends in an error in state: 288.
 ##
 ## command -> OPEN . ASSERT term CLOSE [ # ]
 ## command -> OPEN . CHECK_SAT CLOSE [ # ]
@@ -1547,11 +1795,13 @@ input: OPEN UNDERSCORE
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+115
+a command
+a command name
 
 input: UNDERSCORE
 ##
-## Ends in an error in state: 286.
+## Ends in an error in state: 287.
 ##
 ## input' -> . input [ # ]
 ##
@@ -1559,11 +1809,13 @@ input: UNDERSCORE
 ##
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+116
+an input statement
+an opening parenthesis to start a command
 
 file: OPEN ASSERT OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 122.
+## Ends in an error in state: 123.
 ##
 ## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1571,13 +1823,13 @@ file: OPEN ASSERT OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ## OPEN ATTRIBUTE term
 ##
 
-# Error 006
-a term
-an attribute of the form ":symbol value".
+006
+attributes for a term
+an attribute of the form "keyword value"
 
 file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
 ##
-## Ends in an error in state: 121.
+## Ends in an error in state: 122.
 ##
 ## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1585,13 +1837,13 @@ file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
 ## OPEN ATTRIBUTE
 ##
 
-# Error 007
+007
 a term with attribute
 a term.
 
 file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 119.
+## Ends in an error in state: 120.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1599,13 +1851,13 @@ file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSC
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-# Error 008
+008
 a term
 a closing parenthesis to end the existencially quantified formula
 
 file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 118.
+## Ends in an error in state: 119.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1613,13 +1865,13 @@ file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-# Error 009
+009
 a term
 a term (body for the existencial quantification)
 
 file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
 ##
-## Ends in an error in state: 116.
+## Ends in an error in state: 117.
 ##
 ## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1627,13 +1879,13 @@ file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
 ## OPEN EXISTS OPEN
 ##
 
-# Error 010
+010
 a term
 a sorted variable of the form "(var sort)"
 
 file: OPEN ASSERT OPEN EXISTS UNDERSCORE
 ##
-## Ends in an error in state: 115.
+## Ends in an error in state: 116.
 ##
 ## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1641,13 +1893,13 @@ file: OPEN ASSERT OPEN EXISTS UNDERSCORE
 ## OPEN EXISTS
 ##
 
-# Error 011
+011
 a term
 a list of sorted variables, starting with an opening parenthesis
 
 file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 113.
+## Ends in an error in state: 114.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1655,13 +1907,13 @@ file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSC
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
 ##
 
-# Error 012
+012
 a term
 a closing parenthesis to end the universally quantified formula
 
 file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 112.
+## Ends in an error in state: 113.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1669,13 +1921,13 @@ file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
 ##
 
-# Error 013
+013
 a term
 a term (body for the universal quantification)
 
 file: OPEN ASSERT OPEN FORALL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 104.
+## Ends in an error in state: 105.
 ##
 ## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1683,11 +1935,13 @@ file: OPEN ASSERT OPEN FORALL OPEN UNDERSCORE
 ## OPEN FORALL OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+018
+a term
+a sorted variable of the form "(var sort)"
 
 file: OPEN ASSERT OPEN FORALL UNDERSCORE
 ##
-## Ends in an error in state: 103.
+## Ends in an error in state: 104.
 ##
 ## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1695,11 +1949,13 @@ file: OPEN ASSERT OPEN FORALL UNDERSCORE
 ## OPEN FORALL
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+019
+a term
+a list of sorted variables, starting with an opening parenthesis
 
 file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 101.
+## Ends in an error in state: 102.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1707,11 +1963,13 @@ file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
 ## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+020
+a term
+a closing parenthesis to end the let binding
 
 file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 100.
+## Ends in an error in state: 101.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1719,11 +1977,13 @@ file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ## OPEN LET OPEN nonempty_list(var_binding) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+021
+a term
+a term (body for the let binding)
 
 file: OPEN ASSERT OPEN LET OPEN UNDERSCORE
 ##
-## Ends in an error in state: 92.
+## Ends in an error in state: 93.
 ##
 ## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1731,11 +1991,13 @@ file: OPEN ASSERT OPEN LET OPEN UNDERSCORE
 ## OPEN LET OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+026
+a term
+a variable binding of the form "(var term)"
 
 file: OPEN ASSERT OPEN LET UNDERSCORE
 ##
-## Ends in an error in state: 91.
+## Ends in an error in state: 92.
 ##
 ## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1743,11 +2005,13 @@ file: OPEN ASSERT OPEN LET UNDERSCORE
 ## OPEN LET
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+027
+a term
+a variable binding list, starting with an opening parenthesis
 
 file: OPEN ASSERT OPEN MATCH SYMBOL OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 87.
+## Ends in an error in state: 88.
 ##
 ## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1755,11 +2019,13 @@ file: OPEN ASSERT OPEN MATCH SYMBOL OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+031
+a match
+a closing parenthesis to close the match
 
 file: OPEN ASSERT OPEN MATCH SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 70.
+## Ends in an error in state: 71.
 ##
 ## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1767,11 +2033,13 @@ file: OPEN ASSERT OPEN MATCH SYMBOL OPEN UNDERSCORE
 ## OPEN MATCH term OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+036
+a list of match cases
+a match case of the form "(pattern term)"
 
 file: OPEN ASSERT OPEN MATCH SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 69.
+## Ends in an error in state: 70.
 ##
 ## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1779,11 +2047,13 @@ file: OPEN ASSERT OPEN MATCH SYMBOL UNDERSCORE
 ## OPEN MATCH term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+037
+a match
+a match case list, starting with an opening parenthesis
 
 file: OPEN ASSERT OPEN MATCH UNDERSCORE
 ##
-## Ends in an error in state: 68.
+## Ends in an error in state: 69.
 ##
 ## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1791,7 +2061,9 @@ file: OPEN ASSERT OPEN MATCH UNDERSCORE
 ## OPEN MATCH
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+038
+a match
+a term to match (i.e. the scrutinee of the match)
 
 file: OPEN ASSERT OPEN STR
 ##
@@ -1810,11 +2082,14 @@ file: OPEN ASSERT OPEN STR
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
 
 file: OPEN ASSERT OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 127.
+## Ends in an error in state: 128.
 ##
 ## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1822,11 +2097,15 @@ file: OPEN ASSERT OPEN SYMBOL UNDERSCORE
 ## OPEN qual_identifier
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+044
+a function application
+a term as argument;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
 
 file: OPEN ASSERT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 279.
+## Ends in an error in state: 280.
 ##
 ## command -> OPEN ASSERT term . CLOSE [ OPEN EOF ]
 ##
@@ -1834,11 +2113,13 @@ file: OPEN ASSERT SYMBOL UNDERSCORE
 ## OPEN ASSERT term
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+117
+an assert command
+a closing parenthesis
 
 file: OPEN ASSERT UNDERSCORE
 ##
-## Ends in an error in state: 278.
+## Ends in an error in state: 279.
 ##
 ## command -> OPEN ASSERT . term CLOSE [ OPEN EOF ]
 ##
@@ -1846,11 +2127,13 @@ file: OPEN ASSERT UNDERSCORE
 ## OPEN ASSERT
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+118
+an assert command
+a term
 
 file: OPEN CHECK_SAT UNDERSCORE
 ##
-## Ends in an error in state: 276.
+## Ends in an error in state: 277.
 ##
 ## command -> OPEN CHECK_SAT . CLOSE [ OPEN EOF ]
 ##
@@ -1862,7 +2145,7 @@ file: OPEN CHECK_SAT UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 274.
+## Ends in an error in state: 275.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ OPEN EOF ]
 ##
@@ -1874,7 +2157,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 267.
+## Ends in an error in state: 268.
 ##
 ## prop_literal -> OPEN not_symbol prop_symbol . CLOSE [ SYMBOL OPEN CLOSE ]
 ##
@@ -1886,7 +2169,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 266.
+## Ends in an error in state: 267.
 ##
 ## prop_literal -> OPEN not_symbol . prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
 ##
@@ -1898,7 +2181,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 264.
+## Ends in an error in state: 265.
 ##
 ## prop_literal -> OPEN . not_symbol prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
 ##
@@ -1910,7 +2193,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 271.
+## Ends in an error in state: 272.
 ##
 ## list(prop_literal) -> prop_literal . list(prop_literal) [ CLOSE ]
 ##
@@ -1922,7 +2205,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 ##
-## Ends in an error in state: 263.
+## Ends in an error in state: 264.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -1934,7 +2217,7 @@ file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
 
 file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 ##
-## Ends in an error in state: 262.
+## Ends in an error in state: 263.
 ##
 ## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -1946,7 +2229,7 @@ file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
 
 file: OPEN DECLARE_CONST SYMBOL OPEN STR
 ##
-## Ends in an error in state: 59.
+## Ends in an error in state: 60.
 ##
 ## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
 ## sort -> OPEN . identifier nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
@@ -1959,7 +2242,7 @@ file: OPEN DECLARE_CONST SYMBOL OPEN STR
 
 file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 61.
+## Ends in an error in state: 62.
 ##
 ## nonempty_list(sort) -> sort . [ CLOSE ]
 ## nonempty_list(sort) -> sort . nonempty_list(sort) [ CLOSE ]
@@ -1972,7 +2255,7 @@ file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 60.
+## Ends in an error in state: 61.
 ##
 ## sort -> OPEN identifier . nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
 ##
@@ -1984,7 +2267,7 @@ file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 260.
+## Ends in an error in state: 261.
 ##
 ## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ OPEN EOF ]
 ##
@@ -1996,7 +2279,7 @@ file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 259.
+## Ends in an error in state: 260.
 ##
 ## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ OPEN EOF ]
 ##
@@ -2008,7 +2291,7 @@ file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_CONST UNDERSCORE
 ##
-## Ends in an error in state: 258.
+## Ends in an error in state: 259.
 ##
 ## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ OPEN EOF ]
 ##
@@ -2020,7 +2303,7 @@ file: OPEN DECLARE_CONST UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 256.
+## Ends in an error in state: 257.
 ##
 ## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ OPEN EOF ]
 ##
@@ -2032,7 +2315,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 243.
+## Ends in an error in state: 244.
 ##
 ## nonempty_list(constructor_dec) -> constructor_dec . [ CLOSE ]
 ## nonempty_list(constructor_dec) -> constructor_dec . nonempty_list(constructor_dec) [ CLOSE ]
@@ -2045,7 +2328,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 236.
+## Ends in an error in state: 237.
 ##
 ## list(selector_dec) -> selector_dec . list(selector_dec) [ CLOSE ]
 ##
@@ -2057,7 +2340,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UND
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 234.
+## Ends in an error in state: 235.
 ##
 ## selector_dec -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
 ##
@@ -2069,7 +2352,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCOR
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 233.
+## Ends in an error in state: 234.
 ##
 ## selector_dec -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2081,7 +2364,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 232.
+## Ends in an error in state: 233.
 ##
 ## selector_dec -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2093,7 +2376,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 231.
+## Ends in an error in state: 232.
 ##
 ## constructor_dec -> OPEN SYMBOL . list(selector_dec) CLOSE [ OPEN CLOSE ]
 ##
@@ -2105,7 +2388,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 230.
+## Ends in an error in state: 231.
 ##
 ## constructor_dec -> OPEN . SYMBOL list(selector_dec) CLOSE [ OPEN CLOSE ]
 ##
@@ -2117,7 +2400,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 241.
+## Ends in an error in state: 242.
 ##
 ## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE . CLOSE [ OPEN CLOSE ]
 ##
@@ -2129,7 +2412,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL C
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 229.
+## Ends in an error in state: 230.
 ##
 ## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -2141,7 +2424,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 228.
+## Ends in an error in state: 229.
 ##
 ## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -2153,7 +2436,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 245.
+## Ends in an error in state: 246.
 ##
 ## nonempty_list(datatype_symbol) -> datatype_symbol . [ CLOSE ]
 ## nonempty_list(datatype_symbol) -> datatype_symbol . nonempty_list(datatype_symbol) [ CLOSE ]
@@ -2166,7 +2449,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
 ##
-## Ends in an error in state: 225.
+## Ends in an error in state: 226.
 ##
 ## datatype_dec -> OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -2178,7 +2461,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
 ##
-## Ends in an error in state: 224.
+## Ends in an error in state: 225.
 ##
 ## datatype_dec -> OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -2190,7 +2473,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 223.
+## Ends in an error in state: 224.
 ##
 ## datatype_dec -> OPEN . nonempty_list(constructor_dec) CLOSE [ OPEN CLOSE ]
 ## datatype_dec -> OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
@@ -2203,7 +2486,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 255.
+## Ends in an error in state: 256.
 ##
 ## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ OPEN EOF ]
 ##
@@ -2215,7 +2498,7 @@ file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_DATATYPE UNDERSCORE
 ##
-## Ends in an error in state: 254.
+## Ends in an error in state: 255.
 ##
 ## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ OPEN EOF ]
 ##
@@ -2227,7 +2510,7 @@ file: OPEN DECLARE_DATATYPE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 250.
+## Ends in an error in state: 251.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ OPEN EOF ]
 ##
@@ -2239,7 +2522,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYM
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 252.
+## Ends in an error in state: 253.
 ##
 ## nonempty_list(datatype_dec) -> datatype_dec . [ CLOSE ]
 ## nonempty_list(datatype_dec) -> datatype_dec . nonempty_list(datatype_dec) [ CLOSE ]
@@ -2252,7 +2535,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYM
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 222.
+## Ends in an error in state: 223.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -2264,7 +2547,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 221.
+## Ends in an error in state: 222.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -2276,7 +2559,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 218.
+## Ends in an error in state: 219.
 ##
 ## nonempty_list(sort_dec) -> sort_dec . [ CLOSE ]
 ## nonempty_list(sort_dec) -> sort_dec . nonempty_list(sort_dec) [ CLOSE ]
@@ -2289,7 +2572,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
 ##
-## Ends in an error in state: 216.
+## Ends in an error in state: 217.
 ##
 ## sort_dec -> OPEN SYMBOL NUM . CLOSE [ OPEN CLOSE ]
 ##
@@ -2301,7 +2584,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 215.
+## Ends in an error in state: 216.
 ##
 ## sort_dec -> OPEN SYMBOL . NUM CLOSE [ OPEN CLOSE ]
 ##
@@ -2313,7 +2596,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 214.
+## Ends in an error in state: 215.
 ##
 ## sort_dec -> OPEN . SYMBOL NUM CLOSE [ OPEN CLOSE ]
 ##
@@ -2325,7 +2608,7 @@ file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 ##
-## Ends in an error in state: 213.
+## Ends in an error in state: 214.
 ##
 ## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -2337,7 +2620,7 @@ file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
 
 file: OPEN DECLARE_DATATYPES UNDERSCORE
 ##
-## Ends in an error in state: 212.
+## Ends in an error in state: 213.
 ##
 ## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
 ##
@@ -2349,7 +2632,7 @@ file: OPEN DECLARE_DATATYPES UNDERSCORE
 
 file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 210.
+## Ends in an error in state: 211.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ OPEN EOF ]
 ##
@@ -2361,7 +2644,7 @@ file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 209.
+## Ends in an error in state: 210.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ OPEN EOF ]
 ##
@@ -2373,7 +2656,7 @@ file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
 
 file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 206.
+## Ends in an error in state: 207.
 ##
 ## list(sort) -> sort . list(sort) [ CLOSE ]
 ##
@@ -2385,7 +2668,7 @@ file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 205.
+## Ends in an error in state: 206.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2397,7 +2680,7 @@ file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
 
 file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 204.
+## Ends in an error in state: 205.
 ##
 ## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2409,7 +2692,7 @@ file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_FUN UNDERSCORE
 ##
-## Ends in an error in state: 203.
+## Ends in an error in state: 204.
 ##
 ## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2421,7 +2704,7 @@ file: OPEN DECLARE_FUN UNDERSCORE
 
 file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 ##
-## Ends in an error in state: 201.
+## Ends in an error in state: 202.
 ##
 ## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ OPEN EOF ]
 ##
@@ -2433,7 +2716,7 @@ file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
 
 file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 200.
+## Ends in an error in state: 201.
 ##
 ## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ OPEN EOF ]
 ##
@@ -2445,7 +2728,7 @@ file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
 
 file: OPEN DECLARE_SORT UNDERSCORE
 ##
-## Ends in an error in state: 199.
+## Ends in an error in state: 200.
 ##
 ## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ OPEN EOF ]
 ##
@@ -2457,7 +2740,7 @@ file: OPEN DECLARE_SORT UNDERSCORE
 
 file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 197.
+## Ends in an error in state: 198.
 ##
 ## command -> OPEN DEFINE_FUN function_def . CLOSE [ OPEN EOF ]
 ##
@@ -2469,7 +2752,7 @@ file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUN UNDERSCORE
 ##
-## Ends in an error in state: 196.
+## Ends in an error in state: 197.
 ##
 ## command -> OPEN DEFINE_FUN . function_def CLOSE [ OPEN EOF ]
 ##
@@ -2481,7 +2764,7 @@ file: OPEN DEFINE_FUN UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 192.
+## Ends in an error in state: 193.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ OPEN EOF ]
 ##
@@ -2493,7 +2776,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN S
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
 ##
-## Ends in an error in state: 190.
+## Ends in an error in state: 191.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
 ##
@@ -2505,7 +2788,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN U
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 189.
+## Ends in an error in state: 190.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
 ##
@@ -2517,7 +2800,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERS
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 194.
+## Ends in an error in state: 195.
 ##
 ## nonempty_list(function_dec) -> function_dec . [ CLOSE ]
 ## nonempty_list(function_dec) -> function_dec . nonempty_list(function_dec) [ CLOSE ]
@@ -2530,7 +2813,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 186.
+## Ends in an error in state: 187.
 ##
 ## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE sort . CLOSE [ OPEN CLOSE ]
 ##
@@ -2542,7 +2825,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 185.
+## Ends in an error in state: 186.
 ##
 ## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE . sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2554,7 +2837,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 183.
+## Ends in an error in state: 184.
 ##
 ## function_dec -> OPEN SYMBOL OPEN . list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2566,7 +2849,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 182.
+## Ends in an error in state: 183.
 ##
 ## function_dec -> OPEN SYMBOL . OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2578,7 +2861,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
 ##
-## Ends in an error in state: 181.
+## Ends in an error in state: 182.
 ##
 ## function_dec -> OPEN . SYMBOL OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -2590,7 +2873,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
-## Ends in an error in state: 180.
+## Ends in an error in state: 181.
 ##
 ## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
 ##
@@ -2602,7 +2885,7 @@ file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 
 file: OPEN DEFINE_FUNS_REC UNDERSCORE
 ##
-## Ends in an error in state: 179.
+## Ends in an error in state: 180.
 ##
 ## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
 ##
@@ -2614,7 +2897,7 @@ file: OPEN DEFINE_FUNS_REC UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 177.
+## Ends in an error in state: 178.
 ##
 ## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ OPEN EOF ]
 ##
@@ -2626,7 +2909,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 175.
+## Ends in an error in state: 176.
 ##
 ## function_def -> SYMBOL OPEN list(sorted_var) CLOSE sort . term [ CLOSE ]
 ##
@@ -2638,7 +2921,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 174.
+## Ends in an error in state: 175.
 ##
 ## function_def -> SYMBOL OPEN list(sorted_var) CLOSE . sort term [ CLOSE ]
 ##
@@ -2650,7 +2933,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 171.
+## Ends in an error in state: 172.
 ##
 ## list(sorted_var) -> sorted_var . list(sorted_var) [ CLOSE ]
 ##
@@ -2662,7 +2945,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 170.
+## Ends in an error in state: 171.
 ##
 ## function_def -> SYMBOL OPEN . list(sorted_var) CLOSE sort term [ CLOSE ]
 ##
@@ -2674,7 +2957,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 169.
+## Ends in an error in state: 170.
 ##
 ## function_def -> SYMBOL . OPEN list(sorted_var) CLOSE sort term [ CLOSE ]
 ##
@@ -2686,7 +2969,7 @@ file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_FUN_REC UNDERSCORE
 ##
-## Ends in an error in state: 168.
+## Ends in an error in state: 169.
 ##
 ## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ OPEN EOF ]
 ##
@@ -2698,7 +2981,7 @@ file: OPEN DEFINE_FUN_REC UNDERSCORE
 
 file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 166.
+## Ends in an error in state: 167.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ OPEN EOF ]
 ##
@@ -2710,7 +2993,7 @@ file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 165.
+## Ends in an error in state: 166.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ OPEN EOF ]
 ##
@@ -2722,7 +3005,7 @@ file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
 
 file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 162.
+## Ends in an error in state: 163.
 ##
 ## list(SYMBOL) -> SYMBOL . list(SYMBOL) [ CLOSE ]
 ##
@@ -2734,7 +3017,7 @@ file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 161.
+## Ends in an error in state: 162.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2746,7 +3029,7 @@ file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
 
 file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 160.
+## Ends in an error in state: 161.
 ##
 ## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2758,7 +3041,7 @@ file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
 
 file: OPEN DEFINE_SORT UNDERSCORE
 ##
-## Ends in an error in state: 159.
+## Ends in an error in state: 160.
 ##
 ## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
 ##
@@ -2770,7 +3053,7 @@ file: OPEN DEFINE_SORT UNDERSCORE
 
 file: OPEN ECHO STR UNDERSCORE
 ##
-## Ends in an error in state: 157.
+## Ends in an error in state: 158.
 ##
 ## command -> OPEN ECHO STR . CLOSE [ OPEN EOF ]
 ##
@@ -2782,7 +3065,7 @@ file: OPEN ECHO STR UNDERSCORE
 
 file: OPEN ECHO UNDERSCORE
 ##
-## Ends in an error in state: 156.
+## Ends in an error in state: 157.
 ##
 ## command -> OPEN ECHO . STR CLOSE [ OPEN EOF ]
 ##
@@ -2794,7 +3077,7 @@ file: OPEN ECHO UNDERSCORE
 
 file: OPEN EXIT UNDERSCORE
 ##
-## Ends in an error in state: 154.
+## Ends in an error in state: 155.
 ##
 ## command -> OPEN EXIT . CLOSE [ OPEN EOF ]
 ##
@@ -2806,7 +3089,7 @@ file: OPEN EXIT UNDERSCORE
 
 file: OPEN GET_ASSERTIONS UNDERSCORE
 ##
-## Ends in an error in state: 152.
+## Ends in an error in state: 153.
 ##
 ## command -> OPEN GET_ASSERTIONS . CLOSE [ OPEN EOF ]
 ##
@@ -2818,7 +3101,7 @@ file: OPEN GET_ASSERTIONS UNDERSCORE
 
 file: OPEN GET_ASSIGNMENT UNDERSCORE
 ##
-## Ends in an error in state: 150.
+## Ends in an error in state: 151.
 ##
 ## command -> OPEN GET_ASSIGNMENT . CLOSE [ OPEN EOF ]
 ##
@@ -2830,7 +3113,7 @@ file: OPEN GET_ASSIGNMENT UNDERSCORE
 
 file: OPEN GET_INFO KEYWORD UNDERSCORE
 ##
-## Ends in an error in state: 148.
+## Ends in an error in state: 149.
 ##
 ## command -> OPEN GET_INFO info_flag . CLOSE [ OPEN EOF ]
 ##
@@ -2842,7 +3125,7 @@ file: OPEN GET_INFO KEYWORD UNDERSCORE
 
 file: OPEN GET_INFO UNDERSCORE
 ##
-## Ends in an error in state: 146.
+## Ends in an error in state: 147.
 ##
 ## command -> OPEN GET_INFO . info_flag CLOSE [ OPEN EOF ]
 ##
@@ -2854,7 +3137,7 @@ file: OPEN GET_INFO UNDERSCORE
 
 file: OPEN GET_MODEL UNDERSCORE
 ##
-## Ends in an error in state: 144.
+## Ends in an error in state: 145.
 ##
 ## command -> OPEN GET_MODEL . CLOSE [ OPEN EOF ]
 ##
@@ -2866,7 +3149,7 @@ file: OPEN GET_MODEL UNDERSCORE
 
 file: OPEN GET_OPTION KEYWORD UNDERSCORE
 ##
-## Ends in an error in state: 142.
+## Ends in an error in state: 143.
 ##
 ## command -> OPEN GET_OPTION KEYWORD . CLOSE [ OPEN EOF ]
 ##
@@ -2878,7 +3161,7 @@ file: OPEN GET_OPTION KEYWORD UNDERSCORE
 
 file: OPEN GET_OPTION UNDERSCORE
 ##
-## Ends in an error in state: 141.
+## Ends in an error in state: 142.
 ##
 ## command -> OPEN GET_OPTION . KEYWORD CLOSE [ OPEN EOF ]
 ##
@@ -2890,7 +3173,7 @@ file: OPEN GET_OPTION UNDERSCORE
 
 file: OPEN GET_PROOF UNDERSCORE
 ##
-## Ends in an error in state: 139.
+## Ends in an error in state: 140.
 ##
 ## command -> OPEN GET_PROOF . CLOSE [ OPEN EOF ]
 ##
@@ -2902,7 +3185,7 @@ file: OPEN GET_PROOF UNDERSCORE
 
 file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 ##
-## Ends in an error in state: 137.
+## Ends in an error in state: 138.
 ##
 ## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ OPEN EOF ]
 ##
@@ -2914,7 +3197,7 @@ file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
 
 file: OPEN GET_UNSAT_CORE UNDERSCORE
 ##
-## Ends in an error in state: 135.
+## Ends in an error in state: 136.
 ##
 ## command -> OPEN GET_UNSAT_CORE . CLOSE [ OPEN EOF ]
 ##
@@ -2926,7 +3209,7 @@ file: OPEN GET_UNSAT_CORE UNDERSCORE
 
 file: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 133.
+## Ends in an error in state: 134.
 ##
 ## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ OPEN EOF ]
 ##
@@ -3022,7 +3305,7 @@ file: OPEN RESET UNDERSCORE
 
 file: OPEN RESET_ASSERTIONS CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 284.
+## Ends in an error in state: 285.
 ##
 ## list(command) -> command . list(command) [ EOF ]
 ##

@@ -1,5 +1,5 @@
-[1m[97mFile "tests/parsing/smtlib/v2.6/errors/011_exists_bad_var_list_2.smt2", line 2, character 16-20:
-[0;1m[0m[1m[91mError[0;1m[0m while parsing a term, read the symbol 'blah',
+File "", line 1, character 32-36:
+Error (011) while parsing a term, read the symbol 'blah',
       but expected a list of sorted variables, starting with an opening
-        parenthesis
+      parenthesis.
 

@@ -33,6 +33,7 @@ let touch file =
     true
   else
     let ch = open_out file in
+    output_string ch "run 'make test-promote' to update this file";
     let () = close_out ch in
     false
 
@@ -90,7 +91,7 @@ let test_stanza fmt (exit_codes, pb_file) =
   (action (chdir %%{workspace_root}
            (with-outputs-to %%{target}
             (with-accepted-exit-codes %a
-             (run dolmen %%{deps} %%{read-lines:flags.dune}))))))
+             (run dolmen --color=false %%{deps} %%{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (action (diff %s %s)))

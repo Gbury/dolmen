@@ -1,0 +1,4 @@
+File "", line 1, character 31-33:
+Error (025) while parsing a variable binding, read the reserved word 'as',
+      but expected a symbol (i.e. variable name).
+

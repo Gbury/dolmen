@@ -1,0 +1,6 @@
+File "", line 1, character 36-37:
+Error (016) while parsing a sorted variable, read the reserved word '_',
+      but expected a sort, i.e. either an identifier, or a sort constructor
+      application; note that keywords and reserved words (such as '_', 'as',
+      ...) are not identifiers, and thus are not allowed here.
+

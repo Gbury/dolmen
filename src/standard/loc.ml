@@ -95,7 +95,7 @@ let mk_file name =
   try Hashtbl.find tables name
   with Not_found ->
     let table = Vec.create () in
-    let () = Vec.push table 0 in
+    let () = Vec.push table (-1) in
     let file = { name; table; } in
     Hashtbl.add tables name file;
     file

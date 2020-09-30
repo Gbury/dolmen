@@ -1,0 +1,4 @@
+File "", line 1, character 34-36:
+Error (017) while parsing a sorted variable, read the reserved word 'as',
+      but expected a symbol, i.e. a variable name.
+

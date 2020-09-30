@@ -1,6 +1,6 @@
-[1m[97mFile "tests/parsing/smtlib/v2.6/errors/001_identifier_index_2.smt2", line 2, character 13-15:
-[0;1m[0m[1m[91mError[0;1m[0m while parsing an identifier, read the reserved word 'as',
+File "", line 1, character 29-31:
+Error (001) while parsing an identifier, read the reserved word 'as',
       but expected an underscore: identifiers starting with an opening
-        parenthesis must be indexed identifiers, of the form "(_ symbol
-        index+)"
+      parenthesis must be indexed identifiers, of the form "(_ symbol
+      index+)".
 

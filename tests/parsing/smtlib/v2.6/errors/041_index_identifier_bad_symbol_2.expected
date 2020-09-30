@@ -1,0 +1,5 @@
+File "", line 1, character 28-29:
+Error (041) while parsing an indexed identifier, read the reserved word '!',
+      but expected a symbol; note that keywords and reserved words (such as
+      '_', 'as', ...) are not symbols, and thus are not allowed here.
+

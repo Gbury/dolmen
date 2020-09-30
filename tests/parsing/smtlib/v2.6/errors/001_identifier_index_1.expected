@@ -1,6 +1,6 @@
-[1m[97mFile "tests/parsing/smtlib/v2.6/errors/001_identifier_index_1.smt2", line 2, character 13-17:
-[0;1m[0m[1m[91mError[0;1m[0m while parsing an identifier, read the symbol 'blah',
+File "", line 1, character 29-33:
+Error (001) while parsing an identifier, read the symbol 'blah',
       but expected an underscore: identifiers starting with an opening
-        parenthesis must be indexed identifiers, of the form "(_ symbol
-        index+)"
+      parenthesis must be indexed identifiers, of the form "(_ symbol
+      index+)".
 

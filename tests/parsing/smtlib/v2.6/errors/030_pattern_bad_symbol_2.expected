@@ -1,0 +1,6 @@
+File "", line 1, character 137-138:
+Error (030) while parsing a pattern, read the reserved word '!',
+      but expected a symbol (either a variable or a datatype constructor);
+      note that keywords and reserved words (such as '_', 'as', ...) are not
+      symbols, and thus are not allowed here.
+

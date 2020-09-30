@@ -1,0 +1,6 @@
+File "", line 1, character 29-30:
+Error (042) while parsing a term, read the string 'bla',
+      but expected a term construction (identifier, let binding,
+      quantification, ...); note that this expectation if caused by the
+      preceding opening parenthesis.
+
