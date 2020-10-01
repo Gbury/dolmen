@@ -1,0 +1,4 @@
+File "tests/parsing/dimacs/errors/001_missing_p_2.cnf", line 1, character 0-1:
+Error (001) while parsing a file, read the integer '0',
+      but expected a p-cnf header, starting with the keyword "p".
+

@@ -1,0 +1,4 @@
+File "tests/parsing/dimacs/errors/003_bad_var_num_1.cnf", line 1, character 6-7:
+Error (003) while parsing a p-cnf header, read the integer '0',
+      but expected a non-zero integer for the number of variables.
+

@@ -4,9 +4,18 @@
 {
   exception Error
 
+  module T = Dolmen_std.Tok
+
   open Tokens_dimacs
 
-  let descr _ = assert false
+  let descr token : T.descr =
+    match (token : token) with
+    | EOF -> T.descr ~kind:"end of file token" ""
+    | P -> T.descr ~kind:"keyword" "p"
+    | CNF -> T.descr ~kind:"keyword" "cnf"
+    | NEWLINE -> T.descr ~kind:"newline character" ""
+    | ZERO -> T.descr ~kind:"integer" "0"
+    | INT i -> T.descr ~kind:"integer" (string_of_int i)
 
 }
 

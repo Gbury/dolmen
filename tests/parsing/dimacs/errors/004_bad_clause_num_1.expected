@@ -1,0 +1,4 @@
+File "tests/parsing/dimacs/errors/004_bad_clause_num_1.cnf", line 1, character 8-9:
+Error (004) while parsing a p-cnf header, read the integer '0',
+      but expected a non-zero integer for the number of clauses.
+

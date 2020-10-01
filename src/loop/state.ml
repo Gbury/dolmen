@@ -152,18 +152,22 @@ let prelude _ = "prompt>"
 (* Setting language *)
 (* ************************************************************************* *)
 
+let switch_to_full_mode lang t =
+  let old_mode = input_mode t in
+  let t = set_mode t `Full in
+  match old_mode with
+  | Some `Incremental ->
+    warn t
+      "The@ %s@ format@ does@ not@ support@ \
+       incremental@ mode,@ switching@ to@ full@ mode"
+      lang
+  | _ -> t
+
 let set_lang_aux t l =
   let t = { t with input_lang = Some l; } in
   match l with
-  | Logic.Alt_ergo ->
-    let old_mode = input_mode t in
-    let t = set_mode t `Full in
-    begin match old_mode with
-      | Some `Incremental ->
-        warn t
-          "The Alt-ergo format does not support incremental mode, switching to full mode"
-      | _ -> t
-    end
+  | Logic.Dimacs -> switch_to_full_mode "Dimacs" t
+  | Logic.Alt_ergo -> switch_to_full_mode "Alt-Ergo" t
   | _ -> t
 
 let set_lang t l =
