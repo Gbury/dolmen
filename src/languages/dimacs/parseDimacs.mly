@@ -14,10 +14,13 @@
 
 %%
 
-/* Since there are no check-sat input statement,
-   interactive mode does not make much sense */
 input:
-  | EOF { assert false }
+  | NEWLINE* EOF
+    { None }
+  | NEWLINE* s=start
+    { Some s }
+  | NEWLINE* c=clause
+    { Some c }
 
 file:
   | NEWLINE* h=start l=cnf

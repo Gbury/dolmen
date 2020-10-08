@@ -16,7 +16,7 @@ let expected_of_problem file =
 
 let supports_incremental file =
   match Filename.extension file with
-  | ".ae" | ".cnf" -> false
+  | ".ae" -> false
   | _ -> true
 
 let is_a_pb file =

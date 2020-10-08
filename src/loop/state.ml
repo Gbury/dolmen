@@ -166,7 +166,6 @@ let switch_to_full_mode lang t =
 let set_lang_aux t l =
   let t = { t with input_lang = Some l; } in
   match l with
-  | Logic.Dimacs -> switch_to_full_mode "Dimacs" t
   | Logic.Alt_ergo -> switch_to_full_mode "Alt-Ergo" t
   | _ -> t
 

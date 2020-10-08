@@ -12,7 +12,7 @@ module Make
     type token = Tokens_dimacs.token
     type statement = S.t
     let env = []
-    let incremental = false
+    let incremental = true
     let error s = Syntax_messages.message s
   end)(LexDimacs)(ParseDimacs.Make(L)(T)(S))
 

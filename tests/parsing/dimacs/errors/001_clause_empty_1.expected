@@ -1,4 +1,4 @@
-File "tests/parsing/dimacs/errors/001_missing_p_1.cnf", line 2, character 0-1:
+File "tests/parsing/dimacs/errors/001_clause_empty_1.cnf", line 2, character 0-1:
 Error (001) while parsing an input sentence, read the integer '0',
       but expected a p-cnf header if there hasn't been one yet, or a clause
       starting with a non-zero integer.

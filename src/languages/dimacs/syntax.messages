@@ -22,6 +22,7 @@
 #   an error message, be sure to modify all occurrences of the same
 #   error number
 
+
 input: ZERO
 ##
 ## Ends in an error in state: 23.
@@ -32,11 +33,92 @@ input: ZERO
 ##
 ##
 
-# Only error allowed to not have a test case
-000
-an incremental input
-nothing, this is not supported and should not happen,
-please report upstream, ^^
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
+
+file: NEWLINE INT
+##
+## Ends in an error in state: 3.
+##
+## file -> list(NEWLINE) . start cnf [ # ]
+##
+## The known suffix of the stack is as follows:
+## list(NEWLINE)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 1, spurious reduction of production list(NEWLINE) -> 
+## In state 2, spurious reduction of production list(NEWLINE) -> NEWLINE list(NEWLINE) 
+##
+
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
+
+file: NEWLINE ZERO
+##
+## Ends in an error in state: 1.
+##
+## list(NEWLINE) -> NEWLINE . list(NEWLINE) [ P INT EOF ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
+
+file: P CNF INT INT NEWLINE INT ZERO NEWLINE ZERO
+##
+## Ends in an error in state: 17.
+##
+## cnf -> clause . cnf [ # ]
+##
+## The known suffix of the stack is as follows:
+## clause
+##
+
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
+
+file: P CNF INT INT NEWLINE NEWLINE ZERO
+##
+## Ends in an error in state: 10.
+##
+## cnf -> NEWLINE . cnf [ # ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
+
+file: P CNF INT INT NEWLINE ZERO
+##
+## Ends in an error in state: 9.
+##
+## file -> list(NEWLINE) start . cnf [ # ]
+##
+## The known suffix of the stack is as follows:
+## list(NEWLINE) start
+##
+
+001
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
 
 file: ZERO
 ##
@@ -49,22 +131,23 @@ file: ZERO
 ##
 
 001
-a file
-a p-cnf header, starting with the keyword "p"
+an input sentence
+a p-cnf header if there hasn't been one yet,
+or a clause starting with a non-zero integer
 
-file: NEWLINE ZERO
+input: P ZERO
 ##
-## Ends in an error in state: 1.
+## Ends in an error in state: 25.
 ##
-## list(NEWLINE) -> NEWLINE . list(NEWLINE) [ P ]
+## start -> P . CNF INT INT NEWLINE [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## NEWLINE
+## P
 ##
 
-001
-a file
-a p-cnf header, starting with the keyword "p"
+002
+a p-cnf header
+the keyword "cnf"
 
 file: P ZERO
 ##
@@ -80,6 +163,20 @@ file: P ZERO
 a p-cnf header
 the keyword "cnf"
 
+input: P CNF ZERO
+##
+## Ends in an error in state: 26.
+##
+## start -> P CNF . INT INT NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P CNF
+##
+
+003
+a p-cnf header
+a non-zero integer for the number of variables
+
 file: P CNF ZERO
 ##
 ## Ends in an error in state: 5.
@@ -93,6 +190,20 @@ file: P CNF ZERO
 003
 a p-cnf header
 a non-zero integer for the number of variables
+
+input: P CNF INT ZERO
+##
+## Ends in an error in state: 27.
+##
+## start -> P CNF INT . INT NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P CNF INT
+##
+
+004
+a p-cnf header
+a non-zero integer for the number of clauses
 
 file: P CNF INT ZERO
 ##
@@ -108,6 +219,20 @@ file: P CNF INT ZERO
 a p-cnf header
 a non-zero integer for the number of clauses
 
+input: P CNF INT INT ZERO
+##
+## Ends in an error in state: 28.
+##
+## start -> P CNF INT INT . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P CNF INT INT
+##
+
+005
+a p-cnf header
+a newline character to end the header
+
 file: P CNF INT INT ZERO
 ##
 ## Ends in an error in state: 7.
@@ -122,7 +247,7 @@ file: P CNF INT INT ZERO
 a p-cnf header
 a newline character to end the header
 
-file: P CNF INT INT NEWLINE INT P
+input: INT P
 ##
 ## Ends in an error in state: 19.
 ##
@@ -138,47 +263,19 @@ a clause
 an integer, either zero to mark the end of the clause, or
 a non-zero integer to add to the clause
 
-file: P CNF INT INT NEWLINE ZERO
+input: INT ZERO ZERO
 ##
-## Ends in an error in state: 9.
+## Ends in an error in state: 33.
 ##
-## file -> list(NEWLINE) start . cnf [ # ]
-##
-## The known suffix of the stack is as follows:
-## list(NEWLINE) start
-##
-
-007
-a clause
-a non-zero integer to start a clause
-
-file: P CNF INT INT NEWLINE NEWLINE ZERO
-##
-## Ends in an error in state: 10.
-##
-## cnf -> NEWLINE . cnf [ # ]
+## clause -> nonempty_list(atom) ZERO . NEWLINE [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## NEWLINE
+## nonempty_list(atom) ZERO
 ##
 
-007
+008
 a clause
-a non-zero integer to start a clause
-
-file: P CNF INT INT NEWLINE INT ZERO NEWLINE ZERO
-##
-## Ends in an error in state: 17.
-##
-## cnf -> clause . cnf [ # ]
-##
-## The known suffix of the stack is as follows:
-## clause
-##
-
-007
-a clause
-a non-zero integer to start a clause
+a newline to properly finish the clause after the zero
 
 file: P CNF INT INT NEWLINE INT ZERO ZERO
 ##
@@ -193,4 +290,6 @@ file: P CNF INT INT NEWLINE INT ZERO ZERO
 008
 a clause
 a newline to properly finish the clause after the zero
+
+
 

@@ -1,4 +1,0 @@
-File "tests/parsing/dimacs/errors/007_clause_empty_1.cnf", line 2, character 0-1:
-Error (007) while parsing a clause, read the integer '0',
-      but expected a non-zero integer to start a clause.
-
