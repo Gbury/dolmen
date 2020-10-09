@@ -1,4 +1,33 @@
 
+(* Header check
+
+   This module defines a some pipes to check the presence of headers in
+   an input file. Headerts are there to provide meta-data about problems,
+   such as version, source, classification, and even satisifability status
+   in some cases.
+   Note that this does *not* include the checking of constraints between
+   successivestatements such as what smtlib specifies, see flow.ml
+
+
+   The way this check is implemented/done:
+   - a number of meta-data fields are defines in module [Field],
+     together with ways to parse/print them.
+   - then each language defines its list of headers that are:
+     + required (causing an error if they are absent)
+     + wanted (causing a warning if they are absent)
+   - additionally, some checks are performed on the values of some
+     headers, particularly lang_version and license, which are
+     provided by the state (and usually controlled by the command
+     line, as there are not reasonable defaults for them).
+   - finally the pipe accumulates header (parsing them using the
+     functions from the [Field] module, and a checking function is
+     provided to check the presence of headers at the end of the
+     file processing.
+
+   Note that the current way means that headers can theoretically be
+   present anywhere in the file, rather than at the beginning.
+*)
+
 (* Header fields *)
 (* ************************************************************************ *)
 
