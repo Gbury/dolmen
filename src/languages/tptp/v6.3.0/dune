@@ -13,9 +13,53 @@
  (merge_into parseTptp)
 )
 
+(rule
+  (target syntax_messages.ml)
+  (deps   (:tokens tokens_tptp.mly)
+          (:parser parseTptp.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_tptp %{tokens}
+                      %{parser} --base %{parser} --compile-errors %{msg})))
+)
+
 (library
   (name           dolmen_tptp_v6_3_0)
   (public_name    dolmen.tptp.v6_3_0)
   (libraries      dolmen_std dolmen_intf menhirLib)
-  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Dolmen_tptp_v6_3_0)
+  (modules        Tokens_tptp LexTptp ParseTptp Ast_tptp Syntax_messages Dolmen_tptp_v6_3_0)
+)
+
+; Convenience rule to generate a fresh messages file,
+; and update an already existing one.
+(rule
+  (target new.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_tptp.mly)
+          (:parser parseTptp.mly))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_tptp %{tokens}
+                      %{parser} --base %{parser} --list-errors)))
+)
+
+(rule
+  (target updated.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_tptp.mly)
+          (:parser parseTptp.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_tptp %{tokens}
+                      %{parser} --base %{parser} --update-errors %{msg})))
+)
+
+; Additional rule to add to runtest a check that the messages file is up-to-date
+(rule
+  (alias runtest)
+  (deps   (:tokens tokens_tptp.mly)
+          (:parser parseTptp.mly)
+          (:new new.messages)
+          (:msg syntax.messages))
+  (action (run menhir --external-tokens Tokens_tptp %{tokens}
+                      %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
 )

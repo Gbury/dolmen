@@ -192,10 +192,12 @@ term:
     { let loc = L.mk_pos $startpos $endpos in T.pi ~loc vars t }
   | IF a=term THEN b=term ELSE c=term
     { let loc = L.mk_pos $startpos $endpos in T.ite ~loc a b c }
+  /*
   | error
     { let loc = L.mk_pos $startpos $endpos in
       let msg = Format.dprintf ": expected a term" in
       raise (L.Syntax_error (loc, msg)) }
+  */
 
 constructor:
   | v=name l=atomic_term*
@@ -262,10 +264,12 @@ statement:
     { let loc = L.mk_pos $startpos $endpos in S.goal ~loc ~attrs t }
   | DATA attrs=attrs l=mutual_types DOT
     { let loc = L.mk_pos $startpos $endpos in S.data ~loc ~attrs l }
+  /*
   | error
     { let loc = L.mk_pos $startpos $endpos in
       let msg = Format.dprintf ": expected a statement" in
       raise (L.Syntax_error (loc, msg)) }
+  */
 
 input:
   | EOF         { None }
