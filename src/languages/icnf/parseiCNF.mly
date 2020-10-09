@@ -16,8 +16,9 @@
 
 input:
   | NEWLINE i=input
-  | start i=input
     { i }
+  | s=start
+    { Some s }
   | c=clause
     { Some c }
   | a=assumption
@@ -31,7 +32,7 @@ file:
 
 start:
   | P INCCNF NEWLINE
-    { () }
+    { let loc = L.mk_pos $startpos $endpos in S.p_inccnf ~loc () }
 
 problem:
   | EOF

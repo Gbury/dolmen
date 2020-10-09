@@ -1,0 +1,5 @@
+File "tests/parsing/icnf/errors/006_input_bad_3.icnf", line 1, character 0-1:
+Error (006) while parsing an input sentence, read the integer '0',
+      but expected either a non-zero integer to start a clause, the keyword
+      'a' to start an assumption, or the keyword 'p' to start a header.
+

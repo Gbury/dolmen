@@ -1,0 +1,5 @@
+File "tests/parsing/icnf/errors/004_clause_bad_atom_1.icnf", line 2, character 2-3:
+Error (004) while parsing a clause, read the keyword 'p',
+      but expected either another atom (i.e. non-zero integer), or the
+      integer zero to close the clause.
+

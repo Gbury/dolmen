@@ -441,6 +441,9 @@ let p_cnf ?loc nbvar nbclause =
   let attr = Term.colon ?loc i j in
   mk ?loc ~attr (Set_logic "dimacs")
 
+let p_inccnf ?loc () =
+  mk ?loc (Set_logic "icnf")
+
 let clause ?loc l = mk_clause ?loc l
 
 let assumption ?loc l =

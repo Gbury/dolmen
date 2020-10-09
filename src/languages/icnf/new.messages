@@ -1,0 +1,241 @@
+input: A INT P
+##
+## Ends in an error in state: 15.
+##
+## list(atom) -> atom . list(atom) [ ZERO ]
+##
+## The known suffix of the stack is as follows:
+## atom
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: A P
+##
+## Ends in an error in state: 35.
+##
+## assumption -> A . list(atom) ZERO NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## A
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: A ZERO ZERO
+##
+## Ends in an error in state: 37.
+##
+## assumption -> A list(atom) ZERO . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## A list(atom) ZERO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INT P
+##
+## Ends in an error in state: 23.
+##
+## nonempty_list(atom) -> atom . [ ZERO ]
+## nonempty_list(atom) -> atom . nonempty_list(atom) [ ZERO ]
+##
+## The known suffix of the stack is as follows:
+## atom
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INT ZERO ZERO
+##
+## Ends in an error in state: 41.
+##
+## clause -> nonempty_list(atom) ZERO . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## nonempty_list(atom) ZERO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: NEWLINE ZERO
+##
+## Ends in an error in state: 33.
+##
+## input -> NEWLINE . input [ # ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: P INCCNF ZERO
+##
+## Ends in an error in state: 31.
+##
+## start -> P INCCNF . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P INCCNF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: P ZERO
+##
+## Ends in an error in state: 30.
+##
+## start -> P . INCCNF NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: ZERO
+##
+## Ends in an error in state: 29.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: NEWLINE ZERO
+##
+## Ends in an error in state: 1.
+##
+## list(NEWLINE) -> NEWLINE . list(NEWLINE) [ P ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE A P
+##
+## Ends in an error in state: 11.
+##
+## assumption -> A . list(atom) ZERO NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## A
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE A ZERO NEWLINE ZERO
+##
+## Ends in an error in state: 25.
+##
+## problem -> assumption . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## assumption
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE A ZERO ZERO
+##
+## Ends in an error in state: 13.
+##
+## assumption -> A list(atom) ZERO . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## A list(atom) ZERO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE INT ZERO NEWLINE ZERO
+##
+## Ends in an error in state: 21.
+##
+## problem -> clause . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## clause
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE INT ZERO ZERO
+##
+## Ends in an error in state: 19.
+##
+## clause -> nonempty_list(atom) ZERO . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## nonempty_list(atom) ZERO
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE NEWLINE ZERO
+##
+## Ends in an error in state: 8.
+##
+## problem -> NEWLINE . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF NEWLINE ZERO
+##
+## Ends in an error in state: 7.
+##
+## file -> list(NEWLINE) start . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## list(NEWLINE) start
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P INCCNF ZERO
+##
+## Ends in an error in state: 5.
+##
+## start -> P INCCNF . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## P INCCNF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: P ZERO
+##
+## Ends in an error in state: 4.
+##
+## start -> P . INCCNF NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## P
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ZERO
+##
+## Ends in an error in state: 0.
+##
+## file' -> . file [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+

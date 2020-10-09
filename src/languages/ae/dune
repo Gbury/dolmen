@@ -13,9 +13,53 @@
  (merge_into parseAe)
 )
 
+(rule
+  (target syntax_messages.ml)
+  (deps   (:tokens tokens_ae.mly)
+          (:parser parseAe.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_ae %{tokens}
+                      %{parser} --base %{parser} --compile-errors %{msg})))
+)
+
 (library
   (name           dolmen_ae)
   (public_name    dolmen.ae)
   (libraries      dolmen_std dolmen_intf menhirLib)
-  (modules        Tokens_ae LexAe ParseAe Ast_ae Dolmen_ae)
+  (modules        Tokens_ae LexAe ParseAe Ast_ae Syntax_messages Dolmen_ae)
+)
+
+; Convenience rule to generate a fresh messages file,
+; and update an already existing one.
+(rule
+  (target new.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_ae.mly)
+          (:parser parseAe.mly))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_ae %{tokens}
+                      %{parser} --base %{parser} --list-errors)))
+)
+
+(rule
+  (target updated.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_ae.mly)
+          (:parser parseAe.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_ae %{tokens}
+                      %{parser} --base %{parser} --update-errors %{msg})))
+)
+
+; Additional rule to add to runtest a check that the messages file is up-to-date
+(rule
+  (alias runtest)
+  (deps   (:tokens tokens_ae.mly)
+          (:parser parseAe.mly)
+          (:new new.messages)
+          (:msg syntax.messages))
+  (action (run menhir --external-tokens Tokens_ae %{tokens}
+                      %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
 )

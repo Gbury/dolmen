@@ -1,0 +1,4 @@
+File "tests/parsing/icnf/errors/005_clause_unclosed_1.icnf", line 2, character 4-5:
+Error (005) while parsing a clause, read the integer '0',
+      but expected a newline character.
+

@@ -1,0 +1,323 @@
+#
+# Syntax Error Messages for iCNF
+#
+# Each error message *must* follow the following format:
+#
+# """
+# XXX
+# production parsed (on a single line)
+# what is expected at that point,
+# possibly on multiple lines
+# """
+#
+# The error numbers can be pretty much arbitrary, but for each
+# error number XXX, a corresponding test case file must exists as
+# tests/parsing/icnf/errors/XXX_some_descr_of_the_error_Y.smt2
+# (Y is there to allow multiple example of the error test case to exist,
+# for instance with various different error tokens)
+#
+# Notes:
+# - some error messages are shared among more than one error case,
+#   in such cases, the error number is the same, so when modifying
+#   an error message, be sure to modify all occurrences of the same
+#   error number
+
+input: A INT P
+##
+## Ends in an error in state: 15.
+##
+## list(atom) -> atom . list(atom) [ ZERO ]
+##
+## The known suffix of the stack is as follows:
+## atom
+##
+
+001
+an assumption
+either another atom (i.e. non-zero integer), or the integer
+zero to close the assumption
+
+input: A P
+##
+## Ends in an error in state: 35.
+##
+## assumption -> A . list(atom) ZERO NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## A
+##
+
+002
+an assumption
+an atom, i.e. a non-zero integer
+
+input: A ZERO ZERO
+##
+## Ends in an error in state: 37.
+##
+## assumption -> A list(atom) ZERO . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## A list(atom) ZERO
+##
+
+003
+an assumption
+the newline character
+
+input: INT P
+##
+## Ends in an error in state: 23.
+##
+## nonempty_list(atom) -> atom . [ ZERO ]
+## nonempty_list(atom) -> atom . nonempty_list(atom) [ ZERO ]
+##
+## The known suffix of the stack is as follows:
+## atom
+##
+
+004
+a clause
+either another atom (i.e. non-zero integer), or the integer
+zero to close the clause
+
+input: INT ZERO ZERO
+##
+## Ends in an error in state: 41.
+##
+## clause -> nonempty_list(atom) ZERO . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## nonempty_list(atom) ZERO
+##
+
+005
+a clause
+a newline character
+
+input: NEWLINE ZERO
+##
+## Ends in an error in state: 33.
+##
+## input -> NEWLINE . input [ # ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+input: P INCCNF ZERO
+##
+## Ends in an error in state: 31.
+##
+## start -> P INCCNF . NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P INCCNF
+##
+
+007
+an p-inccnf header
+a newline character to end the p-inccnf header
+
+input: P ZERO
+##
+## Ends in an error in state: 30.
+##
+## start -> P . INCCNF NEWLINE [ # ]
+##
+## The known suffix of the stack is as follows:
+## P
+##
+
+008
+a p-inccnf header
+the 'inccnf' header'
+
+input: ZERO
+##
+## Ends in an error in state: 29.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: NEWLINE ZERO
+##
+## Ends in an error in state: 1.
+##
+## list(NEWLINE) -> NEWLINE . list(NEWLINE) [ P ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: P INCCNF NEWLINE A P
+##
+## Ends in an error in state: 11.
+##
+## assumption -> A . list(atom) ZERO NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## A
+##
+
+002
+an assumption
+an atom, i.e. a non-zero integer
+
+file: P INCCNF NEWLINE A ZERO NEWLINE ZERO
+##
+## Ends in an error in state: 25.
+##
+## problem -> assumption . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## assumption
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: P INCCNF NEWLINE A ZERO ZERO
+##
+## Ends in an error in state: 13.
+##
+## assumption -> A list(atom) ZERO . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## A list(atom) ZERO
+##
+
+003
+an assumption
+the newline character
+
+file: P INCCNF NEWLINE INT ZERO NEWLINE ZERO
+##
+## Ends in an error in state: 21.
+##
+## problem -> clause . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## clause
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: P INCCNF NEWLINE INT ZERO ZERO
+##
+## Ends in an error in state: 19.
+##
+## clause -> nonempty_list(atom) ZERO . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## nonempty_list(atom) ZERO
+##
+
+005
+a clause
+a newline character
+
+file: P INCCNF NEWLINE NEWLINE ZERO
+##
+## Ends in an error in state: 8.
+##
+## problem -> NEWLINE . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## NEWLINE
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: P INCCNF NEWLINE ZERO
+##
+## Ends in an error in state: 7.
+##
+## file -> list(NEWLINE) start . problem [ # ]
+##
+## The known suffix of the stack is as follows:
+## list(NEWLINE) start
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+
+file: P INCCNF ZERO
+##
+## Ends in an error in state: 5.
+##
+## start -> P INCCNF . NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## P INCCNF
+##
+
+007
+an p-inccnf header
+a newline character to end the p-inccnf header
+
+file: P ZERO
+##
+## Ends in an error in state: 4.
+##
+## start -> P . INCCNF NEWLINE [ NEWLINE INT EOF A ]
+##
+## The known suffix of the stack is as follows:
+## P
+##
+
+008
+a p-inccnf header
+the 'inccnf' header'
+
+file: ZERO
+##
+## Ends in an error in state: 0.
+##
+## file' -> . file [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+006
+an input sentence
+either a non-zero integer to start a clause, the keyword
+'a' to start an assumption, or the keyword 'p' to start
+a header
+

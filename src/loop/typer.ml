@@ -719,6 +719,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     let file = S.input_file_loc st in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
     match (S.input_lang st : Logic.language option) with
+    | Some ICNF -> st
     | Some Dimacs -> st
     | Some Smtlib2 _ ->
       let st, l =

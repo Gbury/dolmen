@@ -35,6 +35,9 @@ module type Statement = sig
   type location
   (** The type of locations. *)
 
+  val p_inccnf : ?loc:location -> unit -> t
+  (** header of an iCNF file. *)
+
   val clause : ?loc:location -> term list -> t
   (** Make a clause from a list of literals. *)
 
