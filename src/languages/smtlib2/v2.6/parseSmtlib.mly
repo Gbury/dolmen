@@ -248,11 +248,16 @@ datatype_dec:
 
 function_dec:
   | OPEN s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort CLOSE
-    { I.(mk term s), args, ret }
+    { I.(mk term s), [], args, ret }
+  | OPEN s=SYMBOL PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort CLOSE CLOSE
+    { I.(mk term s), vars, args, ret }
 
 function_def:
   | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
-    { I.(mk term s), args, ret, body }
+    { I.(mk term s), [], args, ret, body }
+  | s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
+    { I.(mk term s), vars, args, ret, body }
+
 
 /* Additional rule for prop_literals symbols, to have lighter
    semantic actions in prop_literal reductions. */
@@ -280,12 +285,16 @@ prop_literal:
 command:
   | OPEN ASSERT t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.assert_ ~loc t }
+  | OPEN ASSERT OPEN PAR OPEN vars=datatype_symbol+ CLOSE t=term CLOSE CLOSE
+    { let loc = L.mk_pos $startpos $endpos in
+      let vars = List.map (fun v -> T.colon v (T.tType ~loc ())) vars in
+      S.assert_ ~loc (T.forall ~loc vars t) }
   | OPEN CHECK_SAT CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc [] }
   | OPEN CHECK_SAT_ASSUMING OPEN l=prop_literal* CLOSE CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc l }
   | OPEN DECLARE_CONST s=SYMBOL ty=sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc I.(mk term s) [] ty }
+    { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc I.(mk term s) [] [] ty }
   | OPEN DECLARE_DATATYPE s=SYMBOL d=datatype_dec CLOSE
     { let vars, constructors = d in
       let loc = L.mk_pos $startpos $endpos in
@@ -302,24 +311,28 @@ command:
   | OPEN DECLARE_FUN s=SYMBOL OPEN args=sort* CLOSE ty=sort CLOSE
     { let id = I.(mk term s) in
       let loc = L.mk_pos $startpos $endpos in
-      S.fun_decl ~loc id args ty }
+      S.fun_decl ~loc id [] args ty }
+  | OPEN DECLARE_FUN s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sort* CLOSE ty=sort CLOSE CLOSE
+    { let id = I.(mk term s) in
+      let loc = L.mk_pos $startpos $endpos in
+      S.fun_decl ~loc id vars args ty }
   | OPEN DECLARE_SORT s=SYMBOL n=NUM CLOSE
     { let id = I.(mk sort s) in
       let loc = L.mk_pos $startpos $endpos in
       S.type_decl ~loc id (int_of_string n) }
   | OPEN DEFINE_FUN f=function_def CLOSE
-    { let id, args, ret, body = f in
+    { let id, vars, args, ret, body = f in
       let loc = L.mk_pos $startpos $endpos in
-      S.fun_def ~loc id args ret body }
+      S.fun_def ~loc id vars args ret body }
   | OPEN DEFINE_FUN_REC f=function_def CLOSE
-    { let id, args, ret, body = f in
+    { let id, vars, args, ret, body = f in
       let loc = L.mk_pos $startpos $endpos in
-      S.funs_def_rec ~loc [id, args, ret, body] }
+      S.funs_def_rec ~loc [id, vars, args, ret, body] }
   /* The syntax technically defines this reduction as having l and l' be the same length,
       but that isn't easily expressible in menhir, so the check is delayed */
   | OPEN DEFINE_FUNS_REC OPEN l1=function_dec+ CLOSE OPEN l2=term+ CLOSE OPEN
     { let res =
-        try List.map2 (fun (id, args, ret) body -> id, args, ret, body) l1 l2
+        try List.map2 (fun (id, vars, args, ret) body -> id, vars, args, ret, body) l1 l2
         with Invalid_argument _ -> assert false
       in
       let loc = L.mk_pos $startpos $endpos in
