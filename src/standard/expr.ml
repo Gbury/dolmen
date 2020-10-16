@@ -2355,6 +2355,7 @@ module Term = struct
       ) Subst.empty branches
     in
     (* Apply the substitution to the scrutinee, patterns and bodies *)
+    let () = Subst.iter Ty.set_wildcard s in
     let scrutinee = subst s Subst.empty scrutinee in
     let branches = List.map (fun (pat, body) ->
         (subst s Subst.empty pat, subst s Subst.empty body)
@@ -2362,7 +2363,7 @@ module Term = struct
     (* Check exhaustivity *)
     let () = check_exhaustivity (ty scrutinee) (List.map fst branches) in
     (* Build the pattern matching *)
-    mk (Match (scrutinee, branches)) (Ty.subst s body_ty)
+    mk (Match (scrutinee, branches)) body_ty
 
 
   (* Wrappers around application *)
