@@ -538,18 +538,18 @@ decl:
     LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR
     COLON ret_ty=primitive_type EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      S.fun_def ~loc f args ret_ty body }
+      S.fun_def ~loc f [] args ret_ty body }
 
   | PRED p=raw_named_ident EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       let ret_ty = T.prop ~loc () in
-      S.fun_def ~loc p [] ret_ty body }
+      S.fun_def ~loc p [] [] ret_ty body }
 
   | PRED p=raw_named_ident
     LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       let ret_ty = T.prop ~loc () in
-      S.fun_def ~loc p args ret_ty body }
+      S.fun_def ~loc p [] args ret_ty body }
 
   | AXIOM name=decl_ident COLON body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
