@@ -33,34 +33,70 @@
     | QM -> reserved "?"
     | AND -> reserved "and"
     | LEFTARROW -> reserved "<-"
-                     (*
-    | RIGHTARROW AC AT AXIOM CASESPLIT REWRITING
-%token BAR HAT
-%token BOOL COLON COMMA PV DISTINCT DOT SHARP ELSE OF EOF EQUAL
-%token EXISTS FALSE VOID FORALL FUNC GE GOAL GT CHECK CUT
-%token IF IN INT BITV MAPS_TO
-%token LE LET LEFTPAR LEFTSQ LEFTBR LOGIC LRARROW XOR LT MINUS
-%token NOT NOTEQ OR PERCENT PLUS PRED PROP
-%token QUOTE REAL UNIT
-%token RIGHTPAR RIGHTSQ RIGHTBR
-%token SLASH POW POWDOT
-%token THEN TIMES TRUE TYPE
-%nonassoc IN
-%nonassoc prec_forall prec_exists
-%right RIGHTARROW LRARROW XOR
-%right OR
-%right AND
-%nonassoc prec_ite
-%left prec_relation EQUAL NOTEQ LT LE GT GE
-%left PLUS MINUS
-%left TIMES SLASH PERCENT POW POWDOT AT
-%nonassoc HAT
-%nonassoc uminus
-%nonassoc NOT
-%right prec_named
-%nonassoc CHECK CUT
-*)
-    | _ -> assert false
+    | RIGHTARROW -> reserved "->"
+    | AC -> reserved "ac"
+    | AT -> reserved "@"
+    | AXIOM -> reserved "axiom"
+    | CASESPLIT -> reserved "case_split"
+    | REWRITING -> reserved "rewriting"
+    | BAR -> reserved "|"
+    | HAT -> reserved "^"
+    | BOOL -> reserved "bool"
+    | COLON -> reserved ":"
+    | COMMA -> reserved ","
+    | PV -> reserved ";"
+    | DISTINCT -> reserved "distinct"
+    | DOT -> reserved "."
+    | SHARP -> reserved "#"
+    | ELSE -> reserved "else"
+    | OF -> reserved "of"
+    | EOF -> T.descr ~kind:"end of file token" ""
+    | EQUAL -> reserved "equal"
+    | EXISTS -> reserved "exists"
+    | FALSE -> reserved "false"
+    | VOID -> reserved "void"
+    | FORALL ->reserved "forall"
+    | FUNC -> reserved "function"
+    | GE -> reserved ">="
+    | GOAL -> reserved "goal"
+    | GT -> reserved ">"
+    | CHECK -> reserved "check"
+    | CUT -> reserved "cut"
+    | IF -> reserved "if"
+    | IN -> reserved "in"
+    | INT -> reserved "int"
+    | BITV -> reserved "bitv"
+    | MAPS_TO -> reserved "|->"
+    | LE -> reserved "<="
+    | LET -> reserved "let"
+    | LEFTPAR -> reserved "("
+    | LEFTSQ -> reserved "["
+    | LEFTBR -> reserved "{"
+    | LOGIC -> reserved "logic"
+    | LRARROW -> reserved "<->"
+    | XOR -> reserved "xor"
+    | LT -> reserved "<"
+    | MINUS -> reserved "-"
+    | NOT -> reserved "not"
+    | NOTEQ -> reserved "<>"
+    | OR -> reserved "or"
+    | PERCENT -> reserved "%"
+    | PLUS -> reserved "+"
+    | PRED -> reserved "predicate"
+    | PROP -> reserved "prop"
+    | QUOTE -> reserved "'"
+    | REAL -> reserved "real"
+    | UNIT -> reserved "unit"
+    | RIGHTPAR -> reserved ")"
+    | RIGHTSQ -> reserved "]"
+    | RIGHTBR -> reserved "}"
+    | SLASH -> reserved "/"
+    | POW -> reserved "**"
+    | POWDOT -> reserved "*."
+    | THEN -> reserved "then"
+    | TIMES -> reserved "*"
+    | TRUE -> reserved "true"
+    | TYPE -> reserved "type"
 
   (* Token parsing *)
 

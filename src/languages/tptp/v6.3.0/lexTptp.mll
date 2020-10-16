@@ -31,7 +31,85 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   open Tokens_tptp
 
-  let descr _ = assert false
+  module T = Dolmen_std.Tok
+
+  let reserved s =
+    T.descr s
+      ~kind:"reserved word"
+      ~hint:"reserved words cannot be used as identifiers"
+
+  let descr t : T.descr =
+    match (t: token) with
+    | EOF -> T.descr ~kind:"end of file token" ""
+    | DOT -> reserved "."
+    | COMMA -> reserved ","
+    | COLON -> reserved ":"
+    | LEFT_PAREN -> reserved "("
+    | RIGHT_PAREN -> reserved ")"
+    | LEFT_BRACKET -> reserved "["
+    | RIGHT_BRACKET -> reserved "]"
+    | CNF -> reserved "cnf"
+    | FOF -> reserved "fof"
+    | TFF -> reserved "tff"
+    | THF -> reserved "thf"
+    | TPI -> reserved "tpi"
+    | INCLUDE -> reserved "include"
+    | LAMBDA -> reserved "^"
+    | APPLY -> reserved "@"
+    | DEFINITE_DESCRIPTION -> reserved "@-"
+    | INDEFINITE_DESCRIPTION -> reserved "@+"
+    | FORALL_TY -> reserved "!>"
+    | FORALL -> reserved "!"
+    | EXISTS_TY -> reserved "?*"
+    | EXISTS -> reserved "?"
+
+    | PI -> reserved "!!"
+    | SIGMA -> reserved "??"
+
+    | LESS -> reserved "<"
+    | ARROW -> reserved ">"
+
+    | STAR -> reserved "*"
+    | PLUS -> reserved "+"
+
+    | XOR -> reserved "<~>"
+    | EQUIV -> reserved "<=>"
+    | IMPLY -> reserved "=>"
+    | LEFT_IMPLY -> reserved "<="
+
+    | NOT -> reserved "~"
+    | AND -> reserved "&"
+    | VLINE -> reserved "|"
+    | NOTAND -> reserved "~&"
+    | NOTVLINE -> reserved "~|"
+
+    | EQUAL -> reserved "="
+    | NOT_EQUAL -> reserved "!="
+    | GENTZEN_ARROW -> reserved "-->"
+
+    | ITE_F -> reserved "$ite_f"
+    | ITE_T -> reserved "$ite_t"
+    | LET_TF -> reserved "$let_tf"
+    | LET_FF -> reserved "$let_ff"
+    | LET_FT -> reserved "$let_ft"
+    | LET_TT -> reserved "$let_tt"
+
+    | DOLLAR_THF -> reserved "$thf"
+    | DOLLAR_TFF -> reserved "$tff"
+    | DOLLAR_FOF -> reserved "$fof"
+    | DOLLAR_CNF -> reserved "$cnf"
+    | DOLLAR_FOT -> reserved "$fot"
+
+    | LOWER_WORD s -> T.descr ~kind:"lower word" s
+    | UPPER_WORD s -> T.descr ~kind:"upper_word" s
+    | SINGLE_QUOTED s -> T.descr ~kind:"single-quoted word" s
+    | DISTINCT_OBJECT s -> T.descr ~kind:"distinct object" s
+    | DOLLAR_WORD s -> T.descr ~kind:"dollar word" s
+    | DOLLAR_DOLLAR_WORD s -> T.descr ~kind:"double dollar word" s
+    | REAL s -> T.descr ~kind:"real literal" s
+    | RATIONAL s -> T.descr ~kind:"rational literal" s
+    | INTEGER s -> T.descr ~kind:"integer literal" s
+
 }
 
 let printable_char = [^ '\n']
