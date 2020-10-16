@@ -88,7 +88,7 @@ module type S = sig
   (** The type of fragments on which error/warning can occur. *)
 
   type error
-  (** The type of type-checing errors. *)
+  (** The type of type-checking errors. *)
 
   type warning
   (** The type of type-checking warnings. *)

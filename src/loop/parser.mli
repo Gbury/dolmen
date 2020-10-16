@@ -1,7 +1,7 @@
 
 (* This file is free software, part of Dolmen. See file "LICENSE" for more details. *)
 
-(** This module provides convenient pipes for parsing and dealing with inlcudes. *)
+(** This module provides convenient pipes for parsing and dealing with includes. *)
 module Pipe
     (Expr : Expr_intf.S)
     (State : State_intf.Parser_pipe

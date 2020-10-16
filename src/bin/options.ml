@@ -277,7 +277,7 @@ let state =
     Arg.(value & opt (list string) [] & info ["header-licenses"] ~doc ~docs)
   in
   let header_lang_version =
-    let doc = "Set the only allowed language verison for headers. If not set,
+    let doc = "Set the only allowed language version for headers. If not set,
                all conforming version numbers are allowed." in
     Arg.(value & opt (some string) None & info ["header-lang-version"] ~docs ~doc)
   in
@@ -311,7 +311,7 @@ let state =
   let max_warn =
     let doc = Format.asprintf
         "Maximum number of warnings to display (excess warnings will be
-         counted and a count of silenced warnings repoted at the end)." in
+         counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~docs ~doc)
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $

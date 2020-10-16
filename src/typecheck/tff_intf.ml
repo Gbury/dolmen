@@ -283,11 +283,11 @@ module type S = sig
 
   type warning =
     | Warning : env * 'a fragment * 'a warn -> warning (**)
-  (** Exitencial wrapper around warnings *)
+  (** Existential wrapper around warnings *)
 
   type error =
     | Error : env * 'a fragment * 'a err -> error (**)
-  (** Exitencial wrapper around errors *)
+  (** Existential wrapper around errors *)
 
   exception Typing_error of error
   (** Exception for typing errors *)
