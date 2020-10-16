@@ -62,3 +62,9 @@
   (action (run menhir --external-tokens Tokens_zf %{tokens}
                       %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
 )
+
+(rule
+  (alias runtest)
+  (deps syntax.messages updated.messages)
+  (action (diff syntax.messages updated.messages))
+)
