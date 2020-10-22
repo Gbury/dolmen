@@ -787,10 +787,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         let l = T.defs env ?attr d in
         let l = List.map (function
             | `Type_def (id, _, vars, body) ->
-              let () = if not d.recursive then Subst.define_ty id vars body in
+              (* are recursive defs interesting to expand ? *)
+              let () = if not d.recursive then Subst.define_ty env id vars body in
               `Type_def (id, vars, body)
             | `Term_def (id, f, vars, args, body) ->
-              let () = Decl.add_definition id (`Term f) in
+              let () = Decl.add_definition env id (`Term f) in
               `Term_def (id, f, vars, args, body)
           ) l
         in

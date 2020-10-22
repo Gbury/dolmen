@@ -1,4 +1,6 @@
 
+module M = Map.Make(Dolmen.Std.Id)
+
 (* Definitions by Substitution *)
 (* ************************************************************************ *)
 
@@ -24,8 +26,6 @@ module Subst
                     and type term := Type.T.t
                     and type term_var := Type.T.Var.t) = struct
 
-  module H = Hashtbl.Make(Dolmen.Std.Id)
-
   let take_drop n l =
     let rec aux acc n = function
       | r when n <= 0 -> List.rev acc, r
@@ -34,18 +34,27 @@ module Subst
     in
     aux [] n l
 
-  let definitions = H.create 13
+  let key = Dolmen.Std.Tag.create ()
 
-  let define_ty id vars body =
-    H.add definitions id (`Ty (vars, body))
+  let get_defs env =
+    match Type.get_global_custom env key with
+    | None -> M.empty
+    | Some m -> m
 
-  let define_term id vars args body =
-    H.add definitions id (`Term (vars, args, body))
+  let define_ty env id vars body =
+    let map = get_defs env in
+    let m = M.add id (`Ty (vars, body)) map in
+    Type.set_global_custom env key m
+
+  let define_term env id vars args body =
+    let map = get_defs env in
+    let m = M.add id (`Term (vars, args, body)) map in
+    Type.set_global_custom env key m
 
   let parse env symbol =
     match (symbol : Type.symbol) with
     | Id id ->
-      begin match H.find definitions id with
+      begin match M.find id (get_defs env) with
         | `Ty (vars, body) ->
           `Ty (Base.make_opn (List.length vars)
                  (module Type) env (Dolmen.Std.Id.full_name id) (fun _ args ->
@@ -85,29 +94,34 @@ end
 
 module Declare(Type : Tff_intf.S) = struct
 
-  module H = Hashtbl.Make(Dolmen.Std.Id)
+  let key = Dolmen.Std.Tag.create ()
 
-  let definitions = H.create 13
+  let get_defs env =
+    match Type.get_global_custom env key with
+    | None -> M.empty
+    | Some m -> m
 
-  let add_definition id def =
-    H.add definitions id def
+  let add_definition env id def =
+    let map = get_defs env in
+    let m = M.add id def map in
+    Type.set_global_custom env key m
 
-  let define_ty id vars _body =
+  let define_ty env id vars _body =
     let c = Type.Ty.Const.mk (Dolmen.Std.Id.full_name id) (List.length vars) in
-    let () = add_definition id (`Ty c) in
+    let () = add_definition env id (`Ty c) in
     c
 
-  let define_term id vars args body =
+  let define_term env id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
     let c = Type.T.Const.mk (Dolmen.Std.Id.full_name id) vars args_ty ret_ty in
-    let () = add_definition id (`Term c) in
+    let () = add_definition env id (`Term c) in
     c
 
   let parse env symbol =
     match (symbol : Type.symbol) with
     | Id id ->
-      begin match H.find definitions id with
+      begin match M.find id (get_defs env) with
         | `Ty c -> `Ty (fun ast args ->
             Type.unwrap_ty env ast (Type.parse_app_ty env ast c args))
         | `Term c -> `Term (fun ast args ->

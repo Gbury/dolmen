@@ -11,15 +11,18 @@
 module Declare(Type : Tff_intf.S) : sig
 
   val add_definition :
-    Dolmen.Std.Id.t -> [ `Ty of Type.Ty.Const.t | `Term of Type.T.Const.t ] -> unit
+    Type.env -> Dolmen.Std.Id.t ->
+    [ `Ty of Type.Ty.Const.t | `Term of Type.T.Const.t ] -> unit
   (** Add a declaration binding. *)
 
   val define_ty :
-    Dolmen.Std.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> Type.Ty.Const.t
+    Type.env -> Dolmen.Std.Id.t ->
+    Type.Ty.Var.t list -> Type.Ty.t -> Type.Ty.Const.t
   (** Define a type constant. *)
 
   val define_term :
-    Dolmen.Std.Id.t -> Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> Type.T.Const.t
+    Type.env -> Dolmen.Std.Id.t ->
+    Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> Type.T.Const.t
   (** Define a term constant. *)
 
   val parse : Type.builtin_symbols
@@ -53,11 +56,13 @@ module Subst(Type : Tff_intf.S)
                     and type term_var := Type.T.Var.t) : sig
 
   val define_ty :
-    Dolmen.Std.Id.t -> Type.Ty.Var.t list -> Type.Ty.t -> unit
+    Type.env -> Dolmen.Std.Id.t ->
+    Type.Ty.Var.t list -> Type.Ty.t -> unit
   (** Define a type constant. *)
 
   val define_term :
-    Dolmen.Std.Id.t -> Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> unit
+    Type.env -> Dolmen.Std.Id.t ->
+    Type.Ty.Var.t list -> Type.T.Var.t list -> Type.T.t -> unit
   (** Define a term constant. *)
 
   val parse : Type.builtin_symbols
