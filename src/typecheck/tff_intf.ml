@@ -332,6 +332,12 @@ module type S = sig
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 
+  val get_global_custom : env -> 'a Dolmen.Std.Tag.t -> 'a option
+  (** Get a custom value from the global environment. *)
+
+  val set_global_custom : env -> 'a Dolmen.Std.Tag.t -> 'a -> unit
+  (** Set a custom value in the global environment. *)
+
 
   (** {2 Errors & Warnings} *)
 

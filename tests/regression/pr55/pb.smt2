@@ -1,0 +1,7 @@
+(set-logic ALL)
+(push 1)
+(define-fun lh_2 () Bool true)
+(check-sat)
+(pop 1)
+(assert lh_2)
+(check-sat)

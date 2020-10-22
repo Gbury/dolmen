@@ -32,6 +32,9 @@ module Make
   module Stmt = Dolmen.Std.Statement
   module Loc = Dolmen.Std.Loc
 
+  (* Custom alias for convenience *)
+  module Hmap = Dolmen.Std.Tag
+
   (* Types *)
   (* ************************************************************************ *)
 
@@ -246,6 +249,11 @@ module Make
     (* stores reasons for typing constructors *)
     mutable field_locs : reason V.t;
     (* stores reasons for typing record fields *)
+
+    mutable custom : Hmap.map;
+    (* heterogeneous map for theories to store custom information,
+       all the while being kept in sync with changes in the global state. *)
+
   }
 
   (* The local environments used for type-checking. *)
@@ -493,10 +501,12 @@ module Make
     const_locs = S.empty;
     cstrs_locs = U.empty;
     field_locs = V.empty;
+    custom = Hmap.empty;
   }
 
   let copy_state st = {
     csts = st.csts;
+    custom = st.custom;
     ttype_locs = st.ttype_locs;
     const_locs = st.const_locs;
     cstrs_locs = st.cstrs_locs;
@@ -527,6 +537,16 @@ module Make
   let decl_term_field env fg id f reason =
     add_global env fg id reason (`Field f);
     env.st.field_locs <- V.add f reason env.st.field_locs
+
+
+  (* Custom theory data in the global state *)
+  let get_global_custom env key =
+    match Hmap.get env.st.custom key with
+    | x :: _ -> Some x
+    | [] -> None
+
+  let set_global_custom env key value =
+    env.st.custom <- Hmap.replace env.st.custom key [value]
 
 
   (* Local Environment *)
