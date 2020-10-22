@@ -13,5 +13,5 @@ module Make
     (I : Id)
     (T : Term with type location := L.t and type id := I.t)
     (S : Statement with type location := L.t and type id := I.t and type term := T.t) :
-  Dolmen_intf.Language.S with type statement = S.t
+  Dolmen_intf.Language.S with type statement = S.t and type file := L.file
 (** Functor to generate a parser for the Smtlib format. *)

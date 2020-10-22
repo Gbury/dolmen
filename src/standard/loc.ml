@@ -87,29 +87,21 @@ let mk_compact offset length =
 (* File table *)
 (* ************************************************************************* *)
 
-let tables = Hashtbl.create 5
-
 let file_name { name; _ } = name
 
 let mk_file name =
-  try Hashtbl.find tables name
-  with Not_found ->
-    let table = Vec.create () in
-    let () = Vec.push table (-1) in
-    let file = { name; table; } in
-    Hashtbl.add tables name file;
-    file
+  let table = Vec.create () in
+  let () = Vec.push table (-1) in
+  { name; table; }
 
 let new_line file offset =
   assert (Vec.last file.table < offset);
   Vec.push file.table (offset - 1)
 
-let newline filename =
-  let file = mk_file filename in
-  (fun lexbuf ->
-     Lexing.new_line lexbuf;
-     let offset = Lexing.lexeme_end lexbuf in
-     new_line file offset)
+let newline file lexbuf =
+  Lexing.new_line lexbuf;
+  let offset = Lexing.lexeme_end lexbuf in
+  new_line file offset
 
 let find_line file offset =
   let rec aux vec offset start stop =

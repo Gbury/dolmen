@@ -5,6 +5,9 @@
 
 module type S = sig
 
+  type file
+  (** Meta-data about locations in files. *)
+
   type token
   (** The type of tokens produced by the language lexer. *)
 
@@ -25,13 +28,17 @@ module type S = sig
       Separates directory and file because most include directives in languages
       are relative to the directory of the original file being processed. *)
 
-  val parse_file : string -> statement list
+  val parse_file : string -> file * statement list
+  (** Parse the given file.
+      @param dir: optional directory to use if the file path is relative. *)
+
+  val parse_file_lazy : string -> file * statement list Lazy.t
   (** Parse the given file.
       @param dir: optional directory to use if the file path is relative. *)
 
   val parse_input :
     [ `Stdin | `File of string | `Contents of string * string ] ->
-    (unit -> statement option) * (unit -> unit)
+    file * (unit -> statement option) * (unit -> unit)
   (** Incremental parsing. Given an input to read (either a file, stdin,
       or some contents of the form [(filename, s)] where [s] is the contents to parse),
       returns a generator that will incrementally parse the statements,

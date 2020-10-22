@@ -145,16 +145,31 @@ module Make
 
   let parse_file file =
     let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
-    let newline = Loc.newline file in
+    let locfile = Loc.mk_file file in
+    let newline = Loc.newline locfile in
     let k_exn () = cleanup () in
-    let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.file in
-    let res = aux () in
+    let res = parse_aux ~k_exn newline lexbuf Parser.Incremental.file () in
     let () = cleanup () in
-    res
+    locfile, res
+
+  let parse_file_lazy file =
+    let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
+    let locfile = Loc.mk_file file in
+    let newline = Loc.newline locfile in
+    let k_exn () = cleanup () in
+    let res =
+      lazy (
+        let res = parse_aux ~k_exn newline lexbuf Parser.Incremental.file () in
+        let () = cleanup () in
+        res
+      )
+    in
+    locfile, res
 
   let parse_input i =
     let lexbuf, cleanup = Misc.mk_lexbuf i in
-    let newline = Loc.newline (Misc.filename_of_input i) in
+    let locfile = Loc.mk_file (Misc.filename_of_input i) in
+    let newline = Loc.newline locfile in
     if not Ty.incremental then begin
       (* If incremental mode is not supported, raise an error rather than
          do weird things. *)
@@ -165,7 +180,7 @@ module Make
     end;
     let k_exn () = Dolmen_line.consume lexbuf in
     let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.input in
-    aux, cleanup
+    locfile, aux, cleanup
 
 end
 

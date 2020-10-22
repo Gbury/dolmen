@@ -14,6 +14,10 @@ module type S = sig
   type t
   (** The type of locations. *)
 
+  type file
+  (** A store for various meta-data about an input file,
+      can be used to optimize representation of locations. *)
+
   exception Uncaught of t * exn
   (** The exception to be raised whenever an unexpected exception is raised during parsing. *)
 
@@ -29,9 +33,12 @@ module type S = sig
   val mk_pos : Lexing.position -> Lexing.position -> t
   (** Make a position from two lewing positions. *)
 
-  val newline : string -> (Lexing.lexbuf -> unit)
-  (** A function first given the name of the file, and which should return a
-      closure that will be called on each new_line. *)
+  val mk_file : string -> file
+  (** Create meta-data for a given filename. *)
+
+  val newline : file -> Lexing.lexbuf -> unit
+  (** Offer a way for the file meta-data to store the current location
+      of the lexbuf as the start of a new line. *)
 
 end
 

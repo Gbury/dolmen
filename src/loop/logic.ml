@@ -10,4 +10,5 @@ module P = Dolmen.Class.Logic.Make
     (Dolmen.Std.Term)
     (Dolmen.Std.Statement)
 
-include (P : Dolmen.Class.Logic.S with type statement := Dolmen.Std.Statement.t)
+include (P : Dolmen.Class.Logic.S with type statement := Dolmen.Std.Statement.t
+                                   and type file := Dolmen.Std.Loc.file)

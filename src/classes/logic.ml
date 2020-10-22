@@ -3,6 +3,7 @@
 
 module type S = sig
 
+  type file
   type statement
   exception Extension_not_found of string
 
@@ -22,18 +23,20 @@ module type S = sig
     ?dir:string -> string -> string option
   val parse_file :
     ?language:language ->
-    string -> language * statement list
+    string -> language * file * statement list
   val parse_file_lazy :
     ?language:language ->
-    string -> language * statement list Lazy.t
-
+    string -> language * file * statement list Lazy.t
   val parse_input :
     ?language:language ->
     [< `File of string | `Stdin of language
     | `Raw of string * language * string ] ->
-    language * (unit -> statement option) * (unit -> unit)
+    language * file * (unit -> statement option) * (unit -> unit)
 
-  module type S = Dolmen_intf.Language.S with type statement := statement
+  module type S = Dolmen_intf.Language.S
+    with type statement := statement
+     and type file := file
+
   val of_language   : language  -> language * string * (module S)
   val of_extension  : string    -> language * string * (module S)
   val of_filename   : string    -> language * string * (module S)
@@ -51,7 +54,9 @@ module Make
 
   exception Extension_not_found of string
 
-  module type S = Dolmen_intf.Language.S with type statement := S.t
+  module type S = Dolmen_intf.Language.S
+    with type statement := S.t
+     and type file := L.file
 
   type language =
     | Alt_ergo
@@ -136,7 +141,8 @@ module Make
       | None -> of_filename file
       | Some l -> of_language l
     in
-    l, P.parse_file file
+    let locfile, res = P.parse_file file in
+    l, locfile, res
 
   let parse_file_lazy ?language file =
     let l, _, (module P : S) =
@@ -144,7 +150,8 @@ module Make
       | None -> of_filename file
       | Some l -> of_language l
     in
-    l, lazy (P.parse_file file)
+    let locfile, res = P.parse_file_lazy file in
+    l, locfile, res
 
   let parse_input ?language = function
     | `File file ->
@@ -153,18 +160,18 @@ module Make
         | Some l -> of_language l
         | None -> of_extension (Dolmen_std.Misc.get_extension file)
       in
-      let gen, cl = P.parse_input (`File file) in
-      l, gen, cl
+      let locfile, gen, cl = P.parse_input (`File file) in
+      l, locfile, gen, cl
     | `Stdin l ->
       let _, _, (module P : S) = of_language
           (match language with | Some l' -> l' | None -> l) in
-      let gen, cl = P.parse_input `Stdin in
-      l, gen, cl
+      let locfile, gen, cl = P.parse_input `Stdin in
+      l, locfile, gen, cl
     | `Raw (filename, l, s) ->
       let _, _, (module P : S) = of_language
           (match language with | Some l' -> l' | None -> l) in
-      let gen, cl = P.parse_input (`Contents (filename, s)) in
-      l, gen, cl
+      let locfile, gen, cl = P.parse_input (`Contents (filename, s)) in
+      l, locfile, gen, cl
 
 end
 

@@ -46,11 +46,13 @@ module Pipe
     let st', g =
       match State.input_source st with
       | `Stdin ->
-        let lang, gen, _ = Logic.parse_input
+        let lang, file_loc, gen, _ = Logic.parse_input
             ?language:(State.input_lang st)
             (`Stdin (Logic.Smtlib2 `Latest))
         in
-        State.set_lang st lang, gen
+        let st = State.set_input_file_loc st file_loc in
+        let st = State.set_lang st lang in
+        st, gen
       | `Raw (filename, contents) ->
         let lang =
           match State.input_lang st with
@@ -59,9 +61,11 @@ module Pipe
             let res, _, _ = Logic.of_filename filename in
             res
         in
-        let lang, gen, cl = Logic.parse_input
+        let lang, file_loc, gen, cl = Logic.parse_input
             ~language:lang (`Raw (filename, lang, contents)) in
-        State.set_lang st lang, gen_finally gen cl
+        let st = State.set_input_file_loc st file_loc in
+        let st = State.set_lang st lang in
+        st, gen_finally gen cl
       | `File f ->
         let s = Dolmen.Std.Statement.include_ f [] in
         (* Auto-detect input format *)
@@ -120,16 +124,16 @@ module Pipe
             let loc = { Dolmen.Std.Loc.file = State.input_file_loc st; loc; } in
             State.file_not_found ~loc ~dir ~file
           | Some file ->
-            let file_loc = Dolmen.Std.Loc.mk_file file in
-            let st = State.set_input_file_loc st file_loc in
             begin match State.input_mode st with
               | None
               | Some `Incremental ->
-                let lang, gen, cl = Logic.parse_input ?language (`File file) in
+                let lang, file_loc, gen, cl = Logic.parse_input ?language (`File file) in
+                let st = State.set_input_file_loc st file_loc in
                 let st = State.set_lang st lang in
                 st, `Gen (merge, gen_finally gen cl)
               | Some `Full ->
-                let lang, l = Logic.parse_file_lazy ?language file in
+                let lang, file_loc, l = Logic.parse_file_lazy ?language file in
+                let st = State.set_input_file_loc st file_loc in
                 let st = State.set_lang st lang in
                 st, `Gen (merge, gen_of_llist l)
             end

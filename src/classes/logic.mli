@@ -5,6 +5,9 @@
 
 module type S = sig
 
+  type file
+  (** File location meta-data. *)
+
   type statement
   (** The type of statements. *)
 
@@ -45,14 +48,14 @@ module type S = sig
 
   val parse_file :
     ?language:language ->
-    string -> language * statement list
+    string -> language * file * statement list
   (** Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
 
   val parse_file_lazy :
     ?language:language ->
-    string -> language * statement list Lazy.t
+    string -> language * file * statement list Lazy.t
   (** Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
@@ -62,7 +65,7 @@ module type S = sig
     [< `File of string
     | `Stdin of language
     | `Raw of string * language * string ] ->
-    language * (unit -> statement option) * (unit -> unit)
+    language * file * (unit -> statement option) * (unit -> unit)
   (** Incremental parsing of either a file (see {!parse_file}), stdin
       (with given language), or some arbitrary contents, of the form
       [`Raw (filename, language, contents)].
@@ -74,7 +77,9 @@ module type S = sig
 
   (** {2 Mid-level parsing} *)
 
-  module type S = Dolmen_intf.Language.S with type statement := statement
+  module type S = Dolmen_intf.Language.S
+    with type statement := statement
+     and type file := file
   (** The type of language modules. *)
 
   val of_language   : language  -> language * string * (module S)
@@ -100,5 +105,5 @@ module Make
     (S : Dolmen_intf.Stmt.Logic with type location := L.t
                                  and type id := I.t
                                  and type term := T.t)
-  : S with type statement := S.t
+  : S with type statement := S.t and type file := L.file
 
