@@ -55,7 +55,7 @@ val is_dummy : loc -> bool
 (** {2 Compact location handling} *)
 
 val mk_file : string -> file
-(** Return the meta-data associated to a file. *)
+(** Create a new set of meta-data for the given filename. *)
 
 val new_line : file -> int -> unit
 (** Register a new line whose first char is at the given offset. *)
