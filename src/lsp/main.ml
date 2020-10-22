@@ -43,7 +43,7 @@ let () =
   let stdio = ref true in
   let host = ref "0.0.0.0" in
   let port = ref 8854 in
-  let logfile = ref "" in
+  let logfile = ref "/tmp/dolmenls.log" in
   let opts = [
     "--host", Arg.Set_string host, " address to listen in";
     "--port", Arg.Set_int port, " port to listen on";
