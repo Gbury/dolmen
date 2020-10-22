@@ -36,7 +36,7 @@ module type S = Dolmen_intf.Location.S
 (** An anstract module type for providing locations. Used
     as argumentby much of the functors provided in Dolmen. *)
 
-include S with type t := t
+include S with type t := t and type file := file
 (** This module implements the signature {S}. *)
 
 val hash : t -> int
