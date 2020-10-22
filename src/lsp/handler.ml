@@ -124,70 +124,77 @@ let process state uri =
 
 (* Initialization *)
 (* ************************************************************************ *)
-(*
-let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
+
+let on_initialize _server state (params : Lsp.Types.InitializeParams.t) =
   Lsp.Logger.log ~section ~title:Debug "Initialization started";
   (* Determine in which mode we are *)
   let diag_mode =
-    if params.capabilities.textDocument.synchronization.willSave then begin
-      Lsp.Logger.log ~section ~title:Info
-        "Setting mode: on_will_save";
+    match params.capabilities.textDocument with
+    | Some { synchronization = Some { willSave = Some true; _ }; _ } ->
+      Lsp.Logger.log ~section ~title:Info "Setting mode: on_will_save";
       On_will_save
-    end else if params.capabilities.textDocument.synchronization.didSave then begin
-      Lsp.Logger.log ~section ~title:Info
-        "Setting mode: on_did_save";
+    | Some { synchronization = Some { didSave = Some true; _ }; _ } ->
+      Lsp.Logger.log ~section ~title:Info "Setting mode: on_did_save";
       On_did_save
-    end else begin
-      Lsp.Logger.log ~section ~title:Info
-        "Setting mode: on_change";
+    | _ ->
+      Lsp.Logger.log ~section ~title:Info "Setting mode: on_change";
       On_change
-    end
   in
   (* New state *)
   let state = { state with diag_mode; } in
   (* Create the capabilities answer *)
-  let info = Lsp.Initialize.Info.{ name = "dolmenls"; version = None; } in
-  let default = Lsp.Initialize.ServerCapabilities.default in
+  let serverInfo = Lsp.Types.InitializeResult.create_serverInfo ~name:"dolmenls" () in
   let capabilities =
-    { default with
-      textDocumentSync = {
-        default.textDocumentSync with
-        (* Request willSave notifications, better then didSave notification,
-           because it is sent earlier (before the editor has to write the full
-           file), but still on save sfrom the user. *)
-        willSave = begin match state.diag_mode with
-          | On_change -> false
-          | On_did_save -> false
-          | On_will_save -> true
-        end;
-        (* Request didSave notifiations. *)
-        save = begin match state.diag_mode with
-          | On_change -> None
-          | On_will_save -> None
-          | On_did_save -> Some {
-              Lsp.Initialize.TextDocumentSyncOptions.includeText = false; }
-        end;
-        (* NoSync is bugged under vim-lsp where it send null instead
-           of an empty list, so this is set to incremental even for
-           read_from_disk mode *)
-        change = IncrementalSync;
-      };
-    } in
+    Lsp.Types.ServerCapabilities.create
+      ~textDocumentSync:(`TextDocumentSyncOptions (
+          Lsp.Types.TextDocumentSyncOptions.create
+          (* Request willSave notifications, better then didSave notification,
+             because it is sent earlier (before the editor has to write the full
+             file), but still on save sfrom the user. *)
+            ~willSave:(match state.diag_mode with
+                | On_change -> false
+                | On_did_save -> false
+                | On_will_save -> true
+              )
+            (* Request didSave notifiations. *)
+            ?save:(match state.diag_mode with
+                | On_change -> None
+                | On_will_save -> None
+                | On_did_save ->
+                  Some (Lsp.Types.SaveOptions.create ~includeText:false ())
+              )
+            (* NoSync is bugged under vim-lsp where it send null instead
+               of an empty list, so this is set to incremental even for
+               read_from_disk mode *)
+            ~change:Incremental
+            ())
+        ) ()
+  in
   (* Return the new state and answer *)
-  let result = Lsp.Initialize.Result.{ serverInfo = Some info; capabilities; } in
-  Ok (state, result)
-*)
+  let result = Lsp.Types.InitializeResult.create ~serverInfo ~capabilities () in
+  Ok (result, state)
+
 (* Request handler *)
 (* ************************************************************************ *)
 
-let on_request : t Lsp.Server.Handler.on_request = {
-  on_request = (fun _ _ ->
-      Fiber.return @@ Error (
-        Lsp.Jsonrpc.Response.Error.make
-          ~code:InternalError ~message:"not implemented" ()
-      )
-    );
-}
+let on_request : t Lsp.Server.Handler.on_request =
+  let on_request : type a.
+    'state Lsp.Server.t ->
+    a Lsp.Server.in_request ->
+    (a * 'state, Lsp.Jsonrpc.Response.Error.t) result Fiber.t
+    = fun server request ->
+      let state = Lsp.Server.state server in
+      match (request : a Lsp.Server.in_request) with
+      | Initialize params ->
+        Fiber.return (on_initialize server state params)
+      | _ ->
+        Fiber.return @@ Error (
+          Lsp.Jsonrpc.Response.Error.make
+            ~code:InternalError ~message:"not implemented" ()
+        )
+  in
+  { on_request }
+
 
 (* Notification handler *)
 (* ************************************************************************ *)
