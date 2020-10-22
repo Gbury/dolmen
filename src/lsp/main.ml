@@ -7,10 +7,14 @@ type listen =
 
 let run ic oc =
   let section = Printf.sprintf "%s[%d]" Handler.section @@ Thread.id (Thread.self ()) in
+  (* Lsp server setup *)
+  let io = Lsp.Io.make ic oc in
+  let scheduler = Lsp.Scheduler.create () in
+  let stream_io = Lsp.Rpc.Stream_io.make scheduler io in
+  let server = Lsp.Server.make Handler.handler stream_io Handler.empty in
+  (* Start the server *)
   Lsp.Logger.log ~section ~title:Debug "start lsp";
-  Lsp.Rpc.start Handler.empty Handler.handler ic oc;
-  Lsp.Logger.log ~section ~title:Debug "stop lsp";
-  ()
+  Lsp.Scheduler.run scheduler (Lsp.Server.start server)
 
 let main_tcp addr port =
   let sock = Unix.socket ~cloexec:true Unix.PF_INET Unix.SOCK_STREAM 0 in

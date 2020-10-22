@@ -7,21 +7,37 @@
 let section = "dolmen_lsp"
 
 module Res_ = struct
+
   let (>|=) x f = match x with
     | Error e -> Error e
     | Ok x -> Ok (f x)
+
   let (>>=) x f = match x with
     | Error e -> Error e
     | Ok x -> f x
+
+  let wrap f =
+    Fiber.with_error_handler (fun () ->
+        match f () with
+        | Ok res ->
+          Fiber.return res
+        | Error msg ->
+          Lsp.Logger.log ~section ~title:Error
+            "Error: %s" msg;
+          Fiber.never
+      ) ~on_error:(function { Stdune.Exn_with_backtrace.exn; backtrace; } ->
+        Lsp.Logger.log ~section ~title:Error
+          "Uncaught exn: %s@\n%s"
+          (Printexc.to_string exn)
+          (Printexc.raw_backtrace_to_string backtrace)
+      )
 end
 
-module N = Lsp.Client_notification
 module Doc = Lsp.Text_document
 
 module Umap = Map.Make(struct
-    type t = Lsp.Uri.t
-    let compare a b =
-      String.compare (Lsp.Uri.to_path a) (Lsp.Uri.to_path b)
+    type t = Lsp.Types.DocumentUri.t
+    let compare = String.compare
   end)
 
 (* Main handler state *)
@@ -36,10 +52,6 @@ type diag_mode =
   | On_did_save
   | On_will_save
 
-type res = {
-  diags : Lsp.Protocol.PublishDiagnostics.params list;
-}
-
 type t = {
 
   (* Mode of execution *)
@@ -48,14 +60,12 @@ type t = {
 
   (* Document tracking *)
   docs: Doc.t Umap.t;
-  processed: res Umap.t;
 }
 
 let empty = {
   file_mode = Compute_incremental;
   diag_mode = On_will_save;
   docs = Umap.empty;
-  processed = Umap.empty;
 }
 
 (* Manipulating documents *)
@@ -65,9 +75,9 @@ let add_doc t uri doc =
   let t' = { t with docs = Umap.add uri doc t.docs; } in
   Ok t'
 
-let open_doc t version uri text =
-  let doc = Doc.make ~version uri text in
-  add_doc t uri doc
+let open_doc t (d : Lsp.Types.DidOpenTextDocumentParams.t) =
+  let doc = Doc.make d in
+  add_doc t d.textDocument.uri doc
 
 let close_doc t uri =
   { t with docs = Umap.remove uri t.docs; }
@@ -78,42 +88,43 @@ let fetch_doc t uri =
   | exception Not_found ->
     Error "uri not found"
 
-let apply_changes version doc changes =
-  List.fold_right (Doc.apply_content_change ~version) changes doc
+let fetch_version t uri =
+  let open Res_ in
+  fetch_doc t uri >|= Doc.version
 
 let change_doc t version uri changes =
   let open Res_ in
   fetch_doc t uri >>= fun doc ->
-  let doc' = apply_changes version doc changes in
+  let doc' = List.fold_right (Doc.apply_content_change ?version) changes doc in
   add_doc t uri doc'
-
 
 (* Document processing *)
 (* ************************************************************************ *)
 
 let process state uri =
   Lsp.Logger.log ~section ~title:Debug
-    "Starting processing of %s" (Lsp.Uri.to_path uri);
-  let path = Lsp.Uri.to_path uri in
+    "Starting processing of %s" uri;
+  (* TODO: translate uri to path ? *)
+  let path = uri in
   let open Res_ in
   begin match state.file_mode with
     | Read_from_disk ->
       Lsp.Logger.log ~section ~title:Debug
         "reading from disk...";
-      Ok None
+      Ok (None, None)
     | Compute_incremental ->
       Lsp.Logger.log ~section ~title:Debug
         "Fetching computed document...";
       fetch_doc state uri >|= fun doc ->
-      Some (Doc.text doc)
-  end >>= fun contents ->
+      Some (Doc.version doc), Some (Doc.text doc)
+  end >>= fun (version, contents) ->
   Loop.process path contents >>= fun st ->
   let diags = st.solve_state in
-  Ok (diags)
+  Ok (version, diags)
 
 (* Initialization *)
 (* ************************************************************************ *)
-
+(*
 let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   Lsp.Logger.log ~section ~title:Debug "Initialization started";
   (* Determine in which mode we are *)
@@ -165,136 +176,129 @@ let on_initialize _rpc state (params : Lsp.Initialize.Params.t) =
   (* Return the new state and answer *)
   let result = Lsp.Initialize.Result.{ serverInfo = Some info; capabilities; } in
   Ok (state, result)
-
+*)
 (* Request handler *)
 (* ************************************************************************ *)
 
-let on_request _rpc _state _capabilities _req =
-  Error (
-    Lsp.Jsonrpc.Response.Error.make
-      ~code:InternalError ~message:"not implemented" ()
-  )
-
+let on_request : t Lsp.Server.Handler.on_request = {
+  on_request = (fun _ _ ->
+      Fiber.return @@ Error (
+        Lsp.Jsonrpc.Response.Error.make
+          ~code:InternalError ~message:"not implemented" ()
+      )
+    );
+}
 
 (* Notification handler *)
 (* ************************************************************************ *)
 
-let send_diagnostics rpc uri version l =
+let send_diagnostics server uri (version, l) =
   Lsp.Logger.log ~section ~title:Debug
     "sending diagnostics list (length %d)" (List.length l);
-  Lsp.Rpc.send_notification rpc @@
-  Lsp.Server_notification.PublishDiagnostics {
-    uri; version;
-    diagnostics = l;
-  }
+  Lsp.Server.notification server @@
+  Lsp.Server_notification.PublishDiagnostics (
+    Lsp.Types.PublishDiagnosticsParams.create ~uri ?version ~diagnostics:l ()
+  )
 
-let process_and_send rpc state uri =
-  let open Res_ in
-  try
-    process state uri >>= fun l ->
-    send_diagnostics rpc uri None l;
-    Ok state
-  with exn ->
-    Lsp.Logger.log ~section ~title:Error
-      "uncaught exception: %s" (Printexc.to_string exn);
-    Error (Format.asprintf "Uncaught exn: %s" (Printexc.to_string exn))
+let process_and_send server state uri =
+  let open Fiber.O in
+  Res_.wrap (fun () -> process state uri)
+  >>= send_diagnostics server uri
+  >>= fun () -> Fiber.return state
 
-let on_will_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  Lsp.Logger.log ~section ~title:Debug "will save / uri %s" (Lsp.Uri.to_path d.uri);
+let on_will_save server state (d : Lsp.Types.WillSaveTextDocumentParams.t) =
+  Lsp.Logger.log ~section ~title:Debug "will save / uri %s" d.textDocument.uri;
   match state.diag_mode, state.file_mode with
-  | On_will_save, Compute_incremental -> process_and_send rpc state d.uri
-  | On_will_save, Read_from_disk -> Error "incoherent internal state"
-  | _ -> Ok state
+  | On_will_save, Compute_incremental ->
+    process_and_send server state d.textDocument.uri
+  | On_will_save, Read_from_disk ->
+    Res_.wrap (fun () -> Error "incoherent internal state")
+  | _ ->
+    Fiber.return state
 
-let on_did_save rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  Lsp.Logger.log ~section ~title:Debug "did save / uri %s" (Lsp.Uri.to_path d.uri);
+let on_did_save server state (d : Lsp.Types.DidSaveTextDocumentParams.t) =
+  Lsp.Logger.log ~section ~title:Debug "did save / uri %s" d.textDocument.uri;
   match state.diag_mode with
-  | On_did_save -> process_and_send rpc state d.uri
-  | _ -> Ok state
+  | On_did_save -> process_and_send server state d.textDocument.uri
+  | _ -> Fiber.return state
 
-let on_did_close _rpc state (d : Lsp.Protocol.TextDocumentIdentifier.t) =
-  Lsp.Logger.log ~section ~title:Debug
-    "did close / uri %s" (Lsp.Uri.to_path d.uri);
-  Ok (close_doc state d.uri)
+let on_did_close _server state (d : Lsp.Types.DidCloseTextDocumentParams.t) =
+  Lsp.Logger.log ~section ~title:Debug "did close / uri %s" d.textDocument.uri;
+  Fiber.return (close_doc state d.textDocument.uri)
 
-let on_did_open rpc state (d : Lsp.Protocol.TextDocumentItem.t) =
-  let open Res_ in
+let on_did_open server state (d : Lsp.Types.DidOpenTextDocumentParams.t) =
   Lsp.Logger.log ~section ~title:Debug "did open / uri %s, size %d"
-    (Lsp.Uri.to_path d.uri) (String.length d.text);
+    d.textDocument.uri (String.length d.textDocument.text);
   (* Register the doc in the state if in incremental mode *)
   begin match state.file_mode with
     | Read_from_disk -> Ok state
-    | Compute_incremental -> open_doc state d.version d.uri d.text
-  end >>= fun state ->
-  (* Process and send if in on_change mode *)
-  begin match state.diag_mode with
-    | On_change -> process_and_send rpc state d.uri
-    | On_did_save -> process_and_send rpc state d.uri
-    | On_will_save -> process_and_send rpc state d.uri
-  end
+    | Compute_incremental -> open_doc state d
+  end |> function
+  | Ok state -> process_and_send server state d.textDocument.uri
+  | Error _ as res -> Res_.wrap (fun () -> res)
 
-let on_did_change rpc state
-    (d : Lsp.Protocol.VersionedTextDocumentIdentifier.t) changes =
-  let open Res_ in
-  Lsp.Logger.log ~section ~title:Debug
-    "did change / uri %s" (Lsp.Uri.to_path d.uri);
+let on_did_change server state (d : Lsp.Types.DidChangeTextDocumentParams.t) =
+  let open Fiber.O in
+  Lsp.Logger.log ~section ~title:Debug "did change / uri %s" d.textDocument.uri;
   (* Update the doc in the state if in incremental mode *)
-  begin match state.file_mode with
+  Res_.wrap (fun () -> match state.file_mode with
     | Read_from_disk -> Ok state
-    | Compute_incremental -> change_doc state d.version d.uri changes
-  end >>= fun state ->
+    | Compute_incremental ->
+      change_doc state d.textDocument.version d.textDocument.uri d.contentChanges
+    ) >>= fun state ->
   (* Process and send if in on_change mode *)
   begin match state.diag_mode with
-    | On_change -> process_and_send rpc state d.uri
+    | On_change -> process_and_send server state d.textDocument.uri
     | On_did_save
-    | On_will_save -> Ok state
+    | On_will_save -> Fiber.return state
   end
 
-let on_notification rpc state = function
+let on_notification server in_notification =
+  let state = Lsp.Server.state server in
+  match (in_notification : Lsp.Client_notification.t) with
 
   (* Initialization, not much to do *)
-  | N.Initialized ->
+  | Initialized ->
     Lsp.Logger.log ~section ~title:Debug "initializing";
-    Ok state
+    Fiber.return state
 
   (* New document *)
-  | N.TextDocumentDidOpen { textDocument=d } ->
-    on_did_open rpc state d
+  | TextDocumentDidOpen params ->
+    on_did_open server state params
   (* Close document *)
-  | N.TextDocumentDidClose { textDocument=d } ->
-    on_did_close rpc state d
+  | TextDocumentDidClose params ->
+    on_did_close server state params
 
   (* Document changes *)
-  | N.TextDocumentDidChange { textDocument; contentChanges; } ->
-    on_did_change rpc state textDocument contentChanges
+  | TextDocumentDidChange params ->
+    on_did_change server state params
   (* will save *)
-  | N.WillSaveTextDocument { textDocument=d; _ } ->
-    on_will_save rpc state d
+  | WillSaveTextDocument params ->
+    on_will_save server state params
   (* did save *)
-  | N.DidSaveTextDocument { textDocument=d; _ } ->
-    on_did_save rpc state d
+  | DidSaveTextDocument params ->
+    on_did_save server state params
 
   (* Exit *)
-  | N.Exit -> Ok state
+  | Exit -> Fiber.return state
 
   (* TODO stuff *)
-  | N.ChangeWorkspaceFolders _ ->
+  | ChangeWorkspaceFolders _ ->
     Lsp.Logger.log ~section ~title:Debug "workspace change";
-    Ok state
-  | N.ChangeConfiguration _ ->
+    Fiber.return state
+  | ChangeConfiguration _ ->
     Lsp.Logger.log ~section ~title:Debug "change config";
-    Error "not implemented"
-  | N.Unknown_notification _req ->
+    (* Error "not implemented" *)
+    Fiber.return state
+  | Unknown_notification _req ->
     Lsp.Logger.log ~section ~title:Debug "unknown notification";
-    Error "not implemented"
+    (* Error "not implemented" *)
+    Fiber.return state
 
 
 (* Lsp Handler *)
 (* ************************************************************************ *)
 
-let handler : t Lsp.Rpc.handler = {
-  on_initialize;
-  on_request;
-  on_notification;
-}
+let handler : t Lsp.Server.Handler.t =
+  Lsp.Server.Handler.make ~on_request ~on_notification ()
 

@@ -6,7 +6,7 @@
     ; ocaml deps
     threads.posix
     ; external deps
-    lsp gen
+    lsp lsp.fiber lsp.stdune gen
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop
