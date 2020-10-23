@@ -42,7 +42,6 @@ Currently the following parsers are working:
 The following parsers are either work in progress, or soon to be
 work in progress:
 
-- alt-ergo native format
 - coq
 - dedukti
 
@@ -65,10 +64,4 @@ is to pin your local copy of dolmen like this:
 Once the dependencies have been installed, you can build the project with:
 
     make
-
-## Future work
-
-- Adding new languages
-- Improve error reporting
-- Dynamic detection of input language
 
