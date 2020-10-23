@@ -54,7 +54,10 @@ type loc = {
 
 exception Uncaught of t * exn
 exception Lexing_error of t * string
-exception Syntax_error of t * Msg.t
+exception Syntax_error of t * [
+    | `Regular of Msg.t
+    | `Advanced of Msg.t * Msg.t * Msg.t
+  ]
 (** Exceptions that may occur during parsing *)
 
 (* Compact locations *)

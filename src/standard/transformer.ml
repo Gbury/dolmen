@@ -65,27 +65,29 @@ module Make
     let s = state checkpoint in
     match token with
     | None ->
-      Format.dprintf "Syntax error@ with@ missing@ token@ read,@ \
-                      please@ report upstream,@ ^^"
+      `Regular (Format.dprintf "Syntax error@ with@ missing@ token@ read,@ \
+                                please@ report upstream,@ ^^")
     | Some tok ->
       let tok_descr = Lexer.descr tok in
       begin match String.trim (Ty.error s) with
         | exception Not_found ->
-          Format.dprintf "Missing@ syntax@ error@ message (state %d),@ \
-                          please@  report@ upstream,@ ^^" s
+          `Regular (Format.dprintf "Missing@ syntax@ error@ message@ \
+                                    (state %d),@ please@ report@ \
+                                    upstream,@ ^^" s)
         | "<YOUR SYNTAX ERROR MESSAGE HERE>" ->
-          Format.dprintf "Syntax error (state %d)@ while reading %a."
-            s Tok.print tok_descr
+          `Regular (Format.dprintf "Syntax error (state %d)@ \
+                                    while reading %a." s Tok.print tok_descr)
         | msg ->
           begin match Misc.split_on_char '\n' msg with
-            | error_no :: production :: l ->
-              let expected = String.concat " " l in
-              Format.dprintf
-                "@[<v>@[<hv>(%s) while parsing %s,@ read %a,@]@ @[<hov>but expected %a.@]@]"
-                error_no production Tok.print tok_descr
-                Format.pp_print_text expected
+            | _error_no :: production :: l ->
+              let prod = Format.dprintf "%s" production in
+              let lexed = Format.dprintf "%a" Tok.print tok_descr in
+              let expected =
+                Format.dprintf "%a" Format.pp_print_text (String.concat " " l)
+              in
+              `Advanced (prod, lexed, expected)
             | _ ->
-              Format.dprintf "Syntax error (state %d)." s
+              `Regular (Format.dprintf "Syntax error (state %d)." s)
           end
       end
 
@@ -129,7 +131,7 @@ module Make
           raise (Loc.Lexing_error (pos, err))
         | exception Parser.Error ->
           let pos = Loc.of_lexbuf lexbuf in
-          let msg = Format.dprintf "" in
+          let msg = `Regular (Format.dprintf "Syntax error") in
           let () = k_exn () in
           raise (Loc.Syntax_error (pos, msg))
         | exception e ->
@@ -176,7 +178,7 @@ module Make
       let msg = Format.dprintf ": @[<hov>%a@]"
           Format.pp_print_text "Input format does not support incremental parsing"
       in
-      raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf, msg))
+      raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf, `Regular msg))
     end;
     let k_exn () = Dolmen_line.consume lexbuf in
     let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.input in

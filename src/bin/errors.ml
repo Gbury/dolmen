@@ -49,10 +49,14 @@ let exn st = function
   | Dolmen.Std.Loc.Lexing_error (loc, lex) ->
     let file = Dolmen_loop.State.input_file_loc st in
     Loop.State.error ~loc:{ file; loc; } st "Lexing error: invalid character '%s'" lex
-  | Dolmen.Std.Loc.Syntax_error (loc, msg) ->
+  | Dolmen.Std.Loc.Syntax_error (loc, `Regular msg) ->
     let file = Dolmen_loop.State.input_file_loc st in
     Loop.State.error ~loc: { file; loc; } st "%t@." msg
-
+  | Dolmen.Std.Loc.Syntax_error (loc, `Advanced (prod, lexed, expected)) ->
+    let file = Dolmen_loop.State.input_file_loc st in
+    Loop.State.error ~loc: { file; loc; } st
+      "@[<v>@[<hv>while parsing %t,@ read %t,@]@ @[<hov>but expected %t.@]@]"
+      prod lexed expected
 
   (* Typing errors *)
   | Dolmen_loop.Typer.T.Typing_error (
