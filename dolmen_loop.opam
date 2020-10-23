@@ -12,9 +12,8 @@ depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen" {= version }
   "dolmen_type" {= version }
-  "gen"
+  "gen" { >= "2.7" }
   "dune"
-  "bisect_ppx" {dev & >= "2.5.0"}
 ]
 tags: [ "logic" "computation" "automated theorem prover" ]
 homepage: "https://github.com/Gbury/dolmen"

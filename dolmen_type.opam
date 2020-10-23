@@ -11,10 +11,9 @@ build: [
 depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen" {= version }
+  "dune" { >= "2.7" }
   "spelll"
   "uutf"
-  "dune"
-  "bisect_ppx" {dev & >= "2.5.0"}
 ]
 tags: [ "logic" "type" "typechecking" "first order" "polymorphism" ]
 homepage: "https://github.com/Gbury/dolmen"

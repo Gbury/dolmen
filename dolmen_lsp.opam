@@ -13,8 +13,8 @@ depends: [
   "dolmen" {= version }
   "dolmen_type" {= version }
   "dolmen_loop" { = version }
+  "dune" { >= "2.7" }
   "lsp"
-  "dune"
   "ocaml-syntax-shims"
 #  "lsp"
 ]
