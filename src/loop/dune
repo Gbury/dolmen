@@ -1,6 +1,7 @@
 (library
   (name           dolmen_loop)
   (public_name    dolmen_loop)
+  (instrumentation (backend bisect_ppx))
   (libraries
     ; External deps
     gen unix fmt

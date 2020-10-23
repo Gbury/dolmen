@@ -1,5 +1,6 @@
-# Source directory (doc, build dir and bin)
+# Generated directories
 _build/
+_coverage/
 src/_build/
 
 # Generated files

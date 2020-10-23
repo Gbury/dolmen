@@ -25,6 +25,7 @@
 (library
   (name           dolmen_icnf)
   (public_name    dolmen.icnf)
+  (instrumentation (backend bisect_ppx))
   (libraries      dolmen_std dolmen_intf menhirLib)
   (modules        Tokens_iCNF LexiCNF ParseiCNF Ast_iCNF Syntax_messages Dolmen_icnf)
 )
