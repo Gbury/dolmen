@@ -4,6 +4,27 @@ This file is incomplete, but may have interesting tips if you want to start
 hacking on dolmen. If you're having troubles, don't hesitate to contact me
 directly, ^^
 
+
+## Tests
+
+Most tests are setup through dune files, associated with tune "runtest" alias.
+
+### Unit tests
+
+There a few (though not that many), unit tests. These are basically to test
+internal functions of the library, in order to check internal assumptions
+that may otherwise not be easy to check with complete parsing/typing tests.
+
+Follow the example in `tests/unit/bitv/` to add more unit tests.
+
+
+### Parsing/typing tests
+
+### Coverage tests
+
+
+
+
 ## Hand-written error messages
 
 Dolmen now has support for customizing syntax error messages, using menhir's
