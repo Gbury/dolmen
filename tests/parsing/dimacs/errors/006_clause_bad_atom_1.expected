@@ -1,5 +1,4 @@
 File "tests/parsing/dimacs/errors/006_clause_bad_atom_1.cnf", line 2, character 2-3:
-Error (006) while parsing a clause, read the keyword 'p',
+Error while parsing a clause, read the keyword 'p',
       but expected an integer, either zero to mark the end of the clause, or
       a non-zero integer to add to the clause.
-

@@ -1,4 +1,3 @@
 File "tests/parsing/icnf/errors/008_input_p_inccnf_bad_inccnf_1.icnf", line 1, character 2-3:
-Error (008) while parsing a p-inccnf header, read the integer '0',
+Error while parsing a p-inccnf header, read the integer '0',
       but expected the 'inccnf' header'.
-

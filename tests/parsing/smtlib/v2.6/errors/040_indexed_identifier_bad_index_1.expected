@@ -1,6 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/040_indexed_identifier_bad_index_1.smt2", line 2, character 16-17:
-Error (040) while parsing an indexed identifier, read the reserved word '_',
+Error while parsing an indexed identifier, read the reserved word '_',
       but expected an index, i.e. either a numeral, a symbol, or a
       hexadecimal number; note that keywords and reserved words (such as '_',
       'as', ...) are not symbols, and thus are not allowed here.
-

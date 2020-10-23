@@ -1,5 +1,4 @@
 File "tests/parsing/smtlib/v2.6/errors/157_attribute_value_bad_s_expr_1.smt2", line 1, character 18-19:
-Error (157) while parsing an attribute value, read the reserved word '_',
+Error while parsing an attribute value, read the reserved word '_',
       but expected a closing parenthesis, or an s-expression, i.e. a literal,
       symbol, keyword, or an s-expression in parentheses.
-

@@ -1,4 +1,3 @@
 File "tests/parsing/smtlib/v2.6/errors/096_get-option_bad_keyword_1.smt2", line 1, character 12-15:
-Error (096) while parsing a get-option command, read the symbol 'foo',
+Error while parsing a get-option command, read the symbol 'foo',
       but expected a keyword of the form ":symbol".
-

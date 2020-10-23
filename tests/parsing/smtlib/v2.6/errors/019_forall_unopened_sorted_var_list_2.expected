@@ -1,5 +1,4 @@
 File "tests/parsing/smtlib/v2.6/errors/019_forall_unopened_sorted_var_list_2.smt2", line 2, character 16-17:
-Error (019) while parsing a term, read the reserved word '!',
+Error while parsing a term, read the reserved word '!',
       but expected a list of sorted variables, starting with an opening
       parenthesis.
-

@@ -1,5 +1,4 @@
 File "tests/parsing/icnf/errors/001_assumption_bad_atom_1.icnf", line 2, character 4-5:
-Error (001) while parsing an assumption, read the keyword 'p',
+Error while parsing an assumption, read the keyword 'p',
       but expected either another atom (i.e. non-zero integer), or the
       integer zero to close the assumption.
-

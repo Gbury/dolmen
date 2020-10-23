@@ -1,5 +1,4 @@
 File "tests/parsing/smtlib/v2.6/errors/068_declare-fun_sort_list_unopened_1.smt2", line 2, character 17-18:
-Error (068) while parsing a function declaration, read the reserved word '_',
+Error while parsing a function declaration, read the reserved word '_',
       but expected an opening parenthesis to start the list of sorts for the
       function's arguments.
-

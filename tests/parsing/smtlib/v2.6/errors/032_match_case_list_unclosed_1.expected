@@ -1,5 +1,4 @@
 File "tests/parsing/smtlib/v2.6/errors/032_match_case_list_unclosed_1.smt2", line 3, character 40-41:
-Error (032) while parsing a list of match cases, read the reserved word '_',
+Error while parsing a list of match cases, read the reserved word '_',
       but expected a closing parenthesis or a match case of the form
       "(pattern body)".
-

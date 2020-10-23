@@ -1,7 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/029_pattern_bad_argument_1.smt2", line 3, character 44-45:
-Error (029) while parsing arguments of a constructor in a pattern,
+Error while parsing arguments of a constructor in a pattern,
       read the reserved word '_',
       but expected a symbol to bind the first constructor argument; note that
       keywords and reserved words (such as '_', 'as', ...) are not symbols,
       and thus are not allowed here.
-

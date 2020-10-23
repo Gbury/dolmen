@@ -1,4 +1,3 @@
 File "tests/parsing/smtlib/v2.6/errors/105_push_unclosed_1.smt2", line 1, character 8-9:
-Error (105) while parsing a push command, read the reserved word '_',
+Error while parsing a push command, read the reserved word '_',
       but expected a closing parenthesis.
-

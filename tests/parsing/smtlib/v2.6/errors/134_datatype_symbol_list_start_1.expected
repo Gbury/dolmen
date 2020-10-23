@@ -1,5 +1,4 @@
 File "tests/parsing/smtlib/v2.6/errors/134_datatype_symbol_list_start_1.smt2", line 2, character 28-29:
-Error (134) while parsing a list of sort variables to parameterize a datatype,
+Error while parsing a list of sort variables to parameterize a datatype,
       read the reserved word '_',
       but expected a symbol.
-
