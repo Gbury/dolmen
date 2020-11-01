@@ -1,0 +1,2 @@
+Error while parsing a p-cnf header, read the end of file token,
+      but expected the keyword "cnf".

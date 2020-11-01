@@ -1,0 +1,4 @@
+File "tests/parsing/dimacs/tokens/zero.cnf", line 1, character 0-1:
+Error while parsing an input sentence, read the integer '0',
+      but expected a p-cnf header if there hasn't been one yet, or a clause
+      starting with a non-zero integer.
