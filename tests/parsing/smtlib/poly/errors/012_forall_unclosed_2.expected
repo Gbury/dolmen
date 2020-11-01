@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/012_forall_unclosed_2.psmt2", line 2, character 28-39:
+Error while parsing a term, read the symbol 'agalaglagla',
+      but expected a closing parenthesis to end the universally quantified
+      formula.

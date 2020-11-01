@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/052_check-sat-assuming_bad_lit_1.psmt2", line 2, character 21-22:
+Error while parsing a list of propositional literals,
+      read the reserved word '_',
+      but expected a propositional literal, i.e. either a symbol or the
+      negation of a symbol.

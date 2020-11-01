@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/061_declare-datatype_bad-cstr-list_1.psmt2", line 2, character 30-31:
+Error while parsing a datatypes definition, read the reserved word '_',
+      but expected an opening parenthesis to start a list of constructors for
+      the first defined datatype.

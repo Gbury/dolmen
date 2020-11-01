@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/035_match_case_bad_pattern_1.psmt2", line 3, character 41-42:
+Error while parsing a match case, read the reserved word '_',
+      but expected a pattern, i.e. either a symbol or a datatype pattern of
+      the form "(symbol symbol+)"; note that keywords and reserved words
+      (such as '_', 'as', ...) are not symbols, and thus are not allowed
+      here.

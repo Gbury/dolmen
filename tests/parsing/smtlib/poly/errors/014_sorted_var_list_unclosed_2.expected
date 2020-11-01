@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/014_sorted_var_list_unclosed_2.psmt2", line 2, character 25-27:
+Error while parsing a list of sorted variables, read the reserved word 'as',
+      but expected either a closing parentheis, or a sorted var of the form
+      "(var sort)".

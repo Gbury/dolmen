@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/165_function_def_unclosed_1.psmt2", line 2, character 43-44:
+Error while parsing a function definition, read the reserved word '_',
+      but expected a closing parenthesis to close the parameterized
+      definition.

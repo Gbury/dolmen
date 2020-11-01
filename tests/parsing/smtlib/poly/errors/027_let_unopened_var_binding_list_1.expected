@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/027_let_unopened_var_binding_list_1.psmt2", line 2, character 13-14:
+Error while parsing a term, read the reserved word '_',
+      but expected a variable binding list, starting with an opening
+      parenthesis.

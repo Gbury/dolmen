@@ -9,7 +9,7 @@
     ; Languages without versions
     dolmen_ae dolmen_dimacs dolmen_icnf dolmen_zf
     ; Smtlib2 & versions
-    dolmen_smtlib2 dolmen_smtlib2_v6
+    dolmen_smtlib2 dolmen_smtlib2_v6 dolmen_smtlib2_poly
     ; TPTP & versions
     dolmen_tptp dolmen_tptp_v6_3_0
     ; Menhir deps

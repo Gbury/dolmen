@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/134_datatype_symbol_list_start_1.psmt2", line 2, character 28-29:
+Error while parsing a list of sort variables to parameterize a datatype,
+      read the reserved word '_',
+      but expected a symbol.

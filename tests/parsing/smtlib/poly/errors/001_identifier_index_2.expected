@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/001_identifier_index_2.psmt2", line 2, character 13-15:
+Error while parsing an identifier, read the reserved word 'as',
+      but expected an underscore: identifiers starting with an opening
+      parenthesis must be indexed identifiers, of the form "(_ symbol
+      index+)".

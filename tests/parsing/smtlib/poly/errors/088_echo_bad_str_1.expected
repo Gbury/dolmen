@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/088_echo_bad_str_1.psmt2", line 2, character 6-9:
+Error while parsing an echo command, read the symbol 'foo',
+      but expected a string literal.

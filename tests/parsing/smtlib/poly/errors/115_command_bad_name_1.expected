@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/115_command_bad_name_1.psmt2", line 1, character 1-2:
+Error while parsing a command, read the reserved word '_',
+      but expected a command name.

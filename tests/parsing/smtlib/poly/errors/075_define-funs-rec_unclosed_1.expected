@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/075_define-funs-rec_unclosed_1.psmt2", line 2, character 41-42:
+Error while parsing a recursive functions definition,
+      read the reserved word '_',
+      but expected a closing parenthesis.

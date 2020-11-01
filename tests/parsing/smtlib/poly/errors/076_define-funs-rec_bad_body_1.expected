@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/076_define-funs-rec_bad_body_1.psmt2", line 2, character 34-35:
+Error while parsing a recursive functions definition,
+      read the reserved word '_',
+      but expected a term for the first function's body.

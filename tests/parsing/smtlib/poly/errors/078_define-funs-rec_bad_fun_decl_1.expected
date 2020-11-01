@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/078_define-funs-rec_bad_fun_decl_1.psmt2", line 2, character 18-19:
+Error while parsing a recursive functions definition,
+      read the reserved word '_',
+      but expected a function declaration of the form "(name (sort*) sort)",
+      or "(name (par (var+) (sort*) sort))".

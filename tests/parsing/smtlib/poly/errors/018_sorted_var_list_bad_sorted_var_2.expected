@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/018_sorted_var_list_bad_sorted_var_2.psmt2", line 2, character 17-19:
+Error while parsing a term, read the reserved word 'as',
+      but expected a sorted variable of the form "(var sort)".

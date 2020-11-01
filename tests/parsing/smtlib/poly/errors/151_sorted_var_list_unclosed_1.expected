@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/151_sorted_var_list_unclosed_1.psmt2", line 2, character 29-30:
+Error while parsing a list of sorted variables, read the reserved word '_',
+      but expected another sorted variable of the form "(var sort)", or a
+      closing parenthesis.

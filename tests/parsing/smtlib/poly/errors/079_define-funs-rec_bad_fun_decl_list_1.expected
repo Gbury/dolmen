@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/079_define-funs-rec_bad_fun_decl_list_1.psmt2", line 2, character 17-18:
+Error while parsing a recursive functions declaration,
+      read the reserved word '_',
+      but expected an opening parenthesis to start a list of function
+      declaration.

@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/001_identifier_index_1.psmt2", line 2, character 13-17:
+Error while parsing an identifier, read the symbol 'blah',
+      but expected an underscore: identifiers starting with an opening
+      parenthesis must be indexed identifiers, of the form "(_ symbol
+      index+)".

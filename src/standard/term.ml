@@ -559,6 +559,11 @@ let binary ?loc s = const ?loc Id.(mk (Value Binary) s)
 
 let sexpr ?loc l = apply ?loc (const Id.(mk Attr "$data")) l
 
+let par ?loc vars t =
+  let vars = List.map (fun v -> colon ?loc v (tType ?loc ())) vars in
+  forall ?loc vars t
+
+
 (* {2 Wrappers for tptp} *)
 
 let rat ?loc s = const ?loc Id.(mk (Value Rational) s)

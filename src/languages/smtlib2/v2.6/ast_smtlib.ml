@@ -73,9 +73,6 @@ module type Term = sig
   val exists  : ?loc:location -> t list -> t -> t
   (** Existencial quantification. *)
 
-  val pi     : ?loc:location -> t list -> t -> t
-  (** Type quantification. *)
-
   val match_ : ?loc:location -> t -> (t * t) list -> t
   (** Pattern matching. The first term is the term to match,
       and each tuple in the list is a match case, which is a pair
@@ -88,18 +85,6 @@ module type Term = sig
   (** Attach a list of attributes (also called annotations) to a term. As written
       in the smtlib manual, "Term attributes have no logical meaning --
       semantically, [attr t l] is equivalent to [t]" *)
-
-  val tType     : ?loc:location -> unit -> t
-  (** The type of types, defined as specific token by the Zipperposition format;
-      in other languages, will be represented as a constant (the "$tType" constant
-      in tptp for instance). Used to define new types, or quantify type variables
-      in languages that support polymorphism. *)
-
-  val trigger : ?loc:location -> t list -> t
-  (** Create a (multi) trigger. *)
-
-  val triggers : ?loc:location -> t -> t list -> t
-  (** Annotate a term (generally a quantified formula), with a list of triggers. *)
 
 end
 (** Implementation requirements for Smtlib terms. *)
@@ -160,12 +145,12 @@ module type Statement = sig
   (** Inductive type definitions. *)
 
   val fun_decl  : ?loc:location -> id -> term list -> term list -> term -> t
-  (** Declares a new term symbol, and its type. [fun_decl f ty_args args ret]
+  (** Declares a new term symbol, and its type. [fun_decl f args ret]
       declares [f] as a new function symbol which takes arguments of types
       described in [args], and with return type [ret]. *)
 
   val fun_def   : ?loc:location -> id -> term list -> term list -> term -> term -> t
-  (** Defines a new function. [fun_def f ty_args args ret body] is such that
+  (** Defines a new function. [fun_def f args ret body] is such that
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)
 

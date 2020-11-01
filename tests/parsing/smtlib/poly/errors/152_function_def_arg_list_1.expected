@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/152_function_def_arg_list_1.psmt2", line 2, character 21-22:
+Error while parsing a function definition, read the reserved word '_',
+      but expected a sorted variable of the form "(var sort)", a closing
+      parenthesis, or a parameterization of the form "par (var+)".

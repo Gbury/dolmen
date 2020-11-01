@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/008_exists_unclosed_1.psmt2", line 2, character 28-29:
+Error while parsing a term, read the reserved word '_',
+      but expected a closing parenthesis to end the existencially quantified
+      formula.

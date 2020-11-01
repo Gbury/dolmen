@@ -1,0 +1,4020 @@
+#
+# Syntax Error Messages for smtlib v2.6
+#
+# Each error message *must* follow the following format:
+#
+# """
+# XXX
+# production parsed (on a single line)
+# what is expected at that point,
+# possibly on multiple lines
+# """
+#
+# The error numbers can be pretty much arbitrary, but for each
+# error number XXX, a corresponding test case file must exists as
+# tests/parsing/smtlib/v2.6/errors/XXX_some_descr_of_the_error_Y.smt2
+# (Y is there to allow multiple example of the error test case to exist,
+# for instance with various different error tokens)
+#
+# Notes:
+# - some error messages are shared among more than one error case,
+#   in such cases, the error number is the same, so when modifying
+#   an error message, be sure to modify all occurrences of the same
+#   error number
+
+term: OPEN AS OPEN SYMBOL
+##
+## Ends in an error in state: 58.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL OPEN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+001
+an identifier
+an underscore: identifiers starting with an opening parenthesis must be
+indexed identifiers, of the form "(_ symbol index+)"
+
+term: OPEN AS SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 491.
+##
+## qual_identifier -> OPEN AS identifier sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier sort
+##
+
+002
+a qualified identifier
+a closing parenthesis
+
+term: OPEN AS SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 490.
+##
+## qual_identifier -> OPEN AS identifier . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier
+##
+
+003
+a qualified identifier
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
+
+term: OPEN AS UNDERSCORE
+##
+## Ends in an error in state: 489.
+##
+## qual_identifier -> OPEN AS . identifier sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS
+##
+
+004
+a qualified identifier
+an identifier;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
+
+term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
+##
+## Ends in an error in state: 126.
+##
+## nonempty_list(attribute) -> attribute . [ CLOSE ]
+## nonempty_list(attribute) -> attribute . nonempty_list(attribute) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## attribute
+##
+
+005
+an attribute list
+either a closing parenthesis, or another attribute of the form
+"keyword value"
+
+term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 486.
+##
+## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE term
+##
+
+006
+a term
+an attribute of the form "keyword value"
+
+term: OPEN ATTRIBUTE UNDERSCORE
+##
+## Ends in an error in state: 485.
+##
+## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE
+##
+
+007
+a term with attribute
+a term
+
+term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 483.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+008
+a term
+a closing parenthesis to end the existencially quantified formula
+
+term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 482.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
+##
+
+009
+a term
+a term (body for the existencial quantification)
+
+term: OPEN EXISTS OPEN UNDERSCORE
+##
+## Ends in an error in state: 480.
+##
+## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN
+##
+
+010
+a term
+a sorted variable of the form "(var sort)"
+
+term: OPEN EXISTS UNDERSCORE
+##
+## Ends in an error in state: 479.
+##
+## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS
+##
+
+011
+a term
+a list of sorted variables, starting with an opening parenthesis
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 477.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+012
+a term
+a closing parenthesis to end the universally quantified formula
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 476.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
+##
+
+013
+a term
+a term (body for the universal quantification)
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 110.
+##
+## nonempty_list(sorted_var) -> sorted_var . [ CLOSE ]
+## nonempty_list(sorted_var) -> sorted_var . nonempty_list(sorted_var) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sorted_var
+##
+
+014
+a list of sorted variables
+either a closing parentheis, or a sorted var of the form "(var sort)"
+
+term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 108.
+##
+## sorted_var -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL sort
+##
+
+015
+a sorted variable
+a closing parenthesis
+
+term: OPEN FORALL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 107.
+##
+## sorted_var -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+016
+a sorted variable
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+identifiers, and thus are not allowed here
+
+term: OPEN FORALL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 106.
+##
+## sorted_var -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+017
+a sorted variable
+a symbol, i.e. a variable name
+
+term: OPEN FORALL OPEN UNDERSCORE
+##
+## Ends in an error in state: 474.
+##
+## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN
+##
+
+018
+a term
+a sorted variable of the form "(var sort)"
+
+term: OPEN FORALL UNDERSCORE
+##
+## Ends in an error in state: 473.
+##
+## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL
+##
+
+019
+a term
+a list of sorted variables, starting with an opening parenthesis
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 471.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
+##
+
+020
+a term
+a closing parenthesis to end the let binding
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 470.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE
+##
+
+021
+a term
+a term (body for the let binding)
+
+term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 98.
+##
+## nonempty_list(var_binding) -> var_binding . [ CLOSE ]
+## nonempty_list(var_binding) -> var_binding . nonempty_list(var_binding) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## var_binding
+##
+
+022
+a list of variable binding
+a closing parenthesis or a variable binding of the form "(var term)"
+
+term: OPEN LET OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 96.
+##
+## var_binding -> OPEN SYMBOL term . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL term
+##
+
+023
+a variable binding
+a closing parenthesis
+
+term: OPEN LET OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 95.
+##
+## var_binding -> OPEN SYMBOL . term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+024
+a variable binding
+a term
+
+term: OPEN LET OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 94.
+##
+## var_binding -> OPEN . SYMBOL term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+025
+a variable binding
+a symbol (i.e. variable name)
+
+term: OPEN LET OPEN UNDERSCORE
+##
+## Ends in an error in state: 468.
+##
+## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN
+##
+
+026
+a term
+a variable binding of the form "(var term)"
+
+term: OPEN LET UNDERSCORE
+##
+## Ends in an error in state: 467.
+##
+## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET
+##
+
+027
+a term
+a variable binding list, starting with an opening parenthesis
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 76.
+##
+## nonempty_list(pattern_symbol) -> pattern_symbol . [ CLOSE ]
+## nonempty_list(pattern_symbol) -> pattern_symbol . nonempty_list(pattern_symbol) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## pattern_symbol
+##
+
+028
+arguments of a constructor in a pattern
+a closing parenthesis, or a symbol to bind the argument;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 75.
+##
+## pattern -> OPEN pattern_symbol . nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern_symbol
+##
+
+029
+arguments of a constructor in a pattern
+a symbol to bind the first constructor argument;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN MATCH SYMBOL OPEN OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 74.
+##
+## pattern -> OPEN . pattern_symbol nonempty_list(pattern_symbol) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+030
+a pattern
+a symbol (either a variable or a datatype constructor);
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 465.
+##
+## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
+##
+
+031
+a match
+a closing parenthesis to close the match
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 90.
+##
+## nonempty_list(match_case) -> match_case . [ CLOSE ]
+## nonempty_list(match_case) -> match_case . nonempty_list(match_case) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## match_case
+##
+
+032
+a list of match cases
+a closing parenthesis or a match case of the form "(pattern body)"
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 82.
+##
+## match_case -> OPEN pattern term . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern term
+##
+
+033
+a match case
+a closing parenthesis to close the match case
+
+term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 81.
+##
+## match_case -> OPEN pattern . term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN pattern
+##
+
+034
+a match case
+a term for the case body
+
+term: OPEN MATCH SYMBOL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 72.
+##
+## match_case -> OPEN . pattern term CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+035
+a match case
+a pattern, i.e. either a symbol or a datatype pattern of
+the form "(symbol symbol+)";
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN MATCH SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 463.
+##
+## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN
+##
+
+036
+a list of match cases
+a match case of the form "(pattern term)"
+
+term: OPEN MATCH SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 462.
+##
+## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term
+##
+
+037
+a match
+a match case list, starting with an opening parenthesis
+
+term: OPEN MATCH UNDERSCORE
+##
+## Ends in an error in state: 461.
+##
+## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH
+##
+
+038
+a match
+a term to match (i.e. the scrutinee of the match)
+
+term: OPEN OPEN AS SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 67.
+##
+## qual_identifier -> OPEN AS identifier sort . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier sort
+##
+
+002
+a qualified identifier
+a closing parenthesis
+
+term: OPEN OPEN AS SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 59.
+##
+## qual_identifier -> OPEN AS identifier . sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS identifier
+##
+
+003
+a qualified identifier
+a sort, i.e. either an identifier, or a sort constructor application;
+note that keywords (such as '_', 'as', ...) are none of these, and thus
+are not allowed here.
+
+term: OPEN OPEN AS UNDERSCORE
+##
+## Ends in an error in state: 57.
+##
+## qual_identifier -> OPEN AS . identifier sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN AS
+##
+
+004
+a qualified identifier
+an identifier.
+Note that keywords (such as '_', 'as', ...) are not identifiers,
+and thus are not allowed here.
+
+term: OPEN OPEN SYMBOL
+##
+## Ends in an error in state: 56.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ SYMBOL STR OPEN NUM HEX DEC BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+039
+an identifier in parentheses
+either an indexed identifier (starting with an underscore)
+or an 'as' type ascription;
+note that this is because of the preceding opening parenthesis
+
+term: OPEN OPEN UNDERSCORE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 48.
+##
+## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE SYMBOL
+##
+
+040
+an indexed identifier
+an index, i.e. either a numeral, a symbol, or a hexadecimal number;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN OPEN UNDERSCORE UNDERSCORE
+##
+## Ends in an error in state: 47.
+##
+## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE
+##
+
+041
+an indexed identifier
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN STR
+##
+## Ends in an error in state: 456.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ # ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ # ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ # ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
+
+term: OPEN SYMBOL OPEN STR
+##
+## Ends in an error in state: 46.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
+
+term: OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 129.
+##
+## nonempty_list(term) -> term . [ CLOSE ]
+## nonempty_list(term) -> term . nonempty_list(term) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+043
+a list of terms
+either a closing parenthesis, or another term;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
+
+term: OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 493.
+##
+## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN qual_identifier
+##
+
+044
+a function application
+a term as argument;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
+
+term: OPEN UNDERSCORE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 54.
+##
+## nonempty_list(index) -> index . [ CLOSE ]
+## nonempty_list(index) -> index . nonempty_list(index) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## index
+##
+
+045
+an index list
+either a closing parenthesis, or an index (i.e. a numeral, a symbol,
+or a hexadecimal);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
+
+term: OPEN UNDERSCORE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 458.
+##
+## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE SYMBOL
+##
+
+040
+an indexed identifier
+an index, i.e. either a numeral, a symbol, or a hexadecimal number;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: OPEN UNDERSCORE UNDERSCORE
+##
+## Ends in an error in state: 457.
+##
+## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN UNDERSCORE
+##
+
+041
+an indexed identifier
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+term: UNDERSCORE
+##
+## Ends in an error in state: 453.
+##
+## term' -> . term [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+046
+a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
+
+input: OPEN ASSERT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 448.
+##
+## command -> OPEN ASSERT term . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT term
+##
+
+049
+an assertion
+a closing parenthesis
+
+input: OPEN ASSERT UNDERSCORE
+##
+## Ends in an error in state: 439.
+##
+## command -> OPEN ASSERT . term CLOSE [ # ]
+## command -> OPEN ASSERT . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT
+##
+
+048
+a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
+
+input: OPEN CHECK_SAT UNDERSCORE
+##
+## Ends in an error in state: 437.
+##
+## command -> OPEN CHECK_SAT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT
+##
+
+050
+a check-sat command
+a closing parenthesis
+
+input: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 435.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
+##
+
+051
+a check-sat-assuming command
+a closing parenthesis
+
+input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 433.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+052
+a list of propositional literals
+a propositional literal, i.e. either a symbol or the negation of a symbol
+
+input: OPEN CHECK_SAT_ASSUMING UNDERSCORE
+##
+## Ends in an error in state: 432.
+##
+## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING
+##
+
+053
+a check-sat-assuming command
+a list of propositional literals, starting with an opening parenthesis
+
+input: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 430.
+##
+## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL sort
+##
+
+054
+a constant declaration
+a closing parenthesis
+
+input: OPEN DECLARE_CONST SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 429.
+##
+## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL
+##
+
+055
+a constant declaration
+a sort
+
+input: OPEN DECLARE_CONST UNDERSCORE
+##
+## Ends in an error in state: 428.
+##
+## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST
+##
+
+056
+a constant declaration
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+input: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 426.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
+##
+
+057
+a datatype declaration
+a closing parenthesis
+
+input: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 425.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL
+##
+
+058
+a datatype declaration
+an opening parenthesis to start the datatype declaration
+
+input: OPEN DECLARE_DATATYPE UNDERSCORE
+##
+## Ends in an error in state: 424.
+##
+## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE
+##
+
+059
+a datatype declaration
+a symbol
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 422.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
+##
+
+060
+a datatypes declaration
+a closing parenthesis
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 420.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
+##
+
+061
+a datatypes definition
+an opening parenthesis to start a list of constructors for the first defined datatype
+
+input: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 419.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
+##
+
+062
+a datatypes declaration
+an opening parenthesis to start a list of datatype definitions,
+one for each of the sorts being declared
+
+input: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
+##
+## Ends in an error in state: 417.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN
+##
+
+063
+a datatypes declaration
+a parametric sort declaration of the form "(symbol num)"
+
+input: OPEN DECLARE_DATATYPES UNDERSCORE
+##
+## Ends in an error in state: 416.
+##
+## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES
+##
+
+064
+a datatypes declaration
+a list of sort declaration, starting with an opening parenthesis
+
+input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 414.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
+##
+
+065
+a function declaration
+a closing parenthesis
+
+input: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 413.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
+##
+
+066
+a function declaration
+a sort for the return type of the function
+
+input: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 401.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ # ]
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN
+##
+
+067
+a function declaration
+a closing parenthesis, or a list of sorts for the arguments of the function
+
+input: OPEN DECLARE_FUN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 400.
+##
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ # ]
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL
+##
+
+068
+a function declaration
+an opening parenthesis to start the list of sorts for the function's arguments
+
+input: OPEN DECLARE_FUN UNDERSCORE
+##
+## Ends in an error in state: 399.
+##
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ # ]
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN
+##
+
+069
+a function declaration
+a symbol for the function's name
+
+input: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 397.
+##
+## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL NUM
+##
+
+070
+a sort declaration
+a closing parenthesis
+
+input: OPEN DECLARE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 396.
+##
+## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL
+##
+
+071
+a sort declaration
+a numeral for the arity of the sort being declared
+
+input: OPEN DECLARE_SORT UNDERSCORE
+##
+## Ends in an error in state: 395.
+##
+## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT
+##
+
+072
+a sort declaration
+a symbol for the sort name
+
+input: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 393.
+##
+## command -> OPEN DEFINE_FUN function_def . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN function_def
+##
+
+073
+a function definition
+a closing parenthesis
+
+input: OPEN DEFINE_FUN UNDERSCORE
+##
+## Ends in an error in state: 392.
+##
+## command -> OPEN DEFINE_FUN . function_def CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN
+##
+
+074
+a function definition
+a symbol for the function's name
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 390.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
+##
+
+075
+a recursive functions definition
+a closing parenthesis
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 388.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
+##
+
+076
+a recursive functions definition
+a term for the first function's body
+
+input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 387.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
+##
+
+077
+a recursive functions definition
+an opening parenthesis to start a list the function's bodies
+
+input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
+##
+## Ends in an error in state: 385.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN
+##
+
+078
+a recursive functions definition
+a function declaration of the form "(name (sort*) sort)",
+or "(name (par (var+) (sort*) sort))"
+
+input: OPEN DEFINE_FUNS_REC UNDERSCORE
+##
+## Ends in an error in state: 384.
+##
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC
+##
+
+079
+a recursive functions declaration
+an opening parenthesis to start a list of function declaration
+
+input: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 382.
+##
+## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC function_def
+##
+
+080
+a recursive function definition
+a closing parenthesis
+
+input: OPEN DEFINE_FUN_REC UNDERSCORE
+##
+## Ends in an error in state: 381.
+##
+## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC
+##
+
+081
+a recursive function definition
+a symbol for the function's name
+
+input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 379.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
+##
+
+082
+a sort definition
+a closing parenthesis
+
+input: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 378.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
+##
+
+083
+a sort definition
+a sort for the definition body
+
+input: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 376.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN
+##
+
+084
+a sort definition
+a closing parenthesis, or a list of symbols for the definition arguments
+
+input: OPEN DEFINE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 375.
+##
+## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL
+##
+
+085
+a sort definition
+an opening parenthesis to start a list of arguments
+
+input: OPEN DEFINE_SORT UNDERSCORE
+##
+## Ends in an error in state: 374.
+##
+## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT
+##
+
+086
+a sort definition
+a symbol for the defined sort's name
+
+input: OPEN ECHO STR UNDERSCORE
+##
+## Ends in an error in state: 372.
+##
+## command -> OPEN ECHO STR . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO STR
+##
+
+087
+an echo command
+a closing parenthesis
+
+input: OPEN ECHO UNDERSCORE
+##
+## Ends in an error in state: 371.
+##
+## command -> OPEN ECHO . STR CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO
+##
+
+088
+an echo command
+a string literal
+
+input: OPEN EXIT UNDERSCORE
+##
+## Ends in an error in state: 369.
+##
+## command -> OPEN EXIT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXIT
+##
+
+089
+an exit command
+a closing parenthesis
+
+input: OPEN GET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 367.
+##
+## command -> OPEN GET_ASSERTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSERTIONS
+##
+
+090
+a get-assertions command
+a closing parenthesis
+
+input: OPEN GET_ASSIGNMENT UNDERSCORE
+##
+## Ends in an error in state: 365.
+##
+## command -> OPEN GET_ASSIGNMENT . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSIGNMENT
+##
+
+091
+a get-assignment command
+a closing parenthesis
+
+input: OPEN GET_INFO KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 363.
+##
+## command -> OPEN GET_INFO info_flag . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO info_flag
+##
+
+092
+a get-info command
+a closing parenthesis
+
+input: OPEN GET_INFO UNDERSCORE
+##
+## Ends in an error in state: 362.
+##
+## command -> OPEN GET_INFO . info_flag CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO
+##
+
+093
+a get-info command
+a keyword of the form ":symbol"
+
+input: OPEN GET_MODEL UNDERSCORE
+##
+## Ends in an error in state: 360.
+##
+## command -> OPEN GET_MODEL . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_MODEL
+##
+
+094
+a get-model command
+a closing parenthesis
+
+input: OPEN GET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 358.
+##
+## command -> OPEN GET_OPTION KEYWORD . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION KEYWORD
+##
+
+095
+a get-option command
+a closing parenthesis
+
+input: OPEN GET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 357.
+##
+## command -> OPEN GET_OPTION . KEYWORD CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION
+##
+
+096
+a get-option command
+a keyword of the form ":symbol"
+
+input: OPEN GET_PROOF UNDERSCORE
+##
+## Ends in an error in state: 355.
+##
+## command -> OPEN GET_PROOF . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_PROOF
+##
+
+097
+a get-proof command
+a closing parenthesis
+
+input: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
+##
+## Ends in an error in state: 353.
+##
+## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_ASSUMPTIONS
+##
+
+098
+a get-unsat-assumptions command
+a closing parenthesis
+
+input: OPEN GET_UNSAT_CORE UNDERSCORE
+##
+## Ends in an error in state: 351.
+##
+## command -> OPEN GET_UNSAT_CORE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_CORE
+##
+
+099
+a get-unsat-core command
+a closing parenthesis
+
+input: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 349.
+##
+## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
+##
+
+100
+a get-value command
+a closing parenthesis
+
+input: OPEN GET_VALUE OPEN UNDERSCORE
+##
+## Ends in an error in state: 347.
+##
+## command -> OPEN GET_VALUE OPEN . nonempty_list(term) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN
+##
+
+101
+a get-value command
+a term
+
+input: OPEN GET_VALUE UNDERSCORE
+##
+## Ends in an error in state: 346.
+##
+## command -> OPEN GET_VALUE . OPEN nonempty_list(term) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE
+##
+
+102
+a get-value command
+an opening parenthesis to start a list of terms
+
+input: OPEN POP NUM UNDERSCORE
+##
+## Ends in an error in state: 344.
+##
+## command -> OPEN POP NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP NUM
+##
+
+103
+a pop command
+a closing parenthesis
+
+input: OPEN POP UNDERSCORE
+##
+## Ends in an error in state: 343.
+##
+## command -> OPEN POP . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP
+##
+
+104
+a pop command
+a numeral
+
+input: OPEN PUSH NUM UNDERSCORE
+##
+## Ends in an error in state: 341.
+##
+## command -> OPEN PUSH NUM . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH NUM
+##
+
+105
+a push command
+a closing parenthesis
+
+input: OPEN PUSH UNDERSCORE
+##
+## Ends in an error in state: 340.
+##
+## command -> OPEN PUSH . NUM CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH
+##
+
+106
+a push command
+a numeral
+
+input: OPEN RESET UNDERSCORE
+##
+## Ends in an error in state: 338.
+##
+## command -> OPEN RESET . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET
+##
+
+107
+a reset command
+a closing parenthesis
+
+input: OPEN RESET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 336.
+##
+## command -> OPEN RESET_ASSERTIONS . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET_ASSERTIONS
+##
+
+108
+a reset-assertions command
+a closing parenthesis
+
+input: OPEN SET_INFO KEYWORD KEYWORD
+##
+## Ends in an error in state: 334.
+##
+## command -> OPEN SET_INFO command_option . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+109
+a set-info command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
+
+input: OPEN SET_INFO UNDERSCORE
+##
+## Ends in an error in state: 333.
+##
+## command -> OPEN SET_INFO . command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO
+##
+
+110
+a set-info command
+an attribute of the form "keyword value?"
+
+input: OPEN SET_LOGIC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 331.
+##
+## command -> OPEN SET_LOGIC SYMBOL . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC SYMBOL
+##
+
+111
+a set-logic command
+a closing parenthesis
+
+input: OPEN SET_LOGIC UNDERSCORE
+##
+## Ends in an error in state: 330.
+##
+## command -> OPEN SET_LOGIC . SYMBOL CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC
+##
+
+112
+a set-logic command
+a symbol for the logic name
+
+input: OPEN SET_OPTION KEYWORD KEYWORD
+##
+## Ends in an error in state: 328.
+##
+## command -> OPEN SET_OPTION command_option . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+113
+a set-option command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
+
+input: OPEN SET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 327.
+##
+## command -> OPEN SET_OPTION . command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION
+##
+
+114
+a set-option command
+an attribute of the form "keyword value?"
+
+input: OPEN UNDERSCORE
+##
+## Ends in an error in state: 326.
+##
+## command -> OPEN . ASSERT term CLOSE [ # ]
+## command -> OPEN . ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ # ]
+## command -> OPEN . CHECK_SAT CLOSE [ # ]
+## command -> OPEN . CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE CLOSE [ # ]
+## command -> OPEN . DECLARE_CONST SYMBOL sort CLOSE [ # ]
+## command -> OPEN . DECLARE_DATATYPE SYMBOL datatype_dec CLOSE [ # ]
+## command -> OPEN . DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ # ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort CLOSE [ # ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ # ]
+## command -> OPEN . DEFINE_FUN function_def CLOSE [ # ]
+## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ # ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
+## command -> OPEN . ECHO STR CLOSE [ # ]
+## command -> OPEN . EXIT CLOSE [ # ]
+## command -> OPEN . GET_ASSERTIONS CLOSE [ # ]
+## command -> OPEN . GET_ASSIGNMENT CLOSE [ # ]
+## command -> OPEN . GET_INFO info_flag CLOSE [ # ]
+## command -> OPEN . GET_MODEL CLOSE [ # ]
+## command -> OPEN . GET_OPTION KEYWORD CLOSE [ # ]
+## command -> OPEN . GET_PROOF CLOSE [ # ]
+## command -> OPEN . GET_UNSAT_ASSUMPTIONS CLOSE [ # ]
+## command -> OPEN . GET_UNSAT_CORE CLOSE [ # ]
+## command -> OPEN . GET_VALUE OPEN nonempty_list(term) CLOSE CLOSE [ # ]
+## command -> OPEN . POP NUM CLOSE [ # ]
+## command -> OPEN . PUSH NUM CLOSE [ # ]
+## command -> OPEN . RESET CLOSE [ # ]
+## command -> OPEN . RESET_ASSERTIONS CLOSE [ # ]
+## command -> OPEN . SET_INFO command_option CLOSE [ # ]
+## command -> OPEN . SET_LOGIC SYMBOL CLOSE [ # ]
+## command -> OPEN . SET_OPTION command_option CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+115
+a command
+a command name
+
+input: UNDERSCORE
+##
+## Ends in an error in state: 325.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+116
+an input statement
+an opening parenthesis to start a command
+
+file: OPEN ASSERT OPEN ATTRIBUTE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 123.
+##
+## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE term
+##
+
+006
+attributes for a term
+an attribute of the form "keyword value"
+
+file: OPEN ASSERT OPEN ATTRIBUTE UNDERSCORE
+##
+## Ends in an error in state: 122.
+##
+## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ATTRIBUTE
+##
+
+007
+a term with attribute
+a term.
+
+file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 120.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+008
+a term
+a closing parenthesis to end the existencially quantified formula
+
+file: OPEN ASSERT OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 119.
+##
+## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE
+##
+
+009
+a term
+a term (body for the existencial quantification)
+
+file: OPEN ASSERT OPEN EXISTS OPEN UNDERSCORE
+##
+## Ends in an error in state: 117.
+##
+## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS OPEN
+##
+
+010
+a term
+a sorted variable of the form "(var sort)"
+
+file: OPEN ASSERT OPEN EXISTS UNDERSCORE
+##
+## Ends in an error in state: 116.
+##
+## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXISTS
+##
+
+011
+a term
+a list of sorted variables, starting with an opening parenthesis
+
+file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 114.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term
+##
+
+012
+a term
+a closing parenthesis to end the universally quantified formula
+
+file: OPEN ASSERT OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 113.
+##
+## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE
+##
+
+013
+a term
+a term (body for the universal quantification)
+
+file: OPEN ASSERT OPEN FORALL OPEN UNDERSCORE
+##
+## Ends in an error in state: 105.
+##
+## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL OPEN
+##
+
+018
+a term
+a sorted variable of the form "(var sort)"
+
+file: OPEN ASSERT OPEN FORALL UNDERSCORE
+##
+## Ends in an error in state: 104.
+##
+## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN FORALL
+##
+
+019
+a term
+a list of sorted variables, starting with an opening parenthesis
+
+file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 102.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE term
+##
+
+020
+a term
+a closing parenthesis to end the let binding
+
+file: OPEN ASSERT OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 101.
+##
+## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN nonempty_list(var_binding) CLOSE
+##
+
+021
+a term
+a term (body for the let binding)
+
+file: OPEN ASSERT OPEN LET OPEN UNDERSCORE
+##
+## Ends in an error in state: 93.
+##
+## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET OPEN
+##
+
+026
+a term
+a variable binding of the form "(var term)"
+
+file: OPEN ASSERT OPEN LET UNDERSCORE
+##
+## Ends in an error in state: 92.
+##
+## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN LET
+##
+
+027
+a term
+a variable binding list, starting with an opening parenthesis
+
+file: OPEN ASSERT OPEN MATCH SYMBOL OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 88.
+##
+## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN nonempty_list(match_case) CLOSE
+##
+
+031
+a match
+a closing parenthesis to close the match
+
+file: OPEN ASSERT OPEN MATCH SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 71.
+##
+## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term OPEN
+##
+
+036
+a list of match cases
+a match case of the form "(pattern term)"
+
+file: OPEN ASSERT OPEN MATCH SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 70.
+##
+## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH term
+##
+
+037
+a match
+a match case list, starting with an opening parenthesis
+
+file: OPEN ASSERT OPEN MATCH UNDERSCORE
+##
+## Ends in an error in state: 69.
+##
+## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN MATCH
+##
+
+038
+a match
+a term to match (i.e. the scrutinee of the match)
+
+file: OPEN ASSERT OPEN STR
+##
+## Ends in an error in state: 310.
+##
+## command -> OPEN ASSERT OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ OPEN EOF ]
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ CLOSE ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ CLOSE ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ CLOSE ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ CLOSE ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN
+##
+
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
+
+input: OPEN ASSERT OPEN STR
+##
+## Ends in an error in state: 440.
+##
+## command -> OPEN ASSERT OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ # ]
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ CLOSE ]
+## qual_identifier -> OPEN . AS identifier sort CLOSE [ CLOSE ]
+## term -> OPEN . qual_identifier nonempty_list(term) CLOSE [ CLOSE ]
+## term -> OPEN . LET OPEN nonempty_list(var_binding) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . FORALL OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . EXISTS OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ CLOSE ]
+## term -> OPEN . MATCH term OPEN nonempty_list(match_case) CLOSE CLOSE [ CLOSE ]
+## term -> OPEN . ATTRIBUTE term nonempty_list(attribute) CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN
+##
+
+042
+a term
+a term construction (identifier, let binding, quantification, ...);
+note that this expectation if caused by the preceding opening parenthesis
+
+file: OPEN ASSERT OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 128.
+##
+## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN qual_identifier
+##
+
+044
+a function application
+a term as argument;
+note that keywords and reserved words (such as '_', 'as', ...) are
+not terms, and thus are not allowed here
+
+file: OPEN ASSERT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 318.
+##
+## command -> OPEN ASSERT term . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT term
+##
+
+049
+an assertion
+a closing parenthesis
+
+file: OPEN ASSERT UNDERSCORE
+##
+## Ends in an error in state: 309.
+##
+## command -> OPEN ASSERT . term CLOSE [ OPEN EOF ]
+## command -> OPEN ASSERT . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT
+##
+
+048
+a term
+a term construction (symbol, function application, match, let binding, ...);
+note that keywords and reserved words (such as '_', 'as', ...) are
+not symbols, and thus are not allowed here
+
+file: OPEN CHECK_SAT UNDERSCORE
+##
+## Ends in an error in state: 307.
+##
+## command -> OPEN CHECK_SAT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT
+##
+
+050
+a check-sat command
+a closing parenthesis
+
+file: OPEN CHECK_SAT_ASSUMING OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 305.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE
+##
+
+051
+a check-sat-assuming command
+a closing parenthesis
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 298.
+##
+## prop_literal -> OPEN not_symbol prop_symbol . CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN not_symbol prop_symbol
+##
+
+046
+a propositional literal
+a closing parenthesis
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 297.
+##
+## prop_literal -> OPEN not_symbol . prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN not_symbol
+##
+
+047
+a propositional literal
+a symbol
+
+file: OPEN CHECK_SAT_ASSUMING OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 295.
+##
+## prop_literal -> OPEN . not_symbol prop_symbol CLOSE [ SYMBOL OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+117
+a propositional literal
+the "not" symbol
+
+file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 302.
+##
+## list(prop_literal) -> prop_literal . list(prop_literal) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## prop_literal
+##
+
+119
+a list of propositional literals
+a propositional literal of the form "symbol" or "(not symbol)"
+
+file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 294.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+052
+a list of propositional literals
+a propositional literal, i.e. either a symbol or the negation of a symbol
+
+file: OPEN CHECK_SAT_ASSUMING UNDERSCORE
+##
+## Ends in an error in state: 293.
+##
+## command -> OPEN CHECK_SAT_ASSUMING . OPEN list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING
+##
+
+053
+a check-sat-assuming command
+a list of propositional literals, starting with an opening parenthesis
+
+file: OPEN DECLARE_CONST SYMBOL OPEN STR
+##
+## Ends in an error in state: 60.
+##
+## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+## sort -> OPEN . identifier nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+120
+a sort
+an identifier to make a sort function application (such as "f x y"),
+or an underscore to start an indexed identifier
+
+file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 62.
+##
+## nonempty_list(sort) -> sort . [ CLOSE ]
+## nonempty_list(sort) -> sort . nonempty_list(sort) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort
+##
+
+121
+a list of sorts
+a sort, or a closing parenthesis
+
+file: OPEN DECLARE_CONST SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 61.
+##
+## sort -> OPEN identifier . nonempty_list(sort) CLOSE [ SYMBOL STR OPEN NUM HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN identifier
+##
+
+122
+a sort
+a sort to start a non-empty list of arguments
+
+file: OPEN DECLARE_CONST SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 291.
+##
+## command -> OPEN DECLARE_CONST SYMBOL sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL sort
+##
+
+054
+a constant declaration
+a closing parenthesis
+
+file: OPEN DECLARE_CONST SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 290.
+##
+## command -> OPEN DECLARE_CONST SYMBOL . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST SYMBOL
+##
+
+055
+a constant declaration
+a sort
+
+file: OPEN DECLARE_CONST UNDERSCORE
+##
+## Ends in an error in state: 289.
+##
+## command -> OPEN DECLARE_CONST . SYMBOL sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_CONST
+##
+
+056
+a constant declaration
+a symbol;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+symbols, and thus are not allowed here
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 287.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL datatype_dec . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL datatype_dec
+##
+
+057
+a datatype declaration
+a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 276.
+##
+## nonempty_list(constructor_dec) -> constructor_dec . [ CLOSE ]
+## nonempty_list(constructor_dec) -> constructor_dec . nonempty_list(constructor_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## constructor_dec
+##
+
+123
+a list of constructor declarations
+another constructor declaration of the form "(constructor selectors*)",
+or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 269.
+##
+## list(selector_dec) -> selector_dec . list(selector_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## selector_dec
+##
+
+124
+a list of selectors
+another selector of the form "(selector sort)", or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 267.
+##
+## selector_dec -> OPEN SYMBOL sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL sort
+##
+
+125
+a selector declaration
+a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 266.
+##
+## selector_dec -> OPEN SYMBOL . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+126
+a selector declaration
+a sort for the return type of the selector
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 265.
+##
+## selector_dec -> OPEN . SYMBOL sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+127
+a selector declaration
+a symbol for the selector name
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 264.
+##
+## constructor_dec -> OPEN SYMBOL . list(selector_dec) CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+128
+a constructor declaration
+a selector declaration, of the form "(selector sort)", or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 263.
+##
+## constructor_dec -> OPEN . SYMBOL list(selector_dec) CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+129
+a constructor declaration
+a symbol for the constructor name
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 274.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE
+##
+
+130
+a datatype declaration
+a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 262.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+131
+a datatype declaration
+a constructor declaration of the form "(symbol selector*)"
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 261.
+##
+## datatype_dec -> OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+132
+a datatype declaration
+an opening parenthesis to start the list of constructors
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 185.
+##
+## nonempty_list(datatype_symbol) -> datatype_symbol . [ CLOSE ]
+## nonempty_list(datatype_symbol) -> datatype_symbol . nonempty_list(datatype_symbol) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## datatype_symbol
+##
+
+133
+a list of sort variables to parameterize a datatype
+another symbol, or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 259.
+##
+## datatype_dec -> OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR OPEN
+##
+
+134
+a list of sort variables to parameterize a datatype
+a symbol
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 258.
+##
+## datatype_dec -> OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PAR
+##
+
+135
+a datatype declaration
+an opening parenthesis to start a list of sort parameters for the datatype
+
+file: OPEN DECLARE_DATATYPE SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 257.
+##
+## datatype_dec -> OPEN . nonempty_list(constructor_dec) CLOSE [ OPEN CLOSE ]
+## datatype_dec -> OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN nonempty_list(constructor_dec) CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+136
+a datatype declaration
+a list of constructor declarations of the form "(symbol selector*)",
+or a parameterization of the datatype of the form "par (sort+)"
+
+file: OPEN DECLARE_DATATYPE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 286.
+##
+## command -> OPEN DECLARE_DATATYPE SYMBOL . datatype_dec CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE SYMBOL
+##
+
+058
+a datatype declaration
+an opening parenthesis to start the datatype declaration
+
+file: OPEN DECLARE_DATATYPE UNDERSCORE
+##
+## Ends in an error in state: 285.
+##
+## command -> OPEN DECLARE_DATATYPE . SYMBOL datatype_dec CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPE
+##
+
+059
+a datatype declaration
+a symbol
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 281.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE
+##
+
+060
+a datatypes declaration
+a closing parenthesis
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN OPEN OPEN SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 283.
+##
+## nonempty_list(datatype_dec) -> datatype_dec . [ CLOSE ]
+## nonempty_list(datatype_dec) -> datatype_dec . nonempty_list(datatype_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## datatype_dec
+##
+
+137
+a list of datatype declarations
+another datatype declaration, or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 256.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN . nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN
+##
+
+061
+a datatypes definition
+an opening parenthesis to start a list of constructors for the first defined datatype
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 255.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE . OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE
+##
+
+062
+a datatypes declaration
+an opening parenthesis to start a list of datatype definitions,
+one for each of the sorts being declared
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM CLOSE UNDERSCORE
+##
+## Ends in an error in state: 252.
+##
+## nonempty_list(sort_dec) -> sort_dec . [ CLOSE ]
+## nonempty_list(sort_dec) -> sort_dec . nonempty_list(sort_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort_dec
+##
+
+138
+a list of datatype arity declarations
+another datatype arity declaration, or a closing parenthesis
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 250.
+##
+## sort_dec -> OPEN SYMBOL NUM . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL NUM
+##
+
+139
+a datatype arity declaration
+a closing parenthesis
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 249.
+##
+## sort_dec -> OPEN SYMBOL . NUM CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+140
+a datatype arity declaration
+a numeral for the datatype arity
+
+file: OPEN DECLARE_DATATYPES OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 248.
+##
+## sort_dec -> OPEN . SYMBOL NUM CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+141
+a datatype arity declaration
+a symbol for the datatype name
+
+file: OPEN DECLARE_DATATYPES OPEN UNDERSCORE
+##
+## Ends in an error in state: 247.
+##
+## command -> OPEN DECLARE_DATATYPES OPEN . nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES OPEN
+##
+
+063
+a datatypes declaration
+a parametric sort declaration of the form "(symbol num)"
+
+file: OPEN DECLARE_DATATYPES UNDERSCORE
+##
+## Ends in an error in state: 246.
+##
+## command -> OPEN DECLARE_DATATYPES . OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_DATATYPES
+##
+
+064
+a datatypes declaration
+a list of sort declaration, starting with an opening parenthesis
+
+file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 244.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort
+##
+
+065
+a function declaration
+a closing parenthesis
+
+file: OPEN DECLARE_FUN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 243.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN list(sort) CLOSE
+##
+
+066
+a function declaration
+a sort for the return type of the function
+
+file: OPEN DECLARE_FUN SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 235.
+##
+## list(sort) -> sort . list(sort) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sort
+##
+
+142
+a list of sorts
+another sort or a closing parenthesis
+
+file: OPEN DECLARE_FUN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 229.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN DECLARE_FUN SYMBOL OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN
+##
+
+067
+a function declaration
+a closing parenthesis, or a list of sorts for the arguments of the function
+
+file: OPEN DECLARE_FUN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 228.
+##
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN DECLARE_FUN SYMBOL . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL
+##
+
+068
+a function declaration
+an opening parenthesis to start the list of sorts for the function's arguments
+
+file: OPEN DECLARE_FUN UNDERSCORE
+##
+## Ends in an error in state: 227.
+##
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN DECLARE_FUN . SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN
+##
+
+069
+a function declaration
+a symbol for the function's name
+
+file: OPEN DECLARE_SORT SYMBOL NUM UNDERSCORE
+##
+## Ends in an error in state: 225.
+##
+## command -> OPEN DECLARE_SORT SYMBOL NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL NUM
+##
+
+070
+a sort declaration
+a closing parenthesis
+
+file: OPEN DECLARE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 224.
+##
+## command -> OPEN DECLARE_SORT SYMBOL . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT SYMBOL
+##
+
+071
+a sort declaration
+a numeral for the arity of the sort being declared
+
+file: OPEN DECLARE_SORT UNDERSCORE
+##
+## Ends in an error in state: 223.
+##
+## command -> OPEN DECLARE_SORT . SYMBOL NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_SORT
+##
+
+072
+a sort declaration
+a symbol for the sort name
+
+file: OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 221.
+##
+## command -> OPEN DEFINE_FUN function_def . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN function_def
+##
+
+073
+a function definition
+a closing parenthesis
+
+file: OPEN DEFINE_FUN UNDERSCORE
+##
+## Ends in an error in state: 220.
+##
+## command -> OPEN DEFINE_FUN . function_def CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN
+##
+
+074
+a function definition
+a symbol for the function's name
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 216.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE
+##
+
+075
+a recursive functions definition
+a closing parenthesis
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 214.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN
+##
+
+076
+a recursive functions definition
+a term for the first function's body
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERSCORE
+##
+## Ends in an error in state: 213.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE
+##
+
+077
+a recursive functions definition
+an opening parenthesis to start a list the function's bodies
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 218.
+##
+## nonempty_list(function_dec) -> function_dec . [ CLOSE ]
+## nonempty_list(function_dec) -> function_dec . nonempty_list(function_dec) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## function_dec
+##
+
+143
+a list of function declarations
+another function declaration, or a closing parenthesis
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 210.
+##
+## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE sort . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN list(sorted_var) CLOSE sort
+##
+
+144
+a function declaration
+a closing parenthesis
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 209.
+##
+## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE . sort CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN list(sorted_var) CLOSE
+##
+
+145
+a function declaration
+a sort for the return type of the function
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 197.
+##
+## function_dec -> OPEN SYMBOL OPEN . list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+## function_dec -> OPEN SYMBOL OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN
+##
+
+146
+a function declaration
+either a sort for the first argument type, or a closing parenthesis
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 196.
+##
+## function_dec -> OPEN SYMBOL . OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+## function_dec -> OPEN SYMBOL . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL
+##
+
+147
+a function declaration
+an opening parenthesis to start the list of arguments sorts
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 195.
+##
+## function_dec -> OPEN . SYMBOL OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
+## function_dec -> OPEN . SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+148
+a function declaration
+a symbol for the function name
+
+file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
+##
+## Ends in an error in state: 194.
+##
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC OPEN
+##
+
+078
+a recursive functions definition
+a function declaration of the form "(name (sort*) sort)",
+or "(name (par (var+) (sort*) sort))"
+
+file: OPEN DEFINE_FUNS_REC UNDERSCORE
+##
+## Ends in an error in state: 193.
+##
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUNS_REC
+##
+
+079
+a recursive functions declaration
+an opening parenthesis to start a list of function declaration
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 191.
+##
+## command -> OPEN DEFINE_FUN_REC function_def . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC function_def
+##
+
+080
+a recursive function definition
+a closing parenthesis
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 189.
+##
+## function_def -> SYMBOL OPEN list(sorted_var) CLOSE sort . term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN list(sorted_var) CLOSE sort
+##
+
+149
+a function definition
+a term for the body of the function
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 188.
+##
+## function_def -> SYMBOL OPEN list(sorted_var) CLOSE . sort term [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN list(sorted_var) CLOSE
+##
+
+150
+a function definition
+a sort for the return type of the function
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 178.
+##
+## list(sorted_var) -> sorted_var . list(sorted_var) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## sorted_var
+##
+
+151
+a list of sorted variables
+another sorted variable of the form "(var sort)", or a closing parenthesis
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 171.
+##
+## function_def -> SYMBOL OPEN . list(sorted_var) CLOSE sort term [ CLOSE ]
+## function_def -> SYMBOL OPEN . PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN
+##
+
+152
+a function definition
+a sorted variable of the form "(var sort)", a closing parenthesis,
+or a parameterization of the form "par (var+)"
+
+file: OPEN DEFINE_FUN_REC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 170.
+##
+## function_def -> SYMBOL . OPEN list(sorted_var) CLOSE sort term [ CLOSE ]
+## function_def -> SYMBOL . OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL
+##
+
+153
+a function definition
+an opening parenthesis to start the list of arguments
+
+file: OPEN DEFINE_FUN_REC UNDERSCORE
+##
+## Ends in an error in state: 169.
+##
+## command -> OPEN DEFINE_FUN_REC . function_def CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_FUN_REC
+##
+
+081
+a recursive function definition
+a symbol for the function's name
+
+file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 167.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort
+##
+
+082
+a sort definition
+a closing parenthesis
+
+file: OPEN DEFINE_SORT SYMBOL OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 166.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE . sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE
+##
+
+083
+a sort definition
+a sort for the definition body
+
+file: OPEN DEFINE_SORT SYMBOL OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 163.
+##
+## list(SYMBOL) -> SYMBOL . list(SYMBOL) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL
+##
+
+154
+a list of symbols
+another symbol or a closing parenthesis
+
+file: OPEN DEFINE_SORT SYMBOL OPEN UNDERSCORE
+##
+## Ends in an error in state: 162.
+##
+## command -> OPEN DEFINE_SORT SYMBOL OPEN . list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL OPEN
+##
+
+084
+a sort definition
+a closing parenthesis, or a list of symbols for the definition arguments
+
+file: OPEN DEFINE_SORT SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 161.
+##
+## command -> OPEN DEFINE_SORT SYMBOL . OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT SYMBOL
+##
+
+085
+a sort definition
+an opening parenthesis to start a list of arguments
+
+file: OPEN DEFINE_SORT UNDERSCORE
+##
+## Ends in an error in state: 160.
+##
+## command -> OPEN DEFINE_SORT . SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DEFINE_SORT
+##
+
+086
+a sort definition
+a symbol for the defined sort's name
+
+file: OPEN ECHO STR UNDERSCORE
+##
+## Ends in an error in state: 158.
+##
+## command -> OPEN ECHO STR . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO STR
+##
+
+087
+an echo command
+a closing parenthesis
+
+file: OPEN ECHO UNDERSCORE
+##
+## Ends in an error in state: 157.
+##
+## command -> OPEN ECHO . STR CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ECHO
+##
+
+088
+an echo command
+a string literal
+
+file: OPEN EXIT UNDERSCORE
+##
+## Ends in an error in state: 155.
+##
+## command -> OPEN EXIT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN EXIT
+##
+
+089
+an exit command
+a closing parenthesis
+
+file: OPEN GET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 153.
+##
+## command -> OPEN GET_ASSERTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSERTIONS
+##
+
+090
+a get-assertions command
+a closing parenthesis
+
+file: OPEN GET_ASSIGNMENT UNDERSCORE
+##
+## Ends in an error in state: 151.
+##
+## command -> OPEN GET_ASSIGNMENT . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_ASSIGNMENT
+##
+
+091
+a get-assignment command
+a closing parenthesis
+
+file: OPEN GET_INFO KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 149.
+##
+## command -> OPEN GET_INFO info_flag . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO info_flag
+##
+
+092
+a get-info command
+a closing parenthesis
+
+file: OPEN GET_INFO UNDERSCORE
+##
+## Ends in an error in state: 147.
+##
+## command -> OPEN GET_INFO . info_flag CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_INFO
+##
+
+093
+a get-info command
+a keyword of the form ":symbol"
+
+file: OPEN GET_MODEL UNDERSCORE
+##
+## Ends in an error in state: 145.
+##
+## command -> OPEN GET_MODEL . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_MODEL
+##
+
+094
+a get-model command
+a closing parenthesis
+
+file: OPEN GET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 143.
+##
+## command -> OPEN GET_OPTION KEYWORD . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION KEYWORD
+##
+
+095
+a get-option command
+a closing parenthesis
+
+file: OPEN GET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 142.
+##
+## command -> OPEN GET_OPTION . KEYWORD CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_OPTION
+##
+
+096
+a get-option command
+a keyword of the form ":symbol"
+
+file: OPEN GET_PROOF UNDERSCORE
+##
+## Ends in an error in state: 140.
+##
+## command -> OPEN GET_PROOF . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_PROOF
+##
+
+097
+a get-proof command
+a closing parenthesis
+
+file: OPEN GET_UNSAT_ASSUMPTIONS UNDERSCORE
+##
+## Ends in an error in state: 138.
+##
+## command -> OPEN GET_UNSAT_ASSUMPTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_ASSUMPTIONS
+##
+
+098
+a get-unsat-assumptions command
+a closing parenthesis
+
+file: OPEN GET_UNSAT_CORE UNDERSCORE
+##
+## Ends in an error in state: 136.
+##
+## command -> OPEN GET_UNSAT_CORE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_UNSAT_CORE
+##
+
+099
+a get-unsat-core command
+a closing parenthesis
+
+file: OPEN GET_VALUE OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 134.
+##
+## command -> OPEN GET_VALUE OPEN nonempty_list(term) CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN nonempty_list(term) CLOSE
+##
+
+100
+a get-value command
+a closing parenthesis
+
+file: OPEN GET_VALUE OPEN UNDERSCORE
+##
+## Ends in an error in state: 44.
+##
+## command -> OPEN GET_VALUE OPEN . nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE OPEN
+##
+
+101
+a get-value command
+a term
+
+file: OPEN GET_VALUE UNDERSCORE
+##
+## Ends in an error in state: 43.
+##
+## command -> OPEN GET_VALUE . OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN GET_VALUE
+##
+
+102
+a get-value command
+an opening parenthesis to start a list of terms
+
+file: OPEN POP NUM UNDERSCORE
+##
+## Ends in an error in state: 41.
+##
+## command -> OPEN POP NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP NUM
+##
+
+103
+a pop command
+a closing parenthesis
+
+file: OPEN POP UNDERSCORE
+##
+## Ends in an error in state: 40.
+##
+## command -> OPEN POP . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN POP
+##
+
+104
+a pop command
+a numeral
+
+file: OPEN PUSH NUM UNDERSCORE
+##
+## Ends in an error in state: 38.
+##
+## command -> OPEN PUSH NUM . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH NUM
+##
+
+105
+a push command
+a closing parenthesis
+
+file: OPEN PUSH UNDERSCORE
+##
+## Ends in an error in state: 37.
+##
+## command -> OPEN PUSH . NUM CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN PUSH
+##
+
+106
+a push command
+a numeral
+
+file: OPEN RESET UNDERSCORE
+##
+## Ends in an error in state: 35.
+##
+## command -> OPEN RESET . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET
+##
+
+107
+a reset command
+a closing parenthesis
+
+file: OPEN RESET_ASSERTIONS CLOSE UNDERSCORE
+##
+## Ends in an error in state: 323.
+##
+## list(command) -> command . list(command) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## command
+##
+
+116
+an input statement
+an opening parenthesis to start a command
+
+file: OPEN RESET_ASSERTIONS UNDERSCORE
+##
+## Ends in an error in state: 33.
+##
+## command -> OPEN RESET_ASSERTIONS . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN RESET_ASSERTIONS
+##
+
+108
+a reset-assertions command
+a closing parenthesis
+
+file: OPEN SET_INFO KEYWORD KEYWORD
+##
+## Ends in an error in state: 31.
+##
+## command -> OPEN SET_INFO command_option . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+109
+a set-info command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
+
+file: OPEN SET_INFO UNDERSCORE
+##
+## Ends in an error in state: 30.
+##
+## command -> OPEN SET_INFO . command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_INFO
+##
+
+110
+a set-info command
+an attribute of the form "keyword value?"
+
+file: OPEN SET_LOGIC SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 28.
+##
+## command -> OPEN SET_LOGIC SYMBOL . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC SYMBOL
+##
+
+111
+a set-logic command
+a closing parenthesis
+
+file: OPEN SET_LOGIC UNDERSCORE
+##
+## Ends in an error in state: 27.
+##
+## command -> OPEN SET_LOGIC . SYMBOL CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_LOGIC
+##
+
+112
+a set-logic command
+a symbol for the logic name
+
+file: OPEN SET_OPTION KEYWORD KEYWORD
+##
+## Ends in an error in state: 24.
+##
+## command -> OPEN SET_OPTION command_option . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION command_option
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production option(attribute_value) -> 
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
+## In state 26, spurious reduction of production command_option -> attribute 
+##
+
+113
+a set-option command
+a closing parenthesis, or an attribute value;
+note that keywords and reserved words (such as '_', 'as', ...) are not
+valid attribute values, and thus are not allowed here
+
+file: OPEN SET_OPTION KEYWORD OPEN OPEN UNDERSCORE
+##
+## Ends in an error in state: 8.
+##
+## s_expr -> OPEN . list(s_expr) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+155
+an s-expression
+a literal, symbol, keyword, or another s-expression in parentheses
+
+
+file: OPEN SET_OPTION KEYWORD OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 15.
+##
+## list(s_expr) -> s_expr . list(s_expr) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## s_expr
+##
+
+156
+a list of s-expressions
+a closing parenthesis, or another s-expression, i.e.
+a literal, symbol, keyword, or an s-expression in parentheses
+
+file: OPEN SET_OPTION KEYWORD OPEN UNDERSCORE
+##
+## Ends in an error in state: 6.
+##
+## attribute_value -> OPEN . list(s_expr) CLOSE [ KEYWORD CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+157
+an attribute value
+a closing parenthesis, or an s-expression, i.e.
+a literal, symbol, keyword, or an s-expression in parentheses
+
+file: OPEN SET_OPTION KEYWORD UNDERSCORE
+##
+## Ends in an error in state: 3.
+##
+## attribute -> KEYWORD . option(attribute_value) [ KEYWORD CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## KEYWORD
+##
+
+158
+an attribute
+either an attribute value as s-expression,
+another attribute, or a closing parenthesis
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 172.
+##
+## function_def -> SYMBOL OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR
+##
+
+159
+a function definition
+an opening parenthesis to start a list of sort variables to
+parameterize the function definition over
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 173.
+##
+## function_def -> SYMBOL OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN
+##
+
+160
+a function definition
+a sort variable (symbol)
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 176.
+##
+## function_def -> SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+161
+a function definition
+an opening parenthesis to start the list of arguments
+of the function
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 177.
+##
+## function_def -> SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . list(sorted_var) CLOSE sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+162
+a function definition
+a sorted variable of the form "(var sort)"
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 181.
+##
+## function_def -> SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE . sort term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE
+##
+
+163
+a function definition
+a sort for the return type of the function
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 182.
+##
+## function_def -> SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort . term CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort
+##
+
+164
+a function definition
+a term for the body of the function
+
+file: OPEN DEFINE_FUN_REC SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 183.
+##
+## function_def -> SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term . CLOSE [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort term
+##
+
+165
+a function definition
+a closing parenthesis to close the parameterized definition
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 198.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR
+##
+
+166
+a function declaration
+an opening parenthesis to start a list of sort variables to
+parameterize the function sort
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 199.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN
+##
+
+167
+a function declaration
+a sort variable
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 201.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+168
+a function declaration
+an opening parenthesis to start the list of arguments
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 202.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . list(sorted_var) CLOSE sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+169
+a function declaration
+a sorted variable of the form "(var sort)"
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 204.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE . sort CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE
+##
+
+170
+a function declaration
+a sort for the return type of the function
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 205.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort . CLOSE CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort
+##
+
+171
+a list of function declaration
+a closing parenthesis to close the function declaration
+
+file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 206.
+##
+## function_dec -> OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE . CLOSE [ OPEN CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sorted_var) CLOSE sort CLOSE
+##
+
+172
+a list of function declarations
+a closing parenthesis to close the list
+
+file: OPEN SET_OPTION UNDERSCORE
+##
+## Ends in an error in state: 2.
+##
+## command -> OPEN SET_OPTION . command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN SET_OPTION
+##
+
+114
+a set-option command
+an attribute of the form "keyword value?"
+
+file: OPEN UNDERSCORE
+##
+## Ends in an error in state: 1.
+##
+## command -> OPEN . ASSERT term CLOSE [ OPEN EOF ]
+## command -> OPEN . ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . CHECK_SAT CLOSE [ OPEN EOF ]
+## command -> OPEN . CHECK_SAT_ASSUMING OPEN list(prop_literal) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_CONST SYMBOL sort CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_DATATYPE SYMBOL datatype_dec CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_DATATYPES OPEN nonempty_list(sort_dec) CLOSE OPEN nonempty_list(datatype_dec) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN list(sort) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUN function_def CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
+## command -> OPEN . ECHO STR CLOSE [ OPEN EOF ]
+## command -> OPEN . EXIT CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_ASSERTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_ASSIGNMENT CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_INFO info_flag CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_MODEL CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_OPTION KEYWORD CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_PROOF CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_UNSAT_ASSUMPTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_UNSAT_CORE CLOSE [ OPEN EOF ]
+## command -> OPEN . GET_VALUE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
+## command -> OPEN . POP NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . PUSH NUM CLOSE [ OPEN EOF ]
+## command -> OPEN . RESET CLOSE [ OPEN EOF ]
+## command -> OPEN . RESET_ASSERTIONS CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_INFO command_option CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_LOGIC SYMBOL CLOSE [ OPEN EOF ]
+## command -> OPEN . SET_OPTION command_option CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN
+##
+
+115
+a command
+a command name
+
+file: UNDERSCORE
+##
+## Ends in an error in state: 0.
+##
+## file' -> . file [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+116
+an input statement
+an opening parenthesis to start a command
+

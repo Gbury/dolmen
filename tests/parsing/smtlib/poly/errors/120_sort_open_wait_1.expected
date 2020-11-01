@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/120_sort_open_wait_1.psmt2", line 2, character 20-21:
+Error while parsing a sort, read the reserved word '!',
+      but expected an identifier to make a sort function application (such as
+      "f x y"), or an underscore to start an indexed identifier.

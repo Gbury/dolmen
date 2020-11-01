@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/124_selector_list_unclosed_1.psmt2", line 2, character 34-35:
+Error while parsing a list of selectors, read the reserved word '_',
+      but expected another selector of the form "(selector sort)", or a
+      closing parenthesis.

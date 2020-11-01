@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/146_function_dec_arg_list_unclosed_1.psmt2", line 2, character 24-25:
+Error while parsing a function declaration, read the reserved word '_',
+      but expected either a sort for the first argument type, or a closing
+      parenthesis.

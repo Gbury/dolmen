@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/034_match_case_bad_term_2.psmt2", line 3, character 37-39:
+Error while parsing a match case, read the reserved word 'as',
+      but expected a term for the case body.
