@@ -9,6 +9,18 @@ directly, ^^
 
 Most tests are setup through dune files, associated with tune "runtest" alias.
 
+To run the tests:
+```
+make test
+```
+
+To promote the results of tests (if e.g. you have changed some error message,
+or added new tests):
+```
+make test-promote
+```
+
+
 ### Unit tests
 
 There a few (though not that many), unit tests. These are basically to test
