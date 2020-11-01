@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/004_qual_identifier_bad_identifier_1.psmt2", line 2, character 12-13:
+Error while parsing a qualified identifier, read the reserved word '_',
+      but expected an identifier. Note that keywords (such as '_', 'as', ...)
+      are not identifiers, and thus are not allowed here..

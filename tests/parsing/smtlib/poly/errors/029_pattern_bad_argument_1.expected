@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/029_pattern_bad_argument_1.psmt2", line 3, character 44-45:
+Error while parsing arguments of a constructor in a pattern,
+      read the reserved word '_',
+      but expected a symbol to bind the first constructor argument; note that
+      keywords and reserved words (such as '_', 'as', ...) are not symbols,
+      and thus are not allowed here.

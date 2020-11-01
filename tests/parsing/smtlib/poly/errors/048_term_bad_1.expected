@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/048_term_bad_1.psmt2", line 2, character 8-9:
+Error while parsing a term, read the reserved word '_',
+      but expected a term construction (symbol, function application, match,
+      let binding, ...); note that keywords and reserved words (such as '_',
+      'as', ...) are not symbols, and thus are not allowed here.

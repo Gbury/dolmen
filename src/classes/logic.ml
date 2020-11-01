@@ -99,6 +99,8 @@ module Make
     (module Dolmen_smtlib2.Latest.Make(L)(I)(T)(S) : S);
     Smtlib2 `V2_6, ".smt2",
     (module Dolmen_smtlib2.V2_6.Make(L)(I)(T)(S) : S);
+    Smtlib2 `Poly, ".psmt2",
+    (module Dolmen_smtlib2.Poly.Make(L)(I)(T)(S) : S);
 
     (* TPTP *)
     Tptp `Latest, ".p",

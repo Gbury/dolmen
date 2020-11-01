@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/041_index_identifier_bad_symbol_2.psmt2", line 2, character 11-12:
+Error while parsing an indexed identifier, read the reserved word '_',
+      but expected a symbol; note that keywords and reserved words (such as
+      '_', 'as', ...) are not symbols, and thus are not allowed here.

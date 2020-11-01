@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/138_datatype_arity_dec_list_unclosed_1.psmt2", line 2, character 28-29:
+Error while parsing a list of datatype arity declarations,
+      read the reserved word '_',
+      but expected another datatype arity declaration, or a closing
+      parenthesis.

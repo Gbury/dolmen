@@ -249,15 +249,10 @@ datatype_dec:
 function_dec:
   | OPEN s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort CLOSE
     { I.(mk term s), [], args, ret }
-  | OPEN s=SYMBOL PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort CLOSE CLOSE
-    { I.(mk term s), vars, args, ret }
 
 function_def:
   | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), [], args, ret, body }
-  | s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
-    { I.(mk term s), vars, args, ret, body }
-
 
 /* Additional rule for prop_literals symbols, to have lighter
    semantic actions in prop_literal reductions. */
@@ -285,10 +280,6 @@ prop_literal:
 command:
   | OPEN ASSERT t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.assert_ ~loc t }
-  | OPEN ASSERT OPEN PAR OPEN vars=datatype_symbol+ CLOSE t=term CLOSE CLOSE
-    { let loc = L.mk_pos $startpos $endpos in
-      let vars = List.map (fun v -> T.colon v (T.tType ~loc ())) vars in
-      S.assert_ ~loc (T.forall ~loc vars t) }
   | OPEN CHECK_SAT CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc [] }
   | OPEN CHECK_SAT_ASSUMING OPEN l=prop_literal* CLOSE CLOSE
@@ -312,10 +303,6 @@ command:
     { let id = I.(mk term s) in
       let loc = L.mk_pos $startpos $endpos in
       S.fun_decl ~loc id [] args ty }
-  | OPEN DECLARE_FUN s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sort* CLOSE ty=sort CLOSE CLOSE
-    { let id = I.(mk term s) in
-      let loc = L.mk_pos $startpos $endpos in
-      S.fun_decl ~loc id vars args ty }
   | OPEN DECLARE_SORT s=SYMBOL n=NUM CLOSE
     { let id = I.(mk sort s) in
       let loc = L.mk_pos $startpos $endpos in

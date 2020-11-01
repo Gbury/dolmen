@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/044_application_empty_args_1.psmt2", line 2, character 13-14:
+Error while parsing a function application, read the reserved word '_',
+      but expected a term as argument; note that keywords and reserved words
+      (such as '_', 'as', ...) are not terms, and thus are not allowed here.

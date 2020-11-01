@@ -1,0 +1,73 @@
+
+(ocamllex (modules lexSmtlib))
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens_smtlib)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens_smtlib))
+ (modules tokens_smtlib parseSmtlib)
+ (merge_into parseSmtlib)
+)
+
+(rule
+  (target syntax_messages.ml)
+  (deps   (:tokens tokens_smtlib.mly)
+          (:parser parseSmtlib.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_smtlib %{tokens}
+                      %{parser} --base %{parser} --compile-errors %{msg})))
+)
+
+
+(library
+  (name           dolmen_smtlib2_poly)
+  (public_name    dolmen.smtlib2.poly)
+  (instrumentation (backend bisect_ppx))
+  (libraries      dolmen_std dolmen_intf menhirLib)
+  (modules        Tokens_smtlib LexSmtlib ParseSmtlib Ast_smtlib Syntax_messages Dolmen_smtlib2_poly)
+)
+
+
+; Convenience rule to generate a fresh messages file,
+; and update an already existing one.
+(rule
+  (target new.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_smtlib.mly)
+          (:parser parseSmtlib.mly))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_smtlib %{tokens}
+                      %{parser} --base %{parser} --list-errors)))
+)
+
+(rule
+  (target updated.messages)
+  (mode   promote-until-clean)
+  (deps   (:tokens tokens_smtlib.mly)
+          (:parser parseSmtlib.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_smtlib %{tokens}
+                      %{parser} --base %{parser} --update-errors %{msg})))
+)
+
+; Additional rule to add to runtest a check that the messages file is up-to-date
+(rule
+  (alias runtest)
+  (deps   (:tokens tokens_smtlib.mly)
+          (:parser parseSmtlib.mly)
+          (:new new.messages)
+          (:msg syntax.messages))
+  (action (run menhir --external-tokens Tokens_smtlib %{tokens}
+                      %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
+)
+
+(rule
+  (alias runtest)
+  (deps syntax.messages updated.messages)
+  (action (diff syntax.messages updated.messages))
+)

@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/112_set-logic_bad_symbol_1.psmt2", line 1, character 11-12:
+Error while parsing a set-logic command, read the reserved word '_',
+      but expected a symbol for the logic name.

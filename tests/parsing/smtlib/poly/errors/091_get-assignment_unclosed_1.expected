@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/091_get-assignment_unclosed_1.psmt2", line 2, character 16-17:
+Error while parsing a get-assignment command, read the reserved word '_',
+      but expected a closing parenthesis.

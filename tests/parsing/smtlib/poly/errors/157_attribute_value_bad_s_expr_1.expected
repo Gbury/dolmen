@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/157_attribute_value_bad_s_expr_1.psmt2", line 1, character 18-19:
+Error while parsing an attribute value, read the reserved word '_',
+      but expected a closing parenthesis, or an s-expression, i.e. a literal,
+      symbol, keyword, or an s-expression in parentheses.

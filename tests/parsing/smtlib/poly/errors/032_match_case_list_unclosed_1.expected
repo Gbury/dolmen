@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/032_match_case_list_unclosed_1.psmt2", line 3, character 40-41:
+Error while parsing a list of match cases, read the reserved word '_',
+      but expected a closing parenthesis or a match case of the form
+      "(pattern body)".

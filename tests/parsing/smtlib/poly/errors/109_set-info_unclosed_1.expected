@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/109_set-info_unclosed_1.psmt2", line 1, character 15-19:
+Error while parsing a set-info command, read the keyword ':bar',
+      but expected a closing parenthesis, or an attribute value; note that
+      keywords and reserved words (such as '_', 'as', ...) are not valid
+      attribute values, and thus are not allowed here.

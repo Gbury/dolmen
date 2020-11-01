@@ -2370,6 +2370,36 @@
   (action (diff 042_term_surprise_str_1.expected 042_term_surprise_str_1.full)))
 
 
+; Test for 042_term_surprise_str_2.smt2
+; Incremental test
+
+(rule
+  (target  042_term_surprise_str_2.incremental)
+  (deps    042_term_surprise_str_2.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 042_term_surprise_str_2.expected 042_term_surprise_str_2.incremental)))
+
+; Full mode test
+
+(rule
+  (target  042_term_surprise_str_2.full)
+  (deps    042_term_surprise_str_2.smt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 042_term_surprise_str_2.expected 042_term_surprise_str_2.full)))
+
+
 ; Test for 043_term_bad_term_list_1.smt2
 ; Incremental test
 

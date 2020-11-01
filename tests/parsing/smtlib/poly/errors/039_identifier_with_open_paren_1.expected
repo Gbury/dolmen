@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/039_identifier_with_open_paren_1.psmt2", line 2, character 10-13:
+Error while parsing an identifier in parentheses, read the symbol 'foo',
+      but expected either an indexed identifier (starting with an underscore)
+      or an 'as' type ascription; note that this is because of the preceding
+      opening parenthesis.

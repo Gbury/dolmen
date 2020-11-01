@@ -638,7 +638,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = match v with
-            | `Latest | `V2_6 -> true;
+            | `Latest | `V2_6 | `Poly -> true;
         } in
       begin match (S.ty_state st).logic with
         | Auto ->
