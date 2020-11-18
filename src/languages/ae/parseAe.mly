@@ -242,9 +242,15 @@ lexpr:
     { let loc = L.mk_pos $startpos $endpos in
       T.neq ~loc l }
 
+
+  /* Conditional branch */
+
   | IF cond=lexpr THEN then_t=lexpr ELSE else_t=lexpr %prec prec_ite
     { let loc = L.mk_pos $startpos $endpos in
       T.ite ~loc cond then_t else_t }
+
+
+  /* Quantification */
 
   | FORALL vars=separated_nonempty_list(COMMA, multi_logic_binder)
            triggers=triggers filters=filters DOT body=lexpr %prec prec_forall
@@ -253,6 +259,7 @@ lexpr:
       let f = T.triggers ~loc f triggers in
       let f = T.filters ~loc f filters in
       f }
+
   | EXISTS vars=separated_nonempty_list(COMMA, multi_logic_binder)
            triggers=triggers filters=filters DOT body=lexpr %prec prec_exists
     { let loc = L.mk_pos $startpos $endpos in
@@ -261,14 +268,23 @@ lexpr:
       let f = T.filters ~loc f filters in
       f }
 
+
+  /* Tracked values */
+
   | name=STRING COLON e=lexpr %prec prec_named
    { let loc = L.mk_pos $startpos $endpos in
      let id = I.mk I.track name in
      T.tracked ~loc id e }
 
+
+  /* Let-binding */
+
   | LET l=separated_nonempty_list(COMMA, let_binder) IN body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       T.letin ~loc l body }
+
+
+  /* Sequent builtins */
 
   | CHECK e=lexpr
    { let loc = L.mk_pos $startpos $endpos in
@@ -514,10 +530,6 @@ rewriting_list:
     { e :: l }
 
 decl:
-  | THEORY id=decl_ident EXTENDS ext=decl_ident EQUAL l=theory_elt* END
-    { let loc = L.mk_pos $startpos $endpos in
-      S.theory ~loc id ext l }
-
   | TYPE vars=type_vars id=raw_ident
     { let loc = L.mk_pos $startpos $endpos in
       S.abstract_type ~loc (id I.term) vars }
@@ -529,6 +541,10 @@ decl:
   | TYPE vars=type_vars id=raw_ident EQUAL r=record_type
     { let loc = L.mk_pos $startpos $endpos in
       S.record_type ~loc (id I.term) vars r }
+
+  | THEORY id=decl_ident EXTENDS ext=decl_ident EQUAL l=theory_elt* END
+    { let loc = L.mk_pos $startpos $endpos in
+      S.theory ~loc id ext l }
 
   | LOGIC ac=ac_modifier args=separated_nonempty_list(COMMA, raw_named_ident) COLON ty=logic_type
     { let loc = L.mk_pos $startpos $endpos in

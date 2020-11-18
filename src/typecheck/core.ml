@@ -9,6 +9,7 @@ module Ae = struct
 
   module Tff
       (Type : Tff_intf.S)
+      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
 
@@ -20,6 +21,10 @@ module Ae = struct
         `Ty (Base.app0 (module Type) env "unit" Ty.unit)
       | Type.Builtin Ast.Void ->
         `Term (Base.app0 (module Type) env "void" T.void)
+      | Type.Id id when Id.(equal ac_symbol) id ->
+        `Tags (Base.app0 (module Type) env "ac" [Type.Any (Tag.ac, ())])
+      | Type.Id id when Id.(equal rwrt_rule) id ->
+        `Tags (Base.app0 (module Type) env "rwrt" [Type.Any (Tag.rwrt, ())])
       | _ -> `Not_found
 
   end

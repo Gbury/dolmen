@@ -12,34 +12,48 @@ module type S = sig
 
 end
 
+(** Minium required signature for tags to typecheck alt-ergo's core. *)
+module type Ae_Base = sig
+
+  include S
+  (* Include common interface *)
+
+  val ac : unit t
+  (** Flag for associative-commutative symbols. *)
+
+  val rwrt : unit t
+  (** Flag for rewrite rules. *)
+
+end
+
 (** Minium required signature for tags to typecheck smtlib's core/base theory. *)
 module type Smtlib_Base = sig
 
-    type term
-    (** The type of terms *)
+  include S
+  (* Include common interface *)
 
-    type 'a t
-    (** Polymorphic tags *)
+  type term
+  (** The type of terms *)
 
-    val named : string t
-    (** A tag used to named formulas in smtlib.
-        Should correspond to the `:named` attribute. *)
+  val named : string t
+  (** A tag used to named formulas in smtlib.
+      Should correspond to the `:named` attribute. *)
 
-    val triggers : term list t
-    (** Multi-triggers (typically annotated on the body of
-        a quantified formula and not the quantified formula itself). *)
+  val triggers : term list t
+  (** Multi-triggers (typically annotated on the body of
+      a quantified formula and not the quantified formula itself). *)
 
-    val rwrt : unit t
-    (** A flag (i.e. unit tag), indicating that the tagged term/formula
-        is to be considered as a rewrite rule. *)
+  val rwrt : unit t
+  (** A flag (i.e. unit tag), indicating that the tagged term/formula
+      is to be considered as a rewrite rule. *)
 
 end
 
 (** Tags *)
 module type Zf_Base = sig
 
-  type 'a t
-  (** Polymorphic tags *)
+  include S
+  (* Include common interface *)
 
   val rwrt : unit t
   (** A flag (i.e. unit tag), indicatgin that the tagged term/formula

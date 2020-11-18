@@ -282,8 +282,17 @@ let rec print_descr fmt = function
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print fmt = function { descr; _ } ->
-  Format.fprintf fmt "%a" print_descr descr
+and print_attr fmt = function
+  | None -> ()
+  | Some t -> Format.fprintf fmt "@ { %a }" Term.print t
+
+and print_id fmt = function
+  | { Id.name = ""; _ } -> ()
+  | id -> Format.fprintf fmt "%a:@ " Id.print id
+
+and print fmt = function { id; descr; attr; _ } ->
+  Format.fprintf fmt "@[<hv 2>%a%a%a@]"
+    print_id id print_descr descr print_attr attr
 
 (** Annotations *)
 let annot = Term.apply
@@ -399,7 +408,8 @@ let logic ?loc ~ac ids ty =
   mk_decls ?loc ?attr ~recursive:true l
 
 let abstract_type ?loc id vars =
-  let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
+  let args = List.map (fun _ -> Term.tType ?loc ()) vars in
+  let ty = Term.fun_ty ?loc args (Term.tType ?loc ()) in
   mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let record_type ?loc id vars fields =

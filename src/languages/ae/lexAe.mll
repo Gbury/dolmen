@@ -117,11 +117,11 @@ let signed_integer = ['-' '+']? integer
 let exp = ['e' 'E'] signed_integer
 let real_exp = digit+ exp
 let decimal = (digit+ '.' digit*) | (digit* '.' digit+)
-let real_dec = decimal exp
+let real_dec = decimal exp?
 let real = real_exp | real_dec
 let hex = digit | ['a'-'f''A'-'F']
 let hex_exp = ['p' 'P'] signed_integer
-let real_hex = "0x" hex+ '.' hex* hex_exp
+let real_hex = "0x" hex+ ('.' hex*)? hex_exp
 
 rule token newline = parse
   | '\n'                      { newline lexbuf; token newline lexbuf }

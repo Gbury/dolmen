@@ -21,7 +21,7 @@ module Subst = Dolmen_type.Def.Subst(T)(struct
 
 (* AE builtins *)
 module Ae_Core =
-  Dolmen_type.Core.Ae.Tff(T)
+  Dolmen_type.Core.Ae.Tff(T)(Dolmen.Std.Expr.Tags)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
 (* Tptp builtins *)

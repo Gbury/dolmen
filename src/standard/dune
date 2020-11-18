@@ -5,10 +5,11 @@
   (instrumentation (backend bisect_ppx))
   (flags :standard -warn-error -3)
   (modules
-    ; Parsing structures
-    Loc Id Term Statement Normalize
-    ; Typing & Loop stuff
-    Tag Pretty Expr
     ; Helpers
-    Msg Tok Vec Misc Escape Transformer)
+    Msg Tok Vec Misc Escape Transformer
+    ; Parsed AST
+    Loc Id Term Statement Normalize
+    ; Typed AST
+    Tag Pretty Builtin Expr
+   )
 )

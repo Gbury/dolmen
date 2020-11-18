@@ -68,7 +68,7 @@ module Smtlib2 = struct
       | Type.Id { Id.name = "select"; ns = Id.Term } ->
         `Term (Base.term_app2 (module Type) env "select" T.select)
       | Type.Id { Id.name = "store"; ns = Id.Term } ->
-        `Term (Base.term_app3 (module Type) env "select" T.store)
+        `Term (Base.term_app3 (module Type) env "store" T.store)
       | _ -> `Not_found
 
   end
