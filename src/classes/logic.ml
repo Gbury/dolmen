@@ -72,6 +72,7 @@ module Make
     "iCNF",       ICNF;
     "smt2",       Smtlib2 `Latest;
     "smt2.6",     Smtlib2 `V2_6;
+    "psmt2",      Smtlib2 `Poly;
     "tptp",       Tptp `Latest;
     "tptp-6.3.0", Tptp `V6_3_0;
     "zf",         Zf;
@@ -165,7 +166,7 @@ module Make
       let locfile, gen, cl = P.parse_input (`File file) in
       l, locfile, gen, cl
     | `Stdin l ->
-      let _, _, (module P : S) = of_language
+      let l, _, (module P : S) = of_language
           (match language with | Some l' -> l' | None -> l) in
       let locfile, gen, cl = P.parse_input `Stdin in
       l, locfile, gen, cl
