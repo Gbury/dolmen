@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/179_par_closing.psmt2", line 2, character 34-35:
+Error while parsing a function declaration, read the reserved word '_',
+      but expected two closing parenthesis.

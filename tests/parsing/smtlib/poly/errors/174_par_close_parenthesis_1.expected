@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/174_par_close_parenthesis_1.psmt2", line 2, character 19-20:
+Error while parsing a command, read the reserved word '_',
+      but expected two closing parenthesis.

@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/182_par_start_arguments.psmt2", line 2, character 26-27:
+Error while parsing a function declaration, read the reserved word '_',
+      but expected an opening parenthesis for starting a possibly empty list
+      of sorts.

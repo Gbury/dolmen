@@ -6450,4 +6450,364 @@
   (action (diff 172_function_decl_unclosed_1.expected 172_function_decl_unclosed_1.full)))
 
 
+; Test for 173_par_close_parenthesis_1.psmt2
+; Incremental test
+
+(rule
+  (target  173_par_close_parenthesis_1.incremental)
+  (deps    173_par_close_parenthesis_1.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 173_par_close_parenthesis_1.expected 173_par_close_parenthesis_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  173_par_close_parenthesis_1.full)
+  (deps    173_par_close_parenthesis_1.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 173_par_close_parenthesis_1.expected 173_par_close_parenthesis_1.full)))
+
+
+; Test for 174_par_close_parenthesis_1.psmt2
+; Incremental test
+
+(rule
+  (target  174_par_close_parenthesis_1.incremental)
+  (deps    174_par_close_parenthesis_1.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 174_par_close_parenthesis_1.expected 174_par_close_parenthesis_1.incremental)))
+
+; Full mode test
+
+(rule
+  (target  174_par_close_parenthesis_1.full)
+  (deps    174_par_close_parenthesis_1.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 174_par_close_parenthesis_1.expected 174_par_close_parenthesis_1.full)))
+
+
+; Test for 175_par_underscore.psmt2
+; Incremental test
+
+(rule
+  (target  175_par_underscore.incremental)
+  (deps    175_par_underscore.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 175_par_underscore.expected 175_par_underscore.incremental)))
+
+; Full mode test
+
+(rule
+  (target  175_par_underscore.full)
+  (deps    175_par_underscore.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 175_par_underscore.expected 175_par_underscore.full)))
+
+
+; Test for 176_par_variable.psmt2
+; Incremental test
+
+(rule
+  (target  176_par_variable.incremental)
+  (deps    176_par_variable.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 176_par_variable.expected 176_par_variable.incremental)))
+
+; Full mode test
+
+(rule
+  (target  176_par_variable.full)
+  (deps    176_par_variable.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 176_par_variable.expected 176_par_variable.full)))
+
+
+; Test for 177_par_open.psmt2
+; Incremental test
+
+(rule
+  (target  177_par_open.incremental)
+  (deps    177_par_open.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 177_par_open.expected 177_par_open.incremental)))
+
+; Full mode test
+
+(rule
+  (target  177_par_open.full)
+  (deps    177_par_open.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 177_par_open.expected 177_par_open.full)))
+
+
+; Test for 178_declare_fun_par.psmt2
+; Incremental test
+
+(rule
+  (target  178_declare_fun_par.incremental)
+  (deps    178_declare_fun_par.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 178_declare_fun_par.expected 178_declare_fun_par.incremental)))
+
+; Full mode test
+
+(rule
+  (target  178_declare_fun_par.full)
+  (deps    178_declare_fun_par.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 178_declare_fun_par.expected 178_declare_fun_par.full)))
+
+
+; Test for 179_par_closing.psmt2
+; Incremental test
+
+(rule
+  (target  179_par_closing.incremental)
+  (deps    179_par_closing.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 179_par_closing.expected 179_par_closing.incremental)))
+
+; Full mode test
+
+(rule
+  (target  179_par_closing.full)
+  (deps    179_par_closing.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 179_par_closing.expected 179_par_closing.full)))
+
+
+; Test for 180_par_return_sort.psmt2
+; Incremental test
+
+(rule
+  (target  180_par_return_sort.incremental)
+  (deps    180_par_return_sort.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 180_par_return_sort.expected 180_par_return_sort.incremental)))
+
+; Full mode test
+
+(rule
+  (target  180_par_return_sort.full)
+  (deps    180_par_return_sort.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 180_par_return_sort.expected 180_par_return_sort.full)))
+
+
+; Test for 181_par_arguments.psmt2
+; Incremental test
+
+(rule
+  (target  181_par_arguments.incremental)
+  (deps    181_par_arguments.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 181_par_arguments.expected 181_par_arguments.incremental)))
+
+; Full mode test
+
+(rule
+  (target  181_par_arguments.full)
+  (deps    181_par_arguments.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 181_par_arguments.expected 181_par_arguments.full)))
+
+
+; Test for 182_par_start_arguments.psmt2
+; Incremental test
+
+(rule
+  (target  182_par_start_arguments.incremental)
+  (deps    182_par_start_arguments.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 182_par_start_arguments.expected 182_par_start_arguments.incremental)))
+
+; Full mode test
+
+(rule
+  (target  182_par_start_arguments.full)
+  (deps    182_par_start_arguments.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 182_par_start_arguments.expected 182_par_start_arguments.full)))
+
+
+; Test for 183_par_type_var.psmt2
+; Incremental test
+
+(rule
+  (target  183_par_type_var.incremental)
+  (deps    183_par_type_var.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 183_par_type_var.expected 183_par_type_var.incremental)))
+
+; Full mode test
+
+(rule
+  (target  183_par_type_var.full)
+  (deps    183_par_type_var.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 183_par_type_var.expected 183_par_type_var.full)))
+
+
+; Test for 184_par_open_type_var.psmt2
+; Incremental test
+
+(rule
+  (target  184_par_open_type_var.incremental)
+  (deps    184_par_open_type_var.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=incremental --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 184_par_open_type_var.expected 184_par_open_type_var.incremental)))
+
+; Full mode test
+
+(rule
+  (target  184_par_open_type_var.full)
+  (deps    184_par_open_type_var.psmt2)
+  (package dolmen_bin)
+  (action (chdir %{workspace_root}
+           (with-outputs-to %{target}
+            (with-accepted-exit-codes (or 0 1)
+             (run dolmen --mode=full --color=false %{deps} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (action (diff 184_par_open_type_var.expected 184_par_open_type_var.full)))
+
+
 ; Auto-generated part end
