@@ -18,7 +18,7 @@ depends: [
   "ocaml-syntax-shims"
 #  "lsp"
 ]
-pin-depends: [ "lsp.dev" "git+https://github.com/ocaml/ocaml-lsp.git" ]
+pin-depends: [ "lsp.dev" "git+https://github.com/ocaml/ocaml-lsp.git#12639888c8f47ae465999678b90c157c459ffc2a" ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "https://github.com/Gbury/dolmen.git"
