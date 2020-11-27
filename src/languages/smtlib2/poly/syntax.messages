@@ -1848,9 +1848,9 @@ input: OPEN SET_INFO KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 109
@@ -1914,9 +1914,9 @@ input: OPEN SET_OPTION KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 113
@@ -3795,9 +3795,9 @@ file: OPEN SET_INFO KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 109
@@ -3861,9 +3861,9 @@ file: OPEN SET_OPTION KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 113
@@ -4195,3 +4195,290 @@ file: UNDERSCORE
 an input statement
 an opening parenthesis to start a command
 
+input: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 446.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 445.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term . CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 444.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . term CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 442.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN ASSERT OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 441.
+##
+## command -> OPEN ASSERT OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 410.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE . CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 409.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort . CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 408.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE . sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 406.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 405.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 403.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: OPEN DECLARE_FUN SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 402.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 316.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 315.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term . CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 314.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . term CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 312.
+##
+## command -> OPEN ASSERT OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN ASSERT OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 311.
+##
+## command -> OPEN ASSERT OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE term CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN ASSERT OPEN PAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 240.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE . CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 239.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort . CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN CLOSE UNDERSCORE
+##
+## Ends in an error in state: 238.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE . sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE OPEN UNDERSCORE
+##
+## Ends in an error in state: 234.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN . list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN SYMBOL CLOSE UNDERSCORE
+##
+## Ends in an error in state: 233.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE . OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN nonempty_list(datatype_symbol) CLOSE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN UNDERSCORE
+##
+## Ends in an error in state: 231.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN . nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR OPEN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: OPEN DECLARE_FUN SYMBOL OPEN PAR UNDERSCORE
+##
+## Ends in an error in state: 230.
+##
+## command -> OPEN DECLARE_FUN SYMBOL OPEN PAR . OPEN nonempty_list(datatype_symbol) CLOSE OPEN list(sort) CLOSE sort CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN DECLARE_FUN SYMBOL OPEN PAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>

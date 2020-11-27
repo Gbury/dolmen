@@ -36,7 +36,6 @@
 ; and update an already existing one.
 (rule
   (target new.messages)
-  (mode   promote-until-clean)
   (deps   (:tokens tokens_smtlib.mly)
           (:parser parseSmtlib.mly))
   (action (with-stdout-to %{target}
@@ -54,19 +53,21 @@
                       %{parser} --base %{parser} --update-errors %{msg})))
 )
 
-; Additional rule to add to runtest a check that the messages file is up-to-date
 (rule
-  (alias runtest)
+  (target new-and-updated.messages)
   (deps   (:tokens tokens_smtlib.mly)
           (:parser parseSmtlib.mly)
           (:new new.messages)
-          (:msg syntax.messages))
-  (action (run menhir --external-tokens Tokens_smtlib %{tokens}
-                      %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
+          (:updated updated.messages)
+  )
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens_smtlib %{tokens}
+                      %{parser} --base %{parser} --merge-errors %{new} --merge-errors %{updated})))
 )
+
 
 (rule
   (alias runtest)
-  (deps syntax.messages updated.messages)
-  (action (diff syntax.messages updated.messages))
+  (deps syntax.messages new-and-updated.messages)
+  (action (diff syntax.messages new-and-updated.messages))
 )
