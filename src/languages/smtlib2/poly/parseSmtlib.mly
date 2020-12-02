@@ -32,6 +32,10 @@ s_expr:
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
   | s=KEYWORD
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | PAR
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term "par") }
+  | AS
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term "as") }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
