@@ -46,7 +46,6 @@
 
 (rule
   (target updated.messages)
-  (mode   promote-until-clean)
   (deps   (:tokens tokens_smtlib.mly)
           (:parser parseSmtlib.mly)
           (:msg syntax.messages))

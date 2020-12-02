@@ -246,16 +246,24 @@ datatype_dec:
     { vars, l }
 ;
 
-function_dec:
-  | OPEN s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort CLOSE
+function_dec(args_var):
+  | s=SYMBOL OPEN args=args_var* CLOSE ret=sort
     { I.(mk term s), [], args, ret }
-  | OPEN s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort CLOSE CLOSE
+/* polymorphism as in smtlib3 draft and Conchon et al 18 */
+  | s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=args_var* CLOSE ret=sort CLOSE
+/* polymorphism as in Bonichon et al 08 */
+  | OPEN PAR OPEN vars=datatype_symbol+ CLOSE s=SYMBOL OPEN args=args_var* CLOSE ret=sort CLOSE
     { I.(mk term s), vars, args, ret }
 
 function_def:
   | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), [], args, ret, body }
+/* polymorphism as in smtlib3 draft */
   | s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
+/* polymorphism as in Bonichon et al 08 */
+  | OPEN PAR OPEN vars=datatype_symbol+ CLOSE s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term CLOSE
+/* polymorphism as in Conchon et al 18 */
+  | s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sorted_var* CLOSE ret=sort CLOSE body=term
     { I.(mk term s), vars, args, ret, body }
 
 
@@ -307,14 +315,10 @@ command:
       in
       let loc = L.mk_pos $startpos $endpos in
       S.datatypes ~loc res }
-  | OPEN DECLARE_FUN s=SYMBOL OPEN args=sort* CLOSE ty=sort CLOSE
-    { let id = I.(mk term s) in
+  | OPEN DECLARE_FUN dec=function_dec(sort) CLOSE
+    { let id, vars, args, ret = dec in
       let loc = L.mk_pos $startpos $endpos in
-      S.fun_decl ~loc id [] args ty }
-  | OPEN DECLARE_FUN s=SYMBOL OPEN PAR OPEN vars=datatype_symbol+ CLOSE OPEN args=sort* CLOSE ty=sort CLOSE CLOSE
-    { let id = I.(mk term s) in
-      let loc = L.mk_pos $startpos $endpos in
-      S.fun_decl ~loc id vars args ty }
+      S.fun_decl ~loc id vars args ret }
   | OPEN DECLARE_SORT s=SYMBOL n=NUM CLOSE
     { let id = I.(mk sort s) in
       let loc = L.mk_pos $startpos $endpos in
@@ -329,7 +333,7 @@ command:
       S.funs_def_rec ~loc [id, vars, args, ret, body] }
   /* The syntax technically defines this reduction as having l and l' be the same length,
       but that isn't easily expressible in menhir, so the check is delayed */
-  | OPEN DEFINE_FUNS_REC OPEN l1=function_dec+ CLOSE OPEN l2=term+ CLOSE OPEN
+  | OPEN DEFINE_FUNS_REC OPEN l1=nonempty_list(OPEN dec=function_dec(sorted_var) CLOSE { dec }) CLOSE OPEN l2=term+ CLOSE OPEN
     { let res =
         try List.map2 (fun (id, vars, args, ret) body -> id, vars, args, ret, body) l1 l2
         with Invalid_argument _ -> assert false
