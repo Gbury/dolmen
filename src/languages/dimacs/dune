@@ -44,7 +44,6 @@
 
 (rule
   (target updated.messages)
-  (mode   promote-until-clean)
   (deps   (:tokens tokens_dimacs.mly)
           (:parser parseDimacs.mly)
           (:msg syntax.messages))

@@ -1665,9 +1665,9 @@ input: OPEN SET_INFO KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 109
@@ -1731,9 +1731,9 @@ input: OPEN SET_OPTION KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 113
@@ -3546,9 +3546,9 @@ file: OPEN SET_INFO KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 109
@@ -3612,9 +3612,9 @@ file: OPEN SET_OPTION KEYWORD KEYWORD
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production option(attribute_value) -> 
-## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value) 
-## In state 26, spurious reduction of production command_option -> attribute 
+## In state 3, spurious reduction of production option(attribute_value) ->
+## In state 22, spurious reduction of production attribute -> KEYWORD option(attribute_value)
+## In state 26, spurious reduction of production command_option -> attribute
 ##
 
 113

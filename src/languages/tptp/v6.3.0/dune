@@ -45,7 +45,6 @@
 
 (rule
   (target updated.messages)
-  (mode   promote-until-clean)
   (deps   (:tokens tokens_tptp.mly)
           (:parser parseTptp.mly)
           (:msg syntax.messages))
