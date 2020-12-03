@@ -7,6 +7,44 @@
     concrete implementation of terms. *)
 
 
+(** {2 Classification of terms} *)
+
+module Classify = struct
+  (** This view represnets the different categories of
+      expressions that are typically used in automated reasoning. *)
+
+  type poly =
+    | Monomorphic
+    | Polymorphic
+
+  type t =
+    | Kind
+    (** The type of Ttype *)
+    | Type of poly
+    (** The type of types. *)
+    | Ty of poly
+    (* Types,
+       Types can be either monomorphic, such as `int`,
+       or polymorphic, such as `pi a. a -> a -> a` *)
+    | Term of poly
+    (* Terms, aka `1 + 2`, `f x (g z)`, ... *)
+    | Other
+    (* Unknown expression. *)
+
+  (** The signature for a module that provides a view of types as
+      specified above. *)
+  module type S = sig
+
+    type expr
+    (** The type of expressions *)
+
+    val view : expr -> t
+    (** The classification view *)
+
+  end
+
+end
+
 (** {2 Interface for types} *)
 
 module Ty = struct
@@ -159,6 +197,7 @@ module HO = struct
     | Arrow of 'term list           (** Function type (arguments are "bound") *)
     | Exists of 'var list           (** Existencial quantification *)
     | Forall of 'var list           (** Universal quantification *)
+    | Lambda of 'var list           (** Function argument binding *)
     | Letin of ('var * 'term) list  (** Let-binding *)
   (** The binder for higher-order terms *)
 

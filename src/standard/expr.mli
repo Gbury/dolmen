@@ -45,6 +45,7 @@ and binder = private
   | Arrow of term list
   | Exists of var list
   | Forall of var list
+  | Lambda of var list
   | Letin of (var * term) list (**)
 (** Binders. *)
 
@@ -86,6 +87,7 @@ type def =
       Note that records are seen as ADTs with only one constructor. *)
 (** The various ways to define a type inside the solver. *)
 
+type t = term
 type ty = term
 type formula = term
 (** Alias for signature compatibility (with Dolmen_loop.Pipes.Make for instance). *)
@@ -113,7 +115,7 @@ exception Record_type_expected of cst
 (** Exception raised when the provided type constructor was expected to
     be that of a record type, but that is not the case. *)
 
-exception Bad_arity of term * term list
+exception Bad_arity of cst * term list
 (** Exception raised in the case of over-applicaiton under-applications
     when creating a first-order application. *)
 
@@ -211,6 +213,9 @@ end
 (*  ************************************************************************* *)
 
 module View : sig
+
+  module Classify : Dolmen_intf.View.Classify.S
+    with type expr := term
 
   module Ty : Dolmen_intf.View.Ty.S
     with type var := var
@@ -318,6 +323,9 @@ module Cst : sig
   module H : Hashtbl.S with type key = t
   (** Hashtables of constants *)
 
+  val ty : t -> ty
+  (** Type of a constant. *)
+
   val tag : t -> 'a Tag.t -> 'a -> unit
   (** Add a tag to an identifier *)
 
@@ -386,6 +394,9 @@ module Cstr : sig
   val void : t
   (** Only constructor for the type unit. *)
 
+  val arity : t -> int * int
+  (** Arity of constructors, as a number of type arguments and term arguments *)
+
   val apply : t -> term list -> term
   (** Apply the constructor to a list of terms. Type arguments are required
       if the constructor is polymorphic. *)
@@ -393,7 +404,7 @@ module Cstr : sig
   val pattern_arity : t -> ty -> ty list -> ty list
   (** Used in the type-checking of pattern matching.
       [pattern_arity cstr ret ty_args] should return the types of the expected arguments
-      [args] such that [apply_cstr cstr ty_args args] has type [ret].
+      [args] such that [Cstr.apply cstr ty_args args] has type [ret].
       @raise Wrong_sum_type if [ret] cannot be unified with the type of [c]
       @raise Bad_term_arity if the provided type argument list is not of the correct length *)
 
@@ -480,7 +491,13 @@ module Ty : sig
   (** Return the last value associated to the tag (if any). *)
 
 
-  (** {4 Type creation} *)
+  (** {4 Variable & Type creation} *)
+
+  val var : string -> var
+  (** Create a type variable. *)
+
+  val cst : string -> int -> cst
+  (** Create a type constructor with the given name and arity. *)
 
   val wildcard : unit -> t
   (** Type wildcard *)
@@ -493,6 +510,12 @@ module Ty : sig
 
   val apply : t -> t list -> t
   (** Application for types. *)
+
+  val pi : var list -> t -> t
+  (** Quantification of type variables in types. *)
+
+  val arrow : t list -> t -> t
+  (** Function types. *)
 
 
   (** {4 Free variables and substitution} *)
@@ -511,6 +534,12 @@ module Ty : sig
 
   val view : t -> view
   (** View on types. *)
+
+  val as_poly_sig : t -> var list * t list * t
+  (** View a function as a first-order polymorphic signature,
+      with variables arguments, type arguments anda  return type.
+      For types that are not funciton types, the two lsits are empty
+      and the return type is the input type. *)
 
 
   (** {4 Type structure definition} *)
@@ -559,6 +588,9 @@ module Ty : sig
 
 
   (** {4 Builtin types} *)
+
+  val type_ : t
+  (** The type of types *)
 
   val prop : t
   (** The type of propositions *)
@@ -697,6 +729,9 @@ module Term : sig
 
   (** {4 Generic Term creation functions} *)
 
+  val cst : string -> var list -> ty list -> ty -> cst
+  (** Create a polymorphic constant. *)
+
   val of_var : var -> t
   (** Create a term from a variable *)
 
@@ -721,6 +756,8 @@ module Term : sig
   val ex : var list -> t -> t
   (** Existencial quantification *)
 
+  val lambda : var list -> t -> t
+  (** Create a function. *)
 
 
   (** {4 Builtins term creation} *)

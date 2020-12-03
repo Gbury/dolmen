@@ -38,6 +38,7 @@ and binder =
   | Arrow of term list
   | Exists of var list
   | Forall of var list
+  | Lambda of var list
   | Letin of (var * term) list
 
 and descr =
@@ -56,6 +57,7 @@ and term = {
 
 (* Alias for dolmen_loop and others who allow to have different types
    for types, terms, and formulas. *)
+type t = term
 type ty = term
 type formula = term
 
@@ -82,9 +84,10 @@ type def =
 exception Kind_has_no_type
 exception Type_already_defined of cst
 exception Record_type_expected of cst
+exception Bad_quantification of binder * t * t
 
 (* Application Errors *)
-exception Bad_arity of term * term list
+exception Bad_arity of cst * term list
 exception Expected_function_type of term
 exception Wrong_type of { term : term; expected_ty: term; }
 
@@ -171,6 +174,7 @@ module Print = struct
     | Exists _
     | Forall _  -> Format.fprintf fmt "."
     | Letin _   -> Format.fprintf fmt "in"
+    | Lambda _
     | Arrow _   -> Format.fprintf fmt "->"
 
   let rec descr fmt = function
@@ -213,6 +217,9 @@ module Print = struct
     | Exists l ->
       Format.fprintf fmt "∃ @[<hov>%a@]"
         (Format.pp_print_list ~pp_sep:(return ",@ ") typed_var) l
+    | Lambda l ->
+      Format.fprintf fmt "fun %a"
+        (Format.pp_print_list ~pp_sep:(return "@ ") typed_var) l
     | Letin l ->
       Format.fprintf fmt "let @[<hv>%a@]"
         (Format.pp_print_list ~pp_sep:(return ",@ ") binding) l
@@ -281,6 +288,30 @@ let with_cache ~cache f x =
 
 module View = struct
 
+  (* ===== Term classification ===== *)
+  (* =============================== *)
+
+  module Classify = struct
+
+    let view t : Dolmen_intf.View.Classify.t =
+      match t with
+      | { descr = Cst { cst_builtin = Builtin.Kind; _ }; _ }
+        -> Kind
+      | { descr = Cst { cst_builtin = Builtin.Type; _ }; _ }
+        -> Type
+      | { ty =
+            { descr = Cst
+                  { cst_builtin = Builtin.Type; _ }; _ }; _ }
+        -> Ty
+      | { ty =
+            { ty =
+                { descr = Cst
+                      { cst_builtin = Builtin.Type; _ }; _ }; _ }; _ }
+        -> Term
+      | _ -> Other
+
+  end
+
   (* ===== Simplified View for types ===== *)
   (* ===================================== *)
 
@@ -334,8 +365,8 @@ module View = struct
     exception Not_first_order_term of term
 
     let is_type t =
-      match t.ty.descr with
-      | Cst { cst_builtin = Builtin.Type; _ } -> true
+      match Classify.view t with
+      | Type -> true
       | _ -> false
 
     let assert_is_type t =
@@ -394,6 +425,7 @@ module View = struct
     let binder t b : (_, _, _) binder =
       match b with
       | Pi _
+      | Lambda _
       | Arrow _ -> raise (Not_first_order_term t)
       | Exists l ->
         let tys, terms = split_fo_vars t l in
@@ -431,6 +463,7 @@ module View = struct
       | Arrow l -> Arrow l
       | Exists l -> Exists l
       | Forall l -> Forall l
+      | Lambda l -> Lambda l
       | Letin l -> Letin l
 
     let term t : (_, _, _, _) Dolmen_intf.View.HO.t =
@@ -470,7 +503,8 @@ module Hash = struct
     | Arrow l -> hash2 5 (list term l)
     | Exists l -> hash2 7 (list var l)
     | Forall l -> hash2 11 (list var l)
-    | Letin l -> hash2 13 (list binding l)
+    | Lambda l -> hash2 13 (list var l)
+    | Letin l -> hash2 17 (list binding l)
 
   and binding (v, t) = hash2 (var v) (term t)
 
@@ -507,7 +541,8 @@ module Discr = struct
     | Arrow _ -> 2
     | Exists _ -> 3
     | Forall _ -> 4
-    | Letin _ -> 5
+    | Lambda _ -> 5
+    | Letin _ -> 6
 
 end
 
@@ -565,6 +600,7 @@ module Compare = struct
     | Exists l, Exists l' -> lexicographic var l l'
     | Forall l, Forall l' -> lexicographic var l l'
     | Letin l, Letin l' -> lexicographic binding l l'
+    | Lambda l, Lambda l' -> lexicographic var l l'
     | _, _ -> (Discr.binder b) - (Discr.binder b')
 
   and binding (v, t) (v', t') =
@@ -678,6 +714,12 @@ module Cst = struct
 
   let get_tag_last (id : t) k = Tag.last id.cst_tags k
 
+
+  (* Some useful functions *)
+
+  let ty c = c.cst_ty
+
+
   (* Kind
      Because of the need to have an end-point for the type of terms,
      the constant and term for [Kind] are created manually with
@@ -748,25 +790,86 @@ module Core = struct
   let ty t =
     if t == kind then raise Kind_has_no_type else t.ty
 
+
   (* ===== Binders ===== *)
 
-  let mk_bind b body =
+  let pi_sort b s1 s2 =
+    match View.Classify.view s1, View.Classify.view s2 with
+    | 
+
+  let rec mk_bind b body =
     match b with
-    | Pi [] | Arrow [] | Exists [] | Forall [] | Letin [] -> body
-    | _ -> mk (Binder (b, body)) (ty body)
+    (* empty list of bound vars *)
+    | Pi []
+    | Arrow []
+    | Exists []
+    | Forall []
+    | Lambda []
+    | Letin [] -> body
 
-  let check_is_type term =
-    match term.ty.descr with
-    | Cst { cst_builtin = Builtin.Type; _ } -> ()
-    | _ -> raise (Wrong_type { term; expected_ty = type_; })
+    (* Pi quantification (type quantification over types) *)
+    | Pi l ->
+      let res_ty = List.fold_right
+          (fun v ty -> pi_sort b v.var_ty ty)
 
-  let pi l body =
-    check_is_type body;
-    mk_bind (Pi l) body
+      begin match View.Classify.view body with
+        | Ty -> ()
+        | _ -> raise (Bad_quantification (b, body))
+      end;
+      List.iter (fun v ->
+          match View.Classify.view v.var_ty with
+          | Type -> ()
+          | _ -> raise (Bad_quantification (b, body))
+        ) l;
+      mk (Binder (b, body)) type_
 
-  let arrow l body =
-    check_is_type body;
-    mk_bind (Arrow l) body
+    (* Arrow function type *)
+    | Arrow args ->
+      begin match View.Classify.view body with
+        | Type | Ty -> ()
+        | _ -> raise (Bad_quantification (b, body))
+      end;
+      List.iter (fun t ->
+          match View.Classify.view t with
+          | Type | Ty -> ()
+          | _ -> raise (Bad_quantification (b, body))
+        ) args;
+      mk (Binder (b, body)) type_
+
+    (* The check that the body is a prop (for exists and forall)
+       is delayed because prop is not yet created at this point. *)
+    | Exists _
+    | Forall _
+    | Letin _ -> mk (Binder (b, body)) (ty body)
+
+    (* for functions, the type is different *)
+    | Lambda vars ->
+      let fun_ty = fun_type vars (ty body) in
+      mk (Binder (b, body)) fun_ty
+
+  and fun_type vars ret_ty =
+    let rec aux_ty acc = function
+      | [] -> .
+
+    and aux_type acc = function
+      | [] -> .
+
+    and aux = function
+      | [] -> ret
+
+      match Var.ty v with
+      | { descr = Cst { cst_builtin = Builtin.Type; _ }; _ } ->
+        mk_bind (Pi [v]) ret
+      | v_ty ->
+        mk_bind (Arrow [v_ty]) ret
+    in
+
+
+    List.fold_right aux vars ret_ty
+
+  let pi l body = mk_bind (Pi l) body
+  let arrow l body = mk_bind (Arrow l) body
+
 
 
   (* ===== Free variables ===== *)
@@ -781,7 +884,7 @@ module Core = struct
       List.fold_left free_vars acc (f :: args)
     | Binder (Arrow l, body) ->
       List.fold_left free_vars acc (body :: l)
-    | Binder ((Pi l | Exists l | Forall l), body) ->
+    | Binder ((Pi l | Exists l | Forall l | Lambda l), body) ->
       let fv = free_vars Var.Set.empty body in
       let fv = List.fold_right Var.Set.remove l fv in
       Var.Set.union fv acc
@@ -994,6 +1097,9 @@ module Core = struct
     | Forall l ->
       let l', s' = var_list_subst ~fix s [] l in
       Forall l', s'
+    | Lambda l ->
+      let l', s' = var_list_subst ~fix s [] l in
+      Lambda l', s'
     | Letin l ->
       let l', s' = binding_list_subst ~fix s [] l in
       Letin l', s'
@@ -1147,6 +1253,8 @@ module Ty = struct
 
   (* ===== Function Aliases ===== *)
 
+  let type_ = Core.type_
+
   let apply = Core.apply
   let of_var = Core.of_var
   let of_cst = Core.of_cst
@@ -1166,10 +1274,10 @@ module Ty = struct
       let res = apply f args in
       begin match View.Ty.poly_sig [] res with
         | `Other _ -> res
-        | `Sig _ -> raise (Bad_arity (f, args)) (* under-application *)
+        | `Sig _ -> raise (Bad_arity (c, args)) (* under-application *)
       end
     with Expected_function_type _ ->
-      raise (Bad_arity (f, args)) (* over-application *)
+      raise (Bad_arity (c, args)) (* over-application *)
 
 
   (* ====== Binders ===== *)
@@ -1179,6 +1287,15 @@ module Ty = struct
 
   let poly_sig vars args ret =
     pi vars (arrow args ret)
+
+
+  (* ===== Type variables & constants ===== *)
+
+  let var name = Var.mk name Core.type_
+
+  let cst name arity =
+    Cst.mk name (arrow (replicate arity Core.type_) Core.type_)
+
 
   (* ===== Prop ===== *)
 
@@ -1326,6 +1443,15 @@ module Cstr = struct
   (* Application *)
   let apply cstr args = Core.apply (Core.of_cst cstr) args
 
+  (* Arity for constructors,
+     Given that the return value of a constructor will
+     not be a function type (since it will be the ADT type
+     constructor applied to some arguments), the arity of
+     a constructor is well-defined. *)
+  let arity cstr =
+    let vars, args, _ = Ty.as_poly_sig cstr.cst_ty in
+    List.length vars, List.length args
+
   (* Get the tester for a given constructor *)
   let tester c =
     match c.cst_builtin with
@@ -1355,7 +1481,7 @@ module Cstr = struct
     | Impossible_unification _ ->
       raise (Wrong_sum_type { cst = c; expected_ty = ret; })
     | Invalid_argument _ ->
-      raise (Bad_arity (Core.of_cst c, tys))
+      raise (Bad_arity (c, tys))
 
   let void =
     match Ty.define_adt Ty.Cst.unit [] ["void", []] with
@@ -1474,12 +1600,21 @@ module Term = struct
       raise (Wrong_type { term = t; expected_ty = ty; })
 
 
+  (* ===== Constants ===== *)
+
+  let cst name vars args ret =
+      Cst.mk name (Ty.poly_sig vars args ret)
+
+
   (* ===== Term creation ===== *)
 
   let of_var = Core.of_var
   let of_cst = Core.of_cst
   let apply = Core.apply
   let pattern_match = Core.pattern_match
+
+  let lambda vars body =
+    Core.mk_bind (Lambda vars) body
 
   let ex vars body =
     check_ty body ~ty:Ty.prop;
@@ -1501,14 +1636,15 @@ module Term = struct
 
   let apply_fo c tys args =
     let f = of_cst c in
+    let args = tys @ args in
     try
-      let res = apply f (tys @ args) in
+      let res = apply f args in
       begin match View.Ty.poly_sig [] res.ty with
         | `Other _ -> res
-        | `Sig _ -> raise (Bad_arity (f, args)) (* under-application *)
+        | `Sig _ -> raise (Bad_arity (c, args)) (* under-application *)
       end
     with Expected_function_type _ ->
-      raise (Bad_arity (f, args)) (* over-application *)
+      raise (Bad_arity (c, args)) (* over-application *)
 
 
   (* ===== Record creation ===== *)
@@ -2377,12 +2513,12 @@ module Term = struct
   let eq a b = apply_fo Cst.eq [Core.ty a] [a; b]
 
   let eqs = function
-    | [] -> raise (Bad_arity (of_cst (Cst.eqs 0), []))
+    | [] -> raise (Bad_arity (Cst.eqs 2, []))
     | (h :: _) as l ->
       apply_fo (Cst.eqs (List.length l)) [Core.ty h] l
 
   let distinct = function
-    | [] -> raise (Bad_arity (of_cst (Cst.distinct 0), []))
+    | [] -> raise (Bad_arity (Cst.distinct 2, []))
     | (h :: _) as l ->
       apply_fo (Cst.distinct (List.length l)) [Core.ty h] l
 

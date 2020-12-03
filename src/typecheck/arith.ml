@@ -67,7 +67,7 @@ module Smtlib2 = struct
     | Error of string
 
   (* Low-level arithmetic view of terms *)
-  module View(Type : Tff_intf.S) = struct
+  module View = struct
 
     (* View of arithmetic expressions *)
     type t = view
@@ -246,9 +246,9 @@ module Smtlib2 = struct
   end
 
   (* Filter for arithmetic *)
-  module Filter(Type : Tff_intf.S) = struct
+  module Filter = struct
 
-    module V = View(Type)
+    module V = View
 
     let bad_arity operator logic n =
       Error (Format.asprintf
@@ -524,12 +524,7 @@ module Smtlib2 = struct
 
   module Int = struct
 
-    module Tff
-        (Type : Tff_intf.S)
-        (Ty : Dolmen.Intf.Ty.Smtlib_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t) = struct
-
-      module F = Filter(Type)
+      module F = Filter
 
       type _ Type.warn +=
         | Restriction : string -> Term.t Type.warn
@@ -606,17 +601,11 @@ module Smtlib2 = struct
           end
         | _ -> `Not_found
 
-    end
   end
 
   module Real = struct
 
-    module Tff
-        (Type : Tff_intf.S)
-        (Ty : Dolmen.Intf.Ty.Smtlib_Real with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t) = struct
-
-      module F = Filter(Type)
+      module F = Filter
 
       type _ Type.warn +=
         | Restriction : string -> Term.t Type.warn
@@ -675,18 +664,11 @@ module Smtlib2 = struct
           end
         | _ -> `Not_found
 
-    end
   end
 
   module Real_Int = struct
 
-    module Tff
-        (Type : Tff_intf.S)
-        (Ty : Dolmen.Intf.Ty.Smtlib_Real_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
-                                               and type ty := Type.Ty.t) = struct
-
-      module F = Filter(Type)
+      module F = Filter
 
       type _ Type.warn +=
         | Restriction : string -> Term.t Type.warn
@@ -809,8 +791,6 @@ module Smtlib2 = struct
                      ]
           end
         | _ -> `Not_found
-
-    end
 
   end
 

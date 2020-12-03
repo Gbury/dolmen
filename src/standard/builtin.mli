@@ -62,7 +62,7 @@ type (_, _, _) t +=
   | Kind
   (** Used for the type of [Type].
       It is an error to try and access the type of kind. *)
-  | Type
+  | Type of [ `poly | `mono ]
   (** Builtin used to represent the type of types. *)
   | Prop
   (** [Prop: ttype]: the builtin type constant for the type of

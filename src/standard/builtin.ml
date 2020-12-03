@@ -13,7 +13,7 @@ type ('var, 'cst, 'term) t = ..
 
 type (_, _, _) t += Base | Wildcard
 
-type (_, _, _) t += Kind | Type | Prop
+type (_, _, _) t += Kind | Type of [ `poly | `mono ] | Prop
 
 type (_, _, _) t += | Unit | Univ
 

@@ -38,6 +38,7 @@ module Smtlib2 = struct
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
+    (* TODO: add warning if s does not fit ona bitv of length n *)
     let parse_extended_lit env s n =
       Base.make_op0 (module Type) env s (fun ast () ->
           assert (String.length s >= 2);

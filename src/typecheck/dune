@@ -11,11 +11,9 @@
     dolmen.smtlib2 dolmen.tptp
   )
   (modules
-    ; TFF typechecking
-    Tff_intf Tff
-    ; Builtins
-    Core Def Arith Arrays Bitv Float Strings
     ; Helpers
     Base Logic Misc
+    ; TFF typechecking
+    Type Core Def Arith Arrays Bitv Float Strings
   )
 )
