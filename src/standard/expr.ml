@@ -1836,6 +1836,10 @@ module Term = struct
           ~name:"floor" ~builtin:Builtin.Floor
           "Floor" [] [Ty.real] Ty.real
 
+      let floor_to_int = mk'
+          ~name:"floor_to_int" ~builtin:Builtin.Floor
+          "Floor" [] [Ty.real] Ty.int
+
       let ceiling = mk'
           ~name:"ceiling" ~builtin:Builtin.Ceiling
           "Ceiling" [] [Ty.real] Ty.real
@@ -2902,6 +2906,7 @@ module Term = struct
     let gt a b = apply_cst Const.Real.gt [] [a; b]
     let ge a b = apply_cst Const.Real.ge [] [a; b]
     let floor a = apply_cst Const.Real.floor [] [a]
+    let floor_to_int a = apply_cst Const.Real.floor_to_int [] [a]
     let ceiling a = apply_cst Const.Real.ceiling [] [a]
     let truncate a = apply_cst Const.Real.truncate [] [a]
     let round a = apply_cst Const.Real.round [] [a]

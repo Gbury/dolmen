@@ -261,11 +261,11 @@ type _ t +=
   | Floor
   (** [Floor:{a=(Int|Rational|Real)} a -> a]:
       floor function on numbers, defined in tptp as
-      the largest intger not greater than the argument. *)
+      the largest integer not greater than the argument. *)
   | Ceiling
   (** [Ceiling:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as
-      the smallest intger not less than the argument. *)
+      the smallest integer not less than the argument. *)
   | Truncate
   (** [Truncate:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as
