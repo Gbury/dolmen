@@ -47,7 +47,6 @@ jobs:
           - 4.08.1
           - 4.07.1
           - 4.06.1
-          - 4.05.0
 
     # Build ENV
     # ---------
@@ -79,11 +78,13 @@ jobs:
     - name: Pin the repo
       run: opam pin add . --no-action
     # Install external deps
+    # Note: for this to run, the with-test option must *NOT* be present else
+    #       cyclic dependencies raise some errors.
     - name: Install external deps
-      run: opam depext dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin --with-doc --with-test
+      run: opam depext dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
     # Install ocaml deps
     - name: Install Ocaml deps
-      run: opam install . --deps-only --with-doc --with-test
+      run: opam install . --deps-only
     # Build the package
     - name: Build the package
       run: opam exec -- make
