@@ -16,6 +16,7 @@ depends: [
   "dune" { >= "2.7" }
   "fmt"
   "cmdliner"
+  "odoc" { with-doc }
 ]
 tags: [ "logic" "computation" "automated theorem prover" "logic" "smtlib" "tptp"]
 homepage: "https://github.com/Gbury/dolmen"
