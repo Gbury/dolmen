@@ -1,0 +1,117 @@
+# Main tests
+# ==========
+# Build the compiler with makefiles and run the testsuite
+name: test
+
+# Configure when to run the workflows. Currently only when
+# it affects the `master` branch (either pushes to the branch,
+# or pull request against it).
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  # Main workflow
+  # =============
+  # Build:
+  # - the package,
+  # - the doc and push it to gh-pages
+  # - the examples and push them to the master branch
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    # Build Matrix
+    # --------------
+    strategy:
+      # Do not cancel other jobs when one fails
+      fail-fast: false
+
+      matrix:
+        # Operating system to run tests on.
+        # TODO: add macos-latest and windows-latest
+        os:
+          - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
+
+        # Ocaml version to test
+        ocaml-version:
+          - 4.11.1
+
+    # Build ENV
+    # ---------
+    env:
+      # EXAMPLE
+      OPAMYES: "true"
+      OPAMWITHDOC: "true"
+      OPAMWITHTEST: "true"
+
+
+    # Build/test steps
+    # ----------------
+    steps:
+    # checkout the repo (full clone, necessary for push later)
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: '1'
+    # Cache the opam directory for faster setups
+    - name: Cach opam directory
+      uses: actions/cache@v2
+      with:
+        path: ~/.opam
+        key: ${{ matrix.os }}-opam-${{ matrix.ocaml-version }}
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam
+      uses: avsm/setup-ocaml@v1
+      with:
+        ocaml-version: ${{ matrix.ocaml-version }}
+    # Pin the repo
+    - name: Pin the repo
+      run: opam pin add . --no-action
+    # Install external deps
+    - name: Install external deps
+      run: opam depext dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin --with-doc --with-test
+    # Install ocaml deps
+    - name: Install Ocaml deps
+      run: opam install . --deps-only --with-doc --with-test
+    # Build the package
+    - name: Build the package
+      run: opam exec -- make
+    # Check the doc builds
+    - name: Build the doc
+      run: opam exec -- make doc
+    # Check the tests
+    - name: Build the examples
+      run: opam exec -- make test
+    # Un-pin the local repo to avoid polluting the cache
+    - name: Un-pin the local repo
+      run: opam pin remove dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
+
+
+    # Update the doc
+    # --------------
+    - name: Update doc index page
+      if: ${{ github.ref == 'master' }}
+      run: |
+        cd doc/scripts && asciidoc index.txt
+    - name: Update documentation on gh-pages
+      if: ${{ github.ref == 'master' }}
+      run: |
+        git checkout gh-pages
+        cp doc/scripts/index.html ./
+        cp -r _build/default/_doc/_html ./dev
+    - name: Commit and push doc updates
+      if: ${{ matrix.ocaml-version == '4.11.1' && github.ref == 'master' }}
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com'
+        git add index.html dev
+        git commit -m 'Automatic doc update'
+        git push
+
