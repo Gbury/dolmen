@@ -1,0 +1,12 @@
+(set-logic ALL)
+(set-info :smt-lib-version 2.6)
+
+(declare-datatype list ( par (X) (
+  ( nil )
+  ( cons ( head X) ( tail ( list X ))))))
+
+(define-fun singleton (par (a) ((x a)) (list a) (cons x nil)))
+
+(assert (par (a) (forall ((x a)) (not (= (cons x nil) (cons 1 nil))))))
+
+(check-sat)

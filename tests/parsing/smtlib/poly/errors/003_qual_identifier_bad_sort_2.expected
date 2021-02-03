@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/003_qual_identifier_bad_sort_2.psmt2", line 2, character 16-17:
+Error while parsing a qualified identifier, read the reserved word '!',
+      but expected a sort, i.e. either an identifier, or a sort constructor
+      application; note that keywords (such as '_', 'as', ...) are none of
+      these, and thus are not allowed here..

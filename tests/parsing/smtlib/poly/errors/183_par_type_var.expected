@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/183_par_type_var.psmt2", line 2, character 24-25:
+Error while parsing the type variable of a function declaration,
+      read the reserved word '_',
+      but expected a type variable.

@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/081_define-fun-rec_bad_name_1.psmt2", line 2, character 16-17:
+Error while parsing a recursive function definition,
+      read the reserved word '_',
+      but expected a symbol for the function's name.

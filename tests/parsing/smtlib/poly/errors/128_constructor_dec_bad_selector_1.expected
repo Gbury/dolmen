@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/128_constructor_dec_bad_selector_1.psmt2", line 2, character 26-27:
+Error while parsing a constructor declaration, read the reserved word '_',
+      but expected a selector declaration, of the form "(selector sort)", or
+      a closing parenthesis.

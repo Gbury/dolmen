@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/030_pattern_bad_symbol_1.psmt2", line 3, character 36-37:
+Error while parsing a pattern, read the reserved word '_',
+      but expected a symbol (either a variable or a datatype constructor);
+      note that keywords and reserved words (such as '_', 'as', ...) are not
+      symbols, and thus are not allowed here.

@@ -43,7 +43,7 @@ file: AXIOM ID COLON VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -97,7 +97,7 @@ file: FUNC ID EQUAL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 108, spurious reduction of production raw_named_ident -> ID 
+## In state 108, spurious reduction of production raw_named_ident -> ID
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -135,7 +135,7 @@ file: FUNC ID LEFTPAR RIGHTPAR COLON UNIT EQUAL VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -246,7 +246,7 @@ file: GOAL ID COLON VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -348,7 +348,7 @@ file: LOGIC ID COLON LEFTPAR UNIT RIGHTARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type 
+## In state 36, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -441,9 +441,9 @@ file: LOGIC ID COLON UNIT COMMA BOOL RIGHTPAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 36, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type 
-## In state 38, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type COMMA separated_nonempty_list(COMMA,primitive_type) 
-## In state 329, spurious reduction of production loption(separated_nonempty_list(COMMA,primitive_type)) -> separated_nonempty_list(COMMA,primitive_type) 
+## In state 36, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type
+## In state 38, spurious reduction of production separated_nonempty_list(COMMA,primitive_type) -> primitive_type COMMA separated_nonempty_list(COMMA,primitive_type)
+## In state 329, spurious reduction of production loption(separated_nonempty_list(COMMA,primitive_type)) -> separated_nonempty_list(COMMA,primitive_type)
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -513,7 +513,7 @@ file: LOGIC ID LEFTPAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 108, spurious reduction of production raw_named_ident -> ID 
+## In state 108, spurious reduction of production raw_named_ident -> ID
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -544,7 +544,7 @@ file: PRED ID COMMA
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 108, spurious reduction of production raw_named_ident -> ID 
+## In state 108, spurious reduction of production raw_named_ident -> ID
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -582,7 +582,7 @@ file: PRED ID EQUAL VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -681,7 +681,7 @@ file: PRED ID LEFTPAR RIGHTPAR EQUAL VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -807,7 +807,7 @@ file: REWRITING ID COLON DISTINCT LEFTPAR VOID COMMA VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -859,7 +859,7 @@ file: REWRITING ID COLON DISTINCT LEFTPAR VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1049,8 +1049,8 @@ file: REWRITING ID COLON FORALL ID COLON BOOL LEFTBR VOID RIGHTPAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
-## In state 148, spurious reduction of production separated_nonempty_list(COMMA,lexpr) -> lexpr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
+## In state 148, spurious reduction of production separated_nonempty_list(COMMA,lexpr) -> lexpr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1100,7 +1100,7 @@ file: REWRITING ID COLON FORALL ID COLON BOOL LEFTSQ ID MAPS_TO VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1287,7 +1287,7 @@ file: REWRITING ID COLON FORALL ID COLON BOOL LEFTSQ VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1355,8 +1355,8 @@ file: REWRITING ID COLON FORALL ID LEFTPAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 108, spurious reduction of production raw_named_ident -> ID 
-## In state 209, spurious reduction of production named_ident -> raw_named_ident 
+## In state 108, spurious reduction of production raw_named_ident -> ID
+## In state 209, spurious reduction of production named_ident -> raw_named_ident
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1398,9 +1398,9 @@ file: REWRITING ID COLON ID LEFTPAR VOID RIGHTBR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
-## In state 148, spurious reduction of production separated_nonempty_list(COMMA,lexpr) -> lexpr 
-## In state 145, spurious reduction of production loption(separated_nonempty_list(COMMA,lexpr)) -> separated_nonempty_list(COMMA,lexpr) 
+## In state 123, spurious reduction of production lexpr -> simple_expr
+## In state 148, spurious reduction of production separated_nonempty_list(COMMA,lexpr) -> lexpr
+## In state 145, spurious reduction of production loption(separated_nonempty_list(COMMA,lexpr)) -> separated_nonempty_list(COMMA,lexpr)
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1439,7 +1439,7 @@ file: REWRITING ID COLON ID LEFTPAR VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1546,7 +1546,7 @@ file: REWRITING ID COLON IF VOID THEN VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1596,7 +1596,7 @@ file: REWRITING ID COLON IF VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1658,7 +1658,7 @@ file: REWRITING ID COLON LEFTBR ID EQUAL VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1778,7 +1778,7 @@ file: REWRITING ID COLON LEFTPAR VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1932,7 +1932,7 @@ file: REWRITING ID COLON LET ID EQUAL VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2006,7 +2006,7 @@ file: REWRITING ID COLON MATCH VOID TYPE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2117,7 +2117,7 @@ file: REWRITING ID COLON MATCH VOID WITH ID RIGHTARROW VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2613,7 +2613,7 @@ file: REWRITING ID COLON VOID LEFTSQ VOID LEFTARROW DECIMAL COMMA VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2663,7 +2663,7 @@ file: REWRITING ID COLON VOID LEFTSQ VOID LEFTARROW VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2714,7 +2714,7 @@ file: REWRITING ID COLON VOID LEFTSQ VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3351,7 +3351,7 @@ file: REWRITING ID COLON VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3469,7 +3469,7 @@ file: THEORY ID EXTENDS ID EQUAL AXIOM ID COLON VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3543,7 +3543,7 @@ file: THEORY ID EXTENDS ID EQUAL CASESPLIT ID COLON VOID WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 123, spurious reduction of production lexpr -> simple_expr 
+## In state 123, spurious reduction of production lexpr -> simple_expr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>

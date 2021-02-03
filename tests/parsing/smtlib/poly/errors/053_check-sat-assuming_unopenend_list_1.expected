@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/053_check-sat-assuming_unopenend_list_1.psmt2", line 2, character 20-21:
+Error while parsing a check-sat-assuming command, read the reserved word '_',
+      but expected a list of propositional literals, starting with an opening
+      parenthesis.

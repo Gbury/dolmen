@@ -25,6 +25,7 @@ let is_a_pb file =
   | ".cnf"
   | ".icnf"
   | ".smt2"
+  | ".psmt2"
   | ".p"
   | ".zf"
     -> true

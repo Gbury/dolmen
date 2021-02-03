@@ -1,0 +1,1 @@
+(get-value (foo) _)

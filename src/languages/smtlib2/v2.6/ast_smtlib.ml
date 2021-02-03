@@ -144,17 +144,17 @@ module type Statement = sig
   val datatypes : ?loc:location -> (id * term list * (id * term list) list) list -> t
   (** Inductive type definitions. *)
 
-  val fun_decl  : ?loc:location -> id -> term list -> term -> t
+  val fun_decl  : ?loc:location -> id -> term list -> term list -> term -> t
   (** Declares a new term symbol, and its type. [fun_decl f args ret]
       declares [f] as a new function symbol which takes arguments of types
       described in [args], and with return type [ret]. *)
 
-  val fun_def   : ?loc:location -> id -> term list -> term -> term -> t
+  val fun_def   : ?loc:location -> id -> term list -> term list -> term -> term -> t
   (** Defines a new function. [fun_def f args ret body] is such that
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)
 
-  val funs_def_rec : ?loc:location -> (id * term list * term * term) list -> t
+  val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
   (** Declare a list of mutually recursive functions. *)
 
 

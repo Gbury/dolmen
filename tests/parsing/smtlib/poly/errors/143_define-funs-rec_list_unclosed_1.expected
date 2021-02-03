@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/143_define-funs-rec_list_unclosed_1.psmt2", line 2, character 32-33:
+Error while parsing a list of function declarations,
+      read the reserved word '_',
+      but expected another function declaration, or a closing parenthesis.

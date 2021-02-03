@@ -23,15 +23,15 @@ input: ASSERT WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -121,15 +121,15 @@ input: GOAL WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -195,15 +195,15 @@ input: LEMMA WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -245,15 +245,15 @@ input: REWRITE WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -295,15 +295,15 @@ input: VAL UPPER_WORD COLON WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -381,15 +381,15 @@ file: ASSERT WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -564,16 +564,16 @@ file: DEF UPPER_WORD COLON INT EQDEF INT WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
-## In state 173, spurious reduction of production def -> name COLON term EQDEF term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+## In state 173, spurious reduction of production def -> name COLON term EQDEF term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -616,15 +616,15 @@ file: DEF UPPER_WORD COLON WILDCARD WHERE WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -655,15 +655,15 @@ file: DEF UPPER_WORD COLON WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -731,15 +731,15 @@ file: GOAL WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -805,15 +805,15 @@ file: LEMMA WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -891,15 +891,15 @@ file: REWRITE IF WILDCARD THEN WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -929,15 +929,15 @@ file: REWRITE IF WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -991,15 +991,15 @@ file: REWRITE LEFT_PAREN WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1053,15 +1053,15 @@ file: REWRITE LOGIC_FORALL LEFT_PAREN UPPER_WORD COLON WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1141,7 +1141,7 @@ file: REWRITE LOGIC_NOT WILDCARD ARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1171,15 +1171,15 @@ file: REWRITE MATCH WILDCARD WHERE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1198,16 +1198,16 @@ file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD ARROW INT WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
-## In state 132, spurious reduction of production match_branch -> VERTICAL_BAR raw_var list(var_or_wildcard) ARROW term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+## In state 132, spurious reduction of production match_branch -> VERTICAL_BAR raw_var list(var_or_wildcard) ARROW term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1410,11 +1410,11 @@ file: REWRITE WILDCARD ARITH_GEQ INT ARITH_LT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 74, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 84, spurious reduction of production arith_op_term -> plus_term ARITH_GEQ plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 74, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 84, spurious reduction of production arith_op_term -> plus_term ARITH_GEQ plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1541,12 +1541,12 @@ file: REWRITE WILDCARD LOGIC_EQ INT LOGIC_NEQ
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 74, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 91, spurious reduction of production eq_term -> not_term LOGIC_EQ not_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 74, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 91, spurious reduction of production eq_term -> not_term LOGIC_EQ not_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1650,15 +1650,15 @@ file: REWRITE WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1688,8 +1688,8 @@ file: VAL LEFT_BRACKET LEFT_PAREN UPPER_WORD RIGHT_BRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 7, spurious reduction of production atomic_attr -> raw_var 
-## In state 15, spurious reduction of production attr -> atomic_attr 
+## In state 7, spurious reduction of production atomic_attr -> raw_var
+## In state 15, spurious reduction of production attr -> atomic_attr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1744,8 +1744,8 @@ file: VAL LEFT_BRACKET UPPER_WORD RIGHT_PAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 7, spurious reduction of production atomic_attr -> raw_var 
-## In state 15, spurious reduction of production attr -> atomic_attr 
+## In state 7, spurious reduction of production atomic_attr -> raw_var
+## In state 15, spurious reduction of production attr -> atomic_attr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1801,15 +1801,15 @@ file: VAL UPPER_WORD COLON WILDCARD WITH
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term 
-## In state 95, spurious reduction of production mult_term -> apply_term 
-## In state 71, spurious reduction of production plus_term -> mult_term 
-## In state 68, spurious reduction of production arith_op_term -> plus_term 
-## In state 89, spurious reduction of production not_term -> arith_op_term 
-## In state 86, spurious reduction of production eq_term -> not_term 
-## In state 92, spurious reduction of production and_term -> eq_term 
-## In state 98, spurious reduction of production or_term -> and_term 
-## In state 85, spurious reduction of production term -> or_term 
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>

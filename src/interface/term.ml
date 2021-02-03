@@ -177,6 +177,7 @@ module type Logic = sig
       of a pattern and a match branch. *)
 
   val pi     : ?loc:location -> t list -> t -> t
+  val par    : ?loc:location -> t list -> t -> t
   val letin  : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
   val exists : ?loc:location -> t list -> t -> t
@@ -191,6 +192,9 @@ module type Logic = sig
       - Letin is local binding, takes a list of equality of equivalences
         whose left hand-side is a variable.
       - Forall is universal quantification
+      - Par is universal quantification over type variables specifically
+        (i.e. the same as forall, but only for a list of type variables,
+        which thus may omit the [colon] annotations in the arguments).
       - Exists is existential quantification
       - Lambda is used for function construction
       - Choice is the choice operator, also called indefinite description, or

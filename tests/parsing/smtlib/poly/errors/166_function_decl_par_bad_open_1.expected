@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/166_function_decl_par_bad_open_1.psmt2", line 2, character 28-29:
+Error while parsing a function declaration, read the reserved word '_',
+      but expected an opening parenthesis to start a list of sort variables
+      to parameterize the function sort.

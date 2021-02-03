@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/149_function_def_bad_body_1.psmt2", line 2, character 28-29:
+Error while parsing a function definition, read the reserved word '_',
+      but expected a term for the body of the function.

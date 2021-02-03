@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/011_exists_bad_var_list_1.psmt2", line 2, character 16-17:
+Error while parsing a term, read the reserved word '_',
+      but expected a list of sorted variables, starting with an opening
+      parenthesis.

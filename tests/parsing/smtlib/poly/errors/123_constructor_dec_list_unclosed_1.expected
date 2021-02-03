@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/123_constructor_dec_list_unclosed_1.psmt2", line 2, character 27-28:
+Error while parsing a list of constructor declarations,
+      read the reserved word '_',
+      but expected another constructor declaration of the form "(constructor
+      selectors*)", or a closing parenthesis.

@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/156_s_expr_list_bad_s_expr_1.psmt2", line 1, character 22-23:
+Error while parsing a list of s-expressions, read the reserved word '_',
+      but expected a closing parenthesis, or another s-expression, i.e. a
+      literal, symbol, keyword, or an s-expression in parentheses.

@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/120_sort_open_wait_1.psmt2", line 2, character 20-21:
+Error while parsing a parametric or monormorphic constant,
+      read the reserved word '!',
+      but expected the keyword par or a sort.

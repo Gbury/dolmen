@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/poly/errors/136_datatype_dec_ambiguous_1.psmt2", line 2, character 23-24:
+Error while parsing a datatype declaration, read the reserved word '_',
+      but expected a list of constructor declarations of the form "(symbol
+      selector*)", or a parameterization of the datatype of the form "par
+      (sort+)".

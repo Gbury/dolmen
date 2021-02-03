@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/135_datatype_dec_unopened_par_list_1.psmt2", line 2, character 27-28:
+Error while parsing a datatype declaration, read the reserved word '_',
+      but expected an opening parenthesis to start a list of sort parameters
+      for the datatype.

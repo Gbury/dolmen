@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/085_define-sort_bad_arg_list_1.psmt2", line 2, character 17-18:
+Error while parsing a sort definition, read the reserved word '_',
+      but expected an opening parenthesis to start a list of arguments.

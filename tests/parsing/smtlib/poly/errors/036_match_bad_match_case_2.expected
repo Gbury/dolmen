@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/036_match_bad_match_case_2.psmt2", line 3, character 34-37:
+Error while parsing a list of match cases, read the symbol 'foo',
+      but expected a match case of the form "(pattern term)".

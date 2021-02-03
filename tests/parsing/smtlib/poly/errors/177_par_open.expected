@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/177_par_open.psmt2", line 2, character 13-14:
+Error while parsing a non-empty list of type variables,
+      read the reserved word '_',
+      but expected an opening parenthesis.

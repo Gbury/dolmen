@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/poly/errors/022_var_binding_list_unclosed_2.psmt2", line 2, character 21-24:
+Error while parsing a list of variable binding, read the symbol 'foo',
+      but expected a closing parenthesis or a variable binding of the form
+      "(var term)".

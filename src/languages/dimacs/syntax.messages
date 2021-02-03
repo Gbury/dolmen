@@ -51,8 +51,8 @@ file: NEWLINE INT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 1, spurious reduction of production list(NEWLINE) -> 
-## In state 2, spurious reduction of production list(NEWLINE) -> NEWLINE list(NEWLINE) 
+## In state 1, spurious reduction of production list(NEWLINE) ->
+## In state 2, spurious reduction of production list(NEWLINE) -> NEWLINE list(NEWLINE)
 ##
 
 001

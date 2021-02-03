@@ -131,13 +131,13 @@ input: FOF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED RIGHT_B
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
-## In state 451, spurious reduction of production fof_formula -> fof_logic_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -299,14 +299,14 @@ input: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRA
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 50, spurious reduction of production defined_constant -> defined_functor 
-## In state 52, spurious reduction of production defined_plain_term -> defined_constant 
-## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term 
-## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula 
-## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
-## In state 230, spurious reduction of production tff_formula -> tff_logic_formula 
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -444,9 +444,9 @@ input: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA XOR RIGHT_BRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 421, spurious reduction of production thf_formula -> thf_logic_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -548,14 +548,14 @@ input: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED RIGHT_B
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
-## In state 451, spurious reduction of production fof_formula -> fof_logic_formula 
-## In state 496, spurious reduction of production tpi_formula -> fof_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+## In state 496, spurious reduction of production tpi_formula -> fof_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -682,12 +682,12 @@ file: CNF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_PAREN SINGLE_QUOT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 464, spurious reduction of production literal -> atomic_formula 
-## In state 459, spurious reduction of production disjunction -> literal 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -778,12 +778,12 @@ file: CNF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED XOR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 464, spurious reduction of production literal -> atomic_formula 
-## In state 459, spurious reduction of production disjunction -> literal 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -885,13 +885,13 @@ file: FOF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED RIGHT_BR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
-## In state 451, spurious reduction of production fof_formula -> fof_logic_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1128,14 +1128,14 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRAC
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 50, spurious reduction of production defined_constant -> defined_functor 
-## In state 52, spurious reduction of production defined_plain_term -> defined_constant 
-## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term 
-## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula 
-## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
-## In state 230, spurious reduction of production tff_formula -> tff_logic_formula 
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1251,12 +1251,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN SINGL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1286,12 +1286,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN SINGL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1321,12 +1321,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN SINGL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1405,12 +1405,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_BRACKET SINGLE_QU
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1453,8 +1453,8 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_PAREN SINGLE_QUOT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type 
-## In state 219, spurious reduction of production tff_typed_atom -> tff_untyped_atom COLON tff_top_level_type 
+## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type
+## In state 219, spurious reduction of production tff_typed_atom -> tff_untyped_atom COLON tff_top_level_type
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1472,12 +1472,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_PAREN SINGLE_QUOT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 187, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 187, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1509,13 +1509,13 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN SING
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 187, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
-## In state 230, spurious reduction of production tff_formula -> tff_logic_formula 
+## In state 187, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1545,13 +1545,13 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN SING
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula 
-## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
+## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1593,13 +1593,13 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN UPPE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 187, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
-## In state 230, spurious reduction of production tff_formula -> tff_logic_formula 
+## In state 187, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1702,12 +1702,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED AND DOLL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 156, spurious reduction of production tff_and_formula -> tff_unitary_formula AND tff_unitary_formula 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 156, spurious reduction of production tff_and_formula -> tff_unitary_formula AND tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1846,7 +1846,7 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COLON LE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type 
+## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -1976,7 +1976,7 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COLON UP
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 218, spurious reduction of production tff_unitary_type -> tff_atomic_type 
+## In state 218, spurious reduction of production tff_unitary_type -> tff_atomic_type
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2070,12 +2070,12 @@ file: TFF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED VLINE DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 149, spurious reduction of production tff_or_formula -> tff_unitary_formula VLINE tff_unitary_formula 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 149, spurious reduction of production tff_or_formula -> tff_unitary_formula VLINE tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2240,8 +2240,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN XOR C
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2259,8 +2259,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN XOR C
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2278,8 +2278,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN XOR R
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2310,11 +2310,11 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LAMBDA LEFT_BRACKET UP
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 374, spurious reduction of production thf_top_level_type -> thf_logic_formula 
-## In state 424, spurious reduction of production thf_typed_variable -> variable COLON thf_top_level_type 
-## In state 432, spurious reduction of production thf_variable -> thf_typed_variable 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 374, spurious reduction of production thf_top_level_type -> thf_logic_formula
+## In state 424, spurious reduction of production thf_typed_variable -> variable COLON thf_top_level_type
+## In state 432, spurious reduction of production thf_variable -> thf_typed_variable
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2480,8 +2480,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_BRACKET XOR RIGHT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2526,8 +2526,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_PAREN XOR RIGHT_B
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2570,9 +2570,9 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN LAMB
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 421, spurious reduction of production thf_formula -> thf_logic_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2638,9 +2638,9 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN LAMB
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 421, spurious reduction of production thf_formula -> thf_logic_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2723,8 +2723,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SIGMA LEFT_PAREN XOR R
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -2953,9 +2953,9 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA XOR RIGHT_BRACKET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 421, spurious reduction of production thf_formula -> thf_logic_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3022,8 +3022,8 @@ file: THF LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA XOR STAR LEFT_PAREN XO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3188,8 +3188,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD STA
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3233,8 +3233,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA DOLLAR_WORD STAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 50, spurious reduction of production defined_constant -> defined_functor 
-## In state 52, spurious reduction of production defined_plain_term -> defined_constant 
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3386,12 +3386,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN SINGL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3470,12 +3470,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_BRACKET SINGLE_QU
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3518,12 +3518,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LEFT_PAREN SINGLE_QUOT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3602,12 +3602,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN LEFT
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3661,13 +3661,13 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN SING
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula 
-## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
+## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3697,10 +3697,10 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN SING
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3935,12 +3935,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED AND DOLL
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 274, spurious reduction of production fof_and_formula -> fof_unitary_formula AND fof_unitary_formula 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 274, spurious reduction of production fof_and_formula -> fof_unitary_formula AND fof_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -3970,13 +3970,13 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 464, spurious reduction of production literal -> atomic_formula 
-## In state 459, spurious reduction of production disjunction -> literal 
-## In state 466, spurious reduction of production cnf_formula -> disjunction 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
+## In state 466, spurious reduction of production cnf_formula -> disjunction
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4018,13 +4018,13 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
-## In state 451, spurious reduction of production fof_formula -> fof_logic_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4102,13 +4102,13 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 187, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula 
-## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula 
-## In state 230, spurious reduction of production tff_formula -> tff_logic_formula 
+## In state 187, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4162,9 +4162,9 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom 
-## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula 
-## In state 421, spurious reduction of production thf_formula -> thf_logic_formula 
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4219,8 +4219,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA LE
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 478, spurious reduction of production general_term -> general_data 
-## In state 473, spurious reduction of production general_terms -> general_term 
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 473, spurious reduction of production general_terms -> general_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4251,8 +4251,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA SI
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 478, spurious reduction of production general_term -> general_data 
-## In state 473, spurious reduction of production general_terms -> general_term 
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 473, spurious reduction of production general_terms -> general_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4331,8 +4331,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED COMMA UP
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 478, spurious reduction of production general_term -> general_data 
-## In state 492, spurious reduction of production source -> general_term 
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 492, spurious reduction of production source -> general_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4412,14 +4412,14 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED RIGHT_BR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
-## In state 114, spurious reduction of production plain_atomic_formula -> plain_term 
-## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula 
-## In state 451, spurious reduction of production fof_formula -> fof_logic_formula 
-## In state 496, spurious reduction of production tpi_formula -> fof_formula 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+## In state 114, spurious reduction of production plain_atomic_formula -> plain_term
+## In state 115, spurious reduction of production atomic_formula -> plain_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+## In state 496, spurious reduction of production tpi_formula -> fof_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4450,8 +4450,8 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED STAR
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 32, spurious reduction of production constant -> tptp_functor 
-## In state 55, spurious reduction of production plain_term -> constant 
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
@@ -4495,12 +4495,12 @@ file: TPI LEFT_PAREN SINGLE_QUOTED COMMA LOWER_WORD COMMA SINGLE_QUOTED VLINE DO
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 37, spurious reduction of production system_constant -> system_functor 
-## In state 39, spurious reduction of production system_term -> system_constant 
-## In state 112, spurious reduction of production system_atomic_formula -> system_term 
-## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula 
-## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula 
-## In state 272, spurious reduction of production fof_or_formula -> fof_unitary_formula VLINE fof_unitary_formula 
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+## In state 112, spurious reduction of production system_atomic_formula -> system_term
+## In state 113, spurious reduction of production atomic_formula -> system_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 272, spurious reduction of production fof_or_formula -> fof_unitary_formula VLINE fof_unitary_formula
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>

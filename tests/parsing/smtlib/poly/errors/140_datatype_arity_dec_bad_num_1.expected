@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/140_datatype_arity_dec_bad_num_1.psmt2", line 2, character 25-26:
+Error while parsing a datatype arity declaration, read the reserved word '_',
+      but expected a numeral for the datatype arity.

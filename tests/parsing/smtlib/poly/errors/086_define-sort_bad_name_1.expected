@@ -1,0 +1,3 @@
+File "tests/parsing/smtlib/poly/errors/086_define-sort_bad_name_1.psmt2", line 2, character 13-14:
+Error while parsing a sort definition, read the reserved word '_',
+      but expected a symbol for the defined sort's name.

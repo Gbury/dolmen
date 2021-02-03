@@ -457,8 +457,11 @@ let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
   mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
-let fun_decl ?loc id l t' =
+let fun_decl ?loc id vars l t' =
   let ty = Term.fun_ty ?loc l t' in
+  let ty = match vars with
+    | [] -> ty
+    | vars -> Term.pi ?loc vars ty  in
   mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let type_def ?loc id args body =
@@ -473,18 +476,25 @@ let datatypes ?loc l =
     ) l in
   mk_decls ?loc ~recursive:true l'
 
-let fun_def_aux id args ty_ret body =
+let fun_def_aux ?loc id vars args ty_ret body =
   let ty = Term.fun_ty (List.map extract_type args) ty_ret in
+  let ty = match vars with
+    | [] -> ty
+    | vars -> Term.pi ?loc vars ty  in
   let t = Term.lambda args (Term.colon body ty_ret) in
+  let t = match vars with
+    | [] -> t
+    | vars ->
+      Term.lambda (List.map (fun e -> Term.colon e (Term.tType ?loc ())) vars) t in
   id, ty, t
 
-let fun_def ?loc id args ty_ret body =
-  let id, ty, body = fun_def_aux id args ty_ret body in
+let fun_def ?loc id vars args ty_ret body =
+  let id, ty, body = fun_def_aux ?loc id vars args ty_ret body in
   mk_defs ?loc ~recursive:false [def ?loc id ty body]
 
 let funs_def_rec ?loc l =
-  let contents = List.map (fun (id, args, ty_ret, body) ->
-      let id, ty, body = fun_def_aux id args ty_ret body in
+  let contents = List.map (fun (id, vars, args, ty_ret, body) ->
+      let id, ty, body = fun_def_aux ?loc id vars args ty_ret body in
       def ?loc id ty body
     ) l in
   mk_defs ?loc ~recursive:true contents

@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/045_index_list_unclosed_1.psmt2", line 2, character 19-20:
+Error while parsing an index list, read the reserved word '_',
+      but expected either a closing parenthesis, or an index (i.e. a numeral,
+      a symbol, or a hexadecimal); note that keywords and reserved words
+      (such as '_', 'as', ...) are not symbols, and thus are not allowed
+      here.

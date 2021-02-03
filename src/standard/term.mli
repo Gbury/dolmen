@@ -148,7 +148,7 @@ type binder =
   (** The arrow binder, for function types. Allows for curified types, if wanted. *)
   | Let
   (** Let bindings (either propositional or for terms).
-      Term boud by a let can have many forms depending on the language, but usual
+      Term bound by a let can have many forms depending on the language, but usual
       shapes are:
       - an equality (using the builtin {!Eq}) between a variable
         (optionnally typed using the {!Colon} constructor),
@@ -160,14 +160,14 @@ type binder =
   *)
   | Fun
   (** Lambda, i.e function abstraction binder.
-      Boud terms are the variables bound by the lambda, optionnally typed
+      Bound terms are the variables bound by the lambda, optionnally typed
       using the {!Colon} constructor. *)
   | Choice
   (** Indefinite description, or epsilon terms.
-      Likely to have its usual shape change fllowing tptp's recent changes. *)
+      Likely to have its usual shape change following tptp's recent changes. *)
   | Description
   (** Definite description.
-      Likely to have its usual shape change fllowing tptp's recent changes. *)
+      Likely to have its usual shape change following tptp's recent changes. *)
 (** The type of binders, these are pretty much always builtin in all languages. *)
 
 type descr =

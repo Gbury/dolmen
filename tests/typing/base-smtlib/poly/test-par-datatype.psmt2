@@ -1,0 +1,22 @@
+(set-logic ALL)
+(set-info :smt-lib-version 2.6)
+
+(declare-datatype list ( par (X) (
+  ( nil )
+  ( cons ( head X) ( tail ( list X ))))))
+
+(define-fun singleton (par (a) ((x a)) (list a) (cons x nil)))
+
+(assert (forall ((x Int)) (not (= nil (singleton x)))))
+
+(assert (par (a) (forall ((x a)) (not (= nil (singleton x))))))
+
+(assert (not (= nil (singleton 1))))
+
+(assert ((_ is cons) (singleton 1)))
+
+(assert (not (= (head (singleton 1)) 1)))
+
+(check-sat)
+(get-value ((as nil (list Int)) (singleton 1)))
+(get-model)
