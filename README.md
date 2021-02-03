@@ -1,4 +1,4 @@
-# Dolmen [![Build Status](https://travis-ci.org/Gbury/dolmen.svg?branch=master)](https://travis-ci.org/Gbury/dolmen)
+# Dolmen ![build](https://github.com/Gbury/dolmen/workflows/build/badge.svg) ![test&doc](https://github.com/Gbury/dolmen/workflows/test/badge.svg)
 
 A library providing flexible parsers for input languages.
 
