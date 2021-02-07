@@ -1371,11 +1371,11 @@ module Term = struct
     let ty = Ty.pi vars (Ty.arrow args ret) in
     Id.mk name ty ~builtin:(Builtin.Constructor { adt = ty_c; case = i; })
 
-  let mk_cstr_tester cstr =
+  let mk_cstr_tester ty_c cstr i =
     let name = Format.asprintf "is:%a" Print.id cstr in
     let vars, _, ret = Ty.poly_sig cstr.id_ty in
     let ty = Ty.pi vars (Ty.arrow [ret] Ty.prop) in
-    Id.mk ~builtin:(Builtin.Tester { cstr }) name ty
+    Id.mk ~builtin:(Builtin.Tester { adt = ty_c; cstr; case = i }) name ty
 
   (* ADT definition *)
   let define_adt_aux ~record ty_const vars l =
@@ -1384,7 +1384,7 @@ module Term = struct
     let l' = List.mapi (fun i (cstr_name, args) ->
         let args_ty = List.map fst args in
         let cstr = mk_cstr ty_const cstr_name i vars args_ty ty in
-        let tester = mk_cstr_tester cstr in
+        let tester = mk_cstr_tester ty_const cstr i in
         let dstrs = Array.make (List.length args) None in
         let l' = List.mapi (fun j -> function
             | (arg_ty, None) -> (arg_ty, None)

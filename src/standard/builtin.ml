@@ -41,13 +41,13 @@ type _ t += Pi | Sigma
 
 type _ t +=
   | Tester :
-      { cstr : 'term_cst; } ->
-      < term_cst : 'term_cst ; .. > t
+      { adt: 'ty_cst; case: int; cstr : 'term_cst; } ->
+      < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
   | Constructor :
       { adt : 'ty_cst; case : int; } ->
       < ty_cst : 'ty_cst ; .. > t
   | Destructor :
-      { adt : 'ty_cst; cstr : 'term_cst; case : int; field: int; } ->
+      { adt : 'ty_cst; case : int; cstr : 'term_cst; field: int; } ->
       < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
 
 
