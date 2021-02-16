@@ -14,9 +14,10 @@ depends: [
   "dolmen_type" {= version }
   "dolmen_loop" { = version }
   "dune" { >= "2.7" }
-  "lsp"
   "ocaml-syntax-shims"
   "odoc" { with-doc }
+  "logs"
+  "lsp"
   "linol"
   "linol-lwt"
 ]
