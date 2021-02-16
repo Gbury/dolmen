@@ -17,6 +17,8 @@ depends: [
   "lsp"
   "ocaml-syntax-shims"
   "odoc" { with-doc }
+  "linol"
+  "linol-lwt"
 ]
 pin-depends: [
   [ "linol.dev" "git+https://github.com/c-cube/linol.git" ]
