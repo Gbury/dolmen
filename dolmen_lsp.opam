@@ -18,7 +18,10 @@ depends: [
   "ocaml-syntax-shims"
   "odoc" { with-doc }
 ]
-pin-depends: [ "linol.dev" "git+https://github.com/c-cube/linol.git" ]
+pin-depends: [
+  [ "linol.dev" "git+https://github.com/c-cube/linol.git" ]
+  [ "linol-lwt.dev" "git+https://github.com/c-cube/linol.git" ]
+  ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "https://github.com/Gbury/dolmen.git"
