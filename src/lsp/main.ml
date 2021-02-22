@@ -1,9 +1,6 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-let logfile =
-  Format.formatter_of_out_channel (open_out "/tmp/dolmenls.log")
-
 module Task = Linol_lwt.Task
 
 let run () =
@@ -30,7 +27,6 @@ let run () =
     1
 
 let () =
-  Format.fprintf logfile "Start !@.";
   let retcode = run () in
   exit retcode
 
