@@ -66,14 +66,6 @@ type 'solve state = {
 
 type t = solve_state state
 
-(* Debug/print the state *)
-(* ************************************************************************* *)
-
-let debug fmt st =
-  Format.fprintf fmt
-    "@[<hv 2>{@ file: %s; }@]" (Dolmen.Std.Loc.file_name st.input_file_loc)
-
-
 (* State and locations *)
 (* ************************************************************************* *)
 
@@ -84,9 +76,9 @@ let pp_loc fmt o =
     if Dolmen.Std.Loc.is_dummy loc then ()
     else Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
 
-let error ?loc _ format =
+let error ?(code=Code.generic) ?loc _ format =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
-  Format.kfprintf (fun _ -> exit 1) Format.err_formatter
+  Format.kfprintf (fun _ -> Code.exit code) Format.err_formatter
     ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
@@ -147,7 +139,11 @@ let is_interactive = function
   | { input_source = `Stdin; _ } -> true
   | _ -> false
 
-let prelude _ = "prompt>"
+let prelude st =
+  match st.input_lang with
+  | None -> "prompt> @?"
+  | Some l ->
+    Format.asprintf "(%s)# @?" (Logic.string_of_language l)
 
 (* Setting language *)
 (* ************************************************************************* *)

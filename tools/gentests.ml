@@ -83,10 +83,9 @@ let scan_folder path =
 (* Base stanza *)
 (* ************************************************************************* *)
 
-let rec pp_exit_codes fmt = function
-  | [] -> assert false
-  | [x] -> Format.fprintf fmt "%d" x
-  | x :: r -> Format.fprintf fmt "(or %d %a)" x pp_exit_codes r
+let pp_exit_codes fmt = function
+  | Some x -> Format.fprintf fmt "%d" x
+  | None -> Format.fprintf fmt "(or 0 (not 0))"
 
 let pp_deps fmt (pb_file, additional) =
   let l = (Format.asprintf "@[<h>(:input %s)@]" pb_file) :: additional in
@@ -164,7 +163,7 @@ let test_deps path pb =
 
 let gen_test fmt path pb =
   let expected_file = Filename.concat path (expected_of_problem pb) in
-  let exit_codes = if check_expect_file expected_file then [0] else [0; 1] in
+  let exit_codes = if check_expect_file expected_file then Some 0 else None in
   let deps = test_deps path pb in
   test_stanza ~deps fmt (exit_codes, pb)
 

@@ -3,11 +3,10 @@
 
 let handle_exn st exn =
   if st.Loop.State.debug then
-    Format.eprintf "%a@\n%s@."
-      Loop.State.debug st
+    Format.eprintf "%s@."
       (Printexc.to_string exn);
-  let () = Errors.exn st exn in
-  exit 1
+  let _st = Errors.exn st exn in
+  exit 125
 
 let finally st e =
   match e with
@@ -16,12 +15,18 @@ let finally st e =
 
 let debug_pipe st c =
   if st.Loop.State.debug then
-    Format.eprintf "%a@\n%a@."
-      Loop.State.debug st
+    Format.eprintf "%a@."
       Dolmen.Std.Statement.print c;
   st, c
 
 let () =
+  let exits =
+    List.map (fun code ->
+        let retcode, doc = Dolmen_loop.Code.descr code in
+        Cmdliner.Term.exit_info ~doc retcode
+      ) (Dolmen_loop.Code.errors ())
+    @ Cmdliner.Term.default_exits
+  in
   let man = [
     `S Options.common_section;
     `P "Common options for the dolmen binary";
@@ -32,10 +37,12 @@ let () =
     `S Cmdliner.Manpage.s_authors;
     `P "Guillaume Bury <guillaume.bury@gmail.com>"
   ] in
-  let info = Cmdliner.Term.info ~man ~version:"0.1" "dolmen" in
+  let info = Cmdliner.Term.info ~exits ~man ~version:"0.1" "dolmen" in
   let st = match Cmdliner.Term.eval (Options.state, info) with
-    | `Version | `Help -> exit 0
-    | `Error `Parse | `Error `Term | `Error `Exn -> exit 2
+    | `Version | `Help ->
+      exit 0
+    | `Error `Parse | `Error `Term | `Error `Exn ->
+      exit Cmdliner.Term.exit_status_cli_error
     | `Ok opt -> opt
   in
   let st, g =

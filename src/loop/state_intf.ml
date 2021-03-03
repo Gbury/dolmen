@@ -166,6 +166,7 @@ module type Header_pipe = sig
   (** Emit an error. *)
 
   val error :
+    ?code:Code.t ->
     ?loc:Dolmen.Std.Loc.full ->
     t -> ('a, Format.formatter, unit, t) format4 ->
     'a

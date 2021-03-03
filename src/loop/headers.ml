@@ -28,6 +28,12 @@
    present anywhere in the file, rather than at the beginning.
 *)
 
+(* Exit code for header errors *)
+(* ************************************************************************ *)
+
+let code = Code.create "on header errors"
+
+
 (* Header fields *)
 (* ************************************************************************ *)
 
@@ -247,7 +253,7 @@ module Pipe(State : State_intf.Header_pipe
     | [] -> st
     | missing ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      State.error st "The following header fields are missing: %a"
+      State.error ~code st "The following header fields are missing: %a"
         (Format.pp_print_list ~pp_sep (Field.print ?lang)) missing
 
   let check st =
@@ -265,7 +271,7 @@ module Pipe(State : State_intf.Header_pipe
   let error st loc fmt =
     let file = State.input_file_loc st in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
-    State.error ~loc st fmt
+    State.error ~code ~loc st fmt
 
   let check_header st loc field value =
     match (field : Field.t) with

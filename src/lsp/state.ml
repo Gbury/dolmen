@@ -28,8 +28,7 @@ let warn ?loc t format =
       let d = Diagnostic.warn ~loc msg in
       add_diag d t) format
 
-
-let error ?loc t format =
+let error ?code:_ ?loc t format =
   let loc = full_loc t loc in
   (* Flush the str formatter to clear any unflushed leftover *)
   let _ = Format.flush_str_formatter () in

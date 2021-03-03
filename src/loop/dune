@@ -16,5 +16,5 @@
     ; Interfaces
     Expr_intf Typer_intf Headers_intf State_intf
     ; Implementations
-    Logic State Parser Typer Headers Pipeline)
+    Logic Code State Parser Typer Headers Pipeline)
 )
