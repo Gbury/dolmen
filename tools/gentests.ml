@@ -56,6 +56,37 @@ let cat fmt file =
   with End_of_file ->
     Format.fprintf fmt "@."
 
+(* is the file empty ? *)
+let is_empty file =
+  let ch = open_in file in
+  try
+    let _ = input_char ch in
+    close_in ch;
+    false
+  with End_of_file ->
+    close_in ch;
+    true
+
+(* Read all the contents of a file *)
+let read_all ch =
+  let b = Buffer.create 113 in
+  try
+    while true do
+      Buffer.add_channel b ch 30
+    done;
+    assert false
+  with End_of_file ->
+    Buffer.contents b
+
+(* grep a string in a file *)
+let contains pattern file =
+  let cmd = Format.asprintf {|grep -q "%s" %s|} pattern file in
+  let ch = Unix.open_process_in cmd in
+  let _ = read_all ch in
+  let res = Unix.close_process_in ch in
+  match res with
+  | Unix.WEXITED 0 -> true
+  | _ -> false
 
 (* Scan a folder *)
 let scan_folder path =
@@ -80,12 +111,22 @@ let scan_folder path =
   aux [] [] handle
 
 
-(* Base stanza *)
+(* Exit codes *)
 (* ************************************************************************* *)
 
+type exit_code =
+  | Any     (* Any exit code *)
+  | Error   (* Any non-zero exit code *)
+  | Success (* Zero exit code *)
+
 let pp_exit_codes fmt = function
-  | Some x -> Format.fprintf fmt "%d" x
-  | None -> Format.fprintf fmt "(or 0 (not 0))"
+  | Success -> Format.fprintf fmt "0"
+  | Error -> Format.fprintf fmt "(not 0)"
+  | Any -> Format.fprintf fmt "(or 0 (not 0))"
+
+
+(* Base stanza *)
+(* ************************************************************************* *)
 
 let pp_deps fmt (pb_file, additional) =
   let l = (Format.asprintf "@[<h>(:input %s)@]" pb_file) :: additional in
@@ -137,20 +178,14 @@ let test_stanza ?deps fmt (exit_codes, pb_file) =
 (* Generating a test case *)
 (* ************************************************************************* *)
 
-let is_empty_or_create file contents =
-  if touch file contents then
-    let ch = open_in file in
-    try
-      let _ = input_char ch in
-      false
-    with End_of_file ->
-      true
-  else
-    true
-
 let check_expect_file path =
   let default_expect_contents = "run 'make test-promote' to update this file" in
-  is_empty_or_create path default_expect_contents
+  if touch path default_expect_contents then
+    if is_empty path then Success
+    else if contains "Error" path then Error
+    else Any
+  else
+    Success
 
 let test_deps path pb =
   match Filename.extension pb with
@@ -163,7 +198,7 @@ let test_deps path pb =
 
 let gen_test fmt path pb =
   let expected_file = Filename.concat path (expected_of_problem pb) in
-  let exit_codes = if check_expect_file expected_file then Some 0 else None in
+  let exit_codes = check_expect_file expected_file in
   let deps = test_deps path pb in
   test_stanza ~deps fmt (exit_codes, pb)
 
