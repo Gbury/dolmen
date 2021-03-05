@@ -18,7 +18,7 @@ module type S = sig
   (** A store for various meta-data about an input file,
       can be used to optimize representation of locations. *)
 
-  exception Uncaught of t * exn
+  exception Uncaught of t * exn * Printexc.raw_backtrace
   (** The exception to be raised whenever an unexpected exception is raised during parsing. *)
 
   exception Lexing_error of t * string

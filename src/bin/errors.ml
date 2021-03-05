@@ -28,11 +28,18 @@ let exn st = function
     Loop.State.error ~code:Dolmen_loop.Code.limit st "Memory limit reached"
 
   (* Parsing errors *)
-  | Dolmen.Std.Loc.Uncaught (loc, exn) ->
+  | Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
     let file = Dolmen_loop.State.input_file_loc st in
     Loop.State.error ~loc:{ file; loc; } st
       ~code:Dolmen_loop.Code.bug
-      "%s" (Printexc.to_string exn)
+      "%s%a%s"
+      (Printexc.to_string exn)
+      (if Printexc.backtrace_status ()
+       then Format.pp_print_flush
+       else (fun _ _ -> ())) ()
+      (if Printexc.backtrace_status ()
+       then Printexc.raw_backtrace_to_string bt
+       else "")
 
   | Dolmen.Std.Loc.Lexing_error (loc, lex) ->
     let file = Dolmen_loop.State.input_file_loc st in
@@ -59,7 +66,7 @@ let exn st = function
       | Dolmen_loop.Typer.T.Uncaught_exn _
       | Dolmen_loop.Typer.T.Unhandled_ast ->
         Dolmen_loop.Code.bug
-      | _ -> Dolmen_loop.Code.generic
+      | _ -> Dolmen_loop.Code.typing
     in
     let loc = Dolmen_loop.Typer.T.fragment_loc env fragment in
     if st.context then

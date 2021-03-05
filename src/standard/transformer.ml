@@ -135,9 +135,10 @@ module Make
           let () = k_exn () in
           raise (Loc.Syntax_error (pos, msg))
         | exception e ->
+          let bt = Printexc.get_raw_backtrace () in
           let pos = Loc.of_lexbuf lexbuf in
           let () = k_exn () in
-          raise (Loc.Uncaught (pos, e))
+          raise (Loc.Uncaught (pos, e, bt))
       end
     in
     aux

@@ -52,7 +52,7 @@ type loc = {
 }
 
 
-exception Uncaught of t * exn
+exception Uncaught of t * exn * Printexc.raw_backtrace
 exception Lexing_error of t * string
 exception Syntax_error of t * [
     | `Regular of Msg.t

@@ -27,8 +27,7 @@ let positive_number = non_zero_numeric numeric*
 let negative_number = ['-'] positive_number
 let number = positive_number | negative_number
 
-let printable_char = [^ '\n']
-let comment = ['c'] printable_char* ['\n']
+let any_char_except_newline = [^ '\n']
 
 rule token newline = parse
   | "c"             { comment newline lexbuf }
@@ -42,6 +41,7 @@ rule token newline = parse
   | _               { raise Error }
 
 and comment newline = parse
+  | eof   { EOF }
   | '\n'  { newline lexbuf; token newline lexbuf }
-  | printable_char { comment newline lexbuf }
+  | any_char_except_newline { comment newline lexbuf }
 

@@ -76,7 +76,7 @@ let pp_loc fmt o =
     if Dolmen.Std.Loc.is_dummy loc then ()
     else Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
 
-let error ?(code=Code.generic) ?loc _ format =
+let error ?(code=Code.bug) ?loc _ format =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   Format.kfprintf (fun _ -> Code.exit code) Format.err_formatter
     ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")

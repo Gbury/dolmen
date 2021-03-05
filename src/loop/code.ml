@@ -24,7 +24,6 @@ let error t = t.abort <- false
 
 let exit t =
   if t.abort then Unix.kill (Unix.getpid ()) Sys.sigabrt;
-  (* TODO: ensure we handle the signal before exiting ? *)
   exit t.code
 
 
@@ -73,7 +72,7 @@ let bug = {
 (* Predefined values *)
 (* ************************************************************************* *)
 
-let generic = create "on generic errore"
+let generic = create "on generic error"
 let limit = create "upon reaching limits (time, memory, etc..)"
 let parsing = create "on parsing errors"
 let typing = create "on typing errore"

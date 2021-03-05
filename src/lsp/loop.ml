@@ -20,7 +20,7 @@ let handle_exn st = function
   | Pipeline.Out_of_time -> Error "timeout"
   | Pipeline.Out_of_space -> Error "memoryout"
   (* Exn during parsing *)
-  | Dolmen.Std.Loc.Uncaught (loc, exn) ->
+  | Dolmen.Std.Loc.Uncaught (loc, exn, _) ->
     let file = State.input_file_loc st in
     let loc = Dolmen.Std.Loc.loc file loc in
     Error (Format.asprintf "%a: %s"
