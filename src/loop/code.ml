@@ -7,7 +7,7 @@
 type t = {
   code : int; (* codes are unique for each exit code *)
   descr : string;
-  mutable active : bool;
+  mutable abort : bool;
 }
 
 let hash t = t.code
@@ -18,13 +18,14 @@ let compare t t' = compare t.code t'.code
 (* Exit with a code and code status *)
 (* ************************************************************************* *)
 
-let is_active t = t.active
-let enable t = t.active <- true
-let disable t = t.active <- false
-let toggle t = t.active <- not t.active
+let is_abort t = t.abort
+let abort t = t.abort <- true
+let error t = t.abort <- false
 
 let exit t =
-  if is_active t then exit t.code else exit 0
+  if t.abort then Unix.kill (Unix.getpid ()) Sys.sigabrt;
+  (* TODO: ensure we handle the signal before exiting ? *)
+  exit t.code
 
 
 (* Manipulation *)
@@ -43,7 +44,7 @@ let create descr =
   assert (0 < code && code < 124);
   let t = {
     code; descr;
-    active = true;
+    abort = false;
   } in
   errors := t :: !errors;
   t
@@ -60,13 +61,13 @@ let descr t = t.code, t.descr
 let ok = {
   code = 0;
   descr = "the success exit code";
-  active = true;
+  abort = false;
 }
 
 let bug = {
   code = 125;
   descr = "on unexpected internal errors (bugs)";
-  active = true;
+  abort = false;
 }
 
 (* Predefined values *)

@@ -29,7 +29,7 @@ let split_input = function
 
 let mk_state
     gc gc_opt bt colors
-    error_on_bug_only
+    abort_on_bug
     time_limit size_limit
     input_lang input_mode input
     header_check header_licenses
@@ -45,10 +45,7 @@ let mk_state
   in
   let () = if bt then Printexc.record_backtrace true in
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
-  let () =
-    if error_on_bug_only then
-      List.iter Dolmen_loop.Code.disable (Dolmen_loop.Code.errors ())
-  in
+  let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Loop.State.t = {
@@ -241,12 +238,10 @@ let state =
     let doc = "Activate coloring of output" in
     Arg.(value & opt bool true & info ["color"] ~doc ~docs)
   in
-  let error_on_bug_only =
+  let abort_on_bug =
     let doc = Format.asprintf
-        "Silence all errors except for internal bugs. If this options is
-        provided, dolmen will return an exit code of 0 even for some error
-        cases, such as parsing or typing errors. This options is designed
-        for debugging purposes (e.g. to fuzz dolmen)." in
+        "Abort instead of exiting properly when an internal bug
+        is detected (i.e. corresponds to an exit code of 125)." in
     Arg.(value & flag & info ["error-on-bug-only"] ~docs ~doc)
   in
   let time =
@@ -327,7 +322,7 @@ let state =
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~docs ~doc)
   in
-  Term.(const mk_state $ gc $ gc_t $ bt $ colors $ error_on_bug_only $
+  Term.(const mk_state $ gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
         typing $ strict $ debug $ context $ max_warn)

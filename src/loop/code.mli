@@ -59,16 +59,13 @@ val exit : t -> _
     Note: exit codes can be silenced, in which case the process
     will exit with an exit code of [0]. *)
 
-val is_active : t -> bool
+val is_abort : t -> bool
 (** Whether an exit code is active. *)
 
-val enable : t -> unit
-(** Enable the exit code. *)
+val abort : t -> unit
+(** Make the exit code abort instead of properly exiting. *)
 
-val disable : t -> unit
-(** Disable the exit code. *)
-
-val toggle : t -> unit
-(** Toggle the status of the exit code. *)
+val error : t -> unit
+(** Make the exit code properly exit. *)
 
 
