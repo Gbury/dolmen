@@ -3,6 +3,7 @@
   (name           main)
   (public_name    dolmen)
   (package        dolmen_bin)
+  (ocamlopt_flags -afl-instrument)
   (libraries
     ; external deps
     cmdliner fmt gen
