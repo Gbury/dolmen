@@ -242,7 +242,7 @@ let state =
     let doc = Format.asprintf
         "Abort instead of exiting properly when an internal bug
         is detected (i.e. corresponds to an exit code of 125)." in
-    Arg.(value & flag & info ["error-on-bug-only"] ~docs ~doc)
+    Arg.(value & flag & info ["abort-on-bug"] ~docs ~doc)
   in
   let time =
     let doc = "Stop the program after a time lapse of $(docv).
