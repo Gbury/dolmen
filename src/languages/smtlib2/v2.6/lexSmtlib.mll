@@ -157,9 +157,6 @@ let ss_char = ss_first_char | digit
 let simple_symbol = ss_first_char ss_char*
 
 let quoted_symbol_char = (white_space_or_printable # ['|' '\\'])
-let quoted_symbol = ['|'] quoted_symbol_char* ['|']
-
-let symbol = simple_symbol | quoted_symbol
 
 let keyword = ':' simple_symbol
 
@@ -181,7 +178,9 @@ rule token newline = parse
   | binary as s         { BIN s }
   | '"'                 { string newline (Buffer.create 42) lexbuf }
   | keyword as s        { KEYWORD s }
-  | symbol as s         { symbol newline lexbuf s }
+  | simple_symbol as s
+  | '|' (quoted_symbol_char* as s) '|'
+    { symbol newline lexbuf s }
 
 and string newline b = parse
   | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
