@@ -181,7 +181,9 @@ rule token newline = parse
   | binary as s         { BIN s }
   | '"'                 { string newline (Buffer.create 42) lexbuf }
   | keyword as s        { KEYWORD s }
-  | symbol as s         { symbol newline lexbuf s }
+  | simple_symbol as s
+  | '|' (quoted_symbol_char* as s) '|'
+    { symbol newline lexbuf s }
 
 and string newline b = parse
   | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
