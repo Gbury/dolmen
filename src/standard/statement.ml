@@ -237,9 +237,9 @@ let rec print_descr fmt = function
 
   | Plain t -> Format.fprintf fmt "@[<hov 2>plain: %a@]" Term.print t
 
-  | Prove [] -> Format.fprintf fmt "Prove"
+  | Prove [] -> Format.fprintf fmt "prove"
   | Prove l ->
-    Format.fprintf fmt "Prove assuming: %a"
+    Format.fprintf fmt "@[<hov 2>prove-assuming:@ %a@]"
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) l
 
   | Clause l ->

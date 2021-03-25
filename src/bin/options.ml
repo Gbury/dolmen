@@ -97,10 +97,12 @@ let perm_conv = Arg.enum [
   ]
 
 (* Converter for input modes *)
-let mode_conv = Arg.enum [
+let mode_list = [
     "full", `Full;
     "incremental", `Incremental;
   ]
+
+let mode_conv = Arg.enum mode_list
 
 (* Output converters *)
 (* ************************************************************************* *)
@@ -258,15 +260,17 @@ let state =
   in
   let in_lang =
     let doc = Format.asprintf
-        "Set the input language to $(docv) (%s)."
-        (Arg.doc_alts_enum ~quoted:false Dolmen_loop.Logic.enum) in
+        "Set the input language to $(docv); must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Logic.enum) in
     Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
   in
   let in_mode =
     let doc = Format.asprintf
-        "Set the input mode. the full mode parses the entire file before iterating
-         over its contents whereas the incremental mode processes each delcaration
-         before parsing the next one. Default is incremental mode." in
+        "Set the input mode, must be %s.
+         The full mode parses the entire file before iterating over its
+         contents whereas the incremental mode processes each declaration
+         before parsing the next one. Default is incremental mode."
+        (Arg.doc_alts_enum ~quoted:true mode_list) in
     Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc ~docs)
   in
   let input =
