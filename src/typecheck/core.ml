@@ -89,6 +89,9 @@ module Smtlib2 = struct
         Type._error env (Ast ast)
           (Type.Expected ("a list of terms in a sexpr", None))
 
+    let mk_or a b = Type.T._or [a; b]
+    let mk_and a b = Type.T._and [a; b]
+
     let parse_f env ast cstr args =
       let loc = Ast.(ast.loc) in
       let t = Ast.apply ~loc cstr args in
@@ -108,9 +111,9 @@ module Smtlib2 = struct
       | Type.Id { Id.name = "not"; ns = Id.Term } ->
         `Term (Base.term_app1 (module Type) env "not" Type.T.neg)
       | Type.Id { Id.name = "and"; ns = Id.Term } ->
-        `Term (fun ast args -> parse_f env ast (Ast.and_t ()) args)
+        `Term (Base.term_app_left (module Type) env "and" mk_and)
       | Type.Id { Id.name = "or"; ns = Id.Term } ->
-        `Term (fun ast args -> parse_f env ast (Ast.or_t ()) args)
+        `Term (Base.term_app_left (module Type) env "or" mk_or)
       | Type.Id { Id.name = "xor"; ns = Id.Term } ->
         `Term (Base.term_app_left (module Type) env "xor" Type.T.xor)
       | Type.Id { Id.name = "=>"; ns = Id.Term } ->
@@ -122,9 +125,11 @@ module Smtlib2 = struct
 
       (* Equality *)
       | Type.Id { Id.name = "distinct"; ns = Id.Term } ->
-        `Term (fun ast args -> parse_f env ast (Ast.neq_t ()) args)
+        `Term (fun _ast args ->
+            let args = List.map (Type.parse_term env) args in
+            Type.T.distinct args)
       | Type.Id { Id.name = "="; ns = Id.Term } ->
-        `Term (fun _ast args -> T.eqs (List.map (Type.parse_term env) args))
+        `Term (Base.term_app_chain (module Type) env "=" Type.T.eq)
 
       (* Named formulas *)
       | Type.Id { Id.name = ":named"; ns = Id.Attr } ->
