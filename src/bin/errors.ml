@@ -35,7 +35,7 @@ let exn st = function
       "%s%a%s"
       (Printexc.to_string exn)
       (if Printexc.backtrace_status ()
-       then Format.pp_print_flush
+       then Format.pp_print_newline
        else (fun _ _ -> ())) ()
       (if Printexc.backtrace_status ()
        then Printexc.raw_backtrace_to_string bt
