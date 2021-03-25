@@ -1,0 +1,2 @@
+File "tests/regression/pr61/smt.smt2", line 57, character 14-86:
+Error Bad arity for operator 'and': expected 2 arguments but got 1
