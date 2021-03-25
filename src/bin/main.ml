@@ -36,6 +36,8 @@ let () =
     `P "Options to control the checking of headers in the input file";
     `S Options.gc_section;
     `P "Options to fine-tune the gc, only experts should use these.";
+    `S Cmdliner.Manpage.s_exit_status;
+    `P "dolmen exits with the following status:";
     `S Cmdliner.Manpage.s_bugs;
     `P "You can report bugs at https://github.com/Gbury/dolmen/issues";
     `S Cmdliner.Manpage.s_authors;
