@@ -186,3 +186,13 @@ grammar. There are three steps in that process:
   an error message in the correct format (see above for more info on that).
 
 
+## Release workflow
+
+Release checklist/workflow:
+
+- update version number in `VERSION`
+- update `CHANGES.md` with the new version number
+- run `dune-release tag` to tag the repo
+- run `dune-release` to publish the package on github and opam
+- run `./doc/script/release` to update the doc on github-pages
+
