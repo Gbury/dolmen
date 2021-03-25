@@ -14,6 +14,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_smtlib.expected test_smtlib.incremental)))
 
 ; Full mode test
@@ -28,6 +29,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_smtlib.expected test_smtlib.full)))
 
 
@@ -44,6 +46,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_tptp.expected test_tptp.incremental)))
 
 ; Full mode test
@@ -58,6 +61,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_tptp.expected test_tptp.full)))
 
 
@@ -74,6 +78,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_tptp_infer.expected test_tptp_infer.incremental)))
 
 ; Full mode test
@@ -88,6 +93,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff test_tptp_infer.expected test_tptp_infer.full)))
 
 

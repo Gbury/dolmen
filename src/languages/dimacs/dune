@@ -55,6 +55,7 @@
 ; Additional rule to add to runtest a check that the messages file is up-to-date
 (rule
   (alias runtest)
+  (package dolmen)
   (deps   (:tokens tokens_dimacs.mly)
           (:parser parseDimacs.mly)
           (:new new.messages)
@@ -65,6 +66,7 @@
 
 (rule
   (alias runtest)
+  (package dolmen)
   (deps syntax.messages updated.messages)
   (action (diff syntax.messages updated.messages))
 )

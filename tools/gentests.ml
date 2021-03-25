@@ -149,6 +149,7 @@ let test_stanza_aux ?(deps=[]) mode fmt (res_file, pb_file, exit_codes, expected
              ))@]@\n\
 @[<v 2>(rule@ \
   (alias runtest)@ \
+  (package dolmen_bin)@ \
   (action (diff %s %s))@])@\n"
     res_file
     pp_deps (pb_file, deps)

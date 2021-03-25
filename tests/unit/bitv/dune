@@ -1,6 +1,7 @@
 
 (test
   (name       test)
+  (package    dolmen_type)
   (libraries  dolmen_type)
 )
 

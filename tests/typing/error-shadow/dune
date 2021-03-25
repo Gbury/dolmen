@@ -14,6 +14,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-sort.expected builtin-sort.incremental)))
 
 ; Full mode test
@@ -28,6 +29,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-sort.expected builtin-sort.full)))
 
 
@@ -44,6 +46,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-term-const.expected builtin-term-const.incremental)))
 
 ; Full mode test
@@ -58,6 +61,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-term-const.expected builtin-term-const.full)))
 
 
@@ -74,6 +78,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-term-var.expected builtin-term-var.incremental)))
 
 ; Full mode test
@@ -88,6 +93,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff builtin-term-var.expected builtin-term-var.full)))
 
 
@@ -104,6 +110,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff redefinition.expected redefinition.incremental)))
 
 ; Full mode test
@@ -118,6 +125,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff redefinition.expected redefinition.full)))
 
 

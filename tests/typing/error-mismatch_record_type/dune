@@ -14,6 +14,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff error.expected error.full)))
 
 
@@ -30,6 +31,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff error2.expected error2.full)))
 
 

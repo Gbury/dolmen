@@ -14,6 +14,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff illegal_decl.expected illegal_decl.incremental)))
 
 ; Full mode test
@@ -28,6 +29,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff illegal_decl.expected illegal_decl.full)))
 
 
@@ -44,6 +46,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff shadow.expected shadow.incremental)))
 
 ; Full mode test
@@ -58,6 +61,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff shadow.expected shadow.full)))
 
 

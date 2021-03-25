@@ -14,6 +14,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff smt.expected smt.incremental)))
 
 ; Full mode test
@@ -28,6 +29,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff smt.expected smt.full)))
 
 

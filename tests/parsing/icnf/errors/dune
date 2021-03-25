@@ -14,6 +14,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 001_assumption_bad_atom_1.expected 001_assumption_bad_atom_1.incremental)))
 
 ; Full mode test
@@ -28,6 +29,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 001_assumption_bad_atom_1.expected 001_assumption_bad_atom_1.full)))
 
 
@@ -44,6 +46,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 002_assumption_bad_first_atom_1.expected 002_assumption_bad_first_atom_1.incremental)))
 
 ; Full mode test
@@ -58,6 +61,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 002_assumption_bad_first_atom_1.expected 002_assumption_bad_first_atom_1.full)))
 
 
@@ -74,6 +78,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 003_assumption_unclosed_1.expected 003_assumption_unclosed_1.incremental)))
 
 ; Full mode test
@@ -88,6 +93,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 003_assumption_unclosed_1.expected 003_assumption_unclosed_1.full)))
 
 
@@ -104,6 +110,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 004_clause_bad_atom_1.expected 004_clause_bad_atom_1.incremental)))
 
 ; Full mode test
@@ -118,6 +125,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 004_clause_bad_atom_1.expected 004_clause_bad_atom_1.full)))
 
 
@@ -134,6 +142,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 005_clause_unclosed_1.expected 005_clause_unclosed_1.incremental)))
 
 ; Full mode test
@@ -148,6 +157,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 005_clause_unclosed_1.expected 005_clause_unclosed_1.full)))
 
 
@@ -164,6 +174,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_1.expected 006_input_bad_1.incremental)))
 
 ; Full mode test
@@ -178,6 +189,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_1.expected 006_input_bad_1.full)))
 
 
@@ -194,6 +206,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_2.expected 006_input_bad_2.incremental)))
 
 ; Full mode test
@@ -208,6 +221,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_2.expected 006_input_bad_2.full)))
 
 
@@ -224,6 +238,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_3.expected 006_input_bad_3.incremental)))
 
 ; Full mode test
@@ -238,6 +253,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_3.expected 006_input_bad_3.full)))
 
 
@@ -254,6 +270,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_4.expected 006_input_bad_4.incremental)))
 
 ; Full mode test
@@ -268,6 +285,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_4.expected 006_input_bad_4.full)))
 
 
@@ -284,6 +302,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_5.expected 006_input_bad_5.incremental)))
 
 ; Full mode test
@@ -298,6 +317,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_5.expected 006_input_bad_5.full)))
 
 
@@ -314,6 +334,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_6.expected 006_input_bad_6.incremental)))
 
 ; Full mode test
@@ -328,6 +349,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 006_input_bad_6.expected 006_input_bad_6.full)))
 
 
@@ -344,6 +366,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 007_input_p_inccnf_unclosed_1.expected 007_input_p_inccnf_unclosed_1.incremental)))
 
 ; Full mode test
@@ -358,6 +381,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 007_input_p_inccnf_unclosed_1.expected 007_input_p_inccnf_unclosed_1.full)))
 
 
@@ -374,6 +398,7 @@
               (run dolmen --mode=incremental --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 008_input_p_inccnf_bad_inccnf_1.expected 008_input_p_inccnf_bad_inccnf_1.incremental)))
 
 ; Full mode test
@@ -388,6 +413,7 @@
               (run dolmen --mode=full --color=false %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
+  (package dolmen_bin)
   (action (diff 008_input_p_inccnf_bad_inccnf_1.expected 008_input_p_inccnf_bad_inccnf_1.full)))
 
 
