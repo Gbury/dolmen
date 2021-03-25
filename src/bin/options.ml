@@ -7,6 +7,8 @@ open Cmdliner
 (* ************************************************************************* *)
 
 let gc_section = "GC OPTIONS"
+let error_section = "ERROR HANDLING"
+let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
 
 (* Color options *)
@@ -248,6 +250,7 @@ let gc_t =
   Term.((const gc_opts $ minor_heap_size $ major_heap_increment $
          space_overhead $ max_overhead $ allocation_policy))
 
+
 (* Main Options parsing *)
 (* ************************************************************************* *)
 
@@ -255,11 +258,11 @@ let state =
   let docs = common_section in
   let gc =
     let doc = "Print statistics about the gc upon exiting" in
-    Arg.(value & flag & info ["g"; "gc"] ~doc ~docs)
+    Arg.(value & flag & info ["g"; "gc"] ~doc ~docs:gc_section)
   in
   let bt =
     let doc = "Enables printing of backtraces." in
-    Arg.(value & flag & info ["b"; "backtrace"] ~doc ~docs)
+    Arg.(value & flag & info ["b"; "backtrace"] ~doc ~docs:error_section)
   in
   let colors =
     let doc = "Activate coloring of output" in
@@ -269,7 +272,7 @@ let state =
     let doc = Format.asprintf
         "Abort instead of exiting properly when an internal bug
         is detected (i.e. corresponds to an exit code of 125)." in
-    Arg.(value & flag & info ["abort-on-bug"] ~docs ~doc)
+    Arg.(value & flag & info ["abort-on-bug"] ~doc ~docs:error_section)
   in
   let time =
     let doc = "Stop the program after a time lapse of $(docv).
@@ -281,13 +284,15 @@ let state =
     let doc = "Stop the program if it tries and use more the $(docv) memory space. " ^
               "Accepts usual suffixes for sizes : k,M,G,T. " ^
               "Without suffix, default to a size in octet." in
-    Arg.(value & opt c_size 1_000_000_000. & info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
+    Arg.(value & opt c_size 1_000_000_000. &
+         info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
   let in_lang =
     let doc = Format.asprintf
         "Set the input language to $(docv); must be %s."
         (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Logic.enum) in
-    Arg.(value & opt (some input_format_conv) None & info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
+    Arg.(value & opt (some input_format_conv) None &
+         info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
   in
   let in_mode =
     let doc = Format.asprintf
@@ -306,17 +311,20 @@ let state =
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
                input file (and errors raised if they are not present)." in
-    Arg.(value & opt bool false & info ["check-headers"] ~doc ~docs)
+    Arg.(value & opt bool false &
+         info ["check-headers"] ~doc ~docs:header_section)
   in
   let header_licenses =
     let doc = "Set the allowed set of licenses in the headers.
                An empty list means allow everything." in
-    Arg.(value & opt (list string) [] & info ["header-licenses"] ~doc ~docs)
+    Arg.(value & opt (list string) [] &
+         info ["header-licenses"] ~doc ~docs:header_section)
   in
   let header_lang_version =
     let doc = "Set the only allowed language version for headers. If not set,
                all conforming version numbers are allowed." in
-    Arg.(value & opt (some string) None & info ["header-lang-version"] ~docs ~doc)
+    Arg.(value & opt (some string) None &
+         info ["header-lang-version"] ~doc ~docs:header_section)
   in
   let typing =
     let doc = "Decide whether to type-check input expressions. If false, only parsing
@@ -325,7 +333,7 @@ let state =
   in
   let strict =
     let doc = "Be strict or more lenient wrt to typing" in
-    Arg.(value & opt bool true & info ["strict"] ~doc ~docs)
+    Arg.(value & opt bool true & info ["strict"] ~doc ~docs:error_section)
   in
   (*
   let locs =
@@ -343,13 +351,13 @@ let state =
   let context =
     let doc = Format.asprintf
         "Print the context / fragment of parsed AST with errors" in
-    Arg.(value & flag & info ["context"] ~docs ~doc)
+    Arg.(value & flag & info ["context"] ~doc ~docs:error_section)
   in
   let max_warn =
     let doc = Format.asprintf
         "Maximum number of warnings to display (excess warnings will be
          counted and a count of silenced warnings reported at the end)." in
-    Arg.(value & opt int max_int & info ["max-warn"] ~docs ~doc)
+    Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
   in
   Term.(const mk_state $ gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
