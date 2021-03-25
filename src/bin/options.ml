@@ -9,74 +9,39 @@ open Cmdliner
 let gc_section = "GC OPTIONS"
 let common_section = Manpage.s_options
 
-(* State creation *)
+(* Color options *)
 (* ************************************************************************* *)
 
-let gc_opts
-    minor_heap_size major_heap_increment
-    space_overhead max_overhead allocation_policy =
-  Gc.({ (get ()) with
-        minor_heap_size; major_heap_increment;
-        space_overhead; max_overhead; allocation_policy;
-      }
-     )
+type color =
+  | Auto
+  | Always
+  | None
 
-let split_input = function
-  | `Stdin ->
-    Sys.getcwd (), `Stdin
-  | `File f ->
-    Filename.dirname f, `File (Filename.basename f)
+let color_list = [
+  "auto", Auto;
+  "always", Always;
+  "never", None;
+]
 
-let mk_state
-    gc gc_opt bt colors
-    abort_on_bug
-    time_limit size_limit
-    input_lang input_mode input
-    header_check header_licenses
-    header_lang_version
-    type_check type_strict
-    debug context max_warn
-  =
-  (* Side-effects *)
-  let () = Gc.set gc_opt in
-  let () =
-    let style = if colors then `Ansi_tty else `None in
-    Fmt.set_style_renderer Format.err_formatter style;
+let color_conv = Arg.enum color_list
+
+let set_color file_descr formatter color =
+  let style =
+    match color with
+    | Always -> `Ansi_tty
+    | None -> `None
+    | Auto -> if Unix.isatty file_descr then `Ansi_tty else `None
   in
-  let () = if bt then Printexc.record_backtrace true in
-  let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
-  let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
-  (* State creation *)
-  let input_dir, input_source = split_input input in
-  let st : Loop.State.t = {
-    debug;
+  Fmt.set_style_renderer formatter style
 
-    context; max_warn;
-    cur_warn = 0;
 
-    time_limit; size_limit;
+(* Input format converter *)
+(* ************************************************************************* *)
 
-    input_dir; input_lang;
-    input_mode; input_source;
-    input_file_loc = Dolmen.Std.Loc.mk_file "";
-
-    header_check; header_licenses; header_lang_version;
-    header_state = Dolmen_loop.Headers.empty;
-
-    type_check; type_strict;
-    type_state = Dolmen_loop.Typer.new_state ();
-
-    solve_state = ();
-
-    export_lang = [];
-  } in
-  st
+let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
 
 (* Input source converter *)
 (* ************************************************************************* *)
-
-(* Converter for input formats/languages *)
-let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
 
 (* Converter for input file/stdin *)
 let input_to_string = function
@@ -89,20 +54,6 @@ let input_source_conv =
   let print fmt i = Format.fprintf fmt "%s" (input_to_string i) in
   Arg.conv (parse, print)
 
-(* Converter for permissions *)
-let perm_conv = Arg.enum [
-    "allow", Dolmen_loop.State.Allow;
-    "warn", Dolmen_loop.State.Warn;
-    "error", Dolmen_loop.State.Error;
-  ]
-
-(* Converter for input modes *)
-let mode_list = [
-    "full", `Full;
-    "incremental", `Incremental;
-  ]
-
-let mode_conv = Arg.enum mode_list
 
 (* Output converters *)
 (* ************************************************************************* *)
@@ -118,6 +69,17 @@ let parse_output = function
 let output_conv =
   let print fmt o = Format.fprintf fmt "%s" (output_to_string o) in
   Arg.conv (parse_output, print)
+
+
+(* Input modes *)
+(* ************************************************************************* *)
+
+let mode_list = [
+    "full", `Full;
+    "incremental", `Incremental;
+  ]
+
+let mode_conv = Arg.enum mode_list
 
 
 (* Argument converter for integer with multiplier suffix *)
@@ -195,6 +157,69 @@ let parse_size arg =
 let c_time = parse_time, print_time
 let c_size = parse_size, print_size
 
+
+(* State creation *)
+(* ************************************************************************* *)
+
+let gc_opts
+    minor_heap_size major_heap_increment
+    space_overhead max_overhead allocation_policy =
+  Gc.({ (get ()) with
+        minor_heap_size; major_heap_increment;
+        space_overhead; max_overhead; allocation_policy;
+      }
+     )
+
+let split_input = function
+  | `Stdin ->
+    Sys.getcwd (), `Stdin
+  | `File f ->
+    Filename.dirname f, `File (Filename.basename f)
+
+let mk_state
+    gc gc_opt bt colors
+    abort_on_bug
+    time_limit size_limit
+    input_lang input_mode input
+    header_check header_licenses
+    header_lang_version
+    type_check type_strict
+    debug context max_warn
+  =
+  (* Side-effects *)
+  let () = Gc.set gc_opt in
+  let () = set_color Unix.stdout Format.std_formatter colors in
+  let () = set_color Unix.stderr Format.err_formatter colors in
+  let () = if bt then Printexc.record_backtrace true in
+  let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
+  let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
+  (* State creation *)
+  let input_dir, input_source = split_input input in
+  let st : Loop.State.t = {
+    debug;
+
+    context; max_warn;
+    cur_warn = 0;
+
+    time_limit; size_limit;
+
+    input_dir; input_lang;
+    input_mode; input_source;
+    input_file_loc = Dolmen.Std.Loc.mk_file "";
+
+    header_check; header_licenses; header_lang_version;
+    header_state = Dolmen_loop.Headers.empty;
+
+    type_check; type_strict;
+    type_state = Dolmen_loop.Typer.new_state ();
+
+    solve_state = ();
+
+    export_lang = [];
+  } in
+  st
+
+
 (* Gc Options parsing *)
 (* ************************************************************************* *)
 
@@ -238,7 +263,7 @@ let state =
   in
   let colors =
     let doc = "Activate coloring of output" in
-    Arg.(value & opt bool true & info ["color"] ~doc ~docs)
+    Arg.(value & opt color_conv Auto & info ["color"] ~doc ~docs)
   in
   let abort_on_bug =
     let doc = Format.asprintf

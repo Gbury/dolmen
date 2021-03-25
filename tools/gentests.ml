@@ -142,7 +142,7 @@ let test_stanza_aux ?(deps=[]) mode fmt (res_file, pb_file, exit_codes, expected
   (action @[<hov 1>(chdir %%{workspace_root}@ \
            @[<hov 1>(with-outputs-to %%{target}@ \
             @[<hov 1>(with-accepted-exit-codes %a@ \
-             @[<hov 1>(run dolmen --mode=%s --color=false %%{input} %%{read-lines:flags.dune})@]\
+             @[<hov 1>(run dolmen --mode=%s --color=never %%{input} %%{read-lines:flags.dune})@]\
              )@]\
              )@]\
              )@]\
