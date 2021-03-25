@@ -1,9 +1,9 @@
-opam-version: "1.2"
+opam-version: "2.0"
 name: "dolmen_lsp"
 version: "dev"
-author: "Guillaume Bury"
-maintainer: "guillaume.bury@gmail.com"
-license: "BSD-2-clauses"
+maintainer: "Guillaume Bury <guillaume.bury@gmail.com>"
+authors: "Guillaume Bury <guillaume.bury@gmail.com>"
+license: "BSD-2-Clause"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
@@ -18,16 +18,12 @@ depends: [
   "odoc" { with-doc }
   "logs"
   "lsp"
-  "linol"
-  "linol-lwt"
+  "linol" { = "0.1" }
+  "linol-lwt" { = "0.1" }
 ]
-pin-depends: [
-  [ "linol.dev" "git+https://github.com/c-cube/linol.git" ]
-  [ "linol-lwt.dev" "git+https://github.com/c-cube/linol.git" ]
-  ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
-dev-repo: "https://github.com/Gbury/dolmen.git"
+dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"
 
 doc: "http://gbury.github.io/dolmen"

@@ -3,7 +3,7 @@ name: "dolmen"
 version: "dev"
 maintainer: "Guillaume Bury <guillaume.bury@gmail.com>"
 authors: "Guillaume Bury <guillaume.bury@gmail.com>"
-license: "BSD-2-clauses"
+license: "BSD-2-Clause"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]

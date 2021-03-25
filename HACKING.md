@@ -192,7 +192,8 @@ Release checklist/workflow:
 
 - update version number in `VERSION`
 - update `CHANGES.md` with the new version number
-- run `dune-release tag` to tag the repo
-- run `dune-release` to publish the package on github and opam
+- run `dune-release lint`
+- run `dune-release tag`
+- run `dune-release distrib`
 - run `./doc/script/release` to update the doc on github-pages
 
