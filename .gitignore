@@ -8,8 +8,7 @@ src/_build/
 *.install
 dolmen
 doc/index.html
-new.messages
-updated.messages
+syntax.messages.updated
 
 # ocamlbuild targets
 *.byte
