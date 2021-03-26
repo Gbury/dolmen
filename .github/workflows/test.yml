@@ -68,6 +68,9 @@ jobs:
       uses: avsm/setup-ocaml@v1
       with:
         ocaml-version: ${{ matrix.ocaml-version }}
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
     # Pin the repo
     - name: Pin the repo
       run: opam pin add . --no-action
