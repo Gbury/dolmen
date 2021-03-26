@@ -20,7 +20,7 @@
 
 ; Install the man page
 (install
- (files    dolmen.1)
  (section  man)
+ (files    dolmen.1)
  (package  dolmen_bin)
 )
