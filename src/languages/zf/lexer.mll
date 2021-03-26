@@ -6,9 +6,84 @@
 {
   exception Error
 
-  open Tokens_zf
+  module T = Dolmen_std.Tok
 
-  let descr _ = assert false
+  open Tokens
+
+  let reserved s =
+    T.descr s
+      ~kind:"reserved word"
+      ~hint:"reserved words cannot be used as identifiers"
+
+  let descr token : T.descr =
+    match (token : token) with
+    | EOF -> T.descr ~kind:"end of file token" ""
+
+    | LEFT_PAREN -> reserved "("
+    | RIGHT_PAREN -> reserved ")"
+    | LEFT_BRACKET -> reserved "{"
+    | RIGHT_BRACKET -> reserved "}"
+
+    | WILDCARD -> reserved "_"
+    | COMMA -> reserved ","
+    | DOT -> reserved "."
+    | SEMI_COLON -> reserved ";"
+    | COLON -> reserved ":"
+    | EQDEF -> reserved ":="
+    | WHERE -> reserved "where"
+    | AND -> reserved "and"
+
+    | LOGIC_TRUE -> reserved "true"
+    | LOGIC_FALSE -> reserved "false"
+    | LOGIC_AND -> reserved "&&"
+    | LOGIC_OR -> reserved "||"
+    | LOGIC_NOT -> reserved "~"
+    | LOGIC_IMPLY -> reserved "=>"
+    | LOGIC_FORALL -> reserved "forall"
+    | LOGIC_EXISTS -> reserved "exists"
+    | LOGIC_EQ -> reserved "="
+    | LOGIC_NEQ -> reserved "!="
+    | LOGIC_EQUIV -> reserved "<=>"
+
+    | ARITH_PLUS -> reserved "+"
+    | ARITH_MINUS -> reserved "-"
+    | ARITH_PRODUCT -> reserved "*"
+    | ARITH_LT -> reserved "<"
+    | ARITH_LEQ -> reserved "<="
+    | ARITH_GT -> reserved ">"
+    | ARITH_GEQ -> reserved ">="
+
+    | IF -> reserved "if"
+    | THEN -> reserved "then"
+    | ELSE -> reserved "else"
+
+    | MATCH -> reserved "match"
+    | WITH -> reserved "with"
+    | END -> reserved "end"
+    | FUN -> reserved "fun"
+
+    | INT -> reserved "int"
+    | PROP -> reserved "prop"
+    | TYPE -> reserved "type"
+
+    | ASSERT -> reserved "assert"
+    | DATA -> reserved "data"
+    | DEF -> reserved "def"
+    | VAL -> reserved "val"
+    | GOAL -> reserved "goal"
+    | REWRITE -> reserved "rewrite"
+    | LEMMA -> reserved "lemma"
+    | INCLUDE -> reserved "include"
+
+    | ARROW -> reserved "->"
+    | PI -> reserved "pi"
+    | VERTICAL_BAR -> reserved "|"
+
+    | LOWER_WORD s -> T.descr ~kind:"lower word" s
+    | UPPER_WORD s -> T.descr ~kind:"upper word" s
+    | QUOTED s -> T.descr ~kind:"quoted word" s
+    | INTEGER s -> T.descr ~kind:"integer" s
+
 }
 
 let printable_char = [^ '\n']

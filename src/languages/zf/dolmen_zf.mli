@@ -3,9 +3,9 @@
 
 (** Zipperposition format input *)
 
-module type Id = Ast_zf.Id
-module type Term = Ast_zf.Term
-module type Statement = Ast_zf.Statement
+module type Id = Ast.Id
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 (** Implementation requirements for the Zipperposition format. *)
 
 module Make

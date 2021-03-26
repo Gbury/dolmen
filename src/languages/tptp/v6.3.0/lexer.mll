@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {
   exception Error
 
-  open Tokens_tptp
+  open Tokens
 
   module T = Dolmen_std.Tok
 

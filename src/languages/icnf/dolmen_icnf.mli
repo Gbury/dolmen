@@ -3,8 +3,8 @@
 
 (** iCNF language input *)
 
-module type Term = Ast_iCNF.Term
-module type Statement = Ast_iCNF.Statement
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 (** Implementation requirement for the iCNF format. *)
 
 module Make

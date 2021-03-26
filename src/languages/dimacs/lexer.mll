@@ -6,15 +6,14 @@
 
   module T = Dolmen_std.Tok
 
-  open Tokens_iCNF
+  open Tokens
 
   let descr token : T.descr =
     match (token : token) with
     | EOF -> T.descr ~kind:"end of file token" ""
-    | NEWLINE -> T.descr ~kind:"newline character" ""
-    | A -> T.descr ~kind:"keyword" "a"
     | P -> T.descr ~kind:"keyword" "p"
-    | INCCNF -> T.descr ~kind:"keyword" "inccnf"
+    | CNF -> T.descr ~kind:"keyword" "cnf"
+    | NEWLINE -> T.descr ~kind:"newline character" ""
     | ZERO -> T.descr ~kind:"integer" "0"
     | INT i -> T.descr ~kind:"integer" (string_of_int i)
 
@@ -28,14 +27,12 @@ let positive_number = non_zero_numeric numeric*
 let negative_number = ['-'] positive_number
 let number = positive_number | negative_number
 
-let printable_char = [^ '\n']
-let comment = ['c'] printable_char* ['\n']
+let any_char_except_newline = [^ '\n']
 
 rule token newline = parse
   | "c"             { comment newline lexbuf }
   | "p"             { P }
-  | "a"             { A }
-  | "inccnf"        { INCCNF }
+  | "cnf"           { CNF }
   | eof             { EOF }
   | zero_numeric    { ZERO }
   | [' ' '\t' '\r'] { token newline lexbuf }
@@ -44,6 +41,7 @@ rule token newline = parse
   | _               { raise Error }
 
 and comment newline = parse
+  | eof   { EOF }
   | '\n'  { newline lexbuf; token newline lexbuf }
-  | printable_char { comment newline lexbuf }
+  | any_char_except_newline { comment newline lexbuf }
 

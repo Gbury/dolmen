@@ -1,9 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
-module type Id = Ast_zf.Id
-module type Term = Ast_zf.Term
-module type Statement = Ast_zf.Statement
+module type Id = Ast.Id
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 
 module Make
     (L : Dolmen_intf.Location.S)
@@ -11,10 +11,10 @@ module Make
     (T : Term with type location := L.t and type id := I.t)
     (S : Statement with type location := L.t and type id := I.t and type term := T.t) =
   Dolmen_std.Transformer.Make(L)(struct
-    type token = Tokens_zf.token
+    type token = Tokens.token
     type statement = S.t
     let env = []
     let incremental = true
     let error s = Syntax_messages.message s
-  end)(LexZf)(ParseZf.Make(L)(I)(T)(S))
+  end)(Lexer)(Parser.Make(L)(I)(T)(S))
 

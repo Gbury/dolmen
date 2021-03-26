@@ -3,8 +3,8 @@
 
 (** Dimacs language input *)
 
-module type Term = Ast_dimacs.Term
-module type Statement = Ast_dimacs.Statement
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 (** Implementation requirement for the Dimacs format. *)
 
 module Make

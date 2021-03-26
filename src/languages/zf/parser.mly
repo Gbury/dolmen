@@ -4,11 +4,9 @@
 (** {1 Parser for Zipperposition Formulas} *)
 
 %parameter <L : Dolmen_intf.Location.S>
-%parameter <I : Ast_zf.Id>
-%parameter <T : Ast_zf.Term
-  with type location := L.t and type id := I.t>
-%parameter <S : Ast_zf.Statement
-  with type location := L.t and type id := I.t and type term := T.t>
+%parameter <I : Ast.Id>
+%parameter <T : Ast.Term with type location := L.t and type id := I.t>
+%parameter <S : Ast.Statement with type location := L.t and type id := I.t and type term := T.t>
 
 %start <S.t list> file
 %start <S.t option> input

@@ -1,72 +1,12 @@
 
-(ocamllex (modules lexDimacs))
-
-(menhir
- (flags (--only-tokens))
- (modules tokens_dimacs)
-)
-
-(menhir
- (flags (--explain --table --external-tokens Tokens_dimacs))
- (modules tokens_dimacs parseDimacs)
- (merge_into parseDimacs)
-)
-
-(rule
-  (target syntax_messages.ml)
-  (deps   (:tokens tokens_dimacs.mly)
-          (:parser parseDimacs.mly)
-          (:msg syntax.messages))
-  (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens_dimacs %{tokens}
-                      %{parser} --base %{parser} --compile-errors %{msg})))
-)
-
+; Language library definition
 (library
   (name           dolmen_dimacs)
   (public_name    dolmen.dimacs)
   (instrumentation (backend bisect_ppx))
   (libraries      dolmen_std dolmen_intf menhirLib)
-  (modules        Tokens_dimacs LexDimacs ParseDimacs Ast_dimacs Syntax_messages Dolmen_dimacs)
+  (modules        Dolmen_dimacs Tokens Lexer Parser Ast Syntax_messages)
 )
 
-; Convenience rule to generate a fresh messages file,
-; and update an already existing one.
-(rule
-  (target new.messages)
-  (mode   promote-until-clean)
-  (deps   (:tokens tokens_dimacs.mly)
-          (:parser parseDimacs.mly))
-  (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens_dimacs %{tokens}
-                      %{parser} --base %{parser} --list-errors)))
-)
-
-(rule
-  (target updated.messages)
-  (deps   (:tokens tokens_dimacs.mly)
-          (:parser parseDimacs.mly)
-          (:msg syntax.messages))
-  (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens_dimacs %{tokens}
-                      %{parser} --base %{parser} --update-errors %{msg})))
-)
-
-; Additional rule to add to runtest a check that the messages file is up-to-date
-(rule
-  (alias runtest)
-  (package dolmen)
-  (deps   (:tokens tokens_dimacs.mly)
-          (:parser parseDimacs.mly)
-          (:new new.messages)
-          (:msg syntax.messages))
-  (action (run menhir --external-tokens Tokens_dimacs %{tokens}
-                      %{parser} --base %{parser} --compare-errors %{new} --compare-errors %{msg}))
-)
-
-(rule
-  (alias runtest)
-  (package dolmen)
-  (deps syntax.messages updated.messages)
-  (action (diff syntax.messages updated.messages))
-)
+; Common include
+(include ../dune.common)
