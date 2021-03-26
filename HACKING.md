@@ -154,5 +154,9 @@ Release checklist/workflow:
 - run `dune-release lint`
 - run `dune-release tag`
 - run `dune-release distrib`
+- run `dune-release publish distrib`
+- run `dune-release opam pkg`
+- run `dune-release opam submit`
+- add line for new version in `doc/index.txt`
 - run `./doc/script/release` to update the doc on github-pages
 

@@ -4,5 +4,5 @@
 ### Additions
 
 - Added a functorized typechecker for all language supported by Dolmen
-- Added a LSP server for all language ssupported by Dolmen
+- Added a LSP server for all language supported by Dolmen
 
