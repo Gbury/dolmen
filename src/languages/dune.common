@@ -50,7 +50,6 @@
 
 (rule
   (target syntax.messages.updated)
-  (mode (promote (until-clean)))
   (deps   (:tokens tokens.mly)
           (:parser parser.mly)
           (:new new.messages)

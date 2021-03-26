@@ -75,35 +75,6 @@ them).
 
 ### Messages files and build rules
 
-Not all languages in dolmen currently have the build rules needed to have
-customized error messages, but it should be fairly easy to add them. For that,
-you'll likely want to use the smtlib's support as reference. Concretely, for a
-language `foobar`, this means comparing `src/language/foobar/dune` with
-`src/language/smtlib2/v2.6/dune` and copying the missing parts.
-
-Once setup, the build for error messages define a few different build targets,
-that are described later. However, due to some limitations of dune (and/or my
-own knowledge of it), not everything has been automated, but the manual
-interventions should be limited to copying a file now and then. The files
-related to error messages are the following:
-- `syntax.messages` the checked-out file containing the customized/hand-written
-  error messages. It must follow the menhir `.messages` file format in order
-  for the build to succeed.
-- `new.messages`: a useful tagret that allows one to ask menhir to generate a
-  template `.messages` file. This target should only be used once at the start
-  of setting up error messages, in order to copy it into a checked-out
-  `syntax.messages`. The `new.messages` file is not meant to be committed, it
-  is only a temporary file promoted by dune into the build treee for
-  convenience.
-- `updated.messages`: a target to ask menhir to generate an updated `.messages`
-  file after a change in then parser/grammar of the language.  It should retain
-  all of the messages from `syntax.messages` that are still valid/relevant for
-  the updated grammar, easing the process of updating the error messages when
-  updating a grammar.
-
-Additionally, the dune file defines rule so that when running the tests, menhir
-checks that the `syntax.messages` file is up-to-date with the current syntax.
-
 ### Adding new error messages
 
 Adding new error messages is as simple as editing the `syntax.messages`
@@ -167,23 +138,11 @@ On syntax error message numbers (i.e. the `XXX` in error messages):
 
 When changing the grammar/parser for a language that has hand-written error
 messages, you'll need to update the `syntax.messages` file according to the new
-grammar. There are three steps in that process:
-- first, try and build the project with the new grammar, if some errors from
-  the old grammar in the `syntax.messages` file are not errors anymore, this
-  will produce a build error with the information about which errors in the
-  `syntax.messages` file are invalid. You can either remove these error, or
-  adjust the input sentence leading to the error if you know what you're doing.
-- Second is to use dune to build the `updated.messages` file for the new
-  grammar in order to update the state numbers in the error messages.
-  language, and then copy it to overwrite the current `syntax.messages` file
-  (this process can not easily be automated by dune because of the circular
-  dependency it creates: `syntax.messages` actually depends on itself in this
-  case).
-- Third is to check that there are messages for all errors. Running `dune build
-  @runtest` will produce an error if some error messages are missing from the
-  `syntax.messages` file. For those errors, you'll have to copy the relevant
-  part from the `new.messages` file into the `syntax.messages` file, and write
-  an error message in the correct format (see above for more info on that).
+grammar. To do so, the simplest way is to run `dune build @runtest`, which will
+check that the `syntax.messages` is correct with regards to the new grammar,
+and if not, will print a diff to update the `syntax.messages` file. Running
+`dune build @runtest --promote` will promote the diff and change the
+`syntax.messages` file.
 
 
 ## Release workflow
