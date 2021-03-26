@@ -24,15 +24,15 @@ class dolmen_lsp_server =
           Format.asprintf "Internal dolmen error: %s" msg
         )
 
-    method on_notif_doc_did_open ~notify_back d ~content : unit Linol_lwt.Task.m =
+    method on_notif_doc_did_open ~notify_back d ~content =
       self#_on_doc ~notify_back d.uri content
-
-    method on_notif_doc_did_close ~notify_back:_ d : unit Linol_lwt.Task.m =
-      Hashtbl.remove buffers d.uri;
-      Linol_lwt.Jsonrpc2.IO.return ()
 
     method on_notif_doc_did_change ~notify_back d _c ~old_content:_old ~new_content =
       self#_on_doc ~notify_back d.uri new_content
+
+    method on_notif_doc_did_close ~notify_back:_ d =
+      Hashtbl.remove buffers d.uri;
+      Linol_lwt.Jsonrpc2.IO.return ()
 
   end
 

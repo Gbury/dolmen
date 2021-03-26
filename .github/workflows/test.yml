@@ -62,7 +62,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.opam
-        key: ${{ matrix.os }}-opam-${{ matrix.ocaml-version }}
+        key: ${{ matrix.os }}-opam-${{ matrix.ocaml-version }}-0
     # Setup ocaml/opam
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v1
