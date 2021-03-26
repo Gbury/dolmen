@@ -3,9 +3,9 @@
 
 (** Smtlib language input *)
 
-module type Id = Ast_smtlib.Id
-module type Term = Ast_smtlib.Term
-module type Statement = Ast_smtlib.Statement
+module type Id = Ast.Id
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 (** Implementation requirement for the Smtlib format. *)
 
 module Make

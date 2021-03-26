@@ -9,7 +9,7 @@
   module T = Dolmen_std.Tok
   module M = Map.Make(String)
 
-  open Tokens_smtlib
+  open Tokens
 
   (* Token printing *)
 
