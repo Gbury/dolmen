@@ -8,7 +8,7 @@
 
   module T = Dolmen_std.Tok
 
-  open Tokens_ae
+  open Tokens
 
   (* Token printing *)
 

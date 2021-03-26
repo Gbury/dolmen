@@ -2,10 +2,10 @@
 (* This file is free software, part of dolmem. See file "LICENSE" for more information *)
 
 %parameter <L : Dolmen_intf.Location.S>
-%parameter <I : Ast_ae.Id>
-%parameter <T : Ast_ae.Term
+%parameter <I : Ast.Id>
+%parameter <T : Ast.Term
   with type location := L.t and type id := I.t>
-%parameter <S : Ast_ae.Statement
+%parameter <S : Ast.Statement
   with type location := L.t  and type id := I.t and type term := T.t>
 
 %start <S.t list> file

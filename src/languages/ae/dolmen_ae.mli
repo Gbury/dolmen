@@ -3,9 +3,9 @@
 
 (** TPTP language input *)
 
-module type Id = Ast_ae.Id
-module type Term = Ast_ae.Term
-module type Statement = Ast_ae.Statement
+module type Id = Ast.Id
+module type Term = Ast.Term
+module type Statement = Ast.Statement
 (** Implementation requirement for the TPTP format. *)
 
 module Make

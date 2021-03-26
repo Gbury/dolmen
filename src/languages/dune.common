@@ -1,0 +1,69 @@
+
+; Commons parts defining the lexer, parser and some test rules
+; =============================================================================
+; All these rules should be common to all libraries, now that the lexer, parser,
+; ast files and so on have standardized names.
+
+(ocamllex (modules lexer))
+
+(menhir
+ (flags (--only-tokens))
+ (modules tokens)
+)
+
+(menhir
+ (flags (--explain --table --external-tokens Tokens))
+ (modules tokens parser)
+ (merge_into parser)
+)
+
+(rule
+  (target syntax_messages.ml)
+  (deps   (:tokens tokens.mly)
+          (:parser parser.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens %{tokens}
+                      %{parser} --base %{parser} --compile-errors %{msg})))
+)
+
+; Convenience rule to generate a fresh messages file,
+; and update an already existing one.
+(rule
+  (target new.messages)
+  (deps   (:tokens tokens.mly)
+          (:parser parser.mly))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens %{tokens}
+                      %{parser} --base %{parser} --list-errors)))
+)
+
+(rule
+  (target updated.messages)
+  (deps   (:tokens tokens.mly)
+          (:parser parser.mly)
+          (:msg syntax.messages))
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens %{tokens}
+                      %{parser} --base %{parser} --update-errors %{msg})))
+)
+
+(rule
+  (target syntax.messages.updated)
+  (mode (promote (until-clean)))
+  (deps   (:tokens tokens.mly)
+          (:parser parser.mly)
+          (:new new.messages)
+          (:updated updated.messages)
+  )
+  (action (with-stdout-to %{target}
+          (run menhir --external-tokens Tokens %{tokens}
+                      %{parser} --base %{parser} --merge-errors %{new} --merge-errors %{updated})))
+)
+
+(rule
+  (alias runtest)
+  (package dolmen)
+  (deps syntax.messages syntax.messages.updated)
+  (action (diff syntax.messages syntax.messages.updated))
+)
