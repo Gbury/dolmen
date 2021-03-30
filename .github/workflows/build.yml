@@ -39,9 +39,12 @@ jobs:
           #- macos-latest
           #- windows-latest
 
-        # Ocaml version to test
+        # Ocaml versions to test
         ocaml-version:
-          - 4.11.1
+          - 4.12.0+flambda
+          - 4.12.0+32bit
+          - 4.12.0
+          - 4.11.2
           - 4.10.1
           - 4.09.1
           - 4.08.1

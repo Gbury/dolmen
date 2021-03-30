@@ -41,7 +41,7 @@ jobs:
 
         # Ocaml version to test
         ocaml-version:
-          - 4.11.1
+          - 4.11.2
 
     # Build ENV
     # ---------
