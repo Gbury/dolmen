@@ -15,12 +15,10 @@ on:
       - master
 
 jobs:
-  # Main workflow
-  # =============
-  # Build:
-  # - the package,
-  # - the doc and push it to gh-pages
-  # - the examples and push them to the master branch
+  # Build workflow
+  # ==============
+  # Goal: Ensure the packages builds across all supported
+  # versions of the ocaml compiler.
   build:
 
     runs-on: ${{ matrix.os }}
@@ -39,21 +37,22 @@ jobs:
           #- macos-latest
           #- windows-latest
 
-        # Ocaml versions to test
+        # Ocaml versions to test. This is a bit of a misnomer, considering
+        # that it is actually just a list of package to install as the base
+        # of the switch
         ocaml-version:
-          - 4.12.0+flambda
-          - 4.12.0+32bit
-          - 4.12.0
-          - 4.11.2+flambda
-          - 4.11.2
-          - 4.10.1
-          - 4.09.1
-          - 4.08.1
+          - ocaml-variants.4.12.0+options,ocaml-option-flambda
+          - ocaml-variants.4.12.0+options,ocaml-option-32bit
+          - ocaml-base-compiler.4.12.0
+          - ocaml-base-compiler.4.11.2
+          - ocaml-base-compiler.4.10.1
+          - ocaml-base-compiler.4.09.1
+          - ocaml-base-compiler.4.08.1
 
     # Build ENV
     # ---------
     env:
-      # EXAMPLE
+      # Ensure opam will not stop because it waits on some user input
       OPAMYES: "true"
 
 
@@ -65,35 +64,18 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: '1'
-    # Cache the opam directory for faster setups
-    - name: Cach opam directory
-      uses: actions/cache@v2
-      with:
-        path: ~/.opam
-        key: ${{ matrix.os }}-opam-build-${{ matrix.ocaml-version }}-0
     # Setup ocaml/opam
     - name: Setup ocaml/opam
-      uses: avsm/setup-ocaml@v1
+      uses: avsm/setup-ocaml@v2
       with:
+        cache-prefix: build
         ocaml-version: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
-    # Pin the repo
-    - name: Pin the repo
-      run: opam pin add . --no-action
-    # Install external deps
-    # Note: for this to run, the with-test option must *NOT* be present else
-    #       cyclic dependencies raise some errors.
-    - name: Install external deps
-      run: opam depext dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
     # Install ocaml deps
     - name: Install Ocaml deps
       run: opam install . --deps-only
     # Build the package
     - name: Build the package
       run: opam exec -- make
-    # Un-pin the local repo to avoid polluting the cache
-    - name: Un-pin the local repo
-      run: opam pin remove dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
-

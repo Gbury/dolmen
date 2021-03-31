@@ -41,12 +41,12 @@ jobs:
 
         # Ocaml version to test
         ocaml-version:
-          - 4.11.2
+          - ocaml-base-compiler.4.12.0
 
     # Build ENV
     # ---------
     env:
-      # EXAMPLE
+      # Ensure opam will not stop because it waits on some user input
       OPAMYES: "true"
 
     # Build/test steps
@@ -57,28 +57,15 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: '1'
-    # Cache the opam directory for faster setups
-    - name: Cach opam directory
-      uses: actions/cache@v2
-      with:
-        path: ~/.opam
-        key: ${{ matrix.os }}-opam-test-${{ matrix.ocaml-version }}-0
     # Setup ocaml/opam
     - name: Setup ocaml/opam
-      uses: avsm/setup-ocaml@v1
+      uses: avsm/setup-ocaml@v2
       with:
+        cache-prefix: test
         ocaml-version: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
-    # Pin the repo
-    - name: Pin the repo
-      run: opam pin add . --no-action
-    # Install external deps
-    # Note: for this to run, the with-test option must *NOT* be present else
-    #       cyclic dependencies raise some errors.
-    - name: Install external deps
-      run: opam depext dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
     # Install ocaml deps
     - name: Install Ocaml deps
       run: opam install . --deps-only --with-doc --with-test
@@ -91,10 +78,6 @@ jobs:
     # Check the tests
     - name: Build the examples
       run: opam exec -- make test
-    # Un-pin the local repo to avoid polluting the cache
-    - name: Un-pin the local repo
-      run: opam pin remove dolmen dolmen_type dolmen_loop dolmen_lsp dolmen_bin
-
 
     # Update the doc
     # --------------
