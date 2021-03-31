@@ -1,7 +1,7 @@
-# Buildability check
-# ==================
-# Build the compiler with the makefile
-name: build
+# Installability tests
+# ====================
+# Build the compiler with makefiles and run the testsuite
+name: install
 
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
@@ -15,10 +15,10 @@ on:
       - master
 
 jobs:
-  # Build workflow
-  # ==============
-  # Goal: Ensure the packages builds across all supported
-  # versions of the ocaml compiler.
+  # Install workflow
+  # ================
+  # Goal: Ensure the packages install as separate packages
+  # using opam
   build:
 
     runs-on: ${{ matrix.os }}
@@ -34,20 +34,20 @@ jobs:
         # TODO: add macos-latest and windows-latest
         os:
           - ubuntu-latest
-          #- macos-latest
-          #- windows-latest
+          - macos-latest
+          - windows-latest
 
-        # Ocaml versions to test. This is a bit of a misnomer, considering
-        # that it is actually just a list of package to install as the base
-        # of the switch
+        # Dolmen package to test installation of
+        dolmen-pkg:
+          - dolmen
+          - dolmen_type
+          - dolmen_loop
+          - dolmen_bin
+          - dolmen_lsp
+
+        # Ocaml versions to use
         ocaml-version:
-          - ocaml-variants.4.12.0+options,ocaml-option-flambda
-          - ocaml-variants.4.12.0+options,ocaml-option-32bit
           - ocaml-base-compiler.4.12.0
-          - ocaml-base-compiler.4.11.2
-          - ocaml-base-compiler.4.10.1
-          - ocaml-base-compiler.4.09.1
-          - ocaml-base-compiler.4.08.1
 
     # Build ENV
     # ---------
@@ -73,9 +73,7 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
-    # Install ocaml deps
-    - name: Install Ocaml deps
-      run: opam install . --deps-only
-    # Build the package
-    - name: Build the package
-      run: opam exec -- make
+    # Install the "dolmen" package
+    - name: Install package
+      run: opam install ${{ matrix.dolmen-pkg }}
+
