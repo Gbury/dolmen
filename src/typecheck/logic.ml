@@ -106,12 +106,18 @@ module Smtlib2 = struct
     (* After the QF, Array and UF theories have been specified,
        BV can be specified *)
     and parse_bv c = function
-      | 'B'::'V'::l -> parse_dt (add_theory `Bitvectors c) l
-      | l -> parse_dt c l
+      | 'B'::'V'::l -> parse_dt_or_fp (add_theory `Bitvectors c) l
+      | l -> parse_dt_or_fp c l
+    (* DT and FP do not have clear ordering, so we allow to specify them in
+       any order. *)
+    and parse_dt_or_fp c = function
+      | 'D'::'T'::l -> parse_fp (set_dt c) l
+      | 'F'::'P'::l -> parse_dt (add_theory `Floats c) l
+      | l -> parse_str c l
     (* DT *)
     and parse_dt c = function
-      | 'D'::'T'::l -> parse_fp (set_dt c) l
-      | l -> parse_fp c l
+      | 'D'::'T'::l -> parse_str (set_dt c) l
+      | l -> parse_str c l
     (* FP theory *)
     and parse_fp c = function
       | 'F'::'P'::l -> parse_str (add_theory `Floats c) l
@@ -134,7 +140,9 @@ module Smtlib2 = struct
     (* End of list *)
     and parse_end c = function
       | [] -> Some c
-      | _ -> None
+      | l ->
+        Format.eprintf "%a" (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ") Format.pp_print_char) l;
+        None
     in
     (* Parse the logic name *)
     let res = parse_logic default (Misc.Strings.to_list s) in
