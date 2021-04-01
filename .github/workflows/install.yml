@@ -6,7 +6,8 @@ name: install
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
 # or pull request against it).
-on:
+on: # release
+  # TODO comment these lines, and uncomment the one above
   push:
     branches:
       - master
@@ -68,7 +69,6 @@ jobs:
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
       with:
-        cache-prefix: build
         ocaml-version: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo

@@ -61,7 +61,6 @@ jobs:
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
       with:
-        cache-prefix: test
         ocaml-version: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
