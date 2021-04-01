@@ -38,6 +38,10 @@ jobs:
           - macos-latest
           - windows-latest
 
+        # Ocaml versions to use
+        ocaml-version:
+          - 4.12.0
+
         # Dolmen package to test installation of
         dolmen-pkg:
           - dolmen
@@ -46,14 +50,6 @@ jobs:
           - dolmen_bin
           - dolmen_lsp
 
-        # Ocaml versions to use
-        ocaml-version:
-          - ocaml-base-compiler.4.12.0
-
-        # windows requires a slightly different compiler version
-        include:
-          - os: windows-latest
-            ocaml-version: ocaml-variants.4.12.0+mingw64c
 
     # Build ENV
     # ---------
@@ -71,14 +67,21 @@ jobs:
       with:
         fetch-depth: '1'
     # Setup ocaml/opam
-    - name: Setup ocaml/opam
+    - name: Setup ocaml/opam on Windows
       uses: avsm/setup-ocaml@v2
+      if: runner.os == 'Windows'
       with:
-        ocaml-version: ${{ matrix.ocaml-version }}
+        ocaml-version: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c
+    - name: Setup ocaml/opam on Unix
+      uses: avsm/setup-ocaml@v2
+      if: runner.os != 'Windows'
+      with:
+        opam-version: ocaml-base-compiler.${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
     # Install the "dolmen" package
     - name: Install package
       run: opam install ${{ matrix.dolmen-pkg }}
+
 
