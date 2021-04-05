@@ -57,6 +57,9 @@ module type Term = sig
   val eq : ?loc:location -> t -> t -> t
   (** Make an equality between terms. *)
 
+  val neq : ?loc:location -> t list -> t
+  (** Make an disequality between terms. *)
+
   val not_  : ?loc:location -> t -> t
   val or_   : ?loc:location -> t list -> t
   val and_  : ?loc:location -> t list -> t

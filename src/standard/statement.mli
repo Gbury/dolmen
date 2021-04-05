@@ -29,7 +29,7 @@ type inductive = {
   vars : term list;
   cstrs : (Id.t * term list) list;
   loc : location;
-  attr : term option;
+  attrs : term list;
 }
 (** The type for inductive type declarations. The "vars" field if used
     to store polymorphic variables of the inductive type. For instance,
@@ -46,7 +46,7 @@ type record = {
   vars : term list;
   fields : (Id.t * term) list;
   loc : location;
-  attr : term option;
+  attrs : term list;
 }
 (** The type of record definitions. *)
 
@@ -145,7 +145,7 @@ type descr =
 and t = {
   id : Id.t;
   descr : descr;
-  attr : term option;
+  attrs : term list;
   loc : location;
 }
 (** The type of statements. Statements have optional location and attributes (or annotations).
@@ -163,17 +163,17 @@ include Dolmen_intf.Stmt.Logic
 (** {2 Additional functions} *)
 
 val mk_decls :
-  ?loc:location -> ?attr:term -> recursive:bool -> decl list -> t
+  ?loc:location -> ?attrs:term list -> recursive:bool -> decl list -> t
 (** Create a group of declarations *)
 
 val mk_defs :
-  ?loc:location -> ?attr:term -> recursive:bool -> def list -> t
+  ?loc:location -> ?attrs:term list -> recursive:bool -> def list -> t
 (** Create a group of declarations *)
 
 val prove : ?loc:location -> unit -> t
 (** Emit a [Prove] statement. *)
 
-val pack : ?id:Id.t -> ?loc:location -> ?attr:term -> t list -> t
+val pack : ?id:Id.t -> ?loc:location -> ?attrs:term list -> t list -> t
 (** Pack a list of statements into a single one. *)
 
 

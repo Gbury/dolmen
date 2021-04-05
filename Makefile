@@ -15,12 +15,13 @@ dune:
 doc:
 	dune build $(FLAGS) @doc
 
-test: dune
+gentests: $(wildcard tests/**/*)
 	dune exec -- tools/gentests.exe tests/
+
+test: gentests
 	dune build $(FLAGS) @runtest
 
-test-promote: dune
-	dune exec -- tools/gentests.exe tests/
+promote: gentests
 	-dune build $(FLAGS) @runtest
 	dune promote $(FLAGS)
 
@@ -36,4 +37,4 @@ clean:
 	rm -rf _coverage
 	$(COMP) clean
 
-.PHONY: all watch dune bin test doc clean
+.PHONY: all watch dune doc gentests test promote coverage clean

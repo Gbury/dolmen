@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-(** External Typechecker interface for TFF
+(** External Typechecker interface for THF
 
     This module defines the external typechcker interface, that is,
     the interface of an instantiated typechecker. *)
@@ -13,9 +13,9 @@ module type S = sig
 
   (** {2 Module aliases} *)
   module Tag: Dolmen.Intf.Tag.S
-  module Ty: Dolmen.Intf.Ty.Tff
+  module Ty: Dolmen.Intf.Ty.Thf
     with type 'a tag := 'a Tag.t
-  module T: Dolmen.Intf.Term.Tff
+  module T: Dolmen.Intf.Term.Thf
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
      and type ty_const := Ty.Const.t

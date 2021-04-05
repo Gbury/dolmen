@@ -824,7 +824,7 @@ module Tptp = struct
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Tptp_Arith with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Tptp_Arith with type t := Type.T.t
+      (T : Dolmen.Intf.Term.Tptp_Tff_Arith with type t := Type.T.t
                                         and type ty := Type.Ty.t) = struct
 
     type _ Type.err +=
@@ -955,7 +955,7 @@ end
 
 (* Ae arithmetic *)
 (* ************************************************************************ *)
-
+(*
 module Ae = struct
 
   module Tff
@@ -964,7 +964,50 @@ module Ae = struct
       (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
                                       and type ty := Type.Ty.t) = struct
 
+  end
+end
+*)
+(* Zf arithmetic *)
+(* ************************************************************************ *)
 
+module Zf = struct
+
+  module Thf
+      (Type : Thf_intf.S)
+      (Ty : Dolmen.Intf.Ty.Zf_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Zf_Arith with type t := Type.T.t) = struct
+
+    let parse env s =
+      match s with
+      (* Types *)
+      | Type.Builtin Term.Int ->
+        `Ty (Base.app0 (module Type) env "int" Ty.int)
+
+      (* Literals *)
+      | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
+        `Term (Base.app0 (module Type) env name (T.int name))
+
+      (* Arithmetic *)
+      | Type.Builtin Term.Minus ->
+        `Term (Base.term_app1 (module Type) env "-" T.Int.minus)
+      | Type.Builtin Term.Add ->
+        `Term (Base.term_app2 (module Type) env "+" T.Int.add)
+      | Type.Builtin Term.Sub ->
+        `Term (Base.term_app2 (module Type) env "-" T.Int.sub)
+      | Type.Builtin Term.Mult ->
+        `Term (Base.term_app2 (module Type) env "*" T.Int.mul)
+      | Type.Builtin Term.Lt ->
+        `Term (Base.term_app2 (module Type) env "<" T.Int.lt)
+      | Type.Builtin Term.Leq ->
+        `Term (Base.term_app2 (module Type) env "<=" T.Int.le)
+      | Type.Builtin Term.Gt ->
+        `Term (Base.term_app2 (module Type) env "<" T.Int.gt)
+      | Type.Builtin Term.Geq ->
+        `Term (Base.term_app2 (module Type) env "<=" T.Int.ge)
+
+      (* Catch-all *)
+      | _ -> `Not_found
 
   end
 end
+

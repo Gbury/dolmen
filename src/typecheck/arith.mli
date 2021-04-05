@@ -97,7 +97,7 @@ module Tptp : sig
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Tptp_Arith with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Tptp_Arith with type t := Type.T.t
+      (T : Dolmen.Intf.Term.Tptp_Tff_Arith with type t := Type.T.t
                                         and type ty := Type.Ty.t) : sig
 
     type _ Type.err +=
@@ -111,6 +111,19 @@ module Tptp : sig
     (** Additional errors specific to arithmetic typing. *)
 
     val parse : Dolmen.Tptp.version -> Type.builtin_symbols
+  end
+
+end
+
+(** Zf Arithmetic *)
+module Zf : sig
+
+  module Thf
+      (Type : Thf_intf.S)
+      (Ty : Dolmen.Intf.Ty.Zf_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Zf_Arith with type t := Type.T.t) : sig
+
+    val parse : Type.builtin_symbols
   end
 
 end

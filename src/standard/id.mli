@@ -103,4 +103,7 @@ val tptp_role : t
 (** The tagged statement has a tptp role. Should be used as a function
     symbol applied to the actual tptp role. *)
 
+val tptp_kind : t
+(** The tagged statement is of the given kind (e.g. tff, thf, ...).
+    Should be used as a function symbol applied to the actual tptp kind. *)
 

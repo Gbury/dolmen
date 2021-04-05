@@ -123,9 +123,9 @@ module Declare(Type : Tff_intf.S) = struct
     | Id id ->
       begin match M.find id (get_defs env) with
         | `Ty c -> `Ty (fun ast args ->
-            Type.unwrap_ty env ast (Type.parse_app_ty env ast c args))
+            Type.unwrap_ty env ast (Type.parse_app_ty_cst env ast c args))
         | `Term c -> `Term (fun ast args ->
-            Type.unwrap_term env ast (Type.parse_app_term env ast c args))
+            Type.unwrap_term env ast (Type.parse_app_term_cst env ast c args))
         | exception Not_found -> `Not_found
       end
     | Builtin _ -> `Not_found

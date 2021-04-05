@@ -22,7 +22,18 @@ module Tptp : sig
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Tptp_Base with type t = Type.T.t) : sig
+      (T : Dolmen.Intf.Term.Tptp_Tff_Core with type t = Type.T.t) : sig
+
+    val parse : Dolmen.Tptp.version -> Type.builtin_symbols
+
+  end
+
+  (** Builtin symbols for tptp's tff *)
+  module Thf
+      (Type : Thf_intf.S)
+      (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Tptp_Thf_Core with type t = Type.T.t
+                                           and type Const.t = Type.T.Const.t) : sig
 
     val parse : Dolmen.Tptp.version -> Type.builtin_symbols
 
@@ -52,7 +63,9 @@ module Zf : sig
   (** Builtins for smtlib's core theory *)
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Zf_Base with type 'a t = 'a Type.Tag.t) : sig
+      (Tag : Dolmen.Intf.Tag.Zf_Base with type 'a t = 'a Type.Tag.t)
+      (Ty : Dolmen.Intf.Ty.Zf_Base with type t = Type.Ty.t)
+      (T : Dolmen.Intf.Term.Zf_Base with type t = Type.T.t) : sig
 
     val parse : Type.builtin_symbols
   end

@@ -10,6 +10,9 @@ module type S = sig
   type 'a t
   (** Polymorphic tags *)
 
+  val create : unit -> 'a t
+  (** Create a new tag. *)
+
 end
 
 (** Minium required signature for tags to typecheck smtlib's core/base theory. *)

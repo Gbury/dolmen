@@ -77,7 +77,7 @@ type map = M.t
 
 type 'a t = {
   id : int;
-  inj : 'a list injection;
+  inj : 'a injection;
 }
 
 let equal k k' = k.id = k'.id
@@ -93,18 +93,34 @@ let create () =
 let empty = M.empty
 
 let get m k =
-  match M.get ~inj:k.inj k.id m with
+  M.get ~inj:k.inj k.id m
+
+let get_list m k =
+  match get m k with
   | None -> []
   | Some l -> l
 
-let last m k =
+let get_last m k =
   match get m k with
-  | x :: _ -> Some x
-  | [] -> None
+  | None -> None
+  | Some [] -> None
+  | Some (x :: _) -> Some x
 
-let replace m k l =
+let set m k l =
   M.add ~inj:k.inj k.id l m
 
+let set_opt m k = function
+  | None -> m
+  | Some v -> set m k v
+
 let add m k v =
-  replace m k (v :: get m k)
+  set m k (v :: get_list m k)
+
+let add_opt m k = function
+  | None -> m
+  | Some v -> add m k v
+
+let add_list m k = function
+  | [] -> m
+  | l -> set m k (List.rev_append l (get_list m k))
 

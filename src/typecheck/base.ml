@@ -313,6 +313,24 @@ let term_app4_ast
       mk ast (Type.parse_term env a) (Type.parse_term env b)
         (Type.parse_term env c) (Type.parse_term env d))
 
+(* N-ary application *)
+
+let term_app_list
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    ?(check=(fun _ -> ())) env _name mk = (fun _ast args ->
+    List.iter check args;
+    mk (List.map (Type.parse_term env) args)
+  )
+
+let term_app_list_ast
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    ?(check=(fun _ -> ())) env _name mk = (fun ast args ->
+    List.iter check args;
+    mk ast (List.map (Type.parse_term env) args)
+  )
+
 
 (* Left associative applications *)
 
@@ -373,5 +391,25 @@ let term_app_chain_ast
       let l' = List.map (Type.parse_term env) l in
       map_chain (module Type) (mk ast) l'
     )
+
+(* Higher-order application *)
+
+let term_app_cst
+    (type env) (type term) (type cst)
+    (module Type : Tff_intf.S with type env = env and type T.t = term and type T.Const.t = cst)
+    env cst = fun ast args ->
+  Type.unwrap_term env ast (Type.parse_app_term_cst env ast cst args)
+
+let term_app_ho
+    (type env) (type term)
+    (module Type : Thf_intf.S with type env = env and type T.t = term)
+    env f = fun ast args ->
+  Type.unwrap_term env ast (Type.parse_app_ho_term env ast f args)
+
+let term_app_ho_ast
+    (type env) (type term)
+    (module Type : Thf_intf.S with type env = env and type T.t = term)
+    env f = fun ast args ->
+  Type.unwrap_term env ast (Type.parse_app_ho_term env ast (f ast) args)
 
 

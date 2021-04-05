@@ -3,14 +3,14 @@
     This module provides functions to typecheck terms from the
     untyped syntax tree defined in the standard implementation. *)
 
-module type S = Tff_intf.S
+module type S = Thf_intf.S
 (** Typechecker external interface *)
 
 module Make
     (Tag: Dolmen.Intf.Tag.S)
-    (Ty: Dolmen.Intf.Ty.Tff
+    (Ty: Dolmen.Intf.Ty.Thf
      with type 'a tag := 'a Tag.t)
-    (T: Dolmen.Intf.Term.Tff
+    (T: Dolmen.Intf.Term.Thf
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t

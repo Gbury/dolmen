@@ -9,12 +9,28 @@ module type S = sig
 
   type ty
   type ty_var
-  type ty_const
+  type ty_cst
 
   type term
   type term_var
-  type term_const
+  type term_cst
 
   type formula
+
+end
+
+module type Print = sig
+
+  include S
+
+  val ty : Format.formatter -> ty -> unit
+  val ty_var : Format.formatter -> ty_var -> unit
+  val ty_cst : Format.formatter -> ty_cst -> unit
+
+  val term : Format.formatter -> term -> unit
+  val term_var : Format.formatter -> term_var -> unit
+  val term_cst : Format.formatter -> term_cst -> unit
+
+  val formula : Format.formatter -> formula -> unit
 
 end

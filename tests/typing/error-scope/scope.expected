@@ -1,0 +1,4 @@
+File "tests/typing/error-scope/scope.zf", line 3, character 25-28:
+Error Cannot infer a monomorphic type for the quantified variable f, bound at
+      line 2, character 12-13. The following variable would escape its
+      scope: a, bound at line 3, character 7-16.
