@@ -146,7 +146,7 @@ type binder =
       a variable (optionnally typed using the {!Colon} constructor. *)
   | Arrow
   (** The arrow binder, for function types. Allows for curified types, if wanted. *)
-  | Let
+  | Let_seq
   (** Let bindings (either propositional or for terms).
       Term bound by a let can have many forms depending on the language, but usual
       shapes are:
@@ -158,6 +158,14 @@ type binder =
         and a term/proposition (e.g. in tptp)
       - a variable and a term juxtaposed using the {!Colon} constructor (e.g. in smtlib)
   *)
+  | Let_par
+  (** Similar to [Let_seq]; except that the list of bindings should be considered all
+      bound at the same time/level/scope. 
+      More precisely, for [Let_seq], the list of bindings is to be understood
+      sequentially (i.e. [Let_seq (b1 :: b2 ...)] is semantically the same as
+      [Let_seq b1 (Let_seq b2 (..))]. For [Let_par], the list of bindings all
+      happen at the same time: the defining expressions of each binding cannot
+      refer to other bindings in the same parralel let-binding. *)
   | Fun
   (** Lambda, i.e function abstraction binder.
       Bound terms are the variables bound by the lambda, optionnally typed

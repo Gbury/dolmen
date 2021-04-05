@@ -12,6 +12,10 @@ type 'a tag = 'a Tag.t
 (* Extensible variant type for builtin operations *)
 type builtin = ..
 
+type let_kind =
+  | Parallel
+  | Sequential
+
 (* Type for first order types *)
 type ttype = Type
 
@@ -64,7 +68,7 @@ and term_descr =
 and binder =
   | Exists of ty_var list * term_var list
   | Forall of ty_var list * term_var list
-  | Letin  of (term_var * term) list
+  | Letin  of let_kind * (term_var * term) list
 
 and term = {
   ty : ty;
@@ -423,10 +427,14 @@ module Print = struct
         binder_name b
         (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) tys
         (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) ts
-    | Letin l ->
+    | Letin (Sequential, l) ->
       Format.fprintf fmt "%a @[<hv>%a@]"
         binder_name b
         (Format.pp_print_list ~pp_sep:(return ",@ ") binding) l
+    | Letin (Parallel, l) ->
+      Format.fprintf fmt "%a @[<hv>%a@]"
+        binder_name b
+        (Format.pp_print_list ~pp_sep:(return "and@ ") binding) l
 
   and binding fmt (v, t) =
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
@@ -1158,7 +1166,7 @@ module Term = struct
       hash3 3 (hash_list Id.hash tys) (hash_list Id.hash ts)
     | Forall (tys, ts) ->
       hash3 5 (hash_list Id.hash tys) (hash_list Id.hash ts)
-    | Letin l ->
+    | Letin (_, l) ->
       let aux (v, t) = hash2 (Id.hash v) (hash t) in
       hash2 7 (hash_list aux l)
 
@@ -1208,13 +1216,21 @@ module Term = struct
     | Forall (tys, ts), Forall (tys', ts') ->
       lexicographic Id.compare tys tys'
       <?> (lexicographic Id.compare, ts, ts')
-    | Letin l, Letin l' ->
+    | Letin (kind, l), Letin (kind', l') ->
       let aux (v, t) (v', t') = Id.compare v v' <?> (compare, t, t') in
-      lexicographic aux l l'
+      compare_let_kind kind kind'
+      <?> (lexicographic aux, l, l')
     | _, _ -> (binder_discr b) - (binder_discr b')
 
   and compare_branch (p, b) (p', b') =
     compare p p' <?> (compare, b, b')
+
+  and compare_let_kind k k' =
+    match k, k' with
+    | Sequential, Sequential
+    | Parallel, Parallel -> 0
+    | Sequential, Parallel -> -1
+    | Parallel, Sequential -> 1
 
   let equal u v = compare u v = 0
 
@@ -1233,7 +1249,7 @@ module Term = struct
       let fv = FV.remove fv tys in
       let fv = FV.remove fv ts in
       FV.merge fv acc
-    | Binder (Letin l, body) ->
+    | Binder (Letin (Sequential, l), body) ->
       let fv = free_vars FV.empty body in
       let fv = List.fold_right (fun (v, t) acc ->
           let acc = free_vars acc t in
@@ -1241,6 +1257,18 @@ module Term = struct
           let acc = Ty.free_vars acc v.ty in
           acc
         ) l fv in
+      FV.merge fv acc
+    | Binder (Letin (Parallel, l), body) ->
+      let fv = free_vars FV.empty body in
+      let fv = List.fold_right (fun (_, t) acc ->
+          free_vars acc t
+        ) l fv
+      in
+      let fv = List.fold_right (fun (v, _) acc ->
+          let acc = FV.del v acc in
+          Ty.free_vars acc v.ty
+        ) l fv
+      in
       FV.merge fv acc
     | Match (scrutinee, branches) ->
       let acc = free_vars acc scrutinee in
@@ -2281,9 +2309,9 @@ module Term = struct
       let ty_var_map = ty_var_list_subst ty_var_map tys in
       let ts, t_var_map = term_var_list_subst ty_var_map t_var_map [] ts in
       Forall (tys, ts), ty_var_map, t_var_map
-    | Letin l ->
+    | Letin (kind, l) ->
       let l, t_var_map = binding_list_subst ~fix ty_var_map t_var_map [] l in
-      Letin l, ty_var_map, t_var_map
+      Letin (kind, l), ty_var_map, t_var_map
 
   and binding_list_subst ~fix ty_var_map t_var_map acc = function
     | [] -> List.rev acc, t_var_map
@@ -2935,9 +2963,13 @@ module Term = struct
     List.iter (fun ((v : Var.t), t) ->
         if not (Ty.equal v.ty (ty t)) then raise (Wrong_type (t, v.ty))
       ) l;
-    mk_bind (Letin l) body
+    mk_bind (Letin (Sequential, l)) body
 
-
+  let letand l body =
+    List.iter (fun ((v : Var.t), t) ->
+        if not (Ty.equal v.ty (ty t)) then raise (Wrong_type (t, v.ty))
+      ) l;
+    mk_bind (Letin (Parallel, l)) body
 
 end
 

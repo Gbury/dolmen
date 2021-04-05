@@ -220,7 +220,7 @@ module Make
     | Unhandled_builtin : Ast.builtin -> Ast.t err
     | Cannot_tag_tag : Ast.t err
     | Cannot_tag_ttype : Ast.t err
-    | Cannot_find : Id.t -> Ast.t err
+    | Cannot_find : Id.t * string -> Ast.t err
     | Type_var_in_type_constructor : Ast.t err
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
@@ -386,8 +386,8 @@ module Make
   let _uncaught_exn env ast exn bt =
     _error env (Ast ast) (Uncaught_exn (exn, bt))
 
-  let _cannot_find env ast s =
-    _error env (Ast ast) (Cannot_find s)
+  let _cannot_find ?(hint="") env ast s =
+    _error env (Ast ast) (Cannot_find (s, hint))
 
   let _wrap env ast f arg =
     try f arg
@@ -942,8 +942,10 @@ module Make
         parse_builtin env ast b l
 
       (* Local bindings *)
-      | { Ast.term = Ast.Binder (Ast.Let, vars, f); _ } ->
-        parse_let env [] f vars
+      | { Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } ->
+        parse_let_seq env [] f vars
+      | { Ast.term = Ast.Binder (Ast.Let_par, vars, f); _ } ->
+        parse_let_par env [] f vars
 
       (* Type annotations *)
       | { Ast.term = Ast.Colon (a, expected); _ } ->
@@ -1088,8 +1090,8 @@ module Make
     in
     List.rev l, env
 
-  and parse_let env acc f = function
-    | [] -> (* TODO: use continuation to avoid stack overflow on packs of let-bindings ? *)
+  and parse_let_seq env acc f = function
+    | [] ->
       let l = List.rev acc in
       begin match parse_expr env f with
         | Term t -> Term (T.letin l t)
@@ -1105,7 +1107,46 @@ module Make
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
           let v', env' = bind_term_var env s e v t w in
-          parse_let env' ((v', t) :: acc) f r
+          parse_let_seq env' ((v', t) :: acc) f r
+        | t -> _expected env "variable binding" t None
+      end
+
+  and parse_let_par env acc f = function
+    | [] ->
+      let env, rev_l =
+        List.fold_right (fun (s, e, v, t, w) (env, acc) ->
+            let v', env' = bind_term_var env s e v t w in
+            (env', (v', t) :: acc)
+          ) acc (env, [])
+      in
+      let l = List.rev rev_l in
+      begin match parse_expr env f with
+        | Term t -> Term (T.letand l t)
+        | res -> _expected env "term of formula" f (Some res)
+      end
+    | x :: r ->
+      begin match x with
+        | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ } as w, e); _ }
+        | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Eq; _}, [
+                { Ast.term = Ast.Symbol s; _ } as w; e]); _ }
+        | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, [
+                { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
+          begin match parse_term env e with
+            | t ->
+              let v = T.Var.mk (Id.full_name s) (T.ty t) in
+              parse_let_par env ((s, e, v, t, w) :: acc) f r
+            (* Try and provide a helpful hints when a parallel let is used as
+               a sequential let-binding *)
+            | exception (Typing_error (Error (
+                env, fragment, Cannot_find (id, ""))))
+                when List.exists (fun (s, _, _, _, _) -> Id.equal s id) acc ->
+              let msg =
+                "This binding occurs in a parallel let-binding; you cannot refer \
+                 to other variables defined by the same let-binding in the defining \
+                 expressions."
+              in
+              _error env fragment (Cannot_find (id, msg))
+          end
         | t -> _expected env "variable binding" t None
       end
 

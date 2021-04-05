@@ -333,8 +333,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Cannot_tag_ttype ->
       Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
 
-    | T.Cannot_find id ->
-      Format.fprintf fmt "Unbound identifier:@ '%a'" Dolmen.Std.Id.print id
+    | T.Cannot_find (id, msg) ->
+      Format.fprintf fmt "Unbound identifier:@ '%a'%a" Dolmen.Std.Id.print id pp_hint msg
 
     | T.Forbidden_quantifier ->
       Format.fprintf fmt "Quantified expressions are forbidden by the logic."

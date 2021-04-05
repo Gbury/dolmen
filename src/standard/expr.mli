@@ -16,6 +16,10 @@ type hash = private int
 type index = private int
 type 'a tag = 'a Tag.t
 
+type let_kind =
+  | Parallel
+  | Sequential
+
 type builtin = ..
 (* Extensible variant type for builtin operations. Encodes in its type
    arguments the lengths of the expected ty and term arguments respectively. *)
@@ -84,7 +88,7 @@ and term_descr =
 and binder =
   | Exists of ty_var list * term_var list
   | Forall of ty_var list * term_var list
-  | Letin  of (term_var * term) list (**)
+  | Letin  of let_kind * (term_var * term) list (**)
 (** Binders. *)
 
 and term = {
@@ -1533,7 +1537,10 @@ module Term : sig
       variable with its defining term. *)
 
   val letin : (Var.t * t) list -> t -> t
-  (** Let-binding. Variabels can be bound to either terms or formulas. *)
+  (** Sequential let-binding. Variables can be bound to either terms or formulas. *)
+
+  val letand : (Var.t * t) list -> t -> t
+  (** Parrallel let-binding. Variables can be bound to either terms or formulas. *)
 
   val ite : t -> t -> t -> t
   (** [ite condition then_t else_t] creates a conditional branch. *)

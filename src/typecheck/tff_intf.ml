@@ -223,7 +223,7 @@ module type S = sig
     (** *)
     | Cannot_tag_ttype : Dolmen.Std.Term.t err
     (** *)
-    | Cannot_find : Dolmen.Std.Id.t -> Dolmen.Std.Term.t err
+    | Cannot_find : Dolmen.Std.Id.t * string -> Dolmen.Std.Term.t err
     (** *)
     | Type_var_in_type_constructor : Dolmen.Std.Term.t err
     (** *)

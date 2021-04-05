@@ -1,0 +1,5 @@
+File "tests/regression/pr63/pb.smt2", line 2, character 26-27:
+Error Unbound identifier: 'x'
+      Hint: This binding occurs in a parallel let-binding; you cannot refer
+        to other variables defined by the same let-binding in the defining
+        expressions.

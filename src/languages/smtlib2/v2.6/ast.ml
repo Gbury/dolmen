@@ -64,8 +64,9 @@ module type Term = sig
   val apply   : ?loc:location -> t -> t list -> t
   (** Application. *)
 
-  val letin   : ?loc:location -> t list -> t -> t
-  (** Local bindings. The bindings are a list of terms built using the [colon] function. *)
+  val letand   : ?loc:location -> t list -> t -> t
+  (** Local parrallel bindings. The bindings are a list of terms built using
+      the [colon] function. *)
 
   val forall  : ?loc:location -> t list -> t -> t
   (** Universal quantification. *)
