@@ -39,6 +39,26 @@ module Ae = struct
 
 end
 
+(* Alt-ergo builtins *)
+(* ************************************************************************ *)
+
+module Dimacs = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (T : Dolmen.Intf.Term.Dimacs with type t = Type.T.t) = struct
+
+    let parse env s =
+      match s with
+      | Type.Builtin Ast.Not ->
+        `Term (Base.term_app1 (module Type) env "not" T.neg)
+      | _ -> `Not_found
+
+  end
+
+end
+
+
 (* TPTP builtins ($i, $o, etc..) *)
 (* ************************************************************************ *)
 

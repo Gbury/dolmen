@@ -15,6 +15,19 @@ module Ae : sig
   end
 end
 
+(** Dimacs builtins *)
+module Dimacs : sig
+
+  (** Builtin symbols for tptp's tff *)
+  module Tff
+      (Type : Tff_intf.S)
+      (T : Dolmen.Intf.Term.Dimacs with type t = Type.T.t) : sig
+
+    val parse : Type.builtin_symbols
+
+  end
+end
+
 (** TPTP builtins ($i, $o, etc..) *)
 module Tptp : sig
 

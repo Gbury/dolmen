@@ -24,6 +24,10 @@ module Ae_Core =
   Dolmen_type.Core.Ae.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
+(* Dimacs builtin *)
+module Dimacs =
+  Dolmen_type.Core.Dimacs.Tff(T)(Dolmen.Std.Expr.Term)
+
 (* Tptp builtins *)
 module Tptp_Core =
   Dolmen_type.Core.Tptp.Tff(T)
@@ -633,7 +637,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
-      let builtins = Dolmen_type.Base.noop in
+      let builtins = Dimacs.parse in
       T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer
         ~var_infer ~sym_infer ~poly

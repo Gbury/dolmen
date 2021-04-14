@@ -570,6 +570,18 @@ module type Thf = sig
 
 end
 
+(** Minimum required to type dimacs *)
+module type Dimacs = sig
+
+  type t
+  (** The type of terms *)
+
+  val neg : t -> t
+  (** Logical negation. *)
+
+end
+
+
 (** Minimum required to type ae's tff *)
 module type Ae_Base = sig
 
