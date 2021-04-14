@@ -179,6 +179,7 @@ module type Logic = sig
   val pi     : ?loc:location -> t list -> t -> t
   val par    : ?loc:location -> t list -> t -> t
   val letin  : ?loc:location -> t list -> t -> t
+  val letand : ?loc:location -> t list -> t -> t
   val forall : ?loc:location -> t list -> t -> t
   val exists : ?loc:location -> t list -> t -> t
   val lambda : ?loc:location -> t list -> t -> t
@@ -190,7 +191,8 @@ module type Logic = sig
       - Pi is the polymorphic type quantification, for instance
         the polymorphic identity function has type: "Pi alpha. alpha -> alpha"
       - Letin is local binding, takes a list of equality of equivalences
-        whose left hand-side is a variable.
+        whose left hand-side is a variable. Letand is the parrallel version
+        of Letin.
       - Forall is universal quantification
       - Par is universal quantification over type variables specifically
         (i.e. the same as forall, but only for a list of type variables,
@@ -570,8 +572,10 @@ module type Tff = sig
       let-binding being typed. *)
 
   val letin : (Var.t * t) list -> t -> t
-  (** Create a let-binding. This function is called after the body of the
-      let-binding has been typed. *)
+  (** Create a sequential let-binding. *)
+
+  val letand : (Var.t * t) list -> t -> t
+  (** Create a parrallel let-binding. *)
 
   val pattern_match : t -> (t * t) list -> t
   (** [pattern_match scrutinee branches] creates a pattern match expression

@@ -155,7 +155,7 @@ term:
       | `NoAs f -> T.apply ~loc f args
       | `As (f,ty) -> T.colon (T.apply ~loc f args) ty }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.letin ~loc l t }
+    { let loc = L.mk_pos $startpos $endpos in T.letand ~loc l t }
   | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
   | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE

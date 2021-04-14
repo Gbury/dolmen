@@ -59,10 +59,14 @@ module Smtlib = struct
 
   let binder m ~attr ~loc b l body =
     match b with
-    | Term.Let ->
+    | Term.Let_seq ->
       let attrs = List.map (Term.map m) attr in
       let l' = List.map (binder_let_eq m) l in
       Term.add_attrs attrs (Term.letin ~loc l' (Term.map m body))
+    | Term.Let_par ->
+      let attrs = List.map (Term.map m) attr in
+      let l' = List.map (binder_let_eq m) l in
+      Term.add_attrs attrs (Term.letand ~loc l' (Term.map m body))
     | _ -> Term.(id_mapper.binder m ~attr ~loc b l body)
 
   let mapper =

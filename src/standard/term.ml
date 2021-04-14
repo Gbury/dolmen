@@ -53,7 +53,9 @@ type builtin =
 type binder =
   | All | Ex
   | Pi | Arrow
-  | Let | Fun           (* Standard binders *)
+  | Let_seq             (* sequential let-binding *)
+  | Let_par             (* parrallel let-binding *)
+  | Fun                 (* function parameter binding *)
   | Choice              (* Indefinite description, or epsilon terms *)
   | Description         (* Definite description *)
 
@@ -148,11 +150,35 @@ let binder_to_string = function
   | All -> "∀"
   | Ex -> "∃"
   | Pi -> "Π"
-  | Arrow -> "→"
-  | Let -> "let"
+  | Arrow -> ""
+  | Let_seq
+  | Let_par -> "let"
   | Fun -> "λ"
   | Choice -> "ε"
   | Description -> "@"
+
+let binder_sep_string = function
+  | All
+  | Ex
+  | Pi
+  | Let_seq
+  | Fun
+  | Choice
+  | Description -> ""
+  | Let_par -> " and"
+  | Arrow -> " →"
+
+let binder_end_string = function
+  | All
+  | Ex
+  | Pi
+  | Choice
+  | Description -> "."
+  | Fun -> "=>"
+  | Let_seq
+  | Let_par -> "in"
+  | Arrow -> "→"
+
 
 (* Debug printing *)
 
@@ -171,12 +197,11 @@ let rec pp_descr b = function
   | App (f, l) ->
     Printf.bprintf b "%a(%a)" pp f
       (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l
-  | Binder (Arrow as q, l, e) ->
-    Printf.bprintf b "%a %a %a"
-      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" → " ~pp) l pp_binder q pp e
   | Binder (q, l, e) ->
-    Printf.bprintf b "%a %a. %a" pp_binder q
-      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:"," ~pp) l pp e
+    let sep = binder_sep_string q ^ " " in
+    Printf.bprintf b "%a %a %s %a" pp_binder q
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep ~pp) l
+      (binder_end_string q) pp e
   | Match (t, l) ->
     Printf.bprintf b "match %a with %a"
       pp t (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" | " ~pp:pp_match_case) l
@@ -202,22 +227,21 @@ let rec print_descr fmt = function
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
   | App ({ term = Builtin sep ; _ }, l) when infix_builtin (List.length l) sep ->
-    Misc.print_list ~print_sep:print_builtin ~sep ~print fmt l
+    let pp_sep fmt () = print_builtin fmt sep in
+    Format.pp_print_list ~pp_sep print fmt l
   | App (f, []) ->
     Format.fprintf fmt "%a" print f
   | App (f, l) ->
-    Format.fprintf fmt "%a@ %a" print f
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l
-  | Binder (Arrow as q, l, e) ->
-    Format.fprintf fmt "%a %a@ %a"
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"→@ " ~print) l
-      print_binder q print e
+    let pp_sep = Format.pp_print_space in
+    Format.fprintf fmt "%a@ %a" print f (Format.pp_print_list ~pp_sep print) l
   | Binder (q, l, e) ->
-    Format.fprintf fmt "%a@ %a.@ %a" print_binder q
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print) l print e
+    let pp_sep fmt () = Format.fprintf fmt "%s@ " (binder_sep_string q) in
+    Format.fprintf fmt "%a@ %a@ %s@ %a" print_binder q
+      (Format.pp_print_list ~pp_sep print) l (binder_end_string q) print e
   | Match (t, l) ->
+    let pp_sep fmt () = Format.fprintf fmt " | " in
     Format.fprintf fmt "match %a with %a" print t
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:" | " ~print:print_match_case) l
+      (Format.pp_print_list ~pp_sep print_match_case) l
 
 and print_match_case fmt (pattern, branch) =
   Format.fprintf fmt "%a => %a" print pattern print branch
@@ -458,7 +482,8 @@ let record_access ?loc t id =
 (* {2 Binders} *)
 
 let pi = mk_bind Pi
-let letin = mk_bind Let
+let letin = mk_bind Let_seq
+let letand = mk_bind Let_par
 let exists = mk_bind Ex
 let forall = mk_bind All
 let lambda = mk_bind Fun
