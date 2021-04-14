@@ -1,2 +1,2 @@
-File "tests/typing/errors/mismatch/test_tptp_infer.p", line 4, character 18-23:
+File "tests/typing/errors/type_mismatch/test_tptp_infer.p", line 4, character 18-23:
 Error The term: `12` has type int but was expected to be of type $i
