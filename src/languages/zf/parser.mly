@@ -157,7 +157,7 @@ eq_term:
   | t=not_term LOGIC_EQ u=not_term
     { let loc = L.mk_pos $startpos $endpos in T.eq ~loc t u }
   | t=not_term LOGIC_NEQ u=not_term
-    { let loc = L.mk_pos $startpos $endpos in T.not_ ~loc (T.eq ~loc t u) }
+    { let loc = L.mk_pos $startpos $endpos in T.neq ~loc [t; u] }
 
 and_term:
   | t=eq_term

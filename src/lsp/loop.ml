@@ -8,7 +8,7 @@ module Header = Dolmen_loop.Headers.Pipe(State)
 module Typer = struct
   module T = Dolmen_loop.Typer.Make(State)
   include T
-  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(State)(T)
+  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(T)
 end
 
 exception Finished of (State.t, string) result

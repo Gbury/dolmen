@@ -10,252 +10,91 @@ type index = int
 type 'a tag = 'a Tag.t
 
 (* Extensible variant type for builtin operations *)
-type builtin = ..
+type builtin = < ty_cst : ty_cst ; term_cst : term_cst > Builtin.t
 
-type let_kind =
-  | Parallel
-  | Sequential
-
-(* Type for first order types *)
-type ttype = Type
-
-(* Identifiers, parametrized by the kind of the type of the variable and
-   the lengths of the expected arguments lists *)
-type 'ty id = {
-  ty            : 'ty;
+(* Identifiers have a dual representation:
+   - in types and terms, they are just integers/indexes
+   - each index maps to a record that provides info about the identifier. *)
+and 'ty id = {
+  id_ty         : 'ty;
+  index         : index; (** unique index *)
   name          : string;
-  index         : index; (** unique *)
   builtin       : builtin;
   mutable tags  : Tag.map;
 }
 
-(* The type of functions *)
-type ('ttype, 'ty) function_type = {
-  fun_vars : 'ttype id list; (* prenex forall *)
-  fun_args : 'ty list;
-  fun_ret : 'ty;
+(* Type for first order types *)
+and type_ = Type
+and type_fun = {
+  arity : int;
+  mutable alias : type_alias;
 }
 
-(* Representation of types *)
-type ty_var = ttype id
+and type_alias =
+  | No_alias
+  | Alias of {
+      alias_vars : ty_var list;
+      alias_body : ty;
+    }
 
-and ty_const = (unit, ttype) function_type id
+(* Representation of polymorphic types
+   Rank-1 polymorphism is enforced at runtime *)
+and ty_var = type_ id
+
+and ty_cst = type_fun id
 
 and ty_descr =
-  | Var of ty_var
-  | App of ty_const * ty list
+  | TyVar of ty_var
+  | TyApp of ty_cst * ty list
+  | Arrow of ty list * ty
+  | Pi of ty_var list * ty
 
 and ty = {
-  as_ : ty_var option;
-  mutable descr : ty_descr;
-  mutable hash : hash; (* lazy hash *)
-  mutable tags : Tag.map;
+  mutable ty_hash : hash; (* lazy hash *)
+  mutable ty_tags : Tag.map;
+  mutable ty_descr : ty_descr;
+  mutable ty_head : ty;
 }
 
 (* Terms and formulas *)
-type term_var = ty id
+and term_var = ty id
 
-and term_const = (ttype, ty) function_type id
+and term_cst = ty id
 
 and pattern = term
 
 and term_descr =
   | Var of term_var
-  | App of term_const * ty list * term list
+  | Cst of term_cst
+  | App of term * ty list * term list
   | Binder of binder * term
   | Match of term * (pattern * term) list
 
 and binder =
+  | Let_seq  of (term_var * term) list
+  | Let_par of (term_var * term) list
+  | Lambda of ty_var list * term_var list
   | Exists of ty_var list * term_var list
   | Forall of ty_var list * term_var list
-  | Letin  of let_kind * (term_var * term) list
 
 and term = {
-  ty : ty;
-  descr : term_descr;
-  mutable hash : hash;
-  mutable tags : Tag.map;
+  term_ty : ty;
+  term_descr : term_descr;
+  mutable term_hash : hash;
+  mutable term_tags : Tag.map;
 }
 
 (* Alias for dolmen_loop and others who allow to have different types
    for terms and formulas. *)
-type formula = term
-
-(* Builtins *)
-(* ************************************************************************* *)
-
-type builtin += Base | Wildcard
-type builtin += Prop | Unit | Univ
-type builtin += Coercion
-type builtin +=
-  | True | False
-  | Equal | Distinct
-  | Neg | And | Or
-  | Nand | Nor | Xor
-  | Imply | Equiv
-type builtin += Ite
-type builtin +=
-  | Tester of {
-      cstr : term_const;
-    }
-  | Constructor of {
-      adt : ty_const;
-      case : int;
-    }
-  | Destructor of {
-      adt : ty_const;
-      cstr : term_const;
-      case : int;
-      field: int;
-    }
-
-(* arithmetic *)
-type builtin +=
-  | Int | Integer of string
-  | Rat | Rational of string
-  | Real | Decimal of string
-  | Lt | Leq | Gt | Geq
-  | Minus | Add | Sub | Mul
-  | Div
-  | Div_e | Modulo_e
-  | Div_t | Modulo_t
-  | Div_f | Modulo_f
-  | Abs | Divisible
-  | Is_int | Is_rat
-  | Floor | Ceiling | Truncate | Round
-
-(* arrays *)
-type builtin +=
-  | Array | Store | Select
-
-(* Bitvectors *)
-type builtin +=
-  | Bitv of int
-  | Bitvec of string
-  | Bitv_concat
-  | Bitv_extract of int * int
-  | Bitv_repeat
-  | Bitv_zero_extend
-  | Bitv_sign_extend
-  | Bitv_rotate_right of int
-  | Bitv_rotate_left of int
-  | Bitv_not | Bitv_and | Bitv_or
-  | Bitv_nand | Bitv_nor
-  | Bitv_xor | Bitv_xnor
-  | Bitv_comp
-  | Bitv_neg | Bitv_add | Bitv_sub | Bitv_mul
-  | Bitv_udiv | Bitv_urem
-  | Bitv_sdiv | Bitv_srem | Bitv_smod
-  | Bitv_shl | Bitv_lshr | Bitv_ashr
-  | Bitv_ult | Bitv_ule
-  | Bitv_ugt | Bitv_uge
-  | Bitv_slt | Bitv_sle
-  | Bitv_sgt | Bitv_sge
-
-(* Floats *)
-type builtin +=
-  | Float of int * int
-  | RoundingMode
-  | Fp of int * int
-  | RoundNearestTiesToEven
-  | RoundNearestTiesToAway
-  | RoundTowardPositive
-  | RoundTowardNegative
-  | RoundTowardZero
-  | Plus_infinity of int * int
-  | Minus_infinity of int * int
-  | Plus_zero of int * int
-  | Minus_zero of int * int
-  | NaN of int * int
-  | Fp_abs of int * int
-  | Fp_neg of int * int
-  | Fp_add of int * int
-  | Fp_sub of int * int
-  | Fp_mul of int * int
-  | Fp_div of int * int
-  | Fp_fma of int * int
-  | Fp_sqrt of int * int
-  | Fp_rem of int * int
-  | Fp_roundToIntegral  of int * int
-  | Fp_min of int * int
-  | Fp_max of int * int
-  | Fp_leq of int * int
-  | Fp_lt of int * int
-  | Fp_geq of int * int
-  | Fp_gt of int * int
-  | Fp_eq of int * int
-  | Fp_isNormal of int * int
-  | Fp_isSubnormal of int * int
-  | Fp_isZero of int * int
-  | Fp_isInfinite of int * int
-  | Fp_isNaN of int * int
-  | Fp_isNegative of int * int
-  | Fp_isPositive of int * int
-  | Ieee_format_to_fp of int * int
-  | Fp_to_fp of int * int * int * int
-  | Real_to_fp of int * int
-  | Sbv_to_fp of int * int * int
-  | Ubv_to_fp of int * int * int
-  | To_ubv of int * int * int
-  | To_sbv of int * int * int
-  | To_real of int * int
-
-(* Strings *)
-type builtin +=
-  | String
-  | Str of string
-  | Str_length
-  | Str_at
-  | Str_to_code
-  | Str_of_code
-  | Str_is_digit
-  | Str_to_int
-  | Str_of_int
-  | Str_concat
-  | Str_sub
-  | Str_index_of
-  | Str_replace
-  | Str_replace_all
-  | Str_replace_re
-  | Str_replace_re_all
-  | Str_is_prefix
-  | Str_is_suffix
-  | Str_contains
-  | Str_lexicographic_strict
-  | Str_lexicographic_large
-  | Str_in_re
-
-(* String Regular languages *)
-type builtin +=
-  | String_RegLan
-  | Re_empty
-  | Re_all
-  | Re_allchar
-  | Re_of_string
-  | Re_range
-  | Re_concat
-  | Re_union
-  | Re_inter
-  | Re_star
-  | Re_cross
-  | Re_complement
-  | Re_diff
-  | Re_option
-  | Re_power of int
-  | Re_loop of int * int
+and formula = term
 
 
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Bad_ty_arity of ty_const * ty list
-exception Bad_term_arity of term_const * ty list * term list
-
-exception Filter_failed_ty of string * ty * string
-exception Filter_failed_term of string * term * string
-
-exception Type_already_defined of ty_const
-exception Record_type_expected of ty_const
+exception Already_aliased of ty_cst
+exception Type_already_defined of ty_cst
+exception Record_type_expected of ty_cst
 
 
 (* Tags *)
@@ -297,83 +136,90 @@ module Print = struct
 
   let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
 
-  let ttype fmt Type = Format.fprintf fmt "Type"
 
-  let pp_index fmt (v : _ id) = Format.fprintf fmt "/%d" v.index
+  (* Id printing *)
+
+  let pp_index fmt (v : _ id) =
+    let aux fmt v = Format.fprintf fmt "/%d" v.index in
+    Fmt.styled (`Fg (`Hi `Black)) aux fmt v
 
   let id fmt (v : _ id) =
-    match Tag.last v.tags name with
-    | Some (Pretty.Exact s | Pretty.Renamed s) -> Format.fprintf fmt "%s" s
+    match Tag.get v.tags name with
+    | Some (Pretty.Exact s | Pretty.Renamed s) ->
+      Format.fprintf fmt "%s" s
     | None ->
       if !print_index then
-        Format.fprintf fmt "%s%a" v.name (Fmt.styled (`Fg (`Hi `Black)) pp_index) v
+        Format.fprintf fmt "%s%a" v.name pp_index v
       else
         Format.fprintf fmt "%s" v.name
 
-  let rec ty_descr fmt (descr : ty_descr) =
-    match descr with
-    | Var v -> id fmt v
-    | App (f, []) -> id fmt f
-    | App (f, l) ->
-      begin match Tag.last f.tags pos with
-        | Some Pretty.Prefix ->
-          Format.fprintf fmt "@[<hov 2>%a %a@]"
-            id f (Format.pp_print_list ~pp_sep:(return "") ty) l
-        | Some Pretty.Infix when List.length l >= 2 ->
-          let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
-          Format.fprintf fmt "@[<hov 2>%a@]" (Format.pp_print_list ~pp_sep ty) l
-        | None | Some Pretty.Infix ->
-          Format.fprintf fmt "@[<hov 2>%a(%a)@]"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") ty) l
-      end
-
-  and ty fmt (t: ty) =
-    match t.as_ with
-    | None -> ty_descr fmt t.descr
-    | Some v -> Format.fprintf fmt "(%a@ as@ %a)" ty_descr t.descr id v
-
-  let params fmt = function
-    | [] -> ()
-    | l -> Format.fprintf fmt "∀ @[<hov>%a@].@ "
-             (Format.pp_print_list ~pp_sep:(return ",@ ") id) l
-
-  let signature print fmt f =
-    match f.fun_args with
-    | [] -> Format.fprintf fmt "@[<hov 2>%a%a@]" params f.fun_vars print f.fun_ret
-    | l -> Format.fprintf fmt "@[<hov 2>%a%a ->@ %a@]" params f.fun_vars
-             (Format.pp_print_list ~pp_sep:(return " ->@ ") print) l print f.fun_ret
-
-  let fun_ty = signature ty
-  let fun_ttype = signature ttype
-
   let id_pretty fmt (v : _ id) =
-    match Tag.last v.tags pos with
+    match Tag.get v.tags pos with
     | None -> ()
     | Some Pretty.Infix -> Format.fprintf fmt "(%a)" id v
     | Some Pretty.Prefix -> Format.fprintf fmt "[%a]" id v
 
   let id_type print fmt (v : _ id) =
-    Format.fprintf fmt "@[<hov 2>%a%a :@ %a@]" id v id_pretty v print v.ty
+    Format.fprintf fmt "@[<hov 2>%a%a :@ %a@]" id v id_pretty v print v.id_ty
 
-  let ty_var fmt id = id_type ttype fmt id
-  let term_var fmt id = id_type ty fmt id
 
-  let ty_const fmt id = id_type fun_ttype fmt id
-  let term_const fmt id = id_type fun_ty fmt id
+  (* Type printing *)
 
-  let binder_name fmt = function
-    | Exists _ -> Format.fprintf fmt "∃"
-    | Forall _ -> Format.fprintf fmt "∀"
-    | Letin _  -> Format.fprintf fmt "let"
+  let type_ fmt Type =
+    Format.fprintf fmt "Type"
 
-  let binder_sep fmt = function
-    | Exists _
-    | Forall _ -> Format.fprintf fmt "."
-    | Letin _  -> Format.fprintf fmt "in"
+  let type_fun fmt { arity; alias = _; } =
+    let rec aux fmt = function
+      | 0 -> type_ fmt Type
+      | n -> Format.fprintf fmt "%a ->@ %a" type_ Type aux (n - 1)
+    in
+    aux fmt arity
 
-  let rec term fmt t = match t.descr with
+  let ty_var fmt var = id_type type_ fmt var
+  let ty_cst fmt cst = id_type type_fun fmt cst
+
+  let rec ty_descr fmt (descr : ty_descr) =
+    match descr with
+    | TyVar v -> id fmt v
+    | Arrow (args, ret) ->
+      Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"
+        (Format.pp_print_list ~pp_sep:(return " ->@ ") subty) args subty ret
+    | TyApp (f, []) -> id fmt f
+    | TyApp (f, l) ->
+      begin match Tag.get f.tags pos with
+        | Some Pretty.Prefix ->
+          Format.fprintf fmt "@[<hov 2>%a %a@]"
+            id f (Format.pp_print_list ~pp_sep:(return "") subty) l
+        | Some Pretty.Infix when List.length l >= 2 ->
+          let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
+          Format.fprintf fmt "@[<hov 2>%a@]" (Format.pp_print_list ~pp_sep subty) l
+        | None | Some Pretty.Infix ->
+          Format.fprintf fmt "@[<hov 2>%a(%a)@]"
+            id f (Format.pp_print_list ~pp_sep:(return ",@ ") subty) l
+      end
+    | Pi ([], body) -> ty fmt body
+    | Pi (poly_vars, body) ->
+      Format.fprintf fmt "@[<hov 2>∀ @[<hov>%a@] .@ %a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) poly_vars ty body
+
+  and subty fmt t =
+    match t.ty_descr with
+    | TyVar _
+    | TyApp (_, []) -> ty fmt t
+    | _ -> Format.fprintf fmt "( %a )" ty t
+
+  and ty fmt t =
+    ty_descr fmt t.ty_descr
+
+  let term_var fmt var = id_type ty fmt var
+  let term_cst fmt cst = id_type ty fmt cst
+
+  (* Term printing *)
+
+  let rec term_descr fmt = function
     | Var v -> id fmt v
-    | App (f, [], []) -> id fmt f
+    | Cst c -> id fmt c
+    | App (f, [], []) -> term fmt f
     | App (f, tys, args) -> term_app fmt f tys args
     | Binder (b, body) ->
       Format.fprintf fmt "@[<hv 2>%a%a@ %a@]" binder b binder_sep b term body
@@ -382,59 +228,73 @@ module Print = struct
         term scrutinee
         (Format.pp_print_list ~pp_sep:(return "@ ") branch) branches
 
-  and term_app fmt (f : _ id) tys args =
-    match Tag.last f.tags pos with
-    | Some Pretty.Prefix ->
-      begin match args with
-        | [] -> id fmt f
-        | _ ->
-          Format.fprintf fmt "@[<hov>%a(%a)@]"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
+  and term_app fmt f tys args =
+    match f.term_descr with
+    | Cst g ->
+      begin match Tag.get g.tags pos with
+        | Some Pretty.Prefix -> generic_app fmt f [] args
+        | Some Pretty.Infix when List.length args >= 2 ->
+          let pp_sep fmt () = Format.fprintf fmt " %a@ " id g in
+          Format.fprintf fmt "@[<hov>%a@]" (Format.pp_print_list ~pp_sep subterm) args
+        | None | Some Pretty.Infix -> generic_app fmt f tys args
       end
-    | Some Pretty.Infix when List.length args >= 2 ->
-      let pp_sep fmt () = Format.fprintf fmt " %a@ " id f in
-      Format.fprintf fmt "(@[<hov>%a@])" (Format.pp_print_list ~pp_sep term) args
-    | None | Some Pretty.Infix ->
-      begin match tys, args with
-        | _, [] ->
-          Format.fprintf fmt "%a(@[<hov>%a@])"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") ty) tys
-        | [], _ ->
-          Format.fprintf fmt "%a(@[<hov>%a@])"
-            id f (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
-        | _ ->
-          Format.fprintf fmt "%a(@[<hov>%a%a%a@])" id f
-            (Format.pp_print_list ~pp_sep:(return ",@ ") ty) tys
-            (return ";@ ") ()
-            (Format.pp_print_list ~pp_sep:(return ",@ ") term) args
-      end
+    | _ -> generic_app fmt f tys args
+
+  and generic_app fmt f tys args =
+    match tys, args with
+    | _, [] ->
+      Format.fprintf fmt "@[<hov>%a@ %a@]"
+        subterm f (Format.pp_print_list ~pp_sep:(return "@ ") ty) tys
+    | [], _ ->
+      Format.fprintf fmt "@[<hov>%a@ %a@]"
+        subterm f (Format.pp_print_list ~pp_sep:(return "@ ") subterm) args
+    | _ ->
+      Format.fprintf fmt "@[<hov>%a@ %a@ %a@]" subterm f
+        (Format.pp_print_list ~pp_sep:(return "@ ") subty) tys
+        (Format.pp_print_list ~pp_sep:(return "@ ") subterm) args
+
+  and binder_sep fmt = function
+    | Lambda _ -> Format.fprintf fmt "=>"
+    | Let_seq _
+    | Let_par _ -> Format.fprintf fmt "in"
+    | Exists _
+    | Forall _ -> Format.fprintf fmt "."
 
   and binder fmt b =
     match b with
-    | Exists (l, [])
-    | Forall (l, []) ->
-      Format.fprintf fmt "%a @[<hov>%a@]"
-        binder_name b
+    | Let_seq l ->
+      Format.fprintf fmt "let @[<hv>%a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") binding) l
+    | Let_par l ->
+      Format.fprintf fmt "let @[<hv>%a@]"
+        (Format.pp_print_list ~pp_sep:(return " and@ ") binding) l
+
+    | Lambda (vars, args) ->
+      Format.fprintf fmt "λ @[<hov>%a .@ %a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) vars
+        (Format.pp_print_list ~pp_sep:(return "@ ") term_var) args
+
+    | Exists (l, []) ->
+      Format.fprintf fmt "∃ @[<hov>%a@]"
         (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) l
-    | Exists ([], l)
-    | Forall ([], l) ->
-      Format.fprintf fmt "%a @[<hov>%a@]"
-        binder_name b
+    | Exists ([], l) ->
+      Format.fprintf fmt "∃ @[<hov>%a@]"
         (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) l
-    | Exists (tys, ts)
-    | Forall (tys, ts) ->
-      Format.fprintf fmt "%a @[<hov>%a,@ %a@]"
-        binder_name b
+    | Exists (tys, ts) ->
+      Format.fprintf fmt "∃ @[<hov>%a,@ %a@]"
         (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) tys
         (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) ts
-    | Letin (Sequential, l) ->
-      Format.fprintf fmt "%a @[<hv>%a@]"
-        binder_name b
-        (Format.pp_print_list ~pp_sep:(return ",@ ") binding) l
-    | Letin (Parallel, l) ->
-      Format.fprintf fmt "%a @[<hv>%a@]"
-        binder_name b
-        (Format.pp_print_list ~pp_sep:(return "and@ ") binding) l
+
+    | Forall (l, []) ->
+      Format.fprintf fmt "∀ @[<hov>%a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) l
+    | Forall ([], l) ->
+      Format.fprintf fmt "∀ @[<hov>%a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) l
+    | Forall (tys, ts) ->
+      Format.fprintf fmt "∀ @[<hov>%a,@ %a@]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) tys
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) ts
 
   and binding fmt (v, t) =
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
@@ -442,83 +302,23 @@ module Print = struct
   and branch fmt (pattern, body) =
     Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a" term pattern term body
 
+  and subterm fmt t =
+    match t.term_descr with
+    | Var _ | Cst _ -> term fmt t
+    | App (t', [], []) -> subterm fmt t'
+    | _ -> Format.fprintf fmt "(%a)" term t
+
+  and term fmt t =
+    term_descr fmt t.term_descr
+
+  let formula = term
+
   let iter ~sep pp fmt k =
     let first = ref true in
     k (fun x ->
         if !first then first := false else sep fmt ();
         pp fmt x
       )
-end
-
-(* Views *)
-(* ************************************************************************* *)
-
-module View = struct
-
-  module Ty = struct
-    type t = [
-      | `Int
-      | `Rat
-      | `Real
-      | `Array of ty * ty
-      | `Bitv of int
-      | `Float of int * int
-      | `String
-      | `String_reg_lang
-      (* Generic cases *)
-      | `Var of ty_var
-      | `App of [
-          | `Generic of ty_const
-          | `Builtin of builtin
-        ] * ty list
-    ]
-
-    let view (ty : ty) : t =
-      match ty.descr with
-      | Var v -> `Var v
-      | App (({ builtin; _ } as c), l) ->
-        begin match builtin with
-          | Int -> `Int
-          | Rat -> `Rat
-          | Real -> `Real
-          | Bitv i -> `Bitv i
-          | Float (e, s) -> `Float (e, s)
-          | Array -> begin match l with
-              | [src; dst] -> `Array (src, dst)
-              | _ -> assert false (* not possible *)
-            end
-          | String -> `String
-          | String_RegLan -> `String_reg_lang
-          | Base -> `App (`Generic c, l)
-          | _ -> `App (`Builtin builtin, l)
-        end
-
-  end
-
-end
-
-(* Flags and filters *)
-(* ************************************************************************* *)
-
-module Filter = struct
-
-  type status = [
-    | `Pass
-    | `Warn
-    | `Error of string
-  ]
-  type ty_filter = string * bool ref * (ty_const -> ty list -> status)
-  type term_filter = string * bool ref * (term_const -> ty list -> term list -> status)
-
-  let ty : ty_filter tag = Tag.create ()
-  let term : term_filter tag = Tag.create ()
-
-  module type S = sig
-    val name : string
-    val active : bool ref
-    val reset : unit -> unit
-  end
-
 end
 
 
@@ -531,21 +331,24 @@ let (<?>) i (cmp, x, y) =
   | 0 -> cmp x y
   | _ -> i
 
-(* hash helpers *)
-let hash2 x y = Hashtbl.seeded_hash x y
+(* hash helpers;
+   Note: these function must guarantee that the returned hash is
+   nonnegative, since negative hashes are used to identify not-yet
+   hashed structures. *)
+let hash2 x y = Hashtbl.hash (x, y)
 let hash3 x y z = hash2 x (hash2 y z)
 let hash4 x y z t = hash2 x (hash3 y z t)
 
 (* option iter *)
-let option_iter f = function
-  | None -> ()
-  | Some x -> f x
+let option_map f = function
+  | None -> None
+  | Some x -> Some (f x)
 
 (* list hash *)
 let hash_list f l =
   let rec aux acc = function
     | [] -> acc
-    | x :: r -> aux (Hashtbl.seeded_hash acc (f x)) r
+    | x :: r -> aux (Hashtbl.hash (acc, (f x))) r
   in
   aux 0 l
 
@@ -595,6 +398,8 @@ module Id = struct
 
   type 'a t = 'a id
 
+  let print = Print.id
+
   (* Usual functions *)
   let hash (v : _ t) = v.index
 
@@ -602,64 +407,40 @@ module Id = struct
 
   let equal v v' = compare v v' = 0
 
-  let print fmt id = Format.pp_print_string fmt id.name
-
   (* Tags *)
-  let tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
-
   let get_tag (id : _ id) k = Tag.get id.tags k
+  let get_tag_last (id : _ id) k = Tag.get_last id.tags k
+  let get_tag_list (id : _ id) k = Tag.get_list id.tags k
 
-  let get_tag_last (id : _ id) k = Tag.last id.tags k
+  let set_tag (id : _ id) k v = id.tags <- Tag.set id.tags k v
+  let add_tag (id : _ id) k v = id.tags <- Tag.add id.tags k v
+  let add_tag_opt (id : _ id) k o = id.tags <- Tag.add_opt id.tags k o
+  let add_tag_list (id : _ id) k l = id.tags <- Tag.add_list id.tags k l
 
   (* Creating ids *)
   let id_counter = ref 0
 
-  let mk ?(builtin=Base) ?(tags=Tag.empty) name ty =
+  let mk
+      ?pos ?name
+      ?(tags=Tag.empty)
+      ?(builtin=Builtin.Base)
+      id_name id_ty =
     incr id_counter;
-    { name; ty; builtin; tags; index = !id_counter; }
-
-  let const
-      ?pos ?name ?builtin ?tags
-      ?(ty_filters=[]) ?(term_filters=[])
-      cname fun_vars fun_args fun_ret =
-    let res = mk ?builtin ?tags cname { fun_vars; fun_args; fun_ret; } in
-    (* Add filter tags *)
-    List.iter (tag res Filter.ty) ty_filters;
-    List.iter (tag res Filter.term) term_filters;
-    (* Add pretty printing tags *)
-    option_iter (tag res Print.pos) pos;
-    option_iter (fun s -> tag res Print.name (Pretty.Exact s)) name;
-    (* Return the id *)
-    res
-
-  let indexed
-      ?pos ?name ?builtin ?tags
-      cname fun_vars fun_arg fun_ret =
-    let h = Hashtbl.create 13 in
-    (fun i ->
-       match Hashtbl.find h i with
-       | res -> res
-       | exception Not_found ->
-         let fun_args = replicate i fun_arg in
-         let c = const
-             ?pos ?name ?builtin ?tags
-             cname fun_vars fun_args fun_ret
-         in
-         Hashtbl.add h i c;
-         c
-    )
+    let tags = Tag.set_opt tags Print.pos pos in
+    let tags = Tag.set_opt tags Print.name
+        (option_map (fun s -> Pretty.Exact s) name)
+    in
+    { name = id_name; id_ty; builtin; tags; index = !id_counter; }
 
 end
 
-(* Maps from pairs of integers *)
+(* Maps from integers *)
 (* ************************************************************************* *)
 
-module Mi = Map.Make(struct
-    type t = index
-    let compare (a : int) b = compare a b
-  end)
+module M = Map.Make(Int)
 
-(* Sets of ids *)
+
+(* Sets of variables *)
 (* ************************************************************************* *)
 
 module FV = struct
@@ -668,25 +449,25 @@ module FV = struct
     | Ty of ty_var
     | Term of term_var
 
-  type t = elt Mi.t
+  type t = elt M.t
 
   let tok v = v.index
   let token = function
     | Ty v -> tok v
     | Term v -> tok v
 
-  (* let mem v s = Mi.mem (tok v) s *)
-  (* let get v s = Mi.find (tok v) s *)
-  let add x (s : t) = Mi.add (token x) x s
-  let del x (s : t) = Mi.remove (tok x) s
+  (* let mem v s = M.mem (tok v) s *)
+  (* let get v s = M.find (tok v) s *)
+  let add x (s : t) = M.add (token x) x s
+  let del x (s : t) = M.remove (tok x) s
 
-  let empty = Mi.empty
+  let empty = M.empty
 
   let remove s l =
     List.fold_left (fun acc v -> del v acc) s l
 
   let diff s s' =
-    Mi.merge (fun _ o o' ->
+    M.merge (fun _ o o' ->
         match o, o' with
         | None, None -> None
         | None, Some _ -> None
@@ -695,7 +476,7 @@ module FV = struct
       ) s s'
 
   let merge s s' =
-    Mi.merge (fun _ o o' ->
+    M.merge (fun _ o o' ->
         match o, o' with
         | None, None -> None
         | _, ((Some _) as res)
@@ -707,7 +488,7 @@ module FV = struct
       | Ty v -> (v :: tys, ts)
       | Term v -> (tys, v :: ts)
     in
-    Mi.fold aux s ([], [])
+    M.fold aux s ([], [])
 
 end
 
@@ -716,18 +497,18 @@ end
 
 module Subst = struct
 
-  type ('a, 'b) t = ('a * 'b) Mi.t
+  type ('a, 'b) t = ('a * 'b) M.t
 
   (* Usual functions *)
-  let empty = Mi.empty
+  let empty = M.empty
 
-  let is_empty = Mi.is_empty
+  let is_empty = M.is_empty
 
   let wrap key = function
     | None -> None
     | Some x -> Some (key, x)
 
-  let merge f = Mi.merge (fun _ opt1 opt2 ->
+  let merge f = M.merge (fun _ opt1 opt2 ->
       match opt1, opt2 with
       | None, None -> assert false
       | Some (key, value), None ->
@@ -738,22 +519,22 @@ module Subst = struct
         wrap key @@ f key (Some value1) (Some value2)
     )
 
-  let iter f = Mi.iter (fun _ (key, value) -> f key value)
+  let iter f = M.iter (fun _ (key, value) -> f key value)
 
-  let map f = Mi.map (fun (key, value) -> (key, f value))
+  let map f = M.map (fun (key, value) -> (key, f value))
 
-  let fold f = Mi.fold (fun _ (key, value) acc -> f key value acc)
+  let fold f = M.fold (fun _ (key, value) acc -> f key value acc)
 
-  let bindings s = Mi.fold (fun _ (key, value) acc -> (key, value) :: acc) s []
+  let bindings s = M.fold (fun _ (key, value) acc -> (key, value) :: acc) s []
 
-  let filter p = Mi.filter (fun _ (key, value) -> p key value)
+  let filter p = M.filter (fun _ (key, value) -> p key value)
 
   (* Comparisons *)
-  let equal f = Mi.equal (fun (_, value1) (_, value2) -> f value1 value2)
-  let compare f = Mi.compare (fun (_, value1) (_, value2) -> f value1 value2)
-  let hash h s = Mi.fold (fun i (_, value) acc -> Hashtbl.hash (acc, i, h value)) s 1
+  let equal f = M.equal (fun (_, value1) (_, value2) -> f value1 value2)
+  let compare f = M.compare (fun (_, value1) (_, value2) -> f value1 value2)
+  let hash h s = M.fold (fun i (_, value) acc -> Hashtbl.hash (acc, i, h value)) s 1
 
-  let choose m = snd (Mi.choose m)
+  let choose m = snd (M.choose m)
 
   (* Iterators *)
   let exists pred s =
@@ -775,7 +556,7 @@ module Subst = struct
       Format.fprintf fmt "@[<hov 2>%a ↦@ %a@]" print_key key print_value value
     in
     Format.fprintf fmt "@[<hv>%a@]"
-      Print.(iter ~sep:(return ";@ ") aux) (fun k -> Mi.iter (fun x y -> k(x,y)) map)
+      Print.(iter ~sep:(return ";@ ") aux) (fun k -> M.iter (fun x y -> k(x,y)) map)
 
   let debug print_key print_value fmt map =
     let aux fmt (i, (key, value)) =
@@ -783,7 +564,7 @@ module Subst = struct
         i print_key key print_value value
     in
     Format.fprintf fmt "@[<hv>%a@]"
-      Print.(iter ~sep:(return ";@ ") aux) (fun k -> Mi.iter (fun x y -> k(x,y)) map)
+      Print.(iter ~sep:(return ";@ ") aux) (fun k -> M.iter (fun x y -> k(x,y)) map)
 
   (* Specific substitutions signature *)
   module type S = sig
@@ -798,58 +579,32 @@ module Subst = struct
   module Var = struct
     type 'a key = 'a id
     let tok v = v.index
-    let get v s = snd (Mi.find (tok v) s)
-    let mem v s = Mi.mem (tok v) s
-    let bind s v t = Mi.add (tok v) (v, t) s
-    let remove v s = Mi.remove (tok v) s
+    let get v s = snd (M.find (tok v) s)
+    let mem v s = M.mem (tok v) s
+    let bind s v t = M.add (tok v) (v, t) s
+    let remove v s = M.remove (tok v) s
   end
 end
+
 
 (* Types *)
 (* ************************************************************************* *)
 
 module Ty = struct
 
-  (* Std type aliase *)
+  (* Std type aliases *)
 
   type t = ty
-
-  type view = View.Ty.t
 
   type subst = (ty_var, ty) Subst.t
 
   type 'a tag = 'a Tag.t
 
+  exception Bad_arity of ty_cst * ty list
+  exception Prenex_polymorphism of ty
+
   (* printing *)
   let print = Print.ty
-
-  (* hash function *)
-  let rec hash_aux (t : t) = match t.descr with
-    | Var v -> hash2 3 (Id.hash v)
-    | App (f, args) -> hash3 5 (Id.hash f) (hash_list hash args)
-
-  and hash (t : t) =
-    if t.hash < 0 then t.hash <- hash_aux t;
-    t.hash
-
-  (* comparison *)
-  let discr (t: t) = match t.descr with
-    | Var _ -> 1
-    | App _ -> 2
-
-  let rec compare (u : t) (v : t) =
-    if u == v || u.descr == v.descr then 0 else begin
-      let hu = hash u and hv = hash v in
-      if hu <> hv then hu - hv (* safe since both are positive *)
-      else match u.descr, v.descr with
-        | Var v, Var v' -> Id.compare v v'
-        | App (f, args), App (f', args') ->
-          Id.compare f f'
-          <?> (lexicographic compare, args, args')
-        | _, _ -> Stdlib.compare (discr u) (discr v)
-    end
-
-  let equal u v = compare u v = 0
 
   (* Set a wildcard/hole to a concrete type
 
@@ -860,45 +615,219 @@ module Ty = struct
      another wildcard w, we must remember that, so that when we set
      w to something, we also need to update v. *)
 
-  let wildcard_tbl = ref Subst.empty
+  let wildcard_refs = Tag.create ()
+  let wildcard_hook = Tag.create ()
 
-  let wildcard_get v =
-    match Subst.Var.get v !wildcard_tbl with
-    | l -> l
-    | exception Not_found -> []
-
-  let wildcard_add v l =
-    let l' = wildcard_get v in
-    wildcard_tbl := Subst.Var.bind !wildcard_tbl v (List.rev_append l l')
+  let wildcard_add_refs v l =
+    Id.add_tag_list v wildcard_refs l
 
   let set_wildcard v (t: t) =
-    let set_descr (t : t) (s: t) = s.descr <- t.descr in
-    let l = wildcard_get v in
+    let () =
+      List.iter (fun f -> f v t)
+        (Id.get_tag_list v wildcard_hook)
+    in
+    let set_descr (t : t) (s: t) =
+      s.ty_descr <- t.ty_descr;
+      s.ty_hash <- -1
+    in
+    let l = Id.get_tag_list v wildcard_refs in
     List.iter (set_descr t) l;
-    match t.descr with
-    | Var ({ builtin = Wildcard; _ } as w) -> wildcard_add w l;
+    match t.ty_descr with
+    | TyVar ({ builtin = Builtin.Wildcard; _ } as w) ->
+      wildcard_add_refs w l
     | _ -> ()
 
+  let wildcard_var () =
+    Id.mk ~builtin:Builtin.Wildcard "_" Type
+
+
+  (* Prenex/Rank-1 polymorphism check *)
+  let rec check_prenex t =
+    match (expand_head t).ty_descr with
+    | Pi _ -> raise (Prenex_polymorphism t)
+    | _ -> ()
+
+  and check_prenex_list l =
+    List.iter check_prenex l
+
+  and subst_bind subst v u =
+    check_prenex u;
+    Subst.Var.bind subst v u
+
+  (* type creation *)
+  and dummy = {
+    ty_hash = 0; (* must be non-negative *)
+    ty_head = dummy;
+    ty_tags = Tag.empty;
+    ty_descr = Arrow ([], dummy);
+  }
+
+  and mk ty_descr = {
+    ty_descr;
+    ty_hash = -1;
+    ty_tags = Tag.empty;
+    ty_head = dummy;
+  }
+
+  and of_var v =
+    let t = mk (TyVar v) in
+    begin match v with
+      | { builtin = Builtin.Wildcard; _ } ->
+        wildcard_add_refs v [t]
+      | _ -> ()
+    end;
+    t
+
+  and apply f args =
+    if List.length args <> f.id_ty.arity then
+      raise (Bad_arity (f, args))
+    else begin
+      check_prenex_list args;
+      mk (TyApp (f, args))
+    end
+
+  and arrow args ret =
+    check_prenex_list (ret :: args);
+    match args with
+    | [] -> ret
+    | _ -> mk (Arrow (args, ret))
+
+  and pi vars body =
+    check_prenex body;
+    match vars with
+    | [] -> body
+    | _ -> mk (Pi (vars, body))
+
+
+  (* Substitutions *)
+  and subst_aux ~fix var_map (t : t) =
+    match t.ty_descr with
+    | TyVar v ->
+      begin match Subst.Var.get v var_map with
+        | exception Not_found -> t
+        | ty -> if fix then subst_aux ~fix var_map ty else ty
+      end
+    | TyApp (f, args) ->
+      let new_args = List.map (subst_aux ~fix var_map) args in
+      if List.for_all2 (==) args new_args then t
+      else apply f new_args
+    | Arrow (args, ret) ->
+      let new_args = List.map (subst_aux ~fix var_map) args in
+      let new_ret = subst_aux ~fix var_map ret in
+      if ret == new_ret && List.for_all2 (==) args new_args then t
+      else arrow new_args new_ret
+    | Pi (vars, body) ->
+      let var_map =
+        List.fold_left (fun map v ->
+            Subst.Var.remove v map
+          ) var_map vars
+      in
+      let new_body = subst_aux ~fix var_map body in
+      if body == new_body then t
+      else pi vars new_body
+
+  and subst ?(fix=true) var_map t =
+    if Subst.is_empty var_map then t
+    else subst_aux ~fix var_map t
+
+  (* type aliases *)
+
+  and alias_to c alias_vars alias_body =
+    let cst_ty = c.id_ty in
+    match cst_ty.alias with
+    | No_alias -> cst_ty.alias <- Alias { alias_vars; alias_body; }
+    | Alias _ -> raise (Already_aliased c)
+
+  and expand_head t =
+    if t.ty_head != dummy then t.ty_head
+    else match t.ty_descr with
+    | TyApp (f, args) ->
+      begin match f.id_ty.alias with
+        | No_alias -> t.ty_head <- t; t
+        | Alias { alias_vars; alias_body; } ->
+          assert (List.compare_lengths alias_vars args = 0);
+          let map = List.fold_left2 Subst.Var.bind Subst.empty alias_vars args in
+          let res = expand_head (subst map alias_body) in
+          t.ty_head <- res;
+          res
+      end
+    | _ -> t.ty_head <- t; t
+
+  (* hash function *)
+  let rec hash_aux (t : t) =
+    match t.ty_descr with
+    | TyVar v -> hash2 3 (Id.hash v)
+    | TyApp (f, args) -> hash3 5 (Id.hash f) (hash_list hash args)
+    | Arrow (args, ret) -> hash3 7 (hash_list hash args) (hash ret)
+    | Pi (vars, body) -> hash3 11 (hash_list Id.hash vars) (hash body)
+
+  and hash (t : t) =
+    if t.ty_hash >= 0 then t.ty_hash
+    else begin
+      let t' = expand_head t in
+      let res = hash_aux t' in
+      t'.ty_hash <- res;
+      t.ty_hash <- res;
+      res
+    end
+
+  (* comparison *)
+  let discr (t: t) =
+    match (expand_head t).ty_descr with
+    | TyVar _ -> 1
+    | TyApp _ -> 2
+    | Arrow _ -> 3
+    | Pi _ -> 4
+
+  let rec compare (u : t) (v : t) =
+    if u == v || u.ty_descr == v.ty_descr then 0 else begin
+      let hu = hash u and hv = hash v in
+      if hu <> hv then hu - hv (* safe since both are positive *)
+      else match (expand_head u).ty_descr, (expand_head v).ty_descr with
+        | TyVar v, TyVar v' -> Id.compare v v'
+        | TyApp (f, args), TyApp (f', args') ->
+          Id.compare f f'
+          <?> (lexicographic compare, args, args')
+        | Arrow (args, ret), Arrow (args', ret') ->
+          lexicographic compare args args'
+          <?> (compare, ret, ret')
+        | Pi (vars, body), Pi (vars', body') ->
+          List.compare_lengths vars vars'
+          <?> (compare_bound, (vars, body), (vars', body'))
+        | _, _ -> Stdlib.compare (discr u) (discr v)
+    end
+
+  and compare_bound (vars, body) (vars', body') =
+    (* Since we only have prenex/rank-1 polymorphism, this can only happen
+       once by comparison. *)
+    let map =
+      List.fold_left2 Subst.Var.bind Subst.empty
+        vars (List.map of_var vars')
+    in
+    let body = subst ~fix:false map body in
+    compare body body'
+
+  let equal u v = compare u v = 0
 
   (* Types definitions *)
 
   type adt_case = {
-    cstr : term_const;
-    tester : term_const;
-    dstrs : term_const option array;
+    cstr : term_cst;
+    tester : term_cst;
+    dstrs : term_cst option array;
   }
 
   type def =
     | Abstract
     | Adt of {
-        ty : ty_const;
+        ty : ty_cst;
         record : bool;
         cases : adt_case array;
       }
 
   let definition_tag : def Tag.t = Tag.create ()
 
-  let definition c = Id.get_tag_last c definition_tag
+  let definition c = Id.get_tag c definition_tag
 
   let is_record c =
     match definition c with
@@ -907,92 +836,81 @@ module Ty = struct
 
   let define c d =
     match definition c with
-    | None -> Id.tag c definition_tag d
+    | None -> Id.set_tag c definition_tag d
     | Some _ -> raise (Type_already_defined c)
 
-  (* view *)
-  let view = View.Ty.view
-
   (* Tags *)
-  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+  let get_tag (t : t) k = Tag.get t.ty_tags k
+  let get_tag_last (t : t) k = Tag.get_last t.ty_tags k
+  let get_tag_list (t : t) k = Tag.get_list t.ty_tags k
 
-  let get_tag (t : t) k = Tag.get t.tags k
-
-  let get_tag_last (t : t) k = Tag.last t.tags k
+  let set_tag (t : t) k l = t.ty_tags <- Tag.set t.ty_tags k l
+  let add_tag (t : t) k v = t.ty_tags <- Tag.add t.ty_tags k v
+  let add_tag_opt (t : t) k o = t.ty_tags <- Tag.add_opt t.ty_tags k o
+  let add_tag_list (t : t) k l = t.ty_tags <- Tag.add_list t.ty_tags k l
 
   (* Module for namespacing *)
   module Var = struct
     type t = ty_var
-    let tag = Id.tag
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
+
     let mk name = Id.mk name Type
+    let wildcard () = wildcard_var ()
+    let is_wildcard = function
+      | { builtin = Builtin.Wildcard; _ } -> true
+      | _ -> false
   end
 
+  let add_wildcard_hook ~hook v =
+    if Var.is_wildcard v then Var.add_tag v wildcard_hook hook
+
   module Const = struct
-    type t = ty_const
-    let tag = Id.tag
+    type t = ty_cst
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
-    let mk name n = Id.const name [] (replicate n Type) Type
-    let arity (c : t) = List.length c.ty.fun_args
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
 
-    let prop = Id.const ~builtin:Prop "Prop" [] [] Type
-    let unit = Id.const ~builtin:Unit "unit" [] [] Type
-    let base = Id.const ~builtin:Univ "$i" [] [] Type
-    let int = Id.const ~builtin:Int "int" [] [] Type
-    let rat = Id.const ~builtin:Rat "rat" [] [] Type
-    let real = Id.const ~builtin:Real "real" [] [] Type
-    let string = Id.const ~builtin:String "string" [] [] Type
-    let string_reg_lang = Id.const ~builtin:String_RegLan "string_reglang" [] [] Type
-    let array = Id.const ~builtin:Array "array" [] [Type; Type] Type
+    let arity (c : t) = c.id_ty.arity
+    let mk name n = Id.mk name { arity = n; alias = No_alias; }
+    let mk' ~builtin name n = Id.mk ~builtin name { arity = n; alias = No_alias; }
+
+    let prop = mk' ~builtin:Builtin.Prop "Prop" 0
+    let unit = mk' ~builtin:Builtin.Unit "unit" 0
+    let base = mk' ~builtin:Builtin.Univ "$i" 0
+    let int =  mk' ~builtin:Builtin.Int "int" 0
+    let rat =  mk' ~builtin:Builtin.Rat "rat" 0
+    let real = mk' ~builtin:Builtin.Real "real" 0
+    let string = mk' ~builtin:Builtin.String "string" 0
+    let string_reg_lang = mk' ~builtin:Builtin.String_RegLan "string_reglang" 0
+    let array = mk' ~builtin:Builtin.Array "array" 2
     let bitv =
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
-          Id.const ~builtin:(Bitv i) (Format.asprintf "Bitv_%d" i) [] [] Type
+          mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
         )
     let float =
       with_cache ~cache:(Hashtbl.create 13) (fun (e,s) ->
-          Id.const ~builtin:(Float(e,s)) (Format.asprintf "FloatingPoint_%d_%d" e s) [] [] Type
+          mk' ~builtin:(Builtin.Float(e,s)) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
         )
-    let roundingMode = Id.const ~builtin:RoundingMode "RoundingMode" [] [] Type
+    let roundingMode = mk' ~builtin:Builtin.RoundingMode "RoundingMode" 0
   end
-
-  let mk descr = { as_ = None; descr; hash = -1; tags = Tag.empty; }
-
-  let as_ t v = { t with as_ = Some v; }
-
-  let of_var v = mk (Var v)
-
-  let wildcard () =
-    let v = Id.mk ~builtin:Wildcard "_" Type in
-    let t = of_var v in
-    wildcard_add v [t];
-    t
-
-  let rec check_filters res f args = function
-    | [] -> res
-    | (name, active, check) :: r ->
-      if !active then match (check f args) with
-        | `Pass -> check_filters res f args r
-        | `Warn -> check_filters res f args r
-        | `Error msg -> raise (Filter_failed_ty (name, res, msg))
-      else
-        check_filters res f args r
-
-  let apply (f : Const.t) (args : ty list) =
-    assert (f.ty.fun_vars = []);
-    if List.length args <> List.length f.ty.fun_args then
-      raise (Bad_ty_arity (f, args))
-    else begin
-      let res = mk (App (f, args)) in
-      check_filters res f args (Const.get_tag f Filter.ty)
-    end
 
   (* Builtin types *)
   let prop = apply Const.prop []
@@ -1016,100 +934,191 @@ module Ty = struct
   exception Impossible_matching of ty * ty
 
   let rec pmatch subst (pat : ty) (t : ty) =
-    match pat, t with
-    | { descr = Var v; _ }, _ ->
+    match (expand_head pat), (expand_head t) with
+    | { ty_descr = TyVar v; _ }, _ ->
       begin match Subst.Var.get v subst with
         | t' ->
           if equal t t' then subst
           else raise (Impossible_matching (pat, t))
         | exception Not_found ->
-          Subst.Var.bind subst v t
+          subst_bind subst v t
       end
-    | { descr = App (f, f_args); _ },
-      { descr = App (g, g_args); _ } ->
+    | { ty_descr = TyApp (f, f_args); _ },
+      { ty_descr = TyApp (g, g_args); _ } ->
       if Id.equal f g then
         List.fold_left2 pmatch subst f_args g_args
       else
         raise (Impossible_matching (pat, t))
+    | { ty_descr = Arrow (pat_args, pat_ret); _ },
+      { ty_descr = Arrow (t_args, t_ret); _ } ->
+      pmatch (pmatch_list pat t subst pat_args t_args) pat_ret t_ret
     | _ -> raise (Impossible_matching (pat, t))
+
+  and pmatch_list pat t subst pat_args t_args =
+    match pat_args, t_args with
+    | [], [] -> subst
+    | x :: l, y :: r -> pmatch_list pat t (pmatch subst x y) l r
+    | [], _ :: _
+    | _ :: _, [] -> raise (Impossible_matching (pat, t))
 
   (* Unification *)
   exception Impossible_unification of t * t
 
   let rec follow subst (t : t) =
     match t with
-    | { descr = Var v; _ } ->
+    | { ty_descr = TyVar v; _ } ->
       begin match Subst.Var.get v subst with
         | t' -> follow subst t'
         | exception Not_found -> t
       end
     | t -> t
 
-  let rec occurs subst l (t : t) =
-    match t with
-    | { descr = Var v; _ } ->
+  let rec occurs u subst l (t : t) =
+    (* no need to call expand_head here, since robinson_bind,
+       and thus this function also, always receive types that
+       have already been expanded. *)
+    match t.ty_descr with
+    | TyVar v ->
       List.exists (Id.equal v) l ||
       begin match Subst.Var.get v subst with
         | exception Not_found -> false
-        | e -> occurs subst (v :: l) e
+        | e -> occurs u subst (v :: l) e
       end
-    | { descr = App (_, tys); _ } ->
-      List.exists (occurs subst l) tys
+    | TyApp (_, tys) ->
+      List.exists (occurs u subst l) tys
+    | Arrow (args, ret) ->
+      List.exists (occurs u subst l) args || occurs u subst l ret
+    | Pi _ -> raise (Prenex_polymorphism t)
 
   let robinson_bind subst m v u =
-    if occurs subst [v] u then
-      raise (Impossible_unification (m, u))
-    else
-      Subst.Var.bind subst v u
-
-  let robinson_as subst s t =
-    match s.as_ with
-    | None -> subst
-    | Some v -> robinson_bind subst s v t
+    match u.ty_descr with
+    | Pi _ -> raise (Prenex_polymorphism u)
+    | _ ->
+      if occurs u subst [v] u then
+        raise (Impossible_unification (m, u))
+      else
+        Subst.Var.bind subst v u
 
   let rec robinson subst s t =
-    let subst = robinson_as (robinson_as subst s t) t s in
-    let s = follow subst s in
-    let t = follow subst t in
+    let s = expand_head (follow subst s) in
+    let t = expand_head (follow subst t) in
     match s, t with
-    | ({ descr = Var ({ builtin = Wildcard; _ } as v); _ } as m), u
-    | u, ({ descr = Var ({ builtin = Wildcard; _ } as v); _ } as m) ->
+    | ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard; _ } as v); _ } as m), u
+    | u, ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard; _ } as v); _ } as m) ->
       if equal m u then subst else robinson_bind subst m v u
-    | ({ descr = Var v; _}, { descr = Var v'; _ }) ->
+    | ({ ty_descr = TyVar v; _}, { ty_descr = TyVar v'; _ }) ->
       if Id.equal v v' then subst
       else raise (Impossible_unification (s, t))
-    | { descr = App (f, f_args); _ },
-      { descr = App (g, g_args); _ } ->
+    | { ty_descr = TyApp (f, f_args); _ },
+      { ty_descr = TyApp (g, g_args); _ } ->
       if Id.equal f g then
         List.fold_left2 robinson subst f_args g_args
       else
         raise (Impossible_unification (s, t))
-    | _, _ ->
-      raise (Impossible_unification (s, t))
+    | { ty_descr = Arrow (f_args, f_ret); _ },
+      { ty_descr = Arrow (g_args, g_ret); _ } ->
+      let subst =
+        List.fold_left2 robinson subst f_args g_args
+      in
+      robinson subst f_ret g_ret
+    | ({ ty_descr = Pi _; _ } as ty), _
+    | _, ({ ty_descr = Pi _; _ } as ty) -> raise (Prenex_polymorphism ty)
+    | _, _ -> raise (Impossible_unification (s, t))
 
+  (* *)
+  let split_pi t =
+    let rec aux acc ty =
+      let ty' = expand_head ty in
+      match ty'.ty_descr with
+      | Pi (vars, body) -> aux (vars :: acc) body
+      | _ ->
+        let vars = List.concat (List.rev acc) in
+        vars, ty'
+    in
+    aux [] t
 
-  (* Substitutions *)
-  let rec subst_aux ~fix var_map (t : t) =
-    match t.descr with
-    | Var v ->
-      begin match Subst.Var.get v var_map with
-        | exception Not_found -> t
-        | ty -> if fix then subst_aux ~fix var_map ty else ty
-      end
-    | App (f, args) ->
-      let new_args = List.map (subst_aux ~fix var_map) args in
-      if List.for_all2 (==) args new_args then t
-      else apply f new_args
+  let split_arrow t =
+    let rec aux acc t =
+      let t' = expand_head t in
+      match t'.ty_descr with
+      | Arrow (args, ret) -> aux (args :: acc) ret
+      | TyVar _ | TyApp _ ->
+        let args = List.concat (List.rev acc) in
+        args, t'
+      | Pi _ -> raise (Prenex_polymorphism t)
+    in
+    aux [] t
 
-  let subst ?(fix=true) var_map t =
-    if Subst.is_empty var_map then t
-    else subst_aux ~fix var_map t
+  let poly_sig t =
+    let vars, t = split_pi t in
+    let args, ret = split_arrow t in
+    vars, args, ret
+
+  let pi_arity t =
+    let l, _ = split_pi t in
+    List.length l
 
 
   (* free variables *)
-  let rec free_vars acc (t : t) = match t.descr with
-    | Var v -> FV.add (FV.Ty v) acc
-    | App (_, l) -> List.fold_left free_vars acc l
+  let rec free_vars acc (t : t) =
+    match t.ty_descr with
+    | TyVar v -> FV.add (FV.Ty v) acc
+    | TyApp (_, l) -> List.fold_left free_vars acc l
+    | Arrow (args, ret) -> List.fold_left free_vars (free_vars acc ret) args
+    | Pi (vars, body) ->
+      let fv = free_vars FV.empty body in
+      let fv = FV.remove fv vars in
+      FV.merge fv acc
+
+  let fv t =
+    let s = free_vars FV.empty t in
+    let l, _ = FV.to_list s in
+    l
+
+  (* Access to type descr *)
+  let descr (t: t) = (expand_head t).ty_descr
+
+  (* View *)
+  type view = [
+    | `Int
+    | `Rat
+    | `Real
+    | `Array of ty * ty
+    | `Bitv of int
+    | `Float of int * int
+    | `String
+    | `String_reg_lang
+    (* Generic cases *)
+    | `Var of ty_var
+    | `App of [
+        | `Generic of ty_cst
+        | `Builtin of builtin
+      ] * ty list
+    | `Arrow of ty list * ty
+    | `Pi of ty_var list * ty
+  ]
+
+  let view (t : ty) : view =
+    match descr t with
+    | TyVar v -> `Var v
+    | Pi (vars, body) -> `Pi (vars, body)
+    | Arrow (args, ret) -> `Arrow (args, ret)
+    | TyApp (({ builtin; _ } as c), l) ->
+      begin match builtin with
+        | Builtin.Int -> `Int
+        | Builtin.Rat -> `Rat
+        | Builtin.Real -> `Real
+        | Builtin.Bitv i -> `Bitv i
+        | Builtin.Float (e, s) -> `Float (e, s)
+        | Builtin.Array -> begin match l with
+            | [src; dst] -> `Array (src, dst)
+            | _ -> assert false (* not possible *)
+          end
+        | Builtin.String -> `String
+        | Builtin.String_RegLan -> `String_reg_lang
+        | Builtin.Base -> `App (`Generic c, l)
+        | _ -> `App (`Builtin builtin, l)
+      end
 
 end
 
@@ -1127,48 +1136,69 @@ module Term = struct
 
   type 'a tag = 'a Tag.t
 
+  (* Exceptions *)
+
   exception Wrong_type of t * ty
-  exception Wrong_sum_type of term_const * ty
-  exception Wrong_record_type of term_const * ty_const
+  exception Wrong_sum_type of term_cst * ty
+  exception Wrong_record_type of term_cst * ty_cst
 
-  exception Field_repeated of term_const
-  exception Field_missing of term_const
-  exception Field_expected of term_const
+  exception Field_repeated of term_cst
+  exception Field_missing of term_cst
+  exception Field_expected of term_cst
 
-  exception Constructor_expected of term_const
+  exception Constructor_expected of term_cst
 
+  exception Over_application of t list
+  exception Bad_poly_arity of ty_var list * ty list
+
+  (* *)
+
+  (* Print *)
   let print = Print.term
 
   (* Tags *)
-  let tag (t : t) k v = t.tags <- Tag.add t.tags k v
+  let get_tag (t : t) k = Tag.get t.term_tags k
+  let get_tag_last (t : t) k = Tag.get_last t.term_tags k
+  let get_tag_list (t : t) k = Tag.get_list t.term_tags k
 
-  let get_tag (t : t) k = Tag.get t.tags k
-
-  let get_tag_last (t : t) k = Tag.last t.tags k
+  let set_tag (t : t) k l = t.term_tags <- Tag.set t.term_tags k l
+  let add_tag (t : t) k v = t.term_tags <- Tag.add t.term_tags k v
+  let add_tag_opt (t : t) k o = t.term_tags <- Tag.add_opt t.term_tags k o
+  let add_tag_list (t : t) k l = t.term_tags <- Tag.add_list t.term_tags k l
 
   (* Hash *)
   let rec hash_aux t =
-    match t.descr with
+    match t.term_descr with
     | Var v -> hash2 3 (Id.hash v)
+    | Cst c -> hash2 5 (Id.hash c)
     | App (f, tys, args) ->
-      hash4 5 (Id.hash f) (hash_list Ty.hash tys) (hash_list hash args)
+      hash4 7 (hash f) (hash_list Ty.hash tys) (hash_list hash args)
     | Binder (b, body) ->
-      hash3 7 (hash_binder b) (hash body)
+      hash3 11 (hash_binder b) (hash body)
     | Match (scrutinee, branches) ->
-      hash3 11 (hash scrutinee) (hash_branches branches)
+      hash3 13 (hash scrutinee) (hash_branches branches)
 
   and hash t =
-    if t.hash <= 0 then t.hash <- hash_aux t;
-    t.hash
+    if t.term_hash >= 0 then t.term_hash
+    else begin
+      let res = hash_aux t in
+      t.term_hash <- res;
+      res
+    end
 
   and hash_binder = function
-    | Exists (tys, ts) ->
-      hash3 3 (hash_list Id.hash tys) (hash_list Id.hash ts)
-    | Forall (tys, ts) ->
-      hash3 5 (hash_list Id.hash tys) (hash_list Id.hash ts)
-    | Letin (_, l) ->
+    | Let_seq l ->
       let aux (v, t) = hash2 (Id.hash v) (hash t) in
-      hash2 7 (hash_list aux l)
+      hash2 3 (hash_list aux l)
+    | Let_par l ->
+      let aux (v, t) = hash2 (Id.hash v) (hash t) in
+      hash2 5 (hash_list aux l)
+    | Lambda (tys, ts) ->
+      hash3 7 (hash_list Id.hash tys) (hash_list Id.hash ts)
+    | Exists (tys, ts) ->
+      hash3 11 (hash_list Id.hash tys) (hash_list Id.hash ts)
+    | Forall (tys, ts) ->
+      hash3 13 (hash_list Id.hash tys) (hash_list Id.hash ts)
 
   and hash_branch (pattern, body) =
     hash2 (hash pattern) (hash body)
@@ -1178,25 +1208,29 @@ module Term = struct
 
   (* Comparison *)
   let discr t =
-    match t.descr with
+    match t.term_descr with
     | Var _ -> 1
-    | App _ -> 2
-    | Binder _ -> 3
-    | Match _ -> 4
+    | Cst _ -> 2
+    | App _ -> 3
+    | Binder _ -> 4
+    | Match _ -> 5
 
   let binder_discr = function
-    | Exists _ -> 1
-    | Forall _ -> 2
-    | Letin _ -> 3
+    | Let_seq _ -> 1
+    | Let_par _ -> 2
+    | Lambda _ -> 3
+    | Exists _ -> 4
+    | Forall _ -> 5
 
   let rec compare u v =
     if u == v then 0 else begin
       let hu = hash u and hv = hash v in
       if hu <> hv then hu - hv
-      else match u.descr, v.descr with
+      else match u.term_descr, v.term_descr with
         | Var v1, Var v2 -> Id.compare v1 v2
+        | Cst c1, Cst c2 -> Id.compare c1 c2
         | App (f1, tys1, args1), App (f2, tys2, args2) ->
-          Id.compare f1 f2
+          compare f1 f2
           <?> (lexicographic Ty.compare, tys1, tys2)
           <?> (lexicographic compare, args1, args2)
         | Binder (b, body), Binder (b', body') ->
@@ -1210,55 +1244,57 @@ module Term = struct
 
   and compare_binder b b' =
     match b, b' with
+    | Let_seq l, Let_seq l' ->
+      let aux (v, t) (v', t') = Id.compare v v' <?> (compare, t, t') in
+      lexicographic aux l l'
+    | Let_par l, Let_par l' ->
+      let aux (v, t) (v', t') = Id.compare v v' <?> (compare, t, t') in
+      lexicographic aux l l'
+    | Lambda (tys, ts), Lambda (tys', ts') ->
+      lexicographic Id.compare tys tys'
+      <?> (lexicographic Id.compare, ts, ts')
     | Exists (tys, ts), Exists (tys', ts') ->
       lexicographic Id.compare tys tys'
       <?> (lexicographic Id.compare, ts, ts')
     | Forall (tys, ts), Forall (tys', ts') ->
       lexicographic Id.compare tys tys'
       <?> (lexicographic Id.compare, ts, ts')
-    | Letin (kind, l), Letin (kind', l') ->
-      let aux (v, t) (v', t') = Id.compare v v' <?> (compare, t, t') in
-      compare_let_kind kind kind'
-      <?> (lexicographic aux, l, l')
     | _, _ -> (binder_discr b) - (binder_discr b')
 
   and compare_branch (p, b) (p', b') =
     compare p p' <?> (compare, b, b')
 
-  and compare_let_kind k k' =
-    match k, k' with
-    | Sequential, Sequential
-    | Parallel, Parallel -> 0
-    | Sequential, Parallel -> -1
-    | Parallel, Sequential -> 1
-
   let equal u v = compare u v = 0
 
   (* Inspection *)
-  let ty { ty; _ } = ty
+  let ty { term_ty; _ } = term_ty
 
   (* free variables *)
-  let rec free_vars acc (t : t) = match t.descr with
-    | Var v -> FV.add (FV.Term v) (Ty.free_vars acc v.ty)
-    | App (_, tys, ts) ->
+  let rec free_vars acc (t : t) =
+    match t.term_descr with
+    | Var v -> FV.add (FV.Term v) (Ty.free_vars acc v.id_ty)
+    | Cst _ -> acc
+    | App (f, tys, ts) ->
       List.fold_left free_vars (
-        List.fold_left Ty.free_vars acc tys
+        List.fold_left Ty.free_vars (
+          free_vars acc f
+        ) tys
       ) ts
-    | Binder ((Exists (tys, ts) | Forall (tys, ts)), body) ->
+    | Binder ((Lambda (tys, ts) | Exists (tys, ts) | Forall (tys, ts)), body) ->
       let fv = free_vars FV.empty body in
       let fv = FV.remove fv tys in
       let fv = FV.remove fv ts in
       FV.merge fv acc
-    | Binder (Letin (Sequential, l), body) ->
+    | Binder (Let_seq l, body) ->
       let fv = free_vars FV.empty body in
       let fv = List.fold_right (fun (v, t) acc ->
           let acc = free_vars acc t in
           let acc = FV.del v acc in
-          let acc = Ty.free_vars acc v.ty in
+          let acc = Ty.free_vars acc v.id_ty in
           acc
         ) l fv in
       FV.merge fv acc
-    | Binder (Letin (Parallel, l), body) ->
+    | Binder (Let_par l, body) ->
       let fv = free_vars FV.empty body in
       let fv = List.fold_right (fun (_, t) acc ->
           free_vars acc t
@@ -1266,7 +1302,7 @@ module Term = struct
       in
       let fv = List.fold_right (fun (v, _) acc ->
           let acc = FV.del v acc in
-          Ty.free_vars acc v.ty
+          Ty.free_vars acc v.id_ty
         ) l fv
       in
       FV.merge fv acc
@@ -1284,13 +1320,14 @@ module Term = struct
 
   (* Helpers for adt definition *)
   let mk_cstr ty_c name i vars args ret =
-    Id.const name vars args ret
-      ~builtin:(Constructor { adt = ty_c; case = i; })
+    let ty = Ty.pi vars (Ty.arrow args ret) in
+    Id.mk name ty ~builtin:(Builtin.Constructor { adt = ty_c; case = i; })
 
   let mk_cstr_tester cstr =
     let name = Format.asprintf "is:%a" Print.id cstr in
-    Id.const ~builtin:(Tester { cstr })
-      name cstr.ty.fun_vars [cstr.ty.fun_ret] Ty.prop
+    let vars, _, ret = Ty.poly_sig cstr.id_ty in
+    let ty = Ty.pi vars (Ty.arrow [ret] Ty.prop) in
+    Id.mk ~builtin:(Builtin.Tester { cstr }) name ty
 
   (* ADT definition *)
   let define_adt_aux ~record ty_const vars l =
@@ -1304,9 +1341,10 @@ module Term = struct
         let l' = List.mapi (fun j -> function
             | (arg_ty, None) -> (arg_ty, None)
             | (arg_ty, Some name) ->
+              let dstr_ty = Ty.pi vars (Ty.arrow [ty] arg_ty) in
               let dstr =
-                Id.const name vars [ty] arg_ty
-                  ~builtin:(Destructor {
+                Id.mk name dstr_ty
+                  ~builtin:(Builtin.Destructor {
                       adt = ty_const; cstr;
                       case = i; field = j; })
               in
@@ -1344,107 +1382,125 @@ module Term = struct
   (* Variables *)
   module Var = struct
     type t = term_var
-    let tag = Id.tag
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
-    let ty ({ ty; _ } : t) = ty
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
+
+    let ty ({ id_ty; _ } : t) = id_ty
     let mk name ty = Id.mk name ty
   end
 
   (* Constants *)
   module Const = struct
-    type t = term_const
-    let tag = Id.tag
+    type t = term_cst
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
 
     let mk name vars args ret =
-      let r = ref ret in
-      let b = ref true in
-      let args = List.map (fun ty ->
-          if !b || not (Ty.equal ty ret) then ty
-          else begin
-            let v = Ty.Var.mk "'ret" in
-            r := Ty.of_var v;
-            b := true;
-            Ty.as_ ty v
-          end
-        ) args
-      in
-      Id.const name vars args !r
+      let ty = Ty.pi vars (Ty.arrow args ret) in
+      Id.mk name ty
+
+    let mk' ?pos ?name ?builtin ?tags cname vars args ret =
+      let ty = Ty.pi vars (Ty.arrow args ret) in
+      Id.mk ?pos ?name ?builtin ?tags cname ty
+
+    let indexed
+        ?pos ?name ?builtin ?tags
+        cname fun_vars fun_arg fun_ret =
+      with_cache ~cache:(Hashtbl.create 13) (fun i ->
+          let fun_args = replicate i fun_arg in
+          mk' ?pos ?name ?builtin ?tags cname fun_vars fun_args fun_ret
+        )
 
     let arity (c : t) =
-      List.length c.ty.fun_vars, List.length c.ty.fun_args
+      let vars, args, _ = Ty.poly_sig c.id_ty in
+      List.length vars, List.length args
 
     (* Some constants *)
     let _true =
-      Id.const ~name:"⊤" ~builtin:True "True" [] [] Ty.prop
+      Id.mk ~name:"⊤" ~builtin:Builtin.True "True" Ty.prop
 
     let _false =
-      Id.const ~name:"⊥" ~builtin:False "False" [] [] Ty.prop
-
-    let eq =
-      let a = Ty.Var.mk "alpha" in
-      let a_ty = Ty.of_var a in
-      Id.const
-        ~pos:Pretty.Infix ~name:"=" ~builtin:Equal
-        "Equal" [a] [a_ty; a_ty] Ty.prop
+      Id.mk ~name:"⊥" ~builtin:Builtin.False "False" Ty.prop
 
     let eqs =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
-      Id.indexed
-        ~pos:Pretty.Infix ~name:"=" ~builtin:Equal
+      indexed
+        ~pos:Pretty.Infix ~name:"=" ~builtin:Builtin.Equal
         "Equals" [a] a_ty Ty.prop
+
+    let eq = eqs 2
 
     let distinct =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
-      Id.indexed ~builtin:Distinct "Distinct" [a] a_ty Ty.prop
+      indexed ~builtin:Builtin.Distinct "Distinct" [a] a_ty Ty.prop
 
-    let neg = Id.const
-        ~pos:Pretty.Prefix ~name:"¬" ~builtin:Neg
+    let neq = distinct 2
+
+    let neg = mk'
+        ~pos:Pretty.Prefix ~name:"¬" ~builtin:Builtin.Neg
         "Neg" [] [Ty.prop] Ty.prop
 
-    let _and = Id.indexed
-        ~pos:Pretty.Infix ~name:"∧" ~builtin:And
+    let _and = indexed
+        ~pos:Pretty.Infix ~name:"∧" ~builtin:Builtin.And
         "And" [] Ty.prop Ty.prop
 
-    let _or = Id.indexed
-        ~pos:Pretty.Infix ~name:"∨" ~builtin:Or
+    let and_ = _and 2
+
+    let _or = indexed
+        ~pos:Pretty.Infix ~name:"∨" ~builtin:Builtin.Or
         "Or" [] Ty.prop Ty.prop
 
-    let nand = Id.const
-        ~pos:Pretty.Infix ~name:"⊼" ~builtin:Nand
+    let or_ = _or 2
+
+    let nand = mk'
+        ~pos:Pretty.Infix ~name:"⊼" ~builtin:Builtin.Nand
         "Nand" [] [Ty.prop; Ty.prop] Ty.prop
 
-    let nor = Id.const
-        ~pos:Pretty.Infix ~name:"V" ~builtin:Nor
+    let nor = mk'
+        ~pos:Pretty.Infix ~name:"V" ~builtin:Builtin.Nor
         "or" [] [Ty.prop; Ty.prop] Ty.prop
 
-    let xor = Id.const
-        ~pos:Pretty.Infix ~name:"⊻" ~builtin:Xor
+    let xor = mk'
+        ~pos:Pretty.Infix ~name:"⊻" ~builtin:Builtin.Xor
         "Xor" [] [Ty.prop; Ty.prop] Ty.prop
 
-    let imply = Id.const
-        ~pos:Pretty.Infix ~name:"⇒" ~builtin:Imply
+    let imply = mk'
+        ~pos:Pretty.Infix ~name:"⇒" ~builtin:Builtin.Imply
         "Imply" [] [Ty.prop; Ty.prop] Ty.prop
 
-    let equiv = Id.const
-        ~pos:Pretty.Infix ~name:"⇔" ~builtin:Equiv
+    let implied = mk'
+        ~pos:Pretty.Infix ~name:"⇐" ~builtin:Builtin.Implied
+        "Implied" [] [Ty.prop; Ty.prop] Ty.prop
+
+    let equiv = mk'
+        ~pos:Pretty.Infix ~name:"⇔" ~builtin:Builtin.Equiv
         "Equiv" [] [Ty.prop; Ty.prop] Ty.prop
 
     let ite =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
-      Id.const
-        ~name:"ite" ~builtin:Ite
+      mk'
+        ~name:"ite" ~builtin:Builtin.Ite
         "Ite" [a] [Ty.prop; a_ty; a_ty] a_ty
 
     let select =
@@ -1452,8 +1508,8 @@ module Term = struct
       let a_ty = Ty.of_var a in
       let b = Ty.Var.mk "beta" in
       let b_ty = Ty.of_var b in
-      Id.const
-        ~name:"select" ~builtin:Select
+      mk'
+        ~name:"select" ~builtin:Builtin.Select
         "Select" [a; b] [Ty.array a_ty b_ty; a_ty] b_ty
 
     let store =
@@ -1462,105 +1518,105 @@ module Term = struct
       let b = Ty.Var.mk "beta" in
       let b_ty = Ty.of_var b in
       let arr = Ty.array a_ty b_ty in
-      Id.const
-        ~name:"store" ~builtin:Store
+      mk'
+        ~name:"store" ~builtin:Builtin.Store
         "Store" [a; b] [arr; a_ty; b_ty] arr
 
     let coerce =
       let a = Ty.Var.mk "alpha" in
       let b = Ty.Var.mk "beta" in
-      Id.const ~builtin:Coercion "coerce"
+      mk' ~builtin:Builtin.Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
     module Int = struct
 
       let int =
         with_cache ~cache:(Hashtbl.create 113) (fun s ->
-            Id.const ~builtin:(Integer s) s [] [] Ty.int
+            mk' ~builtin:(Builtin.Integer s) s [] [] Ty.int
           )
 
-      let minus = Id.const
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:Minus
+      let minus = mk'
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:Builtin.Minus
           "Minus" [] [Ty.int] Ty.int
 
-      let add = Id.const
-          ~pos:Pretty.Infix ~name:"+" ~builtin:Add
+      let add = mk'
+          ~pos:Pretty.Infix ~name:"+" ~builtin:Builtin.Add
           "Add" [] [Ty.int; Ty.int] Ty.int
 
-      let sub = Id.const
-          ~pos:Pretty.Infix ~name:"-" ~builtin:Sub
+      let sub = mk'
+          ~pos:Pretty.Infix ~name:"-" ~builtin:Builtin.Sub
           "Sub" [] [Ty.int; Ty.int] Ty.int
 
-      let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+      let mul = mk'
+          ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.int; Ty.int] Ty.int
 
-      let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
+      let div_e = mk'
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div_e
           "Div_e" [] [Ty.int; Ty.int] Ty.int
-      let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+      let div_t = mk'
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:Builtin.Div_t
           "Div_t" [] [Ty.int; Ty.int] Ty.int
-      let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+      let div_f = mk'
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:Builtin.Div_f
           "Div_f" [] [Ty.int; Ty.int] Ty.int
 
-      let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
+      let rem_e = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_e
           "Modulo" [] [Ty.int; Ty.int] Ty.int
-      let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%e" ~builtin:Modulo_t
+      let rem_t = mk'
+          ~pos:Pretty.Infix ~name:"%e" ~builtin:Builtin.Modulo_t
           "Modulo" [] [Ty.int; Ty.int] Ty.int
-      let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%f" ~builtin:Modulo_f
+      let rem_f = mk'
+          ~pos:Pretty.Infix ~name:"%f" ~builtin:Builtin.Modulo_f
           "Modulo" [] [Ty.int; Ty.int] Ty.int
 
-      let abs = Id.const
-          ~name:"abs" ~builtin:Abs
+      let abs = mk'
+          ~name:"abs" ~builtin:Builtin.Abs
           "Abs" [] [Ty.int] Ty.int
 
-      let lt = Id.const
-          ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
+      let lt = mk'
+          ~pos:Pretty.Infix ~name:"<" ~builtin:Builtin.Lt
           "LessThan" [] [Ty.int; Ty.int] Ty.prop
 
-      let le = Id.const
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
+      let le = mk'
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:Builtin.Leq
           "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
-      let gt = Id.const
-          ~pos:Pretty.Infix ~name:">" ~builtin:Gt
+      let gt = mk'
+          ~pos:Pretty.Infix ~name:">" ~builtin:Builtin.Gt
           "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
 
-      let ge = Id.const
-          ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
+      let ge = mk'
+          ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.Geq
           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
-      let floor = Id.const
-          ~name:"floor" ~builtin:Floor
+      let floor = mk'
+          ~name:"floor" ~builtin:Builtin.Floor
           "Floor" [] [Ty.int] Ty.int
 
-      let ceiling = Id.const
-          ~name:"ceiling" ~builtin:Ceiling
+      let ceiling = mk'
+          ~name:"ceiling" ~builtin:Builtin.Ceiling
           "Ceiling" [] [Ty.int] Ty.int
 
-      let truncate = Id.const
-          ~name:"truncate" ~builtin:Truncate
+      let truncate = mk'
+          ~name:"truncate" ~builtin:Builtin.Truncate
           "Truncate" [] [Ty.int] Ty.int
 
-      let round = Id.const
-          ~name:"round" ~builtin:Round
+      let round = mk'
+          ~name:"round" ~builtin:Builtin.Round
           "Round" [] [Ty.int] Ty.int
 
-      let is_int = Id.const
-          ~name:"is_int" ~builtin:Is_int
+      let is_int = mk'
+          ~name:"is_int" ~builtin:Builtin.Is_int
           "Is_int" [] [Ty.int] Ty.prop
 
-      let is_rat = Id.const
-          ~name:"is_rat" ~builtin:Is_rat
+      let is_rat = mk'
+          ~name:"is_rat" ~builtin:Builtin.Is_rat
           "Is_rat" [] [Ty.int] Ty.prop
 
-      let divisible = Id.const
-          ~builtin:Divisible "Divisible"
+      let divisible = mk'
+          ~builtin:Builtin.Divisible "Divisible"
           [] [Ty.int; Ty.int] Ty.prop
 
     end
@@ -1569,86 +1625,86 @@ module Term = struct
 
       let rat =
         with_cache ~cache:(Hashtbl.create 113) (fun s ->
-            Id.const ~builtin:(Rational s) s [] [] Ty.rat
+            mk' ~builtin:(Builtin.Rational s) s [] [] Ty.rat
           )
 
-      let minus = Id.const
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:Minus
+      let minus = mk'
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:Builtin.Minus
           "Minus" [] [Ty.rat] Ty.rat
 
-      let add = Id.const
-          ~pos:Pretty.Infix ~name:"+" ~builtin:Add
+      let add = mk'
+          ~pos:Pretty.Infix ~name:"+" ~builtin:Builtin.Add
           "Add" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let sub = Id.const
-          ~pos:Pretty.Infix ~name:"-" ~builtin:Sub
+      let sub = mk'
+          ~pos:Pretty.Infix ~name:"-" ~builtin:Builtin.Sub
           "Sub" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+      let mul = mk'
+          ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let div = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div
+      let div = mk'
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div
           "Div" [] [Ty.rat; Ty.rat] Ty.rat
-      let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/e" ~builtin:Div_e
+      let div_e = mk'
+          ~pos:Pretty.Infix ~name:"/e" ~builtin:Builtin.Div_e
           "Div_e" [] [Ty.rat; Ty.rat] Ty.rat
-      let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+      let div_t = mk'
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:Builtin.Div_t
           "Div_t" [] [Ty.rat; Ty.rat] Ty.rat
-      let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+      let div_f = mk'
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:Builtin.Div_f
           "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
+      let rem_e = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_e
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
-      let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
+      let rem_t = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_t
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
-      let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
+      let rem_f = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_f
           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let lt = Id.const
-          ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
+      let lt = mk'
+          ~pos:Pretty.Infix ~name:"<" ~builtin:Builtin.Lt
           "LessThan" [] [Ty.rat; Ty.rat] Ty.prop
 
-      let le = Id.const
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
+      let le = mk'
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:Builtin.Leq
           "LessOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
-      let gt = Id.const
-          ~pos:Pretty.Infix ~name:">" ~builtin:Gt
+      let gt = mk'
+          ~pos:Pretty.Infix ~name:">" ~builtin:Builtin.Gt
           "GreaterThan" [] [Ty.rat; Ty.rat] Ty.prop
 
-      let ge = Id.const
-          ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
+      let ge = mk'
+          ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.Geq
           "GreaterOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
-      let floor = Id.const
-          ~name:"floor" ~builtin:Floor
+      let floor = mk'
+          ~name:"floor" ~builtin:Builtin.Floor
           "Floor" [] [Ty.rat] Ty.rat
 
-      let ceiling = Id.const
-          ~name:"ceiling" ~builtin:Ceiling
+      let ceiling = mk'
+          ~name:"ceiling" ~builtin:Builtin.Ceiling
           "Ceiling" [] [Ty.rat] Ty.rat
 
-      let truncate = Id.const
-          ~name:"truncate" ~builtin:Truncate
+      let truncate = mk'
+          ~name:"truncate" ~builtin:Builtin.Truncate
           "Truncate" [] [Ty.rat] Ty.rat
 
-      let round = Id.const
-          ~name:"round" ~builtin:Round
+      let round = mk'
+          ~name:"round" ~builtin:Builtin.Round
           "Round" [] [Ty.rat] Ty.rat
 
-      let is_int = Id.const
-          ~name:"is_int" ~builtin:Is_int
+      let is_int = mk'
+          ~name:"is_int" ~builtin:Builtin.Is_int
           "Is_int" [] [Ty.rat] Ty.prop
 
-      let is_rat = Id.const
-          ~name:"is_rat" ~builtin:Is_rat
+      let is_rat = mk'
+          ~name:"is_rat" ~builtin:Builtin.Is_rat
           "Is_rat" [] [Ty.rat] Ty.prop
     end
 
@@ -1656,284 +1712,284 @@ module Term = struct
 
       let real =
         with_cache ~cache:(Hashtbl.create 113) (fun s ->
-            Id.const ~builtin:(Decimal s) s [] [] Ty.real
+            mk' ~builtin:(Builtin.Decimal s) s [] [] Ty.real
           )
 
-      let minus = Id.const
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:Minus
+      let minus = mk'
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:Builtin.Minus
           "Minus" [] [Ty.real] Ty.real
 
-      let add = Id.const
-          ~pos:Pretty.Infix ~name:"+" ~builtin:Add
+      let add = mk'
+          ~pos:Pretty.Infix ~name:"+" ~builtin:Builtin.Add
           "Add" [] [Ty.real; Ty.real] Ty.real
 
-      let sub = Id.const
-          ~pos:Pretty.Infix ~name:"-" ~builtin:Sub
+      let sub = mk'
+          ~pos:Pretty.Infix ~name:"-" ~builtin:Builtin.Sub
           "Sub" [] [Ty.real; Ty.real] Ty.real
 
-      let mul = Id.const
-          ~pos:Pretty.Infix ~name:"*" ~builtin:Mul
+      let mul = mk'
+          ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.real; Ty.real] Ty.real
 
-      let div = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div
+      let div = mk'
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div
           "Div" [] [Ty.real; Ty.real] Ty.real
 
-      let div_e = Id.const
-          ~pos:Pretty.Infix ~name:"/" ~builtin:Div_e
+      let div_e = mk'
+          ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div_e
           "Div_e" [] [Ty.real; Ty.real] Ty.real
-      let div_t = Id.const
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:Div_t
+      let div_t = mk'
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:Builtin.Div_t
           "Div_t" [] [Ty.real; Ty.real] Ty.real
-      let div_f = Id.const
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:Div_f
+      let div_f = mk'
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:Builtin.Div_f
           "Div_f" [] [Ty.real; Ty.real] Ty.real
 
-      let rem_e = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_e
+      let rem_e = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_e
           "Modulo" [] [Ty.real; Ty.real] Ty.real
-      let rem_t = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_t
+      let rem_t = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_t
           "Modulo" [] [Ty.real; Ty.real] Ty.real
-      let rem_f = Id.const
-          ~pos:Pretty.Infix ~name:"%" ~builtin:Modulo_f
+      let rem_f = mk'
+          ~pos:Pretty.Infix ~name:"%" ~builtin:Builtin.Modulo_f
           "Modulo" [] [Ty.real; Ty.real] Ty.real
 
-      let lt = Id.const
-          ~pos:Pretty.Infix ~name:"<" ~builtin:Lt
+      let lt = mk'
+          ~pos:Pretty.Infix ~name:"<" ~builtin:Builtin.Lt
           "LessThan" [] [Ty.real; Ty.real] Ty.prop
 
-      let le = Id.const
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:Leq
+      let le = mk'
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:Builtin.Leq
           "LessOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
-      let gt = Id.const
-          ~pos:Pretty.Infix ~name:">" ~builtin:Gt
+      let gt = mk'
+          ~pos:Pretty.Infix ~name:">" ~builtin:Builtin.Gt
           "GreaterThan" [] [Ty.real; Ty.real] Ty.prop
 
-      let ge = Id.const
-          ~pos:Pretty.Infix ~name:">=" ~builtin:Geq
+      let ge = mk'
+          ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.Geq
           "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
-      let floor = Id.const
-          ~name:"floor" ~builtin:Floor
+      let floor = mk'
+          ~name:"floor" ~builtin:Builtin.Floor
           "Floor" [] [Ty.real] Ty.real
 
-      let ceiling = Id.const
-          ~name:"ceiling" ~builtin:Ceiling
+      let ceiling = mk'
+          ~name:"ceiling" ~builtin:Builtin.Ceiling
           "Ceiling" [] [Ty.real] Ty.real
 
-      let truncate = Id.const
-          ~name:"truncate" ~builtin:Truncate
+      let truncate = mk'
+          ~name:"truncate" ~builtin:Builtin.Truncate
           "Truncate" [] [Ty.real] Ty.real
 
-      let round = Id.const
-          ~name:"round" ~builtin:Round
+      let round = mk'
+          ~name:"round" ~builtin:Builtin.Round
           "Round" [] [Ty.real] Ty.real
 
-      let is_int = Id.const
-          ~name:"is_int" ~builtin:Is_int
+      let is_int = mk'
+          ~name:"is_int" ~builtin:Builtin.Is_int
           "Is_int" [] [Ty.real] Ty.prop
 
-      let is_rat = Id.const
-          ~name:"is_rat" ~builtin:Is_rat
+      let is_rat = mk'
+          ~name:"is_rat" ~builtin:Builtin.Is_rat
           "Is_rat" [] [Ty.real] Ty.prop
     end
 
     module Bitv = struct
 
       let bitv s =
-        Id.const ~builtin:(Bitvec s)
+        mk' ~builtin:(Builtin.Bitvec s)
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
       let concat =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j) ->
-            Id.const ~builtin:Bitv_concat "bitv_concat"
+            mk' ~builtin:Builtin.Bitv_concat "bitv_concat"
               [] [Ty.bitv i; Ty.bitv j] (Ty.bitv (i + j))
           )
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            Id.const ~builtin:(Bitv_extract (i, j))
+            mk' ~builtin:(Builtin.Bitv_extract (i, j))
               (Format.asprintf "bitv_extract_%d_%d" i j) []
               [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
 
       let repeat =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            Id.const ~builtin:Bitv_repeat (Format.asprintf "bitv_repeat_%d" k)
+            mk' ~builtin:Builtin.Bitv_repeat (Format.asprintf "bitv_repeat_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n * k))
           )
 
       let zero_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            Id.const ~builtin:Bitv_zero_extend (Format.asprintf "zero_extend_%d" k)
+            mk' ~builtin:Builtin.Bitv_zero_extend (Format.asprintf "zero_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let sign_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            Id.const ~builtin:Bitv_sign_extend (Format.asprintf "sign_extend_%d" k)
+            mk' ~builtin:Builtin.Bitv_sign_extend (Format.asprintf "sign_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let rotate_right =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            Id.const ~builtin:(Bitv_rotate_right k)
+            mk' ~builtin:(Builtin.Bitv_rotate_right k)
               (Format.asprintf "rotate_right_%d" k) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let rotate_left =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            Id.const ~builtin:(Bitv_rotate_left k)
+            mk' ~builtin:(Builtin.Bitv_rotate_left k)
               (Format.asprintf "rotate_left_%d" k) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let not =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_not "bvnot" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_not "bvnot" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let and_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_and "bvand" []
+            mk' ~builtin:Builtin.Bitv_and "bvand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_or "bvor" []
+            mk' ~builtin:Builtin.Bitv_or "bvor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_nand "bvnand" []
+            mk' ~builtin:Builtin.Bitv_nand "bvnand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_nor "bvnor" []
+            mk' ~builtin:Builtin.Bitv_nor "bvnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_xor "bvxor" []
+            mk' ~builtin:Builtin.Bitv_xor "bvxor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_xnor "bvxnor" []
+            mk' ~builtin:Builtin.Bitv_xnor "bvxnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_comp "bvcomp" []
+            mk' ~builtin:Builtin.Bitv_comp "bvcomp" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_neg "bvneg" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_neg "bvneg" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let add =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_add "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_add "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sub =
       with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          Id.const ~builtin:Bitv_sub "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          mk' ~builtin:Builtin.Bitv_sub "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
         )
 
       let mul =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_mul "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_mul "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let udiv =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_udiv "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_udiv "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let urem =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_urem "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_urem "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sdiv =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_sdiv "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_sdiv "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let srem =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_srem "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_srem "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let smod =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_smod "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_smod "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let shl =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_shl "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_shl "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let lshr =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_lshr "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_lshr "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ashr =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_ashr "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:Builtin.Bitv_ashr "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ult =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_ult "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_ult "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ule =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_ule "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_ule "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ugt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_ugt "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_ugt "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let uge =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_uge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_uge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let slt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_slt "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_slt "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sle =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_sle "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_sle "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sgt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_sgt "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_sgt "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sge =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            Id.const ~builtin:Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:Builtin.Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
     end
@@ -1942,24 +1998,24 @@ module Term = struct
 
       let fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (e, s) ->
-            Id.const ~builtin:(Fp(e, s)) "fp" []
+            mk' ~builtin:(Builtin.Fp(e, s)) "fp" []
               [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
 
       let roundNearestTiesToEven =
-        Id.const ~builtin:RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
+        mk' ~builtin:Builtin.RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
 
       let roundNearestTiesToAway =
-        Id.const ~builtin:RoundNearestTiesToAway "RoundNearestTiesToAway" [] [] Ty.roundingMode
+        mk' ~builtin:Builtin.RoundNearestTiesToAway "RoundNearestTiesToAway" [] [] Ty.roundingMode
 
       let roundTowardPositive =
-        Id.const ~builtin:RoundTowardPositive "RoundTowardPositive" [] [] Ty.roundingMode
+        mk' ~builtin:Builtin.RoundTowardPositive "RoundTowardPositive" [] [] Ty.roundingMode
 
       let roundTowardNegative =
-        Id.const ~builtin:RoundTowardNegative "RoundTowardNegative" [] [] Ty.roundingMode
+        mk' ~builtin:Builtin.RoundTowardNegative "RoundTowardNegative" [] [] Ty.roundingMode
 
       let roundTowardZero =
-        Id.const ~builtin:RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
+        mk' ~builtin:Builtin.RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
 
       (** Generic function for creating functions primarily on the same floating
          point format with optionally a rounding mode and a particular result
@@ -1974,67 +2030,127 @@ module Term = struct
               | Some res -> res
               | None -> fp
             in
-            Id.const ~builtin:(builtin es) name [] args res
+            mk' ~builtin:(builtin es) name [] args res
           )
 
-      let plus_infinity = fp_gen_fun ~args:0 "plus_infinity" (fun (e,s) -> Plus_infinity (e,s))
-      let minus_infinity = fp_gen_fun ~args:0 "minus_infinity" (fun (e,s) -> Minus_infinity (e,s))
-      let plus_zero = fp_gen_fun ~args:0 "plus_zero" (fun (e,s) -> Plus_zero (e,s))
-      let minus_zero = fp_gen_fun ~args:0 "minus_zero" (fun (e,s) -> Minus_zero (e,s))
-      let nan = fp_gen_fun ~args:0 "nan" (fun (e,s) -> NaN (e,s))
-      let abs = fp_gen_fun ~args:1 "fp.abs" (fun (e,s) -> Fp_abs (e,s))
-      let neg = fp_gen_fun ~args:1 "fp.neg" (fun (e,s) -> Fp_neg (e,s))
-      let add = fp_gen_fun ~args:2 ~rm:() "fp.add" (fun (e,s) -> Fp_add (e,s))
-      let sub = fp_gen_fun ~args:2 ~rm:() "fp.sub" (fun (e,s) -> Fp_sub (e,s))
-      let mul = fp_gen_fun ~args:2 ~rm:() "fp.mul" (fun (e,s) -> Fp_mul (e,s))
-      let div = fp_gen_fun ~args:2 ~rm:() "fp.div" (fun (e,s) -> Fp_div (e,s))
-      let fma = fp_gen_fun ~args:3 ~rm:() "fp.fma" (fun (e,s) -> Fp_fma (e,s))
-      let sqrt = fp_gen_fun ~args:1 ~rm:() "fp.sqrt" (fun (e,s) -> Fp_sqrt (e,s))
-      let rem = fp_gen_fun ~args:2 "fp.rem" (fun (e,s) -> Fp_rem (e,s))
-      let roundToIntegral = fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral" (fun (e,s) -> Fp_roundToIntegral (e,s))
-      let min = fp_gen_fun ~args:2 "fp.min" (fun (e,s) -> Fp_min (e,s))
-      let max = fp_gen_fun ~args:2 "fp.max" (fun (e,s) -> Fp_max (e,s))
-      let leq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq" (fun (e,s) -> Fp_leq (e,s))
-      let lt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt" (fun (e,s) -> Fp_lt (e,s))
-      let geq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq" (fun (e,s) -> Fp_geq (e,s))
-      let gt = fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt" (fun (e,s) -> Fp_gt (e,s))
-      let eq = fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq" (fun (e,s) -> Fp_eq (e,s))
-      let isNormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal" (fun (e,s) -> Fp_isNormal (e,s))
-      let isSubnormal = fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal" (fun (e,s) -> Fp_isSubnormal (e,s))
-      let isZero = fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero" (fun (e,s) -> Fp_isZero (e,s))
-      let isInfinite = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite" (fun (e,s) -> Fp_isInfinite (e,s))
-      let isNaN = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan" (fun (e,s) -> Fp_isNaN (e,s))
-      let isNegative = fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative" (fun (e,s) -> Fp_isNegative (e,s))
-      let isPositive = fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive" (fun (e,s) -> Fp_isPositive (e,s))
-      let to_real = fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real" (fun (e,s) -> To_real (e,s))
+      let plus_infinity =
+        fp_gen_fun ~args:0 "plus_infinity"
+          (fun (e,s) -> Builtin.Plus_infinity (e,s))
+      let minus_infinity =
+        fp_gen_fun ~args:0 "minus_infinity"
+          (fun (e,s) -> Builtin.Minus_infinity (e,s))
+      let plus_zero =
+        fp_gen_fun ~args:0 "plus_zero"
+          (fun (e,s) -> Builtin.Plus_zero (e,s))
+      let minus_zero =
+        fp_gen_fun ~args:0 "minus_zero"
+          (fun (e,s) -> Builtin.Minus_zero (e,s))
+      let nan =
+        fp_gen_fun ~args:0 "nan"
+          (fun (e,s) -> Builtin.NaN (e,s))
+      let abs =
+        fp_gen_fun ~args:1 "fp.abs"
+          (fun (e,s) -> Builtin.Fp_abs (e,s))
+      let neg =
+        fp_gen_fun ~args:1 "fp.neg"
+          (fun (e,s) -> Builtin.Fp_neg (e,s))
+      let add =
+        fp_gen_fun ~args:2 ~rm:() "fp.add"
+          (fun (e,s) -> Builtin.Fp_add (e,s))
+      let sub =
+        fp_gen_fun ~args:2 ~rm:() "fp.sub"
+          (fun (e,s) -> Builtin.Fp_sub (e,s))
+      let mul =
+        fp_gen_fun ~args:2 ~rm:() "fp.mul"
+          (fun (e,s) -> Builtin.Fp_mul (e,s))
+      let div =
+        fp_gen_fun ~args:2 ~rm:() "fp.div"
+          (fun (e,s) -> Builtin.Fp_div (e,s))
+      let fma =
+        fp_gen_fun ~args:3 ~rm:() "fp.fma"
+          (fun (e,s) -> Builtin.Fp_fma (e,s))
+      let sqrt =
+        fp_gen_fun ~args:1 ~rm:() "fp.sqrt"
+          (fun (e,s) -> Builtin.Fp_sqrt (e,s))
+      let rem =
+        fp_gen_fun ~args:2 "fp.rem"
+          (fun (e,s) -> Builtin.Fp_rem (e,s))
+      let roundToIntegral =
+        fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral"
+          (fun (e,s) -> Builtin.Fp_roundToIntegral (e,s))
+      let min =
+        fp_gen_fun ~args:2 "fp.min"
+          (fun (e,s) -> Builtin.Fp_min (e,s))
+      let max =
+        fp_gen_fun ~args:2 "fp.max"
+          (fun (e,s) -> Builtin.Fp_max (e,s))
+      let leq =
+        fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq"
+          (fun (e,s) -> Builtin.Fp_leq (e,s))
+      let lt =
+        fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt"
+          (fun (e,s) -> Builtin.Fp_lt (e,s))
+      let geq =
+        fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq"
+          (fun (e,s) -> Builtin.Fp_geq (e,s))
+      let gt =
+        fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt"
+          (fun (e,s) -> Builtin.Fp_gt (e,s))
+      let eq =
+        fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq"
+          (fun (e,s) -> Builtin.Fp_eq (e,s))
+      let isNormal =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal"
+          (fun (e,s) -> Builtin.Fp_isNormal (e,s))
+      let isSubnormal =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal"
+          (fun (e,s) -> Builtin.Fp_isSubnormal (e,s))
+      let isZero =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero"
+          (fun (e,s) -> Builtin.Fp_isZero (e,s))
+      let isInfinite =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite"
+          (fun (e,s) -> Builtin.Fp_isInfinite (e,s))
+      let isNaN =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan"
+          (fun (e,s) -> Builtin.Fp_isNaN (e,s))
+      let isNegative =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative"
+          (fun (e,s) -> Builtin.Fp_isNegative (e,s))
+      let isPositive =
+        fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive"
+          (fun (e,s) -> Builtin.Fp_isPositive (e,s))
+      let to_real =
+        fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real"
+          (fun (e,s) -> Builtin.To_real (e,s))
 
       let ieee_format_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
-            Id.const ~builtin:(Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
+            mk' ~builtin:(Builtin.Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
           )
       let to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (e1,s1,e2,s2) ->
-            Id.const ~builtin:(Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
+            mk' ~builtin:(Builtin.Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
           )
       let real_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
-            Id.const ~builtin:(Real_to_fp (e,s)) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
+            mk' ~builtin:(Builtin.Real_to_fp (e,s)) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
           )
       let sbv_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
-            Id.const ~builtin:(Sbv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+            mk' ~builtin:(Builtin.Sbv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let ubv_to_fp =
         with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
-            Id.const ~builtin:(Ubv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+            mk' ~builtin:(Builtin.Ubv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let to_ubv =
         with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
-            Id.const ~builtin:(To_ubv (bv,e,s)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.To_ubv (bv,e,s)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
       let to_sbv =
         with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
-            Id.const ~builtin:(To_sbv (bv,e,s)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.To_sbv (bv,e,s)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
 
     end
@@ -2043,121 +2159,121 @@ module Term = struct
 
       let string =
         with_cache ~cache:(Hashtbl.create 13) (fun s ->
-            Id.const ~builtin:(Str s) (Format.asprintf {|"%s"|} s) [] [] Ty.string
+            mk' ~builtin:(Builtin.Str s) (Format.asprintf {|"%s"|} s) [] [] Ty.string
           )
 
       let length =
-        Id.const ~builtin:Str_length "length"
+        mk' ~builtin:Builtin.Str_length "length"
           [] [Ty.string] Ty.int
       let at =
-        Id.const ~builtin:Str_at "at"
+        mk' ~builtin:Builtin.Str_at "at"
           [] [Ty.string; Ty.int] Ty.string
       let to_code =
-        Id.const ~builtin:Str_to_code "to_code"
+        mk' ~builtin:Builtin.Str_to_code "to_code"
           [] [Ty.string] Ty.int
       let of_code =
-        Id.const ~builtin:Str_of_code "of_code"
+        mk' ~builtin:Builtin.Str_of_code "of_code"
           [] [Ty.int] Ty.string
       let is_digit =
-        Id.const ~builtin:Str_is_digit "is_digit"
+        mk' ~builtin:Builtin.Str_is_digit "is_digit"
           [] [Ty.string] Ty.prop
       let to_int =
-        Id.const ~builtin:Str_to_int "to_int"
+        mk' ~builtin:Builtin.Str_to_int "to_int"
           [] [Ty.string] Ty.int
       let of_int =
-        Id.const ~builtin:Str_of_int "of_int"
+        mk' ~builtin:Builtin.Str_of_int "of_int"
           [] [Ty.int] Ty.string
       let concat =
-        Id.const ~builtin:Str_concat ~pos:Pretty.Infix "++"
+        mk' ~builtin:Builtin.Str_concat ~pos:Pretty.Infix "++"
           [] [Ty.string; Ty.string] Ty.string
       let sub =
-        Id.const ~builtin:Str_sub "sub"
+        mk' ~builtin:Builtin.Str_sub "sub"
           [] [Ty.string; Ty.int; Ty.int] Ty.string
       let index_of =
-        Id.const ~builtin:Str_index_of "index_of"
+        mk' ~builtin:Builtin.Str_index_of "index_of"
           [] [Ty.string; Ty.string; Ty.int] Ty.int
       let replace =
-        Id.const ~builtin:Str_replace "replace"
+        mk' ~builtin:Builtin.Str_replace "replace"
           [] [Ty.string; Ty.string; Ty.string] Ty.string
       let replace_all =
-        Id.const ~builtin:Str_replace_all "replace_all"
+        mk' ~builtin:Builtin.Str_replace_all "replace_all"
           [] [Ty.string; Ty.string; Ty.string] Ty.string
       let replace_re =
-        Id.const ~builtin:Str_replace_re "replace_re"
+        mk' ~builtin:Builtin.Str_replace_re "replace_re"
           [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
       let replace_re_all =
-        Id.const ~builtin:Str_replace_re_all "replace_re_all"
+        mk' ~builtin:Builtin.Str_replace_re_all "replace_re_all"
           [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
       let is_prefix =
-        Id.const ~builtin:Str_is_prefix "is_prefix"
+        mk' ~builtin:Builtin.Str_is_prefix "is_prefix"
           [] [Ty.string; Ty.string] Ty.prop
       let is_suffix =
-        Id.const ~builtin:Str_is_suffix "is_suffix"
+        mk' ~builtin:Builtin.Str_is_suffix "is_suffix"
           [] [Ty.string; Ty.string] Ty.prop
       let contains =
-        Id.const ~builtin:Str_contains "contains"
+        mk' ~builtin:Builtin.Str_contains "contains"
           [] [Ty.string; Ty.string] Ty.prop
       let lt =
-        Id.const ~builtin:Str_lexicographic_strict
+        mk' ~builtin:Builtin.Str_lexicographic_strict
           ~pos:Pretty.Infix "lt"
           [] [Ty.string; Ty.string] Ty.prop
       let leq =
-        Id.const ~builtin:Str_lexicographic_large
+        mk' ~builtin:Builtin.Str_lexicographic_large
           ~pos:Pretty.Infix "leq"
           [] [Ty.string; Ty.string] Ty.prop
       let in_re =
-        Id.const ~builtin:Str_in_re "in_re"
+        mk' ~builtin:Builtin.Str_in_re "in_re"
           [] [Ty.string; Ty.string_reg_lang] Ty.prop
 
       module Reg_Lang = struct
 
         let empty =
-          Id.const ~builtin:Re_empty "empty"
+          mk' ~builtin:Builtin.Re_empty "empty"
             [] [] Ty.string_reg_lang
         let all =
-          Id.const ~builtin:Re_all "all"
+          mk' ~builtin:Builtin.Re_all "all"
             [] [] Ty.string_reg_lang
         let allchar =
-          Id.const ~builtin:Re_allchar "allchar"
+          mk' ~builtin:Builtin.Re_allchar "allchar"
             [] [] Ty.string_reg_lang
         let of_string =
-          Id.const ~builtin:Re_of_string "of_string"
+          mk' ~builtin:Builtin.Re_of_string "of_string"
             [] [Ty.string] Ty.string_reg_lang
         let range =
-          Id.const ~builtin:Re_range "range"
+          mk' ~builtin:Builtin.Re_range "range"
             [] [Ty.string; Ty.string] Ty.string_reg_lang
         let concat =
-          Id.const ~builtin:Re_concat ~pos:Pretty.Infix "++"
+          mk' ~builtin:Builtin.Re_concat ~pos:Pretty.Infix "++"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let union =
-          Id.const ~builtin:Re_union ~pos:Pretty.Infix "∪"
+          mk' ~builtin:Builtin.Re_union ~pos:Pretty.Infix "∪"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let inter =
-          Id.const ~builtin:Re_inter ~pos:Pretty.Infix "∩"
+          mk' ~builtin:Builtin.Re_inter ~pos:Pretty.Infix "∩"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let diff =
-          Id.const ~builtin:Re_diff ~pos:Pretty.Infix "-"
+          mk' ~builtin:Builtin.Re_diff ~pos:Pretty.Infix "-"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let star =
-          Id.const ~builtin:Re_star ~pos:Pretty.Prefix "*"
+          mk' ~builtin:Builtin.Re_star ~pos:Pretty.Prefix "*"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let cross =
-          Id.const ~builtin:Re_cross ~pos:Pretty.Prefix "+"
+          mk' ~builtin:Builtin.Re_cross ~pos:Pretty.Prefix "+"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let complement =
-          Id.const ~builtin:Re_complement "complement"
+          mk' ~builtin:Builtin.Re_complement "complement"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let option =
-          Id.const ~builtin:Re_option "option"
+          mk' ~builtin:Builtin.Re_option "option"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let power =
           with_cache ~cache:(Hashtbl.create 13) (fun n ->
-              Id.const ~builtin:(Re_power n) (Format.asprintf "power_%d" n)
+              mk' ~builtin:(Builtin.Re_power n) (Format.asprintf "power_%d" n)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
         let loop =
           with_cache ~cache:(Hashtbl.create 13) (fun (n1, n2) ->
-              Id.const ~builtin:(Re_loop (n1, n2)) (Format.asprintf "loop_%d_%d" n1 n2)
+              mk' ~builtin:(Builtin.Re_loop (n1, n2)) (Format.asprintf "loop_%d_%d" n1 n2)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
 
@@ -2169,19 +2285,28 @@ module Term = struct
 
   (* Constructors are simply constants *)
   module Cstr = struct
-    type t = term_const
-    let tag = Id.tag
+    type t = term_cst
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
     let get_tag = Id.get_tag
     let get_tag_last = Id.get_tag_last
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
+
+    exception Bad_pattern_arity of term_cst * ty list * term list
+
     let arity (c : t) =
-      List.length c.ty.fun_vars, List.length c.ty.fun_args
+      let vars, args, _ = Ty.poly_sig c.id_ty in
+      List.length vars, List.length args
 
     let tester c =
       match c.builtin with
-      | Constructor { adt; case; } ->
+      | Builtin.Constructor { adt; case; } ->
         begin match Ty.definition adt with
           | Some Adt { cases; _ } -> cases.(case).tester
           | _ -> assert false
@@ -2195,21 +2320,30 @@ module Term = struct
 
     let pattern_arity (c : t) ret tys =
       try
-        let s = List.fold_left2 Subst.Var.bind Subst.empty c.ty.fun_vars tys in
-        let s = Ty.robinson s c.ty.fun_ret ret in
-        List.map (Ty.subst s) c.ty.fun_args
+        let fun_vars, fun_args, fun_ret = Ty.poly_sig c.id_ty in
+        let s = List.fold_left2 Ty.subst_bind Subst.empty fun_vars tys in
+        let s = Ty.robinson s fun_ret ret in
+        List.map (Ty.subst s) fun_args
       with
       | Ty.Impossible_unification _ -> raise (Wrong_sum_type (c, ret))
-      | Invalid_argument _ -> raise (Bad_term_arity (c, tys, []))
+      | Invalid_argument _ -> raise (Bad_pattern_arity (c, tys, []))
 
   end
 
   (* Record fields are represented as their destructors, i.e. constants *)
   module Field = struct
-    type t = term_const
+    type t = term_cst
     let hash = Id.hash
+    let print = Id.print
     let equal = Id.equal
     let compare = Id.compare
+    let get_tag = Id.get_tag
+    let get_tag_last = Id.get_tag_last
+    let get_tag_list = Id.get_tag_list
+    let set_tag = Id.set_tag
+    let add_tag = Id.add_tag
+    let add_tag_opt = Id.add_tag_opt
+    let add_tag_list = Id.add_tag_list
 
     (* Record field getter *)
     let find ty_c i =
@@ -2225,7 +2359,7 @@ module Term = struct
     (* Record creation *)
     let index ty_c f =
       match f.builtin with
-      | Destructor { adt = ty_d; case = i; field = j; _ } ->
+      | Builtin.Destructor { adt = ty_d; case = i; field = j; _ } ->
         if Id.equal ty_c ty_d then begin
           assert (i = 0);
           j
@@ -2236,26 +2370,38 @@ module Term = struct
 
   end
 
-
-  (* Filter check *)
-  let rec check_filters res f tys args = function
-    | [] -> res
-    | (name, active, check) :: r ->
-      if !active then match (check f tys args) with
-        | `Pass -> check_filters res f tys args r
-        | `Warn -> check_filters res f tys args r
-        | `Error msg -> raise (Filter_failed_term (name, res, msg))
-      else
-        check_filters res f tys args r
-
   (* Term creation *)
-  let mk ?(tags=Tag.empty) descr ty = { descr; ty; hash = -1; tags; }
+  let mk ?(tags=Tag.empty) term_descr term_ty =
+    { term_descr; term_ty; term_hash = -1; term_tags = tags; }
 
-  let of_var v = mk (Var v) v.ty
+  let of_var v = mk (Var v) v.id_ty
+  let of_cst c = mk (Cst c) c.id_ty
 
-  (* This function does not check types enough, do not export outside the module *)
+  (* Binder creation *)
   let mk_bind b body =
-    mk (Binder (b, body)) (ty body)
+    match b with
+    | Forall _
+    | Exists _ ->
+      if not (Ty.(equal prop) (ty body)) then
+        raise (Wrong_type (body, Ty.prop));
+      mk (Binder (b, body)) Ty.prop
+    | Let_seq l | Let_par l ->
+      List.iter (fun ((v : Var.t), t) ->
+          if not (Ty.equal v.id_ty (ty t)) then raise (Wrong_type (t, v.id_ty))
+        ) l;
+      mk (Binder (b, body)) (ty body)
+    | Lambda (tys, ts) ->
+      let res_ty =
+        Ty.pi tys
+          (Ty.arrow (List.map Var.ty ts) (ty body))
+      in
+      mk (Binder (b, body)) res_ty
+
+  let lam (tys, ts) body = mk_bind (Lambda (tys, ts)) body
+  let all (tys, ts) body = mk_bind (Forall (tys, ts)) body
+  let ex (tys, ts) body = mk_bind (Exists (tys, ts)) body
+  let letin l body = mk_bind (Let_seq l) body
+  let letand l body = mk_bind (Let_par l) body
 
   (* Substitutions *)
   let rec ty_var_list_subst ty_var_map = function
@@ -2266,8 +2412,8 @@ module Term = struct
   let rec term_var_list_subst ty_var_map t_var_map acc = function
     | [] -> List.rev acc, t_var_map
     | (v :: r : term_var list) ->
-      let ty = Ty.subst ty_var_map v.ty in
-      if not (Ty.equal ty v.ty) then
+      let ty = Ty.subst ty_var_map v.id_ty in
+      if not (Ty.equal ty v.id_ty) then
         let nv = Var.mk v.name ty in
         term_var_list_subst ty_var_map
           (Subst.Var.bind t_var_map v (of_var nv)) (nv :: acc) r
@@ -2276,7 +2422,7 @@ module Term = struct
           (Subst.Var.remove v t_var_map) (v :: acc) r
 
   let rec subst_aux ~fix ty_var_map t_var_map (t : t) =
-    match t.descr with
+    match t.term_descr with
     | Var v ->
       begin match Subst.Var.get v t_var_map with
         | exception Not_found -> t
@@ -2285,11 +2431,16 @@ module Term = struct
           then subst_aux ~fix ty_var_map t_var_map term
           else term
       end
+    | Cst _ -> t
     | App (f, tys, args) ->
+      let new_f = subst_aux ~fix ty_var_map t_var_map f in
       let new_tys = List.map (Ty.subst ~fix ty_var_map) tys in
       let new_args = List.map (subst_aux ~fix ty_var_map t_var_map) args in
-      if List.for_all2 (==) new_tys tys && List.for_all2 (==) new_args args then t
-      else apply f new_tys new_args
+      if new_f == f &&
+         List.for_all2 (==) new_tys tys &&
+         List.for_all2 (==) new_args args
+      then t
+      else apply new_f new_tys new_args
     | Binder (b, body) ->
       let b', ty_var_map, t_var_map = binder_subst ~fix ty_var_map t_var_map b in
       mk_bind b' (subst_aux ~fix ty_var_map t_var_map body)
@@ -2299,6 +2450,17 @@ module Term = struct
       pattern_match scrutinee branches
 
   and binder_subst ~fix ty_var_map t_var_map = function
+    | Let_seq l ->
+      let l, t_var_map = binding_list_subst ~fix ty_var_map t_var_map [] l in
+      Let_seq l, ty_var_map, t_var_map
+    | Let_par l ->
+      let l, t_var_map = binding_list_subst ~fix ty_var_map t_var_map [] l in
+      Let_par l, ty_var_map, t_var_map
+    | Lambda (tys, ts) ->
+      (* term variables in ts may have their types changed by the subst *)
+      let ty_var_map = ty_var_list_subst ty_var_map tys in
+      let ts, t_var_map = term_var_list_subst ty_var_map t_var_map [] ts in
+      Lambda (tys, ts), ty_var_map, t_var_map
     | Exists (tys, ts) ->
       (* term variables in ts may have their types changed by the subst *)
       let ty_var_map = ty_var_list_subst ty_var_map tys in
@@ -2309,15 +2471,12 @@ module Term = struct
       let ty_var_map = ty_var_list_subst ty_var_map tys in
       let ts, t_var_map = term_var_list_subst ty_var_map t_var_map [] ts in
       Forall (tys, ts), ty_var_map, t_var_map
-    | Letin (kind, l) ->
-      let l, t_var_map = binding_list_subst ~fix ty_var_map t_var_map [] l in
-      Letin (kind, l), ty_var_map, t_var_map
 
   and binding_list_subst ~fix ty_var_map t_var_map acc = function
     | [] -> List.rev acc, t_var_map
     | ((v, t) :: r : (term_var * term) list) ->
       let t = subst_aux ~fix ty_var_map t_var_map t in
-      if Ty.equal (ty t) v.ty then begin
+      if Ty.equal (ty t) v.id_ty then begin
         let t_var_map = Subst.Var.remove v t_var_map in
         let acc = (v, t) :: acc in
         binding_list_subst ~fix ty_var_map t_var_map acc r
@@ -2341,27 +2500,96 @@ module Term = struct
       subst_aux ~fix ty_var_map t_var_map t
 
   (* Application typechecking *)
-  and instantiate (f : term_const) tys args =
-    if List.length f.ty.fun_vars <> List.length tys ||
-       List.length f.ty.fun_args <> List.length args then begin
-      raise (Bad_term_arity (f, tys, args))
-    end else begin
-      let map = List.fold_left2 Subst.Var.bind Subst.empty f.ty.fun_vars tys in
-      let s = List.fold_left2 (fun s expected term ->
-          try Ty.robinson s expected (ty term)
-          with Ty.Impossible_unification _ ->
-            raise (Wrong_type (term, Ty.subst s expected))
-        ) map f.ty.fun_args args
-      in
-      Subst.iter Ty.set_wildcard s;
-      Ty.subst s f.ty.fun_ret
-    end
+  and instantiate_finalize subst ty =
+    let subst = Subst.map (Ty.subst ~fix:true subst) subst in
+    Subst.iter Ty.set_wildcard subst;
+    Ty.subst subst ty
+
+  and instantiate_term_app subst fun_ty args =
+    let rec aux subst fun_ty_args fun_ty_ret args =
+      match fun_ty_args, args with
+      (* full application *)
+      | [], [] ->
+        instantiate_finalize subst fun_ty_ret
+      (* partial application *)
+      | _ :: _, [] ->
+        instantiate_finalize subst (Ty.arrow fun_ty_args fun_ty_ret)
+      (* over application *)
+      | [], arg :: rest ->
+        let ret = Ty.of_var (Ty.Var.wildcard ()) in
+        let potential_fun_ty = Ty.arrow [ty arg] ret in
+        begin match Ty.robinson subst fun_ty_ret potential_fun_ty with
+          | subst -> instantiate_term_app subst ret rest
+          | exception Ty.Impossible_unification _ ->
+            raise (Over_application args)
+        end
+      (* regular application, carry on *)
+      | expected :: fun_ty_args, arg :: args ->
+        begin match Ty.robinson subst expected (ty arg) with
+          | subst -> aux subst fun_ty_args fun_ty_ret args
+          | exception Ty.Impossible_unification _ ->
+            raise (Wrong_type (arg, Ty.subst subst expected))
+        end
+    in
+    match args with
+    | [] -> instantiate_finalize subst fun_ty
+    | _ ->
+      let fun_ty_args, fun_ty_ret = Ty.split_arrow fun_ty in
+      aux subst fun_ty_args fun_ty_ret args
+
+  and instantiate_ty_app subst fun_ty tys args =
+    let exception Bad_arity in
+    let rec aux subst fun_ty_vars fun_ty_body tys args =
+      match fun_ty_vars, tys with
+      (* full type application *)
+      | [], [] -> instantiate_term_app subst fun_ty_body args
+      (* partial type application *)
+      | _ :: _, [] ->
+        begin match args with
+          | [] -> instantiate_finalize subst (Ty.pi fun_ty_vars fun_ty)
+          | _ -> raise Bad_arity
+        end
+      (* over application
+         in prenex polymoprhism, type substitution cannot create Pi
+         quantifications (the substitution rhs cannot be Pi _). *)
+      | [], _ :: _ ->
+        raise Bad_arity
+      (* regular application
+         we prevent type schemas (i.e. Pi _) from beign instantiated
+         with polymorphic types to preserve prenex polymorphism.
+         The Ty.subst_bind function performs this check. *)
+      | ty_var :: fun_ty_vars, ty :: tys ->
+        let subst = Ty.subst_bind subst ty_var ty in
+        aux subst fun_ty_vars fun_ty_body tys args
+    in
+    match tys with
+    | [] -> instantiate_term_app subst fun_ty args
+    | _ ->
+      let fun_ty_vars, fun_ty_body = Ty.split_pi fun_ty in
+      begin
+        try aux subst fun_ty_vars fun_ty_body tys args
+        with Bad_arity -> raise (Bad_poly_arity (fun_ty_vars, tys))
+      end
+
+  and instantiate fun_ty tys args =
+    (*
+    Format.eprintf "@[<v 2>inst: %a@ %a@ %a@ @]@."
+      Print.ty fun_ty
+      (Format.pp_print_list Print.ty) tys
+      (Format.pp_print_list (fun fmt t ->
+           Format.fprintf fmt "%a: %a" Print.term t Print.ty (ty t)
+         )) args;
+    *)
+    instantiate_ty_app Subst.empty fun_ty tys args
 
   (* Application *)
   and apply f tys args =
-    let ret = instantiate f tys args in
-    let res = mk (App (f, tys, args)) ret in
-    check_filters res f tys args (Const.get_tag f Filter.term)
+    match tys, args with
+    | [], [] -> f
+    | _, _ ->
+      (* Format.eprintf "apply: %a@." Print.term f; *)
+      let ret_ty = instantiate (ty f) tys args in
+      mk (App (f, tys, args)) ret_ty
 
   (* Pattern matching *)
   and pattern_match scrutinee branches =
@@ -2369,7 +2597,7 @@ module Term = struct
     (* first,
        unify the type of the scrutinee and all patterns,
        and unify the type of all bodies *)
-    let body_ty = Ty.wildcard () in
+    let body_ty = Ty.of_var (Ty.Var.wildcard ()) in
     let s = List.fold_left (fun acc (pattern, body) ->
         let acc =
           try Ty.robinson acc scrutinee_ty (ty pattern)
@@ -2396,23 +2624,29 @@ module Term = struct
 
   (* Wrappers around application *)
 
-  let apply_cstr = apply
+  let apply_cst (c : term_cst) tys args =
+    apply (of_cst c) tys args
 
-  let apply_field (f : term_const) t =
-    let tys = init_list
-        (List.length f.ty.fun_vars)
-        (fun _ -> Ty.wildcard ())
+  let apply_cstr (c : Cstr.t) tys args =
+    apply (of_cst c) tys args
+
+  let apply_field (f : Field.t) t =
+    let f_ty_vars, _ = Ty.split_pi f.id_ty in
+    let tys =
+      init_list (List.length f_ty_vars)
+        (fun _ -> Ty.of_var (Ty.Var.wildcard ()))
     in
-    apply f tys [t]
+    apply (of_cst f) tys [t]
 
   (* ADT constructor tester *)
   let cstr_tester c t =
     let tester = Cstr.tester c in
+    let tester_ty_vars, _ = Ty.split_pi tester.id_ty in
     let ty_args = init_list
-        (List.length tester.ty.fun_vars)
-        (fun _ -> Ty.wildcard ())
+        (List.length tester_ty_vars)
+        (fun _ -> Ty.of_var (Ty.Var.wildcard ()))
     in
-    apply tester ty_args [t]
+    apply_cst tester ty_args [t]
 
   (* Recor creation *)
   let build_record_fields ty_c l =
@@ -2435,7 +2669,7 @@ module Term = struct
     | [] -> raise (Invalid_argument "Dolmen.Expr.record")
     | ((f, _) :: _) as l ->
       begin match f.builtin with
-        | Destructor { adt = ty_c; cstr = c; _ } when Ty.is_record ty_c ->
+        | Builtin.Destructor { adt = ty_c; cstr = c; _ } when Ty.is_record ty_c ->
           let fields = build_record_fields ty_c l in
           (* Check that all fields are indeed present, and create the list
              of term arguments *)
@@ -2445,11 +2679,12 @@ module Term = struct
               | Some v -> v
             ) fields in
           (* Create type wildcard to be unified during application. *)
+          let c_ty_vars, _ = Ty.split_pi c.id_ty in
           let ty_args = init_list
-              (List.length c.ty.fun_vars)
-              (fun _ -> Ty.wildcard ())
+              (List.length c_ty_vars)
+              (fun _ -> Ty.of_var (Ty.Var.wildcard ()))
           in
-          apply c ty_args t_args
+          apply_cst c ty_args t_args
         | _ ->
           raise (Field_expected f)
       end
@@ -2468,107 +2703,113 @@ module Term = struct
 
   (* typing annotations *)
   let ensure t ty =
-    match Ty.robinson Subst.empty ty t.ty with
-    | s -> subst s Subst.empty t
+    match Ty.robinson Subst.empty ty t.term_ty with
+    | s ->
+      Subst.iter Ty.set_wildcard s;
+      subst s Subst.empty t
     | exception Ty.Impossible_unification _ ->
       raise (Wrong_type (t, ty))
 
   (* coercion *)
   let coerce dst_ty t =
     let src_ty = ty t in
-    apply Const.coerce [src_ty; dst_ty] [t]
+    apply_cst Const.coerce [src_ty; dst_ty] [t]
 
   (* Common constructions *)
-  let void = apply Cstr.void [] []
+  let void = apply_cst Cstr.void [] []
 
-  let _true = apply Const._true [] []
-  let _false = apply Const._false [] []
-
-  let eq a b = apply Const.eq [ty a] [a; b]
+  let _true = apply_cst Const._true [] []
+  let _false = apply_cst Const._false [] []
 
   let eqs = function
-    | [] -> apply (Const.eqs 0) [] []
-    | (h :: _) as l -> apply (Const.eqs (List.length l)) [ty h] l
+    | [] -> apply_cst (Const.eqs 0) [] []
+    | (h :: _) as l -> apply_cst (Const.eqs (List.length l)) [ty h] l
+
+  let eq a b = eqs [a; b]
 
   let distinct = function
-    | [] -> apply (Const.distinct 0) [] []
-    | (h :: _) as l -> apply (Const.distinct (List.length l)) [ty h] l
+    | [] -> apply_cst (Const.distinct 0) [] []
+    | (h :: _) as l -> apply_cst (Const.distinct (List.length l)) [ty h] l
 
-  let neg x = apply Const.neg [] [x]
+  let neq a b = distinct [a; b]
 
-  let _and l = apply (Const._and (List.length l)) [] l
+  let neg x = apply_cst Const.neg [] [x]
 
-  let _or l = apply (Const._or (List.length l)) [] l
+  let _and l = apply_cst (Const._and (List.length l)) [] l
 
-  let nand p q = apply Const.nand [] [p; q]
+  let _or l = apply_cst (Const._or (List.length l)) [] l
 
-  let nor p q = apply Const.nor [] [p; q]
+  let nand p q = apply_cst Const.nand [] [p; q]
 
-  let xor p q = apply Const.xor [] [p; q]
+  let nor p q = apply_cst Const.nor [] [p; q]
 
-  let imply p q = apply Const.imply [] [p; q]
+  let xor p q = apply_cst Const.xor [] [p; q]
 
-  let equiv p q = apply Const.equiv [] [p; q]
+  let imply p q = apply_cst Const.imply [] [p; q]
 
-  let int s = apply (Const.Int.int s) [] []
-  let rat s = apply (Const.Rat.rat s) [] []
-  let real s = apply (Const.Real.real s) [] []
+  let implied p q = apply_cst Const.implied [] [p; q]
+
+  let equiv p q = apply_cst Const.equiv [] [p; q]
+
+  let int s = apply_cst (Const.Int.int s) [] []
+  let rat s = apply_cst (Const.Rat.rat s) [] []
+  let real s = apply_cst (Const.Real.real s) [] []
 
   (* arithmetic *)
   module Int = struct
     let mk = int
-    let minus t = apply Const.Int.minus [] [t]
-    let add a b = apply Const.Int.add [] [a; b]
-    let sub a b = apply Const.Int.sub [] [a; b]
-    let mul a b = apply Const.Int.mul [] [a; b]
-    let div a b = apply Const.Int.div_e [] [a; b]
-    let rem a b = apply Const.Int.rem_e [] [a; b]
-    let div_e a b = apply Const.Int.div_e [] [a; b]
-    let div_t a b = apply Const.Int.div_t [] [a; b]
-    let div_f a b = apply Const.Int.div_f [] [a; b]
-    let rem_e a b = apply Const.Int.rem_e [] [a; b]
-    let rem_t a b = apply Const.Int.rem_t [] [a; b]
-    let rem_f a b = apply Const.Int.rem_f [] [a; b]
-    let abs a = apply Const.Int.abs [] [a]
-    let lt a b = apply Const.Int.lt [] [a; b]
-    let le a b = apply Const.Int.le [] [a; b]
-    let gt a b = apply Const.Int.gt [] [a; b]
-    let ge a b = apply Const.Int.ge [] [a; b]
-    let floor a = apply Const.Int.floor [] [a]
-    let ceiling a = apply Const.Int.ceiling [] [a]
-    let truncate a = apply Const.Int.truncate [] [a]
-    let round a = apply Const.Int.round [] [a]
-    let is_int a = apply Const.Int.is_int [] [a]
-    let is_rat a = apply Const.Int.is_rat [] [a]
+    let minus t = apply_cst Const.Int.minus [] [t]
+    let add a b = apply_cst Const.Int.add [] [a; b]
+    let sub a b = apply_cst Const.Int.sub [] [a; b]
+    let mul a b = apply_cst Const.Int.mul [] [a; b]
+    let div a b = apply_cst Const.Int.div_e [] [a; b]
+    let rem a b = apply_cst Const.Int.rem_e [] [a; b]
+    let div_e a b = apply_cst Const.Int.div_e [] [a; b]
+    let div_t a b = apply_cst Const.Int.div_t [] [a; b]
+    let div_f a b = apply_cst Const.Int.div_f [] [a; b]
+    let rem_e a b = apply_cst Const.Int.rem_e [] [a; b]
+    let rem_t a b = apply_cst Const.Int.rem_t [] [a; b]
+    let rem_f a b = apply_cst Const.Int.rem_f [] [a; b]
+    let abs a = apply_cst Const.Int.abs [] [a]
+    let lt a b = apply_cst Const.Int.lt [] [a; b]
+    let le a b = apply_cst Const.Int.le [] [a; b]
+    let gt a b = apply_cst Const.Int.gt [] [a; b]
+    let ge a b = apply_cst Const.Int.ge [] [a; b]
+    let floor a = apply_cst Const.Int.floor [] [a]
+    let ceiling a = apply_cst Const.Int.ceiling [] [a]
+    let truncate a = apply_cst Const.Int.truncate [] [a]
+    let round a = apply_cst Const.Int.round [] [a]
+    let is_int a = apply_cst Const.Int.is_int [] [a]
+    let is_rat a = apply_cst Const.Int.is_rat [] [a]
     let to_int t = coerce Ty.int t
     let to_rat t = coerce Ty.rat t
     let to_real t = coerce Ty.real t
-    let divisible s t = apply Const.Int.divisible [] [int s; t]
+    let divisible s t = apply_cst Const.Int.divisible [] [int s; t]
   end
 
   module Rat = struct
     (* let mk = rat *)
-    let minus t = apply Const.Rat.minus [] [t]
-    let add a b = apply Const.Rat.add [] [a; b]
-    let sub a b = apply Const.Rat.sub [] [a; b]
-    let mul a b = apply Const.Rat.mul [] [a; b]
-    let div a b = apply Const.Rat.div [] [a; b]
-    let div_e a b = apply Const.Rat.div_e [] [a; b]
-    let div_t a b = apply Const.Rat.div_t [] [a; b]
-    let div_f a b = apply Const.Rat.div_f [] [a; b]
-    let rem_e a b = apply Const.Rat.rem_e [] [a; b]
-    let rem_t a b = apply Const.Rat.rem_t [] [a; b]
-    let rem_f a b = apply Const.Rat.rem_f [] [a; b]
-    let lt a b = apply Const.Rat.lt [] [a; b]
-    let le a b = apply Const.Rat.le [] [a; b]
-    let gt a b = apply Const.Rat.gt [] [a; b]
-    let ge a b = apply Const.Rat.ge [] [a; b]
-    let floor a = apply Const.Rat.floor [] [a]
-    let ceiling a = apply Const.Rat.ceiling [] [a]
-    let truncate a = apply Const.Rat.truncate [] [a]
-    let round a = apply Const.Rat.round [] [a]
-    let is_int a = apply Const.Rat.is_int [] [a]
-    let is_rat a = apply Const.Rat.is_rat [] [a]
+    let minus t = apply_cst Const.Rat.minus [] [t]
+    let add a b = apply_cst Const.Rat.add [] [a; b]
+    let sub a b = apply_cst Const.Rat.sub [] [a; b]
+    let mul a b = apply_cst Const.Rat.mul [] [a; b]
+    let div a b = apply_cst Const.Rat.div [] [a; b]
+    let div_e a b = apply_cst Const.Rat.div_e [] [a; b]
+    let div_t a b = apply_cst Const.Rat.div_t [] [a; b]
+    let div_f a b = apply_cst Const.Rat.div_f [] [a; b]
+    let rem_e a b = apply_cst Const.Rat.rem_e [] [a; b]
+    let rem_t a b = apply_cst Const.Rat.rem_t [] [a; b]
+    let rem_f a b = apply_cst Const.Rat.rem_f [] [a; b]
+    let lt a b = apply_cst Const.Rat.lt [] [a; b]
+    let le a b = apply_cst Const.Rat.le [] [a; b]
+    let gt a b = apply_cst Const.Rat.gt [] [a; b]
+    let ge a b = apply_cst Const.Rat.ge [] [a; b]
+    let floor a = apply_cst Const.Rat.floor [] [a]
+    let ceiling a = apply_cst Const.Rat.ceiling [] [a]
+    let truncate a = apply_cst Const.Rat.truncate [] [a]
+    let round a = apply_cst Const.Rat.round [] [a]
+    let is_int a = apply_cst Const.Rat.is_int [] [a]
+    let is_rat a = apply_cst Const.Rat.is_rat [] [a]
     let to_int t = coerce Ty.int t
     let to_rat t = coerce Ty.rat t
     let to_real t = coerce Ty.real t
@@ -2576,27 +2817,27 @@ module Term = struct
 
   module Real = struct
     let mk = real
-    let minus t = apply Const.Real.minus [] [t]
-    let add a b = apply Const.Real.add [] [a; b]
-    let sub a b = apply Const.Real.sub [] [a; b]
-    let mul a b = apply Const.Real.mul [] [a; b]
-    let div a b = apply Const.Real.div [] [a; b]
-    let div_e a b = apply Const.Real.div_e [] [a; b]
-    let div_t a b = apply Const.Real.div_t [] [a; b]
-    let div_f a b = apply Const.Real.div_f [] [a; b]
-    let rem_e a b = apply Const.Real.rem_e [] [a; b]
-    let rem_t a b = apply Const.Real.rem_t [] [a; b]
-    let rem_f a b = apply Const.Real.rem_f [] [a; b]
-    let lt a b = apply Const.Real.lt [] [a; b]
-    let le a b = apply Const.Real.le [] [a; b]
-    let gt a b = apply Const.Real.gt [] [a; b]
-    let ge a b = apply Const.Real.ge [] [a; b]
-    let floor a = apply Const.Real.floor [] [a]
-    let ceiling a = apply Const.Real.ceiling [] [a]
-    let truncate a = apply Const.Real.truncate [] [a]
-    let round a = apply Const.Real.round [] [a]
-    let is_int a = apply Const.Real.is_int [] [a]
-    let is_rat a = apply Const.Real.is_rat [] [a]
+    let minus t = apply_cst Const.Real.minus [] [t]
+    let add a b = apply_cst Const.Real.add [] [a; b]
+    let sub a b = apply_cst Const.Real.sub [] [a; b]
+    let mul a b = apply_cst Const.Real.mul [] [a; b]
+    let div a b = apply_cst Const.Real.div [] [a; b]
+    let div_e a b = apply_cst Const.Real.div_e [] [a; b]
+    let div_t a b = apply_cst Const.Real.div_t [] [a; b]
+    let div_f a b = apply_cst Const.Real.div_f [] [a; b]
+    let rem_e a b = apply_cst Const.Real.rem_e [] [a; b]
+    let rem_t a b = apply_cst Const.Real.rem_t [] [a; b]
+    let rem_f a b = apply_cst Const.Real.rem_f [] [a; b]
+    let lt a b = apply_cst Const.Real.lt [] [a; b]
+    let le a b = apply_cst Const.Real.le [] [a; b]
+    let gt a b = apply_cst Const.Real.gt [] [a; b]
+    let ge a b = apply_cst Const.Real.ge [] [a; b]
+    let floor a = apply_cst Const.Real.floor [] [a]
+    let ceiling a = apply_cst Const.Real.ceiling [] [a]
+    let truncate a = apply_cst Const.Real.truncate [] [a]
+    let round a = apply_cst Const.Real.round [] [a]
+    let is_int a = apply_cst Const.Real.is_int [] [a]
+    let is_rat a = apply_cst Const.Real.is_rat [] [a]
     let to_int t = coerce Ty.int t
     let to_rat t = coerce Ty.rat t
     let to_real t = coerce Ty.real t
@@ -2618,358 +2859,339 @@ module Term = struct
 
   let select t idx =
     let src, dst = match_array_type t in
-    apply Const.select [src; dst] [t; idx]
+    apply_cst Const.select [src; dst] [t; idx]
 
   let store t idx value =
     let src, dst = match_array_type t in
-    apply Const.store [src; dst] [t; idx; value]
+    apply_cst Const.store [src; dst] [t; idx; value]
 
   (* Bitvectors *)
   module Bitv = struct
     let match_bitv_type t =
-      match ty t with
-      | { descr = App ({ builtin = Bitv i; _ }, _); _ } -> i
+      match Ty.descr (ty t) with
+      | TyApp ({ builtin = Builtin.Bitv i; _ }, _) -> i
       | _ -> raise (Wrong_type (t, Ty.bitv 0))
 
-    let mk s = apply (Const.Bitv.bitv s) [] []
+    let mk s = apply_cst (Const.Bitv.bitv s) [] []
 
     let concat u v =
       let i = match_bitv_type u in
       let j = match_bitv_type v in
-      apply (Const.Bitv.concat (i, j)) [] [u; v]
+      apply_cst (Const.Bitv.concat (i, j)) [] [u; v]
 
     let extract i j t =
       let n = match_bitv_type t in
       (* TODO: check that i and j are correct index for a bitv(n) *)
-      apply (Const.Bitv.extract (i, j, n)) [] [t]
+      apply_cst (Const.Bitv.extract (i, j, n)) [] [t]
 
     let repeat k t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.repeat (k, n)) [] [t]
+      apply_cst (Const.Bitv.repeat (k, n)) [] [t]
 
     let zero_extend k t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.zero_extend (k, n)) [] [t]
+      apply_cst (Const.Bitv.zero_extend (k, n)) [] [t]
 
     let sign_extend k t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.sign_extend (k, n)) [] [t]
+      apply_cst (Const.Bitv.sign_extend (k, n)) [] [t]
 
     let rotate_right k t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.rotate_right (k, n)) [] [t]
+      apply_cst (Const.Bitv.rotate_right (k, n)) [] [t]
 
     let rotate_left k t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.rotate_left (k, n)) [] [t]
+      apply_cst (Const.Bitv.rotate_left (k, n)) [] [t]
 
     let not t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.not n) [] [t]
+      apply_cst (Const.Bitv.not n) [] [t]
 
     let and_ u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.and_ n) [] [u; v]
+      apply_cst (Const.Bitv.and_ n) [] [u; v]
 
     let or_ u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.or_ n) [] [u; v]
+      apply_cst (Const.Bitv.or_ n) [] [u; v]
 
     let nand u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.nand n) [] [u; v]
+      apply_cst (Const.Bitv.nand n) [] [u; v]
 
     let nor u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.nor n) [] [u; v]
+      apply_cst (Const.Bitv.nor n) [] [u; v]
 
     let xor u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.xor n) [] [u; v]
+      apply_cst (Const.Bitv.xor n) [] [u; v]
 
     let xnor u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.xnor n) [] [u; v]
+      apply_cst (Const.Bitv.xnor n) [] [u; v]
 
     let comp u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.comp n) [] [u; v]
+      apply_cst (Const.Bitv.comp n) [] [u; v]
 
     let neg t =
       let n = match_bitv_type t in
-      apply (Const.Bitv.neg n) [] [t]
+      apply_cst (Const.Bitv.neg n) [] [t]
 
     let add u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.add n) [] [u; v]
+      apply_cst (Const.Bitv.add n) [] [u; v]
 
     let sub u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.sub n) [] [u; v]
+      apply_cst (Const.Bitv.sub n) [] [u; v]
 
     let mul u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.mul n) [] [u; v]
+      apply_cst (Const.Bitv.mul n) [] [u; v]
 
     let udiv u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.udiv n) [] [u; v]
+      apply_cst (Const.Bitv.udiv n) [] [u; v]
 
     let urem u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.urem n) [] [u; v]
+      apply_cst (Const.Bitv.urem n) [] [u; v]
 
     let sdiv u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.sdiv n) [] [u; v]
+      apply_cst (Const.Bitv.sdiv n) [] [u; v]
 
     let srem u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.srem n) [] [u; v]
+      apply_cst (Const.Bitv.srem n) [] [u; v]
 
     let smod u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.smod n) [] [u; v]
+      apply_cst (Const.Bitv.smod n) [] [u; v]
 
     let shl u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.shl n) [] [u; v]
+      apply_cst (Const.Bitv.shl n) [] [u; v]
 
     let lshr u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.lshr n) [] [u; v]
+      apply_cst (Const.Bitv.lshr n) [] [u; v]
 
     let ashr u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.ashr n) [] [u; v]
+      apply_cst (Const.Bitv.ashr n) [] [u; v]
 
     let ult u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.ult n) [] [u; v]
+      apply_cst (Const.Bitv.ult n) [] [u; v]
 
     let ule u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.ule n) [] [u; v]
+      apply_cst (Const.Bitv.ule n) [] [u; v]
 
     let ugt u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.ugt n) [] [u; v]
+      apply_cst (Const.Bitv.ugt n) [] [u; v]
 
     let uge u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.uge n) [] [u; v]
+      apply_cst (Const.Bitv.uge n) [] [u; v]
 
     let slt u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.slt n) [] [u; v]
+      apply_cst (Const.Bitv.slt n) [] [u; v]
 
     let sle u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.sle n) [] [u; v]
+      apply_cst (Const.Bitv.sle n) [] [u; v]
 
     let sgt u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.sgt n) [] [u; v]
+      apply_cst (Const.Bitv.sgt n) [] [u; v]
 
     let sge u v =
       let n = match_bitv_type u in
-      apply (Const.Bitv.sge n) [] [u; v]
+      apply_cst (Const.Bitv.sge n) [] [u; v]
 
   end
 
   module Float = struct
     (* Floats *)
     let match_float_type t =
-      match ty t with
-      | { descr = App ({ builtin = Float (e,s); _ }, _); _ } -> (e,s)
+      match Ty.descr (ty t) with
+      | TyApp ({ builtin = Builtin.Float (e,s); _ }, _) -> (e,s)
       | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
     let fp sign exp significand =
       let e = Bitv.match_bitv_type exp in
       let s = Bitv.match_bitv_type significand in
-      apply (Const.Float.fp (e, s+1)) [] [sign; exp; significand]
+      apply_cst (Const.Float.fp (e, s+1)) [] [sign; exp; significand]
 
-    let roundNearestTiesToEven = apply Const.Float.roundNearestTiesToEven [] []
-    let roundNearestTiesToAway = apply Const.Float.roundNearestTiesToAway [] []
-    let roundTowardPositive = apply Const.Float.roundTowardPositive [] []
-    let roundTowardNegative = apply Const.Float.roundTowardNegative [] []
-    let roundTowardZero = apply Const.Float.roundTowardZero [] []
+    let roundNearestTiesToEven = apply_cst Const.Float.roundNearestTiesToEven [] []
+    let roundNearestTiesToAway = apply_cst Const.Float.roundNearestTiesToAway [] []
+    let roundTowardPositive = apply_cst Const.Float.roundTowardPositive [] []
+    let roundTowardNegative = apply_cst Const.Float.roundTowardNegative [] []
+    let roundTowardZero = apply_cst Const.Float.roundTowardZero [] []
 
-    let plus_infinity e s = apply (Const.Float.plus_infinity (e,s)) [] []
-    let minus_infinity e s = apply (Const.Float.minus_infinity (e,s)) [] []
-    let plus_zero e s = apply (Const.Float.plus_zero (e,s)) [] []
-    let minus_zero e s = apply (Const.Float.minus_zero (e,s)) [] []
-    let nan e s = apply (Const.Float.nan (e,s)) [] []
+    let plus_infinity e s = apply_cst (Const.Float.plus_infinity (e,s)) [] []
+    let minus_infinity e s = apply_cst (Const.Float.minus_infinity (e,s)) [] []
+    let plus_zero e s = apply_cst (Const.Float.plus_zero (e,s)) [] []
+    let minus_zero e s = apply_cst (Const.Float.minus_zero (e,s)) [] []
+    let nan e s = apply_cst (Const.Float.nan (e,s)) [] []
     let abs x =
       let es = match_float_type x in
-      apply (Const.Float.abs es) [] [x]
+      apply_cst (Const.Float.abs es) [] [x]
     let neg x =
       let es = match_float_type x in
-      apply (Const.Float.neg es) [] [x]
+      apply_cst (Const.Float.neg es) [] [x]
     let add rm x y =
       let es = match_float_type x in
-      apply (Const.Float.add es) [] [rm;x;y]
+      apply_cst (Const.Float.add es) [] [rm;x;y]
     let sub rm x y =
       let es = match_float_type x in
-      apply (Const.Float.sub es) [] [rm;x;y]
+      apply_cst (Const.Float.sub es) [] [rm;x;y]
     let mul rm x y =
       let es = match_float_type x in
-      apply (Const.Float.mul es) [] [rm;x;y]
+      apply_cst (Const.Float.mul es) [] [rm;x;y]
     let div rm x y =
       let es = match_float_type x in
-      apply (Const.Float.div es) [] [rm;x;y]
+      apply_cst (Const.Float.div es) [] [rm;x;y]
     let fma rm x y z =
       let es = match_float_type x in
-      apply (Const.Float.fma es) [] [rm;x;y;z]
+      apply_cst (Const.Float.fma es) [] [rm;x;y;z]
     let sqrt rm x =
       let es = match_float_type x in
-      apply (Const.Float.sqrt es) [] [rm;x]
+      apply_cst (Const.Float.sqrt es) [] [rm;x]
     let rem x y =
       let es = match_float_type x in
-      apply (Const.Float.rem es) [] [x;y]
+      apply_cst (Const.Float.rem es) [] [x;y]
     let roundToIntegral rm x =
       let es = match_float_type x in
-      apply (Const.Float.roundToIntegral es) [] [rm;x]
+      apply_cst (Const.Float.roundToIntegral es) [] [rm;x]
     let min x y =
       let es = match_float_type x in
-      apply (Const.Float.min es) [] [x;y]
+      apply_cst (Const.Float.min es) [] [x;y]
     let max x y =
       let es = match_float_type x in
-      apply (Const.Float.max es) [] [x;y]
+      apply_cst (Const.Float.max es) [] [x;y]
     let leq x y =
       let es = match_float_type x in
-      apply (Const.Float.leq es) [] [x;y]
+      apply_cst (Const.Float.leq es) [] [x;y]
     let lt x y =
       let es = match_float_type x in
-      apply (Const.Float.lt es) [] [x;y]
+      apply_cst (Const.Float.lt es) [] [x;y]
     let geq x y =
       let es = match_float_type x in
-      apply (Const.Float.geq es) [] [x;y]
+      apply_cst (Const.Float.geq es) [] [x;y]
     let gt x y =
       let es = match_float_type x in
-      apply (Const.Float.gt es) [] [x;y]
+      apply_cst (Const.Float.gt es) [] [x;y]
     let eq x y =
       let es = match_float_type x in
-      apply (Const.Float.eq es) [] [x;y]
+      apply_cst (Const.Float.eq es) [] [x;y]
     let isNormal x =
       let es = match_float_type x in
-      apply (Const.Float.isNormal es) [] [x]
+      apply_cst (Const.Float.isNormal es) [] [x]
     let isSubnormal x =
       let es = match_float_type x in
-      apply (Const.Float.isSubnormal es) [] [x]
+      apply_cst (Const.Float.isSubnormal es) [] [x]
     let isZero x =
       let es = match_float_type x in
-      apply (Const.Float.isZero es) [] [x]
+      apply_cst (Const.Float.isZero es) [] [x]
     let isInfinite x =
       let es = match_float_type x in
-      apply (Const.Float.isInfinite es) [] [x]
+      apply_cst (Const.Float.isInfinite es) [] [x]
     let isNaN x =
       let es = match_float_type x in
-      apply (Const.Float.isNaN es) [] [x]
+      apply_cst (Const.Float.isNaN es) [] [x]
     let isNegative x =
       let es = match_float_type x in
-      apply (Const.Float.isNegative es) [] [x]
+      apply_cst (Const.Float.isNegative es) [] [x]
     let isPositive x =
       let es = match_float_type x in
-      apply (Const.Float.isPositive es) [] [x]
+      apply_cst (Const.Float.isPositive es) [] [x]
     let to_real x =
       let es = match_float_type x in
-      apply (Const.Float.to_real es) [] [x]
+      apply_cst (Const.Float.to_real es) [] [x]
     let ieee_format_to_fp e s bv =
-      apply (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
+      apply_cst (Const.Float.ieee_format_to_fp (e,s)) [] [bv]
     let to_fp e2 s2 rm x =
       let (e1,s1) = match_float_type x in
-      apply (Const.Float.to_fp (e1,s1,e2,s2)) [] [rm;x]
+      apply_cst (Const.Float.to_fp (e1,s1,e2,s2)) [] [rm;x]
     let real_to_fp e s rm r =
-      apply (Const.Float.real_to_fp (e,s)) [] [rm;r]
+      apply_cst (Const.Float.real_to_fp (e,s)) [] [rm;r]
     let sbv_to_fp e s rm bv =
       let n = Bitv.match_bitv_type bv in
-      apply (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
+      apply_cst (Const.Float.sbv_to_fp (n,e,s)) [] [rm;bv]
     let ubv_to_fp e s rm bv =
       let n = Bitv.match_bitv_type bv in
-      apply (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
+      apply_cst (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
     let to_ubv m rm x =
       let (e,s) = match_float_type x in
-      apply (Const.Float.to_ubv (e,s,m)) [] [rm;x]
+      apply_cst (Const.Float.to_ubv (e,s,m)) [] [rm;x]
     let to_sbv m rm x =
       let (e,s) = match_float_type x in
-      apply (Const.Float.to_sbv (e,s,m)) [] [rm;x]
+      apply_cst (Const.Float.to_sbv (e,s,m)) [] [rm;x]
   end
 
   module String = struct
 
-    let of_ustring s = apply (Const.String.string s) [] []
-    let length s = apply Const.String.length [] [s]
-    let at s i = apply Const.String.at [] [s; i]
-    let is_digit s = apply Const.String.is_digit [] [s]
-    let to_code s = apply Const.String.to_code [] [s]
-    let of_code i = apply Const.String.of_code [] [i]
-    let to_int s = apply Const.String.to_int [] [s]
-    let of_int i = apply Const.String.of_int [] [i]
-    let concat s s' = apply Const.String.concat [] [s;s']
-    let sub s i n = apply Const.String.sub [] [s; i; n]
-    let index_of s s' i = apply Const.String.index_of [] [s; s'; i]
-    let replace s pat by = apply Const.String.replace [] [s; pat; by]
-    let replace_all s pat by = apply Const.String.replace_all [] [s; pat; by]
-    let replace_re s pat by = apply Const.String.replace_re [] [s; pat; by]
-    let replace_re_all s pat by = apply Const.String.replace_re_all [] [s; pat; by]
-    let is_prefix s s' = apply Const.String.is_prefix [] [s; s']
-    let is_suffix s s' = apply Const.String.is_suffix [] [s; s']
-    let contains s s' = apply Const.String.contains [] [s; s']
-    let lt s s' = apply Const.String.lt [] [s; s']
-    let leq s s' = apply Const.String.leq [] [s; s']
-    let in_re s re = apply Const.String.in_re [] [s; re]
+    let of_ustring s = apply_cst (Const.String.string s) [] []
+    let length s = apply_cst Const.String.length [] [s]
+    let at s i = apply_cst Const.String.at [] [s; i]
+    let is_digit s = apply_cst Const.String.is_digit [] [s]
+    let to_code s = apply_cst Const.String.to_code [] [s]
+    let of_code i = apply_cst Const.String.of_code [] [i]
+    let to_int s = apply_cst Const.String.to_int [] [s]
+    let of_int i = apply_cst Const.String.of_int [] [i]
+    let concat s s' = apply_cst Const.String.concat [] [s;s']
+    let sub s i n = apply_cst Const.String.sub [] [s; i; n]
+    let index_of s s' i = apply_cst Const.String.index_of [] [s; s'; i]
+    let replace s pat by = apply_cst Const.String.replace [] [s; pat; by]
+    let replace_all s pat by = apply_cst Const.String.replace_all [] [s; pat; by]
+    let replace_re s pat by = apply_cst Const.String.replace_re [] [s; pat; by]
+    let replace_re_all s pat by = apply_cst Const.String.replace_re_all [] [s; pat; by]
+    let is_prefix s s' = apply_cst Const.String.is_prefix [] [s; s']
+    let is_suffix s s' = apply_cst Const.String.is_suffix [] [s; s']
+    let contains s s' = apply_cst Const.String.contains [] [s; s']
+    let lt s s' = apply_cst Const.String.lt [] [s; s']
+    let leq s s' = apply_cst Const.String.leq [] [s; s']
+    let in_re s re = apply_cst Const.String.in_re [] [s; re]
 
     module RegLan = struct
-      let empty = apply Const.String.Reg_Lang.empty [] []
-      let all = apply Const.String.Reg_Lang.all [] []
-      let allchar = apply Const.String.Reg_Lang.allchar [] []
-      let of_string s = apply Const.String.Reg_Lang.of_string [] [s]
-      let range s s' = apply Const.String.Reg_Lang.range [] [s; s']
-      let concat re re' = apply Const.String.Reg_Lang.concat [] [re; re']
-      let union re re' = apply Const.String.Reg_Lang.union [] [re; re']
-      let inter re re' = apply Const.String.Reg_Lang.inter [] [re; re']
-      let diff re re' = apply Const.String.Reg_Lang.diff [] [re; re']
-      let star re = apply Const.String.Reg_Lang.star [] [re]
-      let cross re = apply Const.String.Reg_Lang.cross [] [re]
-      let complement re = apply Const.String.Reg_Lang.complement [] [re]
-      let option re = apply Const.String.Reg_Lang.option [] [re]
-      let power n re = apply (Const.String.Reg_Lang.power n) [] [re]
-      let loop n1 n2 re = apply (Const.String.Reg_Lang.loop (n1, n2)) [] [re]
+      let empty = apply_cst Const.String.Reg_Lang.empty [] []
+      let all = apply_cst Const.String.Reg_Lang.all [] []
+      let allchar = apply_cst Const.String.Reg_Lang.allchar [] []
+      let of_string s = apply_cst Const.String.Reg_Lang.of_string [] [s]
+      let range s s' = apply_cst Const.String.Reg_Lang.range [] [s; s']
+      let concat re re' = apply_cst Const.String.Reg_Lang.concat [] [re; re']
+      let union re re' = apply_cst Const.String.Reg_Lang.union [] [re; re']
+      let inter re re' = apply_cst Const.String.Reg_Lang.inter [] [re; re']
+      let diff re re' = apply_cst Const.String.Reg_Lang.diff [] [re; re']
+      let star re = apply_cst Const.String.Reg_Lang.star [] [re]
+      let cross re = apply_cst Const.String.Reg_Lang.cross [] [re]
+      let complement re = apply_cst Const.String.Reg_Lang.complement [] [re]
+      let option re = apply_cst Const.String.Reg_Lang.option [] [re]
+      let power n re = apply_cst (Const.String.Reg_Lang.power n) [] [re]
+      let loop n1 n2 re = apply_cst (Const.String.Reg_Lang.loop (n1, n2)) [] [re]
     end
 
   end
 
-  (* Wrappers for the tff typechecker *)
-  let all _ (tys, ts) body =
-    if Ty.(equal prop) (ty body) then mk_bind (Forall (tys, ts)) body
-    else raise (Wrong_type (body, Ty.prop))
-
-  let ex _ (tys, ts) body =
-    if Ty.(equal prop) (ty body) then mk_bind (Exists (tys, ts)) body
-    else raise (Wrong_type (body, Ty.prop))
+  (* If-then-else *)
 
   let ite cond t_then t_else =
     let ty = ty t_then in
-    apply Const.ite [ty] [cond; t_then; t_else]
+    apply_cst Const.ite [ty] [cond; t_then; t_else]
 
-  (* let-bindings *)
+  (* Let-bindings *)
 
   let bind v t =
-    let () = Id.tag v Tags.bound t in
+    let () = Id.set_tag v Tags.bound t in
     of_var v
-
-  let letin l body =
-    List.iter (fun ((v : Var.t), t) ->
-        if not (Ty.equal v.ty (ty t)) then raise (Wrong_type (t, v.ty))
-      ) l;
-    mk_bind (Letin (Sequential, l)) body
-
-  let letand l body =
-    List.iter (fun ((v : Var.t), t) ->
-        if not (Ty.equal v.ty (ty t)) then raise (Wrong_type (t, v.ty))
-      ) l;
-    mk_bind (Letin (Parallel, l)) body
 
 end
 

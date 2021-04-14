@@ -2,9 +2,6 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
 let handle_exn st exn =
-  if st.Loop.State.debug then
-    Format.eprintf "%s@."
-      (Printexc.to_string exn);
   let _st = Errors.exn st exn in
   exit 125
 
@@ -13,11 +10,17 @@ let finally st e =
   | None -> st
   | Some exn -> handle_exn st exn
 
-let debug_pipe st c =
+let debug_pre_pipe st c =
   if st.Loop.State.debug then
-    Format.eprintf "%a@."
+    Format.eprintf "[pre] @[<hov>%a@]@."
       Dolmen.Std.Statement.print c;
   st, c
+
+let debug_post_pipe st stmt =
+  if st.Loop.State.debug then
+    Format.eprintf "[post] @[<hov>%a@]@\n@."
+      Loop.Typer.print stmt;
+  st, stmt
 
 let () =
   let exits =
@@ -51,6 +54,8 @@ let () =
       exit Cmdliner.Term.exit_status_cli_error
     | `Ok opt -> opt
   in
+  if st.Loop.State.debug then
+    Dolmen.Std.Expr.Print.print_index := true;
   let st, g =
     try Loop.Parser.parse [] st
     with exn -> handle_exn st exn
@@ -59,10 +64,11 @@ let () =
     let open Loop.Pipeline in
     run ~finally g st (
       (fix (op ~name:"expand" Loop.Parser.expand) (
-          (op ~name:"debug" debug_pipe)
+          (op ~name:"debug_pre" debug_pre_pipe)
           @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer.typecheck)
-          @>|> (op (fun st _ -> st, ())) @>>> _end
+          @>|> (op ~name:"debug_post" debug_post_pipe)
+          @>>> (op (fun st _ -> st, ())) @>>> _end
         )
       )
     )

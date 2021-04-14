@@ -68,8 +68,6 @@ module Bitv = struct
 
   exception Invalid_char of char
 
-
-
   (* Bitv in binary forms *)
 
   let check_bin = function
@@ -112,9 +110,6 @@ module Bitv = struct
         Bytes.blit_string (hex_to_bin c) 0 b (i * 4) 4
       ) s;
     Bytes.to_string b
-
-
-
 
   (* bitv in decimal form *)
 

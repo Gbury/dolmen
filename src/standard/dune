@@ -8,7 +8,8 @@
     ; Parsing structures
     Loc Id Term Statement Normalize
     ; Typing & Loop stuff
-    Tag Pretty Expr
+    Tag Pretty Builtin Expr
     ; Helpers
     Msg Tok Vec Misc Escape Transformer)
 )
+

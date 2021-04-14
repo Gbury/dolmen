@@ -4,7 +4,7 @@
 (* Dolmen_type functors instantiation *)
 (* ************************************************************************ *)
 
-module T = Dolmen_type.Tff.Make
+module T = Dolmen_type.Thf.Make
     (Dolmen.Std.Tag)(Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
 (* Definitions builtin *)
@@ -27,6 +27,9 @@ module Ae_Core =
 (* Tptp builtins *)
 module Tptp_Core =
   Dolmen_type.Core.Tptp.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Tptp_Core_Ho =
+  Dolmen_type.Core.Tptp.Thf(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Tptp_Arith =
   Dolmen_type.Arith.Tptp.Tff(T)
@@ -61,6 +64,10 @@ module Smtlib2_String =
 (* Zf *)
 module Zf_Core =
   Dolmen_type.Core.Zf.Tff(T)(Dolmen.Std.Expr.Tags)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Zf_arith =
+  Dolmen_type.Arith.Zf.Thf(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
 (* Typing state *)
 (* ************************************************************************ *)
@@ -96,7 +103,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   type _ T.err +=
     | Warning_as_error : T.warning -> _ T.err
-    | Missing_logic : Dolmen.Std.Loc.t T.err
+    | Bad_tptp_kind : string option -> Dolmen.Std.Loc.t T.err
+    | Missing_smtlib_logic : Dolmen.Std.Loc.t T.err
     | Illegal_decl : Dolmen.Std.Statement.decl T.err
     | Invalid_push_n : Dolmen.Std.Loc.t T.err
     | Invalid_pop_n : Dolmen.Std.Loc.t T.err
@@ -119,7 +127,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         "it looks like the language enforces implicit polymorphism, \
          i.e. no type arguments are to be provided to applications \
          (and instead type annotation/coercions should be used)."
-    | _ :: _ ->
+    | _ :: _ :: _ ->
       Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
         "this is a polymorphic function, and multiple accepted arities \
          are possible because the language supports inference of all type \
@@ -161,6 +169,28 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let print_reason_opt fmt = function
     | Some r -> print_reason fmt r
     | None -> Format.fprintf fmt "<location missing>"
+
+  let print_wildcard_source env fmt = function
+    | T.From_source ast ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+      Format.fprintf fmt
+        "the@ contents@ of@ the@ source@ wildcard@ at@ %a"
+        Dolmen.Std.Loc.fmt_pos loc
+    | T.Symbol_inference ast ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+      Format.fprintf fmt
+        "the@ type@ inferred@ for@ the@ symbol@ %a@ at@ %a"
+        Dolmen.Std.Term.print ast Dolmen.Std.Loc.fmt_pos loc
+    | T.Added_type_argument ast ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+      Format.fprintf fmt
+        "the@ implicit@ type@ to@ provide@ to@ the@ application@ at@ %a"
+        Dolmen.Std.Loc.fmt_pos loc
+    | T.Quantified_variable_type ast ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+      Format.fprintf fmt
+        "a@ monomorphic@ type@ for@ the@ quantified@ variable@ %a,@ bound@ at@ %a"
+        Dolmen.Std.Term.print ast Dolmen.Std.Loc.fmt_pos loc
 
   let report_warning (T.Warning (_env, _fragment, warn)) =
     match warn with
@@ -260,10 +290,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Not_well_founded_datatypes _ ->
       Format.fprintf fmt "Not well founded datatype declaration"
 
-    (* Inference of the type of a bound variable *)
-    | T.Infer_type_variable ->
-      Format.fprintf fmt "Cannot infer the type of a variable"
-
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
       Format.fprintf fmt "Expected %s but got %a"
@@ -276,7 +302,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         s expected actual
     | T.Bad_ty_arity (c, actual) ->
       Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
-        actual Dolmen.Std.Expr.Print.ty_const c
+        actual Dolmen.Std.Expr.Print.ty_cst c
     | T.Bad_op_arity (s, expected, actual) ->
       Format.fprintf fmt
         "Bad arity for operator '%s':@ expected %a arguments but got %d"
@@ -284,13 +310,34 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Bad_cstr_arity (c, expected, actual) ->
       Format.fprintf fmt
         "Bad arity: expected %a arguments but got %d arguments for constructor@ %a%a"
-        print_expected expected actual Dolmen.Std.Expr.Print.term_const c
+        print_expected expected actual Dolmen.Std.Expr.Print.term_cst c
         poly_hint (c, expected, actual)
     | T.Bad_term_arity (c, expected, actual) ->
       Format.fprintf fmt
         "Bad arity: expected %a but got %d arguments for function@ %a%a"
-        print_expected expected actual Dolmen.Std.Expr.Print.term_const c
+        print_expected expected actual Dolmen.Std.Expr.Print.term_cst c
         poly_hint (c, expected, actual)
+    | T.Bad_poly_arity (vars, args) ->
+      let expected = List.length vars in
+      let provided = List.length args in
+      if provided > expected then
+        (* Over application *)
+        Format.fprintf fmt
+          "This@ function@ expected@ at@ most@ %d@ type@ arguments,@ \
+           but@ was@ here@ provided@ with@ %d@ type@ arguments."
+          expected provided
+      else
+        (* under application *)
+        Format.fprintf fmt
+          "This@ function@ expected@ exactly@ %d@ type@ arguments,@ \
+           since@ term@ arguments@ are@ also@ provided,@ but@ was@ given@ \
+           %d@ arguments."
+          expected provided
+    | T.Over_application (over_args) ->
+      let over = List.length over_args in
+      Format.fprintf fmt
+        "Over application:@ this@ application@ has@ %d@ \
+         too@ many@ term@ arguments." over
 
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
@@ -314,7 +361,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
-      Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
+      Format.fprintf fmt "The term:@ `%a`@ has type@ %a@ but was expected to be of type@ %a"
         Dolmen.Std.Expr.Term.print t
         Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.ty t)
         Dolmen.Std.Expr.Ty.print expected
@@ -352,6 +399,26 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     | T.Higher_order_type ->
       Format.fprintf fmt "Higher-order types are not handled by the Tff typechecker"
+
+    | T.Higher_order_env_in_tff_typechecker ->
+      Format.fprintf fmt "Programmer error: trying to create a typing env for \
+                          higher-order with the first-order typechecker."
+
+    | T.Polymorphic_function_argument ->
+      Format.fprintf fmt "Polymorphic terms cannot be given as argument of a function.%a"
+        pp_hint "This is because the typechecker enforces prenex/rank-1 polymorphism. \
+                 In languages with explicit type arguments for polymorphic functions, \
+                 you must apply this term to the adequate number of type arguments to \
+                 make it monomorph."
+
+    | T.Scope_escape_in_wildcard
+        (_, w_src, escaping_var, var_reason) ->
+      Format.fprintf fmt
+        "@[<hov>Cannot@ infer %a.@ \
+                The@ following@ variable@ would@ escape@ its@ scope: %a,@ %a.@]"
+        (print_wildcard_source env) w_src
+        Dolmen.Std.Expr.Ty.Var.print escaping_var
+        print_reason_opt var_reason
 
     | T.Unbound_variables (tys, [], _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
@@ -423,12 +490,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt "The escape sequence starting at index %d in the \
                           following string is not allowed: '%s'" i s
 
-    (* Expression filters *)
-    | T.Uncaught_exn (Dolmen.Std.Expr.Filter_failed_ty (name, _ty, msg), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given type.%a" name pp_hint msg
-    | T.Uncaught_exn (Dolmen.Std.Expr.Filter_failed_term (name, _t, msg), _) ->
-      Format.fprintf fmt "Filter '%s' failed for the given term.%a" name pp_hint msg
-
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn (exn, bt) ->
       Format.fprintf fmt
@@ -443,8 +504,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           Format.fprintf fmt "missing warning reporter, please report upstream, ^^"
       end
 
-    (* Missing logic *)
-    | Missing_logic ->
+    (* Bad tptp kind *)
+    | Bad_tptp_kind None ->
+      Format.fprintf fmt "Missing kind for the tptp statement."
+    | Bad_tptp_kind Some s ->
+      Format.fprintf fmt "Unknown kind for the tptp statement: '%s'." s
+
+    (* Missing smtlib logic *)
+    | Missing_smtlib_logic ->
       Format.fprintf fmt "Missing logic (aka set-logic for smtlib2)."
 
     (* Illegal declarations *)
@@ -506,6 +573,22 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
+  let extract_tptp_kind = function
+    | { Dolmen.Std.Term.term = App (
+        { term = Symbol id; _ },
+        [{ term = Symbol kind; _ }]); _ }
+      when Dolmen.Std.Id.(equal tptp_kind) id ->
+      Some (Dolmen.Std.Id.full_name kind)
+    | _ -> None
+
+  let rec tptp_kind_of_attrs = function
+    | [] -> None
+    | t :: r ->
+      begin match extract_tptp_kind t with
+        | None -> tptp_kind_of_attrs r
+        | (Some _) as res -> res
+      end
+
   let builtins_of_smtlib2_logic v (l : Dolmen_type.Logic.Smtlib2.t) =
     List.fold_left (fun acc th ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
@@ -525,14 +608,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env ~loc warnings (st : S.t) =
-
+  let typing_env ?(attrs=[]) ~loc warnings (st : S.t) =
     let file = S.input_file_loc st in
-
-    let additional_builtins env args =
-      !additional_builtins env args
-    in
-
+    let additional_builtins env args = !additional_builtins env args in
 
     (* Match the language to determine bultins and other options *)
     match (S.input_lang st : Logic.language option) with
@@ -545,24 +623,28 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
        - there are no explicit declaration or definitions, hence no builtins *)
     | Some Dimacs | Some ICNF ->
       let poly = T.Flexible in
-      let expect = T.Typed Dolmen.Std.Expr.Ty.prop in
-      let infer_base = Some Dolmen.Std.Expr.Ty.prop in
+      let var_infer = T.No_var_inference in
+      let sym_infer = T.Symbol_term_infer {
+          base = Static Dolmen.Std.Expr.Ty.prop;
+          expect = Static Dolmen.Std.Expr.Ty.prop;
+        }
+      in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.noop in
-      T.empty_env
+      T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer
-        ~expect ?infer_base ~poly
+        ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
     (* Alt-Ergo format
     *)
     | Some Alt_ergo ->
       let poly = T.Flexible in
-      let expect = T.Nothing in
-      let infer_base = None in
+      let var_infer = T.No_var_inference in
+      let sym_infer = T.No_symbol_inference in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -572,9 +654,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           Decl.parse; Subst.parse;
           additional_builtins
         ] in
-      T.empty_env
+      T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer
-        ~expect ?infer_base ~poly
+        ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
     (* Zipperposition Format
@@ -583,8 +665,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Zf ->
       let poly = T.Flexible in
-      let expect = T.Nothing in
-      let infer_base = None in
+      let var_infer = T.Var_term_infer Wildcard in
+      let sym_infer = T.No_symbol_inference in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -594,10 +676,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           Subst.parse;
           additional_builtins;
           Zf_Core.parse;
+          Zf_arith.parse
         ] in
-      T.empty_env
+      T.empty_env ~order:Higher_order
         ~st:(S.ty_state st).typer
-        ~expect ?infer_base ~poly
+        ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
     (* TPTP
@@ -607,23 +690,50 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Tptp v ->
       let poly = T.Explicit in
-      let expect = T.Typed Dolmen.Std.Expr.Ty.prop in
-      let infer_base = Some Dolmen.Std.Expr.Ty.base in
+      let var_infer = T.Var_term_infer (Static Dolmen.Std.Expr.Ty.base) in
+      let sym_infer = T.Symbol_term_infer {
+          expect = Static Dolmen.Std.Expr.Ty.prop;
+          base = Static Dolmen.Std.Expr.Ty.base;
+        }
+      in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
-      let builtins = Dolmen_type.Base.merge [
-          Decl.parse;
-          Subst.parse;
-          additional_builtins;
-          Tptp_Core.parse v;
-          Tptp_Arith.parse v;
-        ] in
-      T.empty_env
-        ~st:(S.ty_state st).typer
-        ~expect ?infer_base ~poly
-        ~warnings ~file builtins
+      begin match tptp_kind_of_attrs attrs with
+        | Some "thf" ->
+          let builtins = Dolmen_type.Base.merge [
+              Decl.parse;
+              Subst.parse;
+              additional_builtins;
+              Tptp_Core_Ho.parse v;
+              Tptp_Arith.parse v;
+            ] in
+          T.empty_env ~order:Higher_order
+            ~st:(S.ty_state st).typer
+            ~var_infer ~sym_infer ~poly
+            ~warnings ~file builtins
+        | Some ("tff" | "tpi" | "fof" | "cnf") ->
+          let builtins = Dolmen_type.Base.merge [
+              Decl.parse;
+              Subst.parse;
+              additional_builtins;
+              Tptp_Core.parse v;
+              Tptp_Arith.parse v;
+            ] in
+          T.empty_env ~order:First_order
+            ~st:(S.ty_state st).typer
+            ~var_infer ~sym_infer ~poly
+            ~warnings ~file builtins
+        | bad_kind ->
+          let builtins = Dolmen_type.Base.noop in
+          let env =
+            T.empty_env
+              ~st:(S.ty_state st).typer
+              ~poly ~warnings ~file builtins
+          in
+          T._error env (Located loc) (Bad_tptp_kind bad_kind)
+      end
 
     (* SMTLib v2
        - no inference
@@ -633,8 +743,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Smtlib2 v ->
       let poly = T.Implicit in
-      let expect = T.Nothing in
-      let infer_base = None in
+      let var_infer = T.No_var_inference in
+      let sym_infer = T.No_symbol_inference in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = match v with
@@ -644,24 +754,25 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env =
-            T.empty_env
+            T.empty_env ~order:First_order
               ~st:(S.ty_state st).typer
-              ~poly ~expect ~warnings ~file builtins
+              ~var_infer ~sym_infer ~poly
+              ~warnings ~file builtins
           in
-          T._error env (Located loc) Missing_logic
+          T._error env (Located loc) Missing_smtlib_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               Decl.parse :: Subst.parse :: additional_builtins ::
               builtins_of_smtlib2_logic v logic
             ) in
           let quants = logic.features.quantifiers in
-          T.empty_env
+          T.empty_env ~order:First_order
             ~st:(S.ty_state st).typer
-            ~expect ?infer_base ~poly ~quants
+            ~var_infer ~sym_infer ~poly ~quants
             ~warnings ~file builtins
       end
 
-  let typing_wrap ?(loc=Dolmen.Std.Loc.no_loc) st ~f =
+  let typing_wrap ?attrs ?(loc=Dolmen.Std.Loc.no_loc) st ~f =
     let st = ref st in
     let report (T.Warning (env, fg, _) as w) =
       let loc = T.fragment_loc env fg in
@@ -669,7 +780,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       | None -> ()
       | Some pp -> st := S.warn ~loc !st "%a" pp ()
     in
-    let env = typing_env ~loc (warnings_aux report) !st in
+    let env = typing_env ?attrs ~loc (warnings_aux report) !st in
     let res = f env in
     !st, res
 
@@ -754,7 +865,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Auto -> true
 
   let check_decl st env d = function
-    | `Type_decl (c : Dolmen.Std.Expr.ty_const) ->
+    | `Type_decl (c : Dolmen.Std.Expr.ty_cst) ->
       begin match Dolmen.Std.Expr.Ty.definition c with
         | None | Some Abstract ->
           if not (allow_abstract_type_decl st) then
@@ -763,17 +874,20 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           if not (allow_data_type_decl st) then
             T._error env (Decl d) Illegal_decl
       end
-    | `Term_decl (c : Dolmen.Std.Expr.term_const) ->
-      let is_function = c.ty.fun_vars <> [] || c.ty.fun_args <> [] in
+    | `Term_decl (c : Dolmen.Std.Expr.term_cst) ->
+      let is_function =
+        let vars, args, _ = Dolmen.Std.Expr.Ty.poly_sig c.id_ty in
+        vars <> [] || args <> []
+      in
       if is_function && not (allow_function_decl st) then
         T._error env (Decl d) Illegal_decl
 
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls (st : S.t) ?loc ?attr d =
-    typing_wrap ?loc st ~f:(fun env ->
-        let decls = T.decls env ?attr d in
+  let decls (st : S.t) ?loc ?attrs d =
+    typing_wrap ?attrs ?loc st ~f:(fun env ->
+        let decls = T.decls env ?attrs d in
         let () = check_decls st env d.contents decls in
         decls
       )
@@ -782,14 +896,17 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs st ?loc ?attr d =
-    typing_wrap ?loc st ~f:(fun env ->
-        let l = T.defs env ?attr d in
+  let defs st ?loc ?attrs d =
+    typing_wrap ?attrs ?loc st ~f:(fun env ->
+        let l = T.defs env ?attrs d in
         let l = List.map (function
-            | `Type_def (id, _, vars, body) ->
+            | `Type_def (id, c, vars, body) ->
               (* are recursive defs interesting to expand ? *)
-              let () = if not d.recursive then Subst.define_ty env id vars body in
-              `Type_def (id, vars, body)
+              let () =
+                if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body
+              in
+              let () = Decl.add_definition env id (`Ty c) in
+              `Type_def (id, c, vars, body)
             | `Term_def (id, f, vars, args, body) ->
               let () = Decl.add_definition env id (`Term f) in
               `Term_def (id, f, vars, args, body)
@@ -803,20 +920,24 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let typecheck = S.typecheck
 
-  let terms st ?loc ?attr:_ l =
-    typing_wrap ?loc st ~f:(fun env ->
-        List.map (T.parse_term env) l
-      )
+  let terms st ?loc ?attrs = function
+    | [] -> st, []
+    | l ->
+      typing_wrap ?attrs ?loc st ~f:(fun env ->
+          List.map (T.parse_term env) l
+        )
 
-  let formula st ?loc ?attr:_ ~goal:_ (t : Dolmen.Std.Term.t) =
-    typing_wrap ?loc st ~f:(fun env ->
+  let formula st ?loc ?attrs ~goal:_ (t : Dolmen.Std.Term.t) =
+    typing_wrap ?attrs ?loc st ~f:(fun env ->
         T.parse env t
       )
 
-  let formulas st ?loc ?attr:_ l =
-    typing_wrap ?loc st ~f:(fun env ->
-        List.map (T.parse env) l
-      )
+  let formulas st ?loc ?attrs = function
+    | [] -> st, []
+    | l ->
+      typing_wrap ?attrs ?loc st ~f:(fun env ->
+          List.map (T.parse env) l
+        )
 
 end
 
@@ -829,15 +950,23 @@ module type Pipe_res = Typer_intf.Pipe_res
 
 module Pipe
     (Expr : Expr_intf.S)
+    (Print : Expr_intf.Print
+     with type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
     (State : State_intf.Typer_pipe)
     (Typer : Typer_intf.Pipe_arg
      with type state := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
-      and type ty_const := Expr.ty_const
+      and type ty_cst := Expr.ty_cst
       and type term := Expr.term
       and type term_var := Expr.term_var
-      and type term_const := Expr.term_const
+      and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
 = struct
 
@@ -854,8 +983,8 @@ module Pipe
   }
 
   type def = [
-    | `Type_def of Dolmen.Std.Id.t * Expr.ty_var list * Expr.ty
-    | `Term_def of Dolmen.Std.Id.t * Expr.term_const * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Type_def of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
+    | `Term_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
   type defs = [
@@ -863,8 +992,8 @@ module Pipe
   ]
 
   type decl = [
-    | `Type_decl of Expr.ty_const
-    | `Term_decl of Expr.term_const
+    | `Type_decl of Expr.ty_cst
+    | `Term_decl of Expr.term_cst
   ]
 
   type decls = [
@@ -916,6 +1045,48 @@ module Pipe
   (* let tr implicit contents = { implicit; contents; } *)
   let simple id loc (contents: typechecked)  = { id; loc; contents; }
 
+  let print_def fmt = function
+    | `Type_def (id, c, vars, body) ->
+      Format.fprintf fmt "@[<hov 2>type-def:@ %a: %a(%a) ->@ %a@]"
+        Dolmen.Std.Id.print id Print.ty_cst c
+        (Format.pp_print_list Print.ty_var) vars Print.ty body
+    | `Term_def (id, c, vars, args, body) ->
+      Format.fprintf fmt "@[<hov 2>term-def:@ %a: %a(%a; %a) ->@ %a@]"
+        Dolmen.Std.Id.print id Print.term_cst c
+        (Format.pp_print_list Print.ty_var) vars
+        (Format.pp_print_list Print.term_var) args
+        Print.term body
+
+  let print_decl fmt = function
+    | `Type_decl c ->
+      Format.fprintf fmt "@[<hov 2>type-decl:@ %a@]" Print.ty_cst c
+    | `Term_decl c ->
+      Format.fprintf fmt "@<hov 2>term-decl:@ %a@]" Print.term_cst c
+
+  let print_typechecked fmt t =
+    match (t : typechecked) with
+    | `Defs l ->
+      Format.fprintf fmt "@[<v 2>defs:@ %a@]"
+        (Format.pp_print_list print_def) l
+    | `Decls l ->
+      Format.fprintf fmt "@[<v 2>decls:@ %a@]"
+        (Format.pp_print_list print_decl) l
+    | `Hyp f ->
+      Format.fprintf fmt "@[<hov 2>hyp:@ %a@]" Print.formula f
+    | `Goal f ->
+      Format.fprintf fmt "@[<hov 2>goal:@ %a@]" Print.formula f
+    | `Clause l ->
+      Format.fprintf fmt "@[<v 2>clause:@ %a@]"
+        (Format.pp_print_list Print.formula) l
+    | `Solve l ->
+      Format.fprintf fmt "@[<hov 2>solve-assuming: %a@]"
+        (Format.pp_print_list Print.formula) l
+    | _ ->
+      Format.fprintf fmt "TODO"
+
+  let print fmt ({ id; loc = _; contents; } : typechecked stmt) =
+    Format.fprintf fmt "%a:@ %a"
+      Dolmen.Std.Id.print id print_typechecked contents
 
   (* Typechecking *)
   (* ************************************************************************ *)
@@ -1026,20 +1197,20 @@ module Pipe
 
       (* Hypotheses and goal statements *)
       | { S.descr = S.Prove l; _ } ->
-        let st, l = Typer.formulas st ~loc:c.S.loc ?attr:c.S.attr l in
+        let st, l = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
         st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
 
       (* Hypotheses & Goals *)
       | { S.descr = S.Clause l; _ } ->
-        let st, res = Typer.formulas st ~loc:c.S.loc ?attr:c.S.attr l in
+        let st, res = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
         let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
         st, `Continue stmt
       | { S.descr = S.Antecedent t; _ } ->
-        let st, ret = Typer.formula st ~loc:c.S.loc ?attr:c.S.attr ~goal:false t in
+        let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
         let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
         st, `Continue stmt
       | { S.descr = S.Consequent t; _ } ->
-        let st, ret = Typer.formula st ~loc:c.S.loc ?attr:c.S.attr ~goal:true t in
+        let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
         let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
         st, `Continue stmt
 
@@ -1062,11 +1233,11 @@ module Pipe
 
       (* Declarations and definitions *)
       | { S.descr = S.Defs d; _ } ->
-        let st, l = Typer.defs st ~loc:c.S.loc ?attr:c.S.attr d in
+        let st, l = Typer.defs st ~loc:c.S.loc ~attrs:c.S.attrs d in
         let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
         st, `Continue (res)
       | { S.descr = S.Decls l; _ } ->
-        let st, l = Typer.decls st ~loc:c.S.loc ?attr:c.S.attr l in
+        let st, l = Typer.decls st ~loc:c.S.loc ~attrs:c.S.attrs l in
         let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
         st, `Continue (res)
 
@@ -1080,7 +1251,7 @@ module Pipe
       | { S.descr = S.Get_model; _ } ->
         st, `Continue (simple (other_id c) c.S.loc `Get_model)
       | { S.descr = S.Get_value l; _ } ->
-        let st, l = Typer.terms st ~loc:c.S.loc ?attr:c.S.attr l in
+        let st, l = Typer.terms st ~loc:c.S.loc ~attrs:c.S.attrs l in
         st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
       | { S.descr = S.Get_assignment; _ } ->
         st, `Continue (simple (other_id c) c.S.loc `Get_assignment)

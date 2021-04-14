@@ -1,0 +1,3 @@
+
+goal forall f.
+  (fun (a: type) (x: a). f x = x) _ 5.

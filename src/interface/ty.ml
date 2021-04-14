@@ -18,6 +18,11 @@ module type Tff = sig
   type 'a tag
   (** A type for tags to attach to arbitrary types. *)
 
+  exception Prenex_polymorphism of t
+  (** Raised when the type provided is polymorphic, but occurred in a
+      place where polymorphic types are forbidden by prenex/rank-1
+      polymorphism. *)
+
   (** A module for variables that occur in types. *)
   module Var : sig
 
@@ -27,8 +32,23 @@ module type Tff = sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
+    val print : Format.formatter -> t -> unit
+    (** print. TODO: remove this *)
+
     val mk : string -> t
     (** Create a new type variable with the given name. *)
+
+    val wildcard : unit -> t
+    (** Create a fresh type wildcard. *)
+
+    val is_wildcard : t -> bool
+    (** Is the variable a type wildcard ? *)
+
+    val add_tag : t -> 'a list tag -> 'a -> unit
+    (** Tag a variable. *)
+
+    val get_tag_list : t -> 'a list tag -> 'a list
+    (** Returns all the values tagged on a variable. *)
 
   end
 
@@ -47,8 +67,8 @@ module type Tff = sig
     val mk : string -> int -> t
     (** Create a type constant with the given arity. *)
 
-    val tag : t -> 'a tag -> 'a -> unit
-    (** Tag a variable. *)
+    val set_tag : t -> 'a tag -> 'a -> unit
+    (** Set the value bound to a tag. *)
 
   end
 
@@ -61,11 +81,31 @@ module type Tff = sig
   val apply : Const.t -> t list -> t
   (** Application for types. *)
 
-  val wildcard : unit -> t
-  (** Create a fresh type wildcard. *)
+  val pi_arity : t -> int
+  (** Reutnrs the number of expected type arguments that the given
+      type expects (i.e. the number of prenex polymorphic variables
+      in the given type). *)
 
-  val tag : t -> 'a tag -> 'a -> unit
+  val fv : t -> Var.t list
+  (** Returns the list of free_variables in the type. *)
+
+  val add_wildcard_hook : hook:(Var.t -> t -> unit) -> Var.t -> unit
+  (** Add a hook to a wildcard, the hook will be run *)
+
+  val set_tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
+
+end
+
+module type Thf = sig
+
+  include Tff
+
+  val arrow : t list -> t -> t
+  (** Create a function type. *)
+
+  val pi : Var.t list -> t -> t
+  (** Create a rank-1/prenex polymorphc type. *)
 
 end
 
@@ -263,3 +303,28 @@ module type Smtlib_String = sig
   (** The type of regular languages over strings *)
 
 end
+
+(** Signature required by types for typing tptp *)
+module type Zf_Base = sig
+
+    type t
+    (** The type of types *)
+
+    val prop : t
+    (** The type of propositions. *)
+
+end
+
+(** Signature required by types for typing tptp *)
+module type Zf_Arith = sig
+
+    type t
+    (** The type of types *)
+
+    val int : t
+    (** The type of integers *)
+
+end
+
+
+

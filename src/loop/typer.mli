@@ -15,11 +15,11 @@ module T : Dolmen_type.Tff.S
   with type 'a Tag.t = 'a Dolmen.Std.Tag.t
    and type Ty.t = Dolmen.Std.Expr.ty
    and type Ty.Var.t = Dolmen.Std.Expr.ty_var
-   and type Ty.Const.t = Dolmen.Std.Expr.ty_const
+   and type Ty.Const.t = Dolmen.Std.Expr.ty_cst
    and type T.t = Dolmen.Std.Expr.term
    and type T.Var.t = Dolmen.Std.Expr.term_var
-   and type T.Const.t = Dolmen.Std.Expr.term_const
-   and type T.Cstr.t = Dolmen.Std.Expr.term_const
+   and type T.Const.t = Dolmen.Std.Expr.term_cst
+   and type T.Cstr.t = Dolmen.Std.Expr.term_cst
 (** The raw type-checker module. *)
 
 
@@ -44,24 +44,32 @@ module type Pipe_res = Typer_intf.Pipe_res
 
 module Pipe
     (Expr : Expr_intf.S)
+    (Print : Expr_intf.Print
+     with type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
     (State : State_intf.Typer_pipe)
     (Typer : Pipe_arg
      with type state := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
-      and type ty_const := Expr.ty_const
+      and type ty_cst := Expr.ty_cst
       and type term := Expr.term
       and type term_var := Expr.term_var
-      and type term_const := Expr.term_const
+      and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
   : Pipe_res
     with type state := State.t
      and type ty := Expr.ty
      and type ty_var := Expr.ty_var
-     and type ty_const := Expr.ty_const
+     and type ty_cst := Expr.ty_cst
      and type term := Expr.term
      and type term_var := Expr.term_var
-     and type term_const := Expr.term_const
+     and type term_cst := Expr.term_cst
      and type formula := Expr.formula
 
 

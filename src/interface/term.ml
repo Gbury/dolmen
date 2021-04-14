@@ -403,7 +403,7 @@ module type Tff = sig
     val mk : string -> ty_var list -> ty list -> ty -> t
     (** Create a polymorphic constant symbol. *)
 
-    val tag : t -> 'a tag -> 'a -> unit
+    val set_tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
   end
@@ -494,14 +494,22 @@ module type Tff = sig
   exception Field_missing of Field.t
   (** Field missing in a record expression. *)
 
+  exception Over_application of t list
+  (** Raised when an application was provided too many term arguments. The
+      extraneous arguments are returned by the exception. *)
+
+  exception Bad_poly_arity of ty_var list * ty list
+  (** Raised when a polymorphic application does not have an
+      adequate number of arguments. *)
+
   val ensure : t -> ty -> t
   (** Ensure that a given term has the given type. *)
 
   val of_var : Var.t -> t
   (** Create a term from a variable *)
 
-  val apply : Const.t -> ty list -> t list -> t
-  (** Polymorphic application. *)
+  val apply_cst : Const.t -> ty list -> t list -> t
+  (** Polymorphic application of a constant. *)
 
   val apply_cstr : Cstr.t -> ty list -> t list -> t
   (** Polymorphic application of a constructor. *)
@@ -515,55 +523,18 @@ module type Tff = sig
   val record_with : t -> (Field.t * t) list -> t
   (** Create an updated record *)
 
-  val _true : t
-  val _false : t
-  (** Some usual formulas. *)
-
-  val eq : t -> t -> t
-  (** Build the equality of two terms. *)
-
-  val distinct : t list -> t
-  (** Distinct constraints on terms. *)
-
-  val neg : t -> t
-  (** Negation. *)
-
   val _and : t list -> t
   (** Conjunction of formulas *)
 
-  val _or : t list -> t
-  (** Disjunction of formulas *)
 
-  val nand : t -> t -> t
-  (** Not-and *)
+  val lam : ty_var list * Var.t list -> t -> t
+  (** Create a local function. *)
 
-  val nor : t -> t -> t
-  (** Not-or *)
+  val all : ty_var list * Var.t list -> t -> t
+  (** Universally quantify the given formula over the type and terms variables. *)
 
-  val imply : t -> t -> t
-  (** Implication *)
-
-  val equiv : t -> t -> t
-  (** Equivalence *)
-
-  val xor : t -> t -> t
-  (** Exclusive disjunction. *)
-
-  val all :
-    ty_var list * Var.t list ->
-    ty_var list * Var.t list ->
-    t -> t
-  (** Universally quantify the given formula over the type and terms variables.
-      The first pair of arguments are the variables that are free in the resulting
-      quantified formula, and the second pair are the variables bound. *)
-
-  val ex :
-    ty_var list * Var.t list ->
-    ty_var list * Var.t list ->
-    t -> t
-  (** Existencially quantify the given formula over the type and terms variables.
-      The first pair of arguments are the variables that are free in the resulting
-      quantified formula, and the second pair are the variables bound. *)
+  val ex : ty_var list * Var.t list -> t -> t
+  (** Existencially quantify the given formula over the type and terms variables. *)
 
   val bind : Var.t -> t -> t
   (** Bind a variable to an expressions. This function is called when typing
@@ -582,14 +553,20 @@ module type Tff = sig
       on the scrutinee with the given branches, each of the form
       [(pattern, body)] *)
 
-  val ite : t -> t -> t -> t
-  (** [ite condition then_t else_t] creates a conditional branch. *)
-
-  val tag : t -> 'a tag -> 'a -> unit
+  val set_tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given formula wiht the tag and value. *)
 
   val fv : t -> ty_var list * Var.t list
   (** Returns the list of free variables in the formula. *)
+
+end
+
+module type Thf = sig
+
+  include Tff
+
+  val apply : t -> ty list -> t list -> t
+  (** Polymorphic application. *)
 
 end
 
@@ -602,8 +579,16 @@ module type Ae_Base = sig
   val void : t
   (** The only value of type unit. *)
 
-end
+  val eq : t -> t -> t
+  (** Build the equality of two terms. *)
 
+  val _true : t
+  (** The smybol for [true] *)
+
+  val _false : t
+  (** The symbol for [false] *)
+
+end
 
 (** Minimum required to type ae's arith *)
 module type Ae_Arith = sig
@@ -620,7 +605,7 @@ module type Ae_Arith = sig
 end
 
 (** Minimum required to type tptp's tff *)
-module type Tptp_Base = sig
+module type Tptp_Tff_Core = sig
 
   type t
   (** The type of terms *)
@@ -631,10 +616,118 @@ module type Tptp_Base = sig
   val _false : t
   (** The symbol for [false] *)
 
+  val neg : t -> t
+  (** Negation. *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val _and : t list -> t
+  (** Conjunction of formulas *)
+
+  val nand : t -> t -> t
+  (** Not-and *)
+
+  val nor : t -> t -> t
+  (** Not-or *)
+
+  val imply : t -> t -> t
+  (** Implication *)
+
+  val implied : t -> t -> t
+  (** Implication *)
+
+  val equiv : t -> t -> t
+  (** Equivalence *)
+
+  val xor : t -> t -> t
+  (** Exclusive disjunction. *)
+
+  val ite : t -> t -> t -> t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
+
+  val eq : t -> t -> t
+  (** Build the equality of two terms. *)
+
+  val neq : t -> t -> t
+  (** Disequality. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
+
+end
+
+module type Tptp_Thf_Core_Const = sig
+
+    type t
+    (** Type for term constans *)
+
+    val _true : t
+    (** The smybol for [true] *)
+
+    val _false : t
+    (** The symbol for [false] *)
+
+    val neg : t
+    (** Negation. *)
+
+    val or_ : t
+    (** Binary disjunction of formulas *)
+
+    val and_ : t
+    (** Binary conjunction of formulas *)
+
+    val nand : t
+    (** Not-and *)
+
+    val nor : t
+    (** Not-or *)
+
+    val imply : t
+    (** Implication *)
+
+    val implied : t
+    (** Reverse implication *)
+
+    val equiv : t
+    (** Equivalence *)
+
+    val xor : t
+    (** Exclusive disjunction. *)
+
+    val ite : t
+    (** [ite condition then_t else_t] creates a conditional branch. *)
+
+    val eq : t
+    (** Build the equality of two terms. *)
+
+    val neq : t
+    (** Binary disequality. *)
+
+  end
+
+(** Minimum required to type tptp's thf *)
+module type Tptp_Thf_Core = sig
+
+  type t
+  (** The type of terms *)
+
+  type ty
+  (** The type of types *)
+
+  module Const : Tptp_Thf_Core_Const
+  (** Constants *)
+
+  val of_cst : Const.t -> t
+  (** Create a term out of aconstant. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
+
 end
 
 (** Common signature for tptp arithmetics *)
-module type Tptp_Arith_Common = sig
+module type Tptp_Tff_Arith_Common = sig
 
   type t
   (** The type of terms *)
@@ -711,7 +804,7 @@ module type Tptp_Arith_Common = sig
 end
 
 (** Signature required by terms for typing tptp arithmetic. *)
-module type Tptp_Arith = sig
+module type Tptp_Tff_Arith = sig
 
   type t
   (** The type of terms. *)
@@ -732,18 +825,18 @@ module type Tptp_Arith = sig
   (** Real literals *)
 
   module Int : sig
-    include Tptp_Arith_Common with type t := t
+    include Tptp_Tff_Arith_Common with type t := t
   end
 
   module Rat : sig
-    include Tptp_Arith_Common with type t := t
+    include Tptp_Tff_Arith_Common with type t := t
 
     val div : t -> t -> t
     (** Exact division on rationals. *)
   end
 
   module Real : sig
-    include Tptp_Arith_Common with type t := t
+    include Tptp_Tff_Arith_Common with type t := t
 
     val div : t -> t -> t
     (** Exact division on reals. *)
@@ -760,12 +853,48 @@ module type Smtlib_Base = sig
   type cstr
   (** The type of ADT constructor *)
 
-  val eqs : t list -> t
-  (** Create a chain of equalities. *)
-
   val cstr_tester : cstr -> t -> t
   (** Given a constructor [c] and a term [t], returns a terms that evaluates
       to [true] iff [t] has [c] as head constructor. *)
+
+  val _true : t
+  (** The smybol for [true] *)
+
+  val _false : t
+  (** The symbol for [false] *)
+
+  val neg : t -> t
+  (** Negation. *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val _and : t list -> t
+  (** Disjunction of formulas *)
+
+  val nand : t -> t -> t
+  (** Not-and *)
+
+  val nor : t -> t -> t
+  (** Not-or *)
+
+  val imply : t -> t -> t
+  (** Implication *)
+
+  val equiv : t -> t -> t
+  (** Equivalence *)
+
+  val xor : t -> t -> t
+  (** Exclusive disjunction. *)
+
+  val ite : t -> t -> t -> t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
+
+  val eq : t -> t -> t
+  (** Create a chain of equalities. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
 
 end
 
@@ -1375,3 +1504,75 @@ module type Smtlib_String = sig
 
 end
 
+module type Zf_Base = sig
+
+  type t
+  (** The type of terms *)
+
+  val _true : t
+  (** The smybol for [true] *)
+
+  val _false : t
+  (** The symbol for [false] *)
+
+  val neg : t -> t
+  (** Negation. *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val _and : t list -> t
+  (** Conjunction of formulas *)
+
+  val imply : t -> t -> t
+  (** Logical Implication. *)
+
+  val equiv : t -> t -> t
+  (** Logical Equivalence. *)
+
+  val eq : t -> t -> t
+  (** Build the equality of two terms. *)
+
+  val neq : t -> t -> t
+  (** Disequality. *)
+
+  val ite : t -> t -> t -> t
+  (** If-then-else *)
+
+end
+
+module type Zf_Arith = sig
+
+  type t
+  (** The type of terms *)
+
+  val int : string -> t
+  (** Integer literals *)
+
+  module Int : sig
+    val minus : t -> t
+    (** Arithmetic unary minus/negation. *)
+
+    val add : t -> t -> t
+    (** Arithmetic addition. *)
+
+    val sub : t -> t -> t
+    (** Arithmetic substraction *)
+
+    val mul : t -> t -> t
+    (** Arithmetic multiplication *)
+
+    val lt : t -> t -> t
+    (** Arithmetic "less than" comparison. *)
+
+    val le : t -> t -> t
+    (** Arithmetic "less or equal" comparison. *)
+
+    val gt : t -> t -> t
+    (** Arithmetic "greater than" comparison. *)
+
+    val ge : t -> t -> t
+    (** Arithmetic "greater or equal" comparison. *)
+  end
+
+end

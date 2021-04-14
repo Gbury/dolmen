@@ -1,2 +1,0 @@
-File "tests/typing/error-mismatch/test_smtlib.smt2", line 5, character 8-13:
-Error The term: a has type foo but was expected to be of type int

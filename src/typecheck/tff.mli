@@ -18,4 +18,3 @@ module Make
   : S with module Tag = Tag
        and module Ty = Ty
        and module T = T
-

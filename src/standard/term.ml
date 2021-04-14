@@ -9,7 +9,7 @@ type builtin =
   | Unit | Void
   | Prop | Bool
   | True | False
-  | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
+  | Eq | Distinct            (* Should all args be pairwise distinct or equal ? *)
 
   | Ite                 (* Condional *)
   | Sequent             (* Is the given sequent provable ? *)
@@ -75,7 +75,7 @@ and t = {
 
 (* Printing info *)
 
-let infix_builtin n = function
+let infix_builtin = function
   | Add | Sub
   | Lt | Leq
   | Gt | Geq
@@ -86,8 +86,7 @@ let infix_builtin n = function
   | Sequent | Subtype
   | Adt_check | Adt_project | Record_access
     -> true
-  | Distinct when n = 2
-    -> true
+  | Distinct -> true
   | _ -> false
 
 let builtin_to_string = function
@@ -192,7 +191,7 @@ let rec pp_descr b = function
   | Symbol id -> Id.pp b id
   | Builtin s -> pp_builtin b s
   | Colon (u, v) -> Printf.bprintf b "%a : %a" pp u pp v
-  | App ({ term = Builtin sep ; _ }, l) when infix_builtin (List.length l) sep ->
+  | App ({ term = Builtin sep ; _ }, l) when infix_builtin sep ->
     Misc.pp_list ~pp_sep:pp_builtin ~sep ~pp b l
   | App (f, l) ->
     Printf.bprintf b "%a(%a)" pp f
@@ -226,8 +225,8 @@ let rec print_descr fmt = function
   | Symbol id -> Id.print fmt id
   | Builtin s -> print_builtin fmt s
   | Colon (u, v) -> Format.fprintf fmt "%a :@ %a" print u print v
-  | App ({ term = Builtin sep ; _ }, l) when infix_builtin (List.length l) sep ->
-    let pp_sep fmt () = print_builtin fmt sep in
+  | App ({ term = Builtin b ; _ }, l) when infix_builtin b ->
+    let pp_sep fmt () = Format.fprintf fmt " %a@ " print_builtin b in
     Format.pp_print_list ~pp_sep print fmt l
   | App (f, []) ->
     Format.fprintf fmt "%a" print f

@@ -1,0 +1,2 @@
+File "tests/typing/warnings/unused/type_variable.p", line 3, character 22-32:
+Warning Quantified type variable `A : Type` is unused

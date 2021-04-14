@@ -33,7 +33,7 @@ val parse_id :
     is called, else [err] is called with [s], the arity of [indexed],
     and the lenght of [l].
     If no match is found or the split list does not contain a head and a
-    tail, [k] is called wiht the split list. *)
+    tail, [k] is called with the split list. *)
 
 val bad_ty_index_arity :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
@@ -234,6 +234,17 @@ val term_app4_ast :
   'env -> string -> (Dolmen.Std.Term.t -> 'term -> 'term -> 'term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
+val term_app_list :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Std.Term.t -> unit) ->
+  'env -> string -> ('term list -> 'term) ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
+
+val term_app_list_ast :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  ?check:(Dolmen.Std.Term.t -> unit) ->
+  'env -> string -> (Dolmen.Std.Term.t -> 'term list -> 'term) ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
 val term_app_left :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
@@ -259,7 +270,6 @@ val term_app_right_ast :
   'env -> string -> (Dolmen.Std.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
-
 val term_app_chain :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
   ?check:(Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->
@@ -272,4 +282,17 @@ val term_app_chain_ast :
   'env -> string -> (Dolmen.Std.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
+val term_app_cst :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term and type T.Const.t = 'cst) ->
+  'env -> 'cst -> (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
+
+val term_app_ho :
+  (module Thf_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> 'term ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
+
+val term_app_ho_ast :
+  (module Thf_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> (Dolmen.Std.Term.t -> 'term) ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 

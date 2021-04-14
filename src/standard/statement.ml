@@ -16,7 +16,7 @@ type inductive = {
   vars : term list;
   cstrs : (Id.t * term list) list;
   loc : location;
-  attr : term option;
+  attrs : term list;
 }
 
 type record = {
@@ -24,7 +24,7 @@ type record = {
   vars : term list;
   fields : (Id.t * term) list;
   loc : location;
-  attr : term option;
+  attrs : term list;
 }
 
 type decl =
@@ -91,7 +91,7 @@ type descr =
 and t = {
   id : Id.t;
   descr : descr;
-  attr : term option;
+  attrs : term list;
   loc : location;
 }
 
@@ -282,19 +282,25 @@ let rec print_descr fmt = function
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print fmt = function { descr; _ } ->
-  Format.fprintf fmt "%a" print_descr descr
+and print_attrs fmt = function
+  | [] -> ()
+  | l ->
+    Format.fprintf fmt "@[<hov>{ %a }@]@ "
+      (Format.pp_print_list Term.print) l
+
+and print fmt = function { descr; attrs; _ } ->
+  Format.fprintf fmt "%a%a" print_attrs attrs print_descr descr
 
 (** Annotations *)
 let annot = Term.apply
 
 (* Internal shortcut. *)
-let mk ?(id=Id.(mk decl "")) ?(loc=Loc.no_loc) ?attr descr =
-  { id; descr; loc; attr; }
+let mk ?(id=Id.(mk decl "")) ?(loc=Loc.no_loc) ?(attrs=[]) descr =
+  { id; descr; loc; attrs; }
 
 (* Pack *)
-let pack ?id ?loc ?attr l =
-  mk ?id ?loc ?attr (Pack l)
+let pack ?id ?loc ?attrs l =
+  mk ?id ?loc ?attrs (Pack l)
 
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
@@ -303,9 +309,9 @@ let reset_assertions ?loc () = mk ?loc Reset_assertions
 
 (* Assumptions and fact checking *)
 let prove ?loc () = mk ?loc (Prove [])
-let mk_clause ?loc ?attr l = mk ?loc ?attr (Clause l)
-let consequent ?loc ?attr t = mk ?loc ?attr (Consequent t)
-let antecedent ?loc ?attr t = mk ?loc ?attr (Antecedent t)
+let mk_clause ?loc ?attrs l = mk ?loc ?attrs (Clause l)
+let consequent ?loc ?attrs t = mk ?loc ?attrs (Consequent t)
+let antecedent ?loc ?attrs t = mk ?loc ?attrs (Antecedent t)
 
 (* Options statements *)
 let set_logic ?loc s = mk ?loc (Set_logic s)
@@ -340,39 +346,39 @@ let def ?(loc=no_loc) id ty body =
 let abstract ?(loc=no_loc) id ty =
   Abstract { id; ty; loc; }
 
-let record ?(attr=None) ?(loc=no_loc) id vars fields =
-  Record { id; vars; fields; loc; attr; }
+let record ?(attrs=[]) ?(loc=no_loc) id vars fields =
+  Record { id; vars; fields; loc; attrs; }
 
-let inductive ?(attr=None) ?(loc=no_loc) id vars cstrs =
-  Inductive { id; vars; cstrs; loc; attr; }
+let inductive ?(attrs=[]) ?(loc=no_loc) id vars cstrs =
+  Inductive { id; vars; cstrs; loc; attrs; }
 
 (* grouping of decls/defs *)
-let mk_decls ?loc ?attr ~recursive decls =
-  mk ?loc ?attr (Decls { recursive; contents = decls; })
+let mk_decls ?loc ?attrs ~recursive decls =
+  mk ?loc ?attrs (Decls { recursive; contents = decls; })
 
-let group_decls ?loc ?attr ~recursive l =
+let group_decls ?loc ?attrs ~recursive l =
   let decls, others = List.fold_left (fun (decls, others) s ->
       match s with
       | { descr = Decls d; _ } ->
         List.rev_append d.contents decls, others
       | _ -> decls, s :: others
     ) ([], []) l in
-  let new_decls = mk_decls ?loc ?attr ~recursive (List.rev decls) in
+  let new_decls = mk_decls ?loc ?attrs ~recursive (List.rev decls) in
   match others with
   | [] -> new_decls
   | l -> pack ?loc (new_decls :: List.rev l)
 
-let mk_defs ?loc ?attr ~recursive defs =
-  mk ?loc ?attr (Defs { recursive; contents = defs; })
+let mk_defs ?loc ?attrs ~recursive defs =
+  mk ?loc ?attrs (Defs { recursive; contents = defs; })
 
-let group_defs ?loc ?attr ~recursive l =
+let group_defs ?loc ?attrs ~recursive l =
   let defs, others = List.fold_left (fun (defs, others) s ->
       match s with
       | { descr = Defs d; _ } ->
         List.rev_append d.contents defs, others
       | _ -> defs, s :: others
     ) ([], []) l in
-  let new_defs = mk_defs ?loc ?attr ~recursive (List.rev defs) in
+  let new_defs = mk_defs ?loc ?attrs ~recursive (List.rev defs) in
   match others with
   | [] -> new_defs
   | l -> pack ?loc (new_defs :: List.rev l)
@@ -386,7 +392,7 @@ let extract_type = function
 
 (* Alt-ergo wrappers *)
 let logic ?loc ~ac ids ty =
-  let attr = if ac then Some (Term.const ?loc Id.ac_symbol) else None in
+  let attrs = if ac then [Term.const ?loc Id.ac_symbol] else [] in
   let ty = match Term.fv ty with
     | [] -> ty
     | vars ->
@@ -396,7 +402,7 @@ let logic ?loc ~ac ids ty =
       Term.pi ?loc l ty
   in
   let l = List.map (fun id -> abstract ?loc id ty) ids in
-  mk_decls ?loc ?attr ~recursive:true l
+  mk_decls ?loc ~attrs ~recursive:true l
 
 let abstract_type ?loc id vars =
   let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
@@ -415,8 +421,8 @@ let axiom ?loc id t =
   mk ~id ?loc (Antecedent t)
 
 let case_split ?loc id t =
-  let attr = Term.const ?loc Id.case_split in
-  mk ~id ?loc ~attr (Antecedent t)
+  let attrs = [Term.const ?loc Id.case_split] in
+  mk ~id ?loc ~attrs (Antecedent t)
 
 let prove_goal ?loc id t =
   mk ~id ?loc @@ Pack [
@@ -430,16 +436,18 @@ let rewriting ?loc id l =
     ) l)
 
 let theory ?loc id extends l =
-  let attr = Term.colon ?loc (Term.const ?loc Id.theory_decl)
-      (Term.colon ?loc (Term.const ?loc id) (Term.const ?loc extends)) in
-  mk ?loc ~attr (Pack l)
+  let attrs = [
+    Term.colon ?loc (Term.const ?loc Id.theory_decl)
+      (Term.colon ?loc (Term.const ?loc id) (Term.const ?loc extends))
+  ] in
+  mk ?loc ~attrs (Pack l)
 
 (* Dimacs&iCNF wrappers *)
 let p_cnf ?loc nbvar nbclause =
   let i = Term.int ?loc (string_of_int nbvar) in
   let j = Term.int ?loc (string_of_int nbclause) in
-  let attr = Term.colon ?loc i j in
-  mk ?loc ~attr (Set_logic "dimacs")
+  let attrs = [Term.colon ?loc i j] in
+  mk ?loc ~attrs (Set_logic "dimacs")
 
 let p_inccnf ?loc () =
   mk ?loc (Set_logic "icnf")
@@ -501,70 +509,54 @@ let funs_def_rec ?loc l =
 
 
 (* Wrappers for Zf *)
-let zf_attr ?loc = function
-  | None | Some [] -> None
-  | Some l -> Some (Term.apply ?loc (Term.and_t ()) l)
-
 let import ?loc s = mk ?loc (Include s)
 
 let defs ?loc ?attrs l =
-  let attr = zf_attr ?loc attrs in
-  group_defs ?loc ?attr ~recursive:true l
+  group_defs ?loc ?attrs ~recursive:true l
 
 let rewrite ?loc ?attrs t =
-  let attr = zf_attr ?loc attrs in
-  antecedent ?loc ?attr (Term.add_attr (Term.const Id.rwrt_rule) t)
+  antecedent ?loc ?attrs (Term.add_attr (Term.const Id.rwrt_rule) t)
 
 let goal ?loc ?attrs t =
-  let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Pack [
+  mk ?loc ?attrs (Pack [
       consequent ?loc t;
       prove ?loc ();
     ])
 
 let assume ?loc ?attrs t =
-  let attr = zf_attr ?loc attrs in
-  antecedent ?loc ?attr t
+  antecedent ?loc ?attrs t
 
 let lemma ?loc ?attrs t =
-  let attr = zf_attr ?loc attrs in
-  antecedent ?loc ?attr t
+  antecedent ?loc ?attrs t
 
 let decl ?loc ?attrs id ty =
-  let attr = zf_attr ?loc attrs in
-  mk_decls ?loc ?attr ~recursive:true [abstract ?loc id ty]
+  mk_decls ?loc ?attrs ~recursive:true [abstract ?loc id ty]
 
 let definition ?loc ?attrs s ty l =
-  let attr = zf_attr ?loc attrs in
-  mk ?loc ?attr (Pack (
+  mk ?loc ?attrs (Pack (
       decl ?loc s ty ::
       List.map (assume ?loc) l
     ))
 
 let inductive ?loc ?attrs id vars cstrs =
-  let attr = zf_attr ?loc attrs in
-  mk_decls ?loc ~recursive:true [inductive ?loc ~attr id vars cstrs]
+  mk_decls ?loc ~recursive:true [inductive ?loc ?attrs id vars cstrs]
 
 let data ?loc ?attrs l =
   (* this is currently only used for mutually recursive datatypes *)
-  let attr = zf_attr ?loc attrs in
-  group_decls ?loc ?attr ~recursive:true l
+  group_decls ?loc ?attrs ~recursive:true l
 
 
 (* Wrappers for tptp *)
 let include_ ?loc s l =
-  let attr = Term.apply ?loc (Term.and_t ()) (List.map Term.const l) in
-  mk ?loc ~attr (Include s)
+  let attrs = List.map Term.const l in
+  mk ?loc ~attrs (Include s)
 
-let tptp ?loc ?annot id role body =
-  let aux t =
+let tptp ?loc ?annot kind id role body =
+  let attrs =
+    Term.apply (Term.const Id.tptp_role) [Term.const Id.(mk Attr role)] ::
+    Term.apply (Term.const Id.tptp_kind) [Term.const Id.(mk Attr kind)] ::
     match annot with
-    | None -> t
-    | Some t' -> Term.colon t t'
-  in
-  let attr = aux (Term.apply
-                    (Term.const Id.tptp_role)
-                    [Term.const Id.(mk Attr role)])
+    | None -> [] | Some t -> [t]
   in
   let descr = match role with
     | "axiom"
@@ -606,12 +598,12 @@ let tptp ?loc ?annot id role body =
       Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role;
       Pack []
   in
-  mk ~id ?loc ~attr descr
+  mk ~id ?loc ~attrs descr
 
-let tpi ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
-let thf ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
-let tff ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
-let fof ?loc ?annot id role t = tptp ?loc ?annot id role (`Term t)
+let tpi ?loc ?annot id role t = tptp ?loc ?annot "tpi" id role (`Term t)
+let thf ?loc ?annot id role t = tptp ?loc ?annot "thf" id role (`Term t)
+let tff ?loc ?annot id role t = tptp ?loc ?annot "tff" id role (`Term t)
+let fof ?loc ?annot id role t = tptp ?loc ?annot "fof" id role (`Term t)
 
 let cnf ?loc ?annot id role t =
   let l =
@@ -620,6 +612,6 @@ let cnf ?loc ?annot id role t =
             ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } -> l
     | _ -> [t]
   in
-  tptp ?loc ?annot id role (`Clause (t, l))
+  tptp ?loc ?annot "cnf" id role (`Clause (t, l))
 
 

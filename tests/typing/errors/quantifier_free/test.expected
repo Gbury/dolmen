@@ -1,0 +1,2 @@
+File "tests/typing/errors/quantifier_free/test.smt2", line 4, character 8-32:
+Error Quantified expressions are forbidden by the logic.

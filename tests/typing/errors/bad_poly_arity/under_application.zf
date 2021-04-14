@@ -1,0 +1,5 @@
+
+val f : pi a b. a -> b -> prop.
+
+goal f int 5 6.
+
