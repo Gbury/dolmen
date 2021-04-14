@@ -1,2 +1,0 @@
-File "tests/typing/error-var_application/error.smt2", line 2, character 24-29:
-Error Cannot apply arguments to term variable x

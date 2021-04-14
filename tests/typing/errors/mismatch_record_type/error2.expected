@@ -1,0 +1,2 @@
+File "tests/typing/errors/mismatch_record_type/error2.ae", line 6, character 19-49:
+Error The field foo does not belong to record type tt

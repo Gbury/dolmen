@@ -1,2 +1,0 @@
-File "tests/typing/error-shadow/builtin-sort.smt2", line 3, character 0-21:
-Error Shadowing: Bool was already defined by a builtin theory

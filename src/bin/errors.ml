@@ -94,20 +94,12 @@ let exn st = function
       (Dolmen_loop.Logic.string_of_language l')
 
   (* Internal Dolmen Expr errors *)
-  | Dolmen.Std.Expr.Bad_ty_arity (c, l) ->
+  | Dolmen.Std.Expr.Ty.Bad_arity (c, l) ->
     let pp_sep fmt () = Format.fprintf fmt ";@ " in
     Loop.State.error st ~code:Dolmen_loop.Code.bug
       "@[<hv>Internal error: Bad arity for type constant '%a',\
        @ which was provided arguments:@ [@[<hv>%a@]]@]"
       Dolmen.Std.Expr.Print.ty_cst c (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) l
-  | Dolmen.Std.Expr.Bad_term_arity (c, tys, ts) ->
-    let pp_sep fmt () = Format.fprintf fmt ";@ " in
-    Loop.State.error st ~code:Dolmen_loop.Code.bug
-      "@[<hv>Internal error: Bad arity for type constant '%a',\
-       @ which was provided arguments:@ [@[<hv>%a;@ %a@]]@]"
-      Dolmen.Std.Expr.Print.term_cst c
-      (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) tys
-      (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Term.print) ts
   | Dolmen.Std.Expr.Type_already_defined c ->
     Loop.State.error st ~code:Dolmen_loop.Code.bug
       "@[<hv>Internal error: Type constant '%a' was already defined earlier,\

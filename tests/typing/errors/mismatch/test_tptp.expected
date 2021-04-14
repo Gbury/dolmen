@@ -1,0 +1,2 @@
+File "tests/typing/errors/mismatch/test_tptp.p", line 6, character 18-22:
+Error The term: `a` has type int but was expected to be of type $i

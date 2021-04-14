@@ -106,12 +106,10 @@ and formula = term
 (** {2 Exceptions} *)
 (*  ************************************************************************* *)
 
-exception Prenex_polymorphism
 exception Already_aliased of ty_cst
-
-exception Bad_ty_arity of ty_cst * ty list
-exception Bad_term_arity of term_cst * ty list * term list
 exception Type_already_defined of ty_cst
+exception Record_type_expected of ty_cst
+
 
 (** {2 Native Tags} *)
 (*  ************************************************************************* *)
@@ -343,6 +341,14 @@ module Ty : sig
   type 'a tag = 'a Tag.t
   (** A type for tags to attach to arbitrary types. *)
 
+  exception Bad_arity of ty_cst * t list
+  (** Raised when applying a type constant to the wrong number
+      of arguments. *)
+
+  exception Prenex_polymorphism of t
+  (** Raised when the type provided is polymorphic, but occurred in a
+      place where polymorphic types are forbidden by prenex/rank-1
+      polymorphism. *)
 
   val hash : t -> int
   (** A hash function for types, should be suitable to create hashtables. *)
@@ -964,6 +970,18 @@ module Term : sig
 
   exception Field_expected of term_cst
   (** A field was expected but the returned term constant is not a record field. *)
+
+  exception Constructor_expected of Cstr.t
+  (** Raised when trying to access the tester of an ADT constructor, but the constant
+      provided was not a constructor. *)
+
+  exception Over_application of t list
+  (** Raised when an application was provided too many term arguments. The
+      extraneous arguments are returned by the exception. *)
+
+  exception Bad_poly_arity of ty_var list * ty list
+  (** Raised when a polymorphic application does not have an
+      adequate number of arguments. *)
 
   val ensure : t -> ty -> t
   (** Ensure a term has the given type. *)

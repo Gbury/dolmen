@@ -1,0 +1,2 @@
+File "tests/typing/errors/missing_record_field/error.ae", line 5, character 19-33:
+Error The field bar is missing from this record construction

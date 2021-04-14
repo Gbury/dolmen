@@ -494,6 +494,14 @@ module type Tff = sig
   exception Field_missing of Field.t
   (** Field missing in a record expression. *)
 
+  exception Over_application of t list
+  (** Raised when an application was provided too many term arguments. The
+      extraneous arguments are returned by the exception. *)
+
+  exception Bad_poly_arity of ty_var list * ty list
+  (** Raised when a polymorphic application does not have an
+      adequate number of arguments. *)
+
   val ensure : t -> ty -> t
   (** Ensure that a given term has the given type. *)
 

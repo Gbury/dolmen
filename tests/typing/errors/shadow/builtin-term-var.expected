@@ -1,0 +1,2 @@
+File "tests/typing/errors/shadow/builtin-term-var.smt2", line 2, character 15-19:
+Error Shadowing: true was already defined by a builtin theory

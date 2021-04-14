@@ -234,9 +234,12 @@ module Make
     | Bad_op_arity : string * int list * int -> Ast.t err
     | Bad_cstr_arity : T.Cstr.t * int list * int -> Ast.t err
     | Bad_term_arity : T.Const.t * int list * int -> Ast.t err
+    | Bad_poly_arity : Ty.Var.t list * Ty.t list -> Ast.t err
+    | Over_application : T.t list -> Ast.t err
     | Repeated_record_field : T.Field.t -> Ast.t err
     | Missing_record_field : T.Field.t -> Ast.t err
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
+    | Mismatch_sum_type : T.Cstr.t * Ty.t -> Ast.t err
     | Var_application : T.Var.t -> Ast.t err
     | Ty_var_application : Ty.Var.t -> Ast.t err
     | Type_mismatch : T.t * Ty.t -> Ast.t err
@@ -253,6 +256,7 @@ module Make
     | Higher_order_type : Ast.t err
     | Higher_order_env_in_tff_typechecker : Loc.t err
     | Polymorphic_function_argument : Ast.t err
+    | Non_prenex_polymorphism : Ty.t -> Ast.t err
     | Scope_escape_in_wildcard :
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
@@ -468,6 +472,12 @@ module Make
   let _bad_cstr_arity env c expected actual t =
     _error env (Ast t) (Bad_cstr_arity (c, expected, actual))
 
+  let _bad_poly_arity env ast ty_vars tys =
+    _error env (Ast ast) (Bad_poly_arity (ty_vars, tys))
+
+  let _over_application env ast over_args =
+    _error env (Ast ast) (Over_application over_args)
+
   let _ty_var_app env v t =
     _error env (Ast t) (Ty_var_application v)
 
@@ -476,6 +486,9 @@ module Make
 
   let _type_mismatch env t ty ast =
     _error env (Ast ast) (Type_mismatch (t, ty))
+
+  let _wrong_sum_type env ast cstr ty =
+    _error env (Ast ast) (Mismatch_sum_type (cstr, ty))
 
   let _record_type_mismatch env f ty_c ast =
     _error env (Ast ast) (Mismatch_record_type (f, ty_c))
@@ -498,6 +511,9 @@ module Make
   let _cannot_find ?(hint="") env ast s =
     _error env (Ast ast) (Cannot_find (s, hint))
 
+  let _non_prenex_polymorphism env ast ty =
+    _error env (Ast ast) (Non_prenex_polymorphism ty)
+
   let _scope_escape_in_wildcard env ast w w_src v =
     let r = find_reason env (`Ty_var v) in
     _error env (Ast ast) (Scope_escape_in_wildcard (w, w_src, v, r))
@@ -505,14 +521,22 @@ module Make
   let _wrap env ast f arg =
     try f arg
     with
+    | Ty.Prenex_polymorphism ty ->
+      _non_prenex_polymorphism env ast ty
     | T.Wrong_type (t, ty) ->
       _type_mismatch env t ty ast
+    | T.Wrong_sum_type (cstr, ty) ->
+      _wrong_sum_type env ast cstr ty
     | T.Wrong_record_type (f, c) ->
       _record_type_mismatch env f c ast
     | T.Field_repeated f ->
       _field_repeated env f ast
     | T.Field_missing f ->
       _field_missing env f ast
+    | T.Over_application over_args ->
+      _over_application env ast over_args
+    | T.Bad_poly_arity (vars, args) ->
+      _bad_poly_arity env ast vars args
     | Bad_scope (w, w_src, v) ->
       _scope_escape_in_wildcard env ast w w_src v
     | (Typing_error _) as exn ->

@@ -1,2 +1,0 @@
-File "tests/typing/error-shadow/redefinition.smt2", line 3, character 0-23:
-Error Shadowing: a was already declared at line 2, character 0-23

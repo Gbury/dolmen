@@ -1,2 +1,0 @@
-File "tests/typing/error-bad_ty_arity/sort.smt2", line 3, character 18-19:
-Error Bad arity: got 0 arguments for type constant s : Type -> Type

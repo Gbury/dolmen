@@ -1,2 +1,0 @@
-File "tests/typing/warning-unused/term_variable.p", line 3, character 22-28:
-Warning Quantified term variable `A : $i` is unused

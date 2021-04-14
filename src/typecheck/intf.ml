@@ -225,6 +225,10 @@ module type Formulas = sig
     (** [Bad_term_arity (func, expected, actual)] denotes a funciton symbol,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
+    | Bad_poly_arity : ty_var list * ty list -> Dolmen.Std.Term.t err
+    (** *)
+    | Over_application : term list -> Dolmen.Std.Term.t err
+    (** *)
     | Repeated_record_field : term_field -> Dolmen.Std.Term.t err
     (** [Repeated_record_field f] denotes an error within an expression
         that builds a record by giving values to all fields, but where the
@@ -237,6 +241,8 @@ module type Formulas = sig
     (** [Mismatch_record_type (f, r)] denotes an error where while building
         a record expression for a record of type [c], a field [f] belonging
         to another record type was used. *)
+    | Mismatch_sum_type : term_cstr * ty -> Dolmen.Std.Term.t err
+    (** *)
     | Var_application : term_var -> Dolmen.Std.Term.t err
     (** [Var_application v] denotes a variable which was applied to other
         terms, which is forbidden in first-order formulas. *)
@@ -270,6 +276,8 @@ module type Formulas = sig
     | Higher_order_env_in_tff_typechecker : Dolmen.Std.Loc.t err
     (** Programmer error *)
     | Polymorphic_function_argument : Dolmen.Std.Term.t err
+    (** *)
+    | Non_prenex_polymorphism : ty -> Dolmen.Std.Term.t err
     (** *)
     | Scope_escape_in_wildcard :
         ty_var * wildcard_source * ty_var * reason option -> Dolmen.Std.Term.t err

@@ -18,6 +18,11 @@ module type Tff = sig
   type 'a tag
   (** A type for tags to attach to arbitrary types. *)
 
+  exception Prenex_polymorphism of t
+  (** Raised when the type provided is polymorphic, but occurred in a
+      place where polymorphic types are forbidden by prenex/rank-1
+      polymorphism. *)
+
   (** A module for variables that occur in types. *)
   module Var : sig
 

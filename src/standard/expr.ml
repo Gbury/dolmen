@@ -92,14 +92,10 @@ and formula = term
 (* Exceptions *)
 (* ************************************************************************* *)
 
-exception Prenex_polymorphism
 exception Already_aliased of ty_cst
-
-exception Bad_ty_arity of ty_cst * ty list
-exception Bad_term_arity of term_cst * ty list * term list
-
 exception Type_already_defined of ty_cst
 exception Record_type_expected of ty_cst
+
 
 (* Tags *)
 (* ************************************************************************* *)
@@ -596,7 +592,7 @@ end
 
 module Ty = struct
 
-  (* Std type aliase *)
+  (* Std type aliases *)
 
   type t = ty
 
@@ -604,17 +600,11 @@ module Ty = struct
 
   type 'a tag = 'a Tag.t
 
+  exception Bad_arity of ty_cst * ty list
+  exception Prenex_polymorphism of ty
+
   (* printing *)
   let print = Print.ty
-
-  (* Prenex/Rank-1 polymorphism check *)
-  let check t =
-    match t.ty_descr with
-    | Pi _ -> raise Prenex_polymorphism
-    | _ -> ()
-
-  let check_list l =
-    List.iter check l
 
   (* Set a wildcard/hole to a concrete type
 
@@ -651,22 +641,35 @@ module Ty = struct
     Id.mk ~builtin:Builtin.Wildcard "_" Type
 
 
+  (* Prenex/Rank-1 polymorphism check *)
+  let rec check_prenex t =
+    match (expand_head t).ty_descr with
+    | Pi _ -> raise (Prenex_polymorphism t)
+    | _ -> ()
+
+  and check_prenex_list l =
+    List.iter check_prenex l
+
+  and subst_bind subst v u =
+    check_prenex u;
+    Subst.Var.bind subst v u
+
   (* type creation *)
-  let rec dummy = {
+  and dummy = {
     ty_hash = 0; (* must be non-negative *)
     ty_head = dummy;
     ty_tags = Tag.empty;
     ty_descr = Arrow ([], dummy);
   }
 
-  let mk ty_descr = {
+  and mk ty_descr = {
     ty_descr;
     ty_hash = -1;
     ty_tags = Tag.empty;
     ty_head = dummy;
   }
 
-  let of_var v =
+  and of_var v =
     let t = mk (TyVar v) in
     begin match v with
       | { builtin = Builtin.Wildcard; _ } ->
@@ -675,29 +678,29 @@ module Ty = struct
     end;
     t
 
-  let apply f args =
+  and apply f args =
     if List.length args <> f.id_ty.arity then
-      raise (Bad_ty_arity (f, args))
+      raise (Bad_arity (f, args))
     else begin
-      check_list args;
+      check_prenex_list args;
       mk (TyApp (f, args))
     end
 
-  let arrow args ret =
-    check_list (ret :: args);
+  and arrow args ret =
+    check_prenex_list (ret :: args);
     match args with
     | [] -> ret
     | _ -> mk (Arrow (args, ret))
 
-  let pi vars body =
-    check body;
+  and pi vars body =
+    check_prenex body;
     match vars with
     | [] -> body
     | _ -> mk (Pi (vars, body))
 
 
   (* Substitutions *)
-  let rec subst_aux ~fix var_map (t : t) =
+  and subst_aux ~fix var_map (t : t) =
     match t.ty_descr with
     | TyVar v ->
       begin match Subst.Var.get v var_map with
@@ -723,19 +726,19 @@ module Ty = struct
       if body == new_body then t
       else pi vars new_body
 
-  let subst ?(fix=true) var_map t =
+  and subst ?(fix=true) var_map t =
     if Subst.is_empty var_map then t
     else subst_aux ~fix var_map t
 
   (* type aliases *)
 
-  let alias_to c alias_vars alias_body =
+  and alias_to c alias_vars alias_body =
     let cst_ty = c.id_ty in
     match cst_ty.alias with
     | No_alias -> cst_ty.alias <- Alias { alias_vars; alias_body; }
     | Alias _ -> raise (Already_aliased c)
 
-  let rec expand_head t =
+  and expand_head t =
     if t.ty_head != dummy then t.ty_head
     else match t.ty_descr with
     | TyApp (f, args) ->
@@ -796,8 +799,7 @@ module Ty = struct
 
   and compare_bound (vars, body) (vars', body') =
     (* Since we only have prenex/rank-1 polymorphism, this can only happen
-       once by comparison (the substitution function will raise an error
-       if the body contains a Pi quantification. *)
+       once by comparison. *)
     let map =
       List.fold_left2 Subst.Var.bind Subst.empty
         vars (List.map of_var vars')
@@ -870,8 +872,7 @@ module Ty = struct
   end
 
   let add_wildcard_hook ~hook v =
-    assert (Var.is_wildcard v);
-    Var.add_tag v wildcard_hook hook
+    if Var.is_wildcard v then Var.add_tag v wildcard_hook hook
 
   module Const = struct
     type t = ty_cst
@@ -940,7 +941,7 @@ module Ty = struct
           if equal t t' then subst
           else raise (Impossible_matching (pat, t))
         | exception Not_found ->
-          Subst.Var.bind subst v t
+          subst_bind subst v t
       end
     | { ty_descr = TyApp (f, f_args); _ },
       { ty_descr = TyApp (g, g_args); _ } ->
@@ -972,30 +973,28 @@ module Ty = struct
       end
     | t -> t
 
-  let rec occurs m u subst l (t : t) =
-    (* no need to call expand_head here, since expansion should
-       not result in more variables than in the alias (expansion
-       of an alias may remove phantom type variables, but not
-       add them). *)
+  let rec occurs u subst l (t : t) =
+    (* no need to call expand_head here, since robinson_bind,
+       and thus this function also, always receive types that
+       have already been expanded. *)
     match t.ty_descr with
     | TyVar v ->
       List.exists (Id.equal v) l ||
       begin match Subst.Var.get v subst with
         | exception Not_found -> false
-        | e -> occurs m u subst (v :: l) e
+        | e -> occurs u subst (v :: l) e
       end
     | TyApp (_, tys) ->
-      List.exists (occurs m u subst l) tys
+      List.exists (occurs u subst l) tys
     | Arrow (args, ret) ->
-      List.exists (occurs m u subst l) args || occurs m u subst l ret
-    | Pi _ -> raise Prenex_polymorphism
+      List.exists (occurs u subst l) args || occurs u subst l ret
+    | Pi _ -> raise (Prenex_polymorphism t)
 
   let robinson_bind subst m v u =
-    match u with
-    | { ty_descr = Pi _; _ } ->
-      raise Prenex_polymorphism
+    match u.ty_descr with
+    | Pi _ -> raise (Prenex_polymorphism u)
     | _ ->
-      if occurs m u subst [v] u then
+      if occurs u subst [v] u then
         raise (Impossible_unification (m, u))
       else
         Subst.Var.bind subst v u
@@ -1022,8 +1021,8 @@ module Ty = struct
         List.fold_left2 robinson subst f_args g_args
       in
       robinson subst f_ret g_ret
-    | { ty_descr = Pi _; _ }, _
-    | _, { ty_descr = Pi _; _ } -> raise Prenex_polymorphism
+    | ({ ty_descr = Pi _; _ } as ty), _
+    | _, ({ ty_descr = Pi _; _ } as ty) -> raise (Prenex_polymorphism ty)
     | _, _ -> raise (Impossible_unification (s, t))
 
   (* *)
@@ -1046,7 +1045,7 @@ module Ty = struct
       | TyVar _ | TyApp _ ->
         let args = List.concat (List.rev acc) in
         args, t'
-      | Pi _ -> raise Prenex_polymorphism
+      | Pi _ -> raise (Prenex_polymorphism t)
     in
     aux [] t
 
@@ -1137,6 +1136,8 @@ module Term = struct
 
   type 'a tag = 'a Tag.t
 
+  (* Exceptions *)
+
   exception Wrong_type of t * ty
   exception Wrong_sum_type of term_cst * ty
   exception Wrong_record_type of term_cst * ty_cst
@@ -1147,6 +1148,12 @@ module Term = struct
 
   exception Constructor_expected of term_cst
 
+  exception Over_application of t list
+  exception Bad_poly_arity of ty_var list * ty list
+
+  (* *)
+
+  (* Print *)
   let print = Print.term
 
   (* Tags *)
@@ -2291,6 +2298,8 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
 
+    exception Bad_pattern_arity of term_cst * ty list * term list
+
     let arity (c : t) =
       let vars, args, _ = Ty.poly_sig c.id_ty in
       List.length vars, List.length args
@@ -2312,12 +2321,12 @@ module Term = struct
     let pattern_arity (c : t) ret tys =
       try
         let fun_vars, fun_args, fun_ret = Ty.poly_sig c.id_ty in
-        let s = List.fold_left2 Subst.Var.bind Subst.empty fun_vars tys in
+        let s = List.fold_left2 Ty.subst_bind Subst.empty fun_vars tys in
         let s = Ty.robinson s fun_ret ret in
         List.map (Ty.subst s) fun_args
       with
       | Ty.Impossible_unification _ -> raise (Wrong_sum_type (c, ret))
-      | Invalid_argument _ -> raise (Bad_term_arity (c, tys, []))
+      | Invalid_argument _ -> raise (Bad_pattern_arity (c, tys, []))
 
   end
 
@@ -2494,7 +2503,7 @@ module Term = struct
   and instantiate_finalize subst ty =
     let subst = Subst.map (Ty.subst ~fix:true subst) subst in
     Subst.iter Ty.set_wildcard subst;
-    `Ok (Ty.subst subst ty)
+    Ty.subst subst ty
 
   and instantiate_term_app subst fun_ty args =
     let rec aux subst fun_ty_args fun_ty_ret args =
@@ -2512,7 +2521,7 @@ module Term = struct
         begin match Ty.robinson subst fun_ty_ret potential_fun_ty with
           | subst -> instantiate_term_app subst ret rest
           | exception Ty.Impossible_unification _ ->
-            `Over_application args
+            raise (Over_application args)
         end
       (* regular application, carry on *)
       | expected :: fun_ty_args, arg :: args ->
@@ -2529,6 +2538,7 @@ module Term = struct
       aux subst fun_ty_args fun_ty_ret args
 
   and instantiate_ty_app subst fun_ty tys args =
+    let exception Bad_arity in
     let rec aux subst fun_ty_vars fun_ty_body tys args =
       match fun_ty_vars, tys with
       (* full type application *)
@@ -2537,29 +2547,29 @@ module Term = struct
       | _ :: _, [] ->
         begin match args with
           | [] -> instantiate_finalize subst (Ty.pi fun_ty_vars fun_ty)
-          | _ -> `Not_enough_type_arguments fun_ty_vars
+          | _ -> raise Bad_arity
         end
       (* over application
          in prenex polymoprhism, type substitution cannot create Pi
          quantifications (the substitution rhs cannot be Pi _). *)
       | [], _ :: _ ->
-        `Too_many_type_arguments tys
+        raise Bad_arity
       (* regular application
          we prevent type schemas (i.e. Pi _) from beign instantiated
-         with polymorphic types to preserve prenex polymorphism. *)
+         with polymorphic types to preserve prenex polymorphism.
+         The Ty.subst_bind function performs this check. *)
       | ty_var :: fun_ty_vars, ty :: tys ->
-        begin match (Ty.expand_head ty).ty_descr with
-          | Pi _ -> `Non_prenex_polymorphic_application ty
-          | _ ->
-            let subst = Subst.Var.bind subst ty_var ty in
-            aux subst fun_ty_vars fun_ty_body tys args
-        end
+        let subst = Ty.subst_bind subst ty_var ty in
+        aux subst fun_ty_vars fun_ty_body tys args
     in
     match tys with
     | [] -> instantiate_term_app subst fun_ty args
     | _ ->
       let fun_ty_vars, fun_ty_body = Ty.split_pi fun_ty in
-      aux subst fun_ty_vars fun_ty_body tys args
+      begin
+        try aux subst fun_ty_vars fun_ty_body tys args
+        with Bad_arity -> raise (Bad_poly_arity (fun_ty_vars, tys))
+      end
 
   and instantiate fun_ty tys args =
     (*
@@ -2570,12 +2580,7 @@ module Term = struct
            Format.fprintf fmt "%a: %a" Print.term t Print.ty (ty t)
          )) args;
     *)
-    match instantiate_ty_app Subst.empty fun_ty tys args with
-    | `Ok ret_ty -> ret_ty
-    | `Over_application _over_args -> assert false
-    | `Not_enough_type_arguments _ty_vars -> assert false
-    | `Too_many_type_arguments _over_ty_args -> assert false
-    | `Non_prenex_polymorphic_application _ty -> assert false
+    instantiate_ty_app Subst.empty fun_ty tys args
 
   (* Application *)
   and apply f tys args =

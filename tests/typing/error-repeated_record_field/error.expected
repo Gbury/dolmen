@@ -1,2 +1,0 @@
-File "tests/typing/error-repeated_record_field/error.ae", line 5, character 19-46:
-Error The field foo is used more than once in this record construction
