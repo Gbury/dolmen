@@ -200,8 +200,6 @@ module type Formulas = sig
   (** Errors that occur on declaration(s) *)
 
   type _ err +=
-    | Infer_type_variable : Dolmen.Std.Term.t err
-    (** The type of a bound variable had to be inferred which is forbidden. *)
     | Expected : string * res option -> Dolmen.Std.Term.t err
     (** The parsed term didn't match the expected shape *)
     | Bad_index_arity : string * int * int -> Dolmen.Std.Term.t err
@@ -215,20 +213,29 @@ module type Formulas = sig
     | Bad_op_arity : string * int list * int -> Dolmen.Std.Term.t err
     (** [Bad_op_arity (name, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which
-        is being subtituted, etc...) expecting a number of arguments among
+        is being substituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
     | Bad_cstr_arity : term_cstr * int list * int -> Dolmen.Std.Term.t err
     (** [Bad_cstr_arity (cstr, expected, actual)] denotes an ADT constructor,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
     | Bad_term_arity : term_cst * int list * int -> Dolmen.Std.Term.t err
-    (** [Bad_term_arity (func, expected, actual)] denotes a funciton symbol,
+    (** [Bad_term_arity (func, expected, actual)] denotes a function symbol,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
     | Bad_poly_arity : ty_var list * ty list -> Dolmen.Std.Term.t err
-    (** *)
+    (** [Bad_poly_arity (ty_vars, ty_args) denotes a polymorphic term
+        application, where the function term being applied was provided with
+        the type arguments [ty_args], but the function type expected
+        a number of arguments that is the length of [ty_vars], and the
+        two lengths differ. Under application is allowed, so in the cases
+        where there are less provided arguments than expected type arguments,
+        the presence of term arguments after the type arguments forced
+        the raising of this exception. *)
     | Over_application : term list -> Dolmen.Std.Term.t err
-    (** *)
+    (** [Over_application over_args] denotes an application where after applying
+        the provided arguments, the application resulted in a term with a
+        non-function type, but that term was still provided with [over_args]. *)
     | Repeated_record_field : term_field -> Dolmen.Std.Term.t err
     (** [Repeated_record_field f] denotes an error within an expression
         that builds a record by giving values to all fields, but where the
@@ -250,9 +257,11 @@ module type Formulas = sig
     (** [Ty_var_application v] denotes a type variable which was applied to
         other terms, which is forbidden in first-order formulas. *)
     | Type_mismatch : term * ty -> Dolmen.Std.Term.t err
-    (** *)
+    (** [Type_mismatch (term, expected)] denotes a context where [term] was
+        expected to have type [expected], but it is not the case. *)
     | Quantified_var_inference : Dolmen.Std.Term.t err
-    (** Quantified variable without a type *)
+    (** Quantified variable without a type, and no configured way to
+        infer its type. *)
     | Unhandled_builtin : Dolmen.Std.Term.builtin -> Dolmen.Std.Term.t err
     (** *)
     | Cannot_tag_tag : Dolmen.Std.Term.t err
@@ -281,7 +290,10 @@ module type Formulas = sig
     (** *)
     | Scope_escape_in_wildcard :
         ty_var * wildcard_source * ty_var * reason option -> Dolmen.Std.Term.t err
-    (** *)
+    (** [ Scope_escape_in_wildcard (w, w_src, v, reason)] denotes a situation where
+        the wildcard variable [w] (which comes from [w_src]), was instantiated
+        with a type that would lead to the variable [v] from escaping its scope;
+        [reason] is the reason of the binding for [v]. *)
     | Unbound_variables : ty_var list * term_var list * term -> Dolmen.Std.Term.t err
     (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err

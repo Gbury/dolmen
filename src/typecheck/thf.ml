@@ -227,7 +227,6 @@ module Make
 
   (* Errors that occur on term fragments, i.e. Ast.t fragments *)
   type _ err +=
-    | Infer_type_variable : Ast.t err
     | Expected : string * res option -> Ast.t err
     | Bad_index_arity : string * int * int -> Ast.t err
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
@@ -902,8 +901,8 @@ module Make
       `Term (s, T.Var.mk (Id.full_name s) ty)
 
   let infer_sym env ast s args s_ast =
-    if Id.(s.ns = Var) then
-      assert false (* TODO: proper error *)
+    (* variables must be bound explicitly *)
+    if Id.(s.ns = Var) then _cannot_find env ast s
     else match env.sym_infer with
     | No_symbol_inference -> None
     | Symbol_term_infer { expect; base; } ->

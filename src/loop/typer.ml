@@ -127,7 +127,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         "it looks like the language enforces implicit polymorphism, \
          i.e. no type arguments are to be provided to applications \
          (and instead type annotation/coercions should be used)."
-    | _ :: _ ->
+    | _ :: _ :: _ ->
       Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
         "this is a polymorphic function, and multiple accepted arities \
          are possible because the language supports inference of all type \
@@ -290,10 +290,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Not_well_founded_datatypes _ ->
       Format.fprintf fmt "Not well founded datatype declaration"
 
-    (* Inference of the type of a bound variable *)
-    | T.Infer_type_variable ->
-      Format.fprintf fmt "Cannot infer the type of a variable"
-
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
       Format.fprintf fmt "Expected %s but got %a"
@@ -321,6 +317,27 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         "Bad arity: expected %a but got %d arguments for function@ %a%a"
         print_expected expected actual Dolmen.Std.Expr.Print.term_cst c
         poly_hint (c, expected, actual)
+    | T.Bad_poly_arity (vars, args) ->
+      let expected = List.length vars in
+      let provided = List.length args in
+      if provided > expected then
+        (* Over application *)
+        Format.fprintf fmt
+          "This@ function@ expected@ at@ most@ %d@ type@ arguments,@ \
+           but@ was@ here@ provided@ with@ %d@ type@ arguments."
+          expected provided
+      else
+        (* under application *)
+        Format.fprintf fmt
+          "This@ function@ expected@ exactly@ %d@ type@ arguments,@ \
+           since@ term@ arguments@ are@ also@ provided,@ but@ was@ given@ \
+           %d@ arguments."
+          expected provided
+    | T.Over_application (over_args) ->
+      let over = List.length over_args in
+      Format.fprintf fmt
+        "Over application:@ this@ application@ has@ %d@ \
+         too@ many@ term@ arguments." over
 
     (* Record constuction errors *)
     | T.Repeated_record_field f ->

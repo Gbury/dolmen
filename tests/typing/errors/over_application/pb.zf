@@ -1,0 +1,5 @@
+
+val f : int -> prop.
+
+goal f 5 6.
+
