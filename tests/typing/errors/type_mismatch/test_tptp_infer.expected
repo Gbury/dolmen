@@ -1,7 +1,7 @@
 File "tests/typing/errors/type_mismatch/test_tptp_infer.p", line 4, character 18-23:
-Error The typechecker inferred the type for the symbol p to be int -> _.
+Error The typechecker inferred the type for the symbol `p` to be `int -> _`.
       That inference lead to infer one of the argument types of that type to
-      be int.
+      be `int`.
       However, the language specified only the following types should be
-      allowed there: $i
-      Symbol p is located be line 4, character 18-19
+      allowed there: `$i`
+      Symbol `p` is located be line 4, character 18-19

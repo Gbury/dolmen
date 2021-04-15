@@ -1,2 +1,2 @@
 File "tests/typing/warnings/shadow/const_var.smt2", line 3, character 15-16:
-Warning Shadowing: a was already declared at line 2, character 0-22
+Warning Shadowing: `a` was already declared at line 2, character 0-22

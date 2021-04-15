@@ -102,6 +102,9 @@ module type S = Typer_intf.S
 
 module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
+  let pp_wrap pp fmt x =
+    Format.fprintf fmt "`%a`" pp x
+
   (* New warnings & errors *)
   (* ************************************************************************ *)
 
@@ -184,11 +187,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Symbol_inference { symbol; symbol_loc = _; inferred_ty; } ->
       Format.fprintf fmt
         "the@ type@ for@ the@ symbol@ %a@ to@ be@ %a"
-        Dolmen.Std.Id.print symbol Dolmen.Std.Expr.Ty.print inferred_ty
+        (pp_wrap Dolmen.Std.Id.print) symbol
+        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
     | T.Variable_inference { variable; variable_loc = _; inferred_ty; } ->
       Format.fprintf fmt
         "the@ type@ for@ the@ quantified@ variable@ %a@ to@ be@ %a"
-        Dolmen.Std.Id.print variable Dolmen.Std.Expr.Ty.print inferred_ty
+        (pp_wrap Dolmen.Std.Id.print) variable
+        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
 
   let rec print_wildcard_path env fmt = function
     | T.Arg_of src ->
@@ -217,12 +222,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
       Format.fprintf fmt
         "Symbol@ %a@ is@ located@ be@ %a"
-        Dolmen.Std.Id.print symbol Dolmen.Std.Loc.fmt_pos loc
+        (pp_wrap Dolmen.Std.Id.print) symbol
+        Dolmen.Std.Loc.fmt_pos loc
     | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
       let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
       Format.fprintf fmt
         "Variable@ %a@ is@ bound@ at@ %a"
-        Dolmen.Std.Id.print variable Dolmen.Std.Loc.fmt_pos loc
+        (pp_wrap Dolmen.Std.Id.print) variable
+        Dolmen.Std.Loc.fmt_pos loc
 
   let report_warning (T.Warning (_env, _fragment, warn)) =
     match warn with
@@ -247,7 +254,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Shadowing (id, old, _cur) -> Some (fun fmt () ->
         Format.fprintf fmt
           "Shadowing: %a was already %a"
-          Dolmen.Std.Id.print id
+          (pp_wrap Dolmen.Std.Id.print) id
           print_reason_opt (T.binding_reason old)
       )
 
@@ -281,8 +288,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let print_res fmt res =
     match (res : T.res) with
     | T.Ttype -> Format.fprintf fmt "Type"
-    | T.Ty ty -> Format.fprintf fmt "the type@ %a" Dolmen.Std.Expr.Ty.print ty
-    | T.Term t -> Format.fprintf fmt "the term@ %a" Dolmen.Std.Expr.Term.print t
+    | T.Ty ty ->
+      Format.fprintf fmt "the type@ %a" (pp_wrap Dolmen.Std.Expr.Ty.print) ty
+    | T.Term t ->
+      Format.fprintf fmt "the term@ %a" (pp_wrap Dolmen.Std.Expr.Term.print) t
     | T.Tags _ -> Format.fprintf fmt "some tags"
 
   let print_opt pp fmt = function
@@ -296,7 +305,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
     match fragment with
-    | T.Ast ast -> Dolmen.Std.Term.print fmt ast
+    | T.Ast ast -> pp_wrap Dolmen.Std.Term.print fmt ast
     | T.Def d -> Dolmen.Std.Statement.print_def fmt d
     | T.Decl d -> Dolmen.Std.Statement.print_decl fmt d
     | T.Defs d ->
@@ -393,10 +402,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
-      Format.fprintf fmt "The term:@ `%a`@ has type@ %a@ but was expected to be of type@ %a"
-        Dolmen.Std.Expr.Term.print t
-        Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.ty t)
-        Dolmen.Std.Expr.Ty.print expected
+      Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
+        (pp_wrap Dolmen.Std.Expr.Term.print) t
+        (pp_wrap Dolmen.Std.Expr.Ty.print) (Dolmen.Std.Expr.Term.ty t)
+        (pp_wrap Dolmen.Std.Expr.Ty.print) expected
 
     | T.Quantified_var_inference ->
       Format.fprintf fmt "Cannot infer type for a quantified variable"
@@ -404,7 +413,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Unhandled_builtin b ->
       Format.fprintf fmt
         "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
-        Dolmen.Std.Term.print_builtin b
+        (pp_wrap Dolmen.Std.Term.print_builtin) b
 
     | T.Cannot_tag_tag ->
       Format.fprintf fmt "Cannot apply a tag to another tag (only expressions)"
@@ -413,7 +422,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
 
     | T.Cannot_find (id, msg) ->
-      Format.fprintf fmt "Unbound identifier:@ '%a'%a" Dolmen.Std.Id.print id pp_hint msg
+      Format.fprintf fmt "Unbound identifier:@ %a%a"
+        (pp_wrap Dolmen.Std.Id.print) id pp_hint msg
 
     | T.Forbidden_quantifier ->
       Format.fprintf fmt "Quantified expressions are forbidden by the logic."
@@ -423,8 +433,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     | T.Missing_destructor id ->
       Format.fprintf fmt
-        "The destructor '%a'@ was not provided by the user implementation.@ Please report upstream."
-        Dolmen.Std.Id.print id
+        "The destructor %a@ was not provided by the user implementation.@ Please report upstream."
+        (pp_wrap Dolmen.Std.Id.print) id
 
     | T.Higher_order_application ->
       Format.fprintf fmt "Higher-order applications are not handled by the Tff typechecker"
@@ -453,7 +463,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
          @]"
         print_wildcard_origin w_src
         (print_wildcard_path env) w_src
-        Dolmen.Std.Expr.Ty.print inferred_ty
+        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
         (print_wildcard_loc env) w_src
     | T.Inference_conflict (_, w_src, inferred_ty, allowed_tys) ->
       Format.fprintf fmt
@@ -465,8 +475,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         @]"
         print_wildcard_origin w_src
         (print_wildcard_path env) w_src
-        Dolmen.Std.Expr.Ty.print inferred_ty
-        (Format.pp_print_list Dolmen.Std.Expr.Ty.print
+        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
+        (Format.pp_print_list (pp_wrap Dolmen.Std.Expr.Ty.print)
            ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")) allowed_tys
         (print_wildcard_loc env) w_src
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
@@ -480,26 +490,26 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
          @]"
         print_wildcard_origin w_src
         (print_wildcard_path env) w_src
-        Dolmen.Std.Expr.Ty.Var.print escaping_var
+        (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
         (print_wildcard_loc env) w_src
-        Dolmen.Std.Expr.Ty.Var.print escaping_var
+        (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
         print_reason_opt var_reason
 
     | T.Unbound_variables (tys, [], _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a"
-        (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Print.id) tys
+        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
 
     | T.Unbound_variables ([], ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a"
-        (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Print.id) ts
+        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
 
     | T.Unbound_variables (tys, ts, _) ->
       let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
-        (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Print.id) tys
-        (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Print.id) ts
+        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
+        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
 
     | T.Unhandled_ast ->
       Format.fprintf fmt
@@ -510,11 +520,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-        Dolmen.Std.Expr.Ty.print ty
+        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
         "Tptp arithmetic symbols are only polymorphic over the arithmetic types $int, $rat and $real."
     | Tptp_Arith.Cannot_apply_to ty ->
       Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
-        Dolmen.Std.Expr.Ty.print ty
+        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
 
     (* Smtlib Arrya errors *)
     | Smtlib2_Arrays.Forbidden msg ->
@@ -527,7 +537,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a" pp_hint msg
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
       Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-        Dolmen.Std.Expr.Ty.print ty
+        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
         "The stmlib Reals_Ints theory requires an arithmetic type in order to correctly desugar the expression."
 
     (* Smtlib Bitvector errors *)
