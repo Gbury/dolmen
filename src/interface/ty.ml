@@ -96,6 +96,9 @@ module type Tff = sig
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
+  val set_wildcard : Var.t -> t -> unit
+  (** Set a wildcard. *)
+
   val add_wildcard_hook : hook:(Var.t -> t -> unit) -> Var.t -> unit
   (** Add a hook to a wildcard, the hook will be run *)
 

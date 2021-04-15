@@ -11,7 +11,10 @@ type _ t = ..
 (* Base builtins *)
 (* ************************************************************************* *)
 
-type _ t += Base | Wildcard
+type _ t += Base
+
+type _ t +=
+  | Wildcard : { ty : 'ty option ref; } -> < ty : 'ty ; .. > t
 
 type _ t += Kind | Type | Prop
 

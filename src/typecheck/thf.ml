@@ -828,6 +828,23 @@ module Make
     if List.memq shape l then ()
     else Ty.Var.add_tag v wildcard_allowed_shapes shape
 
+  let rec try_set_wildcard_shape w = function
+    | [] -> true
+    | Any_base { preferred; allowed = _; } :: _ ->
+      Ty.set_wildcard w preferred; false
+    | Arrow { ret_shape; arg_shape = _; } :: r ->
+      try_set_wildcard_shape w (ret_shape :: r)
+    | _ :: r ->
+      try_set_wildcard_shape w r
+
+  let set_wildcard_shape v =
+    if not (Ty.Var.is_wildcard v) then true
+    else begin
+      let marks = Ty.Var.get_tag_list v wildcard_allowed_shapes in
+      let shapes = List.map (fun (x, _, _) -> x) marks in
+      try_set_wildcard_shape v shapes
+    end
+
   (* create a wildcard *)
   let wildcard env src shape =
     match shape with
@@ -1101,13 +1118,13 @@ module Make
 
       (* Binders *)
       | { Ast.term = Ast.Binder (Ast.Fun, _, _); _ } ->
-        parse_quant T.lam Ast.Fun env t [] [] t
+        parse_quant parse_term T.lam Ast.Fun env t [] [] t
 
       | { Ast.term = Ast.Binder (Ast.All, _, _); _ } ->
-        parse_quant T.all Ast.All env t [] [] t
+        parse_quant parse_prop T.all Ast.All env t [] [] t
 
       | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
-        parse_quant T.ex Ast.Ex env t [] [] t
+        parse_quant parse_prop T.ex Ast.Ex env t [] [] t
 
       (* Pattern matching *)
       | { Ast.term = Ast.Match (scrutinee, branches); _ } ->
@@ -1215,12 +1232,12 @@ module Make
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
-  and parse_quant mk b env ast ttype_acc ty_acc = function
+  and parse_quant parse_inner mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
       let ttype_vars, ty_vars, env' = parse_quant_vars env vars in
-      parse_quant mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
+      parse_quant parse_inner mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
     | body_ast ->
-      let body = parse_prop env body_ast in
+      let body = parse_inner env body_ast in
       let f = mk_quant env ast mk (ttype_acc, ty_acc) body in
       Term f
 
@@ -1818,6 +1835,11 @@ module Make
     let res = parse_prop env ast in
     match T.fv res with
     | [], [] -> res
-    | tys, ts -> _error env (Ast ast) (Unbound_variables (tys, ts, res))
+    | tys, ts ->
+      let tys = _wrap2 env ast List.filter set_wildcard_shape tys in
+      begin match tys, ts with
+        | [], [] -> res
+        | tys, ts -> _error env (Ast ast) (Unbound_variables (tys, ts, res))
+      end
 
 end

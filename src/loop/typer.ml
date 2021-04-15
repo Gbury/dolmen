@@ -469,7 +469,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt
         "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
               @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
-              @[<hov>However,@ the@ language@ specified@ only@ the@ following@ \
+              @[<hov>However,@ the@ language@ specified@ that@ only@ the@ following@ \
                      types@ should@ be@ allowed@ there:@ %a@]@ \
               @[<hov>%a@]\
         @]"

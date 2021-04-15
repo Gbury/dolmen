@@ -18,8 +18,15 @@ type 'a tag = 'a Tag.t
 
 (** {3 Type definitions} *)
 
-type builtin = < ty_cst : ty_cst ; term_cst : term_cst > Builtin.t
-(* Extensible variant type for builtin operations. *)
+type builtin = <
+  ty : ty;
+  ty_var : ty_var;
+  ty_cst : ty_cst;
+  term : term;
+  term_var : term_var;
+  term_cst : term_cst;
+> Builtin.t
+(** Extensible variant type for builtin operations. *)
 
 and 'ty id = private {
   id_ty         : 'ty;
@@ -633,8 +640,11 @@ module Ty : sig
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
+  val set_wildcard : ty_var -> t -> unit
+  (** Instantiate the given wildcard. *)
+
   val add_wildcard_hook : hook:(ty_var -> ty -> unit) -> ty_var -> unit
-  (** Tag for hooks calle don each wildcard instantiation. *)
+  (** Tag for hooks called upon the wildcard instantiation. *)
 
   val get_tag : t -> 'a Tag.t -> 'a option
   (** Get the value bound to a tag. *)

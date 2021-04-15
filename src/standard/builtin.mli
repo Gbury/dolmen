@@ -55,7 +55,9 @@ type _ t = ..
 type _ t +=
   | Base
   (** The base builtin; it is the default builtin for identifiers. *)
-  | Wildcard
+
+type _ t +=
+  | Wildcard : { ty : 'ty option ref; } -> < ty : 'ty ; .. > t
   (** Wildcards, currently used internally to represent implicit type
       variables during type-checking. *)
 

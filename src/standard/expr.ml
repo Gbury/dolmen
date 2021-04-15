@@ -10,7 +10,14 @@ type index = int
 type 'a tag = 'a Tag.t
 
 (* Extensible variant type for builtin operations *)
-type builtin = < ty_cst : ty_cst ; term_cst : term_cst > Builtin.t
+type builtin = <
+  ty : ty;
+  ty_var : ty_var;
+  ty_cst : ty_cst;
+  term : term;
+  term_var : term_var;
+  term_cst : term_cst;
+> Builtin.t
 
 (* Identifiers have a dual representation:
    - in types and terms, they are just integers/indexes
@@ -95,6 +102,7 @@ and formula = term
 exception Already_aliased of ty_cst
 exception Type_already_defined of ty_cst
 exception Record_type_expected of ty_cst
+exception Wildcard_already_set of ty_var
 
 
 (* Tags *)
@@ -622,23 +630,32 @@ module Ty = struct
     Id.add_tag_list v wildcard_refs l
 
   let set_wildcard v (t: t) =
-    let set_descr (t : t) (s: t) =
-      s.ty_descr <- t.ty_descr;
-      s.ty_hash <- -1
-    in
-    let l = Id.get_tag_list v wildcard_refs in
-    List.iter (set_descr t) l;
-    let () =
-      List.iter (fun f -> f v t)
-        (Id.get_tag_list v wildcard_hook)
-    in
-    match t.ty_descr with
-    | TyVar ({ builtin = Builtin.Wildcard; _ } as w) ->
-      wildcard_add_refs w l
+    match v.builtin with
+    | Builtin.Wildcard { ty; } ->
+      begin match !ty with
+        | Some _ ->
+          raise (Wildcard_already_set v)
+        | None ->
+          let set_descr (t : t) (s: t) =
+            s.ty_descr <- t.ty_descr;
+            s.ty_hash <- -1
+          in
+          ty := Some t;
+          let l = Id.get_tag_list v wildcard_refs in
+          List.iter (set_descr t) l;
+          let () =
+            List.iter (fun f -> f v t)
+              (Id.get_tag_list v wildcard_hook)
+          in
+          match t.ty_descr with
+          | TyVar ({ builtin = Builtin.Wildcard _; _ } as w) ->
+            wildcard_add_refs w l
+          | _ -> ()
+      end
     | _ -> ()
 
   let wildcard_var () =
-    Id.mk ~builtin:Builtin.Wildcard "_" Type
+    Id.mk ~builtin:(Builtin.Wildcard { ty = ref None; }) "_" Type
 
 
   (* Prenex/Rank-1 polymorphism check *)
@@ -670,13 +687,16 @@ module Ty = struct
   }
 
   and of_var v =
-    let t = mk (TyVar v) in
-    begin match v with
-      | { builtin = Builtin.Wildcard; _ } ->
-        wildcard_add_refs v [t]
-      | _ -> ()
-    end;
-    t
+    match v with
+    | { builtin = Builtin.Wildcard { ty; }; _ } ->
+      begin match !ty with
+        | None ->
+          let t = mk (TyVar v) in
+          wildcard_add_refs v [t];
+          t
+        | Some t -> t
+      end
+    | _ -> mk (TyVar v)
 
   and apply f args =
     if List.length args <> f.id_ty.arity then
@@ -867,7 +887,7 @@ module Ty = struct
     let mk name = Id.mk name Type
     let wildcard () = wildcard_var ()
     let is_wildcard = function
-      | { builtin = Builtin.Wildcard; _ } -> true
+      | { builtin = Builtin.Wildcard _; _ } -> true
       | _ -> false
   end
 
@@ -929,6 +949,39 @@ module Ty = struct
 
   (* alias for alt-ergo *)
   let bool = prop
+
+  (* *)
+  let split_pi t =
+    let rec aux acc ty =
+      let ty' = expand_head ty in
+      match ty'.ty_descr with
+      | Pi (vars, body) -> aux (vars :: acc) body
+      | _ ->
+        let vars = List.concat (List.rev acc) in
+        vars, ty'
+    in
+    aux [] t
+
+  let split_arrow t =
+    let rec aux acc t =
+      let t' = expand_head t in
+      match t'.ty_descr with
+      | Arrow (args, ret) -> aux (args :: acc) ret
+      | TyVar _ | TyApp _ ->
+        let args = List.concat (List.rev acc) in
+        args, t'
+      | Pi _ -> raise (Prenex_polymorphism t)
+    in
+    aux [] t
+
+  let poly_sig t =
+    let vars, t = split_pi t in
+    let args, ret = split_arrow t in
+    vars, args, ret
+
+  let pi_arity t =
+    let l, _ = split_pi t in
+    List.length l
 
   (* Matching *)
   exception Impossible_matching of ty * ty
@@ -1003,8 +1056,8 @@ module Ty = struct
     let s = expand_head (follow subst s) in
     let t = expand_head (follow subst t) in
     match s, t with
-    | ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard; _ } as v); _ } as m), u
-    | u, ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard; _ } as v); _ } as m) ->
+    | ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard _; _ } as v); _ } as m), u
+    | u, ({ ty_descr = TyVar ({ builtin = Builtin.Wildcard _; _ } as v); _ } as m) ->
       if equal m u then subst else robinson_bind subst m v u
     | ({ ty_descr = TyVar v; _}, { ty_descr = TyVar v'; _ }) ->
       if Id.equal v v' then subst
@@ -1017,46 +1070,18 @@ module Ty = struct
         raise (Impossible_unification (s, t))
     | { ty_descr = Arrow (f_args, f_ret); _ },
       { ty_descr = Arrow (g_args, g_ret); _ } ->
-      let subst =
-        List.fold_left2 robinson subst f_args g_args
-      in
-      robinson subst f_ret g_ret
+      robinson_arrow subst f_args f_ret g_args g_ret
     | ({ ty_descr = Pi _; _ } as ty), _
     | _, ({ ty_descr = Pi _; _ } as ty) -> raise (Prenex_polymorphism ty)
     | _, _ -> raise (Impossible_unification (s, t))
 
-  (* *)
-  let split_pi t =
-    let rec aux acc ty =
-      let ty' = expand_head ty in
-      match ty'.ty_descr with
-      | Pi (vars, body) -> aux (vars :: acc) body
-      | _ ->
-        let vars = List.concat (List.rev acc) in
-        vars, ty'
-    in
-    aux [] t
-
-  let split_arrow t =
-    let rec aux acc t =
-      let t' = expand_head t in
-      match t'.ty_descr with
-      | Arrow (args, ret) -> aux (args :: acc) ret
-      | TyVar _ | TyApp _ ->
-        let args = List.concat (List.rev acc) in
-        args, t'
-      | Pi _ -> raise (Prenex_polymorphism t)
-    in
-    aux [] t
-
-  let poly_sig t =
-    let vars, t = split_pi t in
-    let args, ret = split_arrow t in
-    vars, args, ret
-
-  let pi_arity t =
-    let l, _ = split_pi t in
-    List.length l
+  and robinson_arrow subst f_args f_ret g_args g_ret =
+    match f_args, g_args with
+    | [], [] -> robinson subst f_ret g_ret
+    | [], _ -> robinson subst f_ret (arrow g_args g_ret)
+    | _, [] -> robinson subst (arrow f_args f_ret) g_ret
+    | f :: f_r, g :: g_r ->
+      robinson_arrow (robinson subst f g) f_r f_ret g_r g_ret
 
   (* typing annotations *)
   let unify t t' =
@@ -1111,7 +1136,7 @@ module Ty = struct
     match descr t with
     | TyVar v ->
       begin match v with
-        | { builtin = Builtin.Wildcard;_ } -> `Wildcard v
+        | { builtin = Builtin.Wildcard _;_ } -> `Wildcard v
         | _ -> `Var v
       end
     | Pi _ ->
