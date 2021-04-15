@@ -29,11 +29,12 @@ module Make
       end)
 
   let empty_env
-      ?st ?var_infer ?sym_infer
+      ?st ?expect ?var_infer ?sym_infer
       ?(order=First_order) ?poly ?quants
       ~warnings ~file builtin_symbols =
     let env =
-      empty_env ?st ?var_infer ?sym_infer
+      empty_env ?st
+        ?expect ?var_infer ?sym_infer
         ~order ?poly ?quants
         ~warnings ~file builtin_symbols
     in

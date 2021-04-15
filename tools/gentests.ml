@@ -180,7 +180,7 @@ let test_stanza ?deps fmt (exit_codes, pb_file) =
 (* ************************************************************************* *)
 
 let check_expect_file path =
-  let default_expect_contents = "run 'make test-promote' to update this file" in
+  let default_expect_contents = "run 'make promote' to update this file" in
   if touch path default_expect_contents then
     if is_empty path then Success
     else if contains "Error" path then Error

@@ -400,8 +400,8 @@ module type Tff = sig
     val arity : t -> int * int
     (** Returns the arity of a term constant. *)
 
-    val mk : string -> ty_var list -> ty list -> ty -> t
-    (** Create a polymorphic constant symbol. *)
+    val mk : string -> ty -> t
+    (** Create a constant symbol. *)
 
     val set_tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)

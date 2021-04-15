@@ -114,7 +114,8 @@ module Declare(Type : Tff_intf.S) = struct
   let define_term env id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
-    let c = Type.T.Const.mk (Dolmen.Std.Id.full_name id) vars args_ty ret_ty in
+    let ty = Type.Ty.pi vars (Type.Ty.arrow args_ty ret_ty) in
+    let c = Type.T.Const.mk (Dolmen.Std.Id.full_name id) ty in
     let () = add_definition env id (`Term c) in
     c
 

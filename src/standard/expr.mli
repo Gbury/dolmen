@@ -392,7 +392,9 @@ module Ty : sig
     | `String_reg_lang
     (** Regular languages over strings *)
     | `Var of ty_var
-    (** Variables *)
+    (** Variables (excluding wildcards) *)
+    | `Wildcard of ty_var
+    (** Wildcards *)
     | `App of [
         | `Generic of ty_cst
         | `Builtin of builtin
@@ -628,6 +630,9 @@ module Ty : sig
   val fv : t -> Var.t list
   (** Returns the list of free variables in the type. *)
 
+  val unify : t -> t -> t option
+  (** Try and unify two types. *)
+
   val add_wildcard_hook : hook:(ty_var -> ty -> unit) -> ty_var -> unit
   (** Tag for hooks calle don each wildcard instantiation. *)
 
@@ -783,8 +788,8 @@ module Term : sig
     val arity : t -> int * int
     (** Returns the arity of a term constant. *)
 
-    val mk : string -> ty_var list -> ty list -> ty -> t
-    (** Create a polymorphic constant symbol. *)
+    val mk : string -> ty -> t
+    (** Create a constant symbol. *)
 
     val get_tag : t -> 'a Tag.t -> 'a option
     (** Get the value bound to a tag. *)

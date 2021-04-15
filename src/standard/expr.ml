@@ -622,16 +622,16 @@ module Ty = struct
     Id.add_tag_list v wildcard_refs l
 
   let set_wildcard v (t: t) =
-    let () =
-      List.iter (fun f -> f v t)
-        (Id.get_tag_list v wildcard_hook)
-    in
     let set_descr (t : t) (s: t) =
       s.ty_descr <- t.ty_descr;
       s.ty_hash <- -1
     in
     let l = Id.get_tag_list v wildcard_refs in
     List.iter (set_descr t) l;
+    let () =
+      List.iter (fun f -> f v t)
+        (Id.get_tag_list v wildcard_hook)
+    in
     match t.ty_descr with
     | TyVar ({ builtin = Builtin.Wildcard; _ } as w) ->
       wildcard_add_refs w l
@@ -1058,6 +1058,14 @@ module Ty = struct
     let l, _ = split_pi t in
     List.length l
 
+  (* typing annotations *)
+  let unify t t' =
+    match robinson Subst.empty t t' with
+    | s ->
+      Subst.iter set_wildcard s;
+      Some (subst s t)
+    | exception Impossible_unification _ ->
+      None
 
   (* free variables *)
   let rec free_vars acc (t : t) =
@@ -1090,6 +1098,7 @@ module Ty = struct
     | `String_reg_lang
     (* Generic cases *)
     | `Var of ty_var
+    | `Wildcard of ty_var
     | `App of [
         | `Generic of ty_cst
         | `Builtin of builtin
@@ -1100,9 +1109,17 @@ module Ty = struct
 
   let view (t : ty) : view =
     match descr t with
-    | TyVar v -> `Var v
-    | Pi (vars, body) -> `Pi (vars, body)
-    | Arrow (args, ret) -> `Arrow (args, ret)
+    | TyVar v ->
+      begin match v with
+        | { builtin = Builtin.Wildcard;_ } -> `Wildcard v
+        | _ -> `Var v
+      end
+    | Pi _ ->
+      let vars, body = split_pi t in
+      `Pi (vars, body)
+    | Arrow _ ->
+      let args, ret = split_arrow t in
+      `Arrow (args, ret)
     | TyApp (({ builtin; _ } as c), l) ->
       begin match builtin with
         | Builtin.Int -> `Int
@@ -1413,8 +1430,7 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
 
-    let mk name vars args ret =
-      let ty = Ty.pi vars (Ty.arrow args ret) in
+    let mk name ty =
       Id.mk name ty
 
     let mk' ?pos ?name ?builtin ?tags cname vars args ret =
@@ -2380,6 +2396,12 @@ module Term = struct
   (* Binder creation *)
   let mk_bind b body =
     match b with
+    | Let_seq []
+    | Let_par []
+    | Forall ([], [])
+    | Exists ([], [])
+    | Lambda ([], []) -> body
+
     | Forall _
     | Exists _ ->
       if not (Ty.(equal prop) (ty body)) then

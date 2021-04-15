@@ -49,22 +49,57 @@ module Make
     | Implicit
     | Flexible
 
-  (* The type of potentially expected result type for parsing an expression *)
-  type infer_ty =
-    | Wildcard
-    | Static of Ty.t
+  (* The source of a type wildcard. *)
+  type sym_inference_source = {
+    symbol : Id.t;
+    symbol_loc : Loc.t;
+    mutable inferred_ty : Ty.t;
+  }
 
-  type var_infer =
-    | No_var_inference
-    | Type_variable
-    | Var_term_infer of infer_ty
+  type var_inference_source = {
+    variable : Id.t;
+    variable_loc : Loc.t;
+    mutable inferred_ty : Ty.t;
+  }
 
-  type sym_infer =
-    | No_symbol_inference
-    | Symbol_term_infer of {
-        expect : infer_ty;
-        base : infer_ty;
+  type wildcard_source =
+    | Arg_of of wildcard_source
+    | Ret_of of wildcard_source
+    | From_source of Ast.t
+    | Added_type_argument of Ast.t
+    | Symbol_inference of sym_inference_source
+    | Variable_inference of var_inference_source
+
+  type wildcard_shape =
+    | Forbidden
+    | Any_in_scope
+    | Any_base of {
+        allowed : Ty.t list;
+        preferred : Ty.t;
       }
+    | Arrow of {
+        arg_shape : wildcard_shape;
+        ret_shape : wildcard_shape;
+      }
+
+  type infer_term_scheme =
+    | No_inference
+    | Wildcard of wildcard_shape
+
+  type var_infer = {
+    infer_type_vars   : bool;
+    infer_term_vars   : infer_term_scheme;
+  }
+
+  type sym_infer = {
+    infer_type_csts   : bool;
+    infer_term_csts   : infer_term_scheme;
+  }
+
+  type expect =
+    | Type
+    | Term
+    | Anything
 
   (* The type returned after parsing an expression. *)
   type tag =
@@ -150,13 +185,6 @@ module Make
       ]
   ]
   (** The bindings that can occur. *)
-
-  type wildcard_source =
-    | From_source of Ast.t
-    | Symbol_inference of Ast.t
-    | Added_type_argument of Ast.t
-    | Quantified_variable_type of Ast.t (**)
-  (** The source of a type wildcard. *)
 
 
   (* Maps & Hashtbls *)
@@ -256,7 +284,11 @@ module Make
     | Higher_order_env_in_tff_typechecker : Loc.t err
     | Polymorphic_function_argument : Ast.t err
     | Non_prenex_polymorphism : Ty.t -> Ast.t err
-    | Scope_escape_in_wildcard :
+    | Inference_forbidden :
+        Ty.Var.t * wildcard_source * Ty.t -> Ast.t err
+    | Inference_conflict :
+        Ty.Var.t * wildcard_source * Ty.t * Ty.t list -> Ast.t err
+    | Inference_scope_escape :
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
     | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
@@ -314,6 +346,7 @@ module Make
     poly         : poly;
     quants       : bool;
 
+    expect       : expect;
     var_infer    : var_infer;
     sym_infer    : sym_infer;
   }
@@ -340,7 +373,9 @@ module Make
 
   (* Internal exceptions *)
   exception Found of Ast.t * res
-  exception Bad_scope of Ty.Var.t * wildcard_source * Ty.Var.t
+  exception Wildcard_bad_scope of Ty.Var.t * wildcard_source * Ty.Var.t
+  exception Wildcard_bad_base of Ty.Var.t * wildcard_source * Ty.t * Ty.t list
+  exception Wildcard_forbidden of Ty.Var.t * wildcard_source * Ty.t
 
   (* Exception for typing errors *)
   exception Typing_error of error
@@ -515,7 +550,13 @@ module Make
 
   let _scope_escape_in_wildcard env ast w w_src v =
     let r = find_reason env (`Ty_var v) in
-    _error env (Ast ast) (Scope_escape_in_wildcard (w, w_src, v, r))
+    _error env (Ast ast) (Inference_scope_escape (w, w_src, v, r))
+
+  let _inference_conflict env ast w w_src inferred allowed =
+    _error env (Ast ast) (Inference_conflict (w, w_src, inferred, allowed))
+
+  let _inference_forbidden env ast w w_src inferred =
+    _error env (Ast ast) (Inference_forbidden (w, w_src, inferred))
 
   let _wrap env ast f arg =
     try f arg
@@ -536,8 +577,12 @@ module Make
       _over_application env ast over_args
     | T.Bad_poly_arity (vars, args) ->
       _bad_poly_arity env ast vars args
-    | Bad_scope (w, w_src, v) ->
+    | Wildcard_bad_scope (w, w_src, v) ->
       _scope_escape_in_wildcard env ast w w_src v
+    | Wildcard_bad_base (w, w_src, inferred, allowed) ->
+      _inference_conflict env ast w w_src inferred allowed
+    | Wildcard_forbidden (w, w_src, inferred) ->
+      _inference_forbidden env ast w w_src inferred
     | (Typing_error _) as exn ->
       raise exn
     | exn ->
@@ -614,8 +659,15 @@ module Make
   (* Make a new empty environment *)
   let empty_env
       ?(st=global)
-      ?(var_infer=No_var_inference)
-      ?(sym_infer=No_symbol_inference)
+      ?(expect=Anything)
+      ?(var_infer={
+          infer_type_vars = true;
+          infer_term_vars = Wildcard Any_in_scope;
+        })
+      ?(sym_infer={
+          infer_type_csts = true;
+          infer_term_csts = Wildcard Any_in_scope;
+        })
       ?(order=Higher_order)
       ?(poly=Flexible)
       ?(quants=true)
@@ -625,7 +677,8 @@ module Make
     type_locs = E.empty;
     term_locs = F.empty;
     file; st; builtins; warnings;
-    order; poly; quants; var_infer; sym_infer;
+    order; poly; quants;
+    var_infer; sym_infer; expect;
   }
 
   (* Generate new fresh names for shadowed variables *)
@@ -728,30 +781,63 @@ module Make
   (* Type inference and wildcards *)
   (* ************************************************************************ *)
 
-  let wildcard_envs = Tag.create ()
+  let wildcard_allowed_shapes = Tag.create ()
 
   let rec wildcard_hook w ty =
-    let fv = Ty.fv ty in
-    let envs = Ty.Var.get_tag_list w wildcard_envs in
-    List.iter (fun v ->
-        List.iter (fun ((src, bound_vars) as mark) ->
-            if Ty.Var.is_wildcard v then begin
-              let l = Ty.Var.get_tag_list v wildcard_envs in
-              if l = [] then Ty.add_wildcard_hook ~hook:wildcard_hook v;
-              if List.memq mark l then ()
-              else Ty.Var.add_tag v wildcard_envs mark
-            end else if not (E.mem v bound_vars) then
-              raise (Bad_scope (w, src, v))
-          ) envs
-      ) fv
+    let fv = lazy (Ty.fv ty) in
+    let shapes = Ty.Var.get_tag_list w wildcard_allowed_shapes in
+    List.iter (check_shape fv w ty) shapes
+
+  and check_shape fv w ty = function
+    | (Forbidden, src, _) -> raise (Wildcard_forbidden (w, src, ty))
+    | (Any_in_scope, src, bound_vars) as mark ->
+      List.iter (fun v ->
+          if Ty.Var.is_wildcard v then begin
+            transfer_hook mark v
+          end else if not (E.mem v bound_vars) then
+            raise (Wildcard_bad_scope (w, src, v))
+        ) (Lazy.force fv)
+    | (Any_base { allowed; preferred = _; }, src, _) as mark ->
+      begin match Ty.view ty with
+        | `Wildcard v -> transfer_hook mark v
+        | _ ->
+          if List.exists (Ty.equal ty) allowed then ()
+          else raise (Wildcard_bad_base (w, src, ty, allowed))
+      end
+    | (Arrow { arg_shape; ret_shape; }, src, bound_vars) as mark ->
+      begin match Ty.view ty with
+        | `Wildcard v -> transfer_hook mark v
+        | `Arrow (ty_args, ty_ret) ->
+          List.iter (transfer_shape arg_shape (Arg_of src) bound_vars) ty_args;
+          transfer_shape ret_shape (Ret_of src) bound_vars ty_ret
+        | _ -> transfer_shape ret_shape src bound_vars ty
+      end
+
+  and transfer_shape shape src bound_vars ty =
+    let mark = (shape, src, bound_vars) in
+    match Ty.view ty with
+    | `Wildcard w -> transfer_hook mark w
+    | _ ->
+      let w = Ty.Var.wildcard () in
+      let fv = lazy (Ty.fv ty) in
+      check_shape fv w ty mark
+
+  and transfer_hook shape v =
+    let l = Ty.Var.get_tag_list v wildcard_allowed_shapes in
+    if l = [] then Ty.add_wildcard_hook ~hook:wildcard_hook v;
+    if List.memq shape l then ()
+    else Ty.Var.add_tag v wildcard_allowed_shapes shape
 
   (* create a wildcard *)
-  let wildcard env src =
-    let mark = (src, env.type_locs) in
-    let w = Ty.Var.wildcard () in
-    Ty.Var.add_tag w wildcard_envs mark;
-    Ty.add_wildcard_hook ~hook:wildcard_hook w;
-    Ty.of_var w
+  let wildcard env src shape =
+    match shape with
+    | Any_base { allowed = [ty]; preferred = _; } -> ty
+    | _ ->
+      let w = Ty.Var.wildcard () in
+      let mark = (shape, src, env.type_locs) in
+      Ty.Var.add_tag w wildcard_allowed_shapes mark;
+      Ty.add_wildcard_hook ~hook:wildcard_hook w;
+      Ty.of_var w
 
 
   (* Wrappers for expression building *)
@@ -769,18 +855,24 @@ module Make
   (* Un-polymorphize a term, by applying it to the adequate
      number of type wildcards *)
   let monomorphize env ast t =
-    let n_ty = Ty.pi_arity (T.ty t) in
-    if n_ty = 0 then t
-    else begin
-      let src = Added_type_argument ast in
-      let ty_l = Misc.Lists.init n_ty (fun _ -> wildcard env src) in
-      _wrap3 env ast T.apply t ty_l []
-    end
+    match Ty.view (T.ty t) with
+    | `Pi (vars, _) ->
+      let n_ty = List.length vars in
+      if n_ty = 0 then t
+      else begin
+        let src = Added_type_argument ast in
+        let ty_l =
+          Misc.Lists.init n_ty
+            (fun _ -> wildcard env src Any_in_scope)
+        in
+        _wrap3 env ast T.apply t ty_l []
+      end
+    | _ -> t
 
   let check_not_poly env ast t =
-    let n_ty = Ty.pi_arity (T.ty t) in
-    if n_ty = 0 then t
-    else _error env (Ast ast) Polymorphic_function_argument
+    match Ty.view (T.ty t) with
+    | `Pi _ -> _error env (Ast ast) Polymorphic_function_argument
+    | _ -> t
 
   (* Split arguments for first order application *)
   let split_fo_args env ast n_ty n_t args =
@@ -794,7 +886,11 @@ module Make
     | Implicit ->
       if n_args = n_t then begin
         let src = Added_type_argument ast in
-        `Fixed (Misc.Lists.init n_ty (fun _ -> wildcard env src), args)
+        let tys =
+          Misc.Lists.init n_ty
+            (fun _ -> wildcard env src Any_in_scope)
+        in
+        `Fixed (tys, args)
       end else
         `Bad_arity ([n_t], n_args)
     | Flexible ->
@@ -802,7 +898,11 @@ module Make
         `Ok (Misc.Lists.take_drop n_ty args)
       else if n_args = n_t then begin
         let src = Added_type_argument ast in
-        `Fixed (Misc.Lists.init n_ty (fun _ -> wildcard env src), args)
+        let tys =
+          Misc.Lists.init n_ty
+            (fun _ -> wildcard env src Any_in_scope)
+        in
+        `Fixed (tys, args)
       end else
         `Bad_arity ([n_t; n_ty + n_t], n_args)
 
@@ -824,7 +924,10 @@ module Make
     in
     let implicit ast n_ty args =
       let src = Added_type_argument ast in
-      let ty_l = Misc.Lists.init n_ty (fun _ -> wildcard env src) in
+      let ty_l =
+        Misc.Lists.init n_ty
+          (fun _ -> wildcard env src Any_in_scope)
+      in
       let t_l = List.map (function
           | ast, Term t -> ast, t
           | ast, res -> _expected env "a term" ast (Some res)
@@ -888,32 +991,76 @@ module Make
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
-  let infer_ty env w_src = function
-    | Wildcard -> wildcard env w_src
-    | Static ty -> ty
-
   let infer_var env ast s =
-    match env.var_infer with
-    | No_var_inference -> _cannot_infer_quant_var env ast
-    | Type_variable -> `Ty (s, Ty.Var.mk (Id.full_name s))
-    | Var_term_infer ty ->
-      let ty = infer_ty env (Quantified_variable_type ast) ty in
-      `Term (s, T.Var.mk (Id.full_name s) ty)
+    match env.expect with
+    | Anything -> _cannot_infer_quant_var env ast
+    | Type ->
+      if not env.var_infer.infer_type_vars then
+        _cannot_infer_quant_var env ast
+      else
+        `Ty (s, Ty.Var.mk (Id.full_name s))
+    | Term ->
+      begin match env.var_infer.infer_term_vars with
+        | No_inference -> _cannot_infer_quant_var env ast
+        | Wildcard shape ->
+          let var_infer = {
+              variable = s;
+              variable_loc = ast.loc;
+              inferred_ty = Ty.prop;
+            } in
+          let ty = wildcard env (Variable_inference var_infer) shape in
+          var_infer.inferred_ty <- ty;
+          `Term (s, T.Var.mk (Id.full_name s) ty)
+      end
 
   let infer_sym env ast s args s_ast =
     (* variables must be bound explicitly *)
-    if Id.(s.ns = Var) then _cannot_find env ast s
-    else match env.sym_infer with
-    | No_symbol_inference -> None
-    | Symbol_term_infer { expect; base; } ->
-      let n = List.length args in
-      let w_src = Symbol_inference s_ast in
-      let args_ty = Misc.Lists.init n (fun _ -> infer_ty env w_src base) in
-      let ret_ty = infer_ty env w_src expect in
-      let ret = T.Const.mk (Id.full_name s) [] args_ty ret_ty in
-      let res = Term_fun ret in
-      decl_term_const env (Ast ast) s ret (Inferred (env.file, s_ast));
-      Some res
+    if Id.(s.ns = Var) then None
+    else match env.expect with
+      | Anything -> None
+      | Type ->
+        if not env.sym_infer.infer_type_csts then None
+        else begin
+          let n = List.length args in
+          let ret = Ty.Const.mk (Id.full_name s) n in
+          let res = Ty_fun ret in
+          decl_ty_const env (Ast ast) s ret (Inferred (env.file, s_ast));
+          Some res
+        end
+      | Term ->
+        begin match env.sym_infer.infer_term_csts with
+          | No_inference -> None
+          | Wildcard shape ->
+            let sym_infer = {
+              symbol = s;
+              symbol_loc = s_ast.loc;
+              inferred_ty = Ty.prop;
+            } in
+            let src = Symbol_inference sym_infer in
+            let ty = wildcard env src shape in
+            sym_infer.inferred_ty <- ty;
+            let ty =
+              match env.order with
+              | Higher_order -> ty
+              | First_order ->
+                (* In first-order, force unification so that the declared term
+                   has the correct arity *)
+                let fun_args_ty =
+                  Misc.Lists.init (List.length args)
+                    (fun _ -> wildcard env (Arg_of src) Any_in_scope)
+                in
+                let fun_ret_ty = wildcard env (Ret_of src) Any_in_scope in
+                let fun_ty = Ty.arrow fun_args_ty fun_ret_ty in
+                begin match Ty.unify ty fun_ty with
+                  | None -> assert false
+                  | Some t -> t
+                end
+            in
+            let ret = T.Const.mk (Id.full_name s) ty in
+            let res = Term_fun ret in
+            decl_term_const env (Ast ast) s ret (Inferred (env.file, s_ast));
+            Some res
+        end
 
   (* Tag application *)
   (* ************************************************************************ *)
@@ -928,26 +1075,14 @@ module Make
   (* Expression parsing *)
   (* ************************************************************************ *)
 
-  let expect_nothing env =
-    { env with
-      sym_infer = No_symbol_inference;
-      var_infer = No_var_inference;
-    }
+  let expect_anything env =
+    { env with expect = Anything; }
 
-  let expect_type_var env =
-    { env with var_infer = Type_variable; }
+  let expect_type env =
+    { env with expect = Type; }
 
-  let expect_base env =
-    match env.sym_infer with
-    | No_symbol_inference -> env
-    | Symbol_term_infer { expect = _; base; } ->
-      { env with sym_infer = Symbol_term_infer { expect = base; base; }; }
-
-  let expect_prop env =
-    match env.sym_infer with
-    | No_symbol_inference -> env
-    | Symbol_term_infer { expect = _; base; } ->
-      { env with sym_infer = Symbol_term_infer { expect = Static Ty.prop; base; }; }
+  let expect_term env =
+    { env with expect = Term; }
 
   let rec parse_expr (env : env) t : res =
     let res : res = match t with
@@ -958,7 +1093,7 @@ module Make
 
       (* Wildcards should only occur in place of types *)
       | { Ast.term = Ast.Builtin Ast.Wildcard; _ } as ast ->
-        Ty (wildcard env (From_source ast))
+        Ty (wildcard env (From_source ast) Any_in_scope)
 
       (* Arrows *)
       | { Ast.term = Ast.Binder (Ast.Arrow, args, ret); _ } ->
@@ -1030,7 +1165,7 @@ module Make
   and parse_attrs env acc = function
     | [] -> acc
     | a :: r ->
-      begin match parse_expr (expect_nothing env) a with
+      begin match parse_expr (expect_anything env) a with
         | Tags l ->
           parse_attrs env (l @ acc) r
         | res ->
@@ -1283,7 +1418,11 @@ module Make
     | Term f -> parse_app_ho_term env ast f args
 
   and parse_app_ho_term env ast f args =
-    let n_ty = Ty.pi_arity (T.ty f) in
+    let n_ty =
+      match Ty.view (T.ty f) with
+      | `Pi (vars, _) -> List.length vars
+      | _ -> 0
+    in
     let args = List.map (fun ast -> ast, parse_expr env ast) args in
     let ty_args, t_args = split_ho_args env ast n_ty args in
     Term (_wrap3 env ast T.apply f ty_args t_args)
@@ -1383,18 +1522,18 @@ module Make
     Term (T.ensure t ty)
 
   and parse_ty env ast =
-    unwrap_ty env ast (parse_expr env ast)
+    unwrap_ty env ast (parse_expr (expect_type env) ast)
 
   and parse_term env ast =
-    unwrap_term env ast (parse_expr (expect_base env) ast)
+    unwrap_term env ast (parse_expr (expect_term env) ast)
 
   and parse_prop env ast =
-    match parse_expr (expect_prop env) ast with
-    | Term t -> t
+    match parse_expr (expect_term env) ast with
+    | Term t -> _wrap2 env ast T.ensure t Ty.prop
     | res -> _expected env "term/prop" ast (Some res)
 
   let parse_ttype_var env t =
-    match parse_var (expect_type_var env) t with
+    match parse_var (expect_type env) t with
     | `Ty (id, v) -> (id, v, t)
     | `Term (_, v) ->
       _expected env "type variable" t (Some (Term (T.of_var v)))
@@ -1594,7 +1733,8 @@ module Make
           List.iter (fun (Any (tag, v)) -> Ty.Const.set_tag c tag v) tags;
           id, `Type_decl c
         | `Fun_ty (vars, args, ret) ->
-          let f = T.Const.mk (Id.full_name id) vars args ret in
+          let ty = Ty.pi vars (Ty.arrow args ret) in
+          let f = T.Const.mk (Id.full_name id) ty in
           List.iter (fun (Any (tag, v)) -> T.Const.set_tag f tag v) tags;
           id, `Term_decl f
       end

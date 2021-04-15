@@ -46,27 +46,64 @@ module type Formulas = sig
         and later instantiated when needed. *)
   (** The various polymorphism mode for the typechecker *)
 
-  type infer_ty =
-    | Wildcard        (** Generate a wildcard and unify it later *)
-    | Static of ty    (** Infer the given type *)
-  (** The base type to specify how to infer a type for a term. *)
+  type sym_inference_source = {
+    symbol : Dolmen.Std.Id.t;
+    symbol_loc : Dolmen.Std.Loc.t;
+    mutable inferred_ty : ty;
+  }
+  (** *)
 
-  type var_infer =
-    | No_var_inference            (** No inference *)
-    | Type_variable               (** Infer a type variable *)
-    | Var_term_infer of infer_ty  (** Iner a term variable of the given type *)
-  (** Specification of how to infer a variable. *)
+  type var_inference_source = {
+    variable : Dolmen.Std.Id.t;
+    variable_loc : Dolmen.Std.Loc.t;
+    mutable inferred_ty : ty;
+  }
+  (** *)
 
-  type sym_infer =
-    | No_symbol_inference     (** No inference *)
-    | Symbol_term_infer of {
-        expect : infer_ty;
-        base : infer_ty;
+  type wildcard_source =
+    | Arg_of of wildcard_source
+    | Ret_of of wildcard_source
+    | From_source of Dolmen.Std.Term.t
+    | Added_type_argument of Dolmen.Std.Term.t
+    | Symbol_inference of sym_inference_source
+    | Variable_inference of var_inference_source (**)
+  (** *)
+
+  type wildcard_shape =
+    | Forbidden
+    | Any_in_scope
+    | Any_base of {
+        allowed : ty list;
+        preferred : ty;
       }
-    (** Infer a function type where the type of each provided argument at
-        the application site is given by [base] and the return type of
-        the function is given by [expect]. *)
-  (** Specification of how to infer a symbol (constant). *)
+    | Arrow of {
+        arg_shape : wildcard_shape;
+        ret_shape : wildcard_shape;
+      } (**)
+  (** *)
+
+  type infer_term_scheme =
+    | No_inference
+    | Wildcard of wildcard_shape (**)
+  (** *)
+
+  type var_infer = {
+    infer_type_vars   : bool;
+    infer_term_vars   : infer_term_scheme;
+  }
+  (** Specification of how to infer variables. *)
+
+  type sym_infer = {
+    infer_type_csts   : bool;
+    infer_term_csts   : infer_term_scheme;
+  }
+  (** Specification of how to infer symbols. *)
+
+  type expect =
+    | Type
+    | Term
+    | Anything (**)
+  (** *)
 
   type tag = Any : 'a ast_tag * 'a -> tag
   (** Existencial wrapper around tags *)
@@ -146,12 +183,6 @@ module type Formulas = sig
   ]
   (** The bindings that can occur. *)
 
-  type wildcard_source =
-    | From_source of Dolmen.Std.Term.t
-    | Symbol_inference of Dolmen.Std.Term.t
-    | Added_type_argument of Dolmen.Std.Term.t
-    | Quantified_variable_type of Dolmen.Std.Term.t (**)
-  (** The source of a type wildcard. *)
 
   (** {2 Errors and warnings} *)
 
@@ -288,9 +319,15 @@ module type Formulas = sig
     (** *)
     | Non_prenex_polymorphism : ty -> Dolmen.Std.Term.t err
     (** *)
-    | Scope_escape_in_wildcard :
+    | Inference_forbidden :
+        ty_var * wildcard_source * ty -> Dolmen.Std.Term.t err
+    (** *)
+    | Inference_conflict :
+        ty_var * wildcard_source * ty * ty list -> Dolmen.Std.Term.t err
+    (** *)
+    | Inference_scope_escape :
         ty_var * wildcard_source * ty_var * reason option -> Dolmen.Std.Term.t err
-    (** [ Scope_escape_in_wildcard (w, w_src, v, reason)] denotes a situation where
+    (** [Inference_scope_escape (w, w_src, v, reason)] denotes a situation where
         the wildcard variable [w] (which comes from [w_src]), was instantiated
         with a type that would lead to the variable [v] from escaping its scope;
         [reason] is the reason of the binding for [v]. *)
@@ -351,6 +388,7 @@ module type Formulas = sig
 
   val empty_env :
     ?st:state ->
+    ?expect:expect ->
     ?var_infer:var_infer ->
     ?sym_infer:sym_infer ->
     ?order:order ->

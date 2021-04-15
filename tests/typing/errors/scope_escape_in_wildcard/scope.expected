@@ -1,4 +1,7 @@
 File "tests/typing/errors/scope_escape_in_wildcard/scope.zf", line 3, character 25-28:
-Error Cannot infer a monomorphic type for the quantified variable f, bound at
-      line 2, character 12-13. The following variable would escape its
-      scope: a, bound at line 3, character 7-16.
+Error The typechecker inferred the type for the quantified variable f to be
+      a -> _.
+      That inference lead to infer that type to contain the variable a which
+      is not in the scope of the inferred type.
+      Variable f is bound at line 2, character 12-13
+      Variable a is bound at line 3, character 7-16.

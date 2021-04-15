@@ -174,27 +174,55 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Some r -> print_reason fmt r
     | None -> Format.fprintf fmt "<location missing>"
 
-  let print_wildcard_source env fmt = function
+  let rec print_wildcard_origin fmt = function
+    | T.Arg_of src
+    | T.Ret_of src -> print_wildcard_origin fmt src
+    | T.From_source _ast ->
+      Format.fprintf fmt "the@ contents@ of@ a@ source@ wildcard"
+    | T.Added_type_argument _ast ->
+      Format.fprintf fmt "the@ implicit@ type@ to@ provide@ to@ an@ application"
+    | T.Symbol_inference { symbol; symbol_loc = _; inferred_ty; } ->
+      Format.fprintf fmt
+        "the@ type@ for@ the@ symbol@ %a@ to@ be@ %a"
+        Dolmen.Std.Id.print symbol Dolmen.Std.Expr.Ty.print inferred_ty
+    | T.Variable_inference { variable; variable_loc = _; inferred_ty; } ->
+      Format.fprintf fmt
+        "the@ type@ for@ the@ quantified@ variable@ %a@ to@ be@ %a"
+        Dolmen.Std.Id.print variable Dolmen.Std.Expr.Ty.print inferred_ty
+
+  let rec print_wildcard_path env fmt = function
+    | T.Arg_of src ->
+      Format.fprintf fmt "one@ of@ the@ argument@ types@ of@ %a"
+        (print_wildcard_path env) src
+    | T.Ret_of src ->
+      Format.fprintf fmt "the@ return@ type@ of@ %a"
+        (print_wildcard_path env) src
+    | _ ->
+      Format.fprintf fmt "that@ type"
+
+  let rec print_wildcard_loc env fmt = function
+    | T.Arg_of src
+    | T.Ret_of src -> print_wildcard_loc env fmt src
     | T.From_source ast ->
       let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
       Format.fprintf fmt
-        "the@ contents@ of@ the@ source@ wildcard@ at@ %a"
+        "The@ source@ wildcard@ is@ located@ at@ %a"
         Dolmen.Std.Loc.fmt_pos loc
-    | T.Symbol_inference ast ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
-      Format.fprintf fmt
-        "the@ type@ inferred@ for@ the@ symbol@ %a@ at@ %a"
-        Dolmen.Std.Term.print ast Dolmen.Std.Loc.fmt_pos loc
     | T.Added_type_argument ast ->
       let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
       Format.fprintf fmt
-        "the@ implicit@ type@ to@ provide@ to@ the@ application@ at@ %a"
+        "The@ application@ is@ located@ at@ %a"
         Dolmen.Std.Loc.fmt_pos loc
-    | T.Quantified_variable_type ast ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+    | T.Symbol_inference { symbol; symbol_loc; inferred_ty = _; } ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
       Format.fprintf fmt
-        "a@ monomorphic@ type@ for@ the@ quantified@ variable@ %a,@ bound@ at@ %a"
-        Dolmen.Std.Term.print ast Dolmen.Std.Loc.fmt_pos loc
+        "Symbol@ %a@ is@ located@ be@ %a"
+        Dolmen.Std.Id.print symbol Dolmen.Std.Loc.fmt_pos loc
+    | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
+      let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
+      Format.fprintf fmt
+        "Variable@ %a@ is@ bound@ at@ %a"
+        Dolmen.Std.Id.print variable Dolmen.Std.Loc.fmt_pos loc
 
   let report_warning (T.Warning (_env, _fragment, warn)) =
     match warn with
@@ -415,12 +443,45 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
                  you must apply this term to the adequate number of type arguments to \
                  make it monomorph."
 
-    | T.Scope_escape_in_wildcard
-        (_, w_src, escaping_var, var_reason) ->
+    | T.Inference_forbidden (_, w_src, inferred_ty) ->
       Format.fprintf fmt
-        "@[<hov>Cannot@ infer %a.@ \
-                The@ following@ variable@ would@ escape@ its@ scope: %a,@ %a.@]"
-        (print_wildcard_source env) w_src
+        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
+              @[<hov>However,@ the@ language@ specified@ inference@ \
+                     at@ that@ point@ was@ forbidden@]@ \
+              @[<hov>%a@]\
+         @]"
+        print_wildcard_origin w_src
+        (print_wildcard_path env) w_src
+        Dolmen.Std.Expr.Ty.print inferred_ty
+        (print_wildcard_loc env) w_src
+    | T.Inference_conflict (_, w_src, inferred_ty, allowed_tys) ->
+      Format.fprintf fmt
+        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
+              @[<hov>However,@ the@ language@ specified@ only@ the@ following@ \
+                     types@ should@ be@ allowed@ there:@ %a@]@ \
+              @[<hov>%a@]\
+        @]"
+        print_wildcard_origin w_src
+        (print_wildcard_path env) w_src
+        Dolmen.Std.Expr.Ty.print inferred_ty
+        (Format.pp_print_list Dolmen.Std.Expr.Ty.print
+           ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")) allowed_tys
+        (print_wildcard_loc env) w_src
+    | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
+      Format.fprintf fmt
+        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ contain@ \
+                     the@ variable@ %a@ which@ is@ not@ in@ the@ scope@ \
+                     of@ the@ inferred@ type.@]@ \
+              @[<hov>%a@]@ \
+              @[<hov>Variable %a is@ %a.@]\
+         @]"
+        print_wildcard_origin w_src
+        (print_wildcard_path env) w_src
+        Dolmen.Std.Expr.Ty.Var.print escaping_var
+        (print_wildcard_loc env) w_src
         Dolmen.Std.Expr.Ty.Var.print escaping_var
         print_reason_opt var_reason
 
@@ -627,12 +688,17 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
        - there are no explicit declaration or definitions, hence no builtins *)
     | Some Dimacs | Some ICNF ->
       let poly = T.Flexible in
-      let var_infer = T.No_var_inference in
-      let sym_infer = T.Symbol_term_infer {
-          base = Static Dolmen.Std.Expr.Ty.prop;
-          expect = Static Dolmen.Std.Expr.Ty.prop;
-        }
-      in
+      let var_infer = T.{
+          infer_type_vars = false;
+          infer_term_vars = No_inference;
+        } in
+      let sym_infer = T.{
+          infer_type_csts = false;
+          infer_term_csts = Wildcard (Any_base {
+              allowed = [Dolmen.Std.Expr.Ty.prop];
+              preferred = Dolmen.Std.Expr.Ty.prop;
+            });
+        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -647,8 +713,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Alt_ergo ->
       let poly = T.Flexible in
-      let var_infer = T.No_var_inference in
-      let sym_infer = T.No_symbol_inference in
+      let var_infer = T.{
+          infer_type_vars = false;
+          infer_term_vars = No_inference;
+        } in
+      let sym_infer = T.{
+          infer_type_csts = false;
+          infer_term_csts = No_inference;
+        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -669,8 +741,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Zf ->
       let poly = T.Flexible in
-      let var_infer = T.Var_term_infer Wildcard in
-      let sym_infer = T.No_symbol_inference in
+      let var_infer = T.{
+          infer_type_vars = true;
+          infer_term_vars = Wildcard Any_in_scope;
+        } in
+      let sym_infer = T.{
+          infer_type_csts = false;
+          infer_term_csts = No_inference;
+        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -694,12 +772,29 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Tptp v ->
       let poly = T.Explicit in
-      let var_infer = T.Var_term_infer (Static Dolmen.Std.Expr.Ty.base) in
-      let sym_infer = T.Symbol_term_infer {
-          expect = Static Dolmen.Std.Expr.Ty.prop;
-          base = Static Dolmen.Std.Expr.Ty.base;
-        }
-      in
+      let var_infer = T.{
+          infer_type_vars = true;
+          infer_term_vars = Wildcard (Any_base {
+              allowed = [Dolmen.Std.Expr.Ty.base];
+              preferred = Dolmen.Std.Expr.Ty.base;
+            });
+        } in
+      let sym_infer = T.{
+          infer_type_csts = true;
+          infer_term_csts = Wildcard (Arrow {
+              arg_shape = Any_base {
+                  allowed = [Dolmen.Std.Expr.Ty.base];
+                  preferred = Dolmen.Std.Expr.Ty.base;
+                };
+              ret_shape = Any_base {
+                  allowed = [
+                    Dolmen.Std.Expr.Ty.base;
+                    Dolmen.Std.Expr.Ty.prop;
+                  ];
+                  preferred = Dolmen.Std.Expr.Ty.base;
+                };
+            });
+        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
@@ -747,8 +842,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Smtlib2 v ->
       let poly = T.Implicit in
-      let var_infer = T.No_var_inference in
-      let sym_infer = T.No_symbol_inference in
+      let var_infer = T.{
+          infer_type_vars = true;
+          infer_term_vars = No_inference;
+        } in
+      let sym_infer = T.{
+          infer_type_csts = false;
+          infer_term_csts = No_inference;
+        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = match v with

@@ -72,6 +72,9 @@ module type Tff = sig
 
   end
 
+  val equal : t -> t -> bool
+  (** Test equality of types. *)
+
   val prop : t
   (** The type of propositions *)
 
@@ -81,19 +84,33 @@ module type Tff = sig
   val apply : Const.t -> t list -> t
   (** Application for types. *)
 
-  val pi_arity : t -> int
-  (** Reutnrs the number of expected type arguments that the given
-      type expects (i.e. the number of prenex polymorphic variables
-      in the given type). *)
+  val arrow : t list -> t -> t
+  (** Create an arrow type. *)
+
+  val pi : Var.t list -> t -> t
+  (** Create a polymorphic type. *)
 
   val fv : t -> Var.t list
   (** Returns the list of free_variables in the type. *)
+
+  val unify : t -> t -> t option
+  (** Try and unify two types. *)
 
   val add_wildcard_hook : hook:(Var.t -> t -> unit) -> Var.t -> unit
   (** Add a hook to a wildcard, the hook will be run *)
 
   val set_tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
+
+  type view = private [>
+    | `Wildcard of Var.t
+    | `Arrow of t list * t
+    | `Pi of Var.t list * t
+  ]
+  (** Partial views for types. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
 
 end
 
