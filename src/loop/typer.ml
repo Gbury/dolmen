@@ -279,7 +279,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     | _ -> Some (fun fmt () ->
         Format.fprintf fmt
-          "Unknown warning, please report upstream, ^^"
+          "@[<v>Unknown warning:@ %s@ please report upstream, ^^@]"
+          Obj.Extension_constructor.(name (of_val warn))
       )
 
   (* Report type errors *)
@@ -452,6 +453,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
                  In languages with explicit type arguments for polymorphic functions, \
                  you must apply this term to the adequate number of type arguments to \
                  make it monomorph."
+    | T.Non_prenex_polymorphism ty ->
+      Format.fprintf fmt "The following polymorphic type occurs in a \
+                          non_prenex position: %a"
+        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
 
     | T.Inference_forbidden (_, w_src, inferred_ty) ->
       Format.fprintf fmt
@@ -604,7 +609,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
     (* Catch-all *)
     | _ ->
-      Format.fprintf fmt "Unknown typing error,@ please report upstream, ^^"
+      Format.fprintf fmt
+        "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
+        Obj.Extension_constructor.(name (of_val err))
 
   let () =
     Printexc.register_printer (function

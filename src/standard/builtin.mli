@@ -115,6 +115,13 @@ type _ t +=
   | Ite
   (** [Ite: 'a. Prop -> 'a -> 'a -> 'a]: branching operator. *)
 
+type _ t +=
+  | Pi
+  (** [Pi: 'a. ('a -> Prop) -> Prop]: higher-order encoding of universal quantification. *)
+  | Sigma
+  (** [Sigma: 'a. ('a -> Prop) -> Prop]: higher-order encoding of existencial quantification. *)
+
+
 (** {2 Algebraic datatype Builtins} *)
 (*  ************************************************************************* *)
 

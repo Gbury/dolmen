@@ -9,7 +9,7 @@ type builtin =
   | Unit | Void
   | Prop | Bool
   | True | False
-  | Eq | Distinct            (* Should all args be pairwise distinct or equal ? *)
+  | Eq | Distinct       (* Should all args be pairwise distinct or equal ? *)
 
   | Ite                 (* Condional *)
   | Sequent             (* Is the given sequent provable ? *)
@@ -25,6 +25,8 @@ type builtin =
 
   | Subtype             (* Function type constructor and subtyping relation *)
   | Product | Union     (* Product and union of types (not set theory) *)
+
+  | Pi | Sigma          (* Higher-order constant to encode forall and exists quantifiers *)
 
   | Not                 (* Propositional negation *)
   | And | Or            (* Conjunction and disjunction *)
@@ -119,6 +121,8 @@ let builtin_to_string = function
   | Subtype -> "⊂"
   | Product -> "*"
   | Union -> "∪"
+  | Pi -> "Π"
+  | Sigma -> "Σ"
   | Not -> "¬"
   | And -> "∧"
   | Or -> "∨"
@@ -359,6 +363,9 @@ let nand_t      = builtin Nand
 let equiv_t     = builtin Equiv
 let implies_t   = builtin Imply
 let implied_t   = builtin Implied
+
+let pi_t        = builtin Pi
+let sigma_t     = builtin Sigma
 
 let void        = builtin Void
 let true_       = builtin True

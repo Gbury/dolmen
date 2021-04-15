@@ -1544,6 +1544,18 @@ module Term = struct
         ~name:"ite" ~builtin:Builtin.Ite
         "Ite" [a] [Ty.prop; a_ty; a_ty] a_ty
 
+    let pi =
+      let a = Ty.Var.mk "alpha" in
+      let a_ty = Ty.of_var a in
+      mk' ~name:"Π" ~builtin:Builtin.Pi
+        "Pi" [a] [Ty.(arrow [a_ty] prop)] Ty.prop
+
+    let sigma =
+      let a = Ty.Var.mk "alpha" in
+      let a_ty = Ty.of_var a in
+      mk' ~name:"Σ" ~builtin:Builtin.Sigma
+        "Sigma" [a] [Ty.(arrow [a_ty] prop)] Ty.prop
+
     let select =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in

@@ -185,6 +185,14 @@ module Tptp = struct
       | Type.Builtin Ast.Ite ->
         `Term (Base.term_app_cst (module Type) env T.Const.ite)
 
+      (* Pi & Sigma *)
+      | Type.Builtin Ast.Pi ->
+        `Term (Base.term_app_ho_ast (module Type) env
+                 (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.pi)))
+      | Type.Builtin Ast.Sigma ->
+        `Term (Base.term_app_ho_ast (module Type) env
+                 (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.sigma)))
+
       (* Ignore the role and kind attributes *)
       | Type.Id id when Id.equal id Id.tptp_role ->
         `Tags (fun _ast _args -> [])

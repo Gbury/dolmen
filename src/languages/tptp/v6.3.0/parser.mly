@@ -560,9 +560,9 @@ thf_unary_connective:
   /* These two quantifiers have been removed from THF0, and will come back in THF1
   when it is released, so it doesn't really matter how we handle them right now*/
   | PI
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc (I.mk I.term "$pi") }
+    { let loc = L.mk_pos $startpos $endpos in T.pi_t ~loc () }
   | SIGMA
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc (I.mk I.term "$sigma") }
+    { let loc = L.mk_pos $startpos $endpos in T.sigma_t ~loc () }
 
 subtype_sign:
   | LESS LESS { () }

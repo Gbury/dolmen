@@ -34,6 +34,7 @@ type _ t +=
 
 type _ t += Ite
 
+type _ t += Pi | Sigma
 
 (* Algebraic datatype builtins *)
 (* ************************************************************************* *)

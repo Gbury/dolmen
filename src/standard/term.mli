@@ -75,6 +75,11 @@ type builtin =
   | Union
   (** Union type constructor *)
 
+  | Pi
+  (** Pi: higher-order encoding of the forall quantifier as a constant. *)
+  | Sigma
+  (** Sigma: higher-order envoding of the exists quantifier of a constant. *)
+
   | Not
   (** Propositional negation *)
   | And

@@ -91,6 +91,8 @@ module type Logic = sig
   val equiv_t   : ?loc:location -> unit -> t
   val implied_t : ?loc:location -> unit -> t
   val implies_t : ?loc:location -> unit -> t
+  val pi_t      : ?loc:location -> unit -> t
+  val sigma_t   : ?loc:location -> unit -> t
   (** Standard logical connectives viewed as terms. [implies_t] is usual
       right implication, i.e [apply implies_t \[p; q\] ] is "p implies q",
       while [apply implied_t \[p; q \]] means "p is implied by q" or
@@ -715,6 +717,12 @@ module type Tptp_Thf_Core_Const = sig
 
     val neq : t
     (** Binary disequality. *)
+
+    val pi : t
+    (** Higher-order encoding of universla quantification. *)
+
+    val sigma : t
+    (** Higher-order encoding of existancial quantification. *)
 
   end
 

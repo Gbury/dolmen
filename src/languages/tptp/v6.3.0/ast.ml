@@ -43,10 +43,14 @@ module type Term = sig
   val equiv_t   : ?loc:location -> unit -> t
   val implies_t : ?loc:location -> unit -> t
   val implied_t : ?loc:location -> unit -> t
+  val pi_t      : ?loc:location -> unit -> t
+  val sigma_t   : ?loc:location -> unit -> t
   val data_t    : ?loc:location -> unit -> t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {!implied_t} is reverse implication, and
-      {!data_t} is used in tptp's annotations. *)
+      {!data_t} is used in tptp's annotations. {!pi_t} and {!sigma_t} are
+      the encoding of forall and exists quantifiers as constant in higher-order
+      logic. *)
 
   val colon : ?loc:location -> t -> t -> t
   (** Juxtaposition of terms, usually used for annotating terms with their type. *)
