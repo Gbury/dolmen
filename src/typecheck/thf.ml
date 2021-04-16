@@ -783,8 +783,8 @@ module Make
 
   let wildcard_allowed_shapes = Tag.create ()
 
-  let add_allowed_shape v l ((shape, src, bound) as mark) =
-    let subsumes_new ((shape', src', bound') as mark') =
+  let add_allowed_shape v l ((shape, _src, bound) as mark) =
+    let subsumes_new ((shape', _src', bound') as mark') =
       mark == mark' ||
       (shape == shape' && bound == bound') ||
       match shape, shape' with
@@ -1025,7 +1025,7 @@ module Make
     | Higher_order -> wildcard env src shape
     | First_order ->
       begin match shape with
-        | Any_base { allowed = [ty]; preferred = _; } -> ty
+        (* | Any_base { allowed = [ty]; preferred = _; } -> ty *)
         | Arrow { arg_shape; ret_shape; } ->
           let ty_args =
             List.map (fun _ ->
