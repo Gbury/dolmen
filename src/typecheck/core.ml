@@ -91,6 +91,8 @@ module Tptp = struct
       | Type.Builtin Ast.Eq ->
         `Term (Base.term_app2 (module Type) env "=" T.eq)
       | Type.Builtin Ast.Distinct ->
+        `Term (Base.term_app_list (module Type) env "!=" T.distinct)
+      | Type.Id { Id.name = "$distinct"; ns = Id.Term; } ->
         `Term (Base.term_app_list (module Type) env "$distinct" T.distinct)
 
       | Type.Builtin Ast.Not ->
@@ -160,6 +162,8 @@ module Tptp = struct
         `Term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.eq)))
       | Type.Builtin Ast.Distinct ->
+        `Term (Base.term_app_list (module Type) env "!=" T.distinct)
+      | Type.Id { Id.name = "$distinct"; ns = Id.Term; } ->
         `Term (Base.term_app_list (module Type) env "$distinct" T.distinct)
 
       | Type.Builtin Ast.Not ->
@@ -183,7 +187,8 @@ module Tptp = struct
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
-        `Term (Base.term_app_cst (module Type) env T.Const.ite)
+        `Term (Base.term_app_ho_ast (module Type) env
+                 (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.ite)))
 
       (* Pi & Sigma *)
       | Type.Builtin Ast.Pi ->
