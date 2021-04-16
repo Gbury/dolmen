@@ -789,35 +789,20 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Tptp v ->
       let poly = T.Explicit in
-      let var_infer = T.{
-          infer_type_vars = true;
-          infer_term_vars = Wildcard (Any_base {
-              allowed = [Dolmen.Std.Expr.Ty.base];
-              preferred = Dolmen.Std.Expr.Ty.base;
-            });
-        } in
-      let sym_infer = T.{
-          infer_type_csts = true;
-          infer_term_csts = Wildcard (Arrow {
-              arg_shape = Any_base {
-                  allowed = [Dolmen.Std.Expr.Ty.base];
-                  preferred = Dolmen.Std.Expr.Ty.base;
-                };
-              ret_shape = Any_base {
-                  allowed = [
-                    Dolmen.Std.Expr.Ty.base;
-                    Dolmen.Std.Expr.Ty.prop;
-                  ];
-                  preferred = Dolmen.Std.Expr.Ty.base;
-                };
-            });
-        } in
       let warnings = warnings {
           strict_typing = S.strict_typing st;
           smtlib2_6_shadow_rules = false;
         } in
       begin match tptp_kind_of_attrs attrs with
         | Some "thf" ->
+          let var_infer = T.{
+              infer_type_vars = true;
+              infer_term_vars = No_inference;
+            } in
+          let sym_infer = T.{
+              infer_type_csts = false;
+              infer_term_csts = No_inference;
+            } in
           let builtins = Dolmen_type.Base.merge [
               Decl.parse;
               Subst.parse;
@@ -830,6 +815,29 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ~var_infer ~sym_infer ~poly
             ~warnings ~file builtins
         | Some ("tff" | "tpi" | "fof" | "cnf") ->
+          let var_infer = T.{
+              infer_type_vars = true;
+              infer_term_vars = Wildcard (Any_base {
+                  allowed = [Dolmen.Std.Expr.Ty.base];
+                  preferred = Dolmen.Std.Expr.Ty.base;
+                });
+            } in
+          let sym_infer = T.{
+              infer_type_csts = true;
+              infer_term_csts = Wildcard (Arrow {
+                  arg_shape = Any_base {
+                      allowed = [Dolmen.Std.Expr.Ty.base];
+                      preferred = Dolmen.Std.Expr.Ty.base;
+                    };
+                  ret_shape = Any_base {
+                      allowed = [
+                        Dolmen.Std.Expr.Ty.base;
+                        Dolmen.Std.Expr.Ty.prop;
+                      ];
+                      preferred = Dolmen.Std.Expr.Ty.base;
+                    };
+                });
+            } in
           let builtins = Dolmen_type.Base.merge [
               Decl.parse;
               Subst.parse;

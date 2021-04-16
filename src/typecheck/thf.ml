@@ -783,6 +783,22 @@ module Make
 
   let wildcard_allowed_shapes = Tag.create ()
 
+  let add_allowed_shape v l ((shape, src, bound) as mark) =
+    let subsumes_new ((shape', src', bound') as mark') =
+      mark == mark' ||
+      (shape == shape' && bound == bound') ||
+      match shape, shape' with
+      | Forbidden, Forbidden -> true
+      | Any_in_scope, Any_in_scope -> bound == bound'
+      | Any_base { allowed = l; preferred = p; },
+        Any_base { allowed = l'; preferred = p'; } ->
+        Ty.equal p p' &&
+        List.for_all (fun ty -> List.exists (Ty.equal ty) l') l
+      | _ -> false
+    in
+    if List.exists subsumes_new l then ()
+    else Ty.Var.add_tag v wildcard_allowed_shapes mark
+
   let rec wildcard_hook w ty =
     let fv = lazy (Ty.fv ty) in
     let shapes = Ty.Var.get_tag_list w wildcard_allowed_shapes in
@@ -822,11 +838,10 @@ module Make
       let fv = lazy (Ty.fv ty) in
       check_shape fv w ty mark
 
-  and transfer_hook shape v =
+  and transfer_hook mark v =
     let l = Ty.Var.get_tag_list v wildcard_allowed_shapes in
     if l = [] then Ty.add_wildcard_hook ~hook:wildcard_hook v;
-    if List.memq shape l then ()
-    else Ty.Var.add_tag v wildcard_allowed_shapes shape
+    add_allowed_shape v l mark
 
   let rec try_set_wildcard_shape w = function
     | [] -> true
@@ -847,14 +862,11 @@ module Make
 
   (* create a wildcard *)
   let wildcard env src shape =
-    match shape with
-    | Any_base { allowed = [ty]; preferred = _; } -> ty
-    | _ ->
-      let w = Ty.Var.wildcard () in
-      let mark = (shape, src, env.type_locs) in
-      Ty.Var.add_tag w wildcard_allowed_shapes mark;
-      Ty.add_wildcard_hook ~hook:wildcard_hook w;
-      Ty.of_var w
+    let w = Ty.Var.wildcard () in
+    let mark = (shape, src, env.type_locs) in
+    Ty.Var.add_tag w wildcard_allowed_shapes mark;
+    Ty.add_wildcard_hook ~hook:wildcard_hook w;
+    Ty.of_var w
 
 
   (* Wrappers for expression building *)
@@ -1008,6 +1020,23 @@ module Make
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
+  let rec infer_ty env src shape args =
+    match env.order with
+    | Higher_order -> wildcard env src shape
+    | First_order ->
+      begin match shape with
+        | Any_base { allowed = [ty]; preferred = _; } -> ty
+        | Arrow { arg_shape; ret_shape; } ->
+          let ty_args =
+            List.map (fun _ ->
+                infer_ty env (Arg_of src) arg_shape []
+              ) args
+          in
+          let ty_ret = infer_ty env (Ret_of src) ret_shape [] in
+          Ty.arrow ty_args ty_ret
+        | _ -> wildcard env src shape
+      end
+
   let infer_var env ast s =
     match env.expect with
     | Anything -> _cannot_infer_quant_var env ast
@@ -1025,7 +1054,7 @@ module Make
               variable_loc = ast.loc;
               inferred_ty = Ty.prop;
             } in
-          let ty = wildcard env (Variable_inference var_infer) shape in
+          let ty = infer_ty env (Variable_inference var_infer) shape [] in
           var_infer.inferred_ty <- ty;
           `Term (s, T.Var.mk (Id.full_name s) ty)
       end
@@ -1054,25 +1083,8 @@ module Make
               inferred_ty = Ty.prop;
             } in
             let src = Symbol_inference sym_infer in
-            let ty = wildcard env src shape in
+            let ty = infer_ty env src shape args in
             sym_infer.inferred_ty <- ty;
-            let ty =
-              match env.order with
-              | Higher_order -> ty
-              | First_order ->
-                (* In first-order, force unification so that the declared term
-                   has the correct arity *)
-                let fun_args_ty =
-                  Misc.Lists.init (List.length args)
-                    (fun _ -> wildcard env (Arg_of src) Any_in_scope)
-                in
-                let fun_ret_ty = wildcard env (Ret_of src) Any_in_scope in
-                let fun_ty = Ty.arrow fun_args_ty fun_ret_ty in
-                begin match Ty.unify ty fun_ty with
-                  | None -> assert false
-                  | Some t -> t
-                end
-            in
             let ret = T.Const.mk (Id.full_name s) ty in
             let res = Term_fun ret in
             decl_term_const env (Ast ast) s ret (Inferred (env.file, s_ast));

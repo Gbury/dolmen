@@ -93,9 +93,6 @@ module type Tff = sig
   val fv : t -> Var.t list
   (** Returns the list of free_variables in the type. *)
 
-  val unify : t -> t -> t option
-  (** Try and unify two types. *)
-
   val set_wildcard : Var.t -> t -> unit
   (** Set a wildcard. *)
 
