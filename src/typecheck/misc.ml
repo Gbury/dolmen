@@ -215,48 +215,23 @@ end
 
 module Fuzzy_Map = struct
 
-  module S = Spelll
-  module I = S.Index
+  module M = Map.Make(Dolmen.Std.Id)
 
-  (** We use fuzzy maps in order to give suggestions in case of typos.
-        Since such maps are not trivial to extend to Dolmen identifiers,
-        we map strings (identifier names) to list of associations. *)
-  type 'a t = (Dolmen.Std.Id.t * 'a) list I.t
+  type 'a t = 'a M.t
 
-  let eq id (x, _) = Dolmen.Std.Id.equal id x
+  let empty = M.empty
 
-  let empty = I.empty
+  let mem map id = M.mem id map
 
-  let rec seq_to_list_ s = match s() with
-    | Seq.Nil -> []
-    | Seq.Cons (x,y) -> x :: seq_to_list_ y
+  let find map id = M.find id map
 
-  let get t id =
-    let s = Dolmen.Std.Id.(id.name) in
-    match seq_to_list_ (I.retrieve ~limit:0 t s) with
-    | [l] -> l
-    | [] -> []
-    | _ -> assert false
+  let add map id v = M.add id v map
 
-  let mem t id =
-    List.exists (eq id) (get t id)
-
-  let find t id =
-    snd @@ List.find (eq id) (get t id)
-
-  let add t id v =
-    let l = get t id in
-    let l' =
-      if List.exists (eq id) (get t id) then l
-      else (id, v) :: l
-    in
-    I.add t Dolmen.Std.Id.(id.name) l'
-
-  (** Return a list of suggestions for an identifier. *)
-  let suggest t ~limit id =
-    let s = Dolmen.Std.Id.(id.name) in
-    let l = seq_to_list_ (I.retrieve ~limit t s) in
-    List.flatten @@ List.map (List.map fst) l
+  let suggest map ~limit id =
+    let name k = Dolmen.Std.Id.full_name k in
+    let automaton = Spelll.of_string ~limit (name id) in
+    let matches id' = Spelll.match_with automaton (name id') in
+    M.fold (fun id' _ acc -> if matches id' then id' :: acc else acc) map []
 
 end
 
@@ -265,20 +240,22 @@ end
 
 module Fuzzy_Hashtbl = struct
 
+  module H = Hashtbl.Make(Dolmen.Std.Id)
+
   (** Fuzzy hashtables are just references to fuzzy maps. *)
-  type 'a t = 'a Fuzzy_Map.t ref
+  type 'a t = 'a H.t
 
-  let create () =
-    ref Fuzzy_Map.empty
+  let create () = H.create 1024
 
-  let find r id =
-    Fuzzy_Map.find !r id
+  let find h id = H.find h id
 
-  let add r id v =
-    r := Fuzzy_Map.add !r id v
+  let add h id v = H.replace h id v
 
-  let suggest r ~limit id =
-    Fuzzy_Map.suggest !r ~limit id
+  let suggest h ~limit id =
+    let name k = Dolmen.Std.Id.full_name k in
+    let automaton = Spelll.of_string ~limit (name id) in
+    let matches id' = Spelll.match_with automaton (name id') in
+    H.fold (fun id' _ acc -> if matches id' then id' :: acc else acc) h []
 
 end
 
