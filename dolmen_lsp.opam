@@ -18,8 +18,8 @@ depends: [
   "odoc" { with-doc }
   "logs"
   "lsp"
-  "linol" { >= "0.1" & < "0.2" }
-  "linol-lwt" { >= "0.1" & < "0.2" }
+  "linol" { >= "0.2" & < "0.3" }
+  "linol-lwt" { >= "0.2" & < "0.3" }
 ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
