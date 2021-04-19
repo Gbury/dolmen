@@ -643,14 +643,13 @@ module Ty = struct
           ty := Some t;
           let l = Id.get_tag_list v wildcard_refs in
           List.iter (set_descr t) l;
-          let () =
-            List.iter (fun f -> f v t)
-              (Id.get_tag_list v wildcard_hook)
-          in
-          match t.ty_descr with
-          | TyVar ({ builtin = Builtin.Wildcard _; _ } as w) ->
-            wildcard_add_refs w l
-          | _ -> ()
+          begin match t.ty_descr with
+            | TyVar ({ builtin = Builtin.Wildcard _; _ } as w) ->
+              wildcard_add_refs w l
+            | _ -> ()
+          end;
+          List.iter (fun f -> f v t)
+            (Id.get_tag_list v wildcard_hook)
       end
     | _ -> ()
 

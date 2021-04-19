@@ -783,7 +783,9 @@ module Make
 
   let wildcard_allowed_shapes = Tag.create ()
 
-  let add_allowed_shape v l ((shape, _src, bound) as mark) =
+  let is_shape_redundant
+      v ?(l=Ty.Var.get_tag_list v wildcard_allowed_shapes)
+      ((shape, _src, bound) as mark) =
     let subsumes_new ((shape', _src', bound') as mark') =
       mark == mark' ||
       (shape == shape' && bound == bound') ||
@@ -796,8 +798,7 @@ module Make
         List.for_all (fun ty -> List.exists (Ty.equal ty) l') l
       | _ -> false
     in
-    if List.exists subsumes_new l then ()
-    else Ty.Var.add_tag v wildcard_allowed_shapes mark
+    List.exists subsumes_new l
 
   let rec wildcard_hook w ty =
     let fv = lazy (Ty.fv ty) in
@@ -841,7 +842,8 @@ module Make
   and transfer_hook mark v =
     let l = Ty.Var.get_tag_list v wildcard_allowed_shapes in
     if l = [] then Ty.add_wildcard_hook ~hook:wildcard_hook v;
-    add_allowed_shape v l mark
+    if not (is_shape_redundant v ~l mark) then
+      Ty.Var.add_tag v wildcard_allowed_shapes mark
 
   let rec try_set_wildcard_shape w = function
     | [] -> true
@@ -1020,76 +1022,6 @@ module Make
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
-  let rec infer_ty env src shape args =
-    match env.order with
-    | Higher_order -> wildcard env src shape
-    | First_order ->
-      begin match shape with
-        (* | Any_base { allowed = [ty]; preferred = _; } -> ty *)
-        | Arrow { arg_shape; ret_shape; } ->
-          let ty_args =
-            List.map (fun _ ->
-                infer_ty env (Arg_of src) arg_shape []
-              ) args
-          in
-          let ty_ret = infer_ty env (Ret_of src) ret_shape [] in
-          Ty.arrow ty_args ty_ret
-        | _ -> wildcard env src shape
-      end
-
-  let infer_var env ast s =
-    match env.expect with
-    | Anything -> _cannot_infer_quant_var env ast
-    | Type ->
-      if not env.var_infer.infer_type_vars then
-        _cannot_infer_quant_var env ast
-      else
-        `Ty (s, Ty.Var.mk (Id.full_name s))
-    | Term ->
-      begin match env.var_infer.infer_term_vars with
-        | No_inference -> _cannot_infer_quant_var env ast
-        | Wildcard shape ->
-          let var_infer = {
-              variable = s;
-              variable_loc = ast.loc;
-              inferred_ty = Ty.prop;
-            } in
-          let ty = infer_ty env (Variable_inference var_infer) shape [] in
-          var_infer.inferred_ty <- ty;
-          `Term (s, T.Var.mk (Id.full_name s) ty)
-      end
-
-  let infer_sym env ast s args s_ast =
-    (* variables must be bound explicitly *)
-    if Id.(s.ns = Var) then None
-    else match env.expect with
-      | Anything -> None
-      | Type ->
-        if not env.sym_infer.infer_type_csts then None
-        else begin
-          let n = List.length args in
-          let ret = Ty.Const.mk (Id.full_name s) n in
-          let res = Ty_fun ret in
-          decl_ty_const env (Ast ast) s ret (Inferred (env.file, s_ast));
-          Some res
-        end
-      | Term ->
-        begin match env.sym_infer.infer_term_csts with
-          | No_inference -> None
-          | Wildcard shape ->
-            let sym_infer = {
-              symbol = s;
-              symbol_loc = s_ast.loc;
-              inferred_ty = Ty.prop;
-            } in
-            let src = Symbol_inference sym_infer in
-            let ty = infer_ty env src shape args in
-            sym_infer.inferred_ty <- ty;
-            let ret = T.Const.mk (Id.full_name s) ty in
-            let res = Term_fun ret in
-            decl_term_const env (Ast ast) s ret (Inferred (env.file, s_ast));
-            Some res
-        end
 
   (* Tag application *)
   (* ************************************************************************ *)
@@ -1457,7 +1389,9 @@ module Make
     Term (_wrap3 env ast T.apply f ty_args t_args)
 
   and parse_app_symbol env ast s s_ast args =
-    match find_bound env s with
+    parse_app_resolved env ast s s_ast args (find_bound env s)
+
+  and parse_app_resolved env ast s s_ast args = function
     | `Ty_var v -> parse_app_ty_var env ast v s_ast args
     | `Term_var v -> parse_app_term_var env ast v s_ast args
     | `Letin (_, v, t) -> parse_app_letin_var env ast v s_ast t args
@@ -1470,11 +1404,7 @@ module Make
     | `Builtin b ->
       builtin_apply env b ast args
     | `Not_found ->
-      begin match infer_sym env ast s args s_ast with
-        | Some Ty_fun f -> parse_app_ty_cst env ast f args
-        | Some Term_fun f -> parse_app_term_cst env ast f args
-        | None -> _cannot_find env ast s
-      end
+      infer_sym env ast s args s_ast
 
   and parse_app_ty_var env ast v _v_ast args =
     if args = [] then Ty (Ty.of_var v)
@@ -1560,6 +1490,95 @@ module Make
     match parse_expr (expect_term env) ast with
     | Term t -> _wrap2 env ast T.ensure t Ty.prop
     | res -> _expected env "term/prop" ast (Some res)
+
+  and infer_ty env ast src shape args =
+    match env.order with
+    | Higher_order -> wildcard env src shape
+    | First_order ->
+      begin match shape with
+        | Arrow { arg_shape; ret_shape; } ->
+          let arg_src = Arg_of src in
+          let ty_args = List.map (infer_ty_arg env ast arg_src arg_shape) args in
+          let ty_ret = infer_ty env ast (Ret_of src) ret_shape [] in
+          Ty.arrow ty_args ty_ret
+        | _ -> wildcard env src shape
+      end
+
+  and infer_ty_arg env ast src shape arg =
+    let ty = T.ty arg in
+    match Ty.view ty with
+    | `Wildcard w ->
+      begin match shape with
+        | Any_base { allowed = [ty]; preferred = _; } ->
+          _wrap2 env ast Ty.set_wildcard w ty;
+          ty
+        | _ ->
+          let mark = (shape, src, env.type_locs) in
+          transfer_hook mark w;
+          ty
+      end
+    | _ -> infer_ty env ast src shape []
+
+  and infer_var env ast s =
+    match env.expect with
+    | Anything -> _cannot_infer_quant_var env ast
+    | Type ->
+      if not env.var_infer.infer_type_vars then
+        _cannot_infer_quant_var env ast
+      else
+        `Ty (s, Ty.Var.mk (Id.full_name s))
+    | Term ->
+      begin match env.var_infer.infer_term_vars with
+        | No_inference -> _cannot_infer_quant_var env ast
+        | Wildcard shape ->
+          let var_infer = {
+              variable = s;
+              variable_loc = ast.loc;
+              inferred_ty = Ty.prop;
+            } in
+          let ty = infer_ty env ast (Variable_inference var_infer) shape [] in
+          var_infer.inferred_ty <- ty;
+          `Term (s, T.Var.mk (Id.full_name s) ty)
+      end
+
+  and infer_sym env ast s args s_ast =
+    (* variables must be bound explicitly *)
+    if Id.(s.ns = Var) then _cannot_find env ast s
+    else match env.expect with
+      | Anything -> _cannot_find env ast s
+      | Type ->
+        if not env.sym_infer.infer_type_csts
+        then _cannot_find env ast s
+        else begin
+          let n = List.length args in
+          let f = Ty.Const.mk (Id.full_name s) n in
+          decl_ty_const env (Ast ast) s f (Inferred (env.file, s_ast));
+          parse_app_ty_cst env ast f args
+        end
+      | Term ->
+        begin match env.sym_infer.infer_term_csts with
+          | No_inference -> _cannot_find env ast s
+          | Wildcard shape ->
+            let t_args = List.map (parse_term env) args in
+            let f =
+              match find_bound env s with
+              | `Term_cst f -> f
+              | `Not_found ->
+                let sym_infer = {
+                  symbol = s;
+                  symbol_loc = s_ast.loc;
+                  inferred_ty = Ty.prop;
+                } in
+                let src = Symbol_inference sym_infer in
+                let f_ty = infer_ty env ast src shape t_args in
+                sym_infer.inferred_ty <- f_ty;
+                let f = T.Const.mk (Id.full_name s) f_ty in
+                decl_term_const env (Ast ast) s f (Inferred (env.file, s_ast));
+                f
+              | _ -> assert false
+            in
+            Term (_wrap3 env ast T.apply_cst f [] t_args)
+        end
 
   let parse_ttype_var env t =
     match parse_var (expect_type env) t with

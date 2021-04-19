@@ -65,4 +65,36 @@
   (action (diff infer_1.expected infer_1.full)))
 
 
+; Test for infer_2.p
+; Incremental test
+
+(rule
+   (target  infer_2.incremental)
+   (deps    (:input infer_2.p))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff infer_2.expected infer_2.incremental)))
+
+; Full mode test
+
+(rule
+   (target  infer_2.full)
+   (deps    (:input infer_2.p))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff infer_2.expected infer_2.full)))
+
+
 ; Auto-generated part end
