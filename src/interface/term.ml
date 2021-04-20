@@ -388,6 +388,15 @@ module type Tff = sig
     val ty : t -> ty
     (** Return the type of the variable. *)
 
+    val get_tag : t -> 'a tag -> 'a option
+    (** Return the value bound to a tag (if any). *)
+
+    val set_tag : t -> 'a tag -> 'a -> unit
+    (** Set the value bound to the tag. *)
+
+    val unset_tag : t -> _ tag -> unit
+    (** Remove the binding to the given tag. *)
+
   end
 
   (** A module for constant symbols that occur in terms. *)

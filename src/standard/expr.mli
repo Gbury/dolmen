@@ -319,7 +319,7 @@ module Id : sig
   (** Get the last value bound to a list tag. *)
 
   val set_tag : _ t -> 'a Tag.t -> 'a -> unit
-  (** Set the list of values bound to the tag. *)
+  (** Set the value bound to the tag. *)
 
   val add_tag : _ t -> 'a list Tag.t -> 'a -> unit
   (** Bind an additional value to a list tag. *)
@@ -329,6 +329,9 @@ module Id : sig
 
   val add_tag_list : _ t -> 'a list Tag.t -> 'a list -> unit
   (** Bind a list of additional values to a list tag. *)
+
+  val unset_tag : _ t -> _ Tag.t -> unit
+  (** Remove the binding to the given tag. *)
 
 end
 
@@ -489,7 +492,7 @@ module Ty : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -499,6 +502,9 @@ module Ty : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
   end
 
@@ -537,7 +543,7 @@ module Ty : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -547,6 +553,9 @@ module Ty : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
     val int : t
     (** The type constant for integers *)
@@ -657,7 +666,7 @@ module Ty : sig
   (** Get the last value bound to a list tag. *)
 
   val set_tag : t -> 'a Tag.t -> 'a -> unit
-  (** Set the list of values bound to the tag. *)
+  (** Set the value bound to the tag. *)
 
   val add_tag : t -> 'a list Tag.t -> 'a -> unit
   (** Bind an additional value to a list tag. *)
@@ -667,6 +676,9 @@ module Ty : sig
 
   val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
   (** Bind a list of additional values to a list tag. *)
+
+  val unset_tag : t -> _ Tag.t -> unit
+  (** Remove the binding to the given tag. *)
 
 end
 
@@ -718,7 +730,7 @@ module Term : sig
   (** Get the last value bound to a list tag. *)
 
   val set_tag : t -> 'a Tag.t -> 'a -> unit
-  (** Set the list of values bound to the tag. *)
+  (** Set the value bound to the tag. *)
 
   val add_tag : t -> 'a list Tag.t -> 'a -> unit
   (** Bind an additional value to a list tag. *)
@@ -728,6 +740,9 @@ module Term : sig
 
   val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
   (** Bind a list of additional values to a list tag. *)
+
+  val unset_tag : t -> _ Tag.t -> unit
+  (** Remove the binding to the given tag. *)
 
   (** A module for variables that occur in terms. *)
   module Var : sig
@@ -764,7 +779,7 @@ module Term : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -774,6 +789,9 @@ module Term : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
   end
 
@@ -812,7 +830,7 @@ module Term : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -822,6 +840,9 @@ module Term : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
     include Dolmen_intf.Term.Tptp_Thf_Core_Const with type t := t
     (** Satisfy the required interface for the typing of tptp's Thf. *)
@@ -875,7 +896,7 @@ module Term : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -885,6 +906,9 @@ module Term : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
   end
 
@@ -917,7 +941,7 @@ module Term : sig
     (** Get the last value bound to a list tag. *)
 
     val set_tag : t -> 'a Tag.t -> 'a -> unit
-    (** Set the list of values bound to the tag. *)
+    (** Set the value bound to the tag. *)
 
     val add_tag : t -> 'a list Tag.t -> 'a -> unit
     (** Bind an additional value to a list tag. *)
@@ -927,6 +951,9 @@ module Term : sig
 
     val add_tag_list : t -> 'a list Tag.t -> 'a list -> unit
     (** Bind a list of additional values to a list tag. *)
+
+    val unset_tag : t -> _ Tag.t -> unit
+    (** Remove the binding to the given tag. *)
 
   end
 

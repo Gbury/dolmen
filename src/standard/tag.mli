@@ -53,4 +53,6 @@ val add_list : map -> 'a list t -> 'a list -> map
     at the head of the list of values bound, however it is not guaranteed that
     the first value of the given list is the new head of the list of bound values. *)
 
+val unset : map -> _ t -> map
+(** Remove any binding to the given key in the map. *)
 

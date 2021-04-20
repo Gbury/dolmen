@@ -41,6 +41,9 @@ module type S = sig
 
   val add : inj:'a injection -> key -> 'a -> t -> t
   (** Bind the key to the value, using [inj] *)
+
+  val remove : inj:'a injection -> key -> t -> t
+  (** Remove the binding to the key. *)
 end
 
 module type ORD = sig
@@ -62,6 +65,10 @@ module Make(X : ORD) : S with type key = X.t = struct
 
   let add ~inj x y map =
     M.add x (inj.set y) map
+
+  let remove ~inj:_ x map =
+    M.remove x map
+
 end
 
 
@@ -105,6 +112,9 @@ let get_last m k =
   | None -> None
   | Some [] -> None
   | Some (x :: _) -> Some x
+
+let unset m k =
+  M.remove ~inj:k.inj k.id m
 
 let set m k l =
   M.add ~inj:k.inj k.id l m

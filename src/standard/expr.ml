@@ -425,6 +425,8 @@ module Id = struct
   let add_tag_opt (id : _ id) k o = id.tags <- Tag.add_opt id.tags k o
   let add_tag_list (id : _ id) k l = id.tags <- Tag.add_list id.tags k l
 
+  let unset_tag (id : _ id) k = id.tags <- Tag.unset id.tags k
+
   (* Creating ids *)
   let id_counter = ref 0
 
@@ -867,6 +869,8 @@ module Ty = struct
   let add_tag (t : t) k v = t.ty_tags <- Tag.add t.ty_tags k v
   let add_tag_opt (t : t) k o = t.ty_tags <- Tag.add_opt t.ty_tags k o
   let add_tag_list (t : t) k l = t.ty_tags <- Tag.add_list t.ty_tags k l
+  
+  let unset_tag (t: t) k = t.ty_tags <- Tag.unset t.ty_tags k
 
   (* Module for namespacing *)
   module Var = struct
@@ -882,6 +886,7 @@ module Ty = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     let mk name = Id.mk name Type
     let wildcard () = wildcard_var ()
@@ -906,6 +911,7 @@ module Ty = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     let arity (c : t) = c.id_ty.arity
     let mk name n = Id.mk name { arity = n; alias = No_alias; }
@@ -1207,6 +1213,8 @@ module Term = struct
   let add_tag_opt (t : t) k o = t.term_tags <- Tag.add_opt t.term_tags k o
   let add_tag_list (t : t) k l = t.term_tags <- Tag.add_list t.term_tags k l
 
+  let unset_tag (t: t) k = t.term_tags <- Tag.unset t.term_tags k
+
   (* Hash *)
   let rec hash_aux t =
     match t.term_descr with
@@ -1434,6 +1442,7 @@ module Term = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     let ty ({ id_ty; _ } : t) = id_ty
     let mk name ty = Id.mk name ty
@@ -1453,6 +1462,7 @@ module Term = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     let mk name ty =
       Id.mk name ty
@@ -2349,6 +2359,7 @@ module Term = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     exception Bad_pattern_arity of term_cst * ty list * term list
 
@@ -2396,6 +2407,7 @@ module Term = struct
     let add_tag = Id.add_tag
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
+    let unset_tag = Id.unset_tag
 
     (* Record field getter *)
     let find ty_c i =

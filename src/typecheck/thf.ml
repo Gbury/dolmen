@@ -1003,22 +1003,31 @@ module Make
   let create_record_access env ast t field =
     _wrap2 env ast T.apply_field field t
 
-  let ty_var_equal v v' = Ty.Var.compare v v' = 0
-  let t_var_equal v v' = T.Var.compare v v' = 0
+  let used_var_tag = Tag.create ()
+
+  (* Emit warnings for quantified variables that are unused *)
+  let warn_unused env (ty_vars, t_vars) =
+    List.iter (fun v ->
+        match Ty.Var.get_tag v used_var_tag with
+        | Some () -> Ty.Var.unset_tag v used_var_tag
+        | None -> _unused_type env v
+      ) ty_vars;
+    List.iter (fun v ->
+        match T.Var.get_tag v used_var_tag with
+        | Some () -> T.Var.unset_tag v used_var_tag
+        | None -> _unused_term env v
+      ) t_vars;
+    ()
+
+  let mk_let env ast mk l body =
+    warn_unused env ([], (List.map fst l));
+    _wrap2 env ast mk l body
 
   let mk_quant env ast mk (ty_vars, t_vars) body =
     if not env.quants then
       _error env (Ast ast) Forbidden_quantifier
     else begin
-      let fv_ty, fv_t = T.fv body in
-      (* Emit warnings for quantified variables that are unused *)
-      List.iter (fun v ->
-          if not @@ List.exists (ty_var_equal v) fv_ty then _unused_type env v
-        ) ty_vars;
-      List.iter (fun v ->
-          if not @@ List.exists (t_var_equal v) fv_t then _unused_term env v
-        ) t_vars;
-      (* Create the quantified formula *)
+      warn_unused env (ty_vars, t_vars);
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
@@ -1070,6 +1079,12 @@ module Make
       | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
         parse_quant parse_prop T.ex Ast.Ex env t [] [] t
 
+      | { Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } as ast ->
+        parse_let_seq env ast [] f vars
+
+      | { Ast.term = Ast.Binder (Ast.Let_par, vars, f); _ } as ast ->
+        parse_let_par env ast [] f vars
+
       (* Pattern matching *)
       | { Ast.term = Ast.Match (scrutinee, branches); _ } ->
         parse_match env t scrutinee branches
@@ -1083,13 +1098,6 @@ module Make
 
       | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_access; _ }, l); _ } as ast ->
         parse_record_access env ast l
-
-      (* Local bindings *)
-      | { Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } ->
-        parse_let_seq env [] f vars
-      | { Ast.term = Ast.Binder (Ast.Let_par, vars, f); _ } ->
-        parse_let_par env [] f vars
-
 
       (* Type annotations *)
       | { Ast.term = Ast.Colon (a, expected); _ } ->
@@ -1247,11 +1255,11 @@ module Make
     in
     List.rev l, env
 
-  and parse_let_seq env acc f = function
+  and parse_let_seq env ast acc f = function
     | [] -> (* TODO: use continuation to avoid stack overflow on packs of let-bindings ? *)
       let l = List.rev acc in
       begin match parse_expr env f with
-        | Term t -> Term (T.letin l t)
+        | Term t -> Term (mk_let env ast T.letin l t)
         | res -> _expected env "term of formula" f (Some res)
       end
     | x :: r ->
@@ -1264,11 +1272,11 @@ module Make
           let t = parse_term env e in
           let v = T.Var.mk (Id.full_name s) (T.ty t) in
           let v', env' = bind_term_var env s e v t w in
-          parse_let_seq env' ((v', t) :: acc) f r
+          parse_let_seq env' ast ((v', t) :: acc) f r
         | t -> _expected env "variable binding" t None
       end
 
-  and parse_let_par env acc f = function
+  and parse_let_par env ast acc f = function
     | [] ->
       let env, rev_l =
         List.fold_right (fun (s, e, v, t, w) (env, acc) ->
@@ -1278,7 +1286,7 @@ module Make
       in
       let l = List.rev rev_l in
       begin match parse_expr env f with
-        | Term t -> Term (T.letand l t)
+        | Term t -> Term (mk_let env ast T.letand l t)
         | res -> _expected env "term of formula" f (Some res)
       end
     | x :: r ->
@@ -1291,7 +1299,7 @@ module Make
           begin match parse_term env e with
             | t ->
               let v = T.Var.mk (Id.full_name s) (T.ty t) in
-              parse_let_par env ((s, e, v, t, w) :: acc) f r
+              parse_let_par env ast ((s, e, v, t, w) :: acc) f r
             (* Try and provide a helpful hints when a parallel let is used as
                a sequential let-binding *)
             | exception (Typing_error (Error (
@@ -1407,10 +1415,12 @@ module Make
       infer_sym env ast s args s_ast
 
   and parse_app_ty_var env ast v _v_ast args =
+    Ty.Var.set_tag v used_var_tag ();
     if args = [] then Ty (Ty.of_var v)
     else _ty_var_app env v ast
 
   and parse_app_term_var env ast v v_ast args =
+    T.Var.set_tag v used_var_tag ();
     match env.order with
     | First_order ->
       if args = [] then Term (T.of_var v)

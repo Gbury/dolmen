@@ -44,11 +44,20 @@ module type Tff = sig
     val is_wildcard : t -> bool
     (** Is the variable a type wildcard ? *)
 
+    val set_tag : t -> 'a tag -> 'a -> unit
+    (** Set the value bound to a tag. *)
+
+    val get_tag : t -> 'a tag -> 'a option
+    (** Return the value bound to a tag (if any). *)
+
     val add_tag : t -> 'a list tag -> 'a -> unit
-    (** Tag a variable. *)
+    (** Add a value to the list of values bound to a tag. *)
 
     val get_tag_list : t -> 'a list tag -> 'a list
     (** Returns all the values tagged on a variable. *)
+
+    val unset_tag : t -> _ tag -> unit
+    (** Remove the binding to a tag. *)
 
   end
 
