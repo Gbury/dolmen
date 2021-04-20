@@ -10,6 +10,7 @@ let gc_section = "GC OPTIONS"
 let error_section = "ERROR HANDLING"
 let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
+let memprof_section = "MEMORY PROFILING"
 
 (* Color options *)
 (* ************************************************************************* *)
@@ -170,6 +171,18 @@ let gc_opts
       }
      )
 
+let memtrace_opts filename sampling_rate =
+  match (filename : _ option) with
+  | None -> `Ok ()
+  | Some filename ->
+    if Memory_profiler.available then begin
+      Memory_profiler.start filename sampling_rate;
+      `Ok ()
+    end else begin
+      let msg = "Memtrace is not available, try to 'opam install memtrace'" in
+      `Error (false, msg)
+    end
+
 let split_input = function
   | `Stdin ->
     Sys.getcwd (), `Stdin
@@ -177,7 +190,7 @@ let split_input = function
     Filename.dirname f, `File (Filename.basename f)
 
 let mk_state
-    gc gc_opt bt colors
+    () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
     input_lang input_mode input
@@ -218,6 +231,22 @@ let mk_state
     export_lang = [];
   } in
   st
+
+
+(* Memory profiling *)
+(* ************************************************************************* *)
+
+let memprof_t =
+  let docs = memprof_section in
+  let filename =
+    let doc = "Filename for the profiling trace" in
+    Arg.(value & opt (some string) None & info ["memtrace"] ~doc ~docs ~docv:"FILE")
+  in
+  let sampling_rate =
+    let doc = "Sampling rate for the memory profiler" in
+    Arg.(value & opt float 1e-6 & info ["memtrace-rate"] ~doc ~docs ~docv:"RATE")
+  in
+  Term.(ret (const memtrace_opts $ filename $ sampling_rate))
 
 
 (* Gc Options parsing *)
@@ -343,7 +372,9 @@ let state =
   *)
   let debug =
     let doc = Format.asprintf
-        "Print the parsed dolmen statement (after expansion of includes)" in
+        "Activate debug mode. Among other things, this will make dolmen \
+         print every statement it parses, and every statement after type \
+         checking, as well as activate unique id printing." in
     Arg.(value & flag & info ["debug"] ~docs ~doc)
   in
   let context =
@@ -357,7 +388,8 @@ let state =
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
   in
-  Term.(const mk_state $ gc $ gc_t $ bt $ colors $ abort_on_bug $
+  Term.(const mk_state $ memprof_t $
+        gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
         typing $ strict $ debug $ context $ max_warn)

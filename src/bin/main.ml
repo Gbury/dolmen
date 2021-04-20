@@ -31,12 +31,17 @@ let () =
     @ Cmdliner.Term.default_exits
   in
   let man = [
+    `S Cmdliner.Manpage.s_description;
+    `P "Dolmen is a tool to parse and type input files that contain problem \
+        used in automated deduction.";
     `S Options.common_section;
     `P "Common options for the dolmen binary";
     `S Options.error_section;
     `P "Options to customize the behaviour of dolmen on errors/warnings";
     `S Options.header_section;
     `P "Options to control the checking of headers in the input file";
+    `S Options.memprof_section;
+    `P "Options to profile the memory usage of dolmen";
     `S Options.gc_section;
     `P "Options to fine-tune the gc, only experts should use these.";
     `S Cmdliner.Manpage.s_exit_status;

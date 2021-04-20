@@ -9,6 +9,10 @@
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop
+    ; Memtrace dependency
+    (select memory_profiler.ml from
+            (memtrace -> memory_profiler.memtrace.ml)
+            (         -> memory_profiler.missing.ml))
     )
 )
 
