@@ -1,0 +1,18 @@
+
+(library
+  (name       tune)
+  (modes      native)
+  (wrapped    true)
+  (libraries
+    ; threads
+    threads.posix
+    ; containers deps
+    containers containers.unix containers-thread
+  )
+  (modules
+    ; System modules ot handle execution
+    Exec Parmap
+    ; Control modules to generate executions
+    Param Range
+  )
+)
