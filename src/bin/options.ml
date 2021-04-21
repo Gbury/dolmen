@@ -18,12 +18,12 @@ let memprof_section = "MEMORY PROFILING"
 type color =
   | Auto
   | Always
-  | None
+  | Never
 
 let color_list = [
   "auto", Auto;
   "always", Always;
-  "never", None;
+  "never", Never;
 ]
 
 let color_conv = Arg.enum color_list
@@ -32,7 +32,7 @@ let set_color file_descr formatter color =
   let style =
     match color with
     | Always -> `Ansi_tty
-    | None -> `None
+    | Never -> `None
     | Auto -> if Unix.isatty file_descr then `Ansi_tty else `None
   in
   Fmt.set_style_renderer formatter style
@@ -162,14 +162,17 @@ let c_size = parse_size, print_size
 (* State creation *)
 (* ************************************************************************* *)
 
-let gc_opts
+let gc_opts use_env
     minor_heap_size major_heap_increment
     space_overhead max_overhead allocation_policy =
-  Gc.({ (get ()) with
-        minor_heap_size; major_heap_increment;
-        space_overhead; max_overhead; allocation_policy;
-      }
-     )
+  if use_env then None
+  else begin
+    let default = Gc.get () in
+    Some { default with
+           minor_heap_size; major_heap_increment;
+           space_overhead; max_overhead; allocation_policy;
+         }
+  end
 
 let memtrace_opts filename sampling_rate =
   match (filename : _ option) with
@@ -200,7 +203,7 @@ let mk_state
     debug context max_warn
   =
   (* Side-effects *)
-  let () = Gc.set gc_opt in
+  let () = Option.iter Gc.set gc_opt in
   let () = set_color Unix.stdout Format.std_formatter colors in
   let () = set_color Unix.stderr Format.err_formatter colors in
   let () = if bt then Printexc.record_backtrace true in
@@ -254,6 +257,11 @@ let memprof_t =
 
 let gc_t =
   let docs = gc_section in
+  let use_env =
+    let doc = "Use the gc settings from the OCAMLRUNPARAM env variable, \
+               and ignore the dolmen settings on the cli." in
+    Arg.(value & opt bool false & info ["gc-env"] ~doc ~docs)
+  in
   let minor_heap_size =
     let doc = "Set Gc.minor_heap_size" in
     Arg.(value & opt int 1_000_000 & info ["gc-s"] ~doc ~docs)
@@ -274,7 +282,8 @@ let gc_t =
     let doc = "Set Gc.allocation policy" in
     Arg.(value & opt int 0 & info ["gc-a"] ~doc ~docs)
   in
-  Term.((const gc_opts $ minor_heap_size $ major_heap_increment $
+  Term.((const gc_opts $ use_env $
+         minor_heap_size $ major_heap_increment $
          space_overhead $ max_overhead $ allocation_policy))
 
 

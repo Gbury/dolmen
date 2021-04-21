@@ -1,12 +1,13 @@
 
 (executable
   (name       gentests)
-  (libraries  unix)
   (modules    gentests)
+  (libraries  unix)
 )
 
 (executable
   (name       count)
-  (libraries  unix)
   (modules    count)
+  (libraries  unix)
 )
+

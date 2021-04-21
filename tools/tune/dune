@@ -1,0 +1,12 @@
+
+(executable
+  (name       tune)
+  (libraries
+    ; threads
+    threads.posix
+    ; stdlib extensions
+    oseq containers containers.unix containers-thread
+    ; Other deps
+    gnuplot progress.unix cmdliner
+  )
+)

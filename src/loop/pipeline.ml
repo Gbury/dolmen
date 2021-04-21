@@ -10,9 +10,11 @@ module Make(State : State_intf.Pipeline) = struct
   (* GC alarm for time/space limits *)
   (* ************************************************************************ *)
 
-  (* This function analyze the current size of the heap *)
+  (* This function analyze the current size of the heap
+     TODO: take into account the minor heap size
+     TODO: should we only consider the live words ? *)
   let check size_limit = function () ->
-    let heap_size = (Gc.quick_stat ()).Gc.heap_words in
+    let heap_size = (Gc.quick_stat ()).Gc.live_words in
     let s = float heap_size *. float Sys.word_size /. 8. in
     if s > size_limit then
       raise Out_of_space
