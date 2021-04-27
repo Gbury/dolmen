@@ -1,0 +1,74 @@
+# Release building
+# ================
+# Build binarys to atach to the releases
+name: release
+
+# Configure when to run the workflows.
+on:
+  release:
+    types: [created]
+
+
+jobs:
+  # Build binaries
+  # ==============
+  binaries:
+
+    runs-on: ${{ matrix.os }}
+
+    # Build Matrix
+    # --------------
+    strategy:
+      matrix:
+        # Operating system to run tests on.
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+        # Ocaml versions to use
+        ocaml-version:
+          - 4.12.0+options
+        ocaml-options:
+          - ocaml-option-flambda
+
+        # Dolmen package to test installation of
+        dolmen-pkg:
+          - dolmen_bin
+          - dolmen_lsp
+
+    # Build ENV
+    # ---------
+    env:
+      # Ensure opam will not stop because it waits on some user input
+      OPAMYES: "true"
+
+    # Build/test steps
+    # ----------------
+    steps:
+    # checkout the repo
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam on Windows
+      uses: avsm/setup-ocaml@v2
+      if: runner.os == 'Windows'
+      with:
+        ocaml-version: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c,${{ matrix.ocaml-options }}
+    - name: Setup ocaml/opam on Unix
+      uses: avsm/setup-ocaml@v2
+      if: runner.os != 'Windows'
+      with:
+        opam-version: ocaml-variants.${{ matrix.ocaml-version }}, ${{ matrix.ocaml-options }}
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
+    # Build the package
+    - name: Build the package
+      run: opam install dolmen_bin dolmen_lsp
+    # Upload the bginaries
+    - name: Upload the binaries
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: "`opam var bin`/{dolmen,dolmenls}"
