@@ -1,6 +1,6 @@
 # Buildability check
 # ==================
-# Build the compiler with the makefile
+# Build dolmen with the makefile
 name: build
 
 # Configure when to run the workflows. Currently only when
@@ -62,8 +62,6 @@ jobs:
     # checkout the repo (full clone, necessary for push later)
     - name: Checkout the repo
       uses: actions/checkout@v2
-      with:
-        fetch-depth: '1'
     # Setup ocaml/opam
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2

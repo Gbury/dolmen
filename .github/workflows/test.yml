@@ -1,6 +1,6 @@
 # Main tests
 # ==========
-# Build the compiler with makefiles and run the testsuite
+# Build dolmen with makefiles and run the testsuite
 name: test
 
 # Configure when to run the workflows. Currently only when

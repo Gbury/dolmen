@@ -1,12 +1,13 @@
 # Release building
 # ================
-# Build binarys to atach to the releases
+# Build binaries to atach to the releases
 name: release
 
 # Configure when to run the workflows.
 on:
   release:
-    types: [created]
+    types:
+      - created
 
 
 jobs:
@@ -31,10 +32,22 @@ jobs:
         ocaml-options:
           - ocaml-option-flambda
 
-        # Dolmen package to test installation of
-        dolmen-pkg:
-          - dolmen_bin
-          - dolmen_lsp
+        include:
+          - os: ubuntu-latest
+            dolmen_artifact: dolmen
+            dolmen_asset: dolmen-linux-amd64
+            dolmenls_artifact: dolmenls
+            dolmenls_asset: dolmenls-linux-amd64
+          #- os: windows-latest
+          #dolmen_artifact: dolmen.exe
+          #dolmen_asset: dolmen-windows-amd64
+          #dolmenls_artifact: dolmenls.exe
+          #dolmenls_asset: dolmenls-windows-amd64
+          - os: macos-latest
+            dolmen_artifact: dolmen
+            dolmen_asset: dolmen-macos-amd64
+            dolmenls_artifact: dolmenls
+            dolmenls_asset: dolmenls-macos-amd64
 
     # Build ENV
     # ---------
@@ -62,13 +75,26 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
+    # Install deps
+    - name: Install deps
+      run: opam install . --deps-only
     # Build the package
     - name: Build the package
-      run: opam install dolmen_bin dolmen_lsp
-    # Upload the bginaries
-    - name: Upload the binaries
-      uses: skx/github-action-publish-binaries@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: opam exec -- dune build --profile=release @install
+    # Upload the binaries
+    - name: Upload Dolmen binary to release
+      uses: svenstaro/upload-release-action@v2
       with:
-        args: "`opam var bin`/{dolmen,dolmenls}"
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: _build/install/default/bin/${{ matrix.dolmen_artifact }}
+        asset_name: ${{ matrix.dolmen_asset }}
+        tag: ${{ github.ref }}
+    # Upload the binaries
+    - name: Upload Dolmenls binary to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: _build/install/default/bin/${{ matrix.dolmenls_artifact }}
+        asset_name: ${{ matrix.dolmenls_asset }}
+        tag: ${{ github.ref }}
+
