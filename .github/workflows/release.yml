@@ -1,0 +1,100 @@
+# Release building
+# ================
+# Build binaries to atach to the releases
+name: release
+
+# Configure when to run the workflows.
+on:
+  release:
+    types:
+      - created
+
+
+jobs:
+  # Build binaries
+  # ==============
+  binaries:
+
+    runs-on: ${{ matrix.os }}
+
+    # Build Matrix
+    # --------------
+    strategy:
+      matrix:
+        # Operating system to run tests on.
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+        # Ocaml versions to use
+        ocaml-version:
+          - 4.12.0+options
+        ocaml-options:
+          - ocaml-option-flambda
+
+        include:
+          - os: ubuntu-latest
+            dolmen_artifact: dolmen
+            dolmen_asset: dolmen-linux-amd64
+            dolmenls_artifact: dolmenls
+            dolmenls_asset: dolmenls-linux-amd64
+          #- os: windows-latest
+          #dolmen_artifact: dolmen.exe
+          #dolmen_asset: dolmen-windows-amd64
+          #dolmenls_artifact: dolmenls.exe
+          #dolmenls_asset: dolmenls-windows-amd64
+          - os: macos-latest
+            dolmen_artifact: dolmen
+            dolmen_asset: dolmen-macos-amd64
+            dolmenls_artifact: dolmenls
+            dolmenls_asset: dolmenls-macos-amd64
+
+    # Build ENV
+    # ---------
+    env:
+      # Ensure opam will not stop because it waits on some user input
+      OPAMYES: "true"
+
+    # Build/test steps
+    # ----------------
+    steps:
+    # checkout the repo
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam on Windows
+      uses: avsm/setup-ocaml@v2
+      if: runner.os == 'Windows'
+      with:
+        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c,${{ matrix.ocaml-options }}
+    - name: Setup ocaml/opam on Unix
+      uses: avsm/setup-ocaml@v2
+      if: runner.os != 'Windows'
+      with:
+        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}, ${{ matrix.ocaml-options }}
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
+    # Install deps
+    - name: Install deps
+      run: opam install . --deps-only
+    # Build the package
+    - name: Build the package
+      run: opam exec -- dune build --profile=release @install
+    # Upload the binaries
+    - name: Upload Dolmen binary to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: _build/install/default/bin/${{ matrix.dolmen_artifact }}
+        asset_name: ${{ matrix.dolmen_asset }}
+        tag: ${{ github.ref }}
+    # Upload the binaries
+    - name: Upload Dolmenls binary to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: _build/install/default/bin/${{ matrix.dolmenls_artifact }}
+        asset_name: ${{ matrix.dolmenls_asset }}
+        tag: ${{ github.ref }}
+

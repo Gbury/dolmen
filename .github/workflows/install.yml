@@ -1,0 +1,80 @@
+# Installability tests
+# ====================
+# Check the binary package install correctly
+name: install
+
+# Configure when to run the workflows. Currently only when
+# it affects the `master` branch (either pushes to the branch,
+# or pull request against it).
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  # Install workflow
+  # ================
+  # Goal: Ensure the packages install as separate packages
+  # using opam
+  install:
+
+    runs-on: ${{ matrix.os }}
+
+    # Build Matrix
+    # --------------
+    strategy:
+      # Do not cancel other jobs when one fails
+      fail-fast: false
+
+      matrix:
+        # Operating system to run tests on.
+        os:
+          - ubuntu-latest
+          - macos-latest
+          #- windows-latest
+
+        # Ocaml versions to use
+        ocaml-version:
+          - 4.12.0
+
+        # Dolmen package to test installation of
+        dolmen-pkg:
+          - dolmen_bin
+          - dolmen_lsp
+
+
+    # Build ENV
+    # ---------
+    env:
+      # Ensure opam will not stop because it waits on some user input
+      OPAMYES: "true"
+
+
+    # Build/test steps
+    # ----------------
+    steps:
+    # checkout the repo (full clone, necessary for push later)
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam on Windows
+      uses: avsm/setup-ocaml@v2
+      if: runner.os == 'Windows'
+      with:
+        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c
+    - name: Setup ocaml/opam on Unix
+      uses: avsm/setup-ocaml@v2
+      if: runner.os != 'Windows'
+      with:
+        ocaml-compiler: ocaml-base-compiler.${{ matrix.ocaml-version }}
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
+    # Install the package
+    - name: Install package
+      run: opam install --with-test ${{ matrix.dolmen-pkg }}
+
+
