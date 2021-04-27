@@ -298,6 +298,12 @@ module Make
   (* State & Environment *)
   (* ************************************************************************ *)
 
+  type wildcard_hook = {
+    src : wildcard_source;
+    shape : wildcard_shape;
+    bound : reason E.t;
+  }
+
   (* Global, mutable state. *)
   type state = {
 
@@ -312,6 +318,9 @@ module Make
     (* stores reasons for typing constructors *)
     mutable field_locs : reason V.t;
     (* stores reasons for typing record fields *)
+
+    mutable wildcards : wildcard_hook list E.t;
+    (** Hooks for wildcards. *)
 
     mutable custom : Hmap.map;
     (* heterogeneous map for theories to store custom information,
@@ -605,12 +614,14 @@ module Make
     const_locs = S.empty;
     cstrs_locs = U.empty;
     field_locs = V.empty;
+    wildcards = E.empty;
     custom = Hmap.empty;
   }
 
   let copy_state st = {
     csts = st.csts;
     custom = st.custom;
+    wildcards = st.wildcards;
     ttype_locs = st.ttype_locs;
     const_locs = st.const_locs;
     cstrs_locs = st.cstrs_locs;
@@ -681,14 +692,6 @@ module Make
     var_infer; sym_infer; expect;
   }
 
-  (* Generate new fresh names for shadowed variables *)
-  let new_name pre =
-    let i = ref 0 in
-    (fun () -> incr i; pre ^ (string_of_int !i))
-
-  let new_ty_name = new_name "ty#"
-  let new_term_name = new_name "term#"
-
   (* Add local variables to environment *)
   let add_type_var env id v ast =
     let reason = Bound (env.file, ast) in
@@ -696,7 +699,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = Ty.Var.mk (new_ty_name ()) in
+        let v' = Ty.Var.mk (Id.full_name id) in
         _shadow env (Ast ast) id old reason (`Ty_var v');
         v'
     in
@@ -717,7 +720,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = T.Var.mk (new_term_name ()) (T.Var.ty v) in
+        let v' = T.Var.mk (Id.full_name id) (T.Var.ty v) in
         _shadow env (Ast ast) id old reason (`Term_var v');
         v'
     in
@@ -732,7 +735,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = T.Var.mk (new_term_name ()) (T.Var.ty v) in
+        let v' = T.Var.mk (Id.full_name id) (T.Var.ty v) in
         _shadow env (Ast ast) id old reason (`Term_var v');
         v'
     in
@@ -781,12 +784,13 @@ module Make
   (* Type inference and wildcards *)
   (* ************************************************************************ *)
 
-  let wildcard_allowed_shapes = Tag.create ()
+  let get_allowed_shapes state v =
+    match E.find v state.wildcards with
+    | shapes -> shapes
+    | exception Not_found -> []
 
-  let is_shape_redundant
-      v ?(l=Ty.Var.get_tag_list v wildcard_allowed_shapes)
-      ((shape, _src, bound) as mark) =
-    let subsumes_new ((shape', _src', bound') as mark') =
+  let is_shape_redundant shapes ({ shape; src = _; bound; } as mark) =
+    let subsumes_new ({ shape = shape'; src = _; bound = bound'; } as mark') =
       mark == mark' ||
       (shape == shape' && bound == bound') ||
       match shape, shape' with
@@ -798,77 +802,89 @@ module Make
         List.for_all (fun ty -> List.exists (Ty.equal ty) l') l
       | _ -> false
     in
-    List.exists subsumes_new l
+    List.exists subsumes_new shapes
 
-  let rec wildcard_hook w ty =
+  let rec wildcard_hook state w ty =
+    let shapes = get_allowed_shapes state w in
+    state.wildcards <- E.remove w state.wildcards;
+    check_shapes state w ty shapes
+
+  and check_shapes state w ty shapes =
     let fv = lazy (Ty.fv ty) in
-    let shapes = Ty.Var.get_tag_list w wildcard_allowed_shapes in
-    List.iter (check_shape fv w ty) shapes
+    List.iter (check_shape state fv w ty) shapes
 
-  and check_shape fv w ty = function
-    | (Forbidden, src, _) -> raise (Wildcard_forbidden (w, src, ty))
-    | (Any_in_scope, src, bound_vars) as mark ->
+  and check_shape state fv w ty = function
+    | { shape = Forbidden; src; bound = _; } ->
+      raise (Wildcard_forbidden (w, src, ty))
+    | { shape = Any_in_scope; src; bound = bound_vars; } as mark ->
       List.iter (fun v ->
           if Ty.Var.is_wildcard v then begin
-            transfer_hook mark v
+            transfer_hook state mark v
           end else if not (E.mem v bound_vars) then
             raise (Wildcard_bad_scope (w, src, v))
         ) (Lazy.force fv)
-    | (Any_base { allowed; preferred = _; }, src, _) as mark ->
+    | { shape = Any_base { allowed; preferred = _; }; src; bound = _; } as mark ->
       begin match Ty.view ty with
-        | `Wildcard v -> transfer_hook mark v
+        | `Wildcard v -> transfer_hook state mark v
         | _ ->
           if List.exists (Ty.equal ty) allowed then ()
           else raise (Wildcard_bad_base (w, src, ty, allowed))
       end
-    | (Arrow { arg_shape; ret_shape; }, src, bound_vars) as mark ->
+    | { shape = Arrow { arg_shape; ret_shape; }; src; bound = bound_vars; } as mark ->
       begin match Ty.view ty with
-        | `Wildcard v -> transfer_hook mark v
+        | `Wildcard v -> transfer_hook state mark v
         | `Arrow (ty_args, ty_ret) ->
-          List.iter (transfer_shape arg_shape (Arg_of src) bound_vars) ty_args;
-          transfer_shape ret_shape (Ret_of src) bound_vars ty_ret
-        | _ -> transfer_shape ret_shape src bound_vars ty
+          List.iter (transfer_shape state arg_shape (Arg_of src) bound_vars) ty_args;
+          transfer_shape state ret_shape (Ret_of src) bound_vars ty_ret
+        | _ -> transfer_shape state ret_shape src bound_vars ty
       end
 
-  and transfer_shape shape src bound_vars ty =
-    let mark = (shape, src, bound_vars) in
+  and transfer_shape state shape src bound ty =
+    let mark = { shape; src; bound; } in
     match Ty.view ty with
-    | `Wildcard w -> transfer_hook mark w
+    | `Wildcard w -> transfer_hook state mark w
     | _ ->
       let w = Ty.Var.wildcard () in
-      let fv = lazy (Ty.fv ty) in
-      check_shape fv w ty mark
+      check_shapes state w ty [mark]
 
-  and transfer_hook mark v =
-    let l = Ty.Var.get_tag_list v wildcard_allowed_shapes in
-    if l = [] then Ty.add_wildcard_hook ~hook:wildcard_hook v;
-    if not (is_shape_redundant v ~l mark) then
-      Ty.Var.add_tag v wildcard_allowed_shapes mark
+  and transfer_hook state mark v =
+    let l = get_allowed_shapes state v in
+    if l = [] then Ty.add_wildcard_hook ~hook:(wildcard_hook state) v;
+    if not (is_shape_redundant l mark) then
+      state.wildcards <- E.add v (mark :: l) state.wildcards
 
+  (* create a wildcard *)
+  let wildcard env src shape =
+    let w = Ty.Var.wildcard () in
+    let mark = { shape; src; bound = env.type_locs; } in
+    env.st.wildcards <- E.add w [mark] env.st.wildcards;
+    Ty.add_wildcard_hook ~hook:(wildcard_hook env.st) w;
+    Ty.of_var w
+
+  (* Try and set a wildcard according to one of its shapes *)
   let rec try_set_wildcard_shape w = function
-    | [] -> true
+    | [] -> false
     | Any_base { preferred; allowed = _; } :: _ ->
-      Ty.set_wildcard w preferred; false
+      Ty.set_wildcard w preferred; true
     | Arrow { ret_shape; arg_shape = _; } :: r ->
       try_set_wildcard_shape w (ret_shape :: r)
     | _ :: r ->
       try_set_wildcard_shape w r
 
-  let set_wildcard_shape v =
-    if not (Ty.Var.is_wildcard v) then true
-    else begin
-      let marks = Ty.Var.get_tag_list v wildcard_allowed_shapes in
-      let shapes = List.map (fun (x, _, _) -> x) marks in
-      try_set_wildcard_shape v shapes
-    end
+  (* "pop" a wildcard out of the set of watched wildcards *)
+  let pop_wildcard state =
+  let w, l = E.choose state.wildcards in
+  state.wildcards <- E.remove w state.wildcards;
+  w, l
 
-  (* create a wildcard *)
-  let wildcard env src shape =
-    let w = Ty.Var.wildcard () in
-    let mark = (shape, src, env.type_locs) in
-    Ty.Var.add_tag w wildcard_allowed_shapes mark;
-    Ty.add_wildcard_hook ~hook:wildcard_hook w;
-    Ty.of_var w
+  (* ensure all wildcards are set *)
+  let rec set_wildcards_and_return_free_wildcards state acc =
+    match pop_wildcard state with
+    | exception Not_found -> acc
+    | w, l ->
+      let shapes = List.map (fun { shape; src = _; bound = _; } -> shape) l in
+      let acc = if try_set_wildcard_shape w shapes then acc else (w :: acc) in
+      set_wildcards_and_return_free_wildcards state acc
 
 
   (* Wrappers for expression building *)
@@ -1429,6 +1445,7 @@ module Make
       parse_app_ho_generic env ast (Term (T.of_var v)) v_ast args
 
   and parse_app_letin_var env ast v v_ast t args =
+    T.Var.set_tag v used_var_tag ();
     match env.order with
     | First_order ->
       if args = [] then Term t
@@ -1523,8 +1540,8 @@ module Make
           _wrap2 env ast Ty.set_wildcard w ty;
           ty
         | _ ->
-          let mark = (shape, src, env.type_locs) in
-          transfer_hook mark w;
+          let mark = { shape; src; bound = env.type_locs; } in
+          transfer_hook env.st mark w;
           ty
       end
     | _ -> infer_ty env ast src shape []
@@ -1874,13 +1891,12 @@ module Make
 
   let parse env ast =
     let res = parse_prop env ast in
-    match T.fv res with
-    | [], [] -> res
-    | tys, ts ->
-      let tys = _wrap2 env ast List.filter set_wildcard_shape tys in
-      begin match tys, ts with
-        | [], [] -> res
-        | tys, ts -> _error env (Ast ast) (Unbound_variables (tys, ts, res))
-      end
+    let free_wildcards =
+      _wrap2 env ast set_wildcards_and_return_free_wildcards  env.st []
+    in
+    begin match free_wildcards with
+      | [] -> res
+      | tys -> _error env (Ast ast) (Unbound_variables (tys, [], res))
+    end
 
 end
