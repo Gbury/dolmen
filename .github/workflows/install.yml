@@ -64,12 +64,12 @@ jobs:
       uses: avsm/setup-ocaml@v2
       if: runner.os == 'Windows'
       with:
-        ocaml-version: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c
+        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c
     - name: Setup ocaml/opam on Unix
       uses: avsm/setup-ocaml@v2
       if: runner.os != 'Windows'
       with:
-        opam-version: ocaml-base-compiler.${{ matrix.ocaml-version }}
+        ocaml-compiler: ocaml-base-compiler.${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
