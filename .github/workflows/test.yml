@@ -21,7 +21,7 @@ jobs:
   # - the package,
   # - the doc and push it to gh-pages
   # - the examples and push them to the master branch
-  build:
+  test:
 
     runs-on: ${{ matrix.os }}
 
@@ -36,8 +36,6 @@ jobs:
         # TODO: add macos-latest and windows-latest
         os:
           - ubuntu-latest
-          #- macos-latest
-          #- windows-latest
 
         # Ocaml version to test
         ocaml-version:

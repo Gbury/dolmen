@@ -1,13 +1,12 @@
 # Installability tests
 # ====================
-# Build the compiler with makefiles and run the testsuite
+# Check the binary package install correctly
 name: install
 
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
 # or pull request against it).
-on: # release
-  # TODO comment these lines, and uncomment the one above
+on:
   push:
     branches:
       - master
@@ -20,7 +19,7 @@ jobs:
   # ================
   # Goal: Ensure the packages install as separate packages
   # using opam
-  build:
+  install:
 
     runs-on: ${{ matrix.os }}
 
@@ -32,11 +31,10 @@ jobs:
 
       matrix:
         # Operating system to run tests on.
-        # TODO: add macos-latest and windows-latest
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
+          #- windows-latest
 
         # Ocaml versions to use
         ocaml-version:
@@ -44,9 +42,6 @@ jobs:
 
         # Dolmen package to test installation of
         dolmen-pkg:
-          - dolmen
-          - dolmen_type
-          - dolmen_loop
           - dolmen_bin
           - dolmen_lsp
 
@@ -64,8 +59,6 @@ jobs:
     # checkout the repo (full clone, necessary for push later)
     - name: Checkout the repo
       uses: actions/checkout@v2
-      with:
-        fetch-depth: '1'
     # Setup ocaml/opam
     - name: Setup ocaml/opam on Windows
       uses: avsm/setup-ocaml@v2
@@ -80,8 +73,8 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
-    # Install the "dolmen" package
+    # Install the package
     - name: Install package
-      run: opam install ${{ matrix.dolmen-pkg }}
+      run: opam install --with-test ${{ matrix.dolmen-pkg }}
 
 
