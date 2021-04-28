@@ -1022,28 +1022,27 @@ module Make
   let used_var_tag = Tag.create ()
 
   (* Emit warnings for quantified variables that are unused *)
-  let warn_unused env (ty_vars, t_vars) =
-    List.iter (fun v ->
-        match Ty.Var.get_tag v used_var_tag with
-        | Some () -> Ty.Var.unset_tag v used_var_tag
-        | None -> _unused_type env v
-      ) ty_vars;
-    List.iter (fun v ->
-        match T.Var.get_tag v used_var_tag with
-        | Some () -> T.Var.unset_tag v used_var_tag
-        | None -> _unused_term env v
-      ) t_vars;
-    ()
+  let check_used_ty_var env v =
+    match Ty.Var.get_tag v used_var_tag with
+    | Some () -> Ty.Var.unset_tag v used_var_tag
+    | None -> _unused_type env v
 
+  let check_used_term_var env v =
+    match T.Var.get_tag v used_var_tag with
+    | Some () -> T.Var.unset_tag v used_var_tag
+    | None -> _unused_term env v
+
+  (* Wrappers for creating binders *)
   let mk_let env ast mk l body =
-    warn_unused env ([], (List.map fst l));
+    List.iter (fun (v, _) -> check_used_term_var env v) l;
     _wrap2 env ast mk l body
 
   let mk_quant env ast mk (ty_vars, t_vars) body =
     if not env.quants then
       _error env (Ast ast) Forbidden_quantifier
     else begin
-      warn_unused env (ty_vars, t_vars);
+      List.iter (check_used_ty_var env) ty_vars;
+      List.iter (check_used_term_var env) t_vars;
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
@@ -1071,74 +1070,77 @@ module Make
     { env with expect = Term; }
 
   let rec parse_expr (env : env) t : res =
-    let res : res = match t with
+    wrap_attr env t @@ function
+    (* Ttype *)
+    | { Ast.term = Ast.Builtin Ast.Ttype; _ } ->
+      Ttype
 
-      (* Ttype *)
-      | { Ast.term = Ast.Builtin Ast.Ttype; _ } ->
-        Ttype
+    (* Wildcards should only occur in place of types *)
+    | { Ast.term = Ast.Builtin Ast.Wildcard; _ } as ast ->
+      Ty (wildcard env (From_source ast) Any_in_scope)
 
-      (* Wildcards should only occur in place of types *)
-      | { Ast.term = Ast.Builtin Ast.Wildcard; _ } as ast ->
-        Ty (wildcard env (From_source ast) Any_in_scope)
+    (* Arrows *)
+    | { Ast.term = Ast.Binder (Ast.Arrow, args, ret); _ } ->
+      parse_arrow env t [args] ret
 
-      (* Arrows *)
-      | { Ast.term = Ast.Binder (Ast.Arrow, args, ret); _ } ->
-        parse_arrow env t [args] ret
+    (* Binders *)
+    | { Ast.term = Ast.Binder (Ast.Fun, _, _); _ } ->
+      parse_quant parse_term T.lam Ast.Fun env t [] [] t
 
-      (* Binders *)
-      | { Ast.term = Ast.Binder (Ast.Fun, _, _); _ } ->
-        parse_quant parse_term T.lam Ast.Fun env t [] [] t
+    | { Ast.term = Ast.Binder (Ast.All, _, _); _ } ->
+      parse_quant parse_prop T.all Ast.All env t [] [] t
 
-      | { Ast.term = Ast.Binder (Ast.All, _, _); _ } ->
-        parse_quant parse_prop T.all Ast.All env t [] [] t
+    | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
+      parse_quant parse_prop T.ex Ast.Ex env t [] [] t
 
-      | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } ->
-        parse_quant parse_prop T.ex Ast.Ex env t [] [] t
+    | ({ Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } as ast)
+    | ({ Ast.term = Ast.Binder (Ast.Let_par, ([_] as vars), f); _ } as ast) ->
+      parse_let_seq env ast [] f vars
 
-      | { Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } as ast ->
-        parse_let_seq env ast [] f vars
+    | { Ast.term = Ast.Binder (Ast.Let_par, vars, f); _ } as ast ->
+      parse_let_par env ast [] f vars
 
-      | { Ast.term = Ast.Binder (Ast.Let_par, vars, f); _ } as ast ->
-        parse_let_par env ast [] f vars
+    (* Pattern matching *)
+    | { Ast.term = Ast.Match (scrutinee, branches); _ } ->
+      parse_match env t scrutinee branches
 
-      (* Pattern matching *)
-      | { Ast.term = Ast.Match (scrutinee, branches); _ } ->
-        parse_match env t scrutinee branches
+    (* Record creation *)
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record; _ }, l); _ } as ast ->
+      parse_record env ast l
 
-      (* Record creation *)
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record; _ }, l); _ } as ast ->
-        parse_record env ast l
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_with; _ }, l); _ } as ast ->
+      parse_record_with env ast l
 
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_with; _ }, l); _ } as ast ->
-        parse_record_with env ast l
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_access; _ }, l); _ } as ast ->
+      parse_record_access env ast l
 
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record_access; _ }, l); _ } as ast ->
-        parse_record_access env ast l
+    (* Type annotations *)
+    | { Ast.term = Ast.Colon (a, expected); _ } ->
+      parse_ensure env a expected
 
-      (* Type annotations *)
-      | { Ast.term = Ast.Colon (a, expected); _ } ->
-        parse_ensure env a expected
+    (* Sometimes parser creates extra applications *)
+    | { Ast.term = Ast.App (t, []); _ } ->
+      parse_expr env t
 
-      (* Sometimes parser creates extra applications *)
-      | { Ast.term = Ast.App (t, []); _ } ->
-        parse_expr env t
+    (* Application *)
+    | { Ast.term = Ast.App (f, args); _ } as ast ->
+      parse_app env ast f args
 
-      (* Application *)
-      | { Ast.term = Ast.App (f, args); _ } as ast ->
-        parse_app env ast f args
+    (* Symbols *)
+    | { Ast.term = Ast.Symbol s; _ } as ast ->
+      parse_symbol env ast s ast
 
-      (* Symbols *)
-      | { Ast.term = Ast.Symbol s; _ } as ast ->
-        parse_symbol env ast s ast
+    (* Builtin *)
+    | { Ast.term = Ast.Builtin b; _ } as ast ->
+      parse_builtin env ast b
 
-      (* Builtin *)
-      | { Ast.term = Ast.Builtin b; _ } as ast ->
-        parse_builtin env ast b
+    (* Other cases *)
+    | ast -> _error env (Ast ast) Unhandled_ast
 
-      (* Other cases *)
-      | ast -> _error env (Ast ast) Unhandled_ast
-    in
-    apply_attr env res t t.Ast.attr
+  and wrap_attr env ast f =
+    match ast.Ast.attr with
+    | [] -> f ast
+    | l -> apply_attr env (f ast) ast l
 
   and apply_attr env res ast l =
     let () = List.iter (function
@@ -1177,15 +1179,14 @@ module Make
     match env.order with
     | First_order -> _error env (Ast ast) Higher_order_type
     | Higher_order ->
-      begin match ret with
-        | { Ast.term = Ast.Binder (Ast.Arrow, args, ret'); _ } ->
-          parse_arrow env ast (args :: acc) ret'
-        | _ ->
-          let args = List.flatten (List.rev acc) in
-          let args = List.map (parse_ty env) args in
-          let ret = parse_ty env ret in
-          Ty (_wrap2 env ast Ty.arrow args ret)
-      end
+      wrap_attr env ret @@ function
+      | { Ast.term = Ast.Binder (Ast.Arrow, args, ret'); _ } ->
+        parse_arrow env ast (args :: acc) ret'
+      | _ ->
+        let args = List.flatten (List.rev acc) in
+        let args = List.map (parse_ty env) args in
+        let ret = parse_ty env ret in
+        Ty (_wrap2 env ast Ty.arrow args ret)
 
   and parse_quant_vars env l =
     let ttype_vars, typed_vars, env' = List.fold_left (
@@ -1200,7 +1201,8 @@ module Make
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
-  and parse_quant parse_inner mk b env ast ttype_acc ty_acc = function
+  and parse_quant parse_inner mk b env ast ttype_acc ty_acc body_ast =
+    wrap_attr env body_ast @@ function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
       let ttype_vars, ty_vars, env' = parse_quant_vars env vars in
       parse_quant parse_inner mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
@@ -1272,11 +1274,17 @@ module Make
     List.rev l, env
 
   and parse_let_seq env ast acc f = function
-    | [] -> (* TODO: use continuation to avoid stack overflow on packs of let-bindings ? *)
-      let l = List.rev acc in
-      begin match parse_expr env f with
-        | Term t -> Term (mk_let env ast T.letin l t)
-        | res -> _expected env "term of formula" f (Some res)
+    | [] ->
+      wrap_attr env f @@ begin function
+        | { Ast.term = Ast.Binder (Ast.Let_seq, vars, f'); _ }
+        | { Ast.term = Ast.Binder (Ast.Let_par, ([_] as vars), f'); _ } ->
+          parse_let_seq env f acc f' vars
+        | _ ->
+          let l = List.rev acc in
+          begin match parse_expr env f with
+            | Term t -> Term (mk_let env ast T.letin l t)
+            | res -> _expected env "term of formula" f (Some res)
+          end
       end
     | x :: r ->
       begin match x with
@@ -1380,7 +1388,7 @@ module Make
     parse_app_symbol env ast s s_ast []
 
   and parse_app env ast f_ast args_asts =
-    match f_ast with
+    wrap_attr env f_ast @@ function
     | { Ast.term = Ast.App (g, inner_args); _ } ->
       parse_app env ast g (inner_args @ args_asts)
     | { Ast.term = Ast.Symbol s; _ } ->
