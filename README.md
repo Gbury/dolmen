@@ -19,7 +19,9 @@ Installation
 
 The main method of installation is to use [opam](https://opam.ocaml.org/).
 See [this page](https://opam.ocaml.org/doc/Install.html#Using-your-distribution-39-s-package-system)
-for information about how to install opam on your system.
+for information about how to install opam on your system. Once you have installed
+and configured opam, you can use the following command to install the dolmen
+cli and lsp binaries:
 
 ```
 opam install dolmen_bin dolmen_lsp
@@ -28,6 +30,13 @@ opam install dolmen_bin dolmen_lsp
 Additionally, pre-built binaries for Linux and MacOs can be found
 on the release pages (starting from the v0.6 release, see
 [the latest release](https://github.com/Gbury/dolmen/releases/tag/v0.5)).
+
+
+The libraries can be installed using:
+
+```
+opam install dolmen dolmen_type dolmen_loop
+```
 
 
 Goals
