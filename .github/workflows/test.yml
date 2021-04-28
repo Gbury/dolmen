@@ -33,7 +33,6 @@ jobs:
 
       matrix:
         # Operating system to run tests on.
-        # TODO: add macos-latest and windows-latest
         os:
           - ubuntu-latest
 
@@ -79,17 +78,17 @@ jobs:
     # Update the doc
     # --------------
     - name: Update doc index page
-      if: ${{ github.ref == 'master' }}
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         cd doc/scripts && asciidoc index.txt
     - name: Update documentation on gh-pages
-      if: ${{ github.ref == 'master' }}
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         git checkout gh-pages
         cp doc/scripts/index.html ./
         cp -r _build/default/_doc/_html ./dev
     - name: Commit and push doc updates
-      if: ${{ matrix.ocaml-version == '4.11.1' && github.ref == 'master' }}
+      if: ${{ github.ref == 'refs/heads/master' }}
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com'
