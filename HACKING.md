@@ -4,6 +4,27 @@ This file is incomplete, but may have interesting tips if you want to start
 hacking on dolmen. If you're having troubles, don't hesitate to contact me
 directly, ^^
 
+## Build locally
+
+You need to have [ocaml](https://ocaml.org/) installed to compile dolmen.
+Additionally, some ocaml dependencies are needed. The easiest way to
+get a working ocaml installation, and install the dependencies is to
+use [opam](https://opam.ocaml.org/).
+See [this page](https://opam.ocaml.org/doc/Install.html#Using-your-distribution-39-s-package-system)
+for information about how to install opam on your system.
+
+Once you have opam installed, you can use the following commands to isntall
+the needed dependencies to build dolmen:
+```
+opam pin add -n .
+opam install --deps-only .
+```
+
+You can then build the project with
+```
+make
+```
+
 
 ## Tests
 
