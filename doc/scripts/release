@@ -8,7 +8,7 @@ git checkout master
 
 # Generate documentation
 make doc
-(cd doc && asciidoc index.txt)
+(cd doc/scripts && asciidoc index.txt)
 
 # Checkout gh-pages
 git checkout gh-pages
@@ -18,7 +18,7 @@ git pull
 mkdir -p ./$version
 
 # Copy doc to the right locations
-cp doc/index.html ./
+cp doc/scripts/index.html ./
 cp -r _build/default/_doc/_html/* ./$version/
 
 # Add potentially new pages
