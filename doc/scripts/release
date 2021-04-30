@@ -20,11 +20,11 @@ git pull
 mkdir -p ./$version
 
 # Copy doc to the right locations
-cp doc/scripts/index.html ./
+git show master:doc/scripts/index.html &> index.html
 cp -r _build/default/_doc/_html/* ./$version/
 
 # Add potentially new pages
-git add ./$version/*
+git add ./$version
 git add ./index.html
 
 # Commit it all & push
