@@ -71,7 +71,7 @@ jobs:
       uses: avsm/setup-ocaml@v2
       if: runner.os != 'Windows'
       with:
-        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}, ${{ matrix.ocaml-options }}
+        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }},${{ matrix.ocaml-options }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
