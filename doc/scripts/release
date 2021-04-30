@@ -9,6 +9,8 @@ git checkout master
 # Generate documentation
 make doc
 (cd doc/scripts && asciidoc index.txt)
+git add doc/scripts/index.html
+git commit -m "Update doc index"
 
 # Checkout gh-pages
 git checkout gh-pages
