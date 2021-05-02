@@ -19,9 +19,7 @@ type builtin = <
   term_cst : term_cst;
 > Builtin.t
 
-(* Identifiers have a dual representation:
-   - in types and terms, they are just integers/indexes
-   - each index maps to a record that provides info about the identifier. *)
+(* Identifiers *)
 and 'ty id = {
   id_ty         : 'ty;
   index         : index; (** unique index *)
@@ -30,8 +28,9 @@ and 'ty id = {
   mutable tags  : Tag.map;
 }
 
-(* Type for first order types *)
 and type_ = Type
+
+(* Type for first order types *)
 and type_fun = {
   arity : int;
   mutable alias : type_alias;

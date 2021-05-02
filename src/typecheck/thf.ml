@@ -127,10 +127,10 @@ module Make
   type not_found = [ `Not_found ]
 
   (* Variable that can be bound to a dolmen identifier *)
-  type var = [
+  type 'env bound_var = [
     | `Ty_var of Ty.Var.t
     | `Term_var of T.Var.t
-    | `Letin of Ast.t * T.Var.t * T.t
+    | `Letin of 'env * Ast.t * T.Var.t * T.t
   ]
 
   (* Constants that can be bound to a dolmen identifier. *)
@@ -153,9 +153,6 @@ module Make
   type builtin = [
     | `Builtin of builtin_res
   ]
-
-  (* Either a bound variable or a bound constant *)
-  type bound = [ var | cst | builtin ]
 
   type reason =
     | Builtin
@@ -342,7 +339,7 @@ module Make
     term_locs : reason F.t;
 
     (* bound variables *)
-    vars : var M.t;
+    vars : env bound_var M.t;
 
     (* The current builtin symbols *)
     builtins : builtin_symbols;
@@ -375,6 +372,10 @@ module Make
 
   (* Convenient alias *)
   type 'a typer = env -> Ast.t -> 'a
+
+  (* Convenient aliases *)
+  type var = env bound_var
+  type bound = [ var | cst | builtin ]
 
 
   (* Exceptions *)
@@ -428,7 +429,7 @@ module Make
         | `Builtin _ -> Builtin
         | `Ty_var v -> E.find v env.type_locs
         | `Term_var v -> F.find v env.term_locs
-        | `Letin (_, v, _) -> F.find v env.term_locs
+        | `Letin (_, _, v, _) -> F.find v env.term_locs
         | `Ty_cst c -> R.find c env.st.ttype_locs
         | `Term_cst c -> S.find c env.st.const_locs
         | `Cstr c -> U.find c env.st.cstrs_locs
@@ -446,7 +447,7 @@ module Make
     | `Builtin `Tags _ -> `Builtin `Tag
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
-    | `Letin (_, v, _) -> `Variable (`Term (v, reason))
+    | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
@@ -741,7 +742,7 @@ module Make
     in
     let t' = T.bind v' t in
     v', { env with
-          vars = M.add id (`Letin (e, v', t')) env.vars;
+          vars = M.add id (`Letin (env, e, v', t')) env.vars;
           term_locs = F.add v' reason env.term_locs;
         }
 
@@ -1426,7 +1427,7 @@ module Make
   and parse_app_resolved env ast s s_ast args = function
     | `Ty_var v -> parse_app_ty_var env ast v s_ast args
     | `Term_var v -> parse_app_term_var env ast v s_ast args
-    | `Letin (_, v, t) -> parse_app_letin_var env ast v s_ast t args
+    | `Letin (_, _, v, t) -> parse_app_letin_var env ast v s_ast t args
     | `Ty_cst f -> parse_app_ty_cst env ast f args
     | `Term_cst f -> parse_app_term_cst env ast f args
     | `Cstr c ->

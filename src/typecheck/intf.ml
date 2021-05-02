@@ -126,29 +126,6 @@ module type Formulas = sig
   type not_found = [ `Not_found ]
   (** Not bound bindings *)
 
-  type var = [
-    | `Ty_var of ty_var
-    | `Term_var of term_var
-    | `Letin of Dolmen.Std.Term.t * term_var * term
-  ]
-  (** Variable bindings *)
-
-  type cst = [
-    | `Cstr of term_cstr
-    | `Field of term_field
-    | `Ty_cst of ty_cst
-    | `Term_cst of term_cst
-  ]
-  (** Constant bindings *)
-
-  type builtin = [
-    | `Builtin of builtin_res
-  ]
-  (** Builtin binding *)
-
-  type bound = [ var | cst | builtin ]
-  (* All internal bindings *)
-
   type inferred =
     | Ty_fun of ty_cst
     | Term_fun of term_cst (**)
@@ -414,6 +391,29 @@ module type Formulas = sig
 
 
   (** {2 Builtin helpers} *)
+
+  type var = [
+    | `Ty_var of ty_var
+    | `Term_var of term_var
+    | `Letin of env * Dolmen.Std.Term.t * term_var * term
+  ]
+  (** Variable bindings *)
+
+  type cst = [
+    | `Cstr of term_cstr
+    | `Field of term_field
+    | `Ty_cst of ty_cst
+    | `Term_cst of term_cst
+  ]
+  (** Constant bindings *)
+
+  type builtin = [
+    | `Builtin of builtin_res
+  ]
+  (** Builtin binding *)
+
+  type bound = [ var | cst | builtin ]
+  (* All internal bindings *)
 
   val find_var : env -> Dolmen.Std.Id.t -> [ var | not_found ]
   (** Try and find the given id in the set of locally bound variables. *)

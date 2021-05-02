@@ -126,7 +126,7 @@ module Smtlib2 = struct
        the Type.find_bound function. *)
     and view_id ~parse version env id args =
       match Type.find_var env id with
-      | `Letin (e, _, _) -> view ~parse version env e
+      | `Letin (env, e, _, _) -> view ~parse version env e
       | #Type.var ->
         begin match args with
           | [] -> Variable id
