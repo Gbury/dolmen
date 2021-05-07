@@ -10,6 +10,6 @@
     ; Typing & Loop stuff
     Tag Pretty Builtin Expr
     ; Helpers
-    Msg Tok Vec Misc Escape Transformer)
+    Msg Tok Vec Misc Escape Transformer Profile)
 )
 

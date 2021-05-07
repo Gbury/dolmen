@@ -33,6 +33,7 @@ module Pipe
     aux
 
   let wrap_parser g = fun st ->
+    Dolmen_std.Profile.with_ "parsing" @@ fun () ->
     if State.is_interactive st then
       Format.printf "%s @?" (State.prelude st);
     State.start `Parsing;

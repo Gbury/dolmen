@@ -259,6 +259,7 @@ module Pipe(State : State_intf.Header_pipe
   let check st =
     if not (State.check_headers st) then st
     else begin
+      Dolmen_std.Profile.with_ "headers.check" @@ fun () ->
       let h = State.header_state st in
       let st = check_wanted st h in
       let st = check_required st h in
@@ -294,6 +295,7 @@ module Pipe(State : State_intf.Header_pipe
   let inspect st c =
     if not (State.check_headers st) then (st, c)
     else begin
+      Dolmen_std.Profile.with_ "headers.inspect" @@ fun () ->
       let lang = State.input_lang st in
       let h = State.header_state st in
       let st =

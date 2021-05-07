@@ -59,6 +59,7 @@ let () =
       exit Cmdliner.Term.exit_status_cli_error
     | `Ok opt -> opt
   in
+  Profiler_backend.setup();
   if st.Loop.State.debug then
     Dolmen.Std.Expr.Print.print_index := true;
   let st, g =
@@ -80,5 +81,6 @@ let () =
   in
   let st = Loop.Header.check st in
   let _st = Dolmen_loop.State.flush st () in
+  Profiler_backend.teardown();
   ()
 

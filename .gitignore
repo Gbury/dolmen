@@ -19,3 +19,6 @@ _opam
 
 # swap files
 *.swp
+
+*.json
+*.json.gz

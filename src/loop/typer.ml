@@ -1298,6 +1298,7 @@ module Pipe
     | _ -> c
 
   let typecheck st c =
+    Dolmen_std.Profile.with_ "typecheck" @@ fun () ->
     let res =
       if not (Typer.typecheck st) then
         st, `Done ()

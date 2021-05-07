@@ -13,6 +13,10 @@
     (select memory_profiler.ml from
             (memtrace -> memory_profiler.memtrace.ml)
             (         -> memory_profiler.missing.ml))
+    ; mtime dependency
+    (select profiler_backend.ml from
+            (mtime mtime.clock.os threads.posix -> profiler_backend.tef.ml)
+            (      -> profiler_backend.missing.ml))
     )
 )
 
