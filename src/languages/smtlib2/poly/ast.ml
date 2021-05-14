@@ -23,11 +23,10 @@ module type Id = sig
       and attributes, respectively. *)
 
   val mk : namespace -> string -> t
-  (** Make an identifier from a name and namespace.
-      Indexed identifiers (which are a list of names),
-      are encoded into a single string with the ['\000']
-      character as separator (since it cannot appear in any
-      symbol from smtlib). *)
+  (** Make an identifier from a name and namespace. *)
+
+  val indexed : namespace -> string -> string list -> t
+  (** Create an indexed identifier. *)
 
 end
 

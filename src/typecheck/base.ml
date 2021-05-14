@@ -17,37 +17,34 @@ let rec merge l env s =
 (* ************************************************************************ *)
 
 type 'ret indexed = [
+  | `Not_indexed
   | `Unary of (string -> 'ret)
   | `Binary of (string -> string -> 'ret)
   | `Ternary of (string -> string -> string -> 'ret)
   | `Nary of int * (string list -> 'ret)
 ]
 
-let parse_id id l ~err ~k =
-  let rec aux h r r_l = function
-    | [] -> k (h :: r)
-    | (s, `Unary f) :: _ when String.equal s h ->
-      begin match r with
-        | [x] -> f x
-        | _ -> err s 1 r_l
-      end
-    | (s, `Binary f) :: _ when String.equal s h ->
-      begin match r with
-        | [x; y] -> f x y
-        | _ -> err s 2 r_l
-      end
-    | (s, `Ternary f) :: _ when String.equal s h ->
-      begin match r with
-        | [x; y; z] -> f x y z
-        | _ -> err s 3 r_l
-      end
-    | (s, `Nary (n, f)) :: _ when String.equal s h ->
-      if r_l = n then f r else err s n r_l
-    | _ :: l' -> aux h r r_l l'
-  in
-  match Dolmen.Std.Id.split id with
-  | h :: r -> aux h r (List.length r) l
-  | r -> k r
+let parse_indexed h r f ~err ~k =
+  let r_l = List.length r in
+  match f h with
+  | `Not_indexed -> k ()
+  | `Unary f ->
+    begin match r with
+      | [x] -> f x
+      | _ -> err h 1 r_l
+    end
+  | `Binary f ->
+    begin match r with
+      | [x; y] -> f x y
+      | _ -> err h 2 r_l
+    end
+  | `Ternary f ->
+    begin match r with
+      | [x; y; z] -> f x y z
+      | _ -> err h 3 r_l
+    end
+  | `Nary (n, f') ->
+    if n = r_l then f' r else err h n r_l
 
 let bad_ty_index_arity (type env ty)
     (module Type: Tff_intf.S with type env = env and type Ty.t = ty)
@@ -71,7 +68,7 @@ let bad_term_index_arity (type env term)
 
 type ('env, 'args, 'ret) helper =
   (module Tff_intf.S with type env = 'env) ->
-  'env -> string -> (Dolmen.Std.Term.t -> 'args -> 'ret) ->
+  'env -> Intf.symbol -> (Dolmen.Std.Term.t -> 'args -> 'ret) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'ret)
 
 let make_op0
@@ -169,13 +166,13 @@ let map_chain
 
 let app0
     (type env) (module Type : Tff_intf.S with type env = env)
-    ?(check=(fun _ -> ())) env name ret =
-  make_op0 (module Type) env name (fun ast () -> check ast; ret)
+    ?(check=(fun _ -> ())) env symbol ret =
+  make_op0 (module Type) env symbol (fun ast () -> check ast; ret)
 
 let app0_ast
     (type env) (module Type : Tff_intf.S with type env = env)
-    ?(check=(fun _ -> ())) env name mk =
-  make_op0 (module Type) env name (fun ast () -> check ast; mk ast)
+    ?(check=(fun _ -> ())) env symbol mk =
+  make_op0 (module Type) env symbol (fun ast () -> check ast; mk ast)
 
 
 (* Unary applications *)
@@ -183,29 +180,29 @@ let app0_ast
 let ty_app1
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_op1 (module Type) env name
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_op1 (module Type) env symbol
     (fun ast t -> check ast t; mk (Type.parse_ty env t))
 
 let ty_app1_ast
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_op1 (module Type) env name
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_op1 (module Type) env symbol
     (fun ast t -> check ast t; mk ast (Type.parse_ty env t))
 
 let term_app1
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_op1 (module Type) env name
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_op1 (module Type) env symbol
     (fun ast t -> check ast t; mk (Type.parse_term env t))
 
 let term_app1_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_op1 (module Type) env name
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_op1 (module Type) env symbol
     (fun ast t -> check ast t; mk ast (Type.parse_term env t))
 
 
@@ -214,29 +211,29 @@ let term_app1_ast
 let ty_app2
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ -> ())) env name mk =
-  make_op2 (module Type) env name (fun ast (a, b) ->
+    ?(check=(fun _ _ _ -> ())) env symbol mk =
+  make_op2 (module Type) env symbol (fun ast (a, b) ->
       check ast a b; mk (Type.parse_ty env a) (Type.parse_ty env b))
 
 let ty_app2_ast
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ -> ())) env name mk =
-  make_op2 (module Type) env name (fun ast (a, b) ->
+    ?(check=(fun _ _ _ -> ())) env symbol mk =
+  make_op2 (module Type) env symbol (fun ast (a, b) ->
       check ast a b; mk ast (Type.parse_ty env a) (Type.parse_ty env b))
 
 let term_app2
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ -> ())) env name mk =
-  make_op2 (module Type) env name (fun ast (a, b) ->
+    ?(check=(fun _ _ _ -> ())) env symbol mk =
+  make_op2 (module Type) env symbol (fun ast (a, b) ->
       check ast a b; mk (Type.parse_term env a) (Type.parse_term env b))
 
 let term_app2_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ -> ())) env name mk =
-  make_op2 (module Type) env name (fun ast (a, b) ->
+    ?(check=(fun _ _ _ -> ())) env symbol mk =
+  make_op2 (module Type) env symbol (fun ast (a, b) ->
       check ast a b; mk ast (Type.parse_term env a) (Type.parse_term env b))
 
 
@@ -245,32 +242,32 @@ let term_app2_ast
 let ty_app3
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ _ -> ())) env name mk =
-  make_op3 (module Type) env name (fun ast (a, b, c) ->
+    ?(check=(fun _ _ _ _ -> ())) env symbol mk =
+  make_op3 (module Type) env symbol (fun ast (a, b, c) ->
       check ast a b c;
       mk (Type.parse_ty env a) (Type.parse_ty env b) (Type.parse_ty env c))
 
 let ty_app3_ast
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ _ -> ())) env name mk =
-  make_op3 (module Type) env name (fun ast (a, b, c) ->
+    ?(check=(fun _ _ _ _ -> ())) env symbol mk =
+  make_op3 (module Type) env symbol (fun ast (a, b, c) ->
       check ast a b c;
       mk ast (Type.parse_ty env a) (Type.parse_ty env b) (Type.parse_ty env c))
 
 let term_app3
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ _ -> ())) env name mk =
-  make_op3 (module Type) env name (fun ast (a, b, c) ->
+    ?(check=(fun _ _ _ _ -> ())) env symbol mk =
+  make_op3 (module Type) env symbol (fun ast (a, b, c) ->
       check ast a b c;
       mk (Type.parse_term env a) (Type.parse_term env b) (Type.parse_term env c))
 
 let term_app3_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ _ -> ())) env name mk =
-  make_op3 (module Type) env name (fun ast (a, b, c) ->
+    ?(check=(fun _ _ _ _ -> ())) env symbol mk =
+  make_op3 (module Type) env symbol (fun ast (a, b, c) ->
       check ast a b c;
       mk ast (Type.parse_term env a) (Type.parse_term env b) (Type.parse_term env c))
 
@@ -280,8 +277,8 @@ let term_app3_ast
 let ty_app4
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ _ _ -> ())) env name mk =
-  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+    ?(check=(fun _ _ _ _ _ -> ())) env symbol mk =
+  make_op4 (module Type) env symbol (fun ast (a, b, c, d) ->
       check ast a b c d;
       mk (Type.parse_ty env a) (Type.parse_ty env b)
         (Type.parse_ty env c) (Type.parse_ty env d))
@@ -289,8 +286,8 @@ let ty_app4
 let ty_app4_ast
     (type env) (type ty)
     (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
-    ?(check=(fun _ _ _ _ _ -> ())) env name mk =
-  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+    ?(check=(fun _ _ _ _ _ -> ())) env symbol mk =
+  make_op4 (module Type) env symbol (fun ast (a, b, c, d) ->
       check ast a b c d;
       mk ast (Type.parse_ty env a) (Type.parse_ty env b)
         (Type.parse_ty env c) (Type.parse_ty env d))
@@ -298,8 +295,8 @@ let ty_app4_ast
 let term_app4
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ _ _ -> ())) env name mk =
-  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+    ?(check=(fun _ _ _ _ _ -> ())) env symbol mk =
+  make_op4 (module Type) env symbol (fun ast (a, b, c, d) ->
       check ast a b c d;
       mk (Type.parse_term env a) (Type.parse_term env b)
         (Type.parse_term env c) (Type.parse_term env d))
@@ -307,8 +304,8 @@ let term_app4
 let term_app4_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ _ _ _ -> ())) env name mk =
-  make_op4 (module Type) env name (fun ast (a, b, c, d) ->
+    ?(check=(fun _ _ _ _ _ -> ())) env symbol mk =
+  make_op4 (module Type) env symbol (fun ast (a, b, c, d) ->
       check ast a b c d;
       mk ast (Type.parse_term env a) (Type.parse_term env b)
         (Type.parse_term env c) (Type.parse_term env d))
@@ -318,7 +315,7 @@ let term_app4_ast
 let term_app_list
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ -> ())) env _name mk = (fun _ast args ->
+    ?(check=(fun _ -> ())) env _symbol mk = (fun _ast args ->
     List.iter check args;
     mk (List.map (Type.parse_term env) args)
   )
@@ -326,7 +323,7 @@ let term_app_list
 let term_app_list_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ -> ())) env _name mk = (fun ast args ->
+    ?(check=(fun _ -> ())) env _symbol mk = (fun ast args ->
     List.iter check args;
     mk ast (List.map (Type.parse_term env) args)
   )
@@ -337,16 +334,16 @@ let term_app_list_ast
 let term_app_left
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_assoc (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
       check ast l;
       fold_left_assoc mk (List.map (Type.parse_term env) l))
 
 let term_app_left_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_assoc (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
       check ast l;
       fold_left_assoc (mk ast) (List.map (Type.parse_term env) l))
 
@@ -356,16 +353,16 @@ let term_app_left_ast
 let term_app_right
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_assoc (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
       check ast l;
       fold_right_assoc mk (List.map (Type.parse_term env) l))
 
 let term_app_right_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_assoc (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
       check ast l;
       fold_right_assoc (mk ast) (List.map (Type.parse_term env) l))
 
@@ -375,8 +372,8 @@ let term_app_right_ast
 let term_app_chain
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_chain (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_chain (module Type) env symbol (fun ast l ->
       check ast l;
       let l' = List.map (Type.parse_term env) l in
       map_chain (module Type) mk l'
@@ -385,8 +382,8 @@ let term_app_chain
 let term_app_chain_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
-    ?(check=(fun _ _ -> ())) env name mk =
-  make_chain (module Type) env name (fun ast l ->
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_chain (module Type) env symbol (fun ast l ->
       check ast l;
       let l' = List.map (Type.parse_term env) l in
       map_chain (module Type) (mk ast) l'

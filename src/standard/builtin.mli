@@ -43,7 +43,8 @@
 (** {2 Type definition} *)
 (*  ************************************************************************* *)
 
-type _ t = ..
+type 'a t = ..
+constraint 'a = < .. >
 (* Extensible variant type for builtin operations.
    Parameterized over an object type that will record the type used for
    various constants and/or terms. *)

@@ -286,6 +286,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Report type errors *)
   (* ************************************************************************ *)
 
+  let print_symbol fmt symbol =
+    match (symbol : T.symbol) with
+    | Id id -> Dolmen.Std.Id.print fmt id
+    | Builtin builtin -> Dolmen.Std.Term.print_builtin fmt builtin
+
   let print_res fmt res =
     match (res : T.res) with
     | T.Ttype -> Format.fprintf fmt "Type"
@@ -345,10 +350,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Bad_ty_arity (c, actual) ->
       Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
         actual Dolmen.Std.Expr.Print.ty_cst c
-    | T.Bad_op_arity (s, expected, actual) ->
+    | T.Bad_op_arity (symbol, expected, actual) ->
       Format.fprintf fmt
-        "Bad arity for operator '%s':@ expected %a arguments but got %d"
-        s print_expected expected actual
+        "Bad arity for symbol '%a':@ expected %a arguments but got %d"
+        print_symbol symbol print_expected expected actual
     | T.Bad_cstr_arity (c, expected, actual) ->
       Format.fprintf fmt
         "Bad arity: expected %a arguments but got %d arguments for constructor@ %a%a"
@@ -658,9 +663,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let extract_tptp_kind = function
     | { Dolmen.Std.Term.term = App (
         { term = Symbol id; _ },
-        [{ term = Symbol kind; _ }]); _ }
-      when Dolmen.Std.Id.(equal tptp_kind) id ->
-      Some (Dolmen.Std.Id.full_name kind)
+        [{ term = Symbol { name = Simple s; _ }; _ }]); _ }
+      when Dolmen.Std.Id.(equal tptp_kind) id -> Some s
     | _ -> None
 
   let rec tptp_kind_of_attrs = function
@@ -1225,11 +1229,11 @@ module Pipe
     let counter = ref 0 in
     (fun c ->
        match c.Dolmen.Std.Statement.id with
-       | { Dolmen.Std.Id.ns = Dolmen.Std.Id.Decl; name = "" } ->
+       | None ->
          let () = incr counter in
          let name = Format.sprintf "%s_%d" ref_name !counter in
          Dolmen.Std.Id.mk Dolmen.Std.Id.decl name
-       | id -> id)
+       | Some id -> id)
 
   let def_id   = stmt_id "def"
   let decl_id  = stmt_id "decl"

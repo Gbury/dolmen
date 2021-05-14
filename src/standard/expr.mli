@@ -31,7 +31,7 @@ type builtin = <
 and 'ty id = private {
   id_ty         : 'ty;
   index         : index; (** unique index *)
-  name          : string;
+  path          : Path.t;
   builtin       : builtin;
   mutable tags  : Tag.map;
 }
@@ -305,7 +305,7 @@ module Id : sig
     ?name:string ->
     ?tags:Tag.map ->
     ?builtin:builtin ->
-    string -> 'a -> 'a t
+    Path.t -> 'a -> 'a t
   (** Create a new identifier *)
 
   val get_tag : _ t -> 'a Tag.t -> 'a option
@@ -529,7 +529,7 @@ module Ty : sig
     val arity : t -> int
     (** Return the arity of the given symbol. *)
 
-    val mk : string -> int -> t
+    val mk : Path.t -> int -> t
     (** Create a type constant with the given arity. *)
 
     val get_tag : t -> 'a Tag.t -> 'a option
@@ -816,7 +816,7 @@ module Term : sig
     val arity : t -> int * int
     (** Returns the arity of a term constant. *)
 
-    val mk : string -> ty -> t
+    val mk : Path.t -> ty -> t
     (** Create a constant symbol. *)
 
     val get_tag : t -> 'a Tag.t -> 'a option
@@ -958,12 +958,12 @@ module Term : sig
   end
 
   val define_record :
-    ty_const -> ty_var list -> (string * ty) list -> Field.t list
+    ty_const -> ty_var list -> (Path.t * ty) list -> Field.t list
   (** Define a new record type. *)
 
   val define_adt :
     ty_const -> ty_var list ->
-    (string * (ty * string option) list) list ->
+    (Path.t * (ty * Path.t option) list) list ->
     (Cstr.t * (ty * Const.t option) list) list
   (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
       the type variables [ty_vars] as defining an algebraic datatypes with constructors

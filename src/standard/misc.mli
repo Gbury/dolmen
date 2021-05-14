@@ -1,6 +1,25 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+(** {2 Comparison helpers} *)
+
+val (<?>) : int -> (('a -> 'a -> int) * 'a * 'a) -> int
+(** Composition of comparison functions. *)
+
+val lexicographic : ('a -> 'a -> int) -> 'a list -> 'a list -> int
+(** Lexicogrphic comparison on lsits. *)
+
+
+(** {2 Hash helpers} *)
+
+val hash_int : int -> int
+val hash_string : string -> int
+val hash_list : ('a -> int) -> 'a list -> int
+val hash2 : int -> int -> int
+val hash3 : int -> int -> int -> int
+val hash4 : int -> int -> int -> int -> int
+(** Hash combinators. *)
+
 
 (** {2 Misc functions} *)
 

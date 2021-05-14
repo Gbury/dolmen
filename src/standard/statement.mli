@@ -143,7 +143,7 @@ type descr =
   (** Exit the interactive loop. *)
 
 and t = {
-  id : Id.t;
+  id : Id.t option;
   descr : descr;
   attrs : term list;
   loc : location;
@@ -179,19 +179,15 @@ val pack : ?id:Id.t -> ?loc:location -> ?attrs:term list -> t list -> t
 
 (** {2 Printing functions} *)
 
-val pp : Buffer.t -> t -> unit
 val print : Format.formatter -> t -> unit
 (** Printing functions for statements. *)
 
-val pp_decl : Buffer.t -> decl -> unit
 val print_decl : Format.formatter -> decl -> unit
 (* Printer for declarations. *)
 
-val pp_def : Buffer.t -> def -> unit
 val print_def : Format.formatter -> def -> unit
 (* Printer for declarations. *)
 
-val pp_group : (Buffer.t -> 'a -> unit) -> Buffer.t -> 'a group -> unit
 val print_group :
   (Format.formatter -> 'a -> unit) ->
   Format.formatter -> 'a group -> unit

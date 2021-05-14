@@ -9,12 +9,14 @@ module type S = Thf_intf.S
 module Make
     (Tag: Dolmen.Intf.Tag.S)
     (Ty: Dolmen.Intf.Ty.Thf
-     with type 'a tag := 'a Tag.t)
+     with type 'a tag := 'a Tag.t
+      and type path := Dolmen.Std.Path.t)
     (T: Dolmen.Intf.Term.Thf
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
-      and type 'a tag := 'a Tag.t)
+      and type 'a tag := 'a Tag.t
+      and type path := Dolmen.Std.Path.t)
   : S with module Tag = Tag
        and module Ty = Ty
        and module T = T

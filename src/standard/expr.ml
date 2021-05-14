@@ -23,7 +23,7 @@ type builtin = <
 and 'ty id = {
   id_ty         : 'ty;
   index         : index; (** unique index *)
-  name          : string;
+  path          : Path.t;
   builtin       : builtin;
   mutable tags  : Tag.map;
 }
@@ -156,9 +156,9 @@ module Print = struct
       Format.fprintf fmt "%s" s
     | None ->
       if !print_index then
-        Format.fprintf fmt "%s%a" v.name pp_index v
+        Format.fprintf fmt "%a%a" Path.print v.path pp_index v
       else
-        Format.fprintf fmt "%s" v.name
+        Format.fprintf fmt "%a" Path.print v.path
 
   let id_pretty fmt (v : _ id) =
     match Tag.get v.tags pos with
@@ -333,46 +333,13 @@ end
 (* ************************************************************************* *)
 
 (* Useful shorthand for chaining comparisons *)
-let (<?>) i (cmp, x, y) =
-  match i with
-  | 0 -> cmp x y
-  | _ -> i
-
-(* hash helpers;
-   Note: these function must guarantee that the returned hash is
-   nonnegative, since negative hashes are used to identify not-yet
-   hashed structures. *)
-let hash2 x y = Hashtbl.hash (x, y)
-let hash3 x y z = hash2 x (hash2 y z)
-let hash4 x y z t = hash2 x (hash3 y z t)
+let (<?>) = Misc.(<?>)
+let lexicographic = Misc.lexicographic
 
 (* option iter *)
 let option_map f = function
   | None -> None
   | Some x -> Some (f x)
-
-(* list hash *)
-let hash_list f l =
-  let rec aux acc = function
-    | [] -> acc
-    | x :: r -> aux (Hashtbl.hash (acc, (f x))) r
-  in
-  aux 0 l
-
-(* lexicographic comparison *)
-let lexicographic cmp l l' =
-  let rec aux l l' =
-    match l, l' with
-    | [], [] -> 0
-    | _ :: _, [] -> 1
-    | [], _ :: _ -> -1
-    | x :: r, x' :: r' ->
-      begin match cmp x x' with
-        | 0 -> aux r r'
-        | res -> res
-      end
-  in
-  aux l l'
 
 (* List creation *)
 let init_list n f =
@@ -397,6 +364,7 @@ let with_cache ~cache f x =
     let res = f x in
     Hashtbl.add cache x res;
     res
+
 
 (* Ids *)
 (* ************************************************************************* *)
@@ -433,13 +401,13 @@ module Id = struct
       ?pos ?name
       ?(tags=Tag.empty)
       ?(builtin=Builtin.Base)
-      id_name id_ty =
+      id_path id_ty =
     incr id_counter;
     let tags = Tag.set_opt tags Print.pos pos in
     let tags = Tag.set_opt tags Print.name
         (option_map (fun s -> Pretty.Exact s) name)
     in
-    { name = id_name; id_ty; builtin; tags; index = !id_counter; }
+    { path = id_path; id_ty; builtin; tags; index = !id_counter; }
 
 end
 
@@ -655,7 +623,8 @@ module Ty = struct
     | _ -> ()
 
   let wildcard_var () =
-    Id.mk ~builtin:(Builtin.Wildcard { ty = ref None; }) "_" Type
+    let path = Path.local "_" in
+    Id.mk ~builtin:(Builtin.Wildcard { ty = ref None; }) path Type
 
 
   (* Prenex/Rank-1 polymorphism check *)
@@ -776,10 +745,14 @@ module Ty = struct
   (* hash function *)
   let rec hash_aux (t : t) =
     match t.ty_descr with
-    | TyVar v -> hash2 3 (Id.hash v)
-    | TyApp (f, args) -> hash3 5 (Id.hash f) (hash_list hash args)
-    | Arrow (args, ret) -> hash3 7 (hash_list hash args) (hash ret)
-    | Pi (vars, body) -> hash3 11 (hash_list Id.hash vars) (hash body)
+    | TyVar v ->
+      Misc.hash2 3 (Id.hash v)
+    | TyApp (f, args) ->
+      Misc.hash3 5 (Id.hash f) (Misc.hash_list hash args)
+    | Arrow (args, ret) ->
+      Misc.hash3 7 (Misc.hash_list hash args) (hash ret)
+    | Pi (vars, body) ->
+      Misc.hash3 11 (Misc.hash_list Id.hash vars) (hash body)
 
   and hash (t : t) =
     if t.ty_hash >= 0 then t.ty_hash
@@ -887,7 +860,7 @@ module Ty = struct
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
 
-    let mk name = Id.mk name Type
+    let mk name = Id.mk (Path.local name) Type
     let wildcard () = wildcard_var ()
     let is_wildcard = function
       | { builtin = Builtin.Wildcard _; _ } -> true
@@ -913,8 +886,10 @@ module Ty = struct
     let unset_tag = Id.unset_tag
 
     let arity (c : t) = c.id_ty.arity
-    let mk name n = Id.mk name { arity = n; alias = No_alias; }
-    let mk' ~builtin name n = Id.mk ~builtin name { arity = n; alias = No_alias; }
+    let mk path n =
+      Id.mk path { arity = n; alias = No_alias; }
+    let mk' ~builtin name n =
+      Id.mk ~builtin (Path.global name) { arity = n; alias = No_alias; }
 
     let prop = mk' ~builtin:Builtin.Prop "Prop" 0
     let unit = mk' ~builtin:Builtin.Unit "unit" 0
@@ -1217,14 +1192,16 @@ module Term = struct
   (* Hash *)
   let rec hash_aux t =
     match t.term_descr with
-    | Var v -> hash2 3 (Id.hash v)
-    | Cst c -> hash2 5 (Id.hash c)
+    | Var v ->
+      Misc.hash2 3 (Id.hash v)
+    | Cst c ->
+      Misc.hash2 5 (Id.hash c)
     | App (f, tys, args) ->
-      hash4 7 (hash f) (hash_list Ty.hash tys) (hash_list hash args)
+      Misc.hash4 7 (hash f) (Misc.hash_list Ty.hash tys) (Misc.hash_list hash args)
     | Binder (b, body) ->
-      hash3 11 (hash_binder b) (hash body)
+      Misc.hash3 11 (hash_binder b) (hash body)
     | Match (scrutinee, branches) ->
-      hash3 13 (hash scrutinee) (hash_branches branches)
+      Misc.hash3 13 (hash scrutinee) (hash_branches branches)
 
   and hash t =
     if t.term_hash >= 0 then t.term_hash
@@ -1236,23 +1213,23 @@ module Term = struct
 
   and hash_binder = function
     | Let_seq l ->
-      let aux (v, t) = hash2 (Id.hash v) (hash t) in
-      hash2 3 (hash_list aux l)
+      let aux (v, t) = Misc.hash2 (Id.hash v) (hash t) in
+      Misc.hash2 3 (Misc.hash_list aux l)
     | Let_par l ->
-      let aux (v, t) = hash2 (Id.hash v) (hash t) in
-      hash2 5 (hash_list aux l)
+      let aux (v, t) = Misc.hash2 (Id.hash v) (hash t) in
+      Misc.hash2 5 (Misc.hash_list aux l)
     | Lambda (tys, ts) ->
-      hash3 7 (hash_list Id.hash tys) (hash_list Id.hash ts)
+      Misc.hash3 7 (Misc.hash_list Id.hash tys) (Misc.hash_list Id.hash ts)
     | Exists (tys, ts) ->
-      hash3 11 (hash_list Id.hash tys) (hash_list Id.hash ts)
+      Misc.hash3 11 (Misc.hash_list Id.hash tys) (Misc.hash_list Id.hash ts)
     | Forall (tys, ts) ->
-      hash3 13 (hash_list Id.hash tys) (hash_list Id.hash ts)
+      Misc.hash3 13 (Misc.hash_list Id.hash tys) (Misc.hash_list Id.hash ts)
 
   and hash_branch (pattern, body) =
-    hash2 (hash pattern) (hash body)
+    Misc.hash2 (hash pattern) (hash body)
 
   and hash_branches l =
-    hash_list hash_branch l
+    Misc.hash_list hash_branch l
 
   (* Comparison *)
   let discr t =
@@ -1367,23 +1344,23 @@ module Term = struct
     FV.to_list s
 
   (* Helpers for adt definition *)
-  let mk_cstr ty_c name i vars args ret =
+  let mk_cstr ty_c path i vars args ret =
     let ty = Ty.pi vars (Ty.arrow args ret) in
-    Id.mk name ty ~builtin:(Builtin.Constructor { adt = ty_c; case = i; })
+    Id.mk path ty ~builtin:(Builtin.Constructor { adt = ty_c; case = i; })
 
   let mk_cstr_tester ty_c cstr i =
-    let name = Format.asprintf "is:%a" Print.id cstr in
+    let path = Path.rename (fun s -> "is:" ^ s) cstr.path in
     let vars, _, ret = Ty.poly_sig cstr.id_ty in
     let ty = Ty.pi vars (Ty.arrow [ret] Ty.prop) in
-    Id.mk ~builtin:(Builtin.Tester { adt = ty_c; cstr; case = i }) name ty
+    Id.mk ~builtin:(Builtin.Tester { adt = ty_c; cstr; case = i; }) path ty
 
   (* ADT definition *)
   let define_adt_aux ~record ty_const vars l =
     let ty =  Ty.apply ty_const (List.map Ty.of_var vars) in
     let cases = ref [] in
-    let l' = List.mapi (fun i (cstr_name, args) ->
+    let l' = List.mapi (fun i (cstr_path, args) ->
         let args_ty = List.map fst args in
-        let cstr = mk_cstr ty_const cstr_name i vars args_ty ty in
+        let cstr = mk_cstr ty_const cstr_path i vars args_ty ty in
         let tester = mk_cstr_tester ty_const cstr i in
         let dstrs = Array.make (List.length args) None in
         let l' = List.mapi (fun j -> function
@@ -1410,11 +1387,11 @@ module Term = struct
   let define_adt = define_adt_aux ~record:false
 
   let define_record ty_const vars l =
-    let name = ty_const.name in
+    let path = ty_const.path in
     let cstr_args = List.map (fun (field_name, ty) ->
         ty, Some field_name
       ) l in
-    let l' = define_adt_aux ~record:true ty_const vars [name, cstr_args] in
+    let l' = define_adt_aux ~record:true ty_const vars [path, cstr_args] in
     match l' with
     | [ _, l'' ] ->
       List.map (function
@@ -1444,7 +1421,8 @@ module Term = struct
     let unset_tag = Id.unset_tag
 
     let ty ({ id_ty; _ } : t) = id_ty
-    let mk name ty = Id.mk name ty
+    let create path ty = Id.mk path ty
+    let mk name ty = Id.mk (Path.local name) ty
   end
 
   (* Constants *)
@@ -1463,12 +1441,12 @@ module Term = struct
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
 
-    let mk name ty =
-      Id.mk name ty
+    let mk path ty =
+      Id.mk path ty
 
     let mk' ?pos ?name ?builtin ?tags cname vars args ret =
       let ty = Ty.pi vars (Ty.arrow args ret) in
-      Id.mk ?pos ?name ?builtin ?tags cname ty
+      Id.mk ?pos ?name ?builtin ?tags (Path.global cname) ty
 
     let indexed
         ?pos ?name ?builtin ?tags
@@ -1484,17 +1462,17 @@ module Term = struct
 
     (* Some constants *)
     let _true =
-      Id.mk ~name:"⊤" ~builtin:Builtin.True "True" Ty.prop
+      Id.mk ~name:"⊤" ~builtin:Builtin.True (Path.global "true") Ty.prop
 
     let _false =
-      Id.mk ~name:"⊥" ~builtin:Builtin.False "False" Ty.prop
+      Id.mk ~name:"⊥" ~builtin:Builtin.False (Path.global "false") Ty.prop
 
     let eqs =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
       indexed
         ~pos:Pretty.Infix ~name:"=" ~builtin:Builtin.Equal
-        "Equals" [a] a_ty Ty.prop
+        "eqs" [a] a_ty Ty.prop
 
     let eq = eqs 2
 
@@ -2380,7 +2358,7 @@ module Term = struct
       | _ -> raise (Constructor_expected c)
 
     let void =
-      match define_adt Ty.Const.unit [] ["void", []] with
+      match define_adt Ty.Const.unit [] [Path.global "void", []] with
       | [void, _] -> void
       | _ -> assert false
 
@@ -2487,7 +2465,7 @@ module Term = struct
     | (v :: r : term_var list) ->
       let ty = Ty.subst ty_var_map v.id_ty in
       if not (Ty.equal ty v.id_ty) then
-        let nv = Var.mk v.name ty in
+        let nv = Var.create v.path ty in
         term_var_list_subst ty_var_map
           (Subst.Var.bind t_var_map v (of_var nv)) (nv :: acc) r
       else
@@ -2554,7 +2532,7 @@ module Term = struct
         let acc = (v, t) :: acc in
         binding_list_subst ~fix ty_var_map t_var_map acc r
       end else begin
-        let nv = Var.mk v.name (ty t) in
+        let nv = Var.create v.path (ty t) in
         let t_var_map = Subst.Var.bind t_var_map v (of_var nv) in
         let acc = (nv, t) :: acc in
         binding_list_subst ~fix ty_var_map t_var_map acc r

@@ -1,6 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+(* Extensions *)
+(* ************************************************************************* *)
+
 let get_extension s =
   let rec aux s i =
     if i <= 0 then ""
@@ -29,6 +32,106 @@ let split_on_char sep s =
   done;
   String.sub s 0 !j :: !r
 
+
+(* Hashs *)
+(* ************************************************************************* *)
+(* Taken from containres's CCHash, cf
+   https://github.com/c-cube/ocaml-containers/blob/master/src/core/CCHash.ml *)
+
+let fnv_offset_basis = 0xcbf29ce484222325L
+let fnv_prime = 0x100000001b3L
+
+(* hash an integer *)
+let hash_int n =
+  let h = ref fnv_offset_basis in
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((n lsr (k * 8)) land 0xff)));
+  done;
+  (Int64.to_int !h) land max_int (* truncate back to int and remove sign *)
+
+let hash_string (x:string) =
+  let h = ref fnv_offset_basis in
+  for i = 0 to String.length x - 1 do
+    h := Int64.(mul !h fnv_prime);
+    let byte = Char.code (String.unsafe_get x i) in
+    h := Int64.(logxor !h (of_int byte));
+  done;
+  Int64.to_int !h land max_int
+
+let hash2 a b =
+  let h = ref fnv_offset_basis in
+  (* we only do one loop, where we mix bytes of [a] and [b], so as
+     to simplify control flow *)
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
+
+let hash3 a b c =
+  let h = ref fnv_offset_basis in
+  (* we only do one loop, where we mix bytes of [a] [b] and [c], so as
+     to simplify control flow *)
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((c lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
+
+let hash4 a b c d =
+  let h = ref fnv_offset_basis in
+  for k = 0 to 7 do
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((a lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((b lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((c lsr (k * 8)) land 0xff)));
+    h := Int64.(mul !h fnv_prime);
+    h := Int64.(logxor !h (of_int ((d lsr (k * 8)) land 0xff)));
+  done;
+  Int64.to_int !h land max_int
+
+let[@inline] hash_combine f s x = hash2 s (f x)
+
+let hash_list f l = List.fold_left (hash_combine f) 0x42 l
+
+
+(* Comparisons *)
+(* ************************************************************************* *)
+
+(* Useful shorthand for chaining comparisons *)
+let (<?>) i (cmp, x, y) =
+  match i with
+  | 0 -> cmp x y
+  | _ -> i
+
+(* lexicographic comparison *)
+let lexicographic cmp l l' =
+  let rec aux l l' =
+    match l, l' with
+    | [], [] -> 0
+    | _ :: _, [] -> 1
+    | [], _ :: _ -> -1
+    | x :: r, x' :: r' ->
+      begin match cmp x x' with
+        | 0 -> aux r r'
+        | res -> res
+      end
+  in
+  aux l l'
+
+
+(* Options *)
+(* ************************************************************************* *)
+
 let opt_map o f =
   match o with
   | None -> None
@@ -39,9 +142,6 @@ let opt_bind o f =
   | None -> None
   | Some x -> f x
 
-
-(* Option printing *)
-
 let pp_opt ?(none="<none>") pp b = function
   | Some t -> pp b t
   | None -> Printf.bprintf b "%s" none
@@ -51,7 +151,8 @@ let print_opt ?(none="<none>") print fmt = function
   | None -> Format.fprintf fmt "%s" none
 
 
-(* List printing functions *)
+(* Lists *)
+(* ************************************************************************* *)
 
 let rec pp_list ~pp_sep ~sep ~pp b = function
   | [] -> ()
@@ -70,7 +171,9 @@ let rec print_list ~print_sep ~sep ~print fmt = function
       (print_list ~print_sep ~sep ~print) r
 
 
-(* Operations on Lexing.lexbuf *)
+(* Lexbufs *)
+(* ************************************************************************* *)
+
 let set_file buf filename =
   let open Lexing in
   buf.lex_curr_p <- {buf.lex_curr_p with pos_fname=filename;};

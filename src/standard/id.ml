@@ -1,83 +1,74 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-type value =
-  | Integer
-  | Rational
-  | Real
-  | Binary
-  | Hexadecimal
-  | Bitvector
-  | String
 
-type namespace =
-  | Var
-  | Sort
-  | Term
-  | Attr
-  | Decl
-  | Track
-  | Module of string
-  | Value of value
+(* Types *)
+
+type namespace = Namespace.t
 
 type t = {
+  name : Name.t;
   ns : namespace;
-  name : string;
 }
 
-let hash = Hashtbl.hash
-let compare = Stdlib.compare
-let equal = Stdlib.(=)
 
-(* Name&Printing *)
+(* Std functions *)
 
-let split { name; _ } =
-  Misc.split_on_char '\000' name
+let hash { ns; name; } =
+  Misc.hash2 (Namespace.hash ns) (Name.hash name)
 
-let to_string ({ name; _} as id) =
-  match split id with
-  | [s] -> s
-  | l ->
-    let b = Buffer.create (String.length name + List.length l + 3) in
-    Buffer.add_string b "(_";
-    List.iter (fun s -> Buffer.add_char b ' '; Buffer.add_string b s) l;
-    Buffer.add_char b ')';
-    Buffer.contents b
+let compare { ns; name; } { ns = ns'; name = name'; } =
+  let (<?>) = Misc.(<?>) in
+  Namespace.compare ns ns'
+  <?> (Name.compare, name, name')
 
-let pp b id =
-  Printf.bprintf b "%s" (to_string id)
+let equal id id' =
+  id == id' || compare id id' = 0
 
-let print fmt id =
-  Format.fprintf fmt "%s" (to_string id)
-
-let full_name = function
-  | { ns = Module m; _ } as id ->
-    Printf.sprintf "%s.%s" m (to_string id)
-  | id ->
-    to_string id
+let print fmt { name; ns = _; } =
+  Name.print fmt name
 
 
 (* Tracked hashtbl *)
 let trackers = Hashtbl.create 13
 let trackeds = Hashtbl.create 13
 
+
 (* Namespaces *)
-let var = Var
-let sort = Sort
-let term = Term
-let attr = Attr
-let decl = Decl
-let track = Track
-let mod_name s = Module s
+let var = Namespace.var
+let sort = Namespace.sort
+let term = Namespace.term
+let attr = Namespace.attr
+let decl = Namespace.decl
+let track = Namespace.track
+
 
 (* Identifiers *)
-let mk ns name = { ns; name; }
+let create ns name = { ns; name; }
 
-let tracked ~track ns name =
-  let id = mk ns name in
+let ns { ns; _ } = ns
+let name { name; _ } = name
+
+
+(* helpers *)
+let mk ns s =
+  let name = Name.simple s in
+  create ns name
+
+let indexed ns basename indexes =
+  let name = Name.indexed basename indexes in
+  create ns name
+
+let qualified ns path name =
+  let name = Name.qualified path name in
+  create ns name
+
+let tracked ~track ns path =
+  let id = mk ns path in
   Hashtbl.add trackers track id;
   Hashtbl.add trackeds id track;
   id
+
 
 (* Standard attributes *)
 let ac_symbol = mk Attr "ac"
