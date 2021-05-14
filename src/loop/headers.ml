@@ -8,7 +8,6 @@
    Note that this does *not* include the checking of constraints between
    successivestatements such as what smtlib specifies, see flow.ml
 
-
    The way this check is implemented/done:
    - a number of meta-data fields are defines in module [Field],
      together with ways to parse/print them.
@@ -107,10 +106,10 @@ module Field = struct
       match s with
 
       (* Language version *)
-      | { Id.ns = Id.Attr; Id.name = ":smt-lib-version"; } ->
+      | { Id.ns = Attr; Id.name = Simple ":smt-lib-version"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Id.Value Id.Real; Id.name = version }; _ } ] ->
+              Id.ns = Value Real; Id.name = Simple version; }; _ } ] ->
             if check_version_number version then
                 Ok (Lang_version, version)
             else
@@ -120,31 +119,32 @@ module Field = struct
         end
 
       (* Problem source *)
-      | { Id.ns = Id.Attr; Id.name = ":source"; } ->
+      | { Id.ns = Attr; Id.name = Simple ":source"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Id.Attr; Id.name = descr }; _ } ] ->
+              Id.ns = Attr; Id.name = Simple descr }; _ } ] ->
             Ok (Problem_source, descr)
           | [] -> Error (loc, "empty value for :source")
           | { Ast.loc; _ } :: _ -> Error (loc, "Expected a single symbol as description")
         end
 
       (* Problem license *)
-      | { Id.ns = Id.Attr; Id.name = ":license"; } ->
+      | { Id.ns = Attr; Id.name = Simple ":license"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Id.Value Id.String; Id.name = license }; _ } ] ->
+              Id.ns = Value String; Id.name = Simple license }; _ } ] ->
             Ok (Problem_license, license)
           | [] -> Error (loc, "empty value for :license")
           | { Ast.loc; _ } :: _ -> Error (loc, "Expected a single string in quotes")
         end
 
       (* Problem category *)
-      | { Id.ns = Id.Attr; Id.name = ":category"; } ->
+      | { Id.ns = Attr; Id.name = Simple ":category"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Id.Value Id.String;
-              Id.name = (("crafted"|"random"|"industrial") as category) }; _ } ] ->
+              Id.ns = Value String;
+              Id.name = Simple (("crafted"|"random"|"industrial") as category)
+            }; _ }; ] ->
             Ok (Problem_category, category)
           | [] -> Error (loc, "empty value for :category")
           | { Ast.loc; _ } :: _ ->
@@ -153,10 +153,10 @@ module Field = struct
 
 
       (* Problem status *)
-      | { Id.ns = Id.Attr; Id.name = ":status"; } ->
+      | { Id.ns = Attr; Id.name = Simple ":status"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.name = (("sat"|"unsat"|"unknown") as status) ; _ }; _ } ] ->
+              Id.name = Simple (("sat"|"unsat"|"unknown") as status) ; _ }; _ }; ] ->
             Ok (Problem_status, status)
           | _ -> Error (loc, "Expected sat|unsat|unknown")
         end

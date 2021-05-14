@@ -9,12 +9,14 @@ module type S = Thf_intf.S
 module Make
     (Tag: Dolmen.Intf.Tag.S)
     (Ty: Dolmen.Intf.Ty.Thf
-     with type 'a tag := 'a Tag.t)
+     with type 'a tag := 'a Tag.t
+      and type path := Dolmen.Std.Path.t)
     (T: Dolmen.Intf.Term.Thf
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
-      and type 'a tag := 'a Tag.t)
+      and type 'a tag := 'a Tag.t
+      and type path := Dolmen.Std.Path.t)
 = struct
 
   (* Module aliases *)
@@ -120,7 +122,7 @@ module Make
     | Term_fun of T.Const.t
 
   (* Wrapper around potential function symbols in Dolmen *)
-  type symbol =
+  type symbol = Intf.symbol =
     | Id of Id.t
     | Builtin of Ast.builtin
 
@@ -257,7 +259,7 @@ module Make
     | Expected : string * res option -> Ast.t err
     | Bad_index_arity : string * int * int -> Ast.t err
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
-    | Bad_op_arity : string * int list * int -> Ast.t err
+    | Bad_op_arity : symbol * int list * int -> Ast.t err
     | Bad_cstr_arity : T.Cstr.t * int list * int -> Ast.t err
     | Bad_term_arity : T.Const.t * int list * int -> Ast.t err
     | Bad_poly_arity : Ty.Var.t list * Ty.t list -> Ast.t err
@@ -634,7 +636,36 @@ module Make
     field_locs = st.field_locs;
   }
 
+  (* Var/Const creation *)
+  let var_name _env name =
+    match (name : Dolmen.Std.Name.t) with
+    | Simple name -> name
+    (* TODO: proper errors *)
+    | Indexed _ -> assert false
+    | Qualified _ -> assert false
 
+  let cst_path _env name =
+    match (name : Dolmen.Std.Name.t) with
+    | Indexed _ -> assert false
+    | Simple name ->
+      Dolmen.Std.Path.global name
+    | Qualified { path; basename; } ->
+      Dolmen.Std.Path.absolute path basename
+
+  let mk_ty_var env name =
+    Ty.Var.mk (var_name env name)
+
+  let mk_term_var env name ty =
+    T.Var.mk (var_name env name) ty
+
+  let mk_ty_cst env name arity =
+    Ty.Const.mk (cst_path env name) arity
+
+  let mk_term_cst env name ty =
+    T.Const.mk (cst_path env name) ty
+
+
+  (* Var/Const declarations *)
   let add_global env fragment id reason (v : cst) =
     begin match find_bound env id with
       | `Not_found -> ()
@@ -642,7 +673,6 @@ module Make
     end;
     env.st.csts <- M.add id v env.st.csts
 
-  (* Symbol declarations *)
   let decl_ty_const env fg id c reason =
     add_global env fg id reason (`Ty_cst c);
     env.st.ttype_locs <- R.add c reason env.st.ttype_locs
@@ -705,7 +735,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = Ty.Var.mk (Id.full_name id) in
+        let v' = mk_ty_var env (Id.name id) in
         _shadow env (Ast ast) id old reason (`Ty_var v');
         v'
     in
@@ -726,7 +756,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = T.Var.mk (Id.full_name id) (T.Var.ty v) in
+        let v' = mk_term_var env (Id.name id) (T.Var.ty v) in
         _shadow env (Ast ast) id old reason (`Term_var v');
         v'
     in
@@ -741,7 +771,7 @@ module Make
       match find_bound env id with
       | `Not_found -> v
       | #bound as old ->
-        let v' = T.Var.mk (Id.full_name id) (T.Var.ty v) in
+        let v' = mk_term_var env (Id.name id) (T.Var.ty v) in
         _shadow env (Ast ast) id old reason (`Term_var v');
         v'
     in
@@ -756,9 +786,10 @@ module Make
   (* ************************************************************************ *)
 
   let suggest ~limit env id =
-    let automaton = Spelll.of_string ~limit Id.(id.name) in
+    let name id = Format.asprintf "%a" Id.print id in
+    let automaton = Spelll.of_string ~limit (name id) in
     let aux id _ acc =
-      if Spelll.match_with automaton Id.(id.name)
+      if Spelll.match_with automaton (name id)
       then id :: acc
       else acc
     in
@@ -1191,8 +1222,8 @@ module Make
     | { Ast.term = Ast.Symbol s; _ } as t -> infer_var env t s
     | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ }, e); _ } ->
       begin match parse_expr env e with
-        | Ttype -> `Ty (s, Ty.Var.mk (Id.full_name s))
-        | Ty ty -> `Term (s, T.Var.mk (Id.full_name s) ty)
+        | Ttype -> `Ty (s, mk_ty_var env (Id.name s))
+        | Ty ty -> `Term (s, mk_term_var env (Id.name s) ty)
         | res -> _expected env "type (or Ttype)" e (Some res)
       end
     | t -> _expected env "(typed) variable" t None
@@ -1270,7 +1301,7 @@ module Make
       end
 
   and parse_pattern_var ty env ast s =
-    let v = T.Var.mk (Id.full_name s) ty in
+    let v = mk_term_var env (Id.name s) ty in
     let v, env = add_term_var env s v ast in
     T.of_var v, env
 
@@ -1326,7 +1357,7 @@ module Make
         | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, [
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
-          let v = T.Var.mk (Id.full_name s) (T.ty t) in
+          let v = mk_term_var env (Id.name s) (T.ty t) in
           let v', env' = bind_term_var env s e v t w in
           parse_let_seq env' ast ((v', t) :: acc) f r
         | t -> _expected env "variable binding" t None
@@ -1354,7 +1385,7 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           begin match parse_term env e with
             | t ->
-              let v = T.Var.mk (Id.full_name s) (T.ty t) in
+              let v = mk_term_var env (Id.name s) (T.ty t) in
               parse_let_par env ast ((s, e, v, t, w) :: acc) f r
             (* Try and provide a helpful hints when a parallel let is used as
                a sequential let-binding *)
@@ -1414,7 +1445,7 @@ module Make
       let field = parse_record_field env f in
       Term (create_record_access env ast t field)
     | l ->
-      _bad_op_arity env "field record access" 2 (List.length l) ast
+      _bad_op_arity env (Builtin Ast.Record_access) 2 (List.length l) ast
 
   and parse_symbol env ast s s_ast =
     parse_app_symbol env ast s s_ast []
@@ -1596,7 +1627,7 @@ module Make
       if not env.var_infer.infer_type_vars then
         _cannot_infer_quant_var env ast
       else
-        `Ty (s, Ty.Var.mk (Id.full_name s))
+        `Ty (s, mk_ty_var env (Id.name s))
     | Term ->
       begin match env.var_infer.infer_term_vars with
         | No_inference -> _cannot_infer_quant_var env ast
@@ -1608,7 +1639,7 @@ module Make
             } in
           let ty = infer_ty env ast (Variable_inference var_infer) shape [] in
           var_infer.inferred_ty <- ty;
-          `Term (s, T.Var.mk (Id.full_name s) ty)
+          `Term (s, mk_term_var env (Id.name s) ty)
       end
 
   and infer_sym env ast s args s_ast =
@@ -1621,7 +1652,7 @@ module Make
         then _cannot_find env ast s
         else begin
           let n = List.length args in
-          let f = Ty.Const.mk (Id.full_name s) n in
+          let f = mk_ty_cst env (Id.name s) n in
           decl_ty_const env (Ast ast) s f (Inferred (env.file, s_ast));
           parse_app_ty_cst env ast f args
         end
@@ -1642,7 +1673,7 @@ module Make
                 let src = Symbol_inference sym_infer in
                 let f_ty = infer_ty env ast src shape t_args in
                 sym_infer.inferred_ty <- f_ty;
-                let f = T.Const.mk (Id.full_name s) f_ty in
+                let f = mk_term_cst env (Id.name s) f_ty in
                 decl_term_const env (Ast ast) s f (Inferred (env.file, s_ast));
                 f
               | _ -> assert false
@@ -1792,7 +1823,7 @@ module Make
     let ty_vars, env = add_type_vars env ttype_vars in
     let l = List.map (fun (id, t) ->
         let ty = parse_ty env t in
-        Id.full_name id, ty
+        cst_path env (Id.name id), ty
       ) fields in
     let field_list = T.define_record ty_cst ty_vars l in
     List.iter2 (fun (id, _) field ->
@@ -1812,8 +1843,8 @@ module Make
       ) cstrs in
     (* Constructors with strings for names *)
     let cstrs_with_strings = List.map (fun (id, args) ->
-        Id.full_name id, List.map (fun (_, ty, dstr) ->
-            ty, Misc.Options.map Id.full_name dstr
+        cst_path env (Id.name id), List.map (fun (_, ty, dstr) ->
+            ty, Misc.Options.map (fun id -> cst_path env (Id.name id)) dstr
           ) args
       ) cstrs_with_ids in
     (* Call the T module to define the adt and get the typed constructors
@@ -1847,7 +1878,7 @@ module Make
     | Abstract { id; ty; _ } ->
       begin match parse_sig env ty with
         | `Ty_cstr n ->
-          let c = Ty.Const.mk (Id.full_name id) n in
+          let c = mk_ty_cst env (Id.name id) n in
           List.iter (function
               | Set (tag, v) -> Ty.Const.set_tag c tag v
               | Add (tag, v) -> Ty.Const.add_tag c tag v
@@ -1855,7 +1886,7 @@ module Make
           id, `Type_decl c
         | `Fun_ty (vars, args, ret) ->
           let ty = Ty.pi vars (Ty.arrow args ret) in
-          let f = T.Const.mk (Id.full_name id) ty in
+          let f = mk_term_cst env (Id.name id) ty in
           List.iter (function
               | Set (tag, v) -> T.Const.set_tag f tag v
               | Add (tag, v) -> T.Const.add_tag f tag v
@@ -1865,7 +1896,7 @@ module Make
     | Record { id; vars; _ }
     | Inductive { id; vars; _ } ->
       let n = List.length vars in
-      let c = Ty.Const.mk (Id.full_name id) n in
+      let c = mk_ty_cst env (Id.name id) n in
       List.iter (function
           | Set (tag, v) -> Ty.Const.set_tag c tag v
           | Add (tag, v) -> Ty.Const.add_tag c tag v

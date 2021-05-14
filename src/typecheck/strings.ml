@@ -95,119 +95,123 @@ module Smtlib2 = struct
     let parse _version env s =
       match s with
       (* Types *)
-      | Type.Id { Id.ns = Id.Sort; name = "Int"; } ->
-        `Ty (Base.app0 (module Type) env "String" Ty.int)
-      | Type.Id { Id.ns = Id.Sort; name = "String"; } ->
-        `Ty (Base.app0 (module Type) env "String" Ty.string)
-      | Type.Id { Id.ns = Id.Sort; name = "RegLan"; } ->
-        `Ty (Base.app0 (module Type) env "RegLan" Ty.string_reg_lang)
+      | Type.Id { ns = Sort; name = Simple "Int"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.int)
+      | Type.Id { ns = Sort; name = Simple "String"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.string)
+      | Type.Id { ns = Sort; name = Simple "RegLan"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.string_reg_lang)
 
       (* String literals *)
-      | Type.Id { Id.ns = Value String; name; } ->
+      | Type.Id { Id.ns = Value String; name = Simple name; } as symbol ->
         `Term (fun ast args ->
             let s = parse_ustring env ast name in
-            Base.app0 (module Type) env name (T.String.of_ustring s) ast args
+            Base.app0 (module Type) env symbol (T.String.of_ustring s) ast args
           )
 
       (* Terms *)
-      | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
+      | Type.Id { ns = Term; name = Simple name; } ->
         begin match name with
 
           (* String Functions *)
           | "str.len" ->
-            `Term (Base.term_app1 (module Type) env name T.String.length)
+            `Term (Base.term_app1 (module Type) env s T.String.length)
           | "str.at" ->
-            `Term (Base.term_app2 (module Type) env name T.String.at)
+            `Term (Base.term_app2 (module Type) env s T.String.at)
 
           | "str.is_digit" ->
-            `Term (Base.term_app1 (module Type) env name T.String.is_digit)
+            `Term (Base.term_app1 (module Type) env s T.String.is_digit)
           | "str._to_code" ->
-            `Term (Base.term_app1 (module Type) env name T.String.to_code)
+            `Term (Base.term_app1 (module Type) env s T.String.to_code)
           | "str.from_code" ->
-            `Term (Base.term_app1 (module Type) env name T.String.of_code)
+            `Term (Base.term_app1 (module Type) env s T.String.of_code)
           | "str.to_int" ->
-            `Term (Base.term_app1 (module Type) env name T.String.to_int)
+            `Term (Base.term_app1 (module Type) env s T.String.to_int)
           | "str.from_int" ->
-            `Term (Base.term_app1 (module Type) env name T.String.of_int)
+            `Term (Base.term_app1 (module Type) env s T.String.of_int)
 
           | "str.++" ->
-            `Term (Base.term_app_left (module Type) env name T.String.concat)
+            `Term (Base.term_app_left (module Type) env s T.String.concat)
           | "str.substr" ->
-            `Term (Base.term_app3 (module Type) env name T.String.sub)
+            `Term (Base.term_app3 (module Type) env s T.String.sub)
 
           | "str.indexof" ->
-            `Term (Base.term_app3 (module Type) env name T.String.index_of)
+            `Term (Base.term_app3 (module Type) env s T.String.index_of)
           | "str.replace" ->
-            `Term (Base.term_app3 (module Type) env name T.String.replace)
+            `Term (Base.term_app3 (module Type) env s T.String.replace)
           | "str.replace_all" ->
-            `Term (Base.term_app3 (module Type) env name T.String.replace_all)
+            `Term (Base.term_app3 (module Type) env s T.String.replace_all)
           | "str.replace_re" ->
-            `Term (Base.term_app3 (module Type) env name T.String.replace_re)
+            `Term (Base.term_app3 (module Type) env s T.String.replace_re)
           | "str.replace_re_all" ->
-            `Term (Base.term_app3 (module Type) env name T.String.replace_re_all)
+            `Term (Base.term_app3 (module Type) env s T.String.replace_re_all)
 
           | "str.prefixof" ->
-            `Term (Base.term_app2 (module Type) env name T.String.is_prefix)
+            `Term (Base.term_app2 (module Type) env s T.String.is_prefix)
           | "str.suffixof" ->
-            `Term (Base.term_app2 (module Type) env name T.String.is_suffix)
+            `Term (Base.term_app2 (module Type) env s T.String.is_suffix)
           | "str.contains" ->
-            `Term (Base.term_app2 (module Type) env name T.String.contains)
+            `Term (Base.term_app2 (module Type) env s T.String.contains)
 
           | "str.<" ->
-            `Term (Base.term_app2 (module Type) env name T.String.lt)
+            `Term (Base.term_app2 (module Type) env s T.String.lt)
           | "str.<=" ->
-            `Term (Base.term_app2 (module Type) env name T.String.leq)
+            `Term (Base.term_app2 (module Type) env s T.String.leq)
 
           (* String/RegLan functions *)
           | "str.to_re" ->
-            `Term (Base.term_app1 (module Type) env name T.String.RegLan.of_string)
+            `Term (Base.term_app1 (module Type) env s T.String.RegLan.of_string)
           | "re.range" ->
-            `Term (Base.term_app2 (module Type) env name T.String.RegLan.range)
+            `Term (Base.term_app2 (module Type) env s T.String.RegLan.range)
           | "str.in_re" ->
-            `Term (Base.term_app2 (module Type) env name T.String.in_re)
+            `Term (Base.term_app2 (module Type) env s T.String.in_re)
 
           (* RegLan functions *)
           | "re.none" ->
-            `Term (Base.app0 (module Type) env name T.String.RegLan.empty)
+            `Term (Base.app0 (module Type) env s T.String.RegLan.empty)
           | "re.all" ->
-            `Term (Base.app0 (module Type) env name T.String.RegLan.all)
+            `Term (Base.app0 (module Type) env s T.String.RegLan.all)
           | "re.allchar" ->
-            `Term (Base.app0 (module Type) env name T.String.RegLan.allchar)
+            `Term (Base.app0 (module Type) env s T.String.RegLan.allchar)
           | "re.++" ->
-            `Term (Base.term_app_left (module Type) env name T.String.RegLan.concat)
+            `Term (Base.term_app_left (module Type) env s T.String.RegLan.concat)
           | "re.union" ->
-            `Term (Base.term_app_left (module Type) env name T.String.RegLan.union)
+            `Term (Base.term_app_left (module Type) env s T.String.RegLan.union)
           | "re.inter" ->
-            `Term (Base.term_app_left (module Type) env name T.String.RegLan.inter)
+            `Term (Base.term_app_left (module Type) env s T.String.RegLan.inter)
           | "re.*" ->
-            `Term (Base.term_app1 (module Type) env name T.String.RegLan.star)
+            `Term (Base.term_app1 (module Type) env s T.String.RegLan.star)
           | "re.comp" ->
-            `Term (Base.term_app1 (module Type) env name T.String.RegLan.complement)
+            `Term (Base.term_app1 (module Type) env s T.String.RegLan.complement)
           | "re.diff" ->
-            `Term (Base.term_app2 (module Type) env name T.String.RegLan.diff)
+            `Term (Base.term_app2 (module Type) env s T.String.RegLan.diff)
           | "re.+" ->
-            `Term (Base.term_app1 (module Type) env name T.String.RegLan.cross)
+            `Term (Base.term_app1 (module Type) env s T.String.RegLan.cross)
           | "re.opt" ->
-            `Term (Base.term_app1 (module Type) env name T.String.RegLan.option)
+            `Term (Base.term_app1 (module Type) env s T.String.RegLan.option)
 
-          (* Indexed identifiers *)
-          | _ -> Base.parse_id id [
-              "char", `Unary (fun s -> `Term (fun ast args ->
-                  let s' = parse_uchar_hexa env ast s in
-                  Base.app0 (module Type) env name (T.String.of_ustring s') ast args
-                ));
-              "re.^", `Unary (fun s ->
-                  let n = int_of_string s in
-                  `Term (Base.term_app1 (module Type) env name (T.String.RegLan.power n))
-                );
-              "re.loop", `Binary (fun s s' ->
-                  let n1 = int_of_string s in
-                  let n2 = int_of_string s' in
-                  `Term (Base.term_app1 (module Type) env name (T.String.RegLan.loop n1 n2))
-                );
-            ] ~err:(Base.bad_term_index_arity (module Type) env)
-              ~k:(fun _ -> `Not_found)
+          | _ -> `Not_found
         end
+
+      (* Indexed identifiers *)
+      | Type.Id { ns = Term; name = Indexed { basename; indexes; }; } as symbol ->
+        Base.parse_indexed basename indexes (function
+            | "char" -> `Unary (fun s -> `Term (fun ast args ->
+                let s' = parse_uchar_hexa env ast s in
+                Base.app0 (module Type) env symbol (T.String.of_ustring s') ast args
+              ))
+            | "re.^" -> `Unary (fun s ->
+                let n = int_of_string s in
+                `Term (Base.term_app1 (module Type) env symbol (T.String.RegLan.power n))
+              )
+            | "re.loop" -> `Binary (fun s s' ->
+                let n1 = int_of_string s in
+                let n2 = int_of_string s' in
+                `Term (Base.term_app1 (module Type) env symbol (T.String.RegLan.loop n1 n2))
+              )
+            | _ -> `Not_indexed
+          ) ~err:(Base.bad_term_index_arity (module Type) env)
+          ~k:(fun _ -> `Not_found)
 
       | _ -> `Not_found
 

@@ -51,18 +51,18 @@ index:
 
 identifier:
   | s=SYMBOL
-    { s }
+    { fun ns -> I.mk ns s }
   | OPEN UNDERSCORE s=SYMBOL l=index+ CLOSE
-    { String.concat "\000" (s :: l) (* see doc of Id.mk in ast_smtlib.ml *) }
+    { fun ns -> I.indexed ns s l }
 ;
 
 sort:
   | s=identifier
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk sort s) }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc (s I.sort) }
   | OPEN f=identifier args=sort+ CLOSE
     { let c =
         let loc = L.mk_pos $startpos(f) $endpos(f) in
-        T.const ~loc I.(mk sort f)
+        T.const ~loc (f I.sort)
       in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc c args }
 ;
@@ -97,10 +97,10 @@ but only its result type
 */
 qual_identifier:
   | s=identifier
-    { let loc = L.mk_pos $startpos $endpos in `NoAs (T.const ~loc I.(mk term s)) }
+    { let loc = L.mk_pos $startpos $endpos in `NoAs (T.const ~loc (s I.term)) }
   | OPEN AS s=identifier ty=sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in
-      `As (T.const ~loc I.(mk term s),ty) }
+      `As (T.const ~loc (s I.term),ty) }
 ;
 
 var_binding:

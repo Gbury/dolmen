@@ -41,11 +41,15 @@ module type Logic = sig
   val track : namespace
   (** Namespace used to tag and identify sub-terms occuring in files. *)
 
-  val mod_name : string -> namespace
-  (** Namespace used by modules (for instance in dedulkti). *)
-
   val mk : namespace -> string -> t
   (** Make an identifier from its namespace and name. *)
+
+  val indexed : namespace -> string -> string list -> t
+  (** Make an indexed identifier from a namespace, basename and list of indexes. *)
+
+  val qualified : namespace -> string list -> string -> t
+  (** Make a qualified identifier from a namespace, a list of modules (a path),
+      and a base name. *)
 
   val tracked : track:t -> namespace -> string -> t
   (** An identifier with an additional name for tracking purposes. *)

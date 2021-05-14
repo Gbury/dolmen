@@ -57,7 +57,7 @@ module Subst
       begin match M.find id (get_defs env) with
         | `Ty (vars, body) ->
           `Ty (Base.make_opn (List.length vars)
-                 (module Type) env (Dolmen.Std.Id.full_name id) (fun _ args ->
+                 (module Type) env symbol (fun _ args ->
                      let ty_args = List.map (Type.parse_ty env) args in
                      let l = List.map2 (fun x y -> x, y) vars ty_args in
                      T.ty_subst l body
@@ -72,8 +72,7 @@ module Subst
                   take_drop n_ty args
                 else begin
                   Type._error env (Ast ast)
-                    (Type.Bad_op_arity (Dolmen.Std.Id.full_name id,
-                                        [n_ty + n_t], n_args))
+                    (Type.Bad_op_arity (symbol, [n_ty + n_t], n_args))
                 end
               in
               let ty_l = List.map2 (fun x y -> x, y) ty_vars
@@ -84,7 +83,7 @@ module Subst
             )
         | exception Not_found -> `Not_found
       end
-    | Builtin _ -> `Not_found
+    | _ -> `Not_found
 
 end
 
@@ -107,15 +106,17 @@ module Declare(Type : Tff_intf.S) = struct
     Type.set_global_custom env key m
 
   let define_ty env id vars _body =
-    let c = Type.Ty.Const.mk (Dolmen.Std.Id.full_name id) (List.length vars) in
+    let path = Type.cst_path env (Dolmen.Std.Id.name id) in
+    let c = Type.Ty.Const.mk path (List.length vars) in
     let () = add_definition env id (`Ty c) in
     c
 
   let define_term env id vars args body =
     let ret_ty = Type.T.ty body in
     let args_ty = List.map Type.T.Var.ty args in
+    let path = Type.cst_path env (Dolmen.Std.Id.name id) in
     let ty = Type.Ty.pi vars (Type.Ty.arrow args_ty ret_ty) in
-    let c = Type.T.Const.mk (Dolmen.Std.Id.full_name id) ty in
+    let c = Type.T.Const.mk path ty in
     let () = add_definition env id (`Term c) in
     c
 

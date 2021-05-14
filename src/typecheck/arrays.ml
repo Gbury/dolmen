@@ -63,12 +63,12 @@ module Smtlib2 = struct
 
     let parse ~arrays _version env s =
       match s with
-      | Type.Id { Id.name = "Array"; ns = Id.Sort } ->
-        `Ty (Base.ty_app2_ast (module Type) env "Array" (mk_array_ty env arrays))
-      | Type.Id { Id.name = "select"; ns = Id.Term } ->
-        `Term (Base.term_app2 (module Type) env "select" T.select)
-      | Type.Id { Id.name = "store"; ns = Id.Term } ->
-        `Term (Base.term_app3 (module Type) env "select" T.store)
+      | Type.Id { name = Simple "Array"; ns = Sort } ->
+        `Ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env arrays))
+      | Type.Id { name = Simple "select"; ns = Term } ->
+        `Term (Base.term_app2 (module Type) env s T.select)
+      | Type.Id { name = Simple "store"; ns = Term } ->
+        `Term (Base.term_app3 (module Type) env s T.store)
       | _ -> `Not_found
 
   end

@@ -6,9 +6,9 @@
   (flags :standard -warn-error -3)
   (modules
     ; Parsing structures
-    Loc Id Term Statement Normalize
+    Loc Name Namespace Id Term Statement Normalize
     ; Typing & Loop stuff
-    Tag Pretty Builtin Expr
+    Tag Pretty Path Builtin Expr
     ; Helpers
     Msg Tok Vec Misc Escape Transformer)
 )

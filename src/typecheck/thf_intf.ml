@@ -15,11 +15,13 @@ module type S = sig
   module Tag: Dolmen.Intf.Tag.S
   module Ty: Dolmen.Intf.Ty.Thf
     with type 'a tag := 'a Tag.t
+     and type path := Dolmen.Std.Path.t
   module T: Dolmen.Intf.Term.Thf
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
      and type ty_const := Ty.Const.t
      and type 'a tag := 'a Tag.t
+     and type path := Dolmen.Std.Path.t
 
   include Intf.Formulas
     with type ty := Ty.t

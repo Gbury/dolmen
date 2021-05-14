@@ -4,7 +4,8 @@
 (* Main Typedef *)
 (* ************************************************************************* *)
 
-type _ t = ..
+type 'a t = ..
+constraint 'a = < .. >
 (* Extensible variant type for builtin operations.
    Parameterized over the type of variables, constants, and terms. *)
 

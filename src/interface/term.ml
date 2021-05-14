@@ -362,6 +362,9 @@ module type Tff = sig
   type t
   (** The type of terms and term variables. *)
 
+  type path
+  (** The type of patsh to constants. *)
+
   type ty
   type ty_var
   type ty_const
@@ -411,7 +414,7 @@ module type Tff = sig
     val arity : t -> int * int
     (** Returns the arity of a term constant. *)
 
-    val mk : string -> ty -> t
+    val mk : path -> ty -> t
     (** Create a constant symbol. *)
 
     val set_tag : t -> 'a tag -> 'a -> unit
@@ -457,7 +460,7 @@ module type Tff = sig
 
   val define_adt :
     ty_const -> ty_var list ->
-    (string * (ty * string option) list) list ->
+    (path * (ty * path option) list) list ->
     (Cstr.t * (ty * Const.t option) list) list
   (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
       the type variables [ty_vars] as defining an algebraic datatypes with constructors
@@ -485,7 +488,7 @@ module type Tff = sig
       *)
 
   val define_record :
-    ty_const -> ty_var list -> (string * ty) list -> Field.t list
+    ty_const -> ty_var list -> (path * ty) list -> Field.t list
   (** Define a (previously abstract) type to be a record type, with the given fields. *)
 
   exception Wrong_type of t * ty

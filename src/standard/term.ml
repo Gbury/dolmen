@@ -182,7 +182,7 @@ let binder_end_string = function
   | Let_par -> "in"
   | Arrow -> "→"
 
-
+(*
 (* Debug printing *)
 
 let pp_builtin b builtin =
@@ -216,6 +216,7 @@ and pp b = function
   | { term = (Symbol _) as d; _ }
   | { term = (Builtin _) as d; _ } -> pp_descr b d
   | e -> Printf.bprintf b "(%a)" pp_descr e.term
+*)
 
 (* Pretty-printing *)
 
@@ -507,7 +508,7 @@ let rec free_vars acc t =
   match t.term with
   | Builtin _ -> acc
   | Colon (t, t') -> free_vars (free_vars acc t) t'
-  | Symbol i -> if i.Id.ns = Id.Var then S.add i acc else acc
+  | Symbol i -> if i.Id.ns = Namespace.Var then S.add i acc else acc
   | App (t, l) ->
     List.fold_left free_vars (free_vars acc t) l
   | Binder (Arrow, l, t) ->
@@ -600,7 +601,7 @@ let par ?loc vars t =
 let rat ?loc s = const ?loc Id.(mk (Value Rational) s)
 let distinct = const
 
-let var ?loc id = const ?loc { id with Id.ns = Id.Var }
+let var ?loc id = const ?loc { id with Id.ns = Var }
 
 let ite ?loc a b c = apply ?loc (ite_t ?loc ()) [a; b; c]
 
@@ -616,7 +617,7 @@ let subtype ?loc a b = apply ?loc (subtype_t ?loc ()) [a; b]
 (* {2 Wrappers for Zf} *)
 
 let quoted ?loc name =
-  const ?loc Id.({ name; ns = Attr})
+  const ?loc (Id.mk Attr name)
 
 (* {2 Term traversal} *)
 

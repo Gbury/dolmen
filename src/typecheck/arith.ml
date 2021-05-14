@@ -92,19 +92,19 @@ module Smtlib2 = struct
 
     let rec view ~parse version env (t : Term.t) =
       match t.term with
-      | Symbol { Id.ns = Id.Value Id.Integer; name } -> Numeral name
-      | Symbol { Id.ns = Id.Value Id.Real; name } -> Decimal name
+      | Symbol { ns = Value Integer; name = Simple name } -> Numeral name
+      | Symbol { ns = Value Real; name = Simple name } -> Decimal name
 
-      | App ({ term = Symbol { Id.ns = Id.Term; name = "-"; }; _ }, [e])
+      | App ({ term = Symbol { Id.ns = Term; name = Simple "-"; }; _ }, [e])
         -> Negation e
 
-      | App ({ term = Symbol { Id.ns = Id.Term; name = "+"; }; _ }, ((_ :: _) as args))
+      | App ({ term = Symbol { Id.ns = Term; name = Simple "+"; }; _ }, ((_ :: _) as args))
         -> Addition args
 
-      | App ({ term = Symbol { Id.ns = Id.Term; name = "-"; }; _ }, ((_ :: _) as args))
+      | App ({ term = Symbol { Id.ns = Term; name = Simple "-"; }; _ }, ((_ :: _) as args))
         -> Subtraction args
 
-      | App ({ term = Symbol { Id.ns = Id.Term; name = "/"; }; _ }, [a; b])
+      | App ({ term = Symbol { Id.ns = Term; name = Simple "/"; }; _ }, [a; b])
         -> Division (a, b)
 
       | Symbol id -> view_id ~parse version env id []
@@ -549,13 +549,13 @@ module Smtlib2 = struct
       let rec parse ~arith version env s =
         match s with
         (* type *)
-        | Type.Id { Id.ns = Id.Sort; name = "Int"; } ->
-          `Ty (Base.app0 (module Type) env "Int" Ty.int)
+        | Type.Id { Id.ns = Sort; name = Simple "Int"; } ->
+          `Ty (Base.app0 (module Type) env s Ty.int)
         (* values *)
-        | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-          `Term (Base.app0 (module Type) env name (T.mk name))
+        | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.mk name))
         (* terms *)
-        | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
+        | Type.Id { Id.ns = Term; name = Simple name; } ->
           begin match name with
             | "-" ->
               `Term (fun ast args -> match args with
@@ -563,47 +563,49 @@ module Smtlib2 = struct
                     check env (F.minus arith (parse ~arith) version env) ast args;
                     T.minus (Type.parse_term env x)
                   | _ ->
-                    Base.term_app_left (module Type) env "-" T.sub ast args
+                    Base.term_app_left (module Type) env s T.sub ast args
                       ~check:(check env (F.sub arith (parse ~arith) version env))
                 )
             | "+" ->
-              `Term (Base.term_app_left (module Type) env "+" T.add
+              `Term (Base.term_app_left (module Type) env s T.add
                     ~check:(check env (F.add arith (parse ~arith) version env)))
             | "*" ->
-              `Term (Base.term_app_left (module Type) env "*" T.mul
+              `Term (Base.term_app_left (module Type) env s T.mul
                        ~check:(check env (F.mul arith (parse ~arith) version env)))
             | "div" ->
-              `Term (Base.term_app_left (module Type) env "div" T.div
+              `Term (Base.term_app_left (module Type) env s T.div
                        ~check:(check env (F.ediv arith)))
             | "mod" ->
-              `Term (Base.term_app2 (module Type) env "mod" T.rem
+              `Term (Base.term_app2 (module Type) env s T.rem
                     ~check:(check2 env (F.mod_ arith)))
             | "abs" ->
-              `Term (Base.term_app1 (module Type) env "abs" T.abs
+              `Term (Base.term_app1 (module Type) env s T.abs
                     ~check:(check1 env (F.abs arith)))
             | "<=" ->
-              `Term (Base.term_app_chain (module Type) env "<=" T.le
+              `Term (Base.term_app_chain (module Type) env s T.le
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
             | "<" ->
-              `Term (Base.term_app_chain (module Type) env "<" T.lt
+              `Term (Base.term_app_chain (module Type) env s T.lt
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">=" ->
-              `Term (Base.term_app_chain (module Type) env ">=" T.ge
+              `Term (Base.term_app_chain (module Type) env s T.ge
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">" ->
-              `Term (Base.term_app_chain (module Type) env ">" T.gt
+              `Term (Base.term_app_chain (module Type) env s T.gt
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
-            | _ -> Base.parse_id id
-                     ~k:(function _ -> `Not_found)
-                     ~err:(Base.bad_ty_index_arity (module Type) env)
-                     [
-                       "divisible", `Unary (function n ->
-                           `Term (Base.term_app1 (module Type) env
-                                    "divisible" (T.divisible n)
-                                    ~check:(check1 env (F.divisible arith)))
-                         );
-                     ]
+            | _ -> `Not_found
           end
+        | Type.Id { Id.ns = Term; name = Indexed { basename; indexes; }; } ->
+          Base.parse_indexed basename indexes
+            ~k:(function () -> `Not_found)
+            ~err:(Base.bad_ty_index_arity (module Type) env) (function
+                | "divisible" ->
+                  `Unary (function n ->
+                      `Term (Base.term_app1 (module Type) env s (T.divisible n)
+                               ~check:(check1 env (F.divisible arith)))
+                    )
+                | _ -> `Not_indexed
+              )
         | _ -> `Not_found
 
     end
@@ -633,13 +635,13 @@ module Smtlib2 = struct
       let rec parse ~arith version env s =
         match s with
         (* type *)
-        | Type.Id { Id.ns = Id.Sort; name = "Real"; } ->
-          `Ty (Base.app0 (module Type) env "Real" Ty.real)
+        | Type.Id { Id.ns = Sort; name = Simple "Real"; } ->
+          `Ty (Base.app0 (module Type) env s Ty.real)
         (* values *)
-        | Type.Id { Id.ns = Id.Value (Id.Integer | Id.Real); name; } ->
-          `Term (Base.app0 (module Type) env name (T.mk name))
+        | Type.Id { Id.ns = Value (Integer | Real); name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.mk name))
         (* terms *)
-        | Type.Id { Id.ns = Id.Term; name; } ->
+        | Type.Id { Id.ns = Term; name = Simple name; } ->
           begin match name with
             | "-" -> `Term (fun ast args ->
                 match args with
@@ -647,29 +649,29 @@ module Smtlib2 = struct
                   check env (F.minus arith (parse ~arith) version env) ast args;
                   T.minus (Type.parse_term env x)
                 | _ ->
-                  Base.term_app_left (module Type) env "-" T.sub ast args
+                  Base.term_app_left (module Type) env s T.sub ast args
                     ~check:(check env (F.sub arith (parse ~arith) version env))
               )
             | "+" ->
-              `Term (Base.term_app_left (module Type) env "+" T.add
+              `Term (Base.term_app_left (module Type) env s T.add
                        ~check:(check env (F.add arith (parse ~arith) version env)))
             | "*" ->
-              `Term (Base.term_app_left (module Type) env "*" T.mul
+              `Term (Base.term_app_left (module Type) env s T.mul
                        ~check:(check env (F.mul arith (parse ~arith) version env)))
             | "/" ->
-              `Term (Base.term_app_left (module Type) env "/" T.div
+              `Term (Base.term_app_left (module Type) env s T.div
                        ~check:(check env (F.div arith (parse ~arith) version env)))
             | "<=" ->
-              `Term (Base.term_app_chain (module Type) env "<=" T.le
+              `Term (Base.term_app_chain (module Type) env s T.le
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | "<" ->
-              `Term (Base.term_app_chain (module Type) env "<" T.lt
+              `Term (Base.term_app_chain (module Type) env s T.lt
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">=" ->
-              `Term (Base.term_app_chain (module Type) env ">=" T.ge
+              `Term (Base.term_app_chain (module Type) env s T.ge
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">" ->
-              `Term (Base.term_app_chain (module Type) env ">" T.gt
+              `Term (Base.term_app_chain (module Type) env s T.gt
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | _ -> `Not_found
           end
@@ -729,85 +731,88 @@ module Smtlib2 = struct
         match s with
 
         (* type *)
-        | Type.Id { Id.ns = Id.Sort; name = "Int"; } ->
-          `Ty (Base.app0 (module Type) env "Int" Ty.int)
-        | Type.Id { Id.ns = Id.Sort; name = "Real"; } ->
-          `Ty (Base.app0 (module Type) env "Real" Ty.real)
+        | Type.Id { Id.ns = Sort; name = Simple "Int"; } ->
+          `Ty (Base.app0 (module Type) env s Ty.int)
+        | Type.Id { Id.ns = Sort; name = Simple "Real"; } ->
+          `Ty (Base.app0 (module Type) env s Ty.real)
 
         (* values *)
-        | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-          `Term (Base.app0 (module Type) env name (T.Int.mk name))
-        | Type.Id { Id.ns = Id.Value Id.Real; name; } ->
-          `Term (Base.app0 (module Type) env name (T.Real.mk name))
+        | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.Int.mk name))
+        | Type.Id { Id.ns = Value Real; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.Real.mk name))
 
         (* terms *)
-        | Type.Id ({ Id.ns = Id.Term; name; } as id) ->
+        | Type.Id { Id.ns = Term; name = Simple name; } ->
           begin match name with
             | "-" -> `Term (fun ast args ->
                 match args with
                 | [_] ->
-                  Base.term_app1_ast (module Type) env "-"
+                  Base.term_app1_ast (module Type) env s
                     (dispatch1 env (T.Int.minus, T.Real.minus)) ast args
                     ~check:(check1 env (F.minus arith (parse ~arith) version env))
                 | _ ->
-                  Base.term_app_left_ast (module Type) env "-"
+                  Base.term_app_left_ast (module Type) env s
                     (dispatch2 env (T.Int.sub, T.Real.sub)) ast args
                     ~check:(check env (F.sub arith (parse ~arith) version env))
               )
             | "+" ->
-              `Term (Base.term_app_left_ast (module Type) env "+"
+              `Term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.add, T.Real.add))
                        ~check:(check env (F.add arith (parse ~arith) version env)))
             | "*" ->
-              `Term (Base.term_app_left_ast (module Type) env "*"
+              `Term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.mul, T.Real.mul))
                        ~check:(check env (F.mul arith (parse ~arith) version env)))
             | "div" ->
-              `Term (Base.term_app_left (module Type) env "div" T.Int.div
+              `Term (Base.term_app_left (module Type) env s T.Int.div
                        ~check:(check env (F.ediv arith)))
             | "mod" ->
-              `Term (Base.term_app2 (module Type) env "mod" T.Int.rem
+              `Term (Base.term_app2 (module Type) env s T.Int.rem
                        ~check:(check2 env (F.mod_ arith)))
             | "abs" ->
-              `Term (Base.term_app1 (module Type) env "abs" T.Int.abs
+              `Term (Base.term_app1 (module Type) env s T.Int.abs
                        ~check:(check1 env (F.abs arith)))
             | "/" ->
-              `Term (Base.term_app_left_ast (module Type) env "/"
+              `Term (Base.term_app_left_ast (module Type) env s
                        (promote_int_to_real env T.Real.div)
                        ~check:(check env (F.div arith (parse ~arith) version env)))
             | "<=" ->
-              `Term (Base.term_app_chain_ast (module Type) env "<="
+              `Term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.le, T.Real.le))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | "<" ->
-              `Term (Base.term_app_chain_ast (module Type) env "<"
+              `Term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.lt, T.Real.lt))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">=" ->
-              `Term (Base.term_app_chain_ast (module Type) env ">="
+              `Term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.ge, T.Real.ge))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | ">" ->
-              `Term (Base.term_app_chain_ast (module Type) env ">"
+              `Term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.gt, T.Real.gt))
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
             | "to_real" ->
-              `Term (Base.term_app1 (module Type) env "to_real" T.Int.to_real)
+              `Term (Base.term_app1 (module Type) env s T.Int.to_real)
             | "to_int" ->
-              `Term (Base.term_app1 (module Type) env "to_int" T.Real.floor_to_int)
+              `Term (Base.term_app1 (module Type) env s T.Real.floor_to_int)
             | "is_int" ->
-              `Term (Base.term_app1 (module Type) env "is_int" T.Real.is_int)
+              `Term (Base.term_app1 (module Type) env s T.Real.is_int)
 
-            | _ -> Base.parse_id id
-                     ~k:(function _ -> `Not_found)
-                     ~err:(Base.bad_ty_index_arity (module Type) env)
-                     [
-                       "divisible", `Unary (function n ->
-                           `Term (Base.term_app1 (module Type) env
-                                    "divisible" (T.Int.divisible n)
-                                    ~check:(check1 env (F.divisible arith))));
-                     ]
+            | _ -> `Not_found
           end
+        | Type.Id { Id.ns = Term; name = Indexed { basename; indexes; }; } ->
+          Base.parse_indexed basename indexes
+            ~k:(function () -> `Not_found)
+            ~err:(Base.bad_ty_index_arity (module Type) env) (function
+                | "divisible" ->
+                  `Unary (function n ->
+                      `Term (Base.term_app1 (module Type) env s (T.Int.divisible n)
+                               ~check:(check1 env (F.divisible arith))))
+                | _ -> `Not_indexed
+              )
+
         | _ -> `Not_found
 
     end
@@ -856,94 +861,94 @@ module Tptp = struct
       match s with
 
       (* type *)
-      | Type.Id { Id.ns = Id.Term; name = "$int"; } ->
-        `Ty (Base.app0 (module Type) env "$int" Ty.int)
-      | Type.Id { Id.ns = Id.Term; name = "$rat"; } ->
-        `Ty (Base.app0 (module Type) env "$rat" Ty.rat)
-      | Type.Id { Id.ns = Id.Term; name = "$real"; } ->
-        `Ty (Base.app0 (module Type) env "$real" Ty.real)
+      | Type.Id { Id.ns = Term; name = Simple "$int"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.int)
+      | Type.Id { Id.ns = Term; name = Simple "$rat"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.rat)
+      | Type.Id { Id.ns = Term; name = Simple "$real"; } ->
+        `Ty (Base.app0 (module Type) env s Ty.real)
 
       (* Literals *)
-      | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-        `Term (Base.app0 (module Type) env name (T.int name))
-      | Type.Id { Id.ns = Id.Value Id.Rational; name; } ->
-        `Term (Base.app0 (module Type) env name (T.rat name))
-      | Type.Id { Id.ns = Id.Value Id.Real; name; } ->
-        `Term (Base.app0 (module Type) env name (T.real name))
+      | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+        `Term (Base.app0 (module Type) env s (T.int name))
+      | Type.Id { Id.ns = Value Rational; name = Simple name; } ->
+        `Term (Base.app0 (module Type) env s (T.rat name))
+      | Type.Id { Id.ns = Value Real; name = Simple name; } ->
+        `Term (Base.app0 (module Type) env s (T.real name))
 
       (* terms *)
-      | Type.Id { Id.ns = Id.Term; name = "$less"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$less"
+      | Type.Id { Id.ns = Term; name = Simple "$less"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.lt, T.Rat.lt, T.Real.lt)))
-      | Type.Id { Id.ns = Id.Term; name = "$lesseq"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$lesseq"
+      | Type.Id { Id.ns = Term; name = Simple "$lesseq"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.le, T.Rat.le, T.Real.le)))
-      | Type.Id { Id.ns = Id.Term; name = "$greater"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$greater"
+      | Type.Id { Id.ns = Term; name = Simple "$greater"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.gt, T.Rat.gt, T.Real.gt)))
-      | Type.Id { Id.ns = Id.Term; name = "$greatereq"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$greatereq"
+      | Type.Id { Id.ns = Term; name = Simple "$greatereq"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.ge, T.Rat.ge, T.Real.ge)))
-      | Type.Id { Id.ns = Id.Term; name = "$uminus"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$uminus"
+      | Type.Id { Id.ns = Term; name = Simple "$uminus"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.minus, T.Rat.minus, T.Real.minus)))
-      | Type.Id { Id.ns = Id.Term; name = "$sum"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$sum"
+      | Type.Id { Id.ns = Term; name = Simple "$sum"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.add, T.Rat.add, T.Real.add)))
-      | Type.Id { Id.ns = Id.Term; name = "$difference"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$difference"
+      | Type.Id { Id.ns = Term; name = Simple "$difference"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.sub, T.Rat.sub, T.Real.sub)))
-      | Type.Id { Id.ns = Id.Term; name = "$product"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$product"
+      | Type.Id { Id.ns = Term; name = Simple "$product"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.mul, T.Rat.mul, T.Real.mul)))
-      | Type.Id { Id.ns = Id.Term; name = "$quotient"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$quotient" (fun ast a b ->
+      | Type.Id { Id.ns = Term; name = Simple "$quotient"; } ->
+        `Term (Base.term_app2_ast (module Type) env s (fun ast a b ->
             (dispatch2 env (_invalid env ast Ty.int, T.Rat.div, T.Real.div)) ast a b
           ))
-      | Type.Id { Id.ns = Id.Term; name = "$quotient_e"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$quotient_e"
+      | Type.Id { Id.ns = Term; name = Simple "$quotient_e"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.div_e, T.Rat.div_e, T.Real.div_e)))
-      | Type.Id { Id.ns = Id.Term; name = "$remainder_e"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$remainder_e"
+      | Type.Id { Id.ns = Term; name = Simple "$remainder_e"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.rem_e, T.Rat.rem_e, T.Real.rem_e)))
-      | Type.Id { Id.ns = Id.Term; name = "$quotient_t"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$quotient_t"
+      | Type.Id { Id.ns = Term; name = Simple "$quotient_t"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.div_t, T.Rat.div_t, T.Real.div_t)))
-      | Type.Id { Id.ns = Id.Term; name = "$remainder_t"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$remainder_t"
+      | Type.Id { Id.ns = Term; name = Simple "$remainder_t"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.rem_t, T.Rat.rem_t, T.Real.rem_t)))
-      | Type.Id { Id.ns = Id.Term; name = "$quotient_f"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$quotient_f"
+      | Type.Id { Id.ns = Term; name = Simple "$quotient_f"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.div_f, T.Rat.div_f, T.Real.div_f)))
-      | Type.Id { Id.ns = Id.Term; name = "$remainder_f"; } ->
-        `Term (Base.term_app2_ast (module Type) env "$remainder_f"
+      | Type.Id { Id.ns = Term; name = Simple "$remainder_f"; } ->
+        `Term (Base.term_app2_ast (module Type) env s
                  (dispatch2 env (T.Int.rem_f, T.Rat.rem_f, T.Real.rem_f)))
-      | Type.Id { Id.ns = Id.Term; name = "$floor"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$floor"
+      | Type.Id { Id.ns = Term; name = Simple "$floor"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.floor, T.Rat.floor, T.Real.floor)))
-      | Type.Id { Id.ns = Id.Term; name = "$ceiling"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$ceiling"
+      | Type.Id { Id.ns = Term; name = Simple "$ceiling"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.ceiling, T.Rat.ceiling, T.Real.ceiling)))
-      | Type.Id { Id.ns = Id.Term; name = "$truncate"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$truncate"
+      | Type.Id { Id.ns = Term; name = Simple "$truncate"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.truncate, T.Rat.truncate, T.Real.truncate)))
-      | Type.Id { Id.ns = Id.Term; name = "$round"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$round"
+      | Type.Id { Id.ns = Term; name = Simple "$round"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.round, T.Rat.round, T.Real.round)))
-      | Type.Id { Id.ns = Id.Term; name = "$is_int"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$is_int"
+      | Type.Id { Id.ns = Term; name = Simple "$is_int"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.is_int, T.Rat.is_int, T.Real.is_int)))
-      | Type.Id { Id.ns = Id.Term; name = "$is_rat"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$is_rat"
+      | Type.Id { Id.ns = Term; name = Simple "$is_rat"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.is_rat, T.Rat.is_rat, T.Real.is_rat)))
-      | Type.Id { Id.ns = Id.Term; name = "$to_int"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$to_int"
+      | Type.Id { Id.ns = Term; name = Simple "$to_int"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.to_int, T.Rat.to_int, T.Real.to_int)))
-      | Type.Id { Id.ns = Id.Term; name = "$to_rat"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$to_rat"
+      | Type.Id { Id.ns = Term; name = Simple "$to_rat"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.to_rat, T.Rat.to_rat, T.Real.to_rat)))
-      | Type.Id { Id.ns = Id.Term; name = "$to_real"; } ->
-        `Term (Base.term_app1_ast (module Type) env "$to_real"
+      | Type.Id { Id.ns = Term; name = Simple "$to_real"; } ->
+        `Term (Base.term_app1_ast (module Type) env s
                  (dispatch1 env (T.Int.to_real, T.Rat.to_real, T.Real.to_real)))
 
       (* Catch-all *)
@@ -981,29 +986,29 @@ module Zf = struct
       match s with
       (* Types *)
       | Type.Builtin Term.Int ->
-        `Ty (Base.app0 (module Type) env "int" Ty.int)
+        `Ty (Base.app0 (module Type) env s Ty.int)
 
       (* Literals *)
-      | Type.Id { Id.ns = Id.Value Id.Integer; name; } ->
-        `Term (Base.app0 (module Type) env name (T.int name))
+      | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+        `Term (Base.app0 (module Type) env s (T.int name))
 
       (* Arithmetic *)
       | Type.Builtin Term.Minus ->
-        `Term (Base.term_app1 (module Type) env "-" T.Int.minus)
+        `Term (Base.term_app1 (module Type) env s T.Int.minus)
       | Type.Builtin Term.Add ->
-        `Term (Base.term_app2 (module Type) env "+" T.Int.add)
+        `Term (Base.term_app2 (module Type) env s T.Int.add)
       | Type.Builtin Term.Sub ->
-        `Term (Base.term_app2 (module Type) env "-" T.Int.sub)
+        `Term (Base.term_app2 (module Type) env s T.Int.sub)
       | Type.Builtin Term.Mult ->
-        `Term (Base.term_app2 (module Type) env "*" T.Int.mul)
+        `Term (Base.term_app2 (module Type) env s T.Int.mul)
       | Type.Builtin Term.Lt ->
-        `Term (Base.term_app2 (module Type) env "<" T.Int.lt)
+        `Term (Base.term_app2 (module Type) env s T.Int.lt)
       | Type.Builtin Term.Leq ->
-        `Term (Base.term_app2 (module Type) env "<=" T.Int.le)
+        `Term (Base.term_app2 (module Type) env s T.Int.le)
       | Type.Builtin Term.Gt ->
-        `Term (Base.term_app2 (module Type) env "<" T.Int.gt)
+        `Term (Base.term_app2 (module Type) env s T.Int.gt)
       | Type.Builtin Term.Geq ->
-        `Term (Base.term_app2 (module Type) env "<=" T.Int.ge)
+        `Term (Base.term_app2 (module Type) env s T.Int.ge)
 
       (* Catch-all *)
       | _ -> `Not_found

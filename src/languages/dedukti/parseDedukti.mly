@@ -114,5 +114,5 @@ id:
   | id=ID
   { let loc = L.mk_pos $startpos $endpos in
     let md, name = id in
-    T.mk ~loc (I.mk (I.mod_name md) name) }
+    T.mk ~loc (I.qualified I.term [md] name) }
 %%

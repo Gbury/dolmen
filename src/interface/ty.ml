@@ -15,6 +15,9 @@ module type Tff = sig
   type t
   (** The type of types. *)
 
+  type path
+  (** The type of paths to constants. *)
+
   type 'a tag
   (** A type for tags to attach to arbitrary types. *)
 
@@ -73,7 +76,7 @@ module type Tff = sig
     val arity : t -> int
     (** Return the arity of the given symbol. *)
 
-    val mk : string -> int -> t
+    val mk : path -> int -> t
     (** Create a type constant with the given arity. *)
 
     val set_tag : t -> 'a tag -> 'a -> unit

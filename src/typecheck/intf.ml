@@ -8,6 +8,12 @@
 
 (** {1 Typechecker interface} *)
 
+type symbol =
+  | Id of Dolmen.Std.Id.t
+  | Builtin of Dolmen.Std.Term.builtin (**)
+(** Wrapper around potential function symbols from the Dolmen AST. *)
+
+
 (** Typechecker interface *)
 module type Formulas = sig
 
@@ -162,6 +168,11 @@ module type Formulas = sig
   ]
   (** The bindings that can occur. *)
 
+  type nonrec symbol = symbol =
+    | Id of Dolmen.Std.Id.t
+    | Builtin of Dolmen.Std.Term.builtin (**)
+  (** Wrapper around potential function symbols from the Dolmen AST. *)
+
 
   (** {2 Errors and warnings} *)
 
@@ -220,8 +231,8 @@ module type Formulas = sig
     (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
         to [actual] arguments, but which has a different arity (which should
         be accessible by getting its type/sort/arity). *)
-    | Bad_op_arity : string * int list * int -> Dolmen.Std.Term.t err
-    (** [Bad_op_arity (name, expected, actual)] denotes a named operator
+    | Bad_op_arity : symbol * int list * int -> Dolmen.Std.Term.t err
+    (** [Bad_op_arity (symbol, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which
         is being substituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
@@ -342,11 +353,6 @@ module type Formulas = sig
       in which case the return value will be a function.
       @raise Typing_error *)
 
-  type symbol =
-    | Id of Dolmen.Std.Id.t
-    | Builtin of Dolmen.Std.Term.builtin
-    (** Wrapper around potential function symbols from the Dolmen AST. *)
-
   type builtin_symbols = env -> symbol -> [ builtin_res | not_found ]
   (** The type of a typer for builtin symbols. Given the environment and a symbol,
       the theory should return a typing function if the symbol belongs to the
@@ -392,7 +398,16 @@ module type Formulas = sig
       @raise Invalid_argument if the binding is [`Not_found] *)
 
 
-  (** {2 Builtin helpers} *)
+  (** {2 Name/Path helpers} *)
+
+  val var_name : env -> Dolmen.Std.Name.t -> string
+  (** Extract a variable name from a standard name. *)
+
+  val cst_path : env -> Dolmen.Std.Name.t -> Dolmen.Std.Path.t
+  (** Build a path from a standard name. *)
+
+
+  (** {2 Bindings helpers} *)
 
   type var = [
     | `Ty_var of ty_var

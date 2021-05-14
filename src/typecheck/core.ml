@@ -17,21 +17,21 @@ module Ae = struct
 
       (* Types *)
       | Type.Builtin Ast.Bool ->
-        `Ty (Base.app0 (module Type) env "bool" Ty.bool)
+        `Ty (Base.app0 (module Type) env s Ty.bool)
       | Type.Builtin Ast.Unit ->
-        `Ty (Base.app0 (module Type) env "unit" Ty.unit)
+        `Ty (Base.app0 (module Type) env s Ty.unit)
 
       (* Constants *)
       | Type.Builtin Ast.Void ->
-        `Term (Base.app0 (module Type) env "void" T.void)
+        `Term (Base.app0 (module Type) env s T.void)
       | Type.Builtin Ast.True ->
-        `Term (Base.app0 (module Type) env "true" T._true)
+        `Term (Base.app0 (module Type) env s T._true)
       | Type.Builtin Ast.False ->
-        `Term (Base.app0 (module Type) env "true" T._false)
+        `Term (Base.app0 (module Type) env s T._false)
 
       (* Terms connectors *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env "=" T.eq)
+        `Term (Base.term_app2 (module Type) env s T.eq)
 
       | _ -> `Not_found
 
@@ -51,7 +51,7 @@ module Dimacs = struct
     let parse env s =
       match s with
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env "not" T.neg)
+        `Term (Base.term_app1 (module Type) env s T.neg)
       | _ -> `Not_found
 
   end
@@ -76,48 +76,48 @@ module Tptp = struct
       match s with
 
       (* Predefined symbols *)
-      | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
-        `Ttype (Base.app0 (module Type) env "$tType" ())
-      | Type.Id { Id.name = "$o"; ns = Id.Term } ->
-        `Ty (Base.app0 (module Type) env "$o" Ty.prop)
-      | Type.Id { Id.name = "$i"; ns = Id.Term } ->
-        `Ty (Base.app0 (module Type) env "$i" Ty.base)
-      | Type.Id { Id.name = "$true"; ns = Id.Term } ->
-        `Term (Base.app0 (module Type) env "$true" T._true)
-      | Type.Id { Id.name = "$false"; ns = Id.Term } ->
-        `Term (Base.app0 (module Type) env "$false" T._false)
+      | Type.Id { name = Simple "$tType"; ns = Term } ->
+        `Ttype (Base.app0 (module Type) env s ())
+      | Type.Id { name = Simple "$o"; ns = Term } ->
+        `Ty (Base.app0 (module Type) env s Ty.prop)
+      | Type.Id { name = Simple "$i"; ns = Term } ->
+        `Ty (Base.app0 (module Type) env s Ty.base)
+      | Type.Id { name = Simple "$true"; ns = Term } ->
+        `Term (Base.app0 (module Type) env s T._true)
+      | Type.Id { name = Simple "$false"; ns = Term } ->
+        `Term (Base.app0 (module Type) env s T._false)
 
       (* Predefined connectives *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env "=" T.eq)
+        `Term (Base.term_app2 (module Type) env s T.eq)
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app_list (module Type) env "!=" T.distinct)
-      | Type.Id { Id.name = "$distinct"; ns = Id.Term; } ->
-        `Term (Base.term_app_list (module Type) env "$distinct" T.distinct)
+        `Term (Base.term_app_list (module Type) env s T.distinct)
+      | Type.Id { name = Simple "$distinct"; ns = Term; } ->
+        `Term (Base.term_app_list (module Type) env s T.distinct)
 
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env "~" T.neg)
+        `Term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app2 (module Type) env "|" mk_or)
+        `Term (Base.term_app2 (module Type) env s mk_or)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app2 (module Type) env "&" mk_and)
+        `Term (Base.term_app2 (module Type) env s mk_and)
       | Type.Builtin Ast.Xor ->
-        `Term (Base.term_app2 (module Type) env "<~>" T.xor)
+        `Term (Base.term_app2 (module Type) env s T.xor)
       | Type.Builtin Ast.Nor ->
-        `Term (Base.term_app2 (module Type) env "~|" T.nor)
+        `Term (Base.term_app2 (module Type) env s T.nor)
       | Type.Builtin Ast.Nand ->
-        `Term (Base.term_app2 (module Type) env "~&" T.nand)
+        `Term (Base.term_app2 (module Type) env s T.nand)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app2 (module Type) env "<=>" T.equiv)
+        `Term (Base.term_app2 (module Type) env s T.equiv)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app2 (module Type) env "=>" T.imply)
+        `Term (Base.term_app2 (module Type) env s T.imply)
       | Type.Builtin Ast.Implied ->
-        `Term (Base.term_app2 (module Type) env "<=" T.implied)
+        `Term (Base.term_app2 (module Type) env s T.implied)
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
         `Term (
-          Base.make_op3 (module Type) env "$ite" (fun _ (a, b, c) ->
+          Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
               let else_ = Type.parse_term env c in
@@ -144,17 +144,17 @@ module Tptp = struct
       match s with
 
       (* Ttype and types *)
-      | Type.Id { Id.name = "$tType"; ns = Id.Term } ->
-        `Ttype (Base.app0 (module Type) env "$tType" ())
-      | Type.Id { Id.name = "$o"; ns = Id.Term } ->
-        `Ty (Base.app0 (module Type) env "$o" Ty.prop)
-      | Type.Id { Id.name = "$i"; ns = Id.Term } ->
-        `Ty (Base.app0 (module Type) env "$i" Ty.base)
+      | Type.Id { name = Simple "$tType"; ns = Term } ->
+        `Ttype (Base.app0 (module Type) env s ())
+      | Type.Id { name = Simple "$o"; ns = Term } ->
+        `Ty (Base.app0 (module Type) env s Ty.prop)
+      | Type.Id { name = Simple "$i"; ns = Term } ->
+        `Ty (Base.app0 (module Type) env s Ty.base)
 
       (* Predefined symbols *)
-      | Type.Id { Id.name = "$true"; ns = Id.Term } ->
+      | Type.Id { name = Simple "$true"; ns = Term } ->
         `Term (Base.term_app_cst (module Type) env T.Const._true)
-      | Type.Id { Id.name = "$false"; ns = Id.Term } ->
+      | Type.Id { name = Simple "$false"; ns = Term } ->
         `Term (Base.term_app_cst (module Type) env T.Const._false)
 
       (* Predefined connectives *)
@@ -162,9 +162,9 @@ module Tptp = struct
         `Term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.eq)))
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app_list (module Type) env "!=" T.distinct)
-      | Type.Id { Id.name = "$distinct"; ns = Id.Term; } ->
-        `Term (Base.term_app_list (module Type) env "$distinct" T.distinct)
+        `Term (Base.term_app_list (module Type) env s T.distinct)
+      | Type.Id { name = Simple "$distinct"; ns = Term; } ->
+        `Term (Base.term_app_list (module Type) env s T.distinct)
 
       | Type.Builtin Ast.Not ->
         `Term (Base.term_app_cst (module Type) env T.Const.neg)
@@ -222,16 +222,19 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) = struct
 
-    let parse_symbol env = function
-      | { Ast.term = Ast.Symbol s; _ }
-      | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } ->
-        Id.full_name s
+    let parse_name env = function
+      | ({ Ast.term = Ast.Symbol s; _ } as ast)
+      | ({ Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } as ast) ->
+        begin match Dolmen.Std.Id.name s with
+          | Simple s -> s
+          | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
+        end
       | ast ->
         Type._error env (Ast ast) (Type.Expected ("symbol", None))
 
     let parse_sexpr_list env = function
       | { Ast.term = Ast.App (
-          { Ast.term = Ast.Symbol { Id.name = "$data"; ns = Id.Attr }; _ },
+          { Ast.term = Ast.Symbol { name = Simple "$data"; ns = Attr }; _ },
           l); _} ->
         l
       | ast ->
@@ -249,29 +252,29 @@ module Smtlib2 = struct
     let parse _version env s =
       match s with
       (* Bool sort and constants *)
-      | Type.Id { Id.name = "Bool"; ns = Id.Sort } ->
-        `Ty (Base.app0 (module Type) env "Bool" Ty.prop)
-      | Type.Id { Id.name = "true"; ns = Id.Term } ->
-        `Term (Base.app0 (module Type) env "true" T._true)
-      | Type.Id { Id.name = "false"; ns = Id.Term } ->
-        `Term (Base.app0 (module Type) env "false" T._false)
+      | Type.Id { name = Simple "Bool"; ns = Sort } ->
+        `Ty (Base.app0 (module Type) env s Ty.prop)
+      | Type.Id { name = Simple "true"; ns = Term } ->
+        `Term (Base.app0 (module Type) env s T._true)
+      | Type.Id { name = Simple "false"; ns = Term } ->
+        `Term (Base.app0 (module Type) env s T._false)
 
       (* Boolean operators *)
-      | Type.Id { Id.name = "not"; ns = Id.Term } ->
-        `Term (Base.term_app1 (module Type) env "not" T.neg)
-      | Type.Id { Id.name = "and"; ns = Id.Term } ->
-        `Term (Base.term_app_left (module Type) env "and" mk_and)
-      | Type.Id { Id.name = "or"; ns = Id.Term } ->
-        `Term (Base.term_app_left (module Type) env "or" mk_or)
-      | Type.Id { Id.name = "xor"; ns = Id.Term } ->
-        `Term (Base.term_app_left (module Type) env "xor" T.xor)
-      | Type.Id { Id.name = "=>"; ns = Id.Term } ->
-        `Term (Base.term_app_right (module Type) env "=>" T.imply)
+      | Type.Id { name = Simple "not"; ns = Term } ->
+        `Term (Base.term_app1 (module Type) env s T.neg)
+      | Type.Id { name = Simple "and"; ns = Term } ->
+        `Term (Base.term_app_left (module Type) env s mk_and)
+      | Type.Id { name = Simple "or"; ns = Term } ->
+        `Term (Base.term_app_left (module Type) env s mk_or)
+      | Type.Id { name = Simple "xor"; ns = Term } ->
+        `Term (Base.term_app_left (module Type) env s T.xor)
+      | Type.Id { name = Simple "=>"; ns = Term } ->
+        `Term (Base.term_app_right (module Type) env s T.imply)
 
       (* If-then-else *)
-      | Type.Id { Id.name = "ite"; ns = Id.Term } ->
+      | Type.Id { name = Simple "ite"; ns = Term } ->
         `Term (
-          Base.make_op3 (module Type) env "$ite" (fun _ (a, b, c) ->
+          Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
               let else_ = Type.parse_term env c in
@@ -280,30 +283,30 @@ module Smtlib2 = struct
         )
 
       (* Equality *)
-      | Type.Id { Id.name = "distinct"; ns = Id.Term } ->
+      | Type.Id { name = Simple "distinct"; ns = Term } ->
         `Term (fun _ast args ->
             let args = List.map (Type.parse_term env) args in
             T.distinct args)
-      | Type.Id { Id.name = "="; ns = Id.Term } ->
-        `Term (Base.term_app_chain (module Type) env "=" T.eq)
+      | Type.Id { name = Simple "="; ns = Term } ->
+        `Term (Base.term_app_chain (module Type) env s T.eq)
 
       (* Named formulas *)
-      | Type.Id { Id.name = ":named"; ns = Id.Attr } ->
-        `Tags (Base.make_op1 (module Type) env ":named" (fun _ t ->
-            let name = parse_symbol env t in
+      | Type.Id { name = Simple ":named"; ns = Attr } ->
+        `Tags (Base.make_op1 (module Type) env s (fun _ t ->
+            let name = parse_name env t in
             [Type.Set (Tag.named, name)]
           ))
 
       (* Trigger annotations *)
-      | Type.Id { Id.name = ":pattern"; ns = Id.Attr } ->
-        `Tags (Base.make_op1 (module Type) env ":pattern" (fun _ t ->
+      | Type.Id { name = Simple ":pattern"; ns = Attr } ->
+        `Tags (Base.make_op1 (module Type) env s (fun _ t ->
             let l = parse_sexpr_list env t in
             let l = List.map (Type.parse_term env) l in
             [Type.Add (Tag.triggers, l)]
           ))
 
       (* N-ary s-expressions in attributes *)
-      | Type.Id { Id.name = "$data"; ns = Id.Attr } ->
+      | Type.Id { name = Simple "$data"; ns = Attr } ->
         `Term (fun ast args ->
             begin match args with
               | f :: r -> parse_f env ast f r
@@ -316,17 +319,19 @@ module Smtlib2 = struct
         `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
 
       (* ADT testers *)
-      | Type.Id ({ Id.ns = Id.Term; _ } as id) ->
-        Base.parse_id id [
-          "is", `Unary (function s ->
-              let id = Id.mk Id.Term s in
-              begin match Type.find_bound env id with
-                | `Cstr c ->
-                  `Term (Base.term_app1 (module Type) env "is" (T.cstr_tester c))
-                | _ -> `Not_found
-              end);
-        ] ~err:(fun _ _ _ -> `Not_found)
+      | Type.Id { Id.ns = Term; name = Indexed { basename; indexes; } } as symbol ->
+        Base.parse_indexed basename indexes
           ~k:(fun _ -> `Not_found)
+          ~err:(fun _ _ _ -> `Not_found) (function
+              | "is" -> `Unary (function s ->
+                  let id = Id.mk Term s in
+                  begin match Type.find_bound env id with
+                    | `Cstr c ->
+                      `Term (Base.term_app1 (module Type) env symbol (T.cstr_tester c))
+                    | _ -> `Not_found
+                  end)
+              | _ -> `Not_indexed
+            )
 
       | _ -> `Not_found
 
@@ -352,32 +357,32 @@ module Zf = struct
       match s with
       (* Types *)
       | Type.Builtin Ast.Prop ->
-        `Ty (Base.app0 (module Type) env "bool" Ty.prop)
+        `Ty (Base.app0 (module Type) env s Ty.prop)
 
       (* Terms *)
       | Type.Builtin Ast.True ->
-        `Term (Base.app0 (module Type) env "true" T._true)
+        `Term (Base.app0 (module Type) env s T._true)
       | Type.Builtin Ast.False ->
-        `Term (Base.app0 (module Type) env "false" T._false)
+        `Term (Base.app0 (module Type) env s T._false)
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env "~" T.neg)
+        `Term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app2 (module Type) env "||" mk_or)
+        `Term (Base.term_app2 (module Type) env s mk_or)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app2 (module Type) env "&&" mk_and)
+        `Term (Base.term_app2 (module Type) env s mk_and)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app2 (module Type) env "=>" T.imply)
+        `Term (Base.term_app2 (module Type) env s T.imply)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app2 (module Type) env "<=>" T.equiv)
+        `Term (Base.term_app2 (module Type) env s T.equiv)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env "=" T.eq)
+        `Term (Base.term_app2 (module Type) env s T.eq)
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app2 (module Type) env "=" T.neq)
+        `Term (Base.term_app2 (module Type) env s T.neq)
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
         `Term (
-          Base.make_op3 (module Type) env "ite" (fun _ (a, b, c) ->
+          Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
               let else_ = Type.parse_term env c in
@@ -388,9 +393,9 @@ module Zf = struct
       (* Tags *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
         `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
-      | Type.Id { Id.name = "infix"; ns = Id.Term } ->
+      | Type.Id { name = Simple "infix"; ns = Term } ->
         `Tags (fun ast args -> match args with
-            | [ { Ast.term = Ast.Symbol { Id.name; _ }; _ } ] -> [
+            | [ { Ast.term = Ast.Symbol { name = Simple name; _ }; _ } ] -> [
                 Type.Set (Tag.name, Tag.exact name);
                 Type.Set (Tag.pos, Tag.infix);
               ]
@@ -398,9 +403,9 @@ module Zf = struct
               Type._error env (Ast ast)
                 (Type.Expected ("a symbol", None))
           )
-      | Type.Id { Id.name = "prefix"; ns = Id.Term } ->
+      | Type.Id { name = Simple "prefix"; ns = Term } ->
         `Tags (fun ast args -> match args with
-            | [ { Ast.term = Ast.Symbol { Id.name; _ }; _ } ] -> [
+            | [ { Ast.term = Ast.Symbol { name = Simple name; _ }; _ } ] -> [
                 Type.Set (Tag.name, Tag.exact name);
                 Type.Set (Tag.pos, Tag.prefix);
               ]

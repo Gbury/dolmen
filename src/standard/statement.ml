@@ -89,7 +89,7 @@ type descr =
 
 (* Statements are wrapped in a record to have a location. *)
 and t = {
-  id : Id.t;
+  id : Id.t option;
   descr : descr;
   attrs : term list;
   loc : location;
@@ -99,6 +99,7 @@ and t = {
 
 let no_loc = Loc.no_loc
 
+(*
 (* Debug printing *)
 
 let pp_abstract b (i : abstract) =
@@ -187,6 +188,7 @@ let rec pp_descr b = function
 
 and pp b = function { descr; _ } ->
   Printf.bprintf b "%a" pp_descr descr
+*)
 
 (* Pretty printing *)
 
@@ -295,7 +297,7 @@ and print fmt = function { descr; attrs; _ } ->
 let annot = Term.apply
 
 (* Internal shortcut. *)
-let mk ?(id=Id.(mk decl "")) ?(loc=Loc.no_loc) ?(attrs=[]) descr =
+let mk ?id ?(loc=Loc.no_loc) ?(attrs=[]) descr =
   { id; descr; loc; attrs; }
 
 (* Pack *)

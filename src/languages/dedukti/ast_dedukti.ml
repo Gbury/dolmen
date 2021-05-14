@@ -11,10 +11,14 @@ module type Id = sig
   type namespace
   (** Namespace for identifiers *)
 
-  val mod_name : string -> namespace
-  (** Create a namespace from a module name. *)
+  val term : namespace
+  (** The term namespace. *)
 
   val mk : namespace -> string -> t
+  (** Create a simple identifier. *)
+
+  val qualified : namespace -> string list -> string -> t
+  (** Create a qualified identifier. *)
 
 end
 
