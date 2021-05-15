@@ -129,8 +129,9 @@
 
   let symbol newline lexbuf s =
     (* register the newlines in quoted symbols to maintain correct locations.*)
-    String.iter (function '\n' -> newline lexbuf | _ -> ()) s;
-    (* Check whetehr the symbol is a reserved word. *)
+    let[@inline] aux = function '\n' -> newline lexbuf | _ -> () in
+    (String.iter[@inlined hint]) aux s;
+    (* Check whether the symbol is a reserved word. *)
     try M.find s reserved_words
     with Not_found -> SYMBOL s
 
