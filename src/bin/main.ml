@@ -41,7 +41,13 @@ let () =
     `S Options.header_section;
     `P "Options to control the checking of headers in the input file";
     `S Options.memprof_section;
-    `P "Options to profile the memory usage of dolmen";
+    `P (Format.asprintf
+          "Options to profile the memory usage of dolmen.%s"
+          (if Memory_profiler.available then "" else
+             " WARNING: Memory profiling is not available on this version
+            of Dolmen. You should install memtrace and recompile Dolmen
+            if you desire to use memory profiling.")
+       );
     `S Options.gc_section;
     `P "Options to fine-tune the gc, only experts should use these.";
     `S Cmdliner.Manpage.s_exit_status;

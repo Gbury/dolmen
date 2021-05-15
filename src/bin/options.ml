@@ -182,7 +182,9 @@ let memtrace_opts filename sampling_rate =
       Memory_profiler.start filename sampling_rate;
       `Ok ()
     end else begin
-      let msg = "Memtrace is not available, try to 'opam install memtrace'" in
+      let msg =
+        "Memtrace is not available, try to install memtrace and recompile Dolmen."
+      in
       `Error (false, msg)
     end
 

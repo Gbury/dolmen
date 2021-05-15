@@ -18,6 +18,9 @@ depends: [
   "cmdliner"
   "odoc" { with-doc }
 ]
+depopts: [
+  "memtrace"
+]
 tags: [ "logic" "computation" "automated theorem prover" "logic" "smtlib" "tptp"]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
