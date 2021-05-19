@@ -197,6 +197,7 @@ module Make
   module U = Map.Make(T.Cstr)
   module V = Map.Make(T.Field)
 
+
   (* Warnings & Errors *)
   (* ************************************************************************ *)
 
@@ -1089,11 +1090,12 @@ module Make
 
   let[@inline] wrap_attr apply_attr env ast f =
     match ast.Ast.attr with
-    | [] -> (f[@inlined hint]) ast
-    | l -> apply_attr env ((f[@inlined hint]) ast) ast l
+    | [] -> f ast
+    | l -> apply_attr env (f ast) ast l
 
   let rec parse_expr (env : env) t : res =
-    (wrap_attr[@inlined]) apply_attr env t @@ (parse_expr_aux env)
+    let[@inline] aux t = parse_expr_aux env t in
+    (wrap_attr[@inlined]) apply_attr env t aux
 
   and parse_expr_aux env = function
     (* Ttype *)
@@ -1199,7 +1201,8 @@ module Make
     match env.order with
     | First_order -> _error env (Ast ast) Higher_order_type
     | Higher_order ->
-      (wrap_attr[@inlined]) apply_attr env ret @@ (parse_arrow_aux env ast acc)
+      let[@inline] aux t = parse_arrow_aux env ast acc t in
+      (wrap_attr[@inlined]) apply_attr env ret aux
 
   and parse_arrow_aux env ast acc = function
     | { Ast.term = Ast.Binder (Ast.Arrow, args, ret'); _ } ->
@@ -1224,8 +1227,10 @@ module Make
     List.rev ttype_vars, List.rev typed_vars, env'
 
   and parse_quant parse_inner mk b env ast ttype_acc ty_acc body_ast =
-    (wrap_attr[@inlined]) apply_attr env body_ast @@
-    (parse_quant_aux parse_inner mk b env ast ttype_acc ty_acc)
+    let [@inline] aux t =
+      parse_quant_aux parse_inner mk b env ast ttype_acc ty_acc t
+    in
+    (wrap_attr[@inlined]) apply_attr env body_ast aux
 
   and parse_quant_aux parse_inner mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
@@ -1311,7 +1316,8 @@ module Make
 
   and parse_let_seq env ast acc f = function
     | [] ->
-      (wrap_attr[@inlined]) apply_attr env f @@ (parse_let_seq_end env ast acc)
+      let[@inline] aux t = parse_let_seq_end env ast acc t in
+      (wrap_attr[@inlined]) apply_attr env f aux
     | x :: r ->
       begin match x with
         | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ } as w, e); _ }
@@ -1414,8 +1420,8 @@ module Make
     parse_app_symbol env ast s s_ast []
 
   and parse_app env ast f_ast args_asts =
-    (wrap_attr[@inlined]) apply_attr env f_ast @@
-    (parse_app_aux env ast args_asts)
+    let[@inline] aux t = parse_app_aux env ast args_asts t in
+    (wrap_attr[@inlined]) apply_attr env f_ast aux
 
   and parse_app_aux env ast args_asts = function
     | { Ast.term = Ast.App (g, inner_args); _ } ->
