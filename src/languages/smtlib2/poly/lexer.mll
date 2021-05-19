@@ -129,7 +129,11 @@
 
   let symbol newline lexbuf s =
     (* register the newlines in quoted symbols to maintain correct locations.*)
-    String.iter (function '\n' -> newline lexbuf | _ -> ()) s;
+    for i = 0 to (String.length s - 1) do
+      match s.[i] with
+      | '\n' -> newline lexbuf
+      | _ -> ()
+    done;
     (* Check whetehr the symbol is a reserved word. *)
     try M.find s reserved_words
     with Not_found -> SYMBOL s
