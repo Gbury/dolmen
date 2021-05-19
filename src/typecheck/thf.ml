@@ -103,7 +103,8 @@ module Make
 
   (* The type returned after parsing an expression. *)
   type tag =
-    | Any : 'a Tag.t * 'a -> tag
+    | Set : 'a Tag.t * 'a -> tag
+    | Add : 'a list Tag.t * 'a -> tag
 
   (* Result of parsing an expression *)
   type res =
@@ -1054,12 +1055,19 @@ module Make
   (* Tag application *)
   (* ************************************************************************ *)
 
-  let apply_tag env ast tag v res =
+  let set_tag env ast tag v res =
     match (res : res) with
     | Ttype -> _error env (Ast ast) Cannot_tag_ttype
     | Tags _ -> _error env (Ast ast) Cannot_tag_tag
     | Ty ty -> Ty.set_tag ty tag v
     | Term t -> T.set_tag t tag v
+
+  let add_tag env ast tag v res =
+    match (res : res) with
+    | Ttype -> _error env (Ast ast) Cannot_tag_ttype
+    | Tags _ -> _error env (Ast ast) Cannot_tag_tag
+    | Ty ty -> Ty.add_tag ty tag v
+    | Term t -> T.add_tag t tag v
 
   (* Expression parsing *)
   (* ************************************************************************ *)
@@ -1156,8 +1164,8 @@ module Make
 
   and apply_attr env res ast l =
     let () = List.iter (function
-        | Any (tag, v) ->
-          apply_tag env ast tag v res;
+        | Set (tag, v) -> set_tag env ast tag v res
+        | Add (tag, v) -> add_tag env ast tag v res
       ) (parse_attrs env [] l) in
     res
 
@@ -1834,19 +1842,28 @@ module Make
       begin match parse_sig env ty with
         | `Ty_cstr n ->
           let c = Ty.Const.mk (Id.full_name id) n in
-          List.iter (fun (Any (tag, v)) -> Ty.Const.set_tag c tag v) tags;
+          List.iter (function
+              | Set (tag, v) -> Ty.Const.set_tag c tag v
+              | Add (tag, v) -> Ty.Const.add_tag c tag v
+            ) tags;
           id, `Type_decl c
         | `Fun_ty (vars, args, ret) ->
           let ty = Ty.pi vars (Ty.arrow args ret) in
           let f = T.Const.mk (Id.full_name id) ty in
-          List.iter (fun (Any (tag, v)) -> T.Const.set_tag f tag v) tags;
+          List.iter (function
+              | Set (tag, v) -> T.Const.set_tag f tag v
+              | Add (tag, v) -> T.Const.add_tag f tag v
+            ) tags;
           id, `Term_decl f
       end
     | Record { id; vars; _ }
     | Inductive { id; vars; _ } ->
       let n = List.length vars in
       let c = Ty.Const.mk (Id.full_name id) n in
-      List.iter (fun (Any (tag, v)) -> Ty.Const.set_tag c tag v) tags;
+      List.iter (function
+          | Set (tag, v) -> Ty.Const.set_tag c tag v
+          | Add (tag, v) -> Ty.Const.add_tag c tag v
+        ) tags;
       id, `Type_decl c
 
   let record_decl env (id, tdecl) (t : Stmt.decl) =

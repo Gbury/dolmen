@@ -28,7 +28,7 @@ module type Smtlib_Base = sig
     (** A tag used to named formulas in smtlib.
         Should correspond to the `:named` attribute. *)
 
-    val triggers : term list t
+    val triggers : term list list t
     (** Multi-triggers (typically annotated on the body of
         a quantified formula and not the quantified formula itself). *)
 

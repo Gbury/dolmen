@@ -417,6 +417,9 @@ module type Tff = sig
     val set_tag : t -> 'a tag -> 'a -> unit
     (** Tag a constant. *)
 
+    val add_tag : t -> 'a list tag -> 'a -> unit
+    (** Add a value to the list of values bound to a tag. *)
+
   end
 
   (** A module for Algebraic datatype constructors. *)
@@ -566,6 +569,9 @@ module type Tff = sig
 
   val set_tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given formula wiht the tag and value. *)
+
+  val add_tag : t -> 'a list tag -> 'a -> unit
+  (** Add a value to the list of values bound to a tag. *)
 
   val fv : t -> ty_var list * Var.t list
   (** Returns the list of free variables in the formula. *)

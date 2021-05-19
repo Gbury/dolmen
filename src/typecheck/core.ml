@@ -291,7 +291,7 @@ module Smtlib2 = struct
       | Type.Id { Id.name = ":named"; ns = Id.Attr } ->
         `Tags (Base.make_op1 (module Type) env ":named" (fun _ t ->
             let name = parse_symbol env t in
-            [Type.Any (Tag.named, name)]
+            [Type.Set (Tag.named, name)]
           ))
 
       (* Trigger annotations *)
@@ -299,7 +299,7 @@ module Smtlib2 = struct
         `Tags (Base.make_op1 (module Type) env ":pattern" (fun _ t ->
             let l = parse_sexpr_list env t in
             let l = List.map (Type.parse_term env) l in
-            [Type.Any (Tag.triggers, l)]
+            [Type.Add (Tag.triggers, l)]
           ))
 
       (* N-ary s-expressions in attributes *)
@@ -313,7 +313,7 @@ module Smtlib2 = struct
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
-        `Tags (fun _ast _args -> [Type.Any (Tag.rwrt, ())])
+        `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
 
       (* ADT testers *)
       | Type.Id ({ Id.ns = Id.Term; _ } as id) ->
@@ -387,12 +387,12 @@ module Zf = struct
 
       (* Tags *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
-        `Tags (fun _ast _args -> [Type.Any (Tag.rwrt, ())])
+        `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
       | Type.Id { Id.name = "infix"; ns = Id.Term } ->
         `Tags (fun ast args -> match args with
             | [ { Ast.term = Ast.Symbol { Id.name; _ }; _ } ] -> [
-                Type.Any (Tag.name, Tag.exact name);
-                Type.Any (Tag.pos, Tag.infix);
+                Type.Set (Tag.name, Tag.exact name);
+                Type.Set (Tag.pos, Tag.infix);
               ]
             | _ ->
               Type._error env (Ast ast)
@@ -401,8 +401,8 @@ module Zf = struct
       | Type.Id { Id.name = "prefix"; ns = Id.Term } ->
         `Tags (fun ast args -> match args with
             | [ { Ast.term = Ast.Symbol { Id.name; _ }; _ } ] -> [
-                Type.Any (Tag.name, Tag.exact name);
-                Type.Any (Tag.pos, Tag.prefix);
+                Type.Set (Tag.name, Tag.exact name);
+                Type.Set (Tag.pos, Tag.prefix);
               ]
             | _ ->
               Type._error env (Ast ast)

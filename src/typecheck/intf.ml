@@ -105,7 +105,9 @@ module type Formulas = sig
     | Anything (**)
   (** *)
 
-  type tag = Any : 'a ast_tag * 'a -> tag
+  type tag =
+    | Set : 'a ast_tag * 'a -> tag
+    | Add : 'a list ast_tag * 'a -> tag
   (** Existencial wrapper around tags *)
 
   type res =

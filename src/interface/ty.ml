@@ -79,6 +79,9 @@ module type Tff = sig
     val set_tag : t -> 'a tag -> 'a -> unit
     (** Set the value bound to a tag. *)
 
+    val add_tag : t -> 'a list tag -> 'a -> unit
+    (** Add a value to the list of values bound to a tag. *)
+
   end
 
   val equal : t -> t -> bool
@@ -110,6 +113,9 @@ module type Tff = sig
 
   val set_tag : t -> 'a tag -> 'a -> unit
   (** Annotate the given type with the given tag and value. *)
+
+  val add_tag : t -> 'a list tag -> 'a -> unit
+  (** Add a value to the list of values bound to a tag. *)
 
   type view = private [>
     | `Wildcard of Var.t
