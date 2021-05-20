@@ -29,7 +29,7 @@ opam install dolmen_bin dolmen_lsp
 
 Additionally, pre-built binaries for Linux and MacOs can be found
 on the release pages (starting from the v0.6 release, see
-[the latest release](https://github.com/Gbury/dolmen/releases/tag/v0.5)).
+[the latest release](https://github.com/Gbury/dolmen/releases/latest)).
 
 
 The libraries can be installed using:
