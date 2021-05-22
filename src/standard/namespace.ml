@@ -78,3 +78,12 @@ let print fmt = function
   | Value value -> Format.fprintf fmt "value:%a" print_value value
 
 
+(* Map *)
+(* ************************************************************************* *)
+
+module Map = Maps.Make(struct
+    type nonrec t = t
+    let compare = compare
+  end)
+
+

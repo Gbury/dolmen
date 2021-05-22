@@ -1,0 +1,15 @@
+
+(executable
+  (name       main)
+  (libraries
+    ; Dolmen deps
+    dolmen_std
+    ; Qcheck
+    qcheck qcheck-core qcheck-core.runner)
+)
+
+(rule
+  (alias runtest)
+  (package dolmen)
+  (action (run ./main.exe --colors --verbose))
+)

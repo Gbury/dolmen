@@ -52,6 +52,9 @@ val compare : t -> t -> int
 val print : Format.formatter -> t -> unit
 (** Printing function. *)
 
+module Map : Maps.S with type key := t
+(** Maps on namespaces *)
+
 
 (** {2 Creation} *)
 (*  ************************************************************************* *)

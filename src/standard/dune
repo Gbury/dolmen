@@ -1,10 +1,12 @@
 (library
   (name           dolmen_std)
   (public_name    dolmen.std)
-  (libraries      dolmen_intf dolmen_line fmt)
+  (libraries      dolmen_intf dolmen_line unix fmt)
   (instrumentation (backend bisect_ppx))
   (flags :standard -warn-error -3)
   (modules
+    ; Maps &Utils % TODO: split this into a dedicated sub-library ?
+    Timer Stats Maps Maps_string
     ; Parsing structures
     Loc Name Namespace Id Term Statement Normalize
     ; Typing & Loop stuff

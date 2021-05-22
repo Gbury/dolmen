@@ -40,9 +40,9 @@ let () =
     `P "Options to customize the behaviour of dolmen on errors/warnings";
     `S Options.header_section;
     `P "Options to control the checking of headers in the input file";
-    `S Options.memprof_section;
+    `S Options.profiling_section;
     `P (Format.asprintf
-          "Options to profile the memory usage of dolmen.%s"
+          "Options to profile Dolmen.%s"
           (if Memory_profiler.available then "" else
              " WARNING: Memory profiling is not available on this version
             of Dolmen. You should install memtrace and recompile Dolmen

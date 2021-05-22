@@ -190,7 +190,7 @@ module Make
   (* Maps & Hashtbls *)
   (* ************************************************************************ *)
 
-  module M = Map.Make(Id)
+  module M = Id.Map
 
   module E = Map.Make(Ty.Var)
   module F = Map.Make(T.Var)
@@ -478,13 +478,14 @@ module Make
     _warn env fragment (Shadowing (id, old_binding, new_binding))
 
   let find_var env name : [var | not_found] =
-    match M.find name env.vars with
-    | #var as res -> res
-    | exception Not_found -> `Not_found
+    match M.find_opt name env.vars with
+    | Some (#var as res) -> res
+    | None -> `Not_found
 
   let find_global env id : [cst | not_found] =
-    try (M.find id env.st.csts :> [cst | not_found])
-    with Not_found -> `Not_found
+    match M.find_opt id env.st.csts with
+    | Some res -> (res :> [cst | not_found])
+    | None -> `Not_found
 
   let find_builtin env id : [builtin | not_found] =
     match env.builtins env (Id id) with
