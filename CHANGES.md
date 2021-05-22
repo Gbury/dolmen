@@ -1,4 +1,23 @@
 
+next
+----
+
+### API
+
+- Added proper abstractions for names and paths.
+  Names are used instead of strings for parsed
+  identifiers (Id.t), while Paths are used instead of
+  strings for typed identifiers (Expr.id).
+  This results in a speedup on some smtlib problems
+  because indexed identifiers no longer need to be
+  encoded and then split.
+- Added to Dolmen a custom implementation of Radix tries
+  for a better indexation of strings. This results
+  in signifcant speedup on large problem.
+- Added some convenience modules for testing and profiling
+  (Timer and Stats)
+
+
 v0.6
 ----
 
