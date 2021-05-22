@@ -11,6 +11,9 @@ watch:
 build:
 	dune build $(FLAGS) @install
 
+top:
+	dune utop
+
 doc:
 	dune build $(FLAGS) @doc
 

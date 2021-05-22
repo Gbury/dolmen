@@ -36,6 +36,11 @@ val print : Format.formatter -> t -> unit
 (** Printing function. *)
 
 
+(** {2 Std functions} *)
+
+module Map : Maps.S with type key := t
+
+
 (** {2 Creation functions} *)
 
 val simple : string -> t

@@ -29,6 +29,9 @@ val compare : t -> t -> int
 val print : Format.formatter -> t -> unit
 (** Printing functions. *)
 
+module Map : Maps.S with type key := t
+(** Maps for ids *)
+
 
 (** {2 Additional functions} *)
 

@@ -10,7 +10,7 @@ let gc_section = "GC OPTIONS"
 let error_section = "ERROR HANDLING"
 let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
-let memprof_section = "MEMORY PROFILING"
+let profiling_section = "PROFILING"
 
 (* Color options *)
 (* ************************************************************************* *)
@@ -174,12 +174,14 @@ let gc_opts use_env
          }
   end
 
-let memtrace_opts filename sampling_rate =
-  match (filename : _ option) with
+let profiling_opts stats
+    memtrace_filename memtrace_sampling_rate =
+  Dolmen_std.Stats.enabled := stats;
+  match (memtrace_filename : _ option) with
   | None -> `Ok ()
   | Some filename ->
     if Memory_profiler.available then begin
-      Memory_profiler.start filename sampling_rate;
+      Memory_profiler.start filename memtrace_sampling_rate;
       `Ok ()
     end else begin
       let msg =
@@ -238,20 +240,25 @@ let mk_state
   st
 
 
-(* Memory profiling *)
+(* Profiling *)
 (* ************************************************************************* *)
 
-let memprof_t =
-  let docs = memprof_section in
-  let filename =
-    let doc = "Filename for the profiling trace" in
+let profiling_t =
+  let docs = profiling_section in
+  let stats =
+    let doc = "Enable statistics collecting and printing" in
+    Arg.(value & flag & info ["stats"] ~doc ~docs)
+    in
+  let memtrace_filename =
+    let doc = "Filename for the memory profiling trace" in
     Arg.(value & opt (some string) None & info ["memtrace"] ~doc ~docs ~docv:"FILE")
   in
-  let sampling_rate =
+  let memtrace_sampling_rate =
     let doc = "Sampling rate for the memory profiler" in
     Arg.(value & opt float 1e-6 & info ["memtrace-rate"] ~doc ~docs ~docv:"RATE")
   in
-  Term.(ret (const memtrace_opts $ filename $ sampling_rate))
+  Term.(ret (const profiling_opts $ stats $
+             memtrace_filename $ memtrace_sampling_rate))
 
 
 (* Gc Options parsing *)
@@ -399,7 +406,7 @@ let state =
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
   in
-  Term.(const mk_state $ memprof_t $
+  Term.(const mk_state $ profiling_t $
         gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
