@@ -127,18 +127,19 @@ type _ t +=
 
 type _ t +=
   | Tester :
-      { cstr : 'term_cst; } ->
-      < term_cst : 'term_cst ; .. > t
-  (** [Tester { cstr; }] is the tester for constructor [cstr]. *)
+      { adt: 'ty_cst; case: int; cstr : 'term_cst; } ->
+      < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
+  (** [Tester { adt; cstr; case; }] is the tester of the case-th constructor
+     of type [adt] which should be [cstr]. *)
   | Constructor :
       { adt : 'ty_cst; case : int; } ->
       < ty_cst : 'ty_cst ; .. > t
   (** [Constructor { adt; case}] is the case-th constructor of the algebraic
       datatype defined by [adt]. *)
   | Destructor :
-      { adt : 'ty_cst; cstr : 'term_cst; case : int; field: int; } ->
+      { adt : 'ty_cst; case : int; cstr : 'term_cst; field: int; } ->
       < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
-  (** [Destructor { adt; cstr; case; field; }] is the destructor retuning the
+  (** [Destructor { adt; cstr; case; field; }] is the destructor returning the
       field-th argument of the case-th constructor of type [adt] which should
       be [cstr]. *)
 
@@ -261,11 +262,17 @@ type _ t +=
   | Floor
   (** [Floor:{a=(Int|Rational|Real)} a -> a]:
       floor function on numbers, defined in tptp as
-      the largest intger not greater than the argument. *)
+      the largest integer not greater than the argument. *)
+  | Floor_to_int
+  (** [Floor_to_int:{a=(Rational|Real)} a -> Int]:
+      floor and conversion to integers in a single funciton.
+      Should return the greatest integer [i] such that the
+      rational or real intepretation of [i] is less than, or
+      equal to, the argument. *)
   | Ceiling
   (** [Ceiling:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as
-      the smallest intger not less than the argument. *)
+      the smallest integer not less than the argument. *)
   | Truncate
   (** [Truncate:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as

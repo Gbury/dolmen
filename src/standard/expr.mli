@@ -1224,6 +1224,9 @@ module Term : sig
     include Dolmen_intf.Term.Smtlib_Float_Real with type t := t
     (** Satisfy the real part of the SMTLIB's Float requirements *)
 
+    val floor_to_int : t -> t
+    (** Greatest integer smaller than the given real *)
+
   end
 
   (** String operations *)

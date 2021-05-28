@@ -794,7 +794,7 @@ module Smtlib2 = struct
             | "to_real" ->
               `Term (Base.term_app1 (module Type) env "to_real" T.Int.to_real)
             | "to_int" ->
-              `Term (Base.term_app1 (module Type) env "to_int" T.Real.to_int)
+              `Term (Base.term_app1 (module Type) env "to_int" T.Real.floor_to_int)
             | "is_int" ->
               `Term (Base.term_app1 (module Type) env "is_int" T.Real.is_int)
 

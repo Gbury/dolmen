@@ -1030,9 +1030,8 @@ module type Smtlib_Real_Int = sig
     val is_int : t -> t
     (** Arithmetic predicate, true on reals that are also integers. *)
 
-    val to_int : t -> t
-    (** Partial function from real to integers. Only has defined semantics
-            when {!is_int} is true. *)
+    val floor_to_int : t -> t
+    (** Greatest integer smaller than the given real *)
 
   end
 

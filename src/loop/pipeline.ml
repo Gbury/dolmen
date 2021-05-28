@@ -27,14 +27,18 @@ module Make(State : State_intf.Pipeline) = struct
      TODO: this does not work on windows.
      TODO: allow to use the time limit only for some passes *)
   let setup_alarm t s =
-    let _ = Unix.setitimer Unix.ITIMER_REAL
-        Unix.{it_value = t; it_interval = 0.01 } in
-    Gc.create_alarm (check s)
+    if t <> infinity then
+      ignore (Unix.setitimer Unix.ITIMER_REAL
+                Unix.{it_value = t; it_interval = 0.01 });
+    if s <> infinity then (Some (Gc.create_alarm (check s)))
+    else None
 
   let delete_alarm alarm =
-    let _ = Unix.setitimer Unix.ITIMER_REAL
-        Unix.{it_value = 0.; it_interval = 0. } in
-    Gc.delete_alarm alarm
+    (* it's alwyas safe to delete the timer here,
+       even if none was present before. *)
+    ignore (Unix.setitimer Unix.ITIMER_REAL
+              Unix.{it_value = 0.; it_interval = 0. });
+    match alarm with None -> () | Some alarm -> Gc.delete_alarm alarm
 
   (* The Unix.timer works by sending a Sys.sigalrm, so in order to use it,
      we catch it and raise the Out_of_time exception. *)
