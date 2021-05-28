@@ -263,6 +263,12 @@ type _ t +=
   (** [Floor:{a=(Int|Rational|Real)} a -> a]:
       floor function on numbers, defined in tptp as
       the largest integer not greater than the argument. *)
+  | Floor_to_int
+  (** [Floor_to_int:{a=(Rational|Real)} a -> Int]:
+      floor and conversion to integers in a single funciton.
+      Should return the greatest integer [i] such that the
+      rational or real intepretation of [i] is less than, or
+      equal to, the argument. *)
   | Ceiling
   (** [Ceiling:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as

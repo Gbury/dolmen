@@ -33,8 +33,9 @@ module Make(State : State_intf.Pipeline) = struct
     if s <> infinity then (Some (Gc.create_alarm (check s)))
     else None
 
-  let delete_alarm t alarm =
-    if t <> infinity then
+  let delete_alarm alarm =
+    (* it's alwyas safe to delete the timer here,
+       even if none was present before. *)
     ignore (Unix.setitimer Unix.ITIMER_REAL
               Unix.{it_value = 0.; it_interval = 0. });
     match alarm with None -> () | Some alarm -> Gc.delete_alarm alarm
@@ -185,7 +186,7 @@ module Make(State : State_intf.Pipeline) = struct
       let al = setup_alarm time size in
       let exn = { k = fun st bt e ->
           (* delete alamr as soon as possible *)
-          let () = delete_alarm time al in
+          let () = delete_alarm al in
           (* go the the correct handler *)
           raise (Exn (st, bt, e));
         }
@@ -195,13 +196,13 @@ module Make(State : State_intf.Pipeline) = struct
 
         (* End of the run, yay ! *)
         | None ->
-          let () = delete_alarm time al in
+          let () = delete_alarm al in
           st
 
         (* Regular case, we finished running the pipeline on one input
            value, let's get to the next one. *)
         | Some (st', ()) ->
-          let () = delete_alarm time al in
+          let () = delete_alarm al in
           let st'' = try finally st' None with _ -> st' in
           run ~finally g st'' pipe
 
@@ -227,7 +228,7 @@ module Make(State : State_intf.Pipeline) = struct
         | exception e ->
           let bt = Printexc.get_raw_backtrace () in
           (* delete alarm *)
-          let () = delete_alarm time al in
+          let () = delete_alarm al in
           (* Flush stdout and print a newline in case the exn was
              raised in the middle of printing *)
           Format.pp_print_flush Format.std_formatter ();

@@ -66,7 +66,8 @@ type _ t +=
   | Div_f | Modulo_f
   | Abs | Divisible
   | Is_int | Is_rat
-  | Floor | Ceiling | Truncate | Round
+  | Floor | Floor_to_int
+  | Ceiling | Truncate | Round
 
 (* arrays *)
 type _ t +=

@@ -1837,7 +1837,7 @@ module Term = struct
           "Floor" [] [Ty.real] Ty.real
 
       let floor_to_int = mk'
-          ~name:"floor_to_int" ~builtin:Builtin.Floor
+          ~name:"floor_to_int" ~builtin:Builtin.Floor_to_int
           "Floor" [] [Ty.real] Ty.int
 
       let ceiling = mk'
