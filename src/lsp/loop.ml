@@ -58,7 +58,7 @@ let process path opt_contents =
         | Some contents -> `Raw (file, contents)
       end;
       input_file_loc = Dolmen.Std.Loc.mk_file "";
-      header_check = true;
+      header_check = false;
       header_licenses = [];
       header_lang_version = None;
       header_state = Dolmen_loop.Headers.empty;
