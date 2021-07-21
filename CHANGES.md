@@ -16,6 +16,7 @@ next
   and reset-assertions was treated as reset (meaning that
   any set-logic were erased). These two commands should
   now be correctly implemented in the typing loop.
+  PR#80
 
 ### API
 
