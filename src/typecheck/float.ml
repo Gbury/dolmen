@@ -17,10 +17,6 @@ module Smtlib2 = struct
     module R = T.Real
     module F = T.Float
 
-    type _ Type.warn +=
-      | Real_lit : Ast.t Type.warn
-      | Bitv_extended_lit : Ast.t Type.warn
-
     type _ Type.err +=
       | Invalid_bin_char : char -> Ast.t Type.err
       | Invalid_hex_char : char -> Ast.t Type.err
@@ -47,16 +43,6 @@ module Smtlib2 = struct
       | s -> B.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
-
-    let parse_extended_lit env symbol s n =
-      Base.make_op0 (module Type) env symbol (fun ast () ->
-          assert (String.length s >= 2);
-          let n = parse_int env ast n in
-          match Misc.Bitv.parse_decimal s n with
-          | s -> B.mk s
-          | exception Misc.Bitv.Invalid_char c ->
-            Type._error env (Ast ast) (Invalid_dec_char c)
-        )
 
     let indexed1 env mk i_s ast =
       let i = parse_int env ast i_s in
@@ -119,11 +105,6 @@ module Smtlib2 = struct
         `Term (Base.app0_ast (module Type) env s (parse_binary env name))
       | Type.Id { ns = Value Hexadecimal; name = Simple name; } ->
         `Term (Base.app0_ast (module Type) env s (parse_hexa env name))
-      (* Added with a warning for compatibility *)
-      | Type.Id { ns = Value Real; name = Simple name; } ->
-        `Term (fun ast args ->
-            Type._warn env (Ast ast) Real_lit;
-            Base.app0 (module Type) env s (R.mk name) ast args)
 
       (* terms *)
       | Type.Id { ns = Term; name = Simple name; } ->
@@ -194,11 +175,6 @@ module Smtlib2 = struct
         end
       | Type.Id { ns = Term; name = Indexed { basename; indexes; } } as symbol ->
         Base.parse_indexed basename indexes (function
-            | s when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
-              `Unary (fun n ->
-                  `Term (fun ast args ->
-                      Type._warn env (Ast ast) Bitv_extended_lit;
-                      parse_extended_lit env symbol s  n ast args))
             | "+oo" -> `Binary (fun e s ->
                 `Term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.plus_infinity e s)))

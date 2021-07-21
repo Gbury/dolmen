@@ -1,0 +1,5 @@
+(set-logic QF_BVFPLRA)
+(declare-fun honk () Real)
+(assert (= honk 0.75))
+(check-sat)
+(exit)

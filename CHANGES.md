@@ -2,6 +2,16 @@
 next
 ----
 
+### Typing
+
+- Removed the typing of real and extended bitvector literals
+  from the Float theory. These are not part of the FP
+  specification, so it's better for Dolmen to be strict.
+  Additionally, dependengin on the order of theories, they
+  could shadow the proper typing of such literals and
+  result in bogus warnings/errors
+  See Issue#43 Issue#74
+
 ### API
 
 - Added proper abstractions for names and paths.
