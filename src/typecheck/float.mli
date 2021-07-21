@@ -8,10 +8,6 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Float with type t := Type.T.t
                                           and type ty := Type.Ty.t) : sig
 
-    type _ Type.warn +=
-      | Real_lit : Dolmen.Std.Term.t Type.warn
-      | Bitv_extended_lit : Dolmen.Std.Term.t Type.warn
-
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err

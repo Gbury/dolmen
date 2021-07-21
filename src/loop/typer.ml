@@ -267,16 +267,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             pp_hint msg
         )
 
-    | Smtlib2_Float.Real_lit -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Real literals are not part of the Floats specification."
-      )
-    | Smtlib2_Float.Bitv_extended_lit -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Bitvector decimal literals are not part of the Floats specification."
-      )
-
-
     | _ -> Some (fun fmt () ->
         Format.fprintf fmt
           "@[<v>Unknown warning:@ %s@ please report upstream, ^^@]"
@@ -646,11 +636,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Smtlib2_Ints.Restriction _, fragment
     | Smtlib2_Reals.Restriction _, fragment
     | Smtlib2_Reals_Ints.Restriction _, fragment
-      when conf.strict_typing ->
-      T._error env fragment (Warning_as_error w)
-
-    | Smtlib2_Float.Real_lit, fragment
-    | Smtlib2_Float.Bitv_extended_lit, fragment
       when conf.strict_typing ->
       T._error env fragment (Warning_as_error w)
 
