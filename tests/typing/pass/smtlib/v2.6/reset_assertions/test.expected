@@ -1,0 +1,2 @@
+File "tests/typing/pass/smtlib/v2.6/pushpop/test.smt2", line 8, character 14-15:
+Error Unbound identifier: `b`

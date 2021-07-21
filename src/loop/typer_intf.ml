@@ -30,6 +30,9 @@ module type Pipe_arg = sig
   val reset :
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
+  val reset_assertions :
+    state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
+
   val push :
     state -> ?loc:Dolmen.Std.Loc.t -> int -> state
 

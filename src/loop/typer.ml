@@ -909,6 +909,15 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let reset st ?loc:_ () =
     S.set_ty_state st (new_state ())
 
+  let reset_assertions st ?loc:_ () =
+    let state = S.ty_state st in
+    S.set_ty_state st {
+      logic = state.logic;
+      typer = T.new_state ();
+      stack = [];
+    }
+
+
   let rec push st ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
@@ -1298,7 +1307,10 @@ module Pipe
       | { S.descr = S.Pack _; _ } -> st, `Done ()
       | { S.descr = S.Include _; _ } -> st, `Done ()
 
-      (* Assertion stack Management *)
+      (* State&Assertion stack management *)
+      | { S.descr = S.Reset; _ } ->
+        let st = Typer.reset st ~loc:c.S.loc () in
+        st, `Continue (simple (other_id c) c.S.loc `Reset)
       | { S.descr = S.Pop i; _ } ->
         let st = Typer.pop st ~loc:c.S.loc i in
         st, `Continue (simple (other_id c) c.S.loc (`Pop i))
@@ -1306,7 +1318,7 @@ module Pipe
         let st = Typer.push st ~loc:c.S.loc i in
         st, `Continue (simple (other_id c) c.S.loc (`Push i))
       | { S.descr = S.Reset_assertions; _ } ->
-        let st = Typer.reset st ~loc:c.S.loc () in
+        let st = Typer.reset_assertions st ~loc:c.S.loc () in
         st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
 
       (* Plain statements
@@ -1380,8 +1392,6 @@ module Pipe
       (* Misc *)
       | { S.descr = S.Echo s; _ } ->
         st, `Continue (simple (other_id c) c.S.loc (`Echo s))
-      | { S.descr = S.Reset; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Reset)
       | { S.descr = S.Exit; _ } ->
         st, `Continue (simple (other_id c) c.S.loc `Exit)
 

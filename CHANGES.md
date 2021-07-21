@@ -11,6 +11,11 @@ next
   could shadow the proper typing of such literals and
   result in bogus warnings/errors
   PR#79 (see also Issue#43 Issue#74)
+- Fixed the handling of the `reset` and `reset-assertions`
+  commands of smtlibv2.6. Previsously reset was ignored,
+  and reset-assertions was treated as reset (meaning that
+  any set-logic were erased). These two commands should
+  now be correctly implemented in the typing loop.
 
 ### API
 
