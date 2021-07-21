@@ -10,7 +10,7 @@ next
   Additionally, dependengin on the order of theories, they
   could shadow the proper typing of such literals and
   result in bogus warnings/errors
-  See Issue#43 Issue#74
+  PR#79 (see also Issue#43 Issue#74)
 
 ### API
 
