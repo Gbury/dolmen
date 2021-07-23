@@ -978,7 +978,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       match ty_st.logic with
       | Auto -> st
       | Smtlib2 _ ->
-        S.warn ~loc st "Logic was previously set at %a"
+        S.warn ~loc st "Logic was already set at %a"
           Dolmen.Std.Loc.fmt_pos ty_st.logic_loc
     in
     S.set_ty_state st {
