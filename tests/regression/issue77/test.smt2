@@ -1,0 +1,5 @@
+(set-logic QF_LIA)
+(declare-fun a () Int )
+(declare-fun b () Bool )
+(assert (let ( (c (ite b 1.0 2.0))) (= 0 (* 2 c))))
+(check-sat )
