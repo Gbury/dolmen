@@ -120,6 +120,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Hints for type errors *)
   (* ************************************************************************ *)
 
+  let pp_hint fmt = function
+    | "" -> ()
+    | msg ->
+      Format.fprintf fmt "@ @[<hov 2>Hint: %a@]"
+        Format.pp_print_text msg
+
   let poly_hint fmt (c, expected, actual) =
     let n_ty, n_t = Dolmen.Std.Expr.Term.Const.arity c in
     let total_arity = n_ty + n_t in
@@ -141,11 +147,18 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
          arguments when none are given in an application."
     | _ -> ()
 
-  let pp_hint fmt = function
-    | "" -> ()
-    | msg ->
-      Format.fprintf fmt "@ @[<hov 2>Hint: %a@]"
-        Format.pp_print_text msg
+  let literal_hint fmt id =
+    match (id : Dolmen.Std.Id.t) with
+    | { ns = Value Integer; name = Simple _; } ->
+      pp_hint fmt "The current logic does not include integer arithmtic"
+    | { ns = Value Rational; name = Simple _; } ->
+      pp_hint fmt "The current logic does not include rational arithmtic"
+    | { ns = Value Real; name = Simple _; } ->
+      pp_hint fmt "The current logic does not include real arithmtic"
+    | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
+      when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
+      pp_hint fmt "The current logic does not include extended bitvector literals"
+    | _ -> ()
 
   (* Report type warnings *)
   (* ************************************************************************ *)
@@ -418,8 +431,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
 
     | T.Cannot_find (id, msg) ->
-      Format.fprintf fmt "Unbound identifier:@ %a%a"
-        (pp_wrap Dolmen.Std.Id.print) id pp_hint msg
+      Format.fprintf fmt "Unbound identifier:@ %a%a%a"
+        (pp_wrap Dolmen.Std.Id.print) id
+        pp_hint msg
+        literal_hint id
 
     | T.Forbidden_quantifier ->
       Format.fprintf fmt "Quantified expressions are forbidden by the logic."
