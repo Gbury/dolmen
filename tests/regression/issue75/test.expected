@@ -1,0 +1,2 @@
+File "tests/regression/issue75/test.smt2", line 2, character 0-15:
+Warning Logic was already set at line 1, character 0-17
