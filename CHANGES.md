@@ -17,6 +17,8 @@ next
   any set-logic were erased). These two commands should
   now be correctly implemented in the typing loop.
   PR#80
+- Added a warning for multiple set-logics
+  PR#82
 - Added a hint to suggest a missing theory when a literal
   is unbound.
   PR#81
