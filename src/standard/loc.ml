@@ -135,6 +135,7 @@ let hash a = Hashtbl.hash a
 let mk file start_line start_column stop_line stop_column =
   { file; start_line; start_column; stop_line; stop_column; }
 
+let dummy = mk "" 0 0 0 0
 let no_loc = mk_compact 0 0
 
 let mk_pos start stop =
