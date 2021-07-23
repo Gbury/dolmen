@@ -46,10 +46,13 @@ val eq : t -> t -> bool
 (** Location equality. *)
 
 val no_loc : t
-(** An dummy location pointing at the first byte of a file. *)
+(** A dummy location pointing at the first byte of a file. *)
+
+val dummy : loc
+(** A dummy location pointing at the first byte of a file. *)
 
 val is_dummy : loc -> bool
-(** Is the location ana ctual location, or a dummy one ? *)
+(** Is the location an actual location, or a dummy one ? *)
 
 
 (** {2 Compact location handling} *)

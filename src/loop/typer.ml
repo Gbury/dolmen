@@ -82,6 +82,7 @@ module Zf_arith =
 type ty_state = {
   (* logic used *)
   logic : Dolmen_type.Logic.t;
+  logic_loc : Dolmen.Std.Loc.loc;
   (* current typechecker global state *)
   typer : T.state;
   (* typechecker state stack *)
@@ -90,6 +91,7 @@ type ty_state = {
 
 let new_state () = {
   logic = Auto;
+  logic_loc = Dolmen.Std.Loc.dummy;
   typer = T.new_state ();
   stack = [];
 }
@@ -928,6 +930,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     let state = S.ty_state st in
     S.set_ty_state st {
       logic = state.logic;
+      logic_loc = state.logic_loc;
       typer = T.new_state ();
       stack = [];
     }
@@ -969,6 +972,21 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Setting the logic *)
   (* ************************************************************************ *)
 
+  let set_logic_aux ~loc st new_logic =
+    let ty_st = S.ty_state st in
+    let st =
+      match ty_st.logic with
+      | Auto -> st
+      | Smtlib2 _ ->
+        S.warn ~loc st "Logic was previously set at %a"
+          Dolmen.Std.Loc.fmt_pos ty_st.logic_loc
+    in
+    S.set_ty_state st {
+      ty_st with
+      logic = new_logic;
+      logic_loc = Dolmen.Std.Loc.full_loc loc;
+    }
+
   let set_logic (st : S.t) ?(loc=Dolmen.Std.Loc.no_loc) s =
     let file = S.input_file_loc st in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
@@ -983,7 +1001,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           let st = S.warn ~loc st "Unknown logic %s" s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
-      S.set_ty_state st { (S.ty_state st) with logic = Smtlib2 l; }
+      set_logic_aux ~loc st (Smtlib2 l)
     | _ ->
       S.warn ~loc st
         "Set logic is not supported for the current language"
