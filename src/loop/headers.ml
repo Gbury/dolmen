@@ -27,12 +27,6 @@
    present anywhere in the file, rather than at the beginning.
 *)
 
-(* Exit code for header errors *)
-(* ************************************************************************ *)
-
-let code = Code.create "on header errors"
-
-
 (* Header fields *)
 (* ************************************************************************ *)
 
@@ -175,6 +169,43 @@ module Field = struct
 
 end
 
+(* Header errors & warnings *)
+(* ************************************************************************ *)
+
+let code = Code.create "on header errors"
+
+let missing_header_error =
+  Report.Error.mk ~code ~mnemonic:"header-missing"
+    ~message:(fun fmt (lang, missing) ->
+        let pp_sep fmt () = Format.fprintf fmt ",@ " in
+        Format.fprintf fmt "The following header fields are missing: %a"
+          (Format.pp_print_list ~pp_sep (Field.print ?lang)) missing)
+    ~name:"Missing header statement" ()
+
+let invalid_header_value_error =
+  Report.Error.mk ~code ~mnemonic:"header-invalid-value"
+    ~message:(fun fmt (field, lang, msg) ->
+        Format.fprintf fmt "Invalid value for header %a: %s"
+          (Field.print ?lang) field msg)
+    ~name:"Invalid header value" ()
+
+let bad_header_payload =
+  Report.Error.mk ~code ~mnemonic:"header-bad-payload"
+    ~message:(fun fmt msg ->
+        Format.fprintf fmt "Could not parse the header: %s" msg)
+    ~name:"Incorrect header payload" ()
+
+let empty_header_field =
+  Report.Warning.mk ~code ~mnemonic:"empty-header-field"
+    ~message:(fun fmt (lang, l) ->
+        let pp_sep fmt () = Format.fprintf fmt ",@ " in
+        Format.fprintf fmt
+          "The following header fields are missing and thus \
+           default values will be assumed: %a"
+          (Format.pp_print_list ~pp_sep (Field.print ?lang)) l)
+    ~name:"Header field with a missing value" ()
+
+
 (* Headers *)
 (* ************************************************************************ *)
 
@@ -237,10 +268,7 @@ module Pipe(State : State_intf.Header_pipe
     match List.filter (fun f -> not (mem h f)) wanted with
     | [] -> st
     | missing ->
-      let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      State.warn st "The following header fields are missing and thus \
-                     default values will be assumed: %a"
-        (Format.pp_print_list ~pp_sep (Field.print ?lang)) missing
+      State.warn st empty_header_field (lang, missing)
 
   let check_required st h =
     let lang = State.input_lang st in
@@ -251,10 +279,7 @@ module Pipe(State : State_intf.Header_pipe
     in
     match List.filter (fun f -> not (mem h f)) required with
     | [] -> st
-    | missing ->
-      let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      State.error ~code st "The following header fields are missing: %a"
-        (Format.pp_print_list ~pp_sep (Field.print ?lang)) missing
+    | missing -> State.error st missing_header_error (lang, missing)
 
   let check st =
     if not (State.check_headers st) then st
@@ -268,10 +293,14 @@ module Pipe(State : State_intf.Header_pipe
 
   (* Incremental checks and construction of the header set *)
 
-  let error st loc fmt =
+  let error st loc err param =
     let file = State.input_file_loc st in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
-    State.error ~code ~loc st fmt
+    State.error ~loc st err param
+
+  let invalid_header_value st loc field msg =
+    let lang = State.input_lang st in
+    error st loc invalid_header_value_error (field, lang, msg)
 
   let check_header st loc field value =
     match (field : Field.t) with
@@ -280,14 +309,16 @@ module Pipe(State : State_intf.Header_pipe
         | None -> st
         | Some v ->
           if v = value then st
-          else error st loc "This language version must be: %s" v
+          else invalid_header_value st loc Lang_version
+              (Format.sprintf "language version must be: %s" v)
       end
     | Problem_license ->
       begin match State.allowed_licenses st with
         | [] -> st
         | allowed ->
           if List.mem value allowed then st
-          else error st loc "This is not an allowed license"
+          else invalid_header_value st loc Problem_license
+              "this license is not in the list of allowed licenses"
       end
     | _ -> st
 
@@ -301,7 +332,8 @@ module Pipe(State : State_intf.Header_pipe
         | { descr = Set_info t; loc; _ } ->
           begin match Field.parse ?lang t with
             | Not_a_header -> st
-            | Error (loc, msg) -> error st loc "%s" msg
+            | Error (loc, msg) ->
+              error st loc bad_header_payload msg
             | Ok (field, value) ->
               let st = check_header st loc field value in
               let st = State.set_header_state st (set h field value) in
@@ -311,8 +343,7 @@ module Pipe(State : State_intf.Header_pipe
           if mem h Problem_status then
             State.set_header_state st (remove h Problem_status)
           else
-            error st loc "This statement lacks a %s header"
-              (Field.name lang Problem_status)
+            error st loc missing_header_error (lang, [Problem_status])
         | _ -> st
       in
       st, c

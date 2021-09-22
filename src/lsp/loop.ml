@@ -15,49 +15,18 @@ exception Finished of (State.t, string) result
 
 let handle_exn st = function
 
+  (* Internal exception used for jumping *)
+  | State.Error st -> Ok st
+
   (* Simple error cases *)
-  | Pipeline.Sigint -> Error "user interrupt"
-  | Pipeline.Out_of_time -> Error "timeout"
-  | Pipeline.Out_of_space -> Error "memoryout"
-  (* Exn during parsing *)
-  | Dolmen.Std.Loc.Uncaught (loc, exn, _) ->
-    let file = State.input_file_loc st in
-    let loc = Dolmen.Std.Loc.loc file loc in
-    Error (Format.asprintf "%a: %s"
-             Dolmen.Std.Loc.fmt loc (Printexc.to_string exn))
-
-  (* lexing error *)
-  | Dolmen.Std.Loc.Lexing_error (loc, msg) ->
-    let file = State.input_file_loc st in
-    let loc = { Dolmen.Std.Loc.file; loc; } in
-    Ok (State.error ~loc st "Lexing error: %s" msg)
-  (* Parsing error *)
-  | Dolmen.Std.Loc.Syntax_error (loc, `Regular msg) ->
-    let file = State.input_file_loc st in
-    let loc = { Dolmen.Std.Loc.file; loc; } in
-    Ok (State.error ~loc st "%t" msg)
-  | Dolmen.Std.Loc.Syntax_error (loc, `Advanced (_, _, expected)) ->
-    let file = State.input_file_loc st in
-    let loc = { Dolmen.Std.Loc.file; loc; } in
-    Ok (State.error ~loc st "Syntax error: expected %t" expected)
-  (* Typing error *)
-  | Dolmen_loop.Typer.T.Typing_error (
-      Dolmen_loop.Typer.T.Error (env, fragment, _err) as error) ->
-    let loc = Dolmen_loop.Typer.T.fragment_loc env fragment in
-    Ok (State.error ~loc st "Typing error: %a" Typer.report_error error)
-
-  (* File not found *)
-  | State.File_not_found (loc, dir, f) ->
-    Ok (State.error ~loc st "File not found: '%s' in directory '%s'" f dir)
-  (* Input lang changed *)
-  | State.Input_lang_changed _ ->
-    Ok (State.error st "Language changed because of an include")
-
+  | Dolmen_loop.Pipeline.Sigint -> Error "user interrupt"
+  | Dolmen_loop.Pipeline.Out_of_time -> Error "timeout"
+  | Dolmen_loop.Pipeline.Out_of_space -> Error "memoryout"
   (* Fallback *)
   | exn ->
+    let bt = Printexc.get_raw_backtrace () in
     Ok (State.error st
-          "Internal error, please report upstream: %s"
-          (Printexc.to_string exn))
+          Dolmen_loop.Report.Error.uncaught_exn (exn, bt))
 
 let finally st e =
   match e with

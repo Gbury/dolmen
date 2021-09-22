@@ -13,13 +13,6 @@ type source = [
   | `Raw of string * string
 ]
 
-type phase = [
-  | `Parsing
-  | `Include
-  | `Typing
-  | `Solving
-]
-
 type mode = [
   | `Full
   | `Incremental
@@ -27,12 +20,32 @@ type mode = [
 
 (** {1 Signatures} *)
 
+module type Common = sig
+
+  type t
+  (** The type of state *)
+
+  exception Error of t
+  (** Convenient exception. *)
+
+  val warn :
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> 'a Report.Warning.t -> 'a -> t
+  (** Emit a warning *)
+
+  val error :
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> 'a Report.Error.t -> 'a -> t
+  (** Emit an error. *)
+
+end
+
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Pipeline.Make} functor. *)
 module type Pipeline = sig
 
-  type t
-  (** The type of values recording options for the current run. *)
+  include Common
+  (** Common interface for the state. *)
 
   val time_limit : t -> float
   (** The time limit for one original statement (in seconds). *)
@@ -46,29 +59,17 @@ end
     to instantiate the {Parser.Pipe} functor. *)
 module type Parser_pipe = sig
 
-  type t
-  (** The type of state *)
+  include Common
+  (** common interface *)
 
   type term
   (** The type of solver terms. *)
-
-  val warn :
-    ?loc:Dolmen.Std.Loc.full ->
-    t -> ('a, Format.formatter, unit, t) format4 ->
-    'a
-  (** Emit a warning *)
 
   val input_file_loc : t -> Dolmen.Std.Loc.file
   (** CUrrent input file location meta-data. *)
 
   val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
   (** Set the input file location meta-data. *)
-
-  val start : phase -> unit
-  (** Hook at the start of a phase *)
-
-  val stop : phase -> unit
-  (** Hook at the end of a phase *)
 
   val prelude : t -> string
   (** Some prelude to print at the begining of lines when in interactive mode. *)
@@ -95,26 +96,17 @@ module type Parser_pipe = sig
   val input_source : t -> source
   (** Return the input source. *)
 
-  val file_not_found :
-    loc:Dolmen.Std.Loc.full -> dir:string -> file:string -> 'a
-  (** Callback for when a file specified by the input source is not found. *)
-
 end
 
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Typer.Make} functor. *)
 module type Typer = sig
 
+  include Common
+  (** common interface *)
+
   type ty_state
   (** The type of state used by the typer. *)
-
-  type t
-  (** The type for the global state. *)
-
-  val warn :
-    ?loc:Dolmen.Std.Loc.full -> t ->
-    ('a, Format.formatter, unit, t) format4 -> 'a
-  (** Emit a warning *)
 
   val input_file_loc : t -> Dolmen.Std.Loc.file
   (** CUrrent input file location meta-data. *)
@@ -140,8 +132,8 @@ end
     to instantiate the {Typer.Pipe} functor. *)
 module type Typer_pipe = sig
 
-  type t
-  (** The type of state *)
+  include Common
+  (** common interface *)
 
   val input_lang : t -> Logic.language option
   (** Return the input language (if any). *)
@@ -153,24 +145,11 @@ end
     to instantiate the {Headers.Pipe} functor. *)
 module type Header_pipe = sig
 
-  type t
-  (** The type of state *)
+  include Common
+  (** common interface *)
 
   type header_state
   (** The type of state used for the header check*)
-
-  val warn :
-    ?loc:Dolmen.Std.Loc.full ->
-    t -> ('a, Format.formatter, unit, t) format4 ->
-    'a
-  (** Emit an error. *)
-
-  val error :
-    ?code:Code.t ->
-    ?loc:Dolmen.Std.Loc.full ->
-    t -> ('a, Format.formatter, unit, t) format4 ->
-    'a
-  (** Emit an error. *)
 
   val input_file_loc : t -> Dolmen.Std.Loc.file
   (** CUrrent input file location meta-data. *)

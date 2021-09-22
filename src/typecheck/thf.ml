@@ -291,7 +291,7 @@ module Make
         Ty.Var.t * wildcard_source * Ty.t * Ty.t list -> Ast.t err
     | Inference_scope_escape :
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
-    | Unbound_variables : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
+    | Unbound_wildcards : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
@@ -1980,7 +1980,7 @@ module Make
     in
     begin match free_wildcards with
       | [] -> res
-      | tys -> _error env (Ast ast) (Unbound_variables (tys, [], res))
+      | tys -> _error env (Ast ast) (Unbound_wildcards (tys, [], res))
     end
 
 end

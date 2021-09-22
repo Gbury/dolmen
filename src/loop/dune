@@ -13,6 +13,8 @@
     dolmen_type
     )
   (modules
+    ; Useful utilities
+    Report
     ; Interfaces
     Expr_intf Typer_intf Headers_intf State_intf
     ; Implementations

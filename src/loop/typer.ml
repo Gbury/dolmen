@@ -73,6 +73,725 @@ module Zf_arith =
   Dolmen_type.Arith.Zf.Thf(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
+(* Printing helpers *)
+(* ************************************************************************ *)
+
+let pp_wrap pp fmt x =
+  Format.fprintf fmt "`%a`" pp x
+
+let print_symbol fmt symbol =
+  match (symbol : T.symbol) with
+  | Id id -> Dolmen.Std.Id.print fmt id
+  | Builtin builtin -> Dolmen.Std.Term.print_builtin fmt builtin
+
+let print_res fmt res =
+  match (res : T.res) with
+  | T.Ttype -> Format.fprintf fmt "Type"
+  | T.Ty ty ->
+    Format.fprintf fmt "the type@ %a" (pp_wrap Dolmen.Std.Expr.Ty.print) ty
+  | T.Term t ->
+    Format.fprintf fmt "the term@ %a" (pp_wrap Dolmen.Std.Expr.Term.print) t
+  | T.Tags _ -> Format.fprintf fmt "some tags"
+
+let print_opt pp fmt = function
+  | None -> Format.fprintf fmt "<none>"
+  | Some x -> pp fmt x
+
+let rec print_expected fmt = function
+  | [] -> assert false
+  | x :: [] -> Format.fprintf fmt "%d" x
+  | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
+
+let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
+  match fragment with
+  | T.Ast ast -> pp_wrap Dolmen.Std.Term.print fmt ast
+  | T.Def d -> Dolmen.Std.Statement.print_def fmt d
+  | T.Decl d -> Dolmen.Std.Statement.print_decl fmt d
+  | T.Defs d ->
+    Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_def fmt d
+  | T.Decls d ->
+    Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_decl fmt d
+  | T.Located _ ->
+    let full = T.fragment_loc env fragment in
+    let loc = Dolmen.Std.Loc.full_loc full in
+    Format.fprintf fmt "<located at %a>" Dolmen.Std.Loc.fmt loc
+
+let decl_loc d =
+  match (d : Dolmen.Std.Statement.decl) with
+  | Record { loc; _ }
+  | Abstract { loc; _ }
+  | Inductive { loc; _ } -> loc
+
+let print_reason fmt r =
+  match (r : T.reason) with
+  | Builtin ->
+    Format.fprintf fmt "defined by a builtin theory"
+  | Bound (file, ast) ->
+    Format.fprintf fmt "bound at %a"
+      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+  | Inferred (file, ast) ->
+    Format.fprintf fmt "inferred at %a"
+      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+  | Defined (file, d) ->
+    Format.fprintf fmt "defined at %a"
+      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
+  | Declared (file, d) ->
+    Format.fprintf fmt "declared at %a"
+      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
+
+let print_reason_opt fmt = function
+  | Some r -> print_reason fmt r
+  | None -> Format.fprintf fmt "<location missing>"
+
+let rec print_wildcard_origin fmt = function
+  | T.Arg_of src
+  | T.Ret_of src -> print_wildcard_origin fmt src
+  | T.From_source _ast ->
+    Format.fprintf fmt "the@ contents@ of@ a@ source@ wildcard"
+  | T.Added_type_argument _ast ->
+    Format.fprintf fmt "the@ implicit@ type@ to@ provide@ to@ an@ application"
+  | T.Symbol_inference { symbol; symbol_loc = _; inferred_ty; } ->
+    Format.fprintf fmt
+      "the@ type@ for@ the@ symbol@ %a@ to@ be@ %a"
+      (pp_wrap Dolmen.Std.Id.print) symbol
+      (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
+  | T.Variable_inference { variable; variable_loc = _; inferred_ty; } ->
+    Format.fprintf fmt
+      "the@ type@ for@ the@ quantified@ variable@ %a@ to@ be@ %a"
+      (pp_wrap Dolmen.Std.Id.print) variable
+      (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
+
+let rec print_wildcard_path env fmt = function
+  | T.Arg_of src ->
+    Format.fprintf fmt "one@ of@ the@ argument@ types@ of@ %a"
+      (print_wildcard_path env) src
+  | T.Ret_of src ->
+    Format.fprintf fmt "the@ return@ type@ of@ %a"
+      (print_wildcard_path env) src
+  | _ ->
+    Format.fprintf fmt "that@ type"
+
+let rec print_wildcard_loc env fmt = function
+  | T.Arg_of src
+  | T.Ret_of src -> print_wildcard_loc env fmt src
+  | T.From_source ast ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+    Format.fprintf fmt
+      "The@ source@ wildcard@ is@ located@ at@ %a"
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Added_type_argument ast ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+    Format.fprintf fmt
+      "The@ application@ is@ located@ at@ %a"
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Symbol_inference { symbol; symbol_loc; inferred_ty = _; } ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
+    Format.fprintf fmt
+      "Symbol@ %a@ is@ located@ be@ %a"
+      (pp_wrap Dolmen.Std.Id.print) symbol
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
+    Format.fprintf fmt
+      "Variable@ %a@ is@ bound@ at@ %a"
+      (pp_wrap Dolmen.Std.Id.print) variable
+      Dolmen.Std.Loc.fmt_pos loc
+
+(* Hint printers *)
+(* ************************************************************************ *)
+
+let fo_hint _ =
+  Some (
+    Format.dprintf "%a" Format.pp_print_text
+      "This statement was parsed as a first-order statement")
+
+let text_hint = function
+  | "" -> None
+  | msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
+
+let poly_hint (c, expected, actual) =
+  let n_ty, n_t = Dolmen.Std.Expr.Term.Const.arity c in
+  let total_arity = n_ty + n_t in
+  match expected with
+  | [x] when x = total_arity && actual = n_t ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "the head of the application is polymorphic, \
+         you probably forgot the type arguments@]")
+  | [x] when x = n_t && n_ty <> 0 ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "it looks like the language enforces implicit polymorphism, \
+         i.e. no type arguments are to be provided to applications \
+         (and instead type annotation/coercions should be used).")
+  | _ :: _ :: _ ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "this is a polymorphic function, and multiple accepted arities \
+         are possible because the language supports inference of all type \
+         arguments when none are given in an application.")
+  | _ -> None
+
+let literal_hint id =
+  match (id : Dolmen.Std.Id.t) with
+  | { ns = Value Integer; name = Simple _; } ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "The current logic does not include integer arithmtic")
+  | { ns = Value Rational; name = Simple _; } ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "The current logic does not include rational arithmtic")
+  | { ns = Value Real; name = Simple _; } ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "The current logic does not include real arithmtic")
+  | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
+    when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "The current logic does not include extended bitvector literals")
+  | _ -> None
+
+let poly_arg_hint _ =
+  Some (
+    Format.dprintf "%a" Format.pp_print_text
+      "The typechecker enforces prenex/rank-1 polymorphism. \
+       In languages with explicit type arguments for polymorphic functions, \
+       you must apply this term to the adequate number of type arguments to \
+       make it monomorph.")
+
+let poly_param_hint _ =
+  Some (
+    Format.dprintf "%a" Format.pp_print_text
+      "The typechecker enforces prenex/rank-1 polymorphism. \
+       This means that only monomorphic types can appear as
+       parameters of a function type.")
+
+
+(* Typing warnings *)
+(* ************************************************************************ *)
+
+let code = Code.typing
+
+let unused_type_variable =
+  Report.Warning.mk ~code ~mnemonic:"unused-type-var"
+    ~message:(fun fmt v ->
+        Format.fprintf fmt
+          "Quantified type variable `%a` is unused"
+          Dolmen.Std.Expr.Print.ty_var v)
+    ~name:"Unused type variable" ()
+
+let unused_term_variable =
+  Report.Warning.mk ~code ~mnemonic:"unused-term-var"
+    ~message:(fun fmt v ->
+        Format.fprintf fmt
+          "Quantified term variable `%a` is unused"
+          Dolmen.Std.Expr.Print.term_var v)
+    ~name:"Unused term variable" ()
+
+let error_in_attribute =
+  Report.Warning.mk ~code ~mnemonic:"error-in-attr"
+    ~message:(fun fmt exn ->
+        Format.fprintf fmt
+          "Exception while typing attribute:@ %s"
+          (Printexc.to_string exn))
+    ~name:"Exception while typing an attribute" ()
+
+let superfluous_destructor =
+  Report.Warning.mk ~code:Code.bug ~mnemonic:"extra-dstr"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt
+          "Superfluous destructor returned by term implementation")
+    ~name:"Superfluous destructor" ()
+
+let shadowing =
+  Report.Warning.mk ~code ~mnemonic:"shadowing"
+    ~message:(fun fmt (id, old) ->
+        Format.fprintf fmt
+          "Shadowing: %a was already %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          print_reason_opt (T.binding_reason old))
+    ~name:"Shadowing of identifier" ()
+
+let arith_restriction =
+  Report.Warning.mk ~code ~mnemonic:"almost-linear-expr"
+    ~message:(fun fmt _ ->
+        Format.fprintf fmt
+          "This is a non-linear expression according to the smtlib spec.")
+    ~hints:[text_hint]
+    ~name:"Non-linear expression in linear arithmetic" ()
+
+let logic_reset =
+  Report.Warning.mk ~code ~mnemonic:"logic-reset"
+    ~message:(fun fmt old_loc ->
+        Format.fprintf fmt "Logic was already set at %a"
+          Dolmen.Std.Loc.fmt_pos old_loc)
+    ~name:"Multiple set-logic statements" ()
+
+let unknown_logic =
+  Report.Warning.mk ~code ~mnemonic:"unknown-logic"
+    ~message:(fun fmt s ->
+        Format.fprintf fmt "Unknown logic: %s" s)
+    ~name:"Unknown logic" ()
+
+let set_logic_not_supported =
+  Report.Warning.mk ~code ~mnemonic:"set-logic-ignored"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt
+          "Set logic is not supported for the current language")
+    ~name:"Set logic not supported for current language" ()
+
+let unknown_warning =
+  Report.Warning.mk ~code:Code.bug ~mnemonic:"unknown-warning"
+    ~message:(fun fmt cstr_name ->
+        Format.fprintf fmt
+          "@[<v>Unknown warning:@ %s@ please report upstream, ^^@]" cstr_name)
+    ~name:"Unknown warning" ()
+
+(* Typing errors *)
+(* ************************************************************************ *)
+
+let not_well_founded_datatype =
+  Report.Error.mk ~code ~mnemonic:"wf-datatype"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Not well founded datatype declaration")
+    ~name:"Not Well Founded Datatype" ()
+
+let expect_error =
+  Report.Error.mk ~code ~mnemonic:"typing-bad-kind"
+    ~message:(fun fmt (expected, got) ->
+        Format.fprintf fmt "Expected %s but got %a"
+          expected (print_opt print_res) got)
+    ~name:"Bad kind" ()
+
+let bad_index_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-index-arity"
+    ~message:(fun fmt (s, expected, actual) ->
+        Format.fprintf fmt
+          "The indexed family of operators '%s' expects %d indexes, but was given %d"
+          s expected actual)
+    ~name:"Incorrect arity for indexed operator" ()
+
+let bad_type_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-type-arity"
+    ~message:(fun fmt (c, actual) ->
+        Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
+          actual Dolmen.Std.Expr.Print.ty_cst c)
+    ~name:"Incorrect Arity for type constant application" ()
+
+let bad_op_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-op-arity"
+    ~message:(fun fmt (symbol, expected, actual) ->
+        Format.fprintf fmt
+          "Bad arity for symbol '%a':@ expected %a arguments but got %d"
+          print_symbol symbol print_expected expected actual)
+    ~name:"Incorrect arity for operator application" ()
+
+let bad_cstr_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-cstr-arity"
+    ~hints:[poly_hint]
+    ~message:(fun fmt (c, expected, actual) ->
+        Format.fprintf fmt
+          "Bad arity: expected %a arguments but got %d arguments for constructor@ %a"
+          print_expected expected actual Dolmen.Std.Expr.Print.term_cst c)
+    ~name:"Incorrect arity for constructor application" ()
+
+let bad_term_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-term-arity"
+    ~hints:[poly_hint]
+    ~message:(fun fmt (c, expected, actual) ->
+        Format.fprintf fmt
+          "Bad arity: expected %a but got %d arguments for function@ %a"
+          print_expected expected actual Dolmen.Std.Expr.Print.term_cst c)
+    ~name:"Incorrect arity for term application" ()
+
+let bad_poly_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-poly-arity"
+    ~message:(fun fmt (vars, args) ->
+        let expected = List.length vars in
+        let provided = List.length args in
+        if provided > expected then
+          (* Over application *)
+          Format.fprintf fmt
+            "This@ function@ expected@ at@ most@ %d@ type@ arguments,@ \
+             but@ was@ here@ provided@ with@ %d@ type@ arguments."
+            expected provided
+        else
+          (* under application *)
+          Format.fprintf fmt
+            "This@ function@ expected@ exactly@ %d@ type@ arguments,@ \
+             since@ term@ arguments@ are@ also@ provided,@ but@ was@ given@ \
+             %d@ arguments."
+            expected provided)
+    ~name:"Incorrect arity for type arguments of a term application" ()
+
+let over_application =
+  Report.Error.mk ~code ~mnemonic:"over-application"
+    ~message:(fun fmt over_args ->
+        let over = List.length over_args in
+        Format.fprintf fmt
+          "Over application:@ this@ application@ has@ %d@ \
+           too@ many@ term@ arguments." over)
+    ~name:"Too many arguments for an application" ()
+
+let repeated_record_field =
+  Report.Error.mk ~code ~mnemonic:"repeated-field"
+    ~message:(fun fmt f ->
+        Format.fprintf fmt
+          "The field %a is used more than once in this record construction"
+          Dolmen.Std.Expr.Print.id f)
+    ~name:"Repeated field in a record construction" ()
+
+let missing_record_field =
+  Report.Error.mk ~code ~mnemonic:"missing-field"
+    ~message:(fun fmt f ->
+        Format.fprintf fmt
+          "The field %a is missing from this record construction"
+          Dolmen.Std.Expr.Print.id f)
+    ~name:"Missing field in a record construction" ()
+
+let mismatch_record_type =
+  Report.Error.mk ~code ~mnemonic:"mismatch-field"
+    ~message:(fun fmt (f, r) ->
+        Format.fprintf fmt
+          "The field %a does not belong to record type %a"
+          Dolmen.Std.Expr.Print.id f Dolmen.Std.Expr.Print.id r)
+    ~name:"Field of another record type in a record construction" ()
+
+let ty_var_application =
+  Report.Error.mk ~code ~mnemonic:"type-var-app"
+    ~message:(fun fmt v ->
+        Format.fprintf fmt
+          "Cannot apply arguments to type variable@ %a" Dolmen.Std.Expr.Print.id v)
+    ~name:"Application of a type variable" ()
+
+let var_application =
+  Report.Error.mk ~code ~mnemonic:"term-var-app"
+    ~hints:[fo_hint]
+    ~message:(fun fmt v ->
+        Format.fprintf fmt
+          "Cannot apply arguments to term variable@ %a" Dolmen.Std.Expr.Print.id v)
+    ~name:"Application of a term variable" ()
+
+let type_mismatch =
+  Report.Error.mk ~code ~mnemonic:"type-mismatch"
+    ~message:(fun fmt (t, expected) ->
+        Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
+          (pp_wrap Dolmen.Std.Expr.Term.print) t
+          (pp_wrap Dolmen.Std.Expr.Ty.print) (Dolmen.Std.Expr.Term.ty t)
+          (pp_wrap Dolmen.Std.Expr.Ty.print) expected)
+    ~name:"Incorrect argument type in an application" ()
+
+let quant_var_inference =
+  Report.Error.mk ~code ~mnemonic:"quant-var-inference"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Cannot infer type for a quantified variable")
+    ~name:"Inference of a quantified variable's type" ()
+
+let unhandled_builtin =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"unhandled-builtin"
+    ~message:(fun fmt b ->
+        Format.fprintf fmt
+          "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
+          (pp_wrap Dolmen.Std.Term.print_builtin) b)
+    ~name:"Unhandled builtin in typechecking" ()
+
+let cannot_tag_tag =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"tag-tag"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Cannot apply a tag to another tag (only expressions)")
+    ~name:"Trying to tag a tag" ()
+
+let cannot_tag_ttype =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"tag-ttype"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Cannot apply a tag to the Ttype constant")
+    ~name:"Tying to tag Ttype" ()
+
+let unbound_identifier =
+  Report.Error.mk ~code ~mnemonic:"unbound-id"
+    ~message:(fun fmt (id, _) ->
+        Format.fprintf fmt "Unbound identifier:@ %a"
+          (pp_wrap Dolmen.Std.Id.print) id)
+    ~hints:[
+      (fun (id, _) -> literal_hint id);
+      (fun (_, msg) -> text_hint msg);]
+    ~name:"Unbound identifier" ()
+
+let multiple_declarations =
+  Report.Error.mk ~code ~mnemonic:"redeclaration"
+    ~message:(fun fmt (id, old) ->
+        Format.fprintf fmt
+          "Duplicate declaration of %a, which was already %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          print_reason_opt (T.binding_reason old))
+    ~name:"Multiple declarations of the same symbol" ()
+
+let forbidden_quant =
+  Report.Error.mk ~code ~mnemonic:"forbidden-quant"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Quantified expressions are forbidden by the logic.")
+    ~name:"Forbidden quantifier" ()
+
+let type_var_in_type_cstr =
+  Report.Error.mk ~code ~mnemonic:"type-var-in-type-cstr"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Type variables cannot appear in the signature of a type constant")
+    ~name:"Type variable in the isgnature of a type constructor" ()
+
+let missing_destructor =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"missing-destructor"
+    ~message:(fun fmt id ->
+        Format.fprintf fmt
+          "The destructor %a@ was not provided by the user implementation.@ Please report upstream."
+          (pp_wrap Dolmen.Std.Id.print) id)
+    ~name:"Missing destructor in implementation" ()
+
+let higher_order_app =
+  Report.Error.mk ~code ~mnemonic:"ho-app"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Higher-order applications are not handled by the Tff typechecker")
+    ~hints:[fo_hint]
+    ~name:"Higher-order application" ()
+
+let higher_order_type =
+  Report.Error.mk ~code ~mnemonic:"ho-type"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Higher-order types are not handled by the Tff typechecker")
+    ~hints:[fo_hint]
+    ~name:"Higher-order type" ()
+
+let higher_order_env_in_tff_typer =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"ho-env-in-tff"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt
+          "Programmer error: trying to create a typing env for \
+           higher-order with the first-order typechecker.")
+    ~name:"Higher order env in TFF type-checker" ()
+
+let poly_arg =
+  Report.Error.mk ~code ~mnemonic:"poly-arg"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Polymorphic terms cannot be given as argument of a function.")
+    ~hints:[poly_arg_hint]
+    ~name:"Polymorphic argument in an application" ()
+
+let non_prenex_polymorphism =
+  Report.Error.mk ~code ~mnemonic:"poly-param"
+    ~message:(fun fmt ty ->
+        Format.fprintf fmt "The following polymorphic type occurs in a \
+                            non_prenex position: %a"
+          (pp_wrap Dolmen.Std.Expr.Ty.print) ty)
+    ~hints:[poly_param_hint]
+    ~name:"Polymorphic function parameter" ()
+
+let inference_forbidden =
+  Report.Error.mk ~code ~mnemonic:"inference-forbidden"
+    ~message:(fun fmt (env, w_src, inferred_ty) ->
+        Format.fprintf fmt
+          "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+           @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
+           @[<hov>However,@ the@ language@ specified@ inference@ \
+           at@ that@ point@ was@ forbidden@]@ \
+           @[<hov>%a@]\
+           @]"
+          print_wildcard_origin w_src
+          (print_wildcard_path env) w_src
+          (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
+          (print_wildcard_loc env) w_src)
+    ~name:"Forbidden type inference" ()
+
+let inference_conflict =
+  Report.Error.mk ~code ~mnemonic:"inference-conflict"
+    ~message:(fun fmt (env, w_src, inferred_ty, allowed_tys) ->
+        Format.fprintf fmt
+          "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+           @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
+           @[<hov>However,@ the@ language@ specified@ that@ only@ the@ following@ \
+           types@ should@ be@ allowed@ there:@ %a@]@ \
+           @[<hov>%a@]\
+           @]"
+          print_wildcard_origin w_src
+          (print_wildcard_path env) w_src
+          (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
+          (Format.pp_print_list (pp_wrap Dolmen.Std.Expr.Ty.print)
+             ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")) allowed_tys
+          (print_wildcard_loc env) w_src)
+    ~name:"Conflict in type inference" ()
+
+let inference_scope_escape =
+  Report.Error.mk ~code ~mnemonic:"inference-scope-escape"
+    ~message:(fun fmt (env, w_src, escaping_var, var_reason) ->
+        Format.fprintf fmt
+          "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
+           @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ contain@ \
+           the@ variable@ %a@ which@ is@ not@ in@ the@ scope@ \
+           of@ the@ inferred@ type.@]@ \
+           @[<hov>%a@]@ \
+           @[<hov>Variable %a is@ %a.@]\
+           @]"
+          print_wildcard_origin w_src
+          (print_wildcard_path env) w_src
+          (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
+          (print_wildcard_loc env) w_src
+          (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
+          print_reason_opt var_reason)
+    ~name:"Scope escape from a type due to inference" ()
+
+let unbound_wildcards =
+  Report.Error.mk ~code ~mnemonic:"inference-incomplete"
+    ~message:(fun fmt (tys, ts) ->
+        match tys, ts with
+        | tys, [] ->
+          let pp_sep fmt () = Format.fprintf fmt ",@ " in
+          Format.fprintf fmt "The following variables are not bound:@ %a"
+            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
+        | [], ts ->
+          let pp_sep fmt () = Format.fprintf fmt ",@ " in
+          Format.fprintf fmt "The following variables are not bound:@ %a"
+            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
+        | _, _ ->
+          let pp_sep fmt () = Format.fprintf fmt ",@ " in
+          Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
+            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
+            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts)
+    ~name:"Under-specified type inference" ()
+
+let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
+  Report.Error.mk ~code ~mnemonic:"unhandled-ast"
+    ~message:(fun fmt (env, fragment) ->
+        Format.fprintf fmt
+          "The typechecker did not know what to do with the following term.@ \
+           Please report upstream.@\n%a"
+          print_fragment (env, fragment))
+    ~name:"Unhandled AST fragment" ()
+
+let expected_arith_type =
+  Report.Error.mk ~code ~mnemonic:"arith-type-expected"
+    ~message:(fun fmt (ty, _) ->
+        Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
+          (pp_wrap Dolmen.Std.Expr.Ty.print) ty
+          "Tptp arithmetic symbols are only polymorphic over the arithmetic \
+           types $int, $rat and $real.")
+    ~hints:[(fun (_, msg) -> text_hint msg)]
+    ~name:"Non-arithmetic use of overloaded arithmetic function" ()
+
+let expected_specific_arith_type =
+  Report.Error.mk ~code ~mnemonic:"arith-type-specific"
+    ~message:(fun fmt ty ->
+        Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
+          (pp_wrap Dolmen.Std.Expr.Ty.print) ty)
+    ~name:"Incorrect use of overloaded arithmetic function" ()
+
+let forbidden_array_sort =
+  Report.Error.mk ~code ~mnemonic:"forbidden-array-sort"
+    ~message:(fun fmt _ ->
+        Format.fprintf fmt "Forbidden array sort.")
+    ~hints:[text_hint]
+    ~name:"Forbidden array sort" ()
+
+let non_linear_expression =
+  Report.Error.mk ~code ~mnemonic:"non-linear-expr"
+    ~message:(fun fmt _ ->
+        Format.fprintf fmt "Non-linear expressions are forbidden by the logic.")
+    ~hints:[text_hint]
+    ~name:"Non linear expression in linear arithmetic logic" ()
+
+let invalid_bin_bitvector_char =
+  Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The character '%c' is invalid inside a binary bitvector litteral" c)
+    ~name:"Invalid character in a binary bitvector literal" ()
+
+let invalid_hex_bitvector_char =
+  Report.Error.mk ~code ~mnemonic:"invalid-bv-hex-char"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The character '%c' is invalid inside an hexadecimal bitvector litteral" c)
+    ~name:"Invalid character in an hexadecimal bitvector literal" ()
+
+let invalid_dec_bitvector_char =
+  Report.Error.mk ~code ~mnemonic:"invalid-bv-dec-char"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The character '%c' is invalid inside a decimal bitvector litteral" c)
+    ~name:"Invalid character in a decimal bitvector literal" ()
+
+let invalid_hex_string_char =
+  Report.Error.mk ~code ~mnemonic:"invalid-hex-string-char"
+    ~message:(fun fmt s ->
+        Format.fprintf fmt
+          "The following is not a valid hexadecimal character: '%s'" s)
+    ~name:"Invalid hexadecimal character in a string literal" ()
+
+let invalid_string_char =
+  Report.Error.mk ~code ~mnemonic:"invalid-string-char"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The following character is not allowed in string literals: '%c'" c)
+    ~name:"Invalid character in a string literal" ()
+
+let invalid_string_escape_sequence =
+  Report.Error.mk ~code ~mnemonic:"invalid-string-escape"
+    ~message:(fun fmt (s, i) ->
+        Format.fprintf fmt
+          "The escape sequence starting at index %d in the \
+           following string is not allowed: '%s'" i s)
+    ~name:"Invalid escape sequence in a string literal" ()
+
+let bad_tptp_kind =
+  Report.Error.mk ~code ~mnemonic:"bad-tptp-kind"
+    ~message:(fun fmt o ->
+        match o with
+        | None ->
+          Format.fprintf fmt "Missing kind for the tptp statement."
+        | Some s ->
+          Format.fprintf fmt "Unknown kind for the tptp statement: '%s'." s)
+    ~name:"Invalid kind for a TPTP statement" ()
+
+let missing_smtlib_logic =
+  Report.Error.mk ~code ~mnemonic:"missing-smt-logic"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Missing logic (aka set-logic for smtlib2).")
+    ~name:"Missing set-logic in an SMTLIB file" ()
+
+let illegal_decl =
+  Report.Error.mk ~code ~mnemonic:"illegal-decl"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Illegal declaration.")
+    ~name:"Illegal declaration in a file" ()
+
+let invalid_push =
+  Report.Error.mk ~code ~mnemonic:"invalid-push"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Invalid push payload (payload must be positive)")
+    ~name:"Negative payload for a push statement" ()
+
+let invalid_pop =
+  Report.Error.mk ~code ~mnemonic:"invalid-pop"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Invalid pop payload (payload must be positive)")
+    ~name:"Negative payload for a pop statement" ()
+
+let empty_pop =
+  Report.Error.mk ~code ~mnemonic:"empty-pop"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt
+          "Pop instruction with an empty stack (likely a \
+           result of a missing push or excessive pop)")
+    ~name:"Excessive use of pop leading to an empty stack" ()
+
+let unknown_error =
+  Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
+    ~message:(fun fmt cstr_name ->
+      Format.fprintf fmt
+        "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
+        cstr_name)
+    ~name:"Unknown typing error" ()
+
+
 (* Typing state *)
 (* ************************************************************************ *)
 
@@ -104,14 +823,10 @@ module type S = Typer_intf.S
 
 module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
-  let pp_wrap pp fmt x =
-    Format.fprintf fmt "`%a`" pp x
-
   (* New warnings & errors *)
   (* ************************************************************************ *)
 
   type _ T.err +=
-    | Warning_as_error : T.warning -> _ T.err
     | Bad_tptp_kind : string option -> Dolmen.Std.Loc.t T.err
     | Missing_smtlib_logic : Dolmen.Std.Loc.t T.err
     | Illegal_decl : Dolmen.Std.Statement.decl T.err
@@ -119,545 +834,181 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Invalid_pop_n : Dolmen.Std.Loc.t T.err
     | Pop_with_empty_stack : Dolmen.Std.Loc.t T.err
 
-  (* Hints for type errors *)
-  (* ************************************************************************ *)
-
-  let pp_hint fmt = function
-    | "" -> ()
-    | msg ->
-      Format.fprintf fmt "@ @[<hov 2>Hint: %a@]"
-        Format.pp_print_text msg
-
-  let poly_hint fmt (c, expected, actual) =
-    let n_ty, n_t = Dolmen.Std.Expr.Term.Const.arity c in
-    let total_arity = n_ty + n_t in
-    match expected with
-    | [x] when x = total_arity && actual = n_t ->
-      Format.fprintf fmt
-        "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "this is a polymorphic function, you probably forgot \
-         the type arguments@]"
-    | [x] when x = n_t && n_ty <> 0 ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "it looks like the language enforces implicit polymorphism, \
-         i.e. no type arguments are to be provided to applications \
-         (and instead type annotation/coercions should be used)."
-    | _ :: _ :: _ ->
-      Format.fprintf fmt "@ @[<hov>Hint: %a@]" Format.pp_print_text
-        "this is a polymorphic function, and multiple accepted arities \
-         are possible because the language supports inference of all type \
-         arguments when none are given in an application."
-    | _ -> ()
-
-  let literal_hint fmt id =
-    match (id : Dolmen.Std.Id.t) with
-    | { ns = Value Integer; name = Simple _; } ->
-      pp_hint fmt "The current logic does not include integer arithmtic"
-    | { ns = Value Rational; name = Simple _; } ->
-      pp_hint fmt "The current logic does not include rational arithmtic"
-    | { ns = Value Real; name = Simple _; } ->
-      pp_hint fmt "The current logic does not include real arithmtic"
-    | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
-      when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
-      pp_hint fmt "The current logic does not include extended bitvector literals"
-    | _ -> ()
-
   (* Report type warnings *)
   (* ************************************************************************ *)
 
-  let decl_loc d =
-    match (d : Dolmen.Std.Statement.decl) with
-    | Record { loc; _ }
-    | Abstract { loc; _ }
-    | Inductive { loc; _ } -> loc
+  let smtlib2_6_shadow_rules st =
+    match (S.input_lang st : Logic.language option) with
+    | Some Smtlib2 (`Latest | `V2_6 | `Poly) -> true
+    | _ -> false
 
-  let print_reason fmt r =
-    match (r : T.reason) with
-    | Builtin ->
-      Format.fprintf fmt "defined by a builtin theory"
-    | Bound (file, ast) ->
-      Format.fprintf fmt "bound at %a"
-        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
-    | Inferred (file, ast) ->
-      Format.fprintf fmt "inferred at %a"
-        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
-    | Defined (file, d) ->
-      Format.fprintf fmt "defined at %a"
-        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
-    | Declared (file, d) ->
-      Format.fprintf fmt "declared at %a"
-        Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
-
-  let print_reason_opt fmt = function
-    | Some r -> print_reason fmt r
-    | None -> Format.fprintf fmt "<location missing>"
-
-  let rec print_wildcard_origin fmt = function
-    | T.Arg_of src
-    | T.Ret_of src -> print_wildcard_origin fmt src
-    | T.From_source _ast ->
-      Format.fprintf fmt "the@ contents@ of@ a@ source@ wildcard"
-    | T.Added_type_argument _ast ->
-      Format.fprintf fmt "the@ implicit@ type@ to@ provide@ to@ an@ application"
-    | T.Symbol_inference { symbol; symbol_loc = _; inferred_ty; } ->
-      Format.fprintf fmt
-        "the@ type@ for@ the@ symbol@ %a@ to@ be@ %a"
-        (pp_wrap Dolmen.Std.Id.print) symbol
-        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
-    | T.Variable_inference { variable; variable_loc = _; inferred_ty; } ->
-      Format.fprintf fmt
-        "the@ type@ for@ the@ quantified@ variable@ %a@ to@ be@ %a"
-        (pp_wrap Dolmen.Std.Id.print) variable
-        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
-
-  let rec print_wildcard_path env fmt = function
-    | T.Arg_of src ->
-      Format.fprintf fmt "one@ of@ the@ argument@ types@ of@ %a"
-        (print_wildcard_path env) src
-    | T.Ret_of src ->
-      Format.fprintf fmt "the@ return@ type@ of@ %a"
-        (print_wildcard_path env) src
-    | _ ->
-      Format.fprintf fmt "that@ type"
-
-  let rec print_wildcard_loc env fmt = function
-    | T.Arg_of src
-    | T.Ret_of src -> print_wildcard_loc env fmt src
-    | T.From_source ast ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
-      Format.fprintf fmt
-        "The@ source@ wildcard@ is@ located@ at@ %a"
-        Dolmen.Std.Loc.fmt_pos loc
-    | T.Added_type_argument ast ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
-      Format.fprintf fmt
-        "The@ application@ is@ located@ at@ %a"
-        Dolmen.Std.Loc.fmt_pos loc
-    | T.Symbol_inference { symbol; symbol_loc; inferred_ty = _; } ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
-      Format.fprintf fmt
-        "Symbol@ %a@ is@ located@ be@ %a"
-        (pp_wrap Dolmen.Std.Id.print) symbol
-        Dolmen.Std.Loc.fmt_pos loc
-    | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
-      let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
-      Format.fprintf fmt
-        "Variable@ %a@ is@ bound@ at@ %a"
-        (pp_wrap Dolmen.Std.Id.print) variable
-        Dolmen.Std.Loc.fmt_pos loc
-
-  let report_warning (T.Warning (_env, _fragment, warn)) =
+  let report_warning st (T.Warning (env, fragment, warn)) =
+    let loc = T.fragment_loc env fragment in
     match warn with
-    | T.Unused_type_variable v -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Quantified type variable `%a` is unused"
-          Dolmen.Std.Expr.Print.ty_var v
-      )
-    | T.Unused_term_variable v -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Quantified term variable `%a` is unused"
-          Dolmen.Std.Expr.Print.term_var v
-      )
-    | T.Error_in_attribute exn -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Exception while typing attribute:@ %s" (Printexc.to_string exn)
-      )
-    | T.Superfluous_destructor _ -> Some (fun fmt () ->
-        Format.fprintf fmt "Internal warning, please report upstream, ^^"
-      )
+    (* typer warnings that are actually errors given some languages spec *)
+    | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)
+    | T.Shadowing (id, ((`Constant _ | `Builtin _ | `Not_found) as old), `Constant _)
+      when smtlib2_6_shadow_rules st ->
+      S.error ~loc st multiple_declarations (id, old)
 
-    | T.Shadowing (id, old, _cur) -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "Shadowing: %a was already %a"
-          (pp_wrap Dolmen.Std.Id.print) id
-          print_reason_opt (T.binding_reason old)
-      )
-
+    (* warnings *)
+    | T.Unused_type_variable v ->
+      S.warn ~loc st unused_type_variable v
+    | T.Unused_term_variable v ->
+      S.warn ~loc st unused_term_variable v
+    | T.Error_in_attribute exn ->
+      S.warn ~loc st error_in_attribute exn
+    | T.Superfluous_destructor _ ->
+      S.warn ~loc st superfluous_destructor ()
+    | T.Shadowing (id, old, _cur) ->
+      S.warn ~loc st shadowing (id, old)
     | Smtlib2_Ints.Restriction msg
     | Smtlib2_Reals.Restriction msg
-    | Smtlib2_Reals_Ints.Restriction msg
-      -> Some (fun fmt () ->
-          Format.fprintf fmt
-            "This is a non-linear expression according to the smtlib spec.%a"
-            pp_hint msg
-        )
-
-    | _ -> Some (fun fmt () ->
-        Format.fprintf fmt
-          "@[<v>Unknown warning:@ %s@ please report upstream, ^^@]"
-          Obj.Extension_constructor.(name (of_val warn))
-      )
+    | Smtlib2_Reals_Ints.Restriction msg ->
+      S.warn ~loc st arith_restriction msg
+    | _ ->
+      S.warn ~loc st unknown_warning
+          (Obj.Extension_constructor.(name (of_val warn)))
 
   (* Report type errors *)
   (* ************************************************************************ *)
 
-  let print_symbol fmt symbol =
-    match (symbol : T.symbol) with
-    | Id id -> Dolmen.Std.Id.print fmt id
-    | Builtin builtin -> Dolmen.Std.Term.print_builtin fmt builtin
-
-  let print_res fmt res =
-    match (res : T.res) with
-    | T.Ttype -> Format.fprintf fmt "Type"
-    | T.Ty ty ->
-      Format.fprintf fmt "the type@ %a" (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-    | T.Term t ->
-      Format.fprintf fmt "the term@ %a" (pp_wrap Dolmen.Std.Expr.Term.print) t
-    | T.Tags _ -> Format.fprintf fmt "some tags"
-
-  let print_opt pp fmt = function
-    | None -> Format.fprintf fmt "<none>"
-    | Some x -> pp fmt x
-
-  let rec print_expected fmt = function
-    | [] -> assert false
-    | x :: [] -> Format.fprintf fmt "%d" x
-    | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
-
-  let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
-    match fragment with
-    | T.Ast ast -> pp_wrap Dolmen.Std.Term.print fmt ast
-    | T.Def d -> Dolmen.Std.Statement.print_def fmt d
-    | T.Decl d -> Dolmen.Std.Statement.print_decl fmt d
-    | T.Defs d ->
-      Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_def fmt d
-    | T.Decls d ->
-      Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_decl fmt d
-    | T.Located _ ->
-      let full = T.fragment_loc env fragment in
-      let loc = Dolmen.Std.Loc.full_loc full in
-      Format.fprintf fmt "<located at %a>" Dolmen.Std.Loc.fmt loc
-
-  let print_bt fmt bt =
-    if Printexc.backtrace_status () then begin
-      let s = Printexc.raw_backtrace_to_string bt in
-      Format.fprintf fmt "@ @[<h>%a@]" Format.pp_print_text s
-    end
-
-
-  let report_error fmt (T.Error (env, fragment, err)) =
+  let report_error st (T.Error (env, fragment, err)) =
+    let loc = T.fragment_loc env fragment in
     match err with
-
     (* Datatype definition not well founded *)
     | T.Not_well_founded_datatypes _ ->
-      Format.fprintf fmt "Not well founded datatype declaration"
-
+      S.error ~loc st not_well_founded_datatype ()
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
-      Format.fprintf fmt "Expected %s but got %a"
-        expect (print_opt print_res) got
-
-    (* Arity errors *)
+      S.error ~loc st expect_error (expect, got)
+      (* Arity errors *)
     | T.Bad_index_arity (s, expected, actual) ->
-      Format.fprintf fmt
-        "The indexed family of operators '%s' expects %d indexes, but was given %d"
-        s expected actual
+      S.error ~loc st bad_index_arity (s, expected, actual)
     | T.Bad_ty_arity (c, actual) ->
-      Format.fprintf fmt "Bad arity: got %d arguments for type constant@ %a"
-        actual Dolmen.Std.Expr.Print.ty_cst c
+      S.error ~loc st bad_type_arity (c, actual)
     | T.Bad_op_arity (symbol, expected, actual) ->
-      Format.fprintf fmt
-        "Bad arity for symbol '%a':@ expected %a arguments but got %d"
-        print_symbol symbol print_expected expected actual
+      S.error ~loc st bad_op_arity (symbol, expected, actual)
     | T.Bad_cstr_arity (c, expected, actual) ->
-      Format.fprintf fmt
-        "Bad arity: expected %a arguments but got %d arguments for constructor@ %a%a"
-        print_expected expected actual Dolmen.Std.Expr.Print.term_cst c
-        poly_hint (c, expected, actual)
+      S.error ~loc st bad_cstr_arity (c, expected, actual)
     | T.Bad_term_arity (c, expected, actual) ->
-      Format.fprintf fmt
-        "Bad arity: expected %a but got %d arguments for function@ %a%a"
-        print_expected expected actual Dolmen.Std.Expr.Print.term_cst c
-        poly_hint (c, expected, actual)
+      S.error ~loc st bad_term_arity (c, expected, actual)
     | T.Bad_poly_arity (vars, args) ->
-      let expected = List.length vars in
-      let provided = List.length args in
-      if provided > expected then
-        (* Over application *)
-        Format.fprintf fmt
-          "This@ function@ expected@ at@ most@ %d@ type@ arguments,@ \
-           but@ was@ here@ provided@ with@ %d@ type@ arguments."
-          expected provided
-      else
-        (* under application *)
-        Format.fprintf fmt
-          "This@ function@ expected@ exactly@ %d@ type@ arguments,@ \
-           since@ term@ arguments@ are@ also@ provided,@ but@ was@ given@ \
-           %d@ arguments."
-          expected provided
-    | T.Over_application (over_args) ->
-      let over = List.length over_args in
-      Format.fprintf fmt
-        "Over application:@ this@ application@ has@ %d@ \
-         too@ many@ term@ arguments." over
-
+      S.error ~loc st bad_poly_arity (vars, args)
+    | T.Over_application over_args ->
+      S.error ~loc st over_application over_args
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
-      Format.fprintf fmt
-        "The field %a is used more than once in this record construction"
-        Dolmen.Std.Expr.Print.id f
+      S.error ~loc st repeated_record_field f
     | T.Missing_record_field f ->
-      Format.fprintf fmt
-        "The field %a is missing from this record construction"
-        Dolmen.Std.Expr.Print.id f
+      S.error ~loc st missing_record_field f
     | T.Mismatch_record_type (f, r) ->
-      Format.fprintf fmt
-        "The field %a does not belong to record type %a"
-        Dolmen.Std.Expr.Print.id f Dolmen.Std.Expr.Print.id r
-
+      S.error ~loc st mismatch_record_type (f, r)
     (* Application of a variable *)
     | T.Var_application v ->
-      Format.fprintf fmt "Cannot apply arguments to term variable@ %a" Dolmen.Std.Expr.Print.id v
+      S.error ~loc st var_application v
     | T.Ty_var_application v ->
-      Format.fprintf fmt "Cannot apply arguments to type variable@ %a" Dolmen.Std.Expr.Print.id v
-
+      S.error ~loc st ty_var_application v
     (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
-      Format.fprintf fmt "The term:@ %a@ has type@ %a@ but was expected to be of type@ %a"
-        (pp_wrap Dolmen.Std.Expr.Term.print) t
-        (pp_wrap Dolmen.Std.Expr.Ty.print) (Dolmen.Std.Expr.Term.ty t)
-        (pp_wrap Dolmen.Std.Expr.Ty.print) expected
-
+      S.error ~loc st type_mismatch (t, expected)
     | T.Quantified_var_inference ->
-      Format.fprintf fmt "Cannot infer type for a quantified variable"
-
+      S.error ~loc st quant_var_inference ()
     | T.Unhandled_builtin b ->
-      Format.fprintf fmt
-        "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
-        (pp_wrap Dolmen.Std.Term.print_builtin) b
-
+      S.error ~loc st unhandled_builtin b
     | T.Cannot_tag_tag ->
-      Format.fprintf fmt "Cannot apply a tag to another tag (only expressions)"
-
+      S.error ~loc st cannot_tag_tag ()
     | T.Cannot_tag_ttype ->
-      Format.fprintf fmt "Cannot apply a tag to the Ttype constant"
-
+      S.error ~loc st cannot_tag_ttype ()
     | T.Cannot_find (id, msg) ->
-      Format.fprintf fmt "Unbound identifier:@ %a%a%a"
-        (pp_wrap Dolmen.Std.Id.print) id
-        pp_hint msg
-        literal_hint id
-
+      S.error ~loc st unbound_identifier (id, msg)
     | T.Forbidden_quantifier ->
-      Format.fprintf fmt "Quantified expressions are forbidden by the logic."
-
+      S.error ~loc st forbidden_quant ()
     | T.Type_var_in_type_constructor ->
-      Format.fprintf fmt "Type variables cannot appear in the signature of a type constant"
-
+      S.error ~loc st type_var_in_type_cstr ()
     | T.Missing_destructor id ->
-      Format.fprintf fmt
-        "The destructor %a@ was not provided by the user implementation.@ Please report upstream."
-        (pp_wrap Dolmen.Std.Id.print) id
-
+      S.error ~loc st missing_destructor id
     | T.Higher_order_application ->
-      Format.fprintf fmt "Higher-order applications are not handled by the Tff typechecker"
-
+      S.error ~loc st higher_order_app ()
     | T.Higher_order_type ->
-      Format.fprintf fmt "Higher-order types are not handled by the Tff typechecker"
-
+      S.error ~loc st higher_order_type ()
     | T.Higher_order_env_in_tff_typechecker ->
-      Format.fprintf fmt "Programmer error: trying to create a typing env for \
-                          higher-order with the first-order typechecker."
-
+      S.error ~loc st higher_order_env_in_tff_typer ()
     | T.Polymorphic_function_argument ->
-      Format.fprintf fmt "Polymorphic terms cannot be given as argument of a function.%a"
-        pp_hint "This is because the typechecker enforces prenex/rank-1 polymorphism. \
-                 In languages with explicit type arguments for polymorphic functions, \
-                 you must apply this term to the adequate number of type arguments to \
-                 make it monomorph."
+      S.error ~loc st poly_arg ()
     | T.Non_prenex_polymorphism ty ->
-      Format.fprintf fmt "The following polymorphic type occurs in a \
-                          non_prenex position: %a"
-        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-
+      S.error ~loc st non_prenex_polymorphism ty
     | T.Inference_forbidden (_, w_src, inferred_ty) ->
-      Format.fprintf fmt
-        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
-              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
-              @[<hov>However,@ the@ language@ specified@ inference@ \
-                     at@ that@ point@ was@ forbidden@]@ \
-              @[<hov>%a@]\
-         @]"
-        print_wildcard_origin w_src
-        (print_wildcard_path env) w_src
-        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
-        (print_wildcard_loc env) w_src
+      S.error ~loc st inference_forbidden (env, w_src, inferred_ty)
     | T.Inference_conflict (_, w_src, inferred_ty, allowed_tys) ->
-      Format.fprintf fmt
-        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
-              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ be@ %a.@]@ \
-              @[<hov>However,@ the@ language@ specified@ that@ only@ the@ following@ \
-                     types@ should@ be@ allowed@ there:@ %a@]@ \
-              @[<hov>%a@]\
-        @]"
-        print_wildcard_origin w_src
-        (print_wildcard_path env) w_src
-        (pp_wrap Dolmen.Std.Expr.Ty.print) inferred_ty
-        (Format.pp_print_list (pp_wrap Dolmen.Std.Expr.Ty.print)
-           ~pp_sep:(fun fmt () -> Format.fprintf fmt ",@ ")) allowed_tys
-        (print_wildcard_loc env) w_src
+      S.error ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
-      Format.fprintf fmt
-        "@[<v>@[<hov>The@ typechecker@ inferred@ %a.@]@ \
-              @[<hov>That@ inference@ lead@ to@ infer@ %a@ to@ contain@ \
-                     the@ variable@ %a@ which@ is@ not@ in@ the@ scope@ \
-                     of@ the@ inferred@ type.@]@ \
-              @[<hov>%a@]@ \
-              @[<hov>Variable %a is@ %a.@]\
-         @]"
-        print_wildcard_origin w_src
-        (print_wildcard_path env) w_src
-        (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
-        (print_wildcard_loc env) w_src
-        (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
-        print_reason_opt var_reason
-
-    | T.Unbound_variables (tys, [], _) ->
-      let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "The following variables are not bound:@ %a"
-        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
-
-    | T.Unbound_variables ([], ts, _) ->
-      let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "The following variables are not bound:@ %a"
-        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
-
-    | T.Unbound_variables (tys, ts, _) ->
-      let pp_sep fmt () = Format.fprintf fmt ",@ " in
-      Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
-        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
-        (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
-
+      S.error ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
+    | T.Unbound_wildcards (tys, ts, _) ->
+      S.error ~loc st unbound_wildcards (tys, ts)
     | T.Unhandled_ast ->
-      Format.fprintf fmt
-        "The typechecker did not know what to do with the following term.@ \
-         Please report upstream.@\n%a"
-        print_fragment (env, fragment)
-
+      S.error ~loc st unhandled_ast (env, fragment)
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
-      Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-        "Tptp arithmetic symbols are only polymorphic over the arithmetic types $int, $rat and $real."
+      S.error ~loc st expected_arith_type (ty, "")
     | Tptp_Arith.Cannot_apply_to ty ->
-      Format.fprintf fmt "Cannot apply the arithmetic operation to type@ %a"
-        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-
-    (* Smtlib Arrya errors *)
+      S.error ~loc st expected_specific_arith_type ty
+    (* Smtlib Array errors *)
     | Smtlib2_Arrays.Forbidden msg ->
-      Format.fprintf fmt "Forbidden array sort.%a" pp_hint msg
-
+      S.error ~loc st forbidden_array_sort msg
     (* Smtlib Arithmetic errors *)
     | Smtlib2_Ints.Forbidden msg
     | Smtlib2_Reals.Forbidden msg
     | Smtlib2_Reals_Ints.Forbidden msg ->
-      Format.fprintf fmt "Non-linear expressions are forbidden by the logic.%a" pp_hint msg
+      S.error ~loc st non_linear_expression msg
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
-      Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-        (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-        "The stmlib Reals_Ints theory requires an arithmetic type in order to correctly desugar the expression."
-
+      S.error ~loc st expected_arith_type
+        (ty, "The stmlib Reals_Ints theory requires an arithmetic type in order to \
+              correctly desugar the expression.")
     (* Smtlib Bitvector errors *)
-    | Smtlib2_Bitv.Invalid_bin_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
-    | Smtlib2_Bitv.Invalid_hex_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
-    | Smtlib2_Bitv.Invalid_dec_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
-
-    (* Smtlib Float errors *)
+    | Smtlib2_Bitv.Invalid_bin_char c
     | Smtlib2_Float.Invalid_bin_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a binary bitvector litteral" c
+      S.error ~loc st invalid_bin_bitvector_char c
+    | Smtlib2_Bitv.Invalid_hex_char c
     | Smtlib2_Float.Invalid_hex_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a hexadecimal bitvector litteral" c
+      S.error ~loc st invalid_hex_bitvector_char c
+    | Smtlib2_Bitv.Invalid_dec_char c
     | Smtlib2_Float.Invalid_dec_char c ->
-      Format.fprintf fmt "The character '%c' is invalid inside a decimal bitvector litteral" c
-
+      S.error ~loc st invalid_dec_bitvector_char c
     (* Smtlib String errors *)
     | Smtlib2_String.Invalid_hexadecimal s ->
-      Format.fprintf fmt "The following is not a valid hexadecimal character: '%s'" s
+      S.error ~loc st invalid_hex_string_char s
     | Smtlib2_String.Invalid_string_char c ->
-      Format.fprintf fmt "The following character is not allowed in string literals: '%c'" c
+      S.error ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
-      Format.fprintf fmt "The escape sequence starting at index %d in the \
-                          following string is not allowed: '%s'" i s
-
+      S.error ~loc st invalid_string_escape_sequence (s, i)
     (* Uncaught exception during type-checking *)
+    | T.Uncaught_exn ((Pipeline.Out_of_time |
+                       Pipeline.Out_of_space |
+                       Pipeline.Sigint) as exn, bt) ->
+      Printexc.raise_with_backtrace exn bt
     | T.Uncaught_exn (exn, bt) ->
-      Format.fprintf fmt
-        "@[<v 2>Uncaught exception: %s%a@]"
-        (Printexc.to_string exn) print_bt bt
-
-    (* Warnings as errors *)
-    | Warning_as_error w ->
-      begin match report_warning w with
-        | Some pp -> pp fmt ()
-        | None ->
-          Format.fprintf fmt "missing warning reporter, please report upstream, ^^"
-      end
-
+      S.error ~loc st Report.Error.uncaught_exn (exn, bt)
     (* Bad tptp kind *)
-    | Bad_tptp_kind None ->
-      Format.fprintf fmt "Missing kind for the tptp statement."
-    | Bad_tptp_kind Some s ->
-      Format.fprintf fmt "Unknown kind for the tptp statement: '%s'." s
-
+    | Bad_tptp_kind o ->
+      S.error ~loc st bad_tptp_kind o
     (* Missing smtlib logic *)
     | Missing_smtlib_logic ->
-      Format.fprintf fmt "Missing logic (aka set-logic for smtlib2)."
-
+      S.error ~loc st missing_smtlib_logic ()
     (* Illegal declarations *)
     | Illegal_decl ->
-      Format.fprintf fmt "Illegal declaration. Hint: check your logic"
-
+      S.error ~loc st illegal_decl ()
     (* Push/Pop errors *)
     | Invalid_push_n ->
-      Format.fprintf fmt "Invalid push payload (payload must be positive)"
+      S.error ~loc st invalid_push ()
     | Invalid_pop_n ->
-      Format.fprintf fmt "Invalid pop payload (payload must be positive)"
+      S.error ~loc st invalid_pop ()
     | Pop_with_empty_stack ->
-      Format.fprintf fmt "Pop instruction with an empty stack (likely a \
-                          result of a missing push or excessive pop)"
-
+      S.error ~loc st empty_pop ()
     (* Catch-all *)
     | _ ->
-      Format.fprintf fmt
-        "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
-        Obj.Extension_constructor.(name (of_val err))
-
-  let () =
-    Printexc.register_printer (function
-        | T.Typing_error error ->
-          Some (Format.asprintf "Typing error:@ %a" report_error error)
-        | _ -> None
-      )
-
-  (* Warning reporting and wrappers *)
-  (* ************************************************************************ *)
-
-  type warning_conf = {
-    strict_typing : bool;
-    smtlib2_6_shadow_rules : bool;
-  }
-
-  (* Warning reporter, sent to the typechecker.
-     This is responsible for turning fatal warnings into errors *)
-  let warnings_aux report conf ((T.Warning (env, fragment, warn)) as w) =
-    match warn, fragment with
-    (* Warnings as errors *)
-    | T.Shadowing (_, (`Builtin `Term | `Not_found), `Variable _), fragment
-    | T.Shadowing (_, (`Constant _ | `Builtin _ | `Not_found), `Constant _), fragment
-      when conf.smtlib2_6_shadow_rules ->
-      T._error env fragment (Warning_as_error w)
-
-    | Smtlib2_Ints.Restriction _, fragment
-    | Smtlib2_Reals.Restriction _, fragment
-    | Smtlib2_Reals_Ints.Restriction _, fragment
-      when conf.strict_typing ->
-      T._error env fragment (Warning_as_error w)
-
-    (* general case *)
-    | _ -> report w
+      S.error ~loc st unknown_error
+        (Obj.Extension_constructor.(name (of_val err)))
 
   (* Generate typing env from state *)
   (* ************************************************************************ *)
@@ -722,10 +1073,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
               preferred = Dolmen.Std.Expr.Ty.prop;
             });
         } in
-      let warnings = warnings {
-          strict_typing = S.strict_typing st;
-          smtlib2_6_shadow_rules = false;
-        } in
       let builtins = Dimacs.parse in
       T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer
@@ -743,10 +1090,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       let sym_infer = T.{
           infer_type_csts = false;
           infer_term_csts = No_inference;
-        } in
-      let warnings = warnings {
-          strict_typing = S.strict_typing st;
-          smtlib2_6_shadow_rules = false;
         } in
       let builtins = Dolmen_type.Base.merge [
           Ae_Core.parse;
@@ -772,10 +1115,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      let warnings = warnings {
-          strict_typing = S.strict_typing st;
-          smtlib2_6_shadow_rules = false;
-        } in
       let builtins = Dolmen_type.Base.merge [
           Decl.parse;
           Subst.parse;
@@ -795,10 +1134,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Tptp v ->
       let poly = T.Explicit in
-      let warnings = warnings {
-          strict_typing = S.strict_typing st;
-          smtlib2_6_shadow_rules = false;
-        } in
       begin match tptp_kind_of_attrs attrs with
         | Some "thf" ->
           let var_infer = T.{
@@ -881,11 +1216,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      let warnings = warnings {
-          strict_typing = S.strict_typing st;
-          smtlib2_6_shadow_rules = match v with
-            | `Latest | `V2_6 | `Poly -> true;
-        } in
       begin match (S.ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
@@ -910,15 +1240,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let typing_wrap ?attrs ?(loc=Dolmen.Std.Loc.no_loc) st ~f =
     let st = ref st in
-    let report (T.Warning (env, fg, _) as w) =
-      let loc = T.fragment_loc env fg in
-      match report_warning w with
-      | None -> ()
-      | Some pp -> st := S.warn ~loc !st "%a" pp ()
-    in
-    let env = typing_env ?attrs ~loc (warnings_aux report) !st in
-    let res = f env in
-    !st, res
+    let report warn = st := report_warning !st warn in
+    match f (typing_env ?attrs ~loc report !st) with
+    | res -> !st, res
+    | exception T.Typing_error err ->
+      let st = report_error !st err in
+      raise (S.Error st)
+
 
   (* Push&Pop *)
   (* ************************************************************************ *)
@@ -939,9 +1267,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let rec push st ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
-      if i <= 0 then
-        let env = typing_env ~loc (fun _ _ -> ()) st in
-        T._error env (Located loc) Invalid_push_n
+      if i < 0 then
+        fst @@ typing_wrap ~loc st ~f:(fun env ->
+            T._error env (Located loc) Invalid_push_n
+          )
       else begin
         let t = S.ty_state st in
         let st' = T.copy_state t.typer in
@@ -953,15 +1282,17 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let rec pop st ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
-      if i <= 0 then
-        let env = typing_env ~loc (fun _ _ -> ()) st in
-        T._error env (Located loc) Invalid_pop_n
+      if i < 0 then
+        fst @@ typing_wrap ~loc st ~f:(fun env ->
+            T._error env (Located loc) Invalid_pop_n
+          )
       else begin
         let t = S.ty_state st in
         match t.stack with
         | [] ->
-          let env = typing_env ~loc (fun _ _ -> ()) st in
-          T._error env (Located loc) Pop_with_empty_stack
+          fst @@ typing_wrap ~loc st ~f:(fun env ->
+              T._error env (Located loc) Pop_with_empty_stack
+            )
         | ty :: r ->
           let t' = { t with typer = ty; stack = r; } in
           let st' = S.set_ty_state st t' in
@@ -977,9 +1308,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     let st =
       match ty_st.logic with
       | Auto -> st
-      | Smtlib2 _ ->
-        S.warn ~loc st "Logic was already set at %a"
-          Dolmen.Std.Loc.fmt_pos ty_st.logic_loc
+      | Smtlib2 _ -> S.warn ~loc st logic_reset ty_st.logic_loc
     in
     S.set_ty_state st {
       ty_st with
@@ -998,13 +1327,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         match Dolmen_type.Logic.Smtlib2.parse s with
         | Some l -> st, l
         | None ->
-          let st = S.warn ~loc st "Unknown logic %s" s in
+          let st = S.warn ~loc st unknown_logic s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
       set_logic_aux ~loc st (Smtlib2 l)
     | _ ->
-      S.warn ~loc st
-        "Set logic is not supported for the current language"
+      S.warn ~loc st set_logic_not_supported ()
 
 
   (* Declarations *)
@@ -1334,99 +1662,99 @@ module Pipe
         st, `Done ()
       else match normalize st c with
 
-      (* Pack and includes.
-         These should have been filtered out before this point.
-         TODO: emit some kind of warning ? *)
-      | { S.descr = S.Pack _; _ } -> st, `Done ()
-      | { S.descr = S.Include _; _ } -> st, `Done ()
+        (* Pack and includes.
+           These should have been filtered out before this point.
+           TODO: emit some kind of warning ? *)
+        | { S.descr = S.Pack _; _ } -> st, `Done ()
+        | { S.descr = S.Include _; _ } -> st, `Done ()
 
-      (* State&Assertion stack management *)
-      | { S.descr = S.Reset; _ } ->
-        let st = Typer.reset st ~loc:c.S.loc () in
-        st, `Continue (simple (other_id c) c.S.loc `Reset)
-      | { S.descr = S.Pop i; _ } ->
-        let st = Typer.pop st ~loc:c.S.loc i in
-        st, `Continue (simple (other_id c) c.S.loc (`Pop i))
-      | { S.descr = S.Push i; _ } ->
-        let st = Typer.push st ~loc:c.S.loc i in
-        st, `Continue (simple (other_id c) c.S.loc (`Push i))
-      | { S.descr = S.Reset_assertions; _ } ->
-        let st = Typer.reset_assertions st ~loc:c.S.loc () in
-        st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
+        (* State&Assertion stack management *)
+        | { S.descr = S.Reset; _ } ->
+          let st = Typer.reset st ~loc:c.S.loc () in
+          st, `Continue (simple (other_id c) c.S.loc `Reset)
+        | { S.descr = S.Pop i; _ } ->
+          let st = Typer.pop st ~loc:c.S.loc i in
+          st, `Continue (simple (other_id c) c.S.loc (`Pop i))
+        | { S.descr = S.Push i; _ } ->
+          let st = Typer.push st ~loc:c.S.loc i in
+          st, `Continue (simple (other_id c) c.S.loc (`Push i))
+        | { S.descr = S.Reset_assertions; _ } ->
+          let st = Typer.reset_assertions st ~loc:c.S.loc () in
+          st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
 
-      (* Plain statements
-         TODO: allow the `plain` function to return a meaningful value *)
-      | { S.descr = S.Plain t; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Plain t))
+        (* Plain statements
+           TODO: allow the `plain` function to return a meaningful value *)
+        | { S.descr = S.Plain t; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Plain t))
 
-      (* Hypotheses and goal statements *)
-      | { S.descr = S.Prove l; _ } ->
-        let st, l = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
-        st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
+        (* Hypotheses and goal statements *)
+        | { S.descr = S.Prove l; _ } ->
+          let st, l = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
 
-      (* Hypotheses & Goals *)
-      | { S.descr = S.Clause l; _ } ->
-        let st, res = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
-        let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
-        st, `Continue stmt
-      | { S.descr = S.Antecedent t; _ } ->
-        let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
-        let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
-        st, `Continue stmt
-      | { S.descr = S.Consequent t; _ } ->
-        let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
-        let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
-        st, `Continue stmt
+        (* Hypotheses & Goals *)
+        | { S.descr = S.Clause l; _ } ->
+          let st, res = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
+          st, `Continue stmt
+        | { S.descr = S.Antecedent t; _ } ->
+          let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
+          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
+          st, `Continue stmt
+        | { S.descr = S.Consequent t; _ } ->
+          let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
+          let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
+          st, `Continue stmt
 
-      (* Other set_logics should check whether corresponding plugins are activated ? *)
-      | { S.descr = S.Set_logic s; _ } ->
-        let st = Typer.set_logic st ~loc:c.S.loc s in
-        st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
+        (* Other set_logics should check whether corresponding plugins are activated ? *)
+        | { S.descr = S.Set_logic s; _ } ->
+          let st = Typer.set_logic st ~loc:c.S.loc s in
+          st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
 
-      (* Set/Get info *)
-      | { S.descr = S.Get_info s; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Get_info s))
-      | { S.descr = S.Set_info t; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Set_info t))
+        (* Set/Get info *)
+        | { S.descr = S.Get_info s; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Get_info s))
+        | { S.descr = S.Set_info t; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Set_info t))
 
-      (* Set/Get options *)
-      | { S.descr = S.Get_option s; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Get_option s))
-      | { S.descr = S.Set_option t; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Set_option t))
+        (* Set/Get options *)
+        | { S.descr = S.Get_option s; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Get_option s))
+        | { S.descr = S.Set_option t; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Set_option t))
 
-      (* Declarations and definitions *)
-      | { S.descr = S.Defs d; _ } ->
-        let st, l = Typer.defs st ~loc:c.S.loc ~attrs:c.S.attrs d in
-        let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
-        st, `Continue (res)
-      | { S.descr = S.Decls l; _ } ->
-        let st, l = Typer.decls st ~loc:c.S.loc ~attrs:c.S.attrs l in
-        let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
-        st, `Continue (res)
+        (* Declarations and definitions *)
+        | { S.descr = S.Defs d; _ } ->
+          let st, l = Typer.defs st ~loc:c.S.loc ~attrs:c.S.attrs d in
+          let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
+          st, `Continue (res)
+        | { S.descr = S.Decls l; _ } ->
+          let st, l = Typer.decls st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
+          st, `Continue (res)
 
-      (* Smtlib's proof/model instructions *)
-      | { S.descr = S.Get_proof; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_proof)
-      | { S.descr = S.Get_unsat_core; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_unsat_core)
-      | { S.descr = S.Get_unsat_assumptions; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_unsat_assumptions)
-      | { S.descr = S.Get_model; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_model)
-      | { S.descr = S.Get_value l; _ } ->
-        let st, l = Typer.terms st ~loc:c.S.loc ~attrs:c.S.attrs l in
-        st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
-      | { S.descr = S.Get_assignment; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
-      (* Assertions *)
-      | { S.descr = S.Get_assertions; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Get_assertions)
-      (* Misc *)
-      | { S.descr = S.Echo s; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc (`Echo s))
-      | { S.descr = S.Exit; _ } ->
-        st, `Continue (simple (other_id c) c.S.loc `Exit)
+        (* Smtlib's proof/model instructions *)
+        | { S.descr = S.Get_proof; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_proof)
+        | { S.descr = S.Get_unsat_core; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_core)
+        | { S.descr = S.Get_unsat_assumptions; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_assumptions)
+        | { S.descr = S.Get_model; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_model)
+        | { S.descr = S.Get_value l; _ } ->
+          let st, l = Typer.terms st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
+        | { S.descr = S.Get_assignment; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
+        (* Assertions *)
+        | { S.descr = S.Get_assertions; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Get_assertions)
+        (* Misc *)
+        | { S.descr = S.Echo s; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc (`Echo s))
+        | { S.descr = S.Exit; _ } ->
+          st, `Continue (simple (other_id c) c.S.loc `Exit)
 
     in
     res

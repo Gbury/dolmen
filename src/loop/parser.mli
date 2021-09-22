@@ -12,13 +12,14 @@ module Pipe
 
   val parse :
     Dolmen.Std.Statement.t list -> State.t ->
-    State.t * (State.t -> Dolmen.Std.Statement.t option)
+    State.t * (State.t -> State.t * Dolmen.Std.Statement.t option)
   (** Parsing function. Reads a list of prelude statements, and the state and
       returns a tuple of the new state (including the detected input language),
       together with a statement generator. *)
 
   val expand : State.t -> Dolmen.Std.Statement.t ->
-    State.t * [ `Ok | `Gen of (State.t -> State.t -> State.t) * Dolmen.Std.Statement.t Gen.t ]
+    State.t * [ `Ok | `Gen of (State.t -> State.t -> State.t) *
+                              (State.t -> State.t * Dolmen.Std.Statement.t option) ]
   (** Expand statements (such as includes). Returns the new state, and either:
       - [ `Ok ], which means the statement can be propagated as is
       - [ `Gen (flat, g) ], if the statement expands into a generator [g]. The bool [flat]

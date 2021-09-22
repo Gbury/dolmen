@@ -1,18 +1,6 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-(* Type definition & Exceptions *)
-(* ************************************************************************* *)
-
-type perm =
-  | Allow
-  | Warn
-  | Error
-
-exception File_not_found of Dolmen.Std.Loc.full * string * string
-
-exception Input_lang_changed of Logic.language * Logic.language
-
 (* Type definition *)
 (* ************************************************************************* *)
 
@@ -66,6 +54,9 @@ type 'solve state = {
 
 type t = solve_state state
 
+exception Error of t
+
+
 (* State and locations *)
 (* ************************************************************************* *)
 
@@ -76,23 +67,41 @@ let pp_loc fmt o =
     if Dolmen.Std.Loc.is_dummy loc then ()
     else Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
 
-let error ?(code=Code.bug) ?loc _ format =
+let error ?loc _ error payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
-  Format.kfprintf (fun _ -> Code.exit code) Format.err_formatter
-    ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
+  let aux _ = Code.exit (Report.Error.code error) in
+  Format.kfprintf aux Format.err_formatter
+    ("@[<v>%a%a @[<hov>%a@]%a@]@.")
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
+    Report.Error.print (error, payload)
+    Report.Error.print_hints (error, payload)
 
-let warn ?loc st format =
+let warn ?loc st warn payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
-  let aux _ = { st with cur_warn = st.cur_warn + 1; } in
-  if st.cur_warn >= st.max_warn then
-    Format.ikfprintf aux Format.err_formatter format
-  else
-    Format.kfprintf aux Format.err_formatter
-      ("@[<v>%a%a @[<hov>" ^^ format ^^ "@]@]@.")
-      Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
-      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+  if not (Report.Warning.enabled warn) then st
+  else begin
+    if Report.Warning.fatal warn then begin
+      let aux _ = Code.exit (Report.Warning.code warn) in
+      Format.kfprintf aux Format.err_formatter
+        ("@[<v>%a%a @[<hov>%a@]%a@]@.")
+        Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+        Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Fatal Warning"
+        Report.Warning.print (warn, payload)
+        Report.Warning.print_hints (warn, payload)
+    end else begin
+      let aux _ = { st with cur_warn = st.cur_warn + 1; } in
+      if st.cur_warn >= st.max_warn then
+        aux st
+      else
+        Format.kfprintf aux Format.err_formatter
+          ("@[<v>%a%a @[<hov>%a@]%a@]@.")
+          Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+          Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+          Report.Warning.print (warn, payload)
+          Report.Warning.print_hints (warn, payload)
+    end
+  end
 
 let flush st () =
   let aux _ = { st with cur_warn = 0; } in
@@ -148,37 +157,26 @@ let prelude st =
 (* Setting language *)
 (* ************************************************************************* *)
 
+let full_mode_switch =
+  Report.Warning.mk ~code:Code.generic ~mnemonic:"full-mode-switch"
+    ~message:(fun fmt lang ->
+        Format.fprintf fmt
+          "The@ %s@ format@ does@ not@ support@ \
+           incremental@ mode,@ switching@ to@ full@ mode"
+          lang)
+    ~name:"Forced switch to full mode" ()
+
 let switch_to_full_mode lang t =
   let old_mode = input_mode t in
   let t = set_mode t `Full in
   match old_mode with
-  | Some `Incremental ->
-    warn t
-      "The@ %s@ format@ does@ not@ support@ \
-       incremental@ mode,@ switching@ to@ full@ mode"
-      lang
-  | _ -> t
-
-let set_lang_aux t l =
-  let t = { t with input_lang = Some l; } in
-  match l with
-  | Logic.Alt_ergo -> switch_to_full_mode "Alt-Ergo" t
+  | Some `Incremental -> warn t full_mode_switch lang
   | _ -> t
 
 let set_lang t l =
-  match t.input_lang with
-  | None -> set_lang_aux t l
-  | Some l' ->
-    if l = l'
-    then set_lang_aux t l
-    else raise (Input_lang_changed (l', l))
-
-(* Full state *)
-(* ************************************************************************* *)
-
-let start _ = ()
-let stop _ = ()
-
-let file_not_found ~loc ~dir ~file =
-  raise (File_not_found (loc, dir, file))
+  let t = { t with input_lang = Some l; } in
+  match l with
+  | Logic.Alt_ergo ->
+    switch_to_full_mode "Alt-Ergo" t
+  | _ -> t
 
