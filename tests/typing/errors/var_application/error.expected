@@ -1,2 +1,3 @@
 File "tests/typing/errors/var_application/error.smt2", line 2, character 24-29:
 Error Cannot apply arguments to term variable x
+Hint: This statement was parsed as a first-order statement
