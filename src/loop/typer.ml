@@ -314,7 +314,7 @@ let shadowing =
           print_reason_opt (T.binding_reason old))
     ~name:"Shadowing of identifier" ()
 
-let arith_restriction =
+let almost_linear =
   Report.Warning.mk ~code ~mnemonic:"almost-linear-expr"
     ~message:(fun fmt _ ->
         Format.fprintf fmt
@@ -865,7 +865,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Smtlib2_Ints.Restriction msg
     | Smtlib2_Reals.Restriction msg
     | Smtlib2_Reals_Ints.Restriction msg ->
-      S.warn ~loc st arith_restriction msg
+      S.warn ~loc st almost_linear msg
     | _ ->
       S.warn ~loc st unknown_warning
           (Obj.Extension_constructor.(name (of_val warn)))

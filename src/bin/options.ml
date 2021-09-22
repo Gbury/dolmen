@@ -84,6 +84,36 @@ let mode_list = [
 
 let mode_conv = Arg.enum mode_list
 
+(* Warning modifiers *)
+(* ************************************************************************ *)
+
+type warn_mod =
+  | Disable of string
+  | Enable of string
+  | Fatal of string
+  | Exact of string
+
+let warn_parser s =
+  if String.length s = 0 then
+    Error (`Msg "empty warning modifier")
+  else begin
+    match s.[0] with
+    | '@' -> Ok (Fatal (String.sub s 1 (String.length s - 1)))
+    | '-' -> Ok (Disable (String.sub s 1 (String.length s - 1)))
+    | '+' -> Ok (Enable (String.sub s 1 (String.length s - 1)))
+    | '=' -> Ok (Exact (String.sub s 1 (String.length s - 1)))
+    | _ -> Ok (Enable s)
+  end
+
+let warn_printer fmt = function
+  | Disable s -> Format.fprintf fmt "-%s" s
+  | Enable s -> Format.fprintf fmt "+%s" s
+  | Fatal s -> Format.fprintf fmt "@%s" s
+  | Exact s -> Format.fprintf fmt "=%s" s
+
+let c_warn = Arg.conv (warn_parser, warn_printer)
+let c_warn_list = Arg.list c_warn
+
 
 (* Argument converter for integer with multiplier suffix *)
 (* ************************************************************************ *)
@@ -190,6 +220,48 @@ let profiling_opts stats
       `Error (false, msg)
     end
 
+let reports_opts strict warn_modifiers =
+  let exception Jump of string in
+  let conf = Dolmen_loop.Report.Conf.mk ~default:Enabled in
+  let conf =
+    if not strict then conf
+    else Dolmen_loop.Report.Conf.fatal conf Dolmen_loop.Typer.almost_linear
+  in
+  try
+    let handle s modif = function
+      | Ok conf -> conf
+      | Error `Error_mnemonic ->
+        raise (Jump (
+            Format.asprintf
+              "the mnemonic '%s refers to an error, but only warnings can be %s."
+              s modif))
+      | Error `Unknown_mnemonic ->
+        raise (Jump (
+            Format.asprintf
+              "The mnemonic '%s' is unknown, please check the spelling." s))
+    in
+    let res =
+      List.fold_left (fun conf l ->
+          List.fold_left (fun conf -> function
+              | Disable s ->
+                handle s "disabled " @@
+                Dolmen_loop.Report.Conf.disable_mnemonic conf s
+              | Enable s ->
+                handle s "enabled" @@
+                Dolmen_loop.Report.Conf.enable_mnemonic conf s
+              | Fatal s ->
+                handle s "made fatal" @@
+                Dolmen_loop.Report.Conf.fatal_mnemonic conf s
+              | Exact s ->
+                handle s "exactly enabled" @@
+                Dolmen_loop.Report.Conf.set_enabled_mnemonic conf s
+            ) conf l
+        ) conf warn_modifiers
+    in
+    `Ok res
+  with Jump msg ->
+    `Error (false, msg)
+
 let split_input = function
   | `Stdin ->
     Sys.getcwd (), `Stdin
@@ -203,8 +275,8 @@ let mk_state
     input_lang input_mode input
     header_check header_licenses
     header_lang_version
-    type_check type_strict
-    debug context max_warn
+    type_check
+    debug context max_warn reports
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -216,7 +288,7 @@ let mk_state
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Loop.State.t = {
-    debug;
+    debug; reports;
 
     context; max_warn;
     cur_warn = 0;
@@ -230,7 +302,7 @@ let mk_state
     header_check; header_licenses; header_lang_version;
     header_state = Dolmen_loop.Headers.empty;
 
-    type_check; type_strict;
+    type_check;
     type_state = Dolmen_loop.Typer.new_state ();
 
     solve_state = ();
@@ -294,6 +366,26 @@ let gc_t =
   Term.((const gc_opts $ use_env $
          minor_heap_size $ major_heap_increment $
          space_overhead $ max_overhead $ allocation_policy))
+
+(* Warning controls *)
+(* ************************************************************************* *)
+
+let reports =
+  let docs = error_section in
+  let warns =
+    let doc = "Change the status of a warning. Accepts a list of      \
+               comma-separated modifiers of the form @mnemonic, where \
+               '@' is an (optional) modifier among '+' (default) to   \
+                enable a warning, '-' to disable a warning and '!' to \
+                make the warning fatal, and 'mnemonic' is the short   \
+               (mnemonic) name of the warning." in
+    Arg.(value  & opt_all c_warn_list [] & info ["w"; "warn"] ~docs ~doc)
+  in
+  let strict =
+    let doc = "Be strict or more lenient wrt to typing" in
+    Arg.(value & opt bool true & info ["strict"] ~doc ~docs:error_section)
+  in
+  Term.(ret (const reports_opts $ strict $ warns))
 
 
 (* Main Options parsing *)
@@ -376,10 +468,6 @@ let state =
                is done. " in
     Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
-  let strict =
-    let doc = "Be strict or more lenient wrt to typing" in
-    Arg.(value & opt bool true & info ["strict"] ~doc ~docs:error_section)
-  in
   (*
   let locs =
     let doc = "Whether to keep location information during typing. \
@@ -410,6 +498,6 @@ let state =
         gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
-        typing $ strict $ debug $ context $ max_warn)
+        typing $ debug $ context $ max_warn $ reports)
 
 

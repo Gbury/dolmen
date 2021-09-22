@@ -60,15 +60,8 @@ module Warning : sig
   val code : _ t -> Code.t
   (** Return the return code of an error. *)
 
-  val enabled : _ t -> bool
-  (** Is the warning enabled ? *)
-
-  val fatal : _ t -> bool
-  (** Is the warning fatal ? *)
-
   val mk :
     ?code:Code.t ->
-    ?enabled:bool -> ?fatal:bool ->
     mnemonic:string ->
     message:(Format.formatter -> 'a -> unit) ->
     ?hints:('a -> (Format.formatter -> unit) option) list ->
@@ -78,3 +71,52 @@ module Warning : sig
 
 end
 
+(** {2 Report configuration} *)
+
+module Conf : sig
+
+  type t
+  (** The type of configuration for reports. *)
+
+  type status =
+    | Disabled
+    | Enabled
+    | Fatal (**)
+  (** The status of a report. *)
+
+  val status : t -> _ Warning.t -> status
+  (** Status for an individual warning. *)
+
+  val mk : default:status -> t
+  (** Create a configuration with a default status for warnings. *)
+
+  val disable : t -> _ Warning.t -> t
+  (** Disable the warning. *)
+
+  val disable_mnemonic : t -> string ->
+    (t, [ `Error_mnemonic | `Unknown_mnemonic ]) result
+  (** Disable the warning identified by the given mnemonic. *)
+
+  val enable : t -> _ Warning.t -> t
+  (** Enable the warning. *)
+
+  val enable_mnemonic : t -> string ->
+    (t, [ `Error_mnemonic | `Unknown_mnemonic ]) result
+  (** Enable the warning identified by the given mnemonic. *)
+
+  val fatal : t -> _ Warning.t -> t
+  (** Make fatal the warning. *)
+
+  val fatal_mnemonic : t -> string ->
+    (t, [ `Error_mnemonic | `Unknown_mnemonic ]) result
+  (** Make fatal the warning identified by the given mnemonic. *)
+
+  val set_enabled : t -> _ Warning.t -> t
+  (** Force the warning to be exactly enabled (and not fatal). *)
+
+  val set_enabled_mnemonic : t -> string ->
+    (t, [ `Error_mnemonic | `Unknown_mnemonic ]) result
+  (** Force the warning identified by the mnemonic to be
+      exactly enabled (and not fatal). *)
+
+end
