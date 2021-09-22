@@ -42,6 +42,9 @@ let () =
     `P "Common options for the dolmen binary";
     `S Options.error_section;
     `P "Options to customize the behaviour of dolmen on errors/warnings";
+    `P "A warning can have one of three status: Disabled, Enabled, and Fatal. \
+        When disabled, a warning will be ignored, when enabled, it will be
+        printed, and when fatal, it will be transformed into an error.";
     `S Options.header_section;
     `P "Options to control the checking of headers in the input file";
     `S Options.profiling_section;

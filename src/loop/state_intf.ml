@@ -117,9 +117,6 @@ module type Typer = sig
   val typecheck : t -> bool
   (** Whether to type-check expressions. *)
 
-  val strict_typing : t -> bool
-  (** Whether to be strict about typing warnings/errors *)
-
   val ty_state : t -> ty_state
   (** Returns the typing state associated. *)
 

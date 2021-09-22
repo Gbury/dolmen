@@ -208,6 +208,8 @@ module Make(State : State_intf.Pipeline) = struct
         (* "Normal" exception case: the exn was raised by an operator, and caught
            then re-raised by the {exn} cotinuation passed to run_aux *)
         | exception Exn (st, bt, e) ->
+          (* delete alarm *)
+          let () = delete_alarm al in
           (* Flush stdout and print a newline in case the exn was
              raised in the middle of printing *)
           Format.pp_print_flush Format.std_formatter ();

@@ -72,4 +72,9 @@ module Pipe
      and type term_cst := Expr.term_cst
      and type formula := Expr.formula
 
+(* Warnings *)
+
+val almost_linear : string Report.Warning.t
+(** Almost linear warning. *)
+
 

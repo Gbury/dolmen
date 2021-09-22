@@ -41,8 +41,10 @@ let finally st e =
 let process path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
+  let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let st = State.{
       debug = false;
+      reports;
       max_warn = max_int;
       cur_warn = 0;
       context = false;
@@ -62,7 +64,6 @@ let process path opt_contents =
       header_state = Dolmen_loop.Headers.empty;
       type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;
-      type_strict = true;
       solve_state = [];
       export_lang = [];
     } in

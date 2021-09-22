@@ -10,8 +10,9 @@ type solve_state = unit
 
 type 'solve state = {
 
-  (* Debug option *)
+  (* Debug & warnings option *)
   debug             : bool;
+  reports           : Report.Conf.t;
 
   (* Warning/Error options *)
   context           : bool;
@@ -42,7 +43,6 @@ type 'solve state = {
   (* Typechecking state *)
   type_state        : ty_state;
   type_check        : bool;
-  type_strict       : bool;
 
   (* Solving state *)
   solve_state       : 'solve;
@@ -79,29 +79,28 @@ let error ?loc _ error payload =
 
 let warn ?loc st warn payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
-  if not (Report.Warning.enabled warn) then st
-  else begin
-    if Report.Warning.fatal warn then begin
-      let aux _ = Code.exit (Report.Warning.code warn) in
+  match Report.Conf.status st.reports warn with
+  | Disabled -> st
+  | Enabled ->
+    let aux _ = { st with cur_warn = st.cur_warn + 1; } in
+    if st.cur_warn >= st.max_warn then
+      aux st
+    else
       Format.kfprintf aux Format.err_formatter
         ("@[<v>%a%a @[<hov>%a@]%a@]@.")
         Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
-        Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Fatal Warning"
+        Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
         Report.Warning.print (warn, payload)
         Report.Warning.print_hints (warn, payload)
-    end else begin
-      let aux _ = { st with cur_warn = st.cur_warn + 1; } in
-      if st.cur_warn >= st.max_warn then
-        aux st
-      else
-        Format.kfprintf aux Format.err_formatter
-          ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-          Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
-          Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
-          Report.Warning.print (warn, payload)
-          Report.Warning.print_hints (warn, payload)
-    end
-  end
+
+  | Fatal ->
+    let aux _ = Code.exit (Report.Warning.code warn) in
+    Format.kfprintf aux Format.err_formatter
+      ("@[<v>%a%a @[<hov>%a@]%a@]@.")
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+      Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Fatal Warning"
+      Report.Warning.print (warn, payload)
+      Report.Warning.print_hints (warn, payload)
 
 let flush st () =
   let aux _ = { st with cur_warn = 0; } in
@@ -142,7 +141,6 @@ let ty_state { type_state; _ } = type_state
 let set_ty_state st type_state = { st with type_state; }
 
 let typecheck st = st.type_check
-let strict_typing { type_strict; _ } = type_strict
 
 let is_interactive = function
   | { input_source = `Stdin; _ } -> true
