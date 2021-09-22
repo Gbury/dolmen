@@ -10,12 +10,12 @@
     performing a fixpoint expansion.
 *)
 
+exception Sigint
+exception Out_of_time
+exception Out_of_space
+
 module Make(State : State_intf.Pipeline) : sig
   (** Concrete pipelines. *)
-
-  exception Sigint
-  exception Out_of_time
-  exception Out_of_space
 
   (** {2 Type definitions } *)
 
@@ -30,7 +30,7 @@ module Make(State : State_intf.Pipeline) : sig
   type 'st merge = 'st -> 'st -> 'st
   (** Merge function used at the end of a fixpoint to get the resulting state. *)
 
-  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a Gen.t ]
+  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * ('st -> ('st * 'a option)) ]
   (** Type used to fixpoint expanding statements such as includes. *)
 
   type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
@@ -87,7 +87,7 @@ module Make(State : State_intf.Pipeline) : sig
 
   val run :
     finally:(State.t -> (Printexc.raw_backtrace * exn) option -> State.t) ->
-    (State.t -> 'a option) -> State.t ->
+    (State.t -> State.t * 'a option) -> State.t ->
     (State.t, 'a, unit) t -> State.t
     (** Loop the evaluation of a pipeline over a generator, and starting options.
         @param finally a function called at the end of every iteration (even if

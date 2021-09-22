@@ -1,11 +1,11 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module Make(State : State_intf.Pipeline) = struct
+exception Sigint
+exception Out_of_time
+exception Out_of_space
 
-  exception Sigint
-  exception Out_of_time
-  exception Out_of_space
+module Make(State : State_intf.Pipeline) = struct
 
   (* GC alarm for time/space limits *)
   (* ************************************************************************ *)
@@ -58,10 +58,9 @@ module Make(State : State_intf.Pipeline) = struct
   (* Pipeline and execution *)
   (* ************************************************************************ *)
 
-  type 'a gen = 'a Gen.t
   type 'st merge = 'st -> 'st -> 'st
   type ('a, 'b) cont = [ `Done of 'a | `Continue of 'b ]
-  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * 'a gen ]
+  type ('st, 'a) fix = [ `Ok | `Gen of 'st merge * ('st -> 'st * 'a option) ]
   type 'st k_exn = { k : 'a. 'st -> Printexc.raw_backtrace -> exn -> 'a; }
 
   type ('st, 'a, 'b) op = {
@@ -152,11 +151,11 @@ module Make(State : State_intf.Pipeline) = struct
       end
 
   and eval_gen_fold : type st a.
-    exn: st k_exn -> (st, a, unit) t -> st -> a gen -> st =
+    exn: st k_exn -> (st, a, unit) t -> st -> (st -> st * a option) -> st =
     fun ~exn pipe st g ->
-    match g () with
-    | None -> st
-    | Some x ->
+    match g st with
+    | st, None -> st
+    | st, Some x ->
       let st', () = eval ~exn pipe st x in
       eval_gen_fold ~exn pipe st' g
     | exception e ->
@@ -166,8 +165,8 @@ module Make(State : State_intf.Pipeline) = struct
   (* Aux function to eval a pipeline on the current value of a generator. *)
   let run_aux ~exn pipe g st =
     match g st with
-    | None -> None
-    | Some x -> Some (eval ~exn pipe st x)
+    | st, None -> `Done st
+    | st, Some x -> `Continue (eval ~exn pipe st x)
     | exception e ->
       let bt = Printexc.get_raw_backtrace () in
       exn.k st bt e
@@ -178,14 +177,14 @@ module Make(State : State_intf.Pipeline) = struct
   let rec run :
     type a.
     finally:(State.t -> (Printexc.raw_backtrace * exn) option -> State.t) ->
-    (State.t -> a option) -> State.t -> (State.t, a, unit) t -> State.t
+    (State.t -> State.t * a option) -> State.t -> (State.t, a, unit) t -> State.t
     = fun ~finally g st pipe ->
       let exception Exn of State.t * Printexc.raw_backtrace * exn in
       let time = State.time_limit st in
       let size = State.size_limit st in
       let al = setup_alarm time size in
       let exn = { k = fun st bt e ->
-          (* delete alamr as soon as possible *)
+          (* delete alarm as soon as possible *)
           let () = delete_alarm al in
           (* go the the correct handler *)
           raise (Exn (st, bt, e));
@@ -195,13 +194,13 @@ module Make(State : State_intf.Pipeline) = struct
         match run_aux ~exn pipe g st with
 
         (* End of the run, yay ! *)
-        | None ->
+        | `Done st ->
           let () = delete_alarm al in
           st
 
         (* Regular case, we finished running the pipeline on one input
            value, let's get to the next one. *)
-        | Some (st', ()) ->
+        | `Continue (st', ()) ->
           let () = delete_alarm al in
           let st'' = try finally st' None with _ -> st' in
           run ~finally g st'' pipe

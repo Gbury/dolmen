@@ -97,7 +97,7 @@ module type S = sig
   (** The type of type-checking warnings. *)
 
   type builtin_symbols
-  (** The type of builint symbols for the type-checker. *)
+  (** The type of builin symbols for the type-checker. *)
 
   include Pipe_arg
     with type state := state
@@ -111,16 +111,11 @@ module type S = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
-  val print_fragment : Format.formatter -> env * 'a fragment -> unit
-  (** Print a code fragment *)
+  val report_error : state -> error -> state
+  (** Report a typing error by calling the appropriate state function. *)
 
-  val report_error : Format.formatter -> error -> unit
-  (** Report a typing error on the given formatter. *)
-
-  val report_warning : warning ->
-    (Format.formatter -> unit -> unit) option
-  (** Return a reporter for the given warning, if the warning should be
-      reported. *)
+  val report_warning : state -> warning -> state
+  (** Return a typing warning by calling the appropriate state function. *)
 
   val additional_builtins : builtin_symbols ref
   (** This reference can be modified to parse new builtin symbols. By default no
