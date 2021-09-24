@@ -30,10 +30,19 @@ type ('kind, 'param) aux = {
 type any = Any : (_, _) aux -> any
 type 'a error = ([ `Error ], 'a) aux
 type 'a warning = ([ `Warning ], 'a) aux
+type any_error = Any_err : _ error -> any_error
+type any_warning = Any_warn : _ warning -> any_warning
 
 
 (* Common functions *)
 (* ************************************************************************* *)
+
+let code report = report.code
+let name report = report.name
+let mnemonic report = report.mnemonic
+
+let print_doc fmt report =
+  Format.fprintf fmt "%t" report.doc
 
 let print fmt (report, param) =
   report.message fmt param
@@ -45,6 +54,7 @@ let print_hints fmt (report, param) =
       | Some pp ->
         Format.fprintf fmt "@\n@[<hov 2>Hint: %t@]" pp
     ) report.hints
+
 
 
 (* Creation and fetching *)
@@ -75,7 +85,8 @@ let mk_error
 
 let mk_warning
     ?(code=Code.bug) ~mnemonic ~message ?hints ~name ?doc () : _ warning =
-  let id = incr warning_count; !warning_count in
+  let id = !warning_count in
+  incr warning_count;
   mk_aux ~kind:(Warning { id; }) ~code ~mnemonic ~message ?hints ~name ?doc ()
 
 
@@ -86,10 +97,36 @@ module Warning = struct
 
   type 'a t = 'a warning
 
-  let print = print
-  let print_hints = print_hints
   let mk = mk_warning
-  let code t = t.code
+  let code = code
+  let name = name
+  let mnemonic = mnemonic
+  let print = print
+  let print_doc = print_doc
+  let print_hints = print_hints
+
+  module Status = struct
+
+    type t =
+      | Disabled
+      | Enabled
+      | Fatal
+
+    let print fmt = function
+      | Disabled -> Format.fprintf fmt "disabled"
+      | Enabled -> Format.fprintf fmt "enabled"
+      | Fatal -> Format.fprintf fmt "fatal"
+
+    let to_string t =
+      Format.asprintf "%a" print t
+
+    let merge s s' =
+      match s, s' with
+      | Disabled, Disabled -> Disabled
+      | _, Fatal | Fatal, _ -> Fatal
+      | _, _ -> Enabled
+
+  end
 
 end
 
@@ -100,10 +137,13 @@ module Error = struct
 
   type 'a t = 'a error
 
-  let print = print
-  let print_hints = print_hints
   let mk = mk_error
-  let code t = t.code
+  let code = code
+  let name = name
+  let mnemonic = mnemonic
+  let print = print
+  let print_doc = print_doc
+  let print_hints = print_hints
 
   let user_interrupt : _ t =
     mk ~code:Code.limit ~mnemonic:"user-interrupt"
@@ -145,29 +185,83 @@ module Error = struct
 
 end
 
+(* Reports *)
+(* ************************************************************************* *)
+
+module T = struct
+
+  type all = [ `All ]
+  type err = [ `Error of any_error ]
+  type warn = [ `Warning of any_warning ]
+
+  type t = [ all | err | warn ]
+
+  let name = function
+    | `All -> "All warnings"
+    | `Error Any_err e -> name e
+    | `Warning Any_warn w -> name w
+
+  let mnemonic = function
+    | `All -> "all"
+    | `Error Any_err e -> mnemonic e
+    | `Warning Any_warn w -> mnemonic w
+
+  let kind = function
+    | `All -> "group"
+    | `Error _ -> "error"
+    | `Warning _ -> "warning"
+
+  let category = function
+    | `All -> "General"
+    | `Error Any_err e -> Code.category (code e)
+    | `Warning Any_warn w -> Code.category (code w)
+
+  let doc = function
+    | `Error Any_err e -> e.doc
+    | `Warning Any_warn w -> w.doc
+    | `All ->
+      Format.dprintf "%a" Format.pp_print_text
+        "The group of all warnings. Its main use is when specifying \
+         a set of warnings to enable/disable/make fatal when using the \
+         '-w' option of Dolmen."
+
+  let find_mnemonic = function
+    | "all" -> Some `All
+    | mnemonic ->
+      begin match Hashtbl.find_opt mnemonics_table mnemonic with
+        | Some (Any ({ kind = Warning _; _ } as w)) ->
+          Some (`Warning (Any_warn w))
+        | Some (Any ({ kind = Error _; _ } as e)) ->
+          Some (`Error (Any_err e))
+        | None -> None
+      end
+
+  let list () =
+    Hashtbl.fold (fun _ any acc ->
+        let elt =
+          match any with
+          | Any ({ kind = Warning _; _ } as w) ->
+            `Warning (Any_warn w)
+          | Any ({ kind = Error _; _ } as e) ->
+            `Error (Any_err e)
+        in
+        elt :: acc
+      ) mnemonics_table [`All]
+
+end
+
 (* Configuration *)
 (* ************************************************************************* *)
 
 module Conf = struct
 
-  type status =
-    | Disabled
-    | Enabled
-    | Fatal
-
   type t = {
-    warnings : status array;
+    warnings : Warning.Status.t array;
   }
 
   let mk ~default =
     locked := true;
     { warnings = Array.make !warning_count default; }
-
-  let merge s s' =
-    match s, s' with
-    | Disabled, Disabled -> Disabled
-    | _, Fatal | Fatal, _ -> Fatal
-    | _, _ -> Enabled
 
   let _copy t =
     { warnings = Array.copy t.warnings; }
@@ -179,47 +273,26 @@ module Conf = struct
     conf.warnings.(i) <- status
 
   let _update_inplace conf i status =
-    _set_inplace conf i (merge status (_get conf i))
+    _set_inplace conf i (Warning.Status.merge status (_get conf i))
 
   let status conf (warning : _ warning) =
     let (Warning { id; }) = warning.kind in
     _get conf id
 
-  let update f param conf (warning : _ warning) =
-    let conf = _copy conf in
-    let (Warning { id; }) = warning.kind in
-    f conf id param;
-    conf
+  let update f param conf = function
+    | `All ->
+      for i = 0 to Array.length conf.warnings do
+        f conf i param
+      done;
+      conf
+    | `Warning (Any_warn { kind = Warning { id; }; _}) ->
+      let conf = _copy conf in
+      f conf id param;
+      conf
 
   let fatal conf w = update _update_inplace Fatal conf w
   let enable conf w = update _update_inplace Enabled conf w
   let disable conf w = update _set_inplace Disabled conf w
   let set_enabled conf w = update _set_inplace Enabled conf w
-
-  let update_mnemonic f status conf = function
-    | "all" ->
-      for i = 0 to Array.length conf.warnings do
-        f conf i status
-      done;
-      Ok conf
-    | mnemonic ->
-      begin match Hashtbl.find_opt mnemonics_table mnemonic with
-        | Some (Any { kind = Warning { id; }; _ }) ->
-          f conf id status;
-          Ok conf
-        | Some (Any { kind = Error _; _ }) ->
-          Error `Error_mnemonic
-        | None ->
-          Error `Unknown_mnemonic
-      end
-
-  let fatal_mnemonic conf =
-    update_mnemonic _update_inplace Fatal (_copy conf)
-  let enable_mnemonic conf =
-    update_mnemonic _update_inplace Enabled (_copy conf)
-  let disable_mnemonic conf =
-    update_mnemonic _set_inplace Disabled (_copy conf)
-  let set_enabled_mnemonic conf =
-    update_mnemonic _set_inplace Enabled (_copy conf)
 
 end

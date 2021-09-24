@@ -172,7 +172,10 @@ end
 (* Header errors & warnings *)
 (* ************************************************************************ *)
 
-let code = Code.create "on header errors"
+let code =
+  Code.create
+    ~category:"Header"
+    ~descr:"on header errors"
 
 let missing_header_error =
   Report.Error.mk ~code ~mnemonic:"header-missing"
