@@ -13,12 +13,15 @@ val compare : t -> t -> int
 
 (** {2 Manipulating error codes} *)
 
-val create : string -> t
+val create : category:string -> descr:string -> t
 (** Create a new exit code. The string given is used as a description
     for the exit code. The create code is active by default. *)
 
 val descr : t -> int * string
 (** Return the actual integer associated to the code, *)
+
+val category : t -> string
+(** Category (used mainly for report documentation). *)
 
 val errors : unit -> t list
 (** Return the list of all created error exit codes. *)

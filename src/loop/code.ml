@@ -7,6 +7,7 @@
 type t = {
   code : int; (* codes are unique for each exit code *)
   descr : string;
+  category : string;
   mutable abort : bool;
 }
 
@@ -36,13 +37,14 @@ let errors = ref []
 (* The create function should only be used for error exit codes,
    the ok exit code (i.e. [0]) is create manually and not included
    in the errors list. *)
-let create descr =
+let create ~category ~descr =
   incr counter;
   let code = !counter in
   (* cmdliner uses retcode 124 for cli errors *)
   assert (0 < code && code < 124);
   let t = {
     code; descr;
+    category;
     abort = false;
   } in
   errors := t :: !errors;
@@ -52,7 +54,7 @@ let create descr =
 let errors () = List.rev !errors
 
 let descr t = t.code, t.descr
-
+let category t = t.category
 
 (* Special values *)
 (* ************************************************************************* *)
@@ -60,20 +62,34 @@ let descr t = t.code, t.descr
 let ok = {
   code = 0;
   descr = "the success exit code";
+  category = "N/A";
   abort = false;
 }
 
 let bug = {
   code = 125;
   descr = "on unexpected internal errors (bugs)";
+  category = "Internal";
   abort = false;
 }
 
 (* Predefined values *)
 (* ************************************************************************* *)
 
-let generic = create "on generic error"
-let limit = create "upon reaching limits (time, memory, etc..)"
-let parsing = create "on parsing errors"
-let typing = create "on typing errore"
+let generic =
+  create
+    ~category:"Generic"
+    ~descr:"on generic error"
+let limit =
+  create
+    ~category:"Limits"
+    ~descr:"upon reaching limits (time, memory, etc..)"
+let parsing =
+  create
+    ~category:"Parsing"
+    ~descr:"on parsing errors"
+let typing =
+  create
+    ~category:"Typing"
+    ~descr:"on typing errors"
 

@@ -12,6 +12,21 @@ let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
 let profiling_section = "PROFILING"
 
+(* Main commands *)
+(* ************************************************************************* *)
+
+type cmd =
+  | Run of {
+      state : Loop.State.t;
+    }
+  | List_reports of {
+      conf : Dolmen_loop.Report.Conf.t;
+    }
+  | Doc of {
+      report : Dolmen_loop.Report.T.t;
+      conf : Dolmen_loop.Report.Conf.t;
+    }
+
 (* Color options *)
 (* ************************************************************************* *)
 
@@ -84,32 +99,64 @@ let mode_list = [
 
 let mode_conv = Arg.enum mode_list
 
+
+(* Mnemonic converter *)
+(* ************************************************************************ *)
+
+let mnemonic_parser s =
+  match Dolmen_loop.Report.T.find_mnemonic s with
+  | Some ((`All | `Error _ | `Warning _) as res) ->
+    Ok res
+  | None ->
+    Error (`Msg (
+        Format.asprintf
+          "@;the mnemonic '%s' is unknown, please check the spelling." s))
+
+let mnemonic_printer fmt t =
+  let s = Dolmen_loop.Report.T.mnemonic t in
+  Format.fprintf fmt "%s" s
+
+let mnemonic_conv = Arg.conv (mnemonic_parser, mnemonic_printer)
+
+
 (* Warning modifiers *)
 (* ************************************************************************ *)
 
 type warn_mod =
-  | Disable of string
-  | Enable of string
-  | Fatal of string
-  | Exact of string
+  [ `Disable | `Enable | `Fatal | `Non_fatal ] *
+  [ Dolmen_loop.Report.T.all | Dolmen_loop.Report.T.warn ]
 
 let warn_parser s =
   if String.length s = 0 then
     Error (`Msg "empty warning modifier")
   else begin
+    let aux change modif s =
+      match mnemonic_parser s with
+      | Ok ((`All | `Warning _) as res) -> Ok (modif, res)
+      | Error _ as res -> res
+      | Ok `Error _ ->
+        Error (`Msg (
+            Format.asprintf
+              "@;the mnemonic '%s' refers to an error, \
+               but only warnings can be %s" s change))
+    in
     match s.[0] with
-    | '@' -> Ok (Fatal (String.sub s 1 (String.length s - 1)))
-    | '-' -> Ok (Disable (String.sub s 1 (String.length s - 1)))
-    | '+' -> Ok (Enable (String.sub s 1 (String.length s - 1)))
-    | '=' -> Ok (Exact (String.sub s 1 (String.length s - 1)))
-    | _ -> Ok (Enable s)
+    | '@' -> aux "made fatal" `Fatal (String.sub s 1 (String.length s - 1))
+    | '-' -> aux "disabled" `Disable (String.sub s 1 (String.length s - 1))
+    | '+' -> aux "enabled" `Enable (String.sub s 1 (String.length s - 1))
+    | '=' -> aux "enabled" `Non_fatal (String.sub s 1 (String.length s - 1))
+    | _ -> aux "enabled" `Enable s
   end
 
-let warn_printer fmt = function
-  | Disable s -> Format.fprintf fmt "-%s" s
-  | Enable s -> Format.fprintf fmt "+%s" s
-  | Fatal s -> Format.fprintf fmt "@%s" s
-  | Exact s -> Format.fprintf fmt "=%s" s
+let warn_printer fmt (modif, r) =
+  let c =
+    match modif with
+    | `Disable -> '-'
+    | `Enable -> '+'
+    | `Fatal -> '@'
+    | `Non_fatal -> '='
+  in
+  Format.fprintf fmt "%c%s" c (Dolmen_loop.Report.T.mnemonic r)
 
 let c_warn = Arg.conv (warn_parser, warn_printer)
 let c_warn_list = Arg.list c_warn
@@ -221,46 +268,23 @@ let profiling_opts stats
     end
 
 let reports_opts strict warn_modifiers =
-  let exception Jump of string in
   let conf = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let conf =
     if not strict then conf
-    else Dolmen_loop.Report.Conf.fatal conf Dolmen_loop.Typer.almost_linear
+    else Dolmen_loop.Report.Conf.fatal conf
+        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.almost_linear))
   in
-  try
-    let handle s modif = function
-      | Ok conf -> conf
-      | Error `Error_mnemonic ->
-        raise (Jump (
-            Format.asprintf
-              "the mnemonic '%s refers to an error, but only warnings can be %s."
-              s modif))
-      | Error `Unknown_mnemonic ->
-        raise (Jump (
-            Format.asprintf
-              "The mnemonic '%s' is unknown, please check the spelling." s))
-    in
-    let res =
-      List.fold_left (fun conf l ->
-          List.fold_left (fun conf -> function
-              | Disable s ->
-                handle s "disabled " @@
-                Dolmen_loop.Report.Conf.disable_mnemonic conf s
-              | Enable s ->
-                handle s "enabled" @@
-                Dolmen_loop.Report.Conf.enable_mnemonic conf s
-              | Fatal s ->
-                handle s "made fatal" @@
-                Dolmen_loop.Report.Conf.fatal_mnemonic conf s
-              | Exact s ->
-                handle s "exactly enabled" @@
-                Dolmen_loop.Report.Conf.set_enabled_mnemonic conf s
-            ) conf l
-        ) conf warn_modifiers
-    in
-    `Ok res
-  with Jump msg ->
-    `Error (false, msg)
+  let res =
+    List.fold_left (fun conf l ->
+        List.fold_left (fun conf -> function
+            | `Disable, w -> Dolmen_loop.Report.Conf.disable conf w
+            | `Enable, w -> Dolmen_loop.Report.Conf.enable conf w
+            | `Fatal, w -> Dolmen_loop.Report.Conf.fatal conf w
+            | `Non_fatal, w -> Dolmen_loop.Report.Conf.set_enabled conf w
+          ) conf l
+      ) conf warn_modifiers
+  in
+  `Ok res
 
 let split_input = function
   | `Stdin ->
@@ -268,7 +292,7 @@ let split_input = function
   | `File f ->
     Filename.dirname f, `File (Filename.basename f)
 
-let mk_state
+let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
@@ -388,7 +412,7 @@ let reports =
   Term.(ret (const reports_opts $ strict $ warns))
 
 
-(* Main Options parsing *)
+(* State term *)
 (* ************************************************************************* *)
 
 let state =
@@ -494,10 +518,38 @@ let state =
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
   in
-  Term.(const mk_state $ profiling_t $
+  Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
         typing $ debug $ context $ max_warn $ reports)
 
+
+(* List command term *)
+(* ************************************************************************* *)
+
+let cli =
+  let aux state list doc =
+    match list, doc with
+    | false, None ->
+      `Ok (Run { state; })
+    | false, Some report ->
+      `Ok (Doc { report; conf = state.reports; })
+    | true, None ->
+      `Ok (List_reports { conf = state.reports; })
+    | true, Some _ ->
+      `Error (false,
+              "at most one of --list and --doc might be \
+               present on the command line")
+  in
+  let list =
+    let doc = "List all reports (i.e. warnings and errors),
+               that dolmen can emit." in
+    Arg.(value & flag & info ["list"] ~doc)
+  in
+  let doc =
+    let doc = "The warning or error of which to show the documentation." in
+    Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic")
+  in
+  Term.(ret (const aux $ state $ list $ doc))
 
