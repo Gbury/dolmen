@@ -62,7 +62,10 @@ let handle_exn st = function
 let finally st e =
   match e with
   | None -> st
-  | Some exn ->
+  | Some (bt,exn) ->
+    (* Print the backtrace if requested *)
+    if Printexc.backtrace_status () then
+      Printexc.print_raw_backtrace stdout bt;
     let res = handle_exn st exn in
     raise (Finished res)
 
