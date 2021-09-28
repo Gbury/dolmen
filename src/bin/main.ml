@@ -8,7 +8,11 @@ let handle_exn st exn =
 let finally st e =
   match e with
   | None -> st
-  | Some exn -> handle_exn st exn
+  | Some (bt,exn) ->
+    (* Print the backtrace if requested *)
+    if Printexc.backtrace_status () then
+      Printexc.print_raw_backtrace stdout bt;
+    handle_exn st exn
 
 let debug_pre_pipe st c =
   if st.Loop.State.debug then

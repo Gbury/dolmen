@@ -177,7 +177,7 @@ module Make(State : State_intf.Pipeline) = struct
      (so all expanded values count toward the same limit). *)
   let rec run :
     type a.
-    finally:(State.t -> exn option -> State.t) ->
+    finally:(State.t -> (Printexc.raw_backtrace * exn) option -> State.t) ->
     (State.t -> a option) -> State.t -> (State.t, a, unit) t -> State.t
     = fun ~finally g st pipe ->
       let exception Exn of State.t * Printexc.raw_backtrace * exn in
@@ -213,11 +213,8 @@ module Make(State : State_intf.Pipeline) = struct
              raised in the middle of printing *)
           Format.pp_print_flush Format.std_formatter ();
           Format.pp_print_flush Format.err_formatter ();
-          (* Print the backtrace if requested *)
-          if Printexc.backtrace_status () then
-            Printexc.print_raw_backtrace stdout bt;
           (* Go on running the rest of the pipeline. *)
-          let st' = finally st (Some e) in
+          let st' = finally st (Some (bt,e)) in
           run ~finally g st' pipe
 
         (* Exception case for exceptions, that can realisically occur for all
@@ -233,11 +230,8 @@ module Make(State : State_intf.Pipeline) = struct
              raised in the middle of printing *)
           Format.pp_print_flush Format.std_formatter ();
           Format.pp_print_flush Format.err_formatter ();
-          (* Print the backtrace if requested *)
-          if Printexc.backtrace_status () then
-            Printexc.print_raw_backtrace stdout bt;
           (* Go on running the rest of the pipeline. *)
-          let st' = finally st (Some e) in
+          let st' = finally st (Some (bt,e)) in
           run ~finally g st' pipe
       end
 
