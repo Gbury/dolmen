@@ -737,7 +737,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Some Alt_ergo ->
       let poly = T.Flexible in
       let var_infer = T.{
-          infer_type_vars = false;
+          infer_type_vars = true;
           infer_term_vars = No_inference;
         } in
       let sym_infer = T.{
