@@ -51,7 +51,7 @@ module Make
     | Implicit
     | Flexible
 
-  (* The source of a type wildcard. *)
+  (* The source of a wildcard. *)
   type sym_inference_source = {
     symbol : Id.t;
     symbol_loc : Loc.t;
@@ -291,7 +291,8 @@ module Make
         Ty.Var.t * wildcard_source * Ty.t * Ty.t list -> Ast.t err
     | Inference_scope_escape :
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
-    | Unbound_wildcards : Ty.Var.t list * T.Var.t list * T.t -> Ast.t err
+    | Unbound_type_wildcards :
+        (Ty.Var.t * wildcard_source list) list * T.t -> Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
@@ -911,9 +912,9 @@ module Make
 
   (* "pop" a wildcard out of the set of watched wildcards *)
   let pop_wildcard state =
-  let w, l = E.choose state.wildcards in
-  state.wildcards <- E.remove w state.wildcards;
-  w, l
+    let w, l = E.choose state.wildcards in
+    state.wildcards <- E.remove w state.wildcards;
+    w, l
 
   (* ensure all wildcards are set *)
   let rec set_wildcards_and_return_free_wildcards state acc =
@@ -921,7 +922,15 @@ module Make
     | exception Not_found -> acc
     | w, l ->
       let shapes = List.map (fun { shape; src = _; bound = _; } -> shape) l in
-      let acc = if try_set_wildcard_shape w shapes then acc else (w :: acc) in
+      let acc =
+        if try_set_wildcard_shape w shapes then acc
+        else begin
+          let sources =
+            List.map (fun { src; shape = _; bound = _; } -> src) l
+          in
+          ((w, sources) :: acc)
+        end
+      in
       set_wildcards_and_return_free_wildcards state acc
 
 
@@ -1976,11 +1985,11 @@ module Make
   let parse env ast =
     let res = parse_prop env ast in
     let free_wildcards =
-      _wrap2 env ast set_wildcards_and_return_free_wildcards  env.st []
+      _wrap2 env ast set_wildcards_and_return_free_wildcards env.st []
     in
     begin match free_wildcards with
       | [] -> res
-      | tys -> _error env (Ast ast) (Unbound_wildcards (tys, [], res))
+      | tys -> _error env (Ast ast) (Unbound_type_wildcards (tys, res))
     end
 
 end

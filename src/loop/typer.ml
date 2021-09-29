@@ -197,6 +197,36 @@ let rec print_wildcard_loc env fmt = function
       (pp_wrap Dolmen.Std.Id.print) variable
       Dolmen.Std.Loc.fmt_pos loc
 
+let rec print_wildcard_origin_loc env fmt = function
+  | T.Arg_of src
+  | T.Ret_of src -> print_wildcard_origin_loc env fmt src
+  | T.From_source ast ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+    Format.fprintf fmt
+      "a@ source@ wildcard@ located@ at@ %a"
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Added_type_argument ast ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env ast.loc) in
+    Format.fprintf fmt
+      "the@ implicit@ type@ argument@ to@ provide@ to@ \
+       the@ polymorphic@ application@ at@ %a"
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Symbol_inference { symbol; symbol_loc; inferred_ty = _; } ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
+    Format.fprintf fmt
+      "the@ type@ for@ the@ symbol@ %a,@ located@ at@ %a"
+      (pp_wrap Dolmen.Std.Id.print) symbol
+      Dolmen.Std.Loc.fmt_pos loc
+  | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
+    let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
+    Format.fprintf fmt
+      "the@ type@ for@ the@ variable@ %a,@ located@ at@ %a"
+      (pp_wrap Dolmen.Std.Id.print) variable
+      Dolmen.Std.Loc.fmt_pos loc
+
+
+
+
 (* Hint printers *)
 (* ************************************************************************ *)
 
@@ -232,7 +262,8 @@ let poly_hint (c, expected, actual) =
          arguments when none are given in an application.")
   | _ -> None
 
-let literal_hint id =
+let literal_hint b id =
+  if not b then None else
   match (id : Dolmen.Std.Id.t) with
   | { ns = Value Integer; name = Simple _; } ->
     Some (
@@ -511,12 +542,12 @@ let cannot_tag_ttype =
 
 let unbound_identifier =
   Report.Error.mk ~code ~mnemonic:"unbound-id"
-    ~message:(fun fmt (id, _) ->
+    ~message:(fun fmt (id, _, _) ->
         Format.fprintf fmt "Unbound identifier:@ %a"
           (pp_wrap Dolmen.Std.Id.print) id)
     ~hints:[
-      (fun (id, _) -> literal_hint id);
-      (fun (_, msg) -> text_hint msg);]
+      (fun (id, _, lit_hint) -> literal_hint lit_hint id);
+      (fun (_, msg, _) -> text_hint msg);]
     ~name:"Unbound identifier" ()
 
 let multiple_declarations =
@@ -639,23 +670,24 @@ let inference_scope_escape =
           print_reason_opt var_reason)
     ~name:"Scope escape from a type due to inference" ()
 
-let unbound_wildcards =
+let unbound_type_wildcards =
   Report.Error.mk ~code ~mnemonic:"inference-incomplete"
-    ~message:(fun fmt (tys, ts) ->
-        match tys, ts with
-        | tys, [] ->
-          let pp_sep fmt () = Format.fprintf fmt ",@ " in
-          Format.fprintf fmt "The following variables are not bound:@ %a"
-            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
-        | [], ts ->
-          let pp_sep fmt () = Format.fprintf fmt ",@ " in
-          Format.fprintf fmt "The following variables are not bound:@ %a"
-            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts
-        | _, _ ->
-          let pp_sep fmt () = Format.fprintf fmt ",@ " in
-          Format.fprintf fmt "The following variables are not bound:@ %a,@ %a"
-            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) tys
-            (Format.pp_print_list ~pp_sep (pp_wrap Dolmen.Std.Expr.Print.id)) ts)
+    ~message:(fun fmt (env, l) ->
+        let pp_sep fmt () = Format.fprintf fmt "@ " in
+        let pp_src fmt src =
+          Format.fprintf fmt "@[<hov>%a@]" (print_wildcard_origin_loc env) src
+        in
+        let pp_wild fmt (w, srcs) =
+          Format.fprintf fmt "%a, @[<v>%a@]"
+            (pp_wrap Dolmen.Std.Expr.Print.id) w
+            (Format.pp_print_list ~pp_sep pp_src) srcs
+        in
+        Format.fprintf fmt
+          "@[<v 2>@[<hov>%a@]:@ %a@]"
+          Format.pp_print_text
+          "Top-level formulas should be closed, but the following type variables are free"
+          (Format.pp_print_list ~pp_sep pp_wild) l
+      )
     ~name:"Under-specified type inference" ()
 
 let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
@@ -921,7 +953,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Cannot_tag_ttype ->
       S.error ~loc st cannot_tag_ttype ()
     | T.Cannot_find (id, msg) ->
-      S.error ~loc st unbound_identifier (id, msg)
+      let lit_hint =
+        match S.input_lang st with
+        | Some Smtlib2 _ -> true
+        | _ -> false
+      in
+      S.error ~loc st unbound_identifier (id, msg, lit_hint)
     | T.Forbidden_quantifier ->
       S.error ~loc st forbidden_quant ()
     | T.Type_var_in_type_constructor ->
@@ -944,8 +981,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
       S.error ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
-    | T.Unbound_wildcards (tys, ts, _) ->
-      S.error ~loc st unbound_wildcards (tys, ts)
+    | T.Unbound_type_wildcards (tys, _) ->
+      S.error ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
       S.error ~loc st unhandled_ast (env, fragment)
     (* Tptp Arithmetic errors *)

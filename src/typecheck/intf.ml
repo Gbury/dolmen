@@ -321,7 +321,8 @@ module type Formulas = sig
         the wildcard variable [w] (which comes from [w_src]), was instantiated
         with a type that would lead to the variable [v] from escaping its scope;
         [reason] is the reason of the binding for [v]. *)
-    | Unbound_wildcards : ty_var list * term_var list * term -> Dolmen.Std.Term.t err
+    | Unbound_type_wildcards :
+        (ty_var * wildcard_source list) list * term -> Dolmen.Std.Term.t err
     (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
