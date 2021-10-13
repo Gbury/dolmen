@@ -317,7 +317,7 @@ command:
       S.funs_def_rec ~loc [id, vars, args, ret, body] }
   /* The syntax technically defines this reduction as having l and l' be the same length,
       but that isn't easily expressible in menhir, so the check is delayed */
-  | OPEN DEFINE_FUNS_REC OPEN l1=function_dec+ CLOSE OPEN l2=term+ CLOSE OPEN
+  | OPEN DEFINE_FUNS_REC OPEN l1=function_dec+ CLOSE OPEN l2=term+ CLOSE CLOSE
     { let res =
         try List.map2 (fun (id, vars, args, ret) body -> id, vars, args, ret, body) l1 l2
         with Invalid_argument _ -> assert false
