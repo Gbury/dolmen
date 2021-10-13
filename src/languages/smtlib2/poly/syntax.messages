@@ -1364,7 +1364,7 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN 
 ##
 ## Ends in an error in state: 435.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ # ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE . CLOSE [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE
@@ -1378,7 +1378,7 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN 
 ##
 ## Ends in an error in state: 433.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN . nonempty_list(term) CLOSE CLOSE [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN
@@ -1392,7 +1392,7 @@ input: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDER
 ##
 ## Ends in an error in state: 432.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE . OPEN nonempty_list(term) CLOSE CLOSE [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE
@@ -1406,7 +1406,7 @@ input: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
 ## Ends in an error in state: 430.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN
@@ -1421,7 +1421,7 @@ input: OPEN DEFINE_FUNS_REC UNDERSCORE
 ##
 ## Ends in an error in state: 429.
 ##
-## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC
@@ -1957,7 +1957,7 @@ input: OPEN UNDERSCORE
 ## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ # ]
 ## command -> OPEN . DEFINE_FUN function_def CLOSE [ # ]
 ## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ # ]
-## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ # ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ # ]
 ## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ # ]
 ## command -> OPEN . ECHO STR CLOSE [ # ]
 ## command -> OPEN . EXIT CLOSE [ # ]
@@ -3122,7 +3122,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN S
 ##
 ## Ends in an error in state: 244.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE . OPEN [ OPEN EOF ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE . CLOSE [ OPEN EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE
@@ -3136,7 +3136,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN U
 ##
 ## Ends in an error in state: 242.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN . nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN . nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN
@@ -3150,7 +3150,7 @@ file: OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNDERS
 ##
 ## Ends in an error in state: 241.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE . OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE . OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE
@@ -3253,7 +3253,7 @@ file: OPEN DEFINE_FUNS_REC OPEN UNDERSCORE
 ##
 ## Ends in an error in state: 210.
 ##
-## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC OPEN
@@ -3268,7 +3268,7 @@ file: OPEN DEFINE_FUNS_REC UNDERSCORE
 ##
 ## Ends in an error in state: 209.
 ##
-## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DEFINE_FUNS_REC
@@ -4158,7 +4158,7 @@ file: OPEN UNDERSCORE
 ## command -> OPEN . DECLARE_SORT SYMBOL NUM CLOSE [ OPEN EOF ]
 ## command -> OPEN . DEFINE_FUN function_def CLOSE [ OPEN EOF ]
 ## command -> OPEN . DEFINE_FUN_REC function_def CLOSE [ OPEN EOF ]
-## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE OPEN [ OPEN EOF ]
+## command -> OPEN . DEFINE_FUNS_REC OPEN nonempty_list(__anonymous_0) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN EOF ]
 ## command -> OPEN . DEFINE_SORT SYMBOL OPEN list(SYMBOL) CLOSE sort CLOSE [ OPEN EOF ]
 ## command -> OPEN . ECHO STR CLOSE [ OPEN EOF ]
 ## command -> OPEN . EXIT CLOSE [ OPEN EOF ]
