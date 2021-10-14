@@ -2,6 +2,13 @@
 next
 ----
 
+### Parsing
+
+* Fix bug in SMTLIB syntax (v2.6 and poly), where the
+  define-funs-rec syntax construction expected an open
+  paren at the end instead of a closing paren
+
+
 ### Typing
 
 - Removed the typing of real and extended bitvector literals
@@ -37,6 +44,9 @@ next
   in signifcant speedup on large problem.
 - Added some convenience modules for testing and profiling
   (Timer and Stats)
+- The pipeline now delegates the task of printing backtraces
+  for excpetions to the caller/finally argument of the run
+  function
 
 
 v0.6
