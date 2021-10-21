@@ -190,9 +190,11 @@ module type Formulas = sig
       trigger on *)
 
   type _ warn +=
-    | Unused_type_variable : ty_var -> Dolmen.Std.Term.t warn
+    | Unused_type_variable :
+        [ `Quantified | `Letbound ] * ty_var -> Dolmen.Std.Term.t warn
     (** Unused quantified type variable *)
-    | Unused_term_variable : term_var -> Dolmen.Std.Term.t warn
+    | Unused_term_variable :
+        [ `Quantified | `Letbound ] * term_var -> Dolmen.Std.Term.t warn
     (** Unused quantified term variable *)
     | Error_in_attribute : exn -> Dolmen.Std.Term.t warn
     (** An error occurred wile parsing an attribute *)
