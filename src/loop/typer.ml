@@ -122,6 +122,10 @@ let decl_loc d =
   | Abstract { loc; _ }
   | Inductive { loc; _ } -> loc
 
+let print_bound_kind fmt = function
+  | `Quantified -> Format.fprintf fmt "quantified"
+  | `Letbound -> Format.fprintf fmt "let-bound"
+
 let print_reason fmt r =
   match (r : T.reason) with
   | Builtin ->
@@ -307,19 +311,19 @@ let code = Code.typing
 
 let unused_type_variable =
   Report.Warning.mk ~code ~mnemonic:"unused-type-var"
-    ~message:(fun fmt v ->
+    ~message:(fun fmt (kind, v) ->
         Format.fprintf fmt
-          "Quantified type variable `%a` is unused"
-          Dolmen.Std.Expr.Print.ty_var v)
-    ~name:"Unused type variable" ()
+          "The following %a type variable is unused: '%a'"
+          print_bound_kind kind Dolmen.Std.Expr.Print.id v)
+    ~name:"Unused bound type variable" ()
 
 let unused_term_variable =
   Report.Warning.mk ~code ~mnemonic:"unused-term-var"
-    ~message:(fun fmt v ->
+    ~message:(fun fmt (kind, v) ->
         Format.fprintf fmt
-          "Quantified term variable `%a` is unused"
-          Dolmen.Std.Expr.Print.term_var v)
-    ~name:"Unused term variable" ()
+          "The following %a term variable is unused: `%a`"
+          print_bound_kind kind Dolmen.Std.Expr.Print.id v)
+    ~name:"Unused bound term variable" ()
 
 let error_in_attribute =
   Report.Warning.mk ~code ~mnemonic:"error-in-attr"
@@ -884,10 +888,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st multiple_declarations (id, old)
 
     (* warnings *)
-    | T.Unused_type_variable v ->
-      S.warn ~loc st unused_type_variable v
-    | T.Unused_term_variable v ->
-      S.warn ~loc st unused_term_variable v
+    | T.Unused_type_variable (kind, v) ->
+      S.warn ~loc st unused_type_variable (kind, v)
+    | T.Unused_term_variable (kind, v) ->
+      S.warn ~loc st unused_term_variable (kind, v)
     | T.Error_in_attribute exn ->
       S.warn ~loc st error_in_attribute exn
     | T.Superfluous_destructor _ ->

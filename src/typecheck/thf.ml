@@ -225,10 +225,12 @@ module Make
   type _ warn = ..
 
   type _ warn +=
-    | Unused_type_variable : Ty.Var.t -> Ast.t warn
-    (* Unused quantified type variable *)
-    | Unused_term_variable : T.Var.t -> Ast.t warn
-    (* Unused quantified term variable *)
+    | Unused_type_variable :
+        [ `Quantified | `Letbound ]  * Ty.Var.t -> Ast.t warn
+    (* Unused bound type variable *)
+    | Unused_term_variable :
+        [ `Quantified | `Letbound ] * T.Var.t -> Ast.t warn
+    (* Unused bound term variable *)
     | Error_in_attribute : exn -> Ast.t warn
     (* An error occurred wile parsing an attribute *)
     | Superfluous_destructor : Id.t * Id.t * T.Const.t -> Ast.t warn
@@ -801,20 +803,20 @@ module Make
   (* Typing explanation *)
   (* ************************************************************************ *)
 
-  let _unused_type env v =
+  let _unused_type env kind v =
     match E.find v env.type_locs with
     (* Variable bound or inferred *)
     | Bound (_, t) | Inferred (_, t) ->
-      _warn env (Ast t) (Unused_type_variable v)
+      _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
     | Builtin | Declared _ | Defined _ ->
       assert false
 
-  let _unused_term env v =
+  let _unused_term env kind v =
     match F.find v env.term_locs with
     (* Variable bound or inferred *)
     | Bound (_, t) | Inferred (_, t) ->
-      _warn env (Ast t) (Unused_term_variable v)
+      _warn env (Ast t) (Unused_term_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
     | Builtin | Declared _ | Defined _ ->
       assert false
@@ -1069,27 +1071,29 @@ module Make
   let used_var_tag = Tag.create ()
 
   (* Emit warnings for quantified variables that are unused *)
-  let check_used_ty_var env v =
+  let check_used_ty_var ~kind env v =
     match Ty.Var.get_tag v used_var_tag with
     | Some () -> Ty.Var.unset_tag v used_var_tag
-    | None -> _unused_type env v
+    | None -> _unused_type env kind v
 
-  let check_used_term_var env v =
+  let check_used_term_var ~kind env v =
     match T.Var.get_tag v used_var_tag with
     | Some () -> T.Var.unset_tag v used_var_tag
-    | None -> _unused_term env v
+    | None -> _unused_term env kind v
 
   (* Wrappers for creating binders *)
   let mk_let env ast mk l body =
-    List.iter (fun (v, _) -> check_used_term_var env v) l;
+    List.iter (fun (v, _) ->
+        check_used_term_var ~kind:`Letbound env v
+      ) l;
     _wrap2 env ast mk l body
 
   let mk_quant env ast mk (ty_vars, t_vars) body =
     if not env.quants then
       _error env (Ast ast) Forbidden_quantifier
     else begin
-      List.iter (check_used_ty_var env) ty_vars;
-      List.iter (check_used_term_var env) t_vars;
+      List.iter (check_used_ty_var ~kind:`Quantified env) ty_vars;
+      List.iter (check_used_term_var ~kind:`Quantified env) t_vars;
       _wrap2 env ast mk (ty_vars, t_vars) body
     end
 
