@@ -1,4 +1,18 @@
 
+(** AE Integer Arithmetic *)
+module Ae: sig
+
+  module Int : sig
+    module Tff
+        (Type : Tff_intf.S)
+        (Ty : Dolmen.Intf.Ty.Ae_Int with type t := Type.Ty.t)
+        (T : Dolmen.Intf.Term.Ae_Int with type t := Type.T.t) : sig
+
+      val parse : Type.builtin_symbols
+    end
+  end
+end
+
 (** Smtlib Integer and Real Arithmetic *)
 module Smtlib2 : sig
 

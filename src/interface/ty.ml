@@ -158,9 +158,8 @@ module type Ae_Base = sig
 
 end
 
-
-(** Signature required by types for typing tptp *)
-module type Ae_Arith = sig
+(** Signature required by types for typing ae's integer arithmetic *)
+module type Ae_Int = sig
 
   type t
   (** The type of types. *)

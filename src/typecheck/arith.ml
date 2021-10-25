@@ -2,6 +2,55 @@
 module Id = Dolmen.Std.Id
 module Term = Dolmen.Std.Term
 
+(* Ae arithmetic *)
+(* ************************************************************************ *)
+module Ae = struct
+
+  module Int = struct
+    module Tff
+        (Type : Tff_intf.S)
+        (Ty : Dolmen.Intf.Ty.Ae_Int with type t := Type.Ty.t)
+        (T : Dolmen.Intf.Term.Ae_Int with type t := Type.T.t) = struct
+
+      let parse env s =
+        match s with
+        (* Types *)
+        | Type.Builtin Term.Int ->
+          `Ty (Base.app0 (module Type) env s Ty.int)
+
+        (* Literals *)
+        | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.mk name))
+
+        (* Arithmetic *)
+        | Type.Builtin Term.Minus ->
+          `Term (Base.term_app1 (module Type) env s T.minus)
+        | Type.Builtin Term.Add ->
+          `Term (Base.term_app2 (module Type) env s T.add)
+        | Type.Builtin Term.Sub ->
+          `Term (Base.term_app2 (module Type) env s T.sub)
+        | Type.Builtin Term.Mult ->
+          `Term (Base.term_app2 (module Type) env s T.mul)
+        | Type.Builtin Term.Div ->
+          `Term (Base.term_app2 (module Type) env s T.div)
+        | Type.Builtin Term.Mod ->
+          `Term (Base.term_app2 (module Type) env s T.rem)
+        | Type.Builtin Term.Lt ->
+          `Term (Base.term_app2 (module Type) env s T.lt)
+        | Type.Builtin Term.Leq ->
+          `Term (Base.term_app2 (module Type) env s T.le)
+        | Type.Builtin Term.Gt ->
+          `Term (Base.term_app2 (module Type) env s T.gt)
+        | Type.Builtin Term.Geq ->
+          `Term (Base.term_app2 (module Type) env s T.ge)
+
+        (* Catch-all *)
+        | _ -> `Not_found
+
+    end
+  end
+end
+
 (* Smtlib arithmetic (integer and reals) *)
 (* ************************************************************************ *)
 
@@ -958,20 +1007,6 @@ module Tptp = struct
 
 end
 
-(* Ae arithmetic *)
-(* ************************************************************************ *)
-(*
-module Ae = struct
-
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
-                                      and type ty := Type.Ty.t) = struct
-
-  end
-end
-*)
 (* Zf arithmetic *)
 (* ************************************************************************ *)
 

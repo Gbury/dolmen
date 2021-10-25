@@ -620,19 +620,73 @@ module type Ae_Base = sig
   val _false : t
   (** The symbol for [false] *)
 
+  val neg : t -> t
+  (** Negation. *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val _and : t list -> t
+  (** Disjunction of formulas *)
+
+  val imply : t -> t -> t
+  (** Implication *)
+
+  val equiv : t -> t -> t
+  (** Equivalence *)
+
+  val xor : t -> t -> t
+  (** Exclusive disjunction. *)
+
+  val ite : t -> t -> t -> t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
+
+  val neq : t -> t -> t
+  (** Disequality. *)
+
 end
 
 (** Minimum required to type ae's arith *)
-module type Ae_Arith = sig
+module type Ae_Int = sig
 
   type t
   (** The type of terms *)
 
-  type ty
-  (** The type of types. *)
+  val mk : string -> t
+  (** Integer literals *)
 
-  val ty : t -> ty
-  (** Type of a term. *)
+  val minus : t -> t
+  (** Arithmetic unary minus/negation. *)
+
+  val add : t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub : t -> t -> t
+  (** Arithmetic substraction *)
+
+  val mul : t -> t -> t
+  (** Arithmetic multiplication *)
+
+  val div : t -> t -> t
+  (** Euclidian division. *)
+
+  val rem : t -> t -> t
+  (** Euclidian integer remainder. *)
+
+  val lt : t -> t -> t
+  (** Arithmetic "less than" comparison. *)
+
+  val le : t -> t -> t
+  (** Arithmetic "less or equal" comparison. *)
+
+  val gt : t -> t -> t
+  (** Arithmetic "greater than" comparison. *)
+
+  val ge : t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
 
 end
 
@@ -984,7 +1038,7 @@ module type Smtlib_Int = sig
   (** Euclidian division. See Smtlib theory for a full description. *)
 
   val rem : t -> t -> t
-  (** Euclidiane integer remainder See Smtlib theory for a full description. *)
+  (** Euclidian integer remainder See Smtlib theory for a full description. *)
 
   val abs : t -> t
   (** Arithmetic absolute value. *)

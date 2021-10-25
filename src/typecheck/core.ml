@@ -12,6 +12,9 @@ module Ae = struct
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
 
+    let mk_or a b = T._or [a; b]
+    let mk_and a b = T._and [a; b]
+
     let parse env s =
       match s with
 
@@ -29,9 +32,42 @@ module Ae = struct
       | Type.Builtin Ast.False ->
         `Term (Base.app0 (module Type) env s T._false)
 
-      (* Terms connectors *)
+      (* Boolean operators *)
+      | Type.Builtin Ast.Not ->
+        `Term (Base.term_app1 (module Type) env s T.neg)
+      | Type.Builtin Ast.And ->
+        `Term (Base.term_app_left (module Type) env s mk_and)
+      | Type.Builtin Ast.Or ->
+        `Term (Base.term_app_left (module Type) env s mk_or)
+      | Type.Builtin Ast.Xor ->
+        `Term (Base.term_app_left (module Type) env s T.xor)
+      | Type.Builtin Ast.Imply ->
+        `Term (Base.term_app_right (module Type) env s T.imply)
+      | Type.Builtin Ast.Equiv ->
+        `Term (Base.term_app_right (module Type) env s T.equiv)
+
+      (* If-then-else *)
+      | Type.Builtin Ast.Ite ->
+        `Term (
+          Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
+              let cond = Type.parse_prop env a in
+              let then_ = Type.parse_term env b in
+              let else_ = Type.parse_term env c in
+              T.ite cond then_ else_
+          )
+        )
+
+      (* Equality *)
       | Type.Builtin Ast.Eq ->
         `Term (Base.term_app2 (module Type) env s T.eq)
+      | Type.Builtin Ast.Distinct ->
+        `Term (
+          fun _ast args ->
+            let args = List.map (Type.parse_term env) args in
+            match args with
+            | [x; y] -> T.neq x y
+            | _ -> T.distinct args
+        )
 
       | _ -> `Not_found
 
@@ -39,7 +75,7 @@ module Ae = struct
 
 end
 
-(* Alt-ergo builtins *)
+(* Dimacs builtins *)
 (* ************************************************************************ *)
 
 module Dimacs = struct

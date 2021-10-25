@@ -23,6 +23,9 @@ module Subst = Dolmen_type.Def.Subst(T)(struct
 module Ae_Core =
   Dolmen_type.Core.Ae.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Ae_Ints =
+  Dolmen_type.Arith.Ae.Int.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Int)
 
 (* Dimacs builtin *)
 module Dimacs =
@@ -1134,6 +1137,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         } in
       let builtins = Dolmen_type.Base.merge [
           Ae_Core.parse;
+          Ae_Ints.parse;
           Decl.parse; Subst.parse;
           additional_builtins
         ] in
