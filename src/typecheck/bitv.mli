@@ -1,5 +1,23 @@
 
 
+
+(** Smtlib bitvector builtins *)
+module Ae : sig
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Bitv with type t := Type.T.t) : sig
+
+    type _ Type.err +=
+      | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+
+    val parse : Type.builtin_symbols
+
+  end
+
+end
+
 (** Smtlib bitvector builtins *)
 module Smtlib2 : sig
 

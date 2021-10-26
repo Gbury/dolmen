@@ -6,48 +6,89 @@ module Term = Dolmen.Std.Term
 (* ************************************************************************ *)
 module Ae = struct
 
-  module Int = struct
-    module Tff
-        (Type : Tff_intf.S)
-        (Ty : Dolmen.Intf.Ty.Ae_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Ae_Int with type t := Type.T.t) = struct
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
+                                        and type ty := Type.Ty.t) = struct
+
+      type _ Type.err +=
+      | Expected_arith_type : Type.Ty.t -> Term.t Type.err
+      | Cannot_apply_to : Type.Ty.t -> Term.t Type.err
+
+      let _invalid env ast ty _ =
+        Type._error env (Ast ast) (Cannot_apply_to ty)
+
+      let dispatch1 env (mk_int, mk_real) ast t =
+        let ty = T.ty t in
+        if Ty.(equal int) ty then mk_int t
+        else if Ty.(equal real) ty then mk_real t
+        else begin
+          Type._error env (Ast ast) (Expected_arith_type ty)
+        end
+
+      let dispatch2 env (mk_int, mk_real) ast a b =
+        let ty = T.ty a in
+        if Ty.(equal int) ty then mk_int a b
+        else if Ty.(equal real) ty then mk_real a b
+        else begin
+          Type._error env (Ast ast) (Expected_arith_type ty)
+        end
 
       let parse env s =
         match s with
         (* Types *)
         | Type.Builtin Term.Int ->
           `Ty (Base.app0 (module Type) env s Ty.int)
+        | Type.Builtin Term.Real ->
+          `Ty (Base.app0 (module Type) env s Ty.real)
 
         (* Literals *)
         | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
-          `Term (Base.app0 (module Type) env s (T.mk name))
+          `Term (Base.app0 (module Type) env s (T.Int.mk name))
+        | Type.Id { Id.ns = Value Real; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.Real.mk name))
 
         (* Arithmetic *)
         | Type.Builtin Term.Minus ->
-          `Term (Base.term_app1 (module Type) env s T.minus)
+          `Term (Base.term_app1_ast (module Type) env s
+            (dispatch1 env (T.Int.minus, T.Real.minus)))
         | Type.Builtin Term.Add ->
-          `Term (Base.term_app2 (module Type) env s T.add)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.add, T.Real.add)))
         | Type.Builtin Term.Sub ->
-          `Term (Base.term_app2 (module Type) env s T.sub)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.sub, T.Real.sub)))
         | Type.Builtin Term.Mult ->
-          `Term (Base.term_app2 (module Type) env s T.mul)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.mul, T.Real.mul)))
         | Type.Builtin Term.Div ->
-          `Term (Base.term_app2 (module Type) env s T.div)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.div_e, T.Real.div)))
         | Type.Builtin Term.Mod ->
-          `Term (Base.term_app2 (module Type) env s T.rem)
+          `Term (Base.term_app2 (module Type) env s T.Int.rem_e)
+        (*
+        | Type.Builtin Term.Int_pow ->
+          `Term (Base.term_app2 (module Type) env s T.Int.pow)
+        | Type.Builtin Term.Real_pow ->
+          `Term (Base.term_app2 (module Type) env s T.Real.pow)
+        *)
         | Type.Builtin Term.Lt ->
-          `Term (Base.term_app2 (module Type) env s T.lt)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.lt, T.Real.lt)))
         | Type.Builtin Term.Leq ->
-          `Term (Base.term_app2 (module Type) env s T.le)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.le, T.Real.le)))
         | Type.Builtin Term.Gt ->
-          `Term (Base.term_app2 (module Type) env s T.gt)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.gt, T.Real.gt)))
         | Type.Builtin Term.Geq ->
-          `Term (Base.term_app2 (module Type) env s T.ge)
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.ge, T.Real.ge)))
 
         (* Catch-all *)
         | _ -> `Not_found
 
-    end
   end
 end
 

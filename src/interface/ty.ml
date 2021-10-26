@@ -158,14 +158,31 @@ module type Ae_Base = sig
 
 end
 
-(** Signature required by types for typing ae's integer arithmetic *)
-module type Ae_Int = sig
+(** Signature required by types for typing ae's arithmetic *)
+module type Ae_Arith = sig
 
   type t
-  (** The type of types. *)
+  (** The type of types *)
 
   val int : t
-  (** The type of integers. *)
+  (** The type of integers *)
+
+  val real : t
+  (** The type of reals *)
+
+  val equal : t -> t -> bool
+  (** Equality on types. *)
+
+end
+
+(** Signature required by types for typing ae's bitvectors *)
+module type Ae_Bitv = sig
+
+  type t
+  (** The type of types *)
+
+  val bitv : int -> t
+  (** Create a fixed size bitvector type. *)
 
 end
 
@@ -238,7 +255,7 @@ module type Smtlib_Real = sig
 
 end
 
-(** Signature required for types for typing smtlib real_int arithmetic. *)
+(** Signature required by types for typing smtlib real_int arithmetic. *)
 module type Smtlib_Real_Int = sig
 
   include Smtlib_Int
@@ -257,7 +274,7 @@ module type Smtlib_Real_Int = sig
 
 end
 
-(** Signature required for types for typing smtlib arrays *)
+(** Signature required by types for typing smtlib arrays *)
 module type Smtlib_Array = sig
 
   type t
@@ -281,7 +298,7 @@ module type Smtlib_Array = sig
 
 end
 
-(** Signature required for types for typing smtlib bitvectors *)
+(** Signature required by types for typing smtlib bitvectors *)
 module type Smtlib_Bitv = sig
 
   type t
@@ -292,7 +309,7 @@ module type Smtlib_Bitv = sig
 
 end
 
-(** Signature required for types for typing smtlib bitvectors *)
+(** Signature required by types for typing smtlib bitvectors *)
 module type Smtlib_Float = sig
 
   type t
@@ -321,7 +338,7 @@ module type Smtlib_Float = sig
 
 end
 
-(* Signature required for types for typing the smtlib string theory *)
+(* Signature required by types for typing the smtlib string theory *)
 module type Smtlib_String = sig
 
   type t

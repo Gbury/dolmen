@@ -649,14 +649,13 @@ module type Ae_Base = sig
 
 end
 
-(** Minimum required to type ae's arith *)
-module type Ae_Int = sig
+module type Ae_Arith_Common = sig
 
   type t
   (** The type of terms *)
 
   val mk : string -> t
-  (** Integer literals *)
+  (** Literals *)
 
   val minus : t -> t
   (** Arithmetic unary minus/negation. *)
@@ -670,11 +669,8 @@ module type Ae_Int = sig
   val mul : t -> t -> t
   (** Arithmetic multiplication *)
 
-  val div : t -> t -> t
-  (** Euclidian division. *)
-
-  val rem : t -> t -> t
-  (** Euclidian integer remainder. *)
+  (* val pow : t -> t -> t *)
+  (** Arithmetic exponentiation *)
 
   val lt : t -> t -> t
   (** Arithmetic "less than" comparison. *)
@@ -687,6 +683,58 @@ module type Ae_Int = sig
 
   val ge : t -> t -> t
   (** Arithmetic "greater or equal" comparison. *)
+
+end
+
+(** Minimum required to type ae's arith *)
+module type Ae_Arith = sig
+
+  type t
+  (** The type of terms. *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Get the type of a term. *)
+
+  module Int : sig
+    include Ae_Arith_Common with type t := t
+
+    val div_e : t -> t -> t
+    (** Euclidian division quotient *)
+
+    val rem_e : t -> t -> t
+    (** Euclidian division remainder *)
+
+  end
+
+  module Real : sig
+    include Ae_Arith_Common with type t := t
+
+    val div : t -> t -> t
+    (** Exact division on reals. *)
+  end
+
+end
+
+(** Minimum required to type ae's bitvectors *)
+module type Ae_Bitv = sig
+
+  type t
+  (** The type of terms *)
+
+  val mk : string -> t
+  (** Create a bitvector litteral from a string representation.
+      The string should only contain characters '0' or '1'. *)
+
+  val concat : t -> t -> t
+  (** Bitvector concatenation. *)
+
+  val extract : int -> int -> t -> t
+  (** Bitvector extraction, using in that order,
+      the start and then end the position of the
+      bitvector to extract. *)
 
 end
 

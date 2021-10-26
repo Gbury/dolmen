@@ -2,15 +2,25 @@
 (** AE Integer Arithmetic *)
 module Ae: sig
 
-  module Int : sig
-    module Tff
-        (Type : Tff_intf.S)
-        (Ty : Dolmen.Intf.Ty.Ae_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Ae_Int with type t := Type.T.t) : sig
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
+                                        and type ty := Type.Ty.t) : sig
 
-      val parse : Type.builtin_symbols
-    end
+    type _ Type.err +=
+      | Expected_arith_type : Type.Ty.t -> Dolmen.Std.Term.t Type.err
+      (** Error raised when an arithmetic type was expected (i.e. either
+          int or real), but another type was found. *)
+      | Cannot_apply_to : Type.Ty.t -> Dolmen.Std.Term.t Type.err
+      (** Raised when an arithmetic symbol is applied to an arithmetic
+          type that cannot support the given operation (e.g. $quotient
+          on integers). *)
+    (** Additional errors specific to arithmetic typing. *)
+
+    val parse : Type.builtin_symbols
   end
+
 end
 
 (** Smtlib Integer and Real Arithmetic *)
