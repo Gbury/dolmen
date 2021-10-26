@@ -26,6 +26,9 @@ module Ae_Core =
 module Ae_Arith =
   Dolmen_type.Arith.Ae.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Ae_Arrays =
+  Dolmen_type.Arrays.Ae.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Ae_Bitv =
   Dolmen_type.Bitv.Ae.Tff(T)
   (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
@@ -1144,6 +1147,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           additional_builtins;
           Ae_Core.parse;
           Ae_Arith.parse;
+          Ae_Arrays.parse;
           Ae_Bitv.parse;
         ] in
       T.empty_env ~order:First_order

@@ -175,6 +175,17 @@ module type Ae_Arith = sig
 
 end
 
+(** Signature required by types for typing smtlib arrays *)
+module type Ae_Array = sig
+
+  type t
+  (** The type of types *)
+
+  val array : t -> t -> t
+  (** The type of functionnal arrays from one type to another. *)
+
+end
+
 (** Signature required by types for typing ae's bitvectors *)
 module type Ae_Bitv = sig
 

@@ -718,6 +718,21 @@ module type Ae_Arith = sig
 
 end
 
+module type Ae_Array = sig
+
+  type t
+  (** The type of terms *)
+
+  val select : t -> t -> t
+  (** [select arr idx] creates the get operation on functionnal
+        array [arr] for index [idx]. *)
+
+  val store : t -> t -> t -> t
+  (** [store arr idx value] creates the set operation on
+      functional array [arr] for value [value] at index [idx]. *)
+
+end
+
 (** Minimum required to type ae's bitvectors *)
 module type Ae_Bitv = sig
 

@@ -1,6 +1,30 @@
 
 module Id = Dolmen.Std.Id
 
+(* Ae arrays *)
+(* ************************************************************************ *)
+
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Array with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Array with type t := Type.T.t) = struct
+
+    let parse env s =
+      match s with
+      | Type.Id { name = Simple "Array"; ns = Sort } ->
+        `Ty (Base.ty_app2 (module Type) env s Ty.array)
+      | Type.Id { name = Simple "select"; ns = Term } ->
+        `Term (Base.term_app2 (module Type) env s T.select)
+      | Type.Id { name = Simple "store"; ns = Term } ->
+        `Term (Base.term_app3 (module Type) env s T.store)
+      | _ -> `Not_found
+  end
+
+end
+
+
 (* Smtlib arrays *)
 (* ************************************************************************ *)
 
