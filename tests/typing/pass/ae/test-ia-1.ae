@@ -1,8 +1,5 @@
 
-logic q : int
-logic p : int
-logic b : int
-logic a : int
+logic q,p,b,a : int
 
 axiom a1: forall x:int. x*0 = 0
 axiom a2: forall x:int. 0*x = 0

@@ -712,6 +712,14 @@ let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
           print_fragment (env, fragment))
     ~name:"Unhandled AST fragment" ()
 
+let bad_farray_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-farray-arity"
+    ~message:(fun fmt _ ->
+        Format.fprintf fmt "Functional array types in Alt-Ergo expect either one or two type \
+        parameters.")
+    ~hints:[text_hint]
+    ~name:"Bad functional array arity" ()
+
 let expected_arith_type =
   Report.Error.mk ~code ~mnemonic:"arith-type-expected"
     ~message:(fun fmt (ty, _) ->
@@ -1005,6 +1013,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
       S.error ~loc st unhandled_ast (env, fragment)
+    (* Alt-Ergo Functional Array errors *)
+    | Ae_Arrays.Bad_farray_arity ->
+      S.error ~loc st bad_farray_arity ""
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
       S.error ~loc st expected_arith_type (ty, "")

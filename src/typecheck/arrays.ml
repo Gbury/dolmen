@@ -11,10 +11,23 @@ module Ae = struct
       (Ty : Dolmen.Intf.Ty.Ae_Array with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Array with type t := Type.T.t) = struct
 
+    type _ Type.err +=
+      | Bad_farray_arity : Dolmen.Std.Term.t Type.err
+
     let parse env s =
       match s with
       | Type.Id { name = Simple "farray"; ns = Term } ->
-        `Ty (Base.ty_app2 (module Type) env s Ty.array)
+        `Ty (
+          fun ast args ->
+            Base.ty_app2 (module Type) env s Ty.array ast
+              begin match args with
+                | [_] ->
+                  let int_ty = Dolmen_std.Term.builtin Dolmen_std.Term.Int () in
+                  (int_ty :: args)
+                | [_; _] -> args
+                | _ -> Type._error env (Ast ast) Bad_farray_arity
+              end
+        )
       | Type.Builtin Array_get ->
         `Term (Base.term_app2 (module Type) env s T.select)
       | Type.Builtin Array_set ->

@@ -7,6 +7,12 @@ module Ae : sig
       (Ty : Dolmen.Intf.Ty.Smtlib_Array with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) : sig
 
+    type _ Type.err +=
+      | Bad_farray_arity : Dolmen.Std.Term.t Type.err
+      (** Raised when an array is parametrized
+          with other than one or two parameters. *)
+    (** Errors for array type-checking. *)
+
     val parse : Type.builtin_symbols
   end
 
