@@ -15,11 +15,9 @@ module Ae = struct
       match s with
       | Type.Id { name = Simple "farray"; ns = Term } ->
         `Ty (Base.ty_app2 (module Type) env s Ty.array)
-      | Type.Builtin Array_get
-      | Type.Id { name = Simple "select"; ns = Term } ->
+      | Type.Builtin Array_get ->
         `Term (Base.term_app2 (module Type) env s T.select)
-      | Type.Builtin Array_set
-      | Type.Id { name = Simple "store"; ns = Term } ->
+      | Type.Builtin Array_set ->
         `Term (Base.term_app3 (module Type) env s T.store)
       | _ -> `Not_found
   end
