@@ -69,6 +69,10 @@ module Ae = struct
             | _ -> T.distinct args
         )
 
+      (* Ignore the AC symbol *)
+      | Type.Id id when Id.equal id Id.ac_symbol ->
+        `Tags (fun _ast _args -> [])
+
       | _ -> `Not_found
 
   end
