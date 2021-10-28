@@ -12,10 +12,9 @@ module Ae: sig
       | Expected_arith_type : Type.Ty.t -> Dolmen.Std.Term.t Type.err
       (** Error raised when an arithmetic type was expected (i.e. either
           int or real), but another type was found. *)
-      | Cannot_apply_to : Type.Ty.t -> Dolmen.Std.Term.t Type.err
-      (** Raised when an arithmetic symbol is applied to an arithmetic
-          type that cannot support the given operation (e.g. $quotient
-          on integers). *)
+      | Incompatible_Arith_Types : Type.Ty.t * Type.Ty.t  -> Dolmen.Std.Term.t Type.err
+      (** Raised when a binary application that expects two values of the same
+          arithmetic type receives two values of different arithmetic types. *)
     (** Additional errors specific to arithmetic typing. *)
 
     val parse : Type.builtin_symbols

@@ -13,55 +13,29 @@ module Ae = struct
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
 
-    let parse_int env ast s =
-      match int_of_string s with
-      | i when i >= 0 -> i
-      | _ ->
-        Type._error env (Ast ast)
-          (Type.Expected ("a positive integer", None))
-      | exception Failure _ ->
-        Type._error env (Ast ast)
-          (Type.Expected ("a positive integer", None))
-
     let parse_binary env s ast =
-      match Misc.Bitv.parse_binary s with
-      | s -> T.mk s
+      match String.iter Misc.Bitv.check_bin s with
+      | () -> T.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
-
-    let indexed2 env mk i_s j_s ast =
-      let i = parse_int env ast i_s in
-      let j = parse_int env ast j_s in
-      mk i j
 
     let parse env s =
       match s with
 
       (* Bitvector sort *)
-      | Type.Id { Id.ns = Sort; name = Indexed { basename; indexes; }; } as symbol ->
-        Base.parse_indexed basename indexes (function
-            | "BitVec" -> `Unary (function n_s ->
-                `Ty (Base.app0_ast (module Type) env symbol (fun ast ->
-                    Ty.bitv (parse_int env ast n_s))))
-            | _ -> `Not_indexed
-          ) ~k:(fun _ -> `Not_found)
-          ~err:(Base.bad_ty_index_arity (module Type) env)
+      | Type.Builtin (Bitv n) ->
+        `Ty (Base.app0 (module Type) env s (Ty.bitv n))
 
       (* Bitvector litterals *)
-      | Type.Id { ns = Value Binary; name = Simple name; } ->
+      | Type.Id { ns = Value Bitvector; name = Simple name; } ->
         `Term (Base.app0_ast (module Type) env s (parse_binary env name))
 
       (* Bitvector operators *)
-      | Type.Id { ns = Term; name = Simple "concat"; } ->
+      | Type.Builtin Bitv_concat ->
         `Term (Base.term_app2 (module Type) env s T.concat)
-      | Type.Id { ns = Term; name = Indexed { basename; indexes; } } as symbol ->
-        Base.parse_indexed basename indexes (function
-          | "extract" -> `Binary (fun i_s j_s ->
-            `Term (Base.term_app1_ast (module Type) env symbol
-                      (indexed2 env T.extract i_s j_s)))
-          | _ -> `Not_indexed)
-        ~err:(Base.bad_term_index_arity (module Type) env)
-        ~k:(function () -> `Not_found)
+      | Type.Builtin (Bitv_extract (l, r)) ->
+        `Term (Base.term_app1 (module Type) env s (T.extract l r))
+
       | _ -> `Not_found
 
   end

@@ -92,7 +92,7 @@
     | RIGHTBR -> reserved "}"
     | SLASH -> reserved "/"
     | POW -> reserved "**"
-    | POWDOT -> reserved "*."
+    | POWDOT -> reserved "**."
     | THEN -> reserved "then"
     | TIMES -> reserved "*"
     | TRUE -> reserved "true"
@@ -117,7 +117,7 @@ let signed_integer = ['-' '+']? integer
 let exp = ['e' 'E'] signed_integer
 let real_exp = digit+ exp
 let decimal = (digit+ '.' digit*) | (digit* '.' digit+)
-let real_dec = decimal exp
+let real_dec = decimal | decimal exp
 let real = real_exp | real_dec
 let hex = digit | ['a'-'f''A'-'F']
 let hex_exp = ['p' 'P'] signed_integer

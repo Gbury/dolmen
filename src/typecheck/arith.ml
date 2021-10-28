@@ -14,26 +14,27 @@ module Ae = struct
 
       type _ Type.err +=
       | Expected_arith_type : Type.Ty.t -> Term.t Type.err
-      | Cannot_apply_to : Type.Ty.t -> Term.t Type.err
-
-      let _invalid env ast ty _ =
-        Type._error env (Ast ast) (Cannot_apply_to ty)
+      | Incompatible_Arith_Types : Type.Ty.t * Type.Ty.t -> Term.t Type.err
 
       let dispatch1 env (mk_int, mk_real) ast t =
         let ty = T.ty t in
-        if Ty.(equal int) ty then mk_int t
-        else if Ty.(equal real) ty then mk_real t
-        else begin
-          Type._error env (Ast ast) (Expected_arith_type ty)
-        end
+        match Ty.view ty with
+        | `Int -> mk_int t
+        | `Real -> mk_real t
+        | _ -> Type._error env (Ast ast) (Expected_arith_type ty)
 
-      let dispatch2 env (mk_int, mk_real) ast a b =
-        let ty = T.ty a in
-        if Ty.(equal int) ty then mk_int a b
-        else if Ty.(equal real) ty then mk_real a b
-        else begin
-          Type._error env (Ast ast) (Expected_arith_type ty)
-        end
+      let dispatch2 ?(strict = true) env (mk_int, mk_real) ast a b =
+        let tya = T.ty a in
+        let tyb = T.ty b in
+        match Ty.view tya, Ty.view tyb with
+        | `Int, `Int -> mk_int a b
+        | `Real, `Real -> mk_real a b
+        | (`Real, `Int | `Int, `Real) when not strict -> mk_real a b
+        | (`Real, `Int | `Int, `Real) ->
+          Type._error env (Ast ast) (Incompatible_Arith_Types (tya, tyb))
+        | _ ->
+          Type._error env (Ast ast) (Expected_arith_type tyb)
+
 
       let parse env s =
         match s with

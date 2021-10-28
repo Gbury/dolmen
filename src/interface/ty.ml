@@ -170,12 +170,18 @@ module type Ae_Arith = sig
   val real : t
   (** The type of reals *)
 
-  val equal : t -> t -> bool
-  (** Equality on types. *)
+  type view = private [>
+    | `Int
+    | `Real
+  ]
+  (** Partial view for types. *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
 
 end
 
-(** Signature required by types for typing smtlib arrays *)
+(** Signature required by types for typing ae arrays *)
 module type Ae_Array = sig
 
   type t

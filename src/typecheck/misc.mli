@@ -55,6 +55,10 @@ module Bitv : sig
   (** Excpetion raised by functions in this module when a non-valid
       character is encountered in the parsing functions. *)
 
+  val check_bin : char -> unit
+  (** [check_bin c] Checks if [c] is '0' or '1', if it's neither,
+      raises [Invalid_char c].*)
+
   val parse_binary : string -> string
   (** Parse a string of the form "#bXXXXXXX" (with X a binary
       character, i.e. either '1' or '0'), into a binary

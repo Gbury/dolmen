@@ -1855,7 +1855,7 @@ module Term = struct
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
             mk' ~builtin:(Builtin.Bitv_extract (i, j))
               (Format.asprintf "bitv_extract_%d_%d" i j) []
-              [Ty.bitv n] (Ty.bitv (i - j + 1))
+              [Ty.bitv n] (Ty.bitv (j - i + 1))
           )
 
       let repeat =

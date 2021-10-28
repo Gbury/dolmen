@@ -31,7 +31,7 @@ module Ae_Arrays =
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Ae_Bitv =
   Dolmen_type.Bitv.Ae.Tff(T)
-  (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 
 (* Dimacs builtin *)
 module Dimacs =
@@ -715,12 +715,19 @@ let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
 let expected_arith_type =
   Report.Error.mk ~code ~mnemonic:"arith-type-expected"
     ~message:(fun fmt (ty, _) ->
-        Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-          (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-          "Tptp arithmetic symbols are only polymorphic over the arithmetic \
-           types $int, $rat and $real.")
+        Format.fprintf fmt "Arithmetic type expected but got@ %a.@"
+          (pp_wrap Dolmen.Std.Expr.Ty.print) ty)
     ~hints:[(fun (_, msg) -> text_hint msg)]
     ~name:"Non-arithmetic use of overloaded arithmetic function" ()
+
+let incompatible_arith_types =
+  Report.Error.mk ~code ~mnemonic:"incompatible-arith-types"
+    ~message:(fun fmt ((tya, tyb), _) ->
+        Format.fprintf fmt "Incompatible arithmetic types: @ %a @ and %a."
+          (pp_wrap Dolmen.Std.Expr.Ty.print) tya
+          (pp_wrap Dolmen.Std.Expr.Ty.print) tyb)
+      ~hints:[(fun (_, msg) -> text_hint msg)]
+    ~name:"Incorrect use of arithmetic operator" ()
 
 let expected_specific_arith_type =
   Report.Error.mk ~code ~mnemonic:"arith-type-specific"
@@ -998,9 +1005,18 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
       S.error ~loc st unhandled_ast (env, fragment)
+    (* Alt-Ergo Arithmetic errors *)
+    | Ae_Arith.Expected_arith_type ty ->
+      S.error ~loc st expected_arith_type (ty, "")
+    | Ae_Arith.Incompatible_Arith_Types (tya, tyb) ->
+        S.error ~loc st incompatible_arith_types
+        ((tya, tyb), "Alt-Ergo's native language is strongly typed. Only the real \
+                      exponentiation operator is polymorphic over reals and ints.")
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
-      S.error ~loc st expected_arith_type (ty, "")
+      S.error ~loc st expected_arith_type
+        (ty, "Tptp arithmetic symbols are only polymorphic over the arithmetic \
+              types $int, $rat and $real.")
     | Tptp_Arith.Cannot_apply_to ty ->
       S.error ~loc st expected_specific_arith_type ty
     (* Smtlib Array errors *)
