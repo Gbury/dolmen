@@ -21,6 +21,8 @@ module Ae = struct
       (* Types *)
       | Type.Builtin Ast.Bool ->
         `Ty (Base.app0 (module Type) env s Ty.bool)
+      | Type.Builtin Ast.Prop ->
+        `Ty (Base.app0 (module Type) env s Ty.bool)
       | Type.Builtin Ast.Unit ->
         `Ty (Base.app0 (module Type) env s Ty.unit)
 
