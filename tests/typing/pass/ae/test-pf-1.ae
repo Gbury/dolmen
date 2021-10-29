@@ -1,0 +1,4 @@
+
+function f (x: 'a): bool = true
+
+goal g: f(0)
