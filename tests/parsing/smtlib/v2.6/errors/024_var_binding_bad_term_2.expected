@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/024_var_binding_bad_term_2.smt2", line 2, character 17-18:
+2 | (assert (let ((x !)) (= x 42)))
+                     ^
 Error while parsing a variable binding, read the reserved word '!',
       but expected a term.

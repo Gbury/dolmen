@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/088_echo_bad_str_1.smt2", line 2, character 6-9:
+2 | (echo foo)
+          ^^^
 Error while parsing an echo command, read the symbol 'foo',
       but expected a string literal.

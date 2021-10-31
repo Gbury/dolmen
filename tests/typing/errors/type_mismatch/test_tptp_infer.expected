@@ -1,4 +1,6 @@
 File "tests/typing/errors/type_mismatch/test_tptp_infer.p", line 4, character 18-23:
+4 | tff(error, axiom, p(12) ).
+                      ^^^^^
 Error The typechecker inferred the type for the symbol `p` to be `int -> _`.
       That inference lead to infer one of the argument types of that type to
       be `int`.

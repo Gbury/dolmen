@@ -1,2 +1,4 @@
 File "tests/regression/pr36/illegal_decl.smt2", line 2, character 0-27:
+2 | (declare-fun f (Bool) Bool)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Error Illegal declaration.

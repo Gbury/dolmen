@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/poly/errors/130_datatype_dec_unclosed_1.psmt2", line 2, character 37-38:
+2 | (declare-datatype foo (par (a) ((A)) _))
+                                         ^
 Error while parsing a datatype declaration, read the reserved word '_',
       but expected a closing parenthesis.

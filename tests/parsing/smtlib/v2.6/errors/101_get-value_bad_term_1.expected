@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/101_get-value_bad_term_1.smt2", line 1, character 12-13:
+1 | (get-value (_))
+                ^
 Error while parsing a get-value command, read the reserved word '_',
       but expected a term.

@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/113_set-option_unclosed_1.smt2", line 1, character 17-21:
+1 | (set-option :foo :bar)
+                     ^^^^
 Error while parsing a set-option command, read the keyword ':bar',
       but expected a closing parenthesis, or an attribute value; note that
       keywords and reserved words (such as '_', 'as', ...) are not valid

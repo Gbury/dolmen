@@ -1,3 +1,5 @@
 File "tests/typing/errors/poly/test-par.psmt2", line 11, character 38-67:
+11 | (assert (par (a) (forall ((x a)) (not (= (cons x nil) (cons 1 nil))))))
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Error The term: `cons int 1 (nil int)` has type `list(int)`
       but was expected to be of type `list(a)`

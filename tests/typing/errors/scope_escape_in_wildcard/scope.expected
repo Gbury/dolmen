@@ -1,4 +1,6 @@
 File "tests/typing/errors/scope_escape_in_wildcard/scope.zf", line 3, character 25-28:
+3 |   (fun (a: type) (x: a). f x = x) _ 5.
+                             ^^^
 Error The typechecker inferred the type for the quantified variable `f` to be
       `a -> _`.
       That inference lead to infer that type to contain the variable `a`

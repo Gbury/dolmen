@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/poly/errors/030_pattern_bad_symbol_2.psmt2", line 3, character 36-37:
+3 | (define-fun f ((x t)) t (match x (((!) 54))))
+                                        ^
 Error while parsing a pattern, read the reserved word '!',
       but expected a symbol (either a variable or a datatype constructor);
       note that keywords and reserved words (such as '_', 'as', ...) are not

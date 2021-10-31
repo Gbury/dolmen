@@ -1,4 +1,6 @@
 File "tests/parsing/dimacs/tokens/cnf.cnf", line 1, character 0-3:
+1 | cnf
+    ^^^
 Error while parsing an input sentence, read the keyword 'cnf',
       but expected a p-cnf header if there hasn't been one yet, or a clause
       starting with a non-zero integer.

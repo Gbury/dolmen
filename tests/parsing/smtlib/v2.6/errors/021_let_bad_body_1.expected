@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/021_let_bad_body_1.smt2", line 2, character 22-23:
+2 | (assert (let ((x 42)) _))
+                          ^
 Error while parsing a term, read the reserved word '_',
       but expected a term (body for the let binding).

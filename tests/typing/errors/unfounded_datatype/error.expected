@@ -1,2 +1,4 @@
 File "tests/typing/errors/unfounded_datatype/error.smt2", line 2, character 0-79:
+2 | (declare-datatypes ((colist 1)) ((par (alpha) ((cons (head (colist alpha)))))))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Error Not well founded datatype declaration

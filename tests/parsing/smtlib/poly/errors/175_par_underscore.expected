@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/poly/errors/175_par_underscore.psmt2", line 2, character 17-18:
+2 | (assert (par (X) _ ))
+                     ^
 Error while parsing a term, read the reserved word '_',
       but expected a term construction (symbol, function application, match,
       let binding, ...); note that keywords and reserved words (such as '_',

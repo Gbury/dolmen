@@ -1,2 +1,4 @@
 File "tests/typing/errors/type_mismatch/test_tptp.p", line 6, character 18-22:
+6 | tff(error, axiom, p(a) ).
+                      ^^^^
 Error The term: `a` has type `int` but was expected to be of type `$i`

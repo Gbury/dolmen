@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/poly/errors/142_declare-fun_arg_list_unclosed_1.psmt2", line 2, character 22-23:
+2 | (declare-fun foo (int _))
+                          ^
 Error while parsing a list of sorts, read the reserved word '_',
       but expected another sort or a closing parenthesis.

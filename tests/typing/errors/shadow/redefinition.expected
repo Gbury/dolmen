@@ -1,2 +1,4 @@
 File "tests/typing/errors/shadow/redefinition.smt2", line 3, character 0-23:
+3 | (declare-fun a () Bool)
+    ^^^^^^^^^^^^^^^^^^^^^^^
 Error Duplicate declaration of `a`, which was already declared at line 2, character 0-23

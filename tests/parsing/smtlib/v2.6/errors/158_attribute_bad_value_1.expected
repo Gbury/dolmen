@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/158_attribute_bad_value_1.smt2", line 1, character 17-18:
+1 | (set-option :foo _)
+                     ^
 Error while parsing an attribute, read the reserved word '_',
       but expected either an attribute value as s-expression, another
       attribute, or a closing parenthesis.

@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/132_datatype_dec_unopened_cstr_list_1.smt2", line 2, character 31-32:
+2 | (declare-datatype foo (par (a) _))
+                                   ^
 Error while parsing a datatype declaration, read the reserved word '_',
       but expected an opening parenthesis to start the list of constructors.

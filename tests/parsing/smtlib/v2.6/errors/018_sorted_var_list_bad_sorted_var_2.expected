@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/018_sorted_var_list_bad_sorted_var_2.smt2", line 2, character 17-19:
+2 | (assert (forall (as) true))
+                     ^^
 Error while parsing a term, read the reserved word 'as',
       but expected a sorted variable of the form "(var sort)".
