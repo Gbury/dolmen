@@ -1,6 +1,23 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+
+(* Debug printing *)
+(* ************** *)
+
+let debug_parsed_pipe st c =
+  if st.Loop.State.debug then
+    Format.eprintf "[parsed] @[<hov>%a@]@."
+      Dolmen.Std.Statement.print c;
+  st, c
+
+let debug_typed_pipe st stmt =
+  if st.Loop.State.debug then
+    Format.eprintf "[typed] @[<hov>%a@]@\n@."
+      Loop.Typer.print stmt;
+  st, stmt
+
+
 (* Run dolmen (regular use) *)
 (* ************************ *)
 
@@ -28,8 +45,10 @@ let run st =
     let open Loop.Pipeline in
     run ~finally g st (
       (fix (op ~name:"expand" Loop.Parser.expand) (
-          (op ~name:"headers" Loop.Header.inspect)
+          (op ~name:"debug-parsed" debug_parsed_pipe)
+          @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer.typecheck)
+          @>|> (op ~name:"debug-typed" debug_typed_pipe)
           @>>> (op (fun st _ -> st, ())) @>>> _end
         )
       )
