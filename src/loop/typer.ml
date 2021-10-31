@@ -1581,7 +1581,8 @@ module Pipe
         Dolmen.Std.Id.print id Print.ty_cst c
         (Format.pp_print_list Print.ty_var) vars Print.ty body
     | `Term_def (id, c, vars, args, body) ->
-      Format.fprintf fmt "@[<hov 2>term-def:@ %a: %a(%a; %a) ->@ %a@]"
+      Format.fprintf fmt
+        "@[<hv 2>term-def{%a}:@ @[<hv>%a@] =@ @[<hov 2>fun (%a;@ %a) ->@ %a@]@]"
         Dolmen.Std.Id.print id Print.term_cst c
         (Format.pp_print_list Print.ty_var) vars
         (Format.pp_print_list Print.term_var) args
@@ -1642,6 +1643,12 @@ module Pipe
     let l' = List.map Dolmen.Std.Term.fv l in
     List.sort_uniq Dolmen.Std.Id.compare (List.flatten l')
 
+  let fp_list (ty : Dolmen.Std.Term.t) =
+    match ty.term with
+    | Binder (Arrow, params_tys, ret_ty) ->
+      fv_list (ret_ty :: params_tys)
+    | _ -> fv_list [ty]
+
   let quantify ~loc var_ty vars f =
     let vars = List.map (fun v ->
         let c = Dolmen.Std.Term.const ~loc v in
@@ -1670,8 +1677,24 @@ module Pipe
           let f = quantify ~loc (fun _ -> None) free_vars f in
           { c with descr = S.Antecedent f; }
       end
-    (* Axioms and goals in alt-ergo have their type variables
+    (* Axioms, goals and definitions in alt-ergo have their type variables
        implicitly quantified. *)
+    | { S.descr = S.Defs { contents = l; recursive; } ; _ } ->
+      let l' = List.map (function ({ S.ty; body; _ } as d) ->
+        match fp_list ty with
+        | [] -> d
+        | l ->
+          let vars = List.map (fun v -> Dolmen.Std.Term.const v) l in
+          let ty = Dolmen.Std.Term.pi vars ty in
+          let body =
+            Dolmen.Std.Term.lambda (List.map (fun v ->
+                Dolmen.Std.Term.colon v (Dolmen.Std.Term.tType ())
+              ) vars) body
+          in
+          { d with ty; body; }
+        ) l
+      in
+      { c with descr = S.Defs { recursive; contents = l'; }; }
     | { S.descr = S.Antecedent t; _ }
       when State.input_lang st = Some Logic.Alt_ergo ->
       begin match fv_list [t] with
