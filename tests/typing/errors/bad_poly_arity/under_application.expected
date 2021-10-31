@@ -1,3 +1,5 @@
 File "tests/typing/errors/bad_poly_arity/under_application.zf", line 4, character 5-14:
+4 | goal f int 5 6.
+         ^^^^^^^^^
 Error This function expected exactly 2 type arguments, since term arguments
       are also provided, but was given 1 arguments.

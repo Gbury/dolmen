@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/poly/errors/133_datatype_symbol_list_unclosed_1.psmt2", line 2, character 30-31:
+2 | (declare-datatype foo (par (a _)))
+                                  ^
 Error while parsing a list of sort variables to parameterize a datatype,
       read the reserved word '_',
       but expected another symbol, or a closing parenthesis.

@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/119_prop_lit_list_bad_1.smt2", line 2, character 23-24:
+2 | (check-sat-assuming (p _))
+                           ^
 Error while parsing a list of propositional literals,
       read the reserved word '_',
       but expected a propositional literal of the form "symbol" or "(not

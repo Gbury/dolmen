@@ -1,3 +1,5 @@
 File "tests/parsing/dimacs/errors/002_missing_cnf_1.cnf", line 1, character 2-3:
+1 | p 0
+      ^
 Error while parsing a p-cnf header, read the integer '0',
       but expected the keyword "cnf".

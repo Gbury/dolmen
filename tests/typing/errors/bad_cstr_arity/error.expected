@@ -1,4 +1,6 @@
 File "tests/typing/errors/bad_cstr_arity/error.smt2", line 3, character 31-41:
+3 | (assert (= (as nil (list Int)) (nil true)))
+                                   ^^^^^^^^^^
 Error Bad arity: expected 0 arguments but got 1 arguments for constructor
       nil : ∀ alpha : Type . list(alpha)
 Hint: it looks like the language enforces implicit polymorphism, i.e. no type

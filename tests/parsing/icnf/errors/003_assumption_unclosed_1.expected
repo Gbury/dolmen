@@ -1,3 +1,5 @@
 File "tests/parsing/icnf/errors/003_assumption_unclosed_1.icnf", line 2, character 4-5:
+2 | a 0 0
+        ^
 Error while parsing an assumption, read the integer '0',
       but expected the newline character.

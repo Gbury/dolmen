@@ -1,2 +1,4 @@
 File "tests/typing/errors/var_ty_application/error.zf", line 2, character 24-27:
+2 | goal exists (a : type). a a.
+                            ^^^
 Error Cannot apply arguments to type variable a

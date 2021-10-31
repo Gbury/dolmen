@@ -1,3 +1,5 @@
 File "tests/parsing/icnf/errors/007_input_p_inccnf_unclosed_1.icnf", line 1, character 9-10:
+1 | p inccnf 0
+             ^
 Error while parsing an p-inccnf header, read the integer '0',
       but expected a newline character to end the p-inccnf header.

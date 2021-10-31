@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/poly/errors/094_get-model_unclosed_1.psmt2", line 2, character 11-12:
+2 | (get-model _)
+               ^
 Error while parsing a get-model command, read the reserved word '_',
       but expected a closing parenthesis.

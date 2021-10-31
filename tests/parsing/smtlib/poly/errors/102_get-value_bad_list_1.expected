@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/poly/errors/102_get-value_bad_list_1.psmt2", line 1, character 11-12:
+1 | (get-value _)
+               ^
 Error while parsing a get-value command, read the reserved word '_',
       but expected an opening parenthesis to start a list of terms.

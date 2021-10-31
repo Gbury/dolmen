@@ -1,3 +1,5 @@
 File "tests/parsing/dimacs/errors/005_header_unclosed_1.cnf", line 1, character 10-11:
+1 | p cnf 1 1 0
+              ^
 Error while parsing a p-cnf header, read the integer '0',
       but expected a newline character to end the header.

@@ -1,3 +1,5 @@
 File "tests/parsing/smtlib/poly/errors/164_function_def_bad_body_1.psmt2", line 2, character 37-38:
+2 | (define-fun-rec foo (par (a) () bool _))
+                                         ^
 Error while parsing a function definition, read the reserved word '_',
       but expected a term for the body of the function.

@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/136_datatype_dec_ambiguous_1.smt2", line 2, character 23-24:
+2 | (declare-datatype foo (_))
+                           ^
 Error while parsing a datatype declaration, read the reserved word '_',
       but expected a list of constructor declarations of the form "(symbol
       selector*)", or a parameterization of the datatype of the form "par

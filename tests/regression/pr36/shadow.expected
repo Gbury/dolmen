@@ -1,2 +1,4 @@
 File "tests/regression/pr36/shadow.smt2", line 3, character 0-23:
+3 | (declare-fun f () Bool)
+    ^^^^^^^^^^^^^^^^^^^^^^^
 Error Duplicate declaration of `f`, which was already declared at line 2, character 0-23

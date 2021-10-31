@@ -1,2 +1,4 @@
 File "tests/typing/errors/shadow/builtin-term-const.smt2", line 2, character 0-26:
+2 | (declare-fun true () Bool)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Error Duplicate declaration of `true`, which was already defined by a builtin theory

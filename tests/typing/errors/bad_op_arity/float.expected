@@ -1,3 +1,5 @@
 File "tests/typing/errors/bad_op_arity/float.smt2", line 3, character 13-34:
+3 | (assert (= x ((_ to_fp 3 4) x x x)))
+                 ^^^^^^^^^^^^^^^^^^^^^
 Error Bad arity for symbol '(_ to_fp 3 4)':
       expected 1 or 2 arguments but got 3

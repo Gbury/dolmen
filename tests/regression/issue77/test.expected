@@ -1,3 +1,5 @@
 File "tests/regression/issue77/test.smt2", line 4, character 25-28:
+4 | (assert (let ( (c (ite b 1.0 2.0))) (= 0 (* 2 c))))
+                             ^^^
 Error Unbound identifier: `1.0`
 Hint: The current logic does not include real arithmtic

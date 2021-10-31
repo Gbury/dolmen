@@ -1,4 +1,6 @@
 File "tests/parsing/smtlib/v2.6/errors/077_define-funs-rec_bad_body_list_1.smt2", line 2, character 33-34:
+2 | (define-funs-rec ((foo () bool)) _)
+                                     ^
 Error while parsing a recursive functions definition,
       read the reserved word '_',
       but expected an opening parenthesis to start a list the function's
