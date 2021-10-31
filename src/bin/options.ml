@@ -236,6 +236,16 @@ let c_time = parse_time, print_time
 let c_size = parse_size, print_size
 
 
+(* Location styles *)
+(* ************************************************************************* *)
+
+let loc_style =
+  Arg.enum [
+    "short", `Short;
+    "contextual", `Contextual;
+  ]
+
+
 (* State creation *)
 (* ************************************************************************* *)
 
@@ -300,7 +310,7 @@ let mk_run_state
     header_check header_licenses
     header_lang_version
     type_check
-    debug context max_warn reports
+    debug loc_style context max_warn reports
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -312,7 +322,7 @@ let mk_run_state
   (* State creation *)
   let input_dir, input_source = split_input input in
   let st : Loop.State.t = {
-    debug; reports;
+    debug; loc_style; reports;
 
     context; max_warn;
     cur_warn = 0;
@@ -507,6 +517,14 @@ let state =
          checking, as well as activate unique id printing." in
     Arg.(value & flag & info ["debug"] ~docs ~doc)
   in
+  let loc_style =
+    let doc = Format.asprintf
+        "Control the way locations are printed for error and warnings messages.
+         $(b,short) only prints the location for the message, while
+         $(b,contextual) also displays the source code snippet corresponding
+         to the location of the message." in
+    Arg.(value & opt loc_style `Contextual & info ["loc-style"] ~doc ~docs:error_section)
+    in
   let context =
     let doc = Format.asprintf
         "Print the context / fragment of parsed AST with errors" in
@@ -522,7 +540,7 @@ let state =
         gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
-        typing $ debug $ context $ max_warn $ reports)
+        typing $ debug $ loc_style $ context $ max_warn $ reports)
 
 
 (* List command term *)
