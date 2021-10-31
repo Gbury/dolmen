@@ -47,8 +47,10 @@ type loc = {
   file : string;
   start_line : int;
   start_column : int;
+  start_line_offset : int;
   stop_line : int;
   stop_column : int;
+  stop_line_offset : int;
 }
 
 
@@ -132,11 +134,15 @@ let eq a b = a = b
 let hash a = Hashtbl.hash a
 
 (* Constructor functions *)
-let mk file start_line start_column stop_line stop_column =
-  { file; start_line; start_column; stop_line; stop_column; }
+let mk file
+    start_line start_column start_line_offset
+    stop_line stop_column stop_line_offset =
+  { file;
+    start_line; start_column; start_line_offset;
+    stop_line; stop_column; stop_line_offset; }
 
-let dummy = mk "" 0 0 0 0
-let no_loc = mk_compact 0 0
+let no_loc : t = mk_compact 0 0
+let dummy : loc = mk "" 0 0 0 0 0 0
 
 let mk_pos start stop =
   let open Lexing in
@@ -155,20 +161,38 @@ let of_lexbuf lexbuf =
   let stop = Lexing.lexeme_end_p lexbuf in
   mk_pos start stop
 
+let lexing_positions (loc : loc) =
+  let start = Lexing.{
+      pos_fname = loc.file;
+      pos_lnum = loc.start_line;
+      pos_bol = loc.start_line_offset;
+      pos_cnum = loc.start_column + loc.start_line_offset;
+    } in
+  let stop = Lexing.{
+      pos_fname = loc.file;
+      pos_lnum = loc.stop_line;
+      pos_bol = loc.stop_line_offset;
+      pos_cnum = loc.stop_column + loc.stop_line_offset;
+    } in
+  start, stop
+
+
 (* Compact<->full translations *)
 (* ************************************************************************* *)
 
-let loc file c =
+let loc file c : loc =
   let start_offset, length = split_compact c in
   if length = 0 then
-    mk file.name 0 0 0 0
+    mk file.name 0 0 0 0 0 0
   else begin
     let stop_offset = start_offset + length in
     let start_line_offset, start_line = find_line file start_offset in
     let start_column = start_offset - start_line_offset - 1 in
     let stop_line_offset, stop_line = find_line file stop_offset in
     let stop_column = stop_offset - stop_line_offset - 1 in
-    mk file.name start_line start_column stop_line stop_column
+    mk file.name
+      start_line start_column (start_line_offset + 1)
+      stop_line stop_column (stop_line_offset + 1)
   end
 
 let full_loc { file; loc = l; } = loc file l

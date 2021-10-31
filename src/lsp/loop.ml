@@ -44,7 +44,7 @@ let process path opt_contents =
   let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let st = State.{
       debug = false;
-      reports;
+      reports; loc_style = `Short;
       max_warn = max_int;
       cur_warn = 0;
       context = false;

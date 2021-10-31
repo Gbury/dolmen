@@ -10,9 +10,10 @@ type solve_state = unit
 
 type 'solve state = {
 
-  (* Debug & warnings option *)
+  (* Debug, warnings, and error options *)
   debug             : bool;
   reports           : Report.Conf.t;
+  loc_style         : [ `Short | `Contextual ];
 
   (* Warning/Error options *)
   context           : bool;
@@ -60,19 +61,41 @@ exception Error of t
 (* State and locations *)
 (* ************************************************************************* *)
 
-let pp_loc fmt o =
+let loc_input st =
+  match st.loc_style, st.input_source with
+  | _, `Stdin -> None
+  | `Short, _ -> None
+  | `Contextual, `File filename ->
+    let full_filename = Filename.concat st.input_dir filename in
+    let input = Pp_loc.Input.file full_filename in
+    Some input
+  | `Contextual, `Raw (_, contents) ->
+    let input = Pp_loc.Input.string contents in
+    Some input
+
+let pp_loc st fmt o =
   match o with
   | None -> ()
   | Some loc ->
     if Dolmen.Std.Loc.is_dummy loc then ()
-    else Format.fprintf fmt "%a:@ " Dolmen.Std.Loc.fmt loc
+    else begin
+      match loc_input st with
+      | None ->
+        Format.fprintf fmt "%a:@ "
+          Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
+      | Some input ->
+        let locs = Dolmen.Std.Loc.lexing_positions loc in
+        Format.fprintf fmt "%a:@ %a"
+          Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
+          (Pp_loc.pp ~max_lines:3 ~input) [locs]
+    end
 
-let error ?loc _ error payload =
+let error ?loc st error payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   let aux _ = Code.exit (Report.Error.code error) in
   Format.kfprintf aux Format.err_formatter
     ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-    Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+    (pp_loc st) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
     Report.Error.print (error, payload)
     Report.Error.print_hints (error, payload)
@@ -88,7 +111,7 @@ let warn ?loc st warn payload =
     else
       Format.kfprintf aux Format.err_formatter
         ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-        Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+        (pp_loc st) loc
         Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
         Report.Warning.print (warn, payload)
         Report.Warning.print_hints (warn, payload)
@@ -97,7 +120,7 @@ let warn ?loc st warn payload =
     let aux _ = Code.exit (Report.Warning.code warn) in
     Format.kfprintf aux Format.err_formatter
       ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-      Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) pp_loc) loc
+      (pp_loc st) loc
       Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Fatal Warning"
       Report.Warning.print (warn, payload)
       Report.Warning.print_hints (warn, payload)

@@ -5,12 +5,14 @@
 
 (** {2 Interface definition} *)
 
-type loc = {
+type loc = private {
   file : string;
   start_line : int;
   start_column : int;
+  start_line_offset : int;
   stop_line : int;
   stop_column : int;
+  stop_line_offset : int;
 }
 (** A full location, including file, start position and end position.
     Dummy positions (i.e. with [start_line = stop_line] and
@@ -73,6 +75,8 @@ val full_loc : full -> loc
 val compact : loc -> file * t
 (** Compactify a full location into a compact representation. *)
 
+val lexing_positions : loc -> Lexing.position * Lexing.position
+(** Reutnr the pari of lexing positions corresponding to a location. *)
 
 (** {2 Printing locations} *)
 
