@@ -59,7 +59,7 @@ exception Error of t
 (* ************************************************************************* *)
 
 let loc_input st (loc : Dolmen.Std.Loc.loc) =
-  if loc.max_line_length >= 80 then
+  if loc.max_line_length >= 120 then
     None
   else begin
     match st.loc_style, st.input_source with
