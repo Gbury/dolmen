@@ -14,9 +14,6 @@ type 'solve state = {
   debug             : bool;
   reports           : Report.Conf.t;
   loc_style         : [ `Short | `Contextual ];
-
-  (* Warning/Error options *)
-  context           : bool;
   max_warn          : int;
   cur_warn          : int;
 

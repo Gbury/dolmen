@@ -47,7 +47,6 @@ let process path opt_contents =
       reports; loc_style = `Short;
       max_warn = max_int;
       cur_warn = 0;
-      context = false;
       time_limit = 0.; (* disable the timer *)
       size_limit = max_float;
       input_dir = dir;
