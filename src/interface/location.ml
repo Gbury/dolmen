@@ -49,5 +49,9 @@ module type S = sig
   (** Offer a way for the file meta-data to store the current location
       of the lexbuf as the start of a new line. *)
 
+  val update_size : file -> Lexing.lexbuf -> unit
+  (** Update the file meta-data to store the maximum offset currently seen
+      for this file. *)
+
 end
 

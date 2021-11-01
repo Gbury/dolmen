@@ -95,7 +95,7 @@ module Make
   (* Parsing loop
      ------------ *)
 
-  let parse_aux ~k_exn newline lexbuf checkpoint =
+  let parse_aux ~k_exn newline sync lexbuf checkpoint =
     (* Token supplier *)
     let last_token = ref None in
     let aux =
@@ -108,8 +108,12 @@ module Make
       res
     in
     (* Incremental loop *)
-    let succeed res = res in
+    let succeed res =
+      sync lexbuf;
+      res
+    in
     let fail checkpoint =
+      sync lexbuf;
       let pos = Loc.of_lexbuf lexbuf in
       let msg = error_message !last_token checkpoint in
       let () = k_exn () in
@@ -150,8 +154,9 @@ module Make
     let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
     let locfile = Loc.mk_file file in
     let newline = Loc.newline locfile in
+    let sync = Loc.update_size locfile in
     let k_exn () = cleanup () in
-    let res = parse_aux ~k_exn newline lexbuf Parser.Incremental.file () in
+    let res = parse_aux ~k_exn newline sync lexbuf Parser.Incremental.file () in
     let () = cleanup () in
     locfile, res
 
@@ -159,10 +164,13 @@ module Make
     let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
     let locfile = Loc.mk_file file in
     let newline = Loc.newline locfile in
+    let sync = Loc.update_size locfile in
     let k_exn () = cleanup () in
     let res =
       lazy (
-        let res = parse_aux ~k_exn newline lexbuf Parser.Incremental.file () in
+        let res =
+          parse_aux ~k_exn newline sync lexbuf Parser.Incremental.file ()
+        in
         let () = cleanup () in
         res
       )
@@ -173,6 +181,7 @@ module Make
     let lexbuf, cleanup = Misc.mk_lexbuf i in
     let locfile = Loc.mk_file (Misc.filename_of_input i) in
     let newline = Loc.newline locfile in
+    let sync = Loc.update_size locfile in
     if not Ty.incremental then begin
       (* If incremental mode is not supported, raise an error rather than
          do weird things. *)
@@ -181,8 +190,8 @@ module Make
       in
       raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf, `Regular msg))
     end;
-    let k_exn () = Dolmen_line.consume lexbuf in
-    let aux = parse_aux ~k_exn newline lexbuf Parser.Incremental.input in
+    let k_exn () = Dolmen_line.consume ~newline ~sync lexbuf in
+    let aux = parse_aux ~k_exn newline sync lexbuf Parser.Incremental.input in
     locfile, aux, cleanup
 
 end

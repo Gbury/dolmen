@@ -521,7 +521,8 @@ let state =
         "Control the way locations are printed for error and warnings messages.
          $(b,short) only prints the location for the message, while
          $(b,contextual) also displays the source code snippet corresponding
-         to the location of the message." in
+         to the location of the message (except in some cases where the snippet
+         would be too long)." in
     Arg.(value & opt loc_style `Contextual & info ["loc-style"] ~doc ~docs:error_section)
     in
   let max_warn =
