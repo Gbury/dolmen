@@ -310,7 +310,7 @@ let mk_run_state
     header_check header_licenses
     header_lang_version
     type_check
-    debug loc_style context max_warn reports
+    debug loc_style max_warn reports
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -324,8 +324,7 @@ let mk_run_state
   let st : Loop.State.t = {
     debug; loc_style; reports;
 
-    context; max_warn;
-    cur_warn = 0;
+    max_warn; cur_warn = 0;
 
     time_limit; size_limit;
 
@@ -525,11 +524,6 @@ let state =
          to the location of the message." in
     Arg.(value & opt loc_style `Contextual & info ["loc-style"] ~doc ~docs:error_section)
     in
-  let context =
-    let doc = Format.asprintf
-        "Print the context / fragment of parsed AST with errors" in
-    Arg.(value & flag & info ["context"] ~doc ~docs:error_section)
-  in
   let max_warn =
     let doc = Format.asprintf
         "Maximum number of warnings to display (excess warnings will be
@@ -540,7 +534,7 @@ let state =
         gc $ gc_t $ bt $ colors $ abort_on_bug $
         time $ size $ in_lang $ in_mode $ input $
         header_check $ header_licenses $ header_lang_version $
-        typing $ debug $ loc_style $ context $ max_warn $ reports)
+        typing $ debug $ loc_style $ max_warn $ reports)
 
 
 (* List command term *)
