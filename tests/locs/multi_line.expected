@@ -1,0 +1,8 @@
+File "tests/locs/multi_line.smt2", line 3, character 7 to line 4, character 6:
+3 | .......(* 1
+4 |     2)
+Fatal Warning This is a non-linear expression according to the smtlib spec.
+Hint: multiplication in strict linear arithmetic expects an integer or
+  rational literal and a symbol (variable or constant) but was given:
+  - an integer coefficient
+  - an integer coefficient
