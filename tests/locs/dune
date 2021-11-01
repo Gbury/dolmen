@@ -33,4 +33,36 @@
   (action (diff multi_line.expected multi_line.full)))
 
 
+; Test for too_long.smt2
+; Incremental test
+
+(rule
+   (target  too_long.incremental)
+   (deps    (:input too_long.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff too_long.expected too_long.incremental)))
+
+; Full mode test
+
+(rule
+   (target  too_long.full)
+   (deps    (:input too_long.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff too_long.expected too_long.full)))
+
+
 ; Auto-generated part end
