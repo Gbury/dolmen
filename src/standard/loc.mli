@@ -13,6 +13,7 @@ type loc = private {
   stop_line : int;
   stop_column : int;
   stop_line_offset : int;
+  max_line_length : int;
 }
 (** A full location, including file, start position and end position.
     Dummy positions (i.e. with [start_line = stop_line] and

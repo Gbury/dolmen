@@ -58,17 +58,21 @@ exception Error of t
 (* State and locations *)
 (* ************************************************************************* *)
 
-let loc_input st =
-  match st.loc_style, st.input_source with
-  | _, `Stdin -> None
-  | `Short, _ -> None
-  | `Contextual, `File filename ->
-    let full_filename = Filename.concat st.input_dir filename in
-    let input = Pp_loc.Input.file full_filename in
-    Some input
-  | `Contextual, `Raw (_, contents) ->
-    let input = Pp_loc.Input.string contents in
-    Some input
+let loc_input st (loc : Dolmen.Std.Loc.loc) =
+  if loc.max_line_length >= 80 then
+    None
+  else begin
+    match st.loc_style, st.input_source with
+    | _, `Stdin -> None
+    | `Short, _ -> None
+    | `Contextual, `File filename ->
+      let full_filename = Filename.concat st.input_dir filename in
+      let input = Pp_loc.Input.file full_filename in
+      Some input
+    | `Contextual, `Raw (_, contents) ->
+      let input = Pp_loc.Input.string contents in
+      Some input
+  end
 
 let pp_loc st fmt o =
   match o with
@@ -76,7 +80,7 @@ let pp_loc st fmt o =
   | Some loc ->
     if Dolmen.Std.Loc.is_dummy loc then ()
     else begin
-      match loc_input st with
+      match loc_input st loc with
       | None ->
         Format.fprintf fmt "%a:@ "
           Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc

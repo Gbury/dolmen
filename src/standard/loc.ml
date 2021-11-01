@@ -18,6 +18,7 @@ module type S = Dolmen_intf.Location.S
    starts. *)
 type file = {
   name : string;
+  mutable max_size : int;
   mutable table : int Vec.t;
 }
 
@@ -51,6 +52,7 @@ type loc = {
   stop_line : int;
   stop_column : int;
   stop_line_offset : int;
+  max_line_length : int;
 }
 
 
@@ -97,16 +99,21 @@ let file_name { name; _ } = name
 let mk_file name =
   let table = Vec.create () in
   let () = Vec.push table (-1) in
-  { name; table; }
+  { name; table; max_size = 0; }
 
 let new_line file offset =
   assert (Vec.last file.table < offset);
-  Vec.push file.table (offset - 1)
+  Vec.push file.table (offset - 1);
+  file.max_size <- offset
 
 let newline file lexbuf =
   Lexing.new_line lexbuf;
   let offset = Lexing.lexeme_end lexbuf in
   new_line file offset
+
+let update_size file lexbuf =
+  let offset = Lexing.lexeme_end lexbuf in
+  file.max_size <- offset
 
 let find_line file offset =
   let rec aux vec offset start stop =
@@ -126,6 +133,21 @@ let find_line file offset =
   let line_offset = Vec.get file.table (line - 1) in
   line_offset, line
 
+let line_length file line =
+  let line_offset = Vec.get file.table (line - 1) in
+  let next_line_offset =
+    try Vec.get file.table line
+    with Invalid_argument _ -> file.max_size
+  in
+  next_line_offset - line_offset
+
+let max_line_length file start_line stop_line =
+  let res = ref 0 in
+  for line = start_line to stop_line do
+    res := max !res (line_length file line)
+  done;
+  !res
+
 
 (* Full locations *)
 (* ************************************************************************* *)
@@ -135,14 +157,20 @@ let hash a = Hashtbl.hash a
 
 (* Constructor functions *)
 let mk file
-    start_line start_column start_line_offset
-    stop_line stop_column stop_line_offset =
-  { file;
+    ~start_line ~start_column ~start_line_offset
+    ~stop_line ~stop_column ~stop_line_offset
+    ~max_line_length =
+  { file; max_line_length;
     start_line; start_column; start_line_offset;
     stop_line; stop_column; stop_line_offset; }
 
-let no_loc : t = mk_compact 0 0
-let dummy : loc = mk "" 0 0 0 0 0 0
+let no_loc : t =
+  mk_compact 0 0
+
+let dummy : loc =
+  mk "" ~max_line_length:0
+    ~start_line:0 ~start_column:0 ~start_line_offset:0
+    ~stop_line:0 ~stop_column:0 ~stop_line_offset:0
 
 let mk_pos start stop =
   let open Lexing in
@@ -183,16 +211,19 @@ let lexing_positions (loc : loc) =
 let loc file c : loc =
   let start_offset, length = split_compact c in
   if length = 0 then
-    mk file.name 0 0 0 0 0 0
+    mk file.name ~max_line_length:0
+      ~start_line:0 ~start_column:0 ~start_line_offset:0
+      ~stop_line:0 ~stop_column:0 ~stop_line_offset:0
   else begin
     let stop_offset = start_offset + length in
     let start_line_offset, start_line = find_line file start_offset in
     let start_column = start_offset - start_line_offset - 1 in
     let stop_line_offset, stop_line = find_line file stop_offset in
     let stop_column = stop_offset - stop_line_offset - 1 in
-    mk file.name
-      start_line start_column (start_line_offset + 1)
-      stop_line stop_column (stop_line_offset + 1)
+    let max_line_length = max_line_length file start_line stop_line in
+    mk file.name ~max_line_length
+      ~start_line ~start_column ~start_line_offset:(start_line_offset + 1)
+      ~stop_line ~stop_column ~stop_line_offset:(stop_line_offset + 1)
   end
 
 let full_loc { file; loc = l; } = loc file l

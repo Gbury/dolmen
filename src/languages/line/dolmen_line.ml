@@ -1,9 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-let rec consume lexbuf =
+let rec consume ~newline ~sync lexbuf =
   match LexLine.token lexbuf with
-  | LexLine.EOF -> ()
-  | LexLine.CHAR '\n' -> Lexing.new_line lexbuf
-  | _ -> consume lexbuf
+  | LexLine.EOF -> sync lexbuf; ()
+  | LexLine.CHAR '\n' -> newline lexbuf; Lexing.new_line lexbuf
+  | _ -> consume ~newline ~sync lexbuf
 
