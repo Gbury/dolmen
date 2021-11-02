@@ -2,6 +2,11 @@
 next
 ----
 
+### UI
+
+- Added source input snippet printing for errors and warnings
+
+
 ### Parsing
 
 * Fix bug in SMTLIB syntax (v2.6 and poly), where the
@@ -47,6 +52,8 @@ next
 - The pipeline now delegates the task of printing backtraces
   for excpetions to the caller/finally argument of the run
   function
+- the `Dolmen_loop` library now has an added dependency on
+  `pp_loc` (used for the source input printing)
 
 
 v0.6
