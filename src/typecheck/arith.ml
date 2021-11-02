@@ -68,12 +68,10 @@ module Ae = struct
             (dispatch2 env (T.Int.div_e, T.Real.div)))
         | Type.Builtin Term.Mod ->
           `Term (Base.term_app2 (module Type) env s T.Int.rem_e)
-        (*
         | Type.Builtin Term.Int_pow ->
           `Term (Base.term_app2 (module Type) env s T.Int.pow)
         | Type.Builtin Term.Real_pow ->
           `Term (Base.term_app2 (module Type) env s T.Real.pow)
-        *)
         | Type.Builtin Term.Lt ->
           `Term (Base.term_app2_ast (module Type) env s
             (dispatch2 env (T.Int.lt, T.Real.lt)))

@@ -669,7 +669,7 @@ module type Ae_Arith_Common = sig
   val mul : t -> t -> t
   (** Arithmetic multiplication *)
 
-  (* val pow : t -> t -> t *)
+  val pow : t -> t -> t
   (** Arithmetic exponentiation *)
 
   val lt : t -> t -> t

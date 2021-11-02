@@ -1182,6 +1182,9 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic on integers. *)
 
+    val pow : t -> t -> t
+    (** Exponentiation on integers. *)
+
     val div : t -> t -> t
     (** Euclidian division quotient *)
 
@@ -1208,6 +1211,9 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic over Rationals *)
 
+    val pow : t -> t -> t
+    (** Exponentiation on rationals. *)
+
     val div : t -> t -> t
     (** Exact division on rationals. *)
   end
@@ -1223,6 +1229,9 @@ module Term : sig
 
     include Dolmen_intf.Term.Smtlib_Float_Real with type t := t
     (** Satisfy the real part of the SMTLIB's Float requirements *)
+
+    val pow : t -> t -> t
+    (** Exponentiation on integers. *)
 
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)
