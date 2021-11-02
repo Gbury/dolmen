@@ -21,7 +21,7 @@ module Subst = Dolmen_type.Def.Subst(T)(struct
 
 (* AE builtins *)
 module Ae_Core =
-  Dolmen_type.Core.Ae.Tff(T)
+  Dolmen_type.Core.Ae.Tff(T)(Dolmen.Std.Expr.Tags)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Ae_Arith =
   Dolmen_type.Arith.Ae.Tff(T)
@@ -714,10 +714,9 @@ let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
 
 let bad_farray_arity =
   Report.Error.mk ~code ~mnemonic:"bad-farray-arity"
-    ~message:(fun fmt _ ->
+    ~message:(fun fmt () ->
         Format.fprintf fmt "Functional array types in Alt-Ergo expect either one or two type \
         parameters.")
-    ~hints:[text_hint]
     ~name:"Bad functional array arity" ()
 
 let expected_arith_type =
@@ -727,15 +726,6 @@ let expected_arith_type =
           (pp_wrap Dolmen.Std.Expr.Ty.print) ty)
     ~hints:[(fun (_, msg) -> text_hint msg)]
     ~name:"Non-arithmetic use of overloaded arithmetic function" ()
-
-let incompatible_arith_types =
-  Report.Error.mk ~code ~mnemonic:"incompatible-arith-types"
-    ~message:(fun fmt ((tya, tyb), _) ->
-        Format.fprintf fmt "Incompatible arithmetic types: @ %a @ and %a."
-          (pp_wrap Dolmen.Std.Expr.Ty.print) tya
-          (pp_wrap Dolmen.Std.Expr.Ty.print) tyb)
-      ~hints:[(fun (_, msg) -> text_hint msg)]
-    ~name:"Incorrect use of arithmetic operator" ()
 
 let expected_specific_arith_type =
   Report.Error.mk ~code ~mnemonic:"arith-type-specific"
@@ -1015,14 +1005,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st unhandled_ast (env, fragment)
     (* Alt-Ergo Functional Array errors *)
     | Ae_Arrays.Bad_farray_arity ->
-      S.error ~loc st bad_farray_arity ""
+      S.error ~loc st bad_farray_arity ()
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
       S.error ~loc st expected_arith_type (ty, "")
-    | Ae_Arith.Incompatible_Arith_Types (tya, tyb) ->
-        S.error ~loc st incompatible_arith_types
-        ((tya, tyb), "Alt-Ergo's native language is strongly typed. Only the real \
-                      exponentiation operator is polymorphic over reals and ints.")
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
       S.error ~loc st expected_arith_type

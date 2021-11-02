@@ -1,5 +1,0 @@
-
-
-logic fa: int farray
-
-goal g: fa[0 <- 0] = fa[0 <- 1, 0 <- 0]

@@ -654,9 +654,6 @@ module type Ae_Arith_Common = sig
   type t
   (** The type of terms *)
 
-  val mk : string -> t
-  (** Literals *)
-
   val minus : t -> t
   (** Arithmetic unary minus/negation. *)
 
@@ -698,6 +695,12 @@ module type Ae_Arith = sig
   val ty : t -> ty
   (** Get the type of a term. *)
 
+  val int : string -> t
+  (** Integer literals *)
+
+  val real : string -> t
+  (** Real literals *)
+
   module Int : sig
     include Ae_Arith_Common with type t := t
 
@@ -714,6 +717,10 @@ module type Ae_Arith = sig
 
     val div : t -> t -> t
     (** Exact division on reals. *)
+
+    val to_real : t -> t
+    (** Conversion from an integer term to a real term. *)
+
   end
 
 end

@@ -4,16 +4,14 @@ logic register: bitv[8]
 (** Explicit declaration *)
 axiom a: register = [|00101010|]
 
-(** Concatenation
-        Both goals are valid *)
+(** Concatenation *)
 goal g1:
     forall x,y:bitv[16]. x@y=y@x -> x = y
 
 goal g2:
     forall x:bitv[3]. x@[|101|] = [|000101|] -> x=[|000|]
 
-(** Extraction of contiguous bits
-        All goals are valid *)
+(** Extraction of contiguous bits *)
 goal g3:
     [|010|]^{0,1}=[|1100|]^{1,2}
 

@@ -9,6 +9,7 @@ module Ae = struct
 
   module Tff
       (Type : Tff_intf.S)
+      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
 
@@ -63,17 +64,11 @@ module Ae = struct
       | Type.Builtin Ast.Eq ->
         `Term (Base.term_app2 (module Type) env s T.eq)
       | Type.Builtin Ast.Distinct ->
-        `Term (
-          fun _ast args ->
-            let args = List.map (Type.parse_term env) args in
-            match args with
-            | [x; y] -> T.neq x y
-            | _ -> T.distinct args
-        )
+        `Term (Base.term_app_list (module Type) env s T.distinct)
 
       (* Ignore the AC symbol *)
       | Type.Id id when Id.equal id Id.ac_symbol ->
-        `Tags (fun _ast _args -> [])
+        `Tags (fun _ast _args -> [Type.Set (Tag.ac, ())])
 
       | _ -> `Not_found
 

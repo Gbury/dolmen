@@ -137,6 +137,9 @@ module Tags : sig
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
   (** Satsify the Zf interface. *)
 
+  include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
+  (** Satsify the Ae interface. *)
+
 end
 
 (** {2 Printing} *)
@@ -1182,8 +1185,8 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic on integers. *)
 
-    val pow : t -> t -> t
-    (** Exponentiation on integers. *)
+    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
+    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
 
     val div : t -> t -> t
     (** Euclidian division quotient *)
@@ -1211,8 +1214,8 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic over Rationals *)
 
-    val pow : t -> t -> t
-    (** Exponentiation on rationals. *)
+    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
+    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
 
     val div : t -> t -> t
     (** Exact division on rationals. *)

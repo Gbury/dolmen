@@ -1,0 +1,11 @@
+
+logic P, Q, R: bool
+
+goal or_idempotent:
+    P or P <-> P
+goal and_commutative:
+    P and Q <-> Q and P
+goal xor_associative:
+    P xor (Q xor R) <-> (P xor Q) xor R
+goal implies_transitive:
+    (P -> Q) and (Q -> R) -> (P -> R)

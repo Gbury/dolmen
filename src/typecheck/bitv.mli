@@ -1,7 +1,7 @@
 
 
 
-(** Smtlib bitvector builtins *)
+(** Alt-Ergo bitvector builtins *)
 module Ae : sig
 
   module Tff
@@ -11,6 +11,8 @@ module Ae : sig
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+      (** Error raised when a character that isn't '0' or '1' is
+          used inside a bitvector string *)
 
     val parse : Type.builtin_symbols
 

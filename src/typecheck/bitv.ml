@@ -34,7 +34,7 @@ module Ae = struct
       | Type.Builtin Bitv_concat ->
         `Term (Base.term_app2 (module Type) env s T.concat)
       | Type.Builtin (Bitv_extract (l, r)) ->
-        `Term (Base.term_app1 (module Type) env s (T.extract l r))
+        `Term (Base.term_app1 (module Type) env s (T.extract r l))
 
       | _ -> `Not_found
 

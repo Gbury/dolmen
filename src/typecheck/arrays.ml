@@ -19,14 +19,13 @@ module Ae = struct
       | Type.Id { name = Simple "farray"; ns = Term } ->
         `Ty (
           fun ast args ->
-            Base.ty_app2 (module Type) env s Ty.array ast
-              begin match args with
-                | [_] ->
-                  let int_ty = Dolmen_std.Term.builtin Dolmen_std.Term.Int () in
-                  (int_ty :: args)
-                | [_; _] -> args
-                | _ -> Type._error env (Ast ast) Bad_farray_arity
-              end
+            match args with
+            | [_] ->
+              let int_ty = Dolmen_std.Term.builtin Dolmen_std.Term.Int () in
+              Base.ty_app2 (module Type) env s Ty.array ast (int_ty :: args)
+            | [_; _] ->
+              Base.ty_app2 (module Type) env s Ty.array ast args
+            | _ -> Type._error env (Ast ast) Bad_farray_arity
         )
       | Type.Builtin Array_get ->
         `Term (Base.term_app2 (module Type) env s T.select)

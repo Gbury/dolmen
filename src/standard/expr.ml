@@ -116,6 +116,7 @@ module Tags = struct
   let pos = Tag.create ()
   let name = Tag.create ()
   let rwrt = Tag.create ()
+  let ac = Tag.create ()
 
   let exact s = Pretty.Exact s
   let infix = Pretty.Infix
@@ -841,7 +842,7 @@ module Ty = struct
   let add_tag (t : t) k v = t.ty_tags <- Tag.add t.ty_tags k v
   let add_tag_opt (t : t) k o = t.ty_tags <- Tag.add_opt t.ty_tags k o
   let add_tag_list (t : t) k l = t.ty_tags <- Tag.add_list t.ty_tags k l
-  
+
   let unset_tag (t: t) k = t.ty_tags <- Tag.unset t.ty_tags k
 
   (* Module for namespacing *)
@@ -1867,7 +1868,7 @@ module Term = struct
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
             mk' ~builtin:(Builtin.Bitv_extract (i, j))
               (Format.asprintf "bitv_extract_%d_%d" i j) []
-              [Ty.bitv n] (Ty.bitv (j - i + 1))
+              [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
 
       let repeat =

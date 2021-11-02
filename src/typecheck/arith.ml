@@ -14,7 +14,6 @@ module Ae = struct
 
       type _ Type.err +=
       | Expected_arith_type : Type.Ty.t -> Term.t Type.err
-      | Incompatible_Arith_Types : Type.Ty.t * Type.Ty.t -> Term.t Type.err
 
       let dispatch1 env (mk_int, mk_real) ast t =
         let ty = T.ty t in
@@ -23,17 +22,12 @@ module Ae = struct
         | `Real -> mk_real t
         | _ -> Type._error env (Ast ast) (Expected_arith_type ty)
 
-      let dispatch2 ?(strict = true) env (mk_int, mk_real) ast a b =
+      let dispatch2 env (mk_int, mk_real) ast a b =
         let tya = T.ty a in
-        let tyb = T.ty b in
-        match Ty.view tya, Ty.view tyb with
-        | `Int, `Int -> mk_int a b
-        | `Real, `Real -> mk_real a b
-        | (`Real, `Int | `Int, `Real) when not strict -> mk_real a b
-        | (`Real, `Int | `Int, `Real) ->
-          Type._error env (Ast ast) (Incompatible_Arith_Types (tya, tyb))
-        | _ ->
-          Type._error env (Ast ast) (Expected_arith_type tyb)
+        match Ty.view tya with
+        | `Int -> mk_int a b
+        | `Real -> mk_real a b
+        | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
 
 
       let parse env s =
@@ -46,9 +40,9 @@ module Ae = struct
 
         (* Literals *)
         | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
-          `Term (Base.app0 (module Type) env s (T.Int.mk name))
+          `Term (Base.app0 (module Type) env s (T.int name))
         | Type.Id { Id.ns = Value Real; name = Simple name; } ->
-          `Term (Base.app0 (module Type) env s (T.Real.mk name))
+          `Term (Base.app0 (module Type) env s (T.real name))
 
         (* Arithmetic *)
         | Type.Builtin Term.Minus ->
@@ -71,7 +65,20 @@ module Ae = struct
         | Type.Builtin Term.Int_pow ->
           `Term (Base.term_app2 (module Type) env s T.Int.pow)
         | Type.Builtin Term.Real_pow ->
-          `Term (Base.term_app2 (module Type) env s T.Real.pow)
+          `Term (fun ast args ->
+            Base.term_app2 (module Type) env s
+              (fun a b ->
+                let tya = T.ty a in
+                let a', b' =
+                  match Ty.view tya, Ty.view (T.ty b) with
+                  | `Real, `Real -> a, b
+                  | `Real, `Int -> a, T.Real.to_real b
+                  | `Int, `Real -> T.Real.to_real a, b
+                  | `Int, `Int -> T.Real.to_real a, T.Real.to_real b
+                  | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
+                in
+                T.Real.pow a' b') ast args
+          )
         | Type.Builtin Term.Lt ->
           `Term (Base.term_app2_ast (module Type) env s
             (dispatch2 env (T.Int.lt, T.Real.lt)))
