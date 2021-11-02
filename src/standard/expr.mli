@@ -1214,9 +1214,6 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic over Rationals *)
 
-    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
-    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
-
     val div : t -> t -> t
     (** Exact division on rationals. *)
   end
@@ -1233,8 +1230,8 @@ module Term : sig
     include Dolmen_intf.Term.Smtlib_Float_Real with type t := t
     (** Satisfy the real part of the SMTLIB's Float requirements *)
 
-    val pow : t -> t -> t
-    (** Exponentiation on integers. *)
+    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
+    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
 
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)

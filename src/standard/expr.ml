@@ -1688,10 +1688,6 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.rat; Ty.rat] Ty.rat
 
-      let pow = mk'
-          ~pos:Pretty.Infix ~name:"**" ~builtin:Builtin.Pow
-          "Pow" [] [Ty.rat; Ty.rat] Ty.rat
-
       let div = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div
           "Div" [] [Ty.rat; Ty.rat] Ty.rat
@@ -2858,7 +2854,6 @@ module Term = struct
     let add a b = apply_cst Const.Rat.add [] [a; b]
     let sub a b = apply_cst Const.Rat.sub [] [a; b]
     let mul a b = apply_cst Const.Rat.mul [] [a; b]
-    let pow a b = apply_cst Const.Rat.pow [] [a; b]
     let div a b = apply_cst Const.Rat.div [] [a; b]
     let div_e a b = apply_cst Const.Rat.div_e [] [a; b]
     let div_t a b = apply_cst Const.Rat.div_t [] [a; b]
