@@ -9,12 +9,22 @@ module Ae = struct
 
   module Tff
       (Type : Tff_intf.S)
-      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t)
+      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t
+                                      and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
 
     let mk_or a b = T._or [a; b]
     let mk_and a b = T._and [a; b]
+
+    let parse_trigger env ast = function
+      | { Ast.term = Ast.App (
+          { Ast.term = Ast.Builtin And; _ }, l
+        ); _} ->
+        List.map (Type.parse_term env) l
+      | _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("A conjunction of terms", None))
 
     let parse env s =
       match s with
@@ -57,7 +67,7 @@ module Ae = struct
               let then_ = Type.parse_term env b in
               let else_ = Type.parse_term env c in
               T.ite cond then_ else_
-          )
+            )
         )
 
       (* Equality *)
@@ -66,9 +76,23 @@ module Ae = struct
       | Type.Builtin Ast.Distinct ->
         `Term (Base.term_app_list (module Type) env s T.distinct)
 
-      (* Ignore the AC symbol *)
-      | Type.Id id when Id.equal id Id.ac_symbol ->
-        `Tags (fun _ast _args -> [Type.Set (Tag.ac, ())])
+      (* AC (Associative Commutative) symbol *)
+      | Type.Id { name = Simple "ac"; ns = Attr; }->
+        `Tags (fun _ _ -> [Type.Set (Tag.ac, ())])
+
+      (* Triggers *)
+      | Type.Id { name = Simple "triggers"; ns = Attr; } ->
+        `Tags (fun ast l ->
+            let l = List.map (parse_trigger env ast) l in
+            [Type.Set (Tag.triggers, l)]
+          )
+
+      (* Filters *)
+      | Type.Id { name = Simple "filters"; ns = Attr; } ->
+        `Tags (fun _ l ->
+            let l = List.map (Type.parse_prop env) l in
+            [Type.Set (Tag.filters, l)]
+          )
 
       | _ -> `Not_found
 

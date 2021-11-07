@@ -20,11 +20,11 @@ module Ae = struct
         `Ty (
           fun ast args ->
             match args with
-            | [_] ->
+            | [ty] ->
               let int_ty = Dolmen_std.Term.builtin Dolmen_std.Term.Int () in
-              Base.ty_app2 (module Type) env s Ty.array ast (int_ty :: args)
-            | [_; _] ->
-              Base.ty_app2 (module Type) env s Ty.array ast args
+              Ty.array (Type.parse_ty env int_ty) (Type.parse_ty env ty)
+            | [ity; vty] ->
+              Ty.array (Type.parse_ty env ity) (Type.parse_ty env vty)
             | _ -> Type._error env (Ast ast) Bad_farray_arity
         )
       | Type.Builtin Array_get ->

@@ -18,12 +18,21 @@ end
 (** Minium required signature for tags to typecheck Alt-Ergo's core/base theory. *)
 module type Ae_Base = sig
 
+  type term
+  (** The type of terms *)
+
   type 'a t
   (** Polymorphic tags *)
 
   val ac : unit t
   (** A flag (i.e. unit tag), indicating that the tagged term/formula
       is to be considered as a associative and commutative term. *)
+
+  val triggers : term list list t
+  (** Multi-triggers that can be added to quantified formulas *)
+
+  val filters : term list t
+  (** Filters that can be added to quantified formulas *)
 
 end
 

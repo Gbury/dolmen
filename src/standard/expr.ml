@@ -124,6 +124,7 @@ module Tags = struct
 
   let named = Tag.create ()
   let triggers = Tag.create ()
+  let filters = Tag.create ()
 
   let bound = Tag.create ()
 

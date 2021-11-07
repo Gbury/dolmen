@@ -72,9 +72,9 @@ module Ae = struct
                 let a', b' =
                   match Ty.view tya, Ty.view (T.ty b) with
                   | `Real, `Real -> a, b
-                  | `Real, `Int -> a, T.Real.to_real b
-                  | `Int, `Real -> T.Real.to_real a, b
-                  | `Int, `Int -> T.Real.to_real a, T.Real.to_real b
+                  | `Real, `Int -> a, T.Int.to_real b
+                  | `Int, `Real -> T.Int.to_real a, b
+                  | `Int, `Int -> T.Int.to_real a, T.Int.to_real b
                   | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
                 in
                 T.Real.pow a' b') ast args

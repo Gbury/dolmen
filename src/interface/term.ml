@@ -644,9 +644,6 @@ module type Ae_Base = sig
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
 
-  val neq : t -> t -> t
-  (** Disequality. *)
-
 end
 
 module type Ae_Arith_Common = sig
@@ -710,6 +707,9 @@ module type Ae_Arith = sig
     val rem_e : t -> t -> t
     (** Euclidian division remainder *)
 
+    val to_real : t -> t
+    (** Conversion from an integer term to a real term. *)
+    
   end
 
   module Real : sig
@@ -717,9 +717,6 @@ module type Ae_Arith = sig
 
     val div : t -> t -> t
     (** Exact division on reals. *)
-
-    val to_real : t -> t
-    (** Conversion from an integer term to a real term. *)
 
   end
 

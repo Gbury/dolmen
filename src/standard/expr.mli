@@ -138,6 +138,7 @@ module Tags : sig
   (** Satsify the Zf interface. *)
 
   include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
+                                        and type term := term
   (** Satsify the Ae interface. *)
 
 end
