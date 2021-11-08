@@ -4,8 +4,8 @@ module Ae : sig
 
   module Tff
       (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Array with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) : sig
+      (Ty : Dolmen.Intf.Ty.Ae_Array with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Array with type t := Type.T.t) : sig
 
     type _ Type.err +=
       | Bad_farray_arity : Dolmen.Std.Term.t Type.err

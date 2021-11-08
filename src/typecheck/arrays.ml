@@ -21,8 +21,7 @@ module Ae = struct
           fun ast args ->
             match args with
             | [ty] ->
-              let int_ty = Dolmen_std.Term.builtin Dolmen_std.Term.Int () in
-              Ty.array (Type.parse_ty env int_ty) (Type.parse_ty env ty)
+              Ty.array Ty.int (Type.parse_ty env ty)
             | [ity; vty] ->
               Ty.array (Type.parse_ty env ity) (Type.parse_ty env vty)
             | _ -> Type._error env (Ast ast) Bad_farray_arity

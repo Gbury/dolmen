@@ -187,6 +187,10 @@ module type Ae_Array = sig
   type t
   (** The type of types *)
 
+  val int : t
+  (** The type of integers, used as a default type of indexes
+      when no type is provided *)
+
   val array : t -> t -> t
   (** The type of functionnal arrays from one type to another. *)
 
