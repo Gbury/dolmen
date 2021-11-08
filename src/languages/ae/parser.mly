@@ -249,17 +249,15 @@ lexpr:
   | FORALL vars=separated_nonempty_list(COMMA, multi_logic_binder)
            triggers=triggers filters=filters DOT body=lexpr %prec prec_forall
     { let loc = L.mk_pos $startpos $endpos in
-      let f = T.forall ~loc (List.flatten vars) body in
-      let f = T.triggers ~loc f triggers in
-      let f = T.filters ~loc f filters in
-      f }
+      let body = T.triggers ~loc body triggers in
+      let body = T.filters ~loc body filters in
+      T.forall ~loc (List.flatten vars) body }
   | EXISTS vars=separated_nonempty_list(COMMA, multi_logic_binder)
            triggers=triggers filters=filters DOT body=lexpr %prec prec_exists
     { let loc = L.mk_pos $startpos $endpos in
-      let f = T.exists ~loc (List.flatten vars) body in
-      let f = T.triggers ~loc f triggers in
-      let f = T.filters ~loc f filters in
-      f }
+      let body = T.triggers ~loc body triggers in
+      let body = T.filters ~loc body filters in
+      T.exists ~loc (List.flatten vars) body }
 
   | name=STRING COLON e=lexpr %prec prec_named
    { let loc = L.mk_pos $startpos $endpos in
