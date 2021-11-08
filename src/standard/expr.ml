@@ -116,6 +116,7 @@ module Tags = struct
   let pos = Tag.create ()
   let name = Tag.create ()
   let rwrt = Tag.create ()
+  let ac = Tag.create ()
 
   let exact s = Pretty.Exact s
   let infix = Pretty.Infix
@@ -123,6 +124,7 @@ module Tags = struct
 
   let named = Tag.create ()
   let triggers = Tag.create ()
+  let filters = Tag.create ()
 
   let bound = Tag.create ()
 
@@ -841,7 +843,7 @@ module Ty = struct
   let add_tag (t : t) k v = t.ty_tags <- Tag.add t.ty_tags k v
   let add_tag_opt (t : t) k o = t.ty_tags <- Tag.add_opt t.ty_tags k o
   let add_tag_list (t : t) k l = t.ty_tags <- Tag.add_list t.ty_tags k l
-  
+
   let unset_tag (t: t) k = t.ty_tags <- Tag.unset t.ty_tags k
 
   (* Module for namespacing *)
@@ -1590,6 +1592,10 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.int; Ty.int] Ty.int
 
+      let pow = mk'
+          ~pos:Pretty.Infix ~name:"**" ~builtin:Builtin.Pow
+          "Pow" [] [Ty.int; Ty.int] Ty.int
+
       let div_e = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div_e
           "Div_e" [] [Ty.int; Ty.int] Ty.int
@@ -1769,6 +1775,10 @@ module Term = struct
       let mul = mk'
           ~pos:Pretty.Infix ~name:"*" ~builtin:Builtin.Mul
           "Mul" [] [Ty.real; Ty.real] Ty.real
+
+      let pow = mk'
+          ~pos:Pretty.Infix ~name:"**" ~builtin:Builtin.Pow
+          "Pow" [] [Ty.real; Ty.real] Ty.real
 
       let div = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:Builtin.Div
@@ -2813,6 +2823,7 @@ module Term = struct
     let add a b = apply_cst Const.Int.add [] [a; b]
     let sub a b = apply_cst Const.Int.sub [] [a; b]
     let mul a b = apply_cst Const.Int.mul [] [a; b]
+    let pow a b = apply_cst Const.Int.pow [] [a; b]
     let div a b = apply_cst Const.Int.div_e [] [a; b]
     let rem a b = apply_cst Const.Int.rem_e [] [a; b]
     let div_e a b = apply_cst Const.Int.div_e [] [a; b]
@@ -2872,6 +2883,7 @@ module Term = struct
     let add a b = apply_cst Const.Real.add [] [a; b]
     let sub a b = apply_cst Const.Real.sub [] [a; b]
     let mul a b = apply_cst Const.Real.mul [] [a; b]
+    let pow a b = apply_cst Const.Real.pow [] [a; b]
     let div a b = apply_cst Const.Real.div [] [a; b]
     let div_e a b = apply_cst Const.Real.div_e [] [a; b]
     let div_t a b = apply_cst Const.Real.div_t [] [a; b]

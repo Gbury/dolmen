@@ -21,8 +21,17 @@ module Subst = Dolmen_type.Def.Subst(T)(struct
 
 (* AE builtins *)
 module Ae_Core =
-  Dolmen_type.Core.Ae.Tff(T)
+  Dolmen_type.Core.Ae.Tff(T)(Dolmen.Std.Expr.Tags)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Ae_Arith =
+  Dolmen_type.Arith.Ae.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Ae_Arrays =
+  Dolmen_type.Arrays.Ae.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Ae_Bitv =
+  Dolmen_type.Bitv.Ae.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 
 (* Dimacs builtin *)
 module Dimacs =
@@ -703,13 +712,18 @@ let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
           print_fragment (env, fragment))
     ~name:"Unhandled AST fragment" ()
 
+let bad_farray_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-farray-arity"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Functional array types in Alt-Ergo expect either one or two type \
+        parameters.")
+    ~name:"Bad functional array arity" ()
+
 let expected_arith_type =
   Report.Error.mk ~code ~mnemonic:"arith-type-expected"
     ~message:(fun fmt (ty, _) ->
-        Format.fprintf fmt "Arithmetic type expected but got@ %a.@ %s"
-          (pp_wrap Dolmen.Std.Expr.Ty.print) ty
-          "Tptp arithmetic symbols are only polymorphic over the arithmetic \
-           types $int, $rat and $real.")
+        Format.fprintf fmt "Arithmetic type expected but got@ %a.@"
+          (pp_wrap Dolmen.Std.Expr.Ty.print) ty)
     ~hints:[(fun (_, msg) -> text_hint msg)]
     ~name:"Non-arithmetic use of overloaded arithmetic function" ()
 
@@ -989,9 +1003,17 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
       S.error ~loc st unhandled_ast (env, fragment)
+    (* Alt-Ergo Functional Array errors *)
+    | Ae_Arrays.Bad_farray_arity ->
+      S.error ~loc st bad_farray_arity ()
+    (* Alt-Ergo Arithmetic errors *)
+    | Ae_Arith.Expected_arith_type ty ->
+      S.error ~loc st expected_arith_type (ty, "")
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
-      S.error ~loc st expected_arith_type (ty, "")
+      S.error ~loc st expected_arith_type
+        (ty, "Tptp arithmetic symbols are only polymorphic over the arithmetic \
+              types $int, $rat and $real.")
     | Tptp_Arith.Cannot_apply_to ty ->
       S.error ~loc st expected_specific_arith_type ty
     (* Smtlib Array errors *)
@@ -1133,9 +1155,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           infer_term_csts = No_inference;
         } in
       let builtins = Dolmen_type.Base.merge [
+          Decl.parse;
+          Subst.parse;
+          additional_builtins;
           Ae_Core.parse;
-          Decl.parse; Subst.parse;
-          additional_builtins
+          Ae_Arith.parse;
+          Ae_Arrays.parse;
+          Ae_Bitv.parse;
         ] in
       T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer

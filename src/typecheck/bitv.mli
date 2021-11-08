@@ -1,5 +1,26 @@
 
 
+
+(** Alt-Ergo bitvector builtins *)
+module Ae : sig
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Bitv with type t := Type.T.t) : sig
+
+    type _ Type.err +=
+      | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+      (** Error raised when a character that isn't '0' or '1' is
+          used inside a bitvector string *)
+    (** Additional errors specific to Alt-Ergo's bitvectors' typing. *)
+
+    val parse : Type.builtin_symbols
+
+  end
+
+end
+
 (** Smtlib bitvector builtins *)
 module Smtlib2 : sig
 

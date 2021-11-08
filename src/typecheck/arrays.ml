@@ -1,6 +1,41 @@
 
 module Id = Dolmen.Std.Id
 
+(* Ae arrays *)
+(* ************************************************************************ *)
+
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Array with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Array with type t := Type.T.t) = struct
+
+    type _ Type.err +=
+      | Bad_farray_arity : Dolmen.Std.Term.t Type.err
+
+    let parse env s =
+      match s with
+      | Type.Id { name = Simple "farray"; ns = Term } ->
+        `Ty (
+          fun ast args ->
+            match args with
+            | [ty] ->
+              Ty.array Ty.int (Type.parse_ty env ty)
+            | [ity; vty] ->
+              Ty.array (Type.parse_ty env ity) (Type.parse_ty env vty)
+            | _ -> Type._error env (Ast ast) Bad_farray_arity
+        )
+      | Type.Builtin Array_get ->
+        `Term (Base.term_app2 (module Type) env s T.select)
+      | Type.Builtin Array_set ->
+        `Term (Base.term_app3 (module Type) env s T.store)
+      | _ -> `Not_found
+  end
+
+end
+
+
 (* Smtlib arrays *)
 (* ************************************************************************ *)
 

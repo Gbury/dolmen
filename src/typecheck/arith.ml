@@ -2,6 +2,102 @@
 module Id = Dolmen.Std.Id
 module Term = Dolmen.Std.Term
 
+(* Ae arithmetic *)
+(* ************************************************************************ *)
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
+                                        and type ty := Type.Ty.t) = struct
+
+      type _ Type.err +=
+      | Expected_arith_type : Type.Ty.t -> Term.t Type.err
+
+      let dispatch1 env (mk_int, mk_real) ast t =
+        let ty = T.ty t in
+        match Ty.view ty with
+        | `Int -> mk_int t
+        | `Real -> mk_real t
+        | _ -> Type._error env (Ast ast) (Expected_arith_type ty)
+
+      let dispatch2 env (mk_int, mk_real) ast a b =
+        let tya = T.ty a in
+        match Ty.view tya with
+        | `Int -> mk_int a b
+        | `Real -> mk_real a b
+        | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
+
+
+      let parse env s =
+        match s with
+        (* Types *)
+        | Type.Builtin Term.Int ->
+          `Ty (Base.app0 (module Type) env s Ty.int)
+        | Type.Builtin Term.Real ->
+          `Ty (Base.app0 (module Type) env s Ty.real)
+
+        (* Literals *)
+        | Type.Id { Id.ns = Value Integer; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.int name))
+        | Type.Id { Id.ns = Value Real; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.real name))
+
+        (* Arithmetic *)
+        | Type.Builtin Term.Minus ->
+          `Term (Base.term_app1_ast (module Type) env s
+            (dispatch1 env (T.Int.minus, T.Real.minus)))
+        | Type.Builtin Term.Add ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.add, T.Real.add)))
+        | Type.Builtin Term.Sub ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.sub, T.Real.sub)))
+        | Type.Builtin Term.Mult ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.mul, T.Real.mul)))
+        | Type.Builtin Term.Div ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.div_e, T.Real.div)))
+        | Type.Builtin Term.Mod ->
+          `Term (Base.term_app2 (module Type) env s T.Int.rem_e)
+        | Type.Builtin Term.Int_pow ->
+          `Term (Base.term_app2 (module Type) env s T.Int.pow)
+        | Type.Builtin Term.Real_pow ->
+          `Term (fun ast args ->
+            Base.term_app2 (module Type) env s
+              (fun a b ->
+                let tya = T.ty a in
+                let a', b' =
+                  match Ty.view tya, Ty.view (T.ty b) with
+                  | `Real, `Real -> a, b
+                  | `Real, `Int -> a, T.Int.to_real b
+                  | `Int, `Real -> T.Int.to_real a, b
+                  | `Int, `Int -> T.Int.to_real a, T.Int.to_real b
+                  | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
+                in
+                T.Real.pow a' b') ast args
+          )
+        | Type.Builtin Term.Lt ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.lt, T.Real.lt)))
+        | Type.Builtin Term.Leq ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.le, T.Real.le)))
+        | Type.Builtin Term.Gt ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.gt, T.Real.gt)))
+        | Type.Builtin Term.Geq ->
+          `Term (Base.term_app2_ast (module Type) env s
+            (dispatch2 env (T.Int.ge, T.Real.ge)))
+
+        (* Catch-all *)
+        | _ -> `Not_found
+
+  end
+end
+
 (* Smtlib arithmetic (integer and reals) *)
 (* ************************************************************************ *)
 
@@ -958,20 +1054,6 @@ module Tptp = struct
 
 end
 
-(* Ae arithmetic *)
-(* ************************************************************************ *)
-(*
-module Ae = struct
-
-  module Tff
-      (Type : Tff_intf.S)
-      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
-                                      and type ty := Type.Ty.t) = struct
-
-  end
-end
-*)
 (* Zf arithmetic *)
 (* ************************************************************************ *)
 

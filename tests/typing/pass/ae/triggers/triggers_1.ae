@@ -1,0 +1,6 @@
+
+logic P, R: int -> prop
+logic f: int -> int
+
+goal g1: exists x:int [P(0)|f(1),P(2)]{f(1)>f(2)}. P(0) -> R(x)
+goal g2: forall x:int [P(x)]{f(x)>f(2)}. P(x) -> R(x)

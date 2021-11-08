@@ -1,6 +1,46 @@
 
 module Id = Dolmen.Std.Id
 
+(* Ae Bitvector *)
+(* ************************************************************************ *)
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Bitv with type t := Type.T.t) = struct
+
+    type _ Type.err +=
+      | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+
+    let parse_binary env s ast =
+      match String.iter Misc.Bitv.check_bin s with
+      | () -> T.mk s
+      | exception Misc.Bitv.Invalid_char c ->
+        Type._error env (Ast ast) (Invalid_bin_char c)
+
+    let parse env s =
+      match s with
+
+      (* Bitvector sort *)
+      | Type.Builtin (Bitv n) ->
+        `Ty (Base.app0 (module Type) env s (Ty.bitv n))
+
+      (* Bitvector litterals *)
+      | Type.Id { ns = Value Bitvector; name = Simple name; } ->
+        `Term (Base.app0_ast (module Type) env s (parse_binary env name))
+
+      (* Bitvector operators *)
+      | Type.Builtin Bitv_concat ->
+        `Term (Base.term_app2 (module Type) env s T.concat)
+      | Type.Builtin (Bitv_extract (l, r)) ->
+        `Term (Base.term_app1 (module Type) env s (T.extract r l))
+
+      | _ -> `Not_found
+
+  end
+end
+
 (* Smtlib Bitvector *)
 (* ************************************************************************ *)
 

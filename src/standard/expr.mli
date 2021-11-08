@@ -137,6 +137,10 @@ module Tags : sig
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
   (** Satsify the Zf interface. *)
 
+  include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
+                                        and type term := term
+  (** Satsify the Ae interface. *)
+
 end
 
 (** {2 Printing} *)
@@ -1182,6 +1186,9 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic on integers. *)
 
+    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
+    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
+
     val div : t -> t -> t
     (** Euclidian division quotient *)
 
@@ -1223,6 +1230,9 @@ module Term : sig
 
     include Dolmen_intf.Term.Smtlib_Float_Real with type t := t
     (** Satisfy the real part of the SMTLIB's Float requirements *)
+
+    include Dolmen_intf.Term.Ae_Arith_Common with type t := t
+    (** Satisfy the common interface for Alt-Ergo's arithmetic types. *)
 
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)

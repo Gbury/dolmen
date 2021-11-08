@@ -1,0 +1,23 @@
+
+
+logic x: int farray
+
+goal g:
+  x[0 <- 0] = x[0 <- 1, 0 <- 0]
+
+goal g :
+  forall i,j:'a.
+  forall v : 'b.
+  forall a,b : ('a,'b) farray.
+  i = j ->
+  b = a[j<-v] ->
+  v = b[i]
+
+
+logic y: ('a, 'b) farray
+
+function update (a: 'a, b: 'b, fa: ('a, 'b) farray) : ('a, 'b) farray =
+  fa[a <- b]
+
+goal g2:
+  y[1] = 0. -> update (1, 0., y) = y

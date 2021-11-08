@@ -7,6 +7,8 @@ module Ae : sig
   (** Builtin symbols for tptp's tff *)
   module Tff
       (Type : Tff_intf.S)
+      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t
+                                      and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) : sig
 

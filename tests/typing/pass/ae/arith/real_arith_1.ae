@@ -1,0 +1,18 @@
+
+logic x,y,z:real
+
+goal g1: x > y and x > 1.
+
+goal g2: 3.*x+2.*y-z = 1.
+
+goal g3: -x+.5*y+z >= 0.
+
+
+logic p1, p2, p3, p4: real
+
+axiom x1: p1=2**.2
+axiom x2: p2=2.**.2
+axiom x3: p3=2**.2.
+axiom x4: p4=2.**.2.
+
+goal g5: p1=p2 and p2=p3 and p3=p4

@@ -620,19 +620,140 @@ module type Ae_Base = sig
   val _false : t
   (** The symbol for [false] *)
 
+  val neg : t -> t
+  (** Negation. *)
+
+  val _or : t list -> t
+  (** Disjunction of formulas *)
+
+  val _and : t list -> t
+  (** Disjunction of formulas *)
+
+  val imply : t -> t -> t
+  (** Implication *)
+
+  val equiv : t -> t -> t
+  (** Equivalence *)
+
+  val xor : t -> t -> t
+  (** Exclusive disjunction. *)
+
+  val ite : t -> t -> t -> t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
+
+  val distinct : t list -> t
+  (** Distinct constraints on terms. *)
+
+end
+
+module type Ae_Arith_Common = sig
+
+  type t
+  (** The type of terms *)
+
+  val minus : t -> t
+  (** Arithmetic unary minus/negation. *)
+
+  val add : t -> t -> t
+  (** Arithmetic addition. *)
+
+  val sub : t -> t -> t
+  (** Arithmetic substraction *)
+
+  val mul : t -> t -> t
+  (** Arithmetic multiplication *)
+
+  val pow : t -> t -> t
+  (** Arithmetic exponentiation *)
+
+  val lt : t -> t -> t
+  (** Arithmetic "less than" comparison. *)
+
+  val le : t -> t -> t
+  (** Arithmetic "less or equal" comparison. *)
+
+  val gt : t -> t -> t
+  (** Arithmetic "greater than" comparison. *)
+
+  val ge : t -> t -> t
+  (** Arithmetic "greater or equal" comparison. *)
+
 end
 
 (** Minimum required to type ae's arith *)
 module type Ae_Arith = sig
 
   type t
-  (** The type of terms *)
+  (** The type of terms. *)
 
   type ty
   (** The type of types. *)
 
   val ty : t -> ty
-  (** Type of a term. *)
+  (** Get the type of a term. *)
+
+  val int : string -> t
+  (** Integer literals *)
+
+  val real : string -> t
+  (** Real literals *)
+
+  module Int : sig
+    include Ae_Arith_Common with type t := t
+
+    val div_e : t -> t -> t
+    (** Euclidian division quotient *)
+
+    val rem_e : t -> t -> t
+    (** Euclidian division remainder *)
+
+    val to_real : t -> t
+    (** Conversion from an integer term to a real term. *)
+    
+  end
+
+  module Real : sig
+    include Ae_Arith_Common with type t := t
+
+    val div : t -> t -> t
+    (** Exact division on reals. *)
+
+  end
+
+end
+
+module type Ae_Array = sig
+
+  type t
+  (** The type of terms *)
+
+  val select : t -> t -> t
+  (** [select arr idx] creates the get operation on functionnal
+        array [arr] for index [idx]. *)
+
+  val store : t -> t -> t -> t
+  (** [store arr idx value] creates the set operation on
+      functional array [arr] for value [value] at index [idx]. *)
+
+end
+
+(** Minimum required to type ae's bitvectors *)
+module type Ae_Bitv = sig
+
+  type t
+  (** The type of terms *)
+
+  val mk : string -> t
+  (** Create a bitvector litteral from a string representation.
+      The string should only contain characters '0' or '1'. *)
+
+  val concat : t -> t -> t
+  (** Bitvector concatenation. *)
+
+  val extract : int -> int -> t -> t
+  (** Bitvector extraction, using in that order,
+      the start and then end the position of the
+      bitvector to extract. *)
 
 end
 
@@ -984,7 +1105,7 @@ module type Smtlib_Int = sig
   (** Euclidian division. See Smtlib theory for a full description. *)
 
   val rem : t -> t -> t
-  (** Euclidiane integer remainder See Smtlib theory for a full description. *)
+  (** Euclidian integer remainder See Smtlib theory for a full description. *)
 
   val abs : t -> t
   (** Arithmetic absolute value. *)

@@ -60,7 +60,7 @@ type _ t +=
   | Rat | Rational of string
   | Real | Decimal of string
   | Lt | Leq | Gt | Geq
-  | Minus | Add | Sub | Mul
+  | Minus | Add | Sub | Mul | Pow
   | Div
   | Div_e | Modulo_e
   | Div_t | Modulo_t

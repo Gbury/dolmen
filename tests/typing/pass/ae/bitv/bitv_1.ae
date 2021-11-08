@@ -1,0 +1,27 @@
+(** Usage of bitv types *)
+logic register: bitv[8]
+
+(** Explicit declaration *)
+axiom a: register = [|00101010|]
+
+(** Concatenation *)
+goal g1:
+    forall x,y:bitv[16]. x@y=y@x -> x = y
+
+goal g2:
+    forall x:bitv[3]. x@[|101|] = [|000101|] -> x=[|000|]
+
+(** Extraction of contiguous bits *)
+goal g3:
+    [|010|]^{0,1}=[|1100|]^{1,2}
+
+goal g4:
+    forall x:bitv[4]. forall y:bitv[2].
+    x=y@[|10|] ->
+    x^{2,3}=[|11|] ->
+    x=[|1110|]
+
+goal g5 :
+    forall x:bitv[32]. forall y:bitv[32]. forall s:bitv[32].
+    s = y^{0,15} @ x^{16,31} ->
+    (s^{16,31} = y^{0,15} and s^{0,15} = x^{16,31})

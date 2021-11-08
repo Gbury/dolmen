@@ -202,6 +202,10 @@ type _ t +=
   (** [Mul:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic multiplication on numbers
       (whether integers, rationals, or reals). *)
+  | Pow
+  (** [Pow:{a=(Int|Rational|Real)} a -> a -> a]:
+      arithmetic exponentiation on numbers
+      (whether integers, rationals, or reals). *)
   | Div
   (** [Div:{a=(Rational|Real)} a -> a -> a]:
       arithmetic exact division on numbers

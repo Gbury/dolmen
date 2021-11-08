@@ -1,4 +1,24 @@
 
+(** Ae array builtins *)
+module Ae : sig
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Array with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Array with type t := Type.T.t) : sig
+
+    type _ Type.err +=
+      | Bad_farray_arity : Dolmen.Std.Term.t Type.err
+      (** Raised when an array is parametrized
+          with other than one or two parameters. *)
+    (** Errors for array type-checking. *)
+
+    val parse : Type.builtin_symbols
+  end
+
+end
+
+
 (** Smtlib array builtins *)
 module Smtlib2 : sig
 

@@ -1,4 +1,24 @@
 
+(** AE Integer Arithmetic *)
+module Ae: sig
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
+                                        and type ty := Type.Ty.t) : sig
+
+    type _ Type.err +=
+      | Expected_arith_type : Type.Ty.t -> Dolmen.Std.Term.t Type.err
+      (** Error raised when an arithmetic type was expected (i.e. either
+          int or real), but another type was found. *)
+    (** Additional errors specific to arithmetic typing. *)
+
+    val parse : Type.builtin_symbols
+  end
+
+end
+
 (** Smtlib Integer and Real Arithmetic *)
 module Smtlib2 : sig
 

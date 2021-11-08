@@ -9,14 +9,30 @@ module Ae = struct
 
   module Tff
       (Type : Tff_intf.S)
+      (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t
+                                      and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
+
+    let mk_or a b = T._or [a; b]
+    let mk_and a b = T._and [a; b]
+
+    let parse_trigger env ast = function
+      | { Ast.term = Ast.App (
+          { Ast.term = Ast.Builtin And; _ }, l
+        ); _} ->
+        List.map (Type.parse_term env) l
+      | _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("A multi-trigger (i.e. a list of term patterns)", None))
 
     let parse env s =
       match s with
 
       (* Types *)
       | Type.Builtin Ast.Bool ->
+        `Ty (Base.app0 (module Type) env s Ty.bool)
+      | Type.Builtin Ast.Prop ->
         `Ty (Base.app0 (module Type) env s Ty.bool)
       | Type.Builtin Ast.Unit ->
         `Ty (Base.app0 (module Type) env s Ty.unit)
@@ -29,9 +45,54 @@ module Ae = struct
       | Type.Builtin Ast.False ->
         `Term (Base.app0 (module Type) env s T._false)
 
-      (* Terms connectors *)
+      (* Boolean operators *)
+      | Type.Builtin Ast.Not ->
+        `Term (Base.term_app1 (module Type) env s T.neg)
+      | Type.Builtin Ast.And ->
+        `Term (Base.term_app_left (module Type) env s mk_and)
+      | Type.Builtin Ast.Or ->
+        `Term (Base.term_app_left (module Type) env s mk_or)
+      | Type.Builtin Ast.Xor ->
+        `Term (Base.term_app_left (module Type) env s T.xor)
+      | Type.Builtin Ast.Imply ->
+        `Term (Base.term_app_right (module Type) env s T.imply)
+      | Type.Builtin Ast.Equiv ->
+        `Term (Base.term_app_right (module Type) env s T.equiv)
+
+      (* If-then-else *)
+      | Type.Builtin Ast.Ite ->
+        `Term (
+          Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
+              let cond = Type.parse_prop env a in
+              let then_ = Type.parse_term env b in
+              let else_ = Type.parse_term env c in
+              T.ite cond then_ else_
+            )
+        )
+
+      (* Equality *)
       | Type.Builtin Ast.Eq ->
         `Term (Base.term_app2 (module Type) env s T.eq)
+      | Type.Builtin Ast.Distinct ->
+        `Term (Base.term_app_list (module Type) env s T.distinct)
+
+      (* AC (Associative Commutative) symbol *)
+      | Type.Id { name = Simple "ac"; ns = Attr; }->
+        `Tags (fun _ _ -> [Type.Set (Tag.ac, ())])
+
+      (* Triggers *)
+      | Type.Id { name = Simple "triggers"; ns = Attr; } ->
+        `Tags (fun ast l ->
+            let l = List.map (parse_trigger env ast) l in
+            [Type.Set (Tag.triggers, l)]
+          )
+
+      (* Filters *)
+      | Type.Id { name = Simple "filters"; ns = Attr; } ->
+        `Tags (fun _ l ->
+            let l = List.map (Type.parse_prop env) l in
+            [Type.Set (Tag.filters, l)]
+          )
 
       | _ -> `Not_found
 
@@ -39,7 +100,7 @@ module Ae = struct
 
 end
 
-(* Alt-ergo builtins *)
+(* Dimacs builtins *)
 (* ************************************************************************ *)
 
 module Dimacs = struct
