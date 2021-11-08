@@ -24,7 +24,7 @@ module Ae = struct
         List.map (Type.parse_term env) l
       | _ ->
         Type._error env (Ast ast)
-          (Type.Expected ("A conjunction of terms", None))
+          (Type.Expected ("A multi-trigger (i.e. a list of term patterns)", None))
 
     let parse env s =
       match s with
