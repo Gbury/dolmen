@@ -1094,6 +1094,8 @@ module Ty = struct
 
   (* View *)
   type view = [
+    | `Prop
+    | `Bool
     | `Int
     | `Rat
     | `Real

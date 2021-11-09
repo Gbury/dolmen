@@ -389,6 +389,10 @@ module Ty : sig
   (** {4 View} *)
 
   type view = [
+    | `Prop
+    (** Propositions *)
+    | `Bool
+    (** Booleans *)
     | `Int
     (** Integers *)
     | `Rat
