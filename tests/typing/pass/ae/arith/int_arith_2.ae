@@ -1,0 +1,5 @@
+
+goal g:
+  forall x:int.
+  exists y,z:int.
+    x <= y <= z

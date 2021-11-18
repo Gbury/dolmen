@@ -38,7 +38,7 @@ make test
 To promote the results of tests (if e.g. you have changed some error message,
 or added new tests):
 ```
-make test-promote
+make promote
 ```
 
 

@@ -1,0 +1,8 @@
+File "tests/typing/pass/ae/types/types_2.ae", line 3, character 0-27:
+3 | logic a,b,c, beta,gamma : a
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning Shadowing: `a` was already declared at line 2, character 0-6
+File "tests/typing/pass/ae/types/types_2.ae", line 4, character 21-22:
+4 | logic ac f : a, a -> a
+                         ^
+Error Expected Ttype of type but got the term `a`

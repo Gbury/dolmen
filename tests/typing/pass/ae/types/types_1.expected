@@ -1,0 +1,4 @@
+File "tests/typing/pass/ae/types/types_1.ae", line 6, character 0-20:
+6 | type 'a m = {m : 'a}
+    ^^^^^^^^^^^^^^^^^^^^
+Warning Shadowing: `m` was already declared at line 6, character 0-20

@@ -1,0 +1,5 @@
+
+type t = { c_1 : int }
+
+goal g_valid_3_1:
+  {c_1 = 10}#c_1 = 10

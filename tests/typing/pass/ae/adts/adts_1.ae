@@ -1,0 +1,5 @@
+
+type t = A | B | C of { c_1 : t }
+
+goal g:
+  C(A) ? C and C(B)#c_1 = B

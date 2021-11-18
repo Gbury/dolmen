@@ -1,0 +1,4 @@
+File "tests/typing/pass/ae/arith/int_arith_2.ae", line 5, character 4-15:
+5 |     x <= y <= z
+        ^^^^^^^^^^^
+Error Arithmetic type expected but got `Prop`.@

@@ -18,6 +18,23 @@
   (action (diff int_arith_1.expected int_arith_1.full)))
 
 
+; Test for int_arith_2.ae
+; Full mode test
+
+(rule
+   (target  int_arith_2.full)
+   (deps    (:input int_arith_2.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff int_arith_2.expected int_arith_2.full)))
+
+
 ; Test for real_arith_1.ae
 ; Full mode test
 

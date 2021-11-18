@@ -2711,7 +2711,7 @@ module Term = struct
     in
     apply_cst tester ty_args [t]
 
-  (* Recor creation *)
+  (* Record creation *)
   let build_record_fields ty_c l =
     let n =
       match Ty.definition ty_c with

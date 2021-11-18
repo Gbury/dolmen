@@ -1,0 +1,8 @@
+
+type ('a, 'b) t =
+    A of {a : 'a}
+  | B of {b : 'b}
+
+type 'a m = {m : 'a}
+
+type n
