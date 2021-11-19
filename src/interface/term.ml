@@ -728,6 +728,9 @@ module type Ae_Arith = sig
     val to_real : t -> t
     (** Conversion from an integer term to a real term. *)
 
+    val in_interval : t -> bool * bool -> t -> t -> t
+    (** Arithmetic "ín interval" check. *)
+
   end
 
   module Real : sig

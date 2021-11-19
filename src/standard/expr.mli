@@ -1217,6 +1217,9 @@ module Term : sig
     val rem_f : t -> t -> t
     (** Remaidner for the floor of the ration/real division. *)
 
+    val in_interval : t -> bool * bool -> t -> t -> t
+    (** Arithmetic "in interval" check. *)
+
   end
 
   (** Rational operations *)

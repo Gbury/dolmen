@@ -92,6 +92,11 @@ module Ae = struct
           `Term (Base.term_app2_ast (module Type) env s
             (dispatch2 env (T.Int.ge, T.Real.ge)))
 
+        | Type.Builtin (Term.In_interval (b1, b2)) ->
+          `Term (Base.term_app3_ast (module Type) env s
+            (fun _ast _a1 _a2 _a3 ->
+              T.Int.in_interval _a1 (b1, b2) _a2 _a3))
+
         (* Catch-all *)
         | _ -> `Not_found
 

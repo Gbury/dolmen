@@ -1638,6 +1638,10 @@ module Term = struct
           ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.Geq
           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
+      let in_interval (b1, b2) = mk'
+          ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
+          "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
+
       let floor = mk'
           ~name:"floor" ~builtin:Builtin.Floor
           "Floor" [] [Ty.int] Ty.int
@@ -2845,6 +2849,8 @@ module Term = struct
     let le a b = apply_cst Const.Int.le [] [a; b]
     let gt a b = apply_cst Const.Int.gt [] [a; b]
     let ge a b = apply_cst Const.Int.ge [] [a; b]
+    let in_interval t (b1, b2) t1 t2 =
+      apply_cst (Const.Int.in_interval (b1, b2)) [] [t; t1; t2]
     let floor a = apply_cst Const.Int.floor [] [a]
     let ceiling a = apply_cst Const.Int.ceiling [] [a]
     let truncate a = apply_cst Const.Int.truncate [] [a]
