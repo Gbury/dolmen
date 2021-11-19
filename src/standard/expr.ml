@@ -732,17 +732,17 @@ module Ty = struct
   and expand_head t =
     if t.ty_head != dummy then t.ty_head
     else match t.ty_descr with
-    | TyApp (f, args) ->
-      begin match f.id_ty.alias with
-        | No_alias -> t.ty_head <- t; t
-        | Alias { alias_vars; alias_body; } ->
-          assert (List.compare_lengths alias_vars args = 0);
-          let map = List.fold_left2 Subst.Var.bind Subst.empty alias_vars args in
-          let res = expand_head (subst map alias_body) in
-          t.ty_head <- res;
-          res
-      end
-    | _ -> t.ty_head <- t; t
+      | TyApp (f, args) ->
+        begin match f.id_ty.alias with
+          | No_alias -> t.ty_head <- t; t
+          | Alias { alias_vars; alias_body; } ->
+            assert (List.compare_lengths alias_vars args = 0);
+            let map = List.fold_left2 Subst.Var.bind Subst.empty alias_vars args in
+            let res = expand_head (subst map alias_body) in
+            t.ty_head <- res;
+            res
+        end
+      | _ -> t.ty_head <- t; t
 
   (* hash function *)
   let rec hash_aux (t : t) =
@@ -1571,6 +1571,17 @@ module Term = struct
       mk' ~builtin:Builtin.Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
+    let in_interval (b1, b2) = mk'
+        ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
+        "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
+
+    let maps_to =
+      let a = Ty.Var.mk "alpha" in
+      let b = Ty.Var.mk "beta" in
+      mk'
+        ~name:"maps_to" ~builtin:Builtin.Maps_to
+        "MapsTo" [] [Ty.of_var a; Ty.of_var b] Ty.prop
+
     module Int = struct
 
       let int =
@@ -1637,10 +1648,6 @@ module Term = struct
       let ge = mk'
           ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.Geq
           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
-
-      let in_interval (b1, b2) = mk'
-          ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
-          "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
 
       let floor = mk'
           ~name:"floor" ~builtin:Builtin.Floor
@@ -1962,9 +1969,9 @@ module Term = struct
           )
 
       let sub =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
       let mul =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
@@ -2077,8 +2084,8 @@ module Term = struct
         mk' ~builtin:Builtin.RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
 
       (** Generic function for creating functions primarily on the same floating
-         point format with optionally a rounding mode and a particular result
-         type *)
+          point format with optionally a rounding mode and a particular result
+          type *)
       let fp_gen_fun ~args ?rm ?res name builtin =
         with_cache ~cache:(Hashtbl.create 13) (fun es ->
             let fp = Ty.float' es in
@@ -2774,6 +2781,16 @@ module Term = struct
       in
       mk_record aux l
 
+  (* Alt-Ergo's semantic triggers *)
+  let in_interval t (b1, b2) t1 t2 =
+    apply_cst (Const.in_interval (b1, b2)) [] [t; t1; t2]
+
+  let maps_to tv t =
+    let ntv = of_var tv in
+    let tv_ty = ty ntv in
+    let t_ty = ty t in
+    apply_cst Const.maps_to [tv_ty; t_ty] [ntv; t]
+
   (* typing annotations *)
   let ensure t ty =
     match Ty.robinson Subst.empty ty t.term_ty with
@@ -2849,8 +2866,6 @@ module Term = struct
     let le a b = apply_cst Const.Int.le [] [a; b]
     let gt a b = apply_cst Const.Int.gt [] [a; b]
     let ge a b = apply_cst Const.Int.ge [] [a; b]
-    let in_interval t (b1, b2) t1 t2 =
-      apply_cst (Const.Int.in_interval (b1, b2)) [] [t; t1; t2]
     let floor a = apply_cst Const.Int.floor [] [a]
     let ceiling a = apply_cst Const.Int.ceiling [] [a]
     let truncate a = apply_cst Const.Int.truncate [] [a]

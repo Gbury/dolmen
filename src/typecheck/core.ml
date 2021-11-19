@@ -14,6 +14,7 @@ module Ae = struct
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t
                                      and type term_field := Type.T.Field.t
+                                     and type term_var := Type.T.Var.t
                                      and type term_cst := Type.T.Const.t
                                      and type term_cstr := Type.T.Cstr.t) = struct
 
@@ -115,7 +116,7 @@ module Ae = struct
                       | `Term_cst c -> T.adt_project t c
                       | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
                     end
-                  | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("ADT constructor/Record field name", None))
                 end
               | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
             end
@@ -126,7 +127,7 @@ module Ae = struct
           fun ast args ->
             begin match args with
               | [adt; cstr] ->
-                let _t = Type.parse_term env adt in
+                let t = Type.parse_term env adt in
                 begin match cstr with
                   | { Ast.term = Ast.Symbol sym; _ }
                   | { Ast.term =
@@ -134,10 +135,38 @@ module Ae = struct
                     } ->
                     begin
                       match Type.find_bound env sym with
-                      | `Cstr c -> T.cstr_tester c _t
+                      | `Cstr c -> T.cstr_tester c t
                       | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
                     end
-                  | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("ADT constructor name", None))
+                end
+              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
+            end
+        )
+
+      (* Semantic triggers *)
+      | Type.Builtin (Ast.In_interval (b1, b2)) ->
+        `Term (Base.term_app3_ast (module Type) env s
+                 (fun _ast _a1 _a2 _a3 ->
+                    T.in_interval _a1 (b1, b2) _a2 _a3))
+
+      | Type.Builtin Ast.Maps_to ->
+        `Term (
+          fun ast args ->
+            begin match args with
+              | [var; t] ->
+                let t = Type.parse_term env t in
+                begin match var with
+                  | { Ast.term = Ast.Symbol sym; _ }
+                  | { Ast.term =
+                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
+                    } ->
+                    begin
+                      match Type.find_bound env sym with
+                      | `Term_var v -> T.maps_to v t
+                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
+                    end
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("Variable name", None))
                 end
               | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
             end

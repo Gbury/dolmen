@@ -23,6 +23,10 @@ type _ t += | Unit | Univ
 
 type _ t += Coercion
 
+type _ t +=
+  | In_interval of bool * bool
+  | Maps_to
+
 (* Boolean builtins *)
 (* ************************************************************************* *)
 
@@ -60,7 +64,6 @@ type _ t +=
   | Rat | Rational of string
   | Real | Decimal of string
   | Lt | Leq | Gt | Geq
-  | In_interval of bool * bool
   | Minus | Add | Sub | Mul | Pow
   | Div
   | Div_e | Modulo_e

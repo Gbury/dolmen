@@ -93,6 +93,23 @@ type _ t +=
       or the cast of a rational into an integer, as long as the cast is
       guarded by a clause verifying the rational is an integer). *)
 
+type _ t +=
+  | In_interval of bool * bool
+  (** [In_interval (b1, b2): Int -> Int -> Int -> Prop]:
+      Tests whether or not an interger is in an interval, [b1] (resp. [b2])
+      determines if the interval is open on the lower bound
+      (resp. upper bound).
+
+      [warning:] It is an Alt-Ergo semantic trigger that should only be
+      allowed inside theories. *)
+
+  | Maps_to
+  (** [Maps_to: 'term_var -> 'term -> 'term]:
+      Used in semantic triggers for floating point arithmetic.
+      See [alt-ergo/src/preludes/fpa-theory-2017-01-04-16h00.ae].
+
+      [warning:] It is an Alt-Ergo semantic trigger that should only be
+      allowed inside theories. *)
 
 (** {2 Boolean Builtins} *)
 (*  ************************************************************************* *)
@@ -186,14 +203,6 @@ type _ t +=
   (** [Geq:{a=(Int|Rational|Real)} a -> a -> Prop]:
       large comparison (greater or equal than) on numbers
       (whether integers, rationals, or reals). *)
-  | In_interval of bool * bool
-  (** [In_interval (b1, b2): a -> a -> a -> Prop]:
-      Tests whether or not an interger is in an interval, [b1] (resp. [b2])
-      determines if the interval is open on the lower bound
-      (resp. upper bound).
-
-      [warning:] It is a semantic trigger in Alt-Ergo that should only be
-      allowed inside theories. *)
   | Minus
   (** [Minus:{a=(Int|Rational|Real)} a -> a]:
       arithmetic unary negation/minus on numbers

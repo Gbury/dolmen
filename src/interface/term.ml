@@ -608,6 +608,9 @@ module type Ae_Base = sig
   type t
   (** The type of terms *)
 
+  type term_var
+  (** The type of term variables *)
+
   type term_cst
   (** The type of term symbols and constants *)
 
@@ -661,6 +664,12 @@ module type Ae_Base = sig
 
   val record_access : t -> term_field -> t
   (** Access a field in an record. *)
+
+  val in_interval : t -> bool * bool -> t -> t -> t
+  (** Semantic trigger: "in interval" check. *)
+
+  val maps_to : term_var -> t -> t
+  (** Semantic trigger: maps to. *)
 
 end
 
@@ -727,9 +736,6 @@ module type Ae_Arith = sig
 
     val to_real : t -> t
     (** Conversion from an integer term to a real term. *)
-
-    val in_interval : t -> bool * bool -> t -> t -> t
-    (** Arithmetic "ín interval" check. *)
 
   end
 

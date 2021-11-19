@@ -1168,6 +1168,14 @@ module Term : sig
   val subst : ?fix:bool -> Ty.subst -> subst -> t -> t
   (** Substitution over terms. *)
 
+  (* Alt-Ergo's semantic triggers *)
+
+  val in_interval : t -> bool * bool -> t -> t -> t
+  (** Interger interval inclusion. *)
+
+  val maps_to : Var.t -> t -> t
+  (** Variable mapping to term. *)
+
   (* Bitvector manipulation *)
   module Bitv : sig
 
@@ -1216,9 +1224,6 @@ module Term : sig
 
     val rem_f : t -> t -> t
     (** Remaidner for the floor of the ration/real division. *)
-
-    val in_interval : t -> bool * bool -> t -> t -> t
-    (** Arithmetic "in interval" check. *)
 
   end
 
