@@ -12,7 +12,10 @@ module Ae = struct
       (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t
                                       and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
+      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t
+                                     and type term_field := Type.T.Field.t
+                                     and type term_cst := Type.T.Const.t
+                                     and type term_cstr := Type.T.Cstr.t) = struct
 
     let mk_or a b = T._or [a; b]
     let mk_and a b = T._and [a; b]
@@ -93,6 +96,52 @@ module Ae = struct
             let l = List.map (Type.parse_prop env) l in
             [Type.Set (Tag.filters, l)]
           )
+
+      (* Algebraic data types *)
+      | Type.Builtin Ast.Adt_project ->
+        `Term (
+          fun ast args ->
+            begin match args with
+              | [dt; field] ->
+                let t = Type.parse_term env dt in
+                begin match field with
+                  | { Ast.term = Ast.Symbol sym; _ }
+                  | { Ast.term =
+                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
+                    } ->
+                    begin
+                      match Type.find_bound env sym with
+                      | `Field f -> T.record_access t f
+                      | `Term_cst c -> T.adt_project t c
+                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
+                    end
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
+                end
+              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
+            end
+        )
+
+      | Type.Builtin Ast.Adt_check ->
+        `Term (
+          fun ast args ->
+            begin match args with
+              | [adt; cstr] ->
+                let _t = Type.parse_term env adt in
+                begin match cstr with
+                  | { Ast.term = Ast.Symbol sym; _ }
+                  | { Ast.term =
+                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
+                    } ->
+                    begin
+                      match Type.find_bound env sym with
+                      | `Cstr c -> T.cstr_tester c _t
+                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
+                    end
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
+                end
+              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
+            end
+        )
 
       | _ -> `Not_found
 

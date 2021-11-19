@@ -1,5 +1,0 @@
-File "tests/typing/pass/ae/records/records_1.ae", line 5, character 2-16:
-5 |   {c_1 = 10}#c_1 = 10
-      ^^^^^^^^^^^^^^
-Error The following Dolmen builtin is currently not handled `#`.
-      Please report upstream

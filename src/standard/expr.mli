@@ -1057,6 +1057,12 @@ module Term : sig
   val cstr_tester : Cstr.t -> t -> t
   (** Test expression for a constructor. *)
 
+  val adt_project : t -> Const.t -> t
+  (** Access a field in an ADT. *)
+
+  val record_access : t -> Field.t -> t
+  (** Access a field in an record. *)
+
   val pattern_match : t -> (pattern * t) list -> t
   (** Create a pattern match. *)
 

@@ -1,5 +1,0 @@
-File "tests/typing/pass/ae/adts/adts_1.ae", line 5, character 2-10:
-5 |   C(A) ? C and C(B)#c_1 = B
-      ^^^^^^^^
-Error The following Dolmen builtin is currently not handled `?`.
-      Please report upstream

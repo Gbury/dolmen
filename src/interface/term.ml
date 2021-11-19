@@ -485,7 +485,7 @@ module type Tff = sig
       This definition defines the usual type of polymorphic linked lists, as well as two
       destructors "hd" and "tl". "hd" would have type [forall alpha. alpha list -> a], and
       be the partial function returning the head of the list.
-      *)
+  *)
 
   val define_record :
     ty_const -> ty_var list -> (path * ty) list -> Field.t list
@@ -608,6 +608,15 @@ module type Ae_Base = sig
   type t
   (** The type of terms *)
 
+  type term_cst
+  (** The type of term symbols and constants *)
+
+  type term_field
+  (** The type of record fields *)
+
+  type term_cstr
+  (** The type of algebraic data type constructors *)
+
   val void : t
   (** The only value of type unit. *)
 
@@ -643,6 +652,15 @@ module type Ae_Base = sig
 
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
+
+  val cstr_tester : term_cstr -> t -> t
+  (** Test expression for a constructor. *)
+
+  val adt_project : t -> term_cst -> t
+  (** Access a field in an ADT. *)
+
+  val record_access : t -> term_field -> t
+  (** Access a field in an record. *)
 
 end
 
@@ -709,7 +727,7 @@ module type Ae_Arith = sig
 
     val to_real : t -> t
     (** Conversion from an integer term to a real term. *)
-    
+
   end
 
   module Real : sig
@@ -812,58 +830,58 @@ end
 
 module type Tptp_Thf_Core_Const = sig
 
-    type t
-    (** Type for term constans *)
+  type t
+  (** Type for term constans *)
 
-    val _true : t
-    (** The smybol for [true] *)
+  val _true : t
+  (** The smybol for [true] *)
 
-    val _false : t
-    (** The symbol for [false] *)
+  val _false : t
+  (** The symbol for [false] *)
 
-    val neg : t
-    (** Negation. *)
+  val neg : t
+  (** Negation. *)
 
-    val or_ : t
-    (** Binary disjunction of formulas *)
+  val or_ : t
+  (** Binary disjunction of formulas *)
 
-    val and_ : t
-    (** Binary conjunction of formulas *)
+  val and_ : t
+  (** Binary conjunction of formulas *)
 
-    val nand : t
-    (** Not-and *)
+  val nand : t
+  (** Not-and *)
 
-    val nor : t
-    (** Not-or *)
+  val nor : t
+  (** Not-or *)
 
-    val imply : t
-    (** Implication *)
+  val imply : t
+  (** Implication *)
 
-    val implied : t
-    (** Reverse implication *)
+  val implied : t
+  (** Reverse implication *)
 
-    val equiv : t
-    (** Equivalence *)
+  val equiv : t
+  (** Equivalence *)
 
-    val xor : t
-    (** Exclusive disjunction. *)
+  val xor : t
+  (** Exclusive disjunction. *)
 
-    val ite : t
-    (** [ite condition then_t else_t] creates a conditional branch. *)
+  val ite : t
+  (** [ite condition then_t else_t] creates a conditional branch. *)
 
-    val eq : t
-    (** Build the equality of two terms. *)
+  val eq : t
+  (** Build the equality of two terms. *)
 
-    val neq : t
-    (** Binary disequality. *)
+  val neq : t
+  (** Binary disequality. *)
 
-    val pi : t
-    (** Higher-order encoding of universla quantification. *)
+  val pi : t
+  (** Higher-order encoding of universla quantification. *)
 
-    val sigma : t
-    (** Higher-order encoding of existancial quantification. *)
+  val sigma : t
+  (** Higher-order encoding of existancial quantification. *)
 
-  end
+end
 
 (** Minimum required to type tptp's thf *)
 module type Tptp_Thf_Core = sig
@@ -1343,141 +1361,141 @@ end
 (** Float part of the smtlib float requirements *)
 module type Smtlib_Float_Float = sig
 
-    type t
-    (** the type of terms *)
+  type t
+  (** the type of terms *)
 
-    val fp : t -> t -> t -> t
-    (** Construct a floating point from bitvector literals
-        (sign, exponent, significand). The sign should be of size 1. *)
+  val fp : t -> t -> t -> t
+  (** Construct a floating point from bitvector literals
+      (sign, exponent, significand). The sign should be of size 1. *)
 
-    val roundNearestTiesToEven: t
-    (** constant for rounding mode RNE *)
+  val roundNearestTiesToEven: t
+  (** constant for rounding mode RNE *)
 
-    val roundNearestTiesToAway: t
-    (** constant for rounding mode RNA *)
+  val roundNearestTiesToAway: t
+  (** constant for rounding mode RNA *)
 
-    val roundTowardPositive: t
-    (** constant for rounding mode RTP *)
+  val roundTowardPositive: t
+  (** constant for rounding mode RTP *)
 
-    val roundTowardNegative: t
-    (** constant for rounding mode RTN *)
+  val roundTowardNegative: t
+  (** constant for rounding mode RTN *)
 
-    val roundTowardZero: t
-    (** constant for rounding mode RTZ *)
+  val roundTowardZero: t
+  (** constant for rounding mode RTZ *)
 
-    val plus_infinity: int -> int -> t
-    (** The constant plus infinity, it is also equivalent to a literal *)
+  val plus_infinity: int -> int -> t
+  (** The constant plus infinity, it is also equivalent to a literal *)
 
-    val minus_infinity: int -> int -> t
-    (** The constant minus infinity, it is also equivalent to a literal *)
+  val minus_infinity: int -> int -> t
+  (** The constant minus infinity, it is also equivalent to a literal *)
 
-    val plus_zero: int -> int -> t
-    (** The constant plus zero, it is also equivalent to a literal *)
+  val plus_zero: int -> int -> t
+  (** The constant plus zero, it is also equivalent to a literal *)
 
-    val minus_zero: int -> int -> t
-    (** The constant minus zero, it is also equivalent to a literal *)
+  val minus_zero: int -> int -> t
+  (** The constant minus zero, it is also equivalent to a literal *)
 
-    val nan: int -> int -> t
-    (** The constant Non-numbers, it is also equivalent to many literals which are
-        equivalent together *)
+  val nan: int -> int -> t
+  (** The constant Non-numbers, it is also equivalent to many literals which are
+      equivalent together *)
 
-    val abs : t -> t
-    (** absolute value *)
+  val abs : t -> t
+  (** absolute value *)
 
-    val neg : t -> t
-    (** negation *)
+  val neg : t -> t
+  (** negation *)
 
-    val add : t -> t -> t -> t
-    (** [add rm f1 f2] addition *)
+  val add : t -> t -> t -> t
+  (** [add rm f1 f2] addition *)
 
-    val sub : t -> t -> t -> t
-    (** [sub rm f1 f2] subtraction *)
+  val sub : t -> t -> t -> t
+  (** [sub rm f1 f2] subtraction *)
 
-    val mul : t -> t -> t -> t
-    (** [mul rm f1 f2] multiplication *)
+  val mul : t -> t -> t -> t
+  (** [mul rm f1 f2] multiplication *)
 
-    val div : t -> t -> t -> t
-    (** [mul rm f1 f2] division *)
+  val div : t -> t -> t -> t
+  (** [mul rm f1 f2] division *)
 
-    val fma : t -> t -> t -> t -> t
-    (** [mul rm f1 f2] fused multiplication and addition *)
+  val fma : t -> t -> t -> t -> t
+  (** [mul rm f1 f2] fused multiplication and addition *)
 
-    val sqrt : t -> t -> t
-    (** [sqrt rm f] square root *)
+  val sqrt : t -> t -> t
+  (** [sqrt rm f] square root *)
 
-    val rem : t -> t -> t
-    (** [rem f1 f2] remainder *)
+  val rem : t -> t -> t
+  (** [rem f1 f2] remainder *)
 
-    val roundToIntegral : t -> t -> t
-    (** [roundToIntegral rm f] rounding to integral *)
+  val roundToIntegral : t -> t -> t
+  (** [roundToIntegral rm f] rounding to integral *)
 
-    val min : t -> t -> t
-    (** [min f1 f2] minimum *)
+  val min : t -> t -> t
+  (** [min f1 f2] minimum *)
 
-    val max : t -> t -> t
-    (** [max f1 f2] maximum *)
+  val max : t -> t -> t
+  (** [max f1 f2] maximum *)
 
-    val leq : t -> t -> t
-    (** [leq f1 f2] less or equal floating point comparison *)
+  val leq : t -> t -> t
+  (** [leq f1 f2] less or equal floating point comparison *)
 
-    val lt : t -> t -> t
-    (** [lt f1 f2] less than floating point comparison *)
+  val lt : t -> t -> t
+  (** [lt f1 f2] less than floating point comparison *)
 
-    val geq : t -> t -> t
-    (** [geq f1 f2] greater or equal floating point comparison *)
+  val geq : t -> t -> t
+  (** [geq f1 f2] greater or equal floating point comparison *)
 
-    val gt : t -> t -> t
-    (** [lt f1 f2] greater than floating point comparison *)
+  val gt : t -> t -> t
+  (** [lt f1 f2] greater than floating point comparison *)
 
-    val eq : t -> t -> t
-    (** [eq f1 f2] floating point equality *)
+  val eq : t -> t -> t
+  (** [eq f1 f2] floating point equality *)
 
-    val isNormal : t -> t
-    (** [isNormal f] test if it is a normal floating point *)
+  val isNormal : t -> t
+  (** [isNormal f] test if it is a normal floating point *)
 
-    val isSubnormal : t -> t
-    (** [isSubnormal f] test if it is a subnormal floating point *)
+  val isSubnormal : t -> t
+  (** [isSubnormal f] test if it is a subnormal floating point *)
 
-    val isZero : t -> t
-    (** [isZero f] test if it is a zero *)
+  val isZero : t -> t
+  (** [isZero f] test if it is a zero *)
 
-    val isInfinite : t -> t
-    (** [isInfinite f] test if it is an infinite *)
+  val isInfinite : t -> t
+  (** [isInfinite f] test if it is an infinite *)
 
-    val isNaN : t -> t
-    (** [isNaN f] test if it is NaN *)
+  val isNaN : t -> t
+  (** [isNaN f] test if it is NaN *)
 
-    val isNegative : t -> t
-    (** [isNegative f] test if it is a negative floating point *)
+  val isNegative : t -> t
+  (** [isNegative f] test if it is a negative floating point *)
 
-    val isPositive : t -> t
-    (** [isPositive f] test if it is a positive floating point *)
+  val isPositive : t -> t
+  (** [isPositive f] test if it is a positive floating point *)
 
-    val ieee_format_to_fp: int -> int -> t -> t
-    (** [ieee_format_to_fp e s bv] Convert a bitvector into a floating point using IEEE 754-2008 interchange format.
-        (reinterpret the bitvector into floating-point)
-    *)
+  val ieee_format_to_fp: int -> int -> t -> t
+  (** [ieee_format_to_fp e s bv] Convert a bitvector into a floating point using IEEE 754-2008 interchange format.
+      (reinterpret the bitvector into floating-point)
+  *)
 
-    val to_fp: int -> int -> t -> t -> t
-    (** [to_fp e s rm f] convert from one floating point format to another *)
+  val to_fp: int -> int -> t -> t -> t
+  (** [to_fp e s rm f] convert from one floating point format to another *)
 
-    val real_to_fp: int -> int -> t -> t -> t
-    (** [real_to_fp e s rm r] convert from a real *)
+  val real_to_fp: int -> int -> t -> t -> t
+  (** [real_to_fp e s rm r] convert from a real *)
 
-    val sbv_to_fp: int -> int -> t -> t -> t
-    (** [sbv_to_fp e s rm bv] convert from a signed integer *)
+  val sbv_to_fp: int -> int -> t -> t -> t
+  (** [sbv_to_fp e s rm bv] convert from a signed integer *)
 
-    val ubv_to_fp: int -> int -> t -> t -> t
-    (** [ubv_to_fp e s rm bv] convert from an unsigned integer *)
+  val ubv_to_fp: int -> int -> t -> t -> t
+  (** [ubv_to_fp e s rm bv] convert from an unsigned integer *)
 
-    val to_ubv: int -> t -> t -> t
-    (** [to_ubv m rm f] convert to an unsigned integer (bitvector of size m) *)
+  val to_ubv: int -> t -> t -> t
+  (** [to_ubv m rm f] convert to an unsigned integer (bitvector of size m) *)
 
-    val to_sbv: int -> t -> t -> t
-    (** [to_ubv m rm f] convert to a signed integer (bitvector of size m) *)
+  val to_sbv: int -> t -> t -> t
+  (** [to_ubv m rm f] convert to a signed integer (bitvector of size m) *)
 
-    val to_real: t -> t
-    (** [to_real f] convert to a real *)
+  val to_real: t -> t
+  (** [to_real f] convert to a real *)
 
 end
 
