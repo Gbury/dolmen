@@ -28,6 +28,9 @@ module type Ae_Base = sig
   (** A flag (i.e. unit tag), indicating that the tagged term/formula
       is to be considered as a associative and commutative term. *)
 
+  val named : string t
+  (** A tag used to name formulas in alt-ergo. *)
+
   val triggers : term list list t
   (** Multi-triggers that can be added to quantified formulas *)
 
