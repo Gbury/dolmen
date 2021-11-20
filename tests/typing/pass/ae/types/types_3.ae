@@ -1,0 +1,7 @@
+
+type ('a, 'b) t = {a1: 'a; b1: 'b}
+
+logic v1: 'a
+logic v2: 'b
+
+goal g : {a1 = v1; b1 = v2}#a1 = v1
