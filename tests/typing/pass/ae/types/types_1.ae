@@ -1,8 +1,9 @@
 
-type ('a, 'b) t =
-    A of {a : 'a}
-  | B of {b : 'b}
+type a
+logic a,b,c, beta,gamma : a
+logic ac f : a, a -> a
 
-type 'a m = {m : 'a}
-
-type n
+goal g31 :
+  gamma = f(a,b)->
+  f(a,c) = beta ->
+  f(b,beta) = f(c,gamma)

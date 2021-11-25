@@ -1,9 +1,7 @@
 
-type a
-logic a,b,c, beta,gamma : a
-logic ac f : a, a -> a
+type ('a, 'b) t = {a1: 'a; b1: 'b}
 
-goal g31 :
-  gamma = f(a,b)->
-  f(a,c) = beta ->
-  f(b,beta) = f(c,gamma)
+logic v1: 'a
+logic v2: 'b
+
+goal g : {a1 = v1; b1 = v2}#a1 = v1

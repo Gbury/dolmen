@@ -1,5 +1,4 @@
 
-goal g:
-  forall x:int.
-  exists y,z:int.
-    x <= y <= z
+goal g1: 1 <= 2 < 3 <= 4 < 5
+goal g2: 5 > 4 >= 3 >= 2 > 1
+goal g3: 1 = 1 = 1 = 1 = 1
