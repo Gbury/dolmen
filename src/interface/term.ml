@@ -639,7 +639,7 @@ module type Ae_Base = sig
   (** Disjunction of formulas *)
 
   val _and : t list -> t
-  (** Disjunction of formulas *)
+  (** Conjunction of formulas *)
 
   val imply : t -> t -> t
   (** Implication *)
@@ -724,6 +724,9 @@ module type Ae_Arith = sig
 
   val real : string -> t
   (** Real literals *)
+
+  val _and : t list -> t
+  (** Conjunction of formulas *)
 
   module Int : sig
     include Ae_Arith_Common with type t := t

@@ -76,7 +76,18 @@ module Ae = struct
 
       (* Equality *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env s T.eq)
+        `Term (
+          fun ast args ->
+            match args with
+            | [Ast.{
+                term = App ( { term = Builtin Eq; _ }, [_; lr_st] ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Ast.eq lr_st r_st]
+            | _ ->
+              Base.term_app2 (module Type) env s T.eq ast args
+        )
+
       | Type.Builtin Ast.Distinct ->
         `Term (Base.term_app_list (module Type) env s T.distinct)
 

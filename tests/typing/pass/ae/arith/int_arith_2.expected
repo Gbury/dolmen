@@ -1,4 +1,0 @@
-File "tests/typing/pass/ae/arith/int_arith_2.ae", line 2, character 9-19:
-2 | goal g1: 1 <= 2 < 3 <= 4 < 5
-             ^^^^^^^^^^
-Error Arithmetic type expected but got `Prop`.@
