@@ -18,4 +18,21 @@
   (action (diff farray_1.expected farray_1.full)))
 
 
+; Test for farray_2.ae
+; Full mode test
+
+(rule
+   (target  farray_2.full)
+   (deps    (:input farray_2.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff farray_2.expected farray_2.full)))
+
+
 ; Auto-generated part end

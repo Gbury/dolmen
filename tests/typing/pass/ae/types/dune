@@ -18,4 +18,21 @@
   (action (diff types_1.expected types_1.full)))
 
 
+; Test for types_2.ae
+; Full mode test
+
+(rule
+   (target  types_2.full)
+   (deps    (:input types_2.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff types_2.expected types_2.full)))
+
+
 ; Auto-generated part end
