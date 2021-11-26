@@ -13,7 +13,10 @@ module type Id = sig
   (** Used for type variables. *)
 
   val term : namespace
-  (** Usual namespace, used for temrs, types and propositions. *)
+  (** Usual namespace, used for terms and propositions. *)
+
+  val sort : namespace
+  (** Usual namespace, used for types. *)
 
   val decl : namespace
   (** Names used to refer to tptp phrases. These are used
