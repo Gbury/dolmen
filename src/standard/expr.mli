@@ -390,9 +390,7 @@ module Ty : sig
 
   type view = [
     | `Prop
-    (** Propositions *)
-    | `Bool
-    (** Booleans *)
+    (** Propositions (Also used as booleans in AE) *)
     | `Int
     (** Integers *)
     | `Rat

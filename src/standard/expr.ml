@@ -1095,7 +1095,6 @@ module Ty = struct
   (* View *)
   type view = [
     | `Prop
-    | `Bool
     | `Int
     | `Rat
     | `Real
@@ -1130,6 +1129,7 @@ module Ty = struct
       `Arrow (args, ret)
     | TyApp (({ builtin; _ } as c), l) ->
       begin match builtin with
+        | Builtin.Prop -> `Prop
         | Builtin.Int -> `Int
         | Builtin.Rat -> `Rat
         | Builtin.Real -> `Real
