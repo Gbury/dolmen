@@ -39,19 +39,24 @@ decl_ident:
 ident:
   | id=raw_ident
     { let loc = L.mk_pos $startpos $endpos in
-      (fun ns -> T.const ~loc (id ns)) }
+      T.const ~loc (id I.term) }
 
 raw_named_ident:
   | id=ID
-    { fun ns ->  I.mk ns id }
+    { I.mk I.term id }
   | id=ID str=STRING
     { let track = I.mk I.track str in
-      (fun ns -> I.tracked ~track ns id) }
+      I.tracked ~track I.term id }
 
 named_ident:
   | id=raw_named_ident
     { let loc = L.mk_pos $startpos $endpos in
-      (fun ns -> T.const ~loc (id ns)) }
+      T.const ~loc id }
+
+ty_ident:
+  | id=raw_ident
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (id I.sort) }
 
 
 /* Binders */
@@ -59,12 +64,12 @@ named_ident:
 logic_binder:
   | v=ident COLON ty=primitive_type
     { let loc = L.mk_pos $startpos $endpos in
-      T.colon ~loc (v I.term) ty }
+      T.colon ~loc v ty }
 
 multi_logic_binder:
   | vars=separated_nonempty_list(COMMA, named_ident) COLON ty=primitive_type
     { let loc = L.mk_pos $startpos $endpos in
-      List.map (fun x -> T.colon ~loc (x I.term) ty) vars }
+      List.map (fun x -> T.colon ~loc x ty) vars }
 
 
 /* Type variables */
@@ -111,20 +116,20 @@ primitive_type:
       in
       T.ty_bitv ~loc n }
 
-  | c=ident
+  | c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
-      T.apply ~loc (c I.sort) [] }
+      T.apply ~loc c [] }
 
   | v=type_var
     { v }
 
-  | arg=primitive_type c=ident
+  | arg=primitive_type c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
-      T.apply ~loc (c I.sort) [arg] }
+      T.apply ~loc c [arg] }
 
-  | LEFTPAR args=separated_nonempty_list(COMMA, primitive_type) RIGHTPAR c=ident
+  | LEFTPAR args=separated_nonempty_list(COMMA, primitive_type) RIGHTPAR c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
-      T.apply ~loc (c I.sort) args }
+      T.apply ~loc c args }
 
 primitive_type_or_prop:
   | ty=primitive_type
@@ -296,20 +301,19 @@ match_cases:
 
 simple_pattern:
   | t=ident
-    { t I.term }
+    { t }
   | f=ident LEFTPAR args=separated_nonempty_list(COMMA,ident) RIGHTPAR
    { let loc = L.mk_pos $startpos $endpos in
-     let args = List.map (fun x -> x I.term) args in
-     T.apply ~loc (f I.term) args }
+     T.apply ~loc f args }
 
 let_binder:
   | a=ident EQUAL b=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      T.eq ~loc (a I.term) b }
+      T.eq ~loc a b }
 
 simple_expr :
   | t=ident
-    { (t I.term) }
+    { t }
   | LEFTPAR e=lexpr RIGHTPAR
     { e }
 
@@ -351,7 +355,7 @@ simple_expr :
 
   | f=ident LEFTPAR args=separated_list(COMMA, lexpr) RIGHTPAR
     { let loc = L.mk_pos $startpos $endpos in
-      T.apply ~loc (f I.term) args }
+      T.apply ~loc f args }
 
 
   /* Arrays */
@@ -455,7 +459,7 @@ list2_lexpr_sep_comma:
 label_expr:
   | id=ident EQUAL e=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      T.eq ~loc (id I.term) e }
+      T.eq ~loc id e }
 
 
 /* Type definitions */
@@ -471,7 +475,7 @@ record_type:
 algebraic_label_with_type:
   | id=ident COLON ty=primitive_type
     { let loc = L.mk_pos $startpos $endpos in
-      T.colon ~loc (id I.term) ty }
+      T.colon ~loc id ty }
 
 algebraic_args:
   | { [] }
@@ -531,24 +535,24 @@ decl:
 
   | LOGIC ac=ac_modifier args=separated_nonempty_list(COMMA, raw_named_ident) COLON ty=logic_type
     { let loc = L.mk_pos $startpos $endpos in
-      S.logic ~loc ~ac ( List.map (fun x -> x I.term) args) ty }
+      S.logic ~loc ~ac args ty }
 
   | FUNC f=raw_named_ident
     LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR
     COLON ret_ty=primitive_type EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      S.fun_def ~loc (f I.term) [] args ret_ty body }
+      S.fun_def ~loc f [] args ret_ty body }
 
   | PRED p=raw_named_ident EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       let ret_ty = T.prop ~loc () in
-      S.fun_def ~loc (p I.term) [] [] ret_ty body }
+      S.fun_def ~loc p [] [] ret_ty body }
 
   | PRED p=raw_named_ident
     LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
       let ret_ty = T.prop ~loc () in
-      S.fun_def ~loc (p I.term) [] args ret_ty body }
+      S.fun_def ~loc p [] args ret_ty body }
 
   | AXIOM name=decl_ident COLON body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
