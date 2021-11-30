@@ -519,6 +519,13 @@ module type Tff = sig
   (** Raised when a polymorphic application does not have an
       adequate number of arguments. *)
 
+  exception Redundant_cases of t list
+  (** Raised when some cases are unreachable in a pattern
+      matching. *)
+
+  exception Inexhaustive_matching of Const.t list
+  (** Raised when a pattern matching is not exhaustive. *)
+
   val ensure : t -> ty -> t
   (** Ensure that a given term has the given type. *)
 

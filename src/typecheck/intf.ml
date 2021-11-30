@@ -284,6 +284,13 @@ module type Formulas = sig
         to another record type was used. *)
     | Mismatch_sum_type : term_cstr * ty -> Dolmen.Std.Term.t err
     (** *)
+    | Redundant_cases : term list -> Dolmen.Std.Term.t err
+    (** [Redundant_cases tl] denotes an error whitin a pattern matching
+        in which some of the cases (the ones in [tl]) are unreachable. *)
+    | Inexhaustive_matching : term_cst list -> Dolmen.Std.Term.t err
+    (** [Inexhaustive_matching tcl] denotes an error whitin a pattern
+        matching in which some of the constructors of the type of the
+        matched value where not matched by the pattern matching. *)
     | Var_application : term_var -> Dolmen.Std.Term.t err
     (** [Var_application v] denotes a variable which was applied to other
         terms, which is forbidden in first-order formulas. *)

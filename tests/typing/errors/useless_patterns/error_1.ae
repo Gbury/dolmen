@@ -6,8 +6,6 @@ type t =
 goal g_invalid:
   forall x : t.
     match x with
-    | A(y) -> 1
-    | D -> 3
-    | E -> 2
     | v -> 1
+    | A(y) -> 1
     end <= 2

@@ -1,0 +1,6 @@
+File "tests/typing/errors/non_exhaustive_pattern_matching/error_1.ae", line 8, character 2 to line 11, character 5:
+ 8 | ..match A with
+...
+11 |   end
+Error Inexhaustive matching: The following constructors are not covered by the pattern matching: 
+      - C : t

@@ -289,6 +289,8 @@ module Make
     | Missing_record_field : T.Field.t -> Ast.t err
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
     | Mismatch_sum_type : T.Cstr.t * Ty.t -> Ast.t err
+    | Redundant_cases : T.t list -> Ast.t err
+    | Inexhaustive_matching : T.Const.t list -> Ast.t err
     | Var_application : T.Var.t -> Ast.t err
     | Ty_var_application : Ty.Var.t -> Ast.t err
     | Type_mismatch : T.t * Ty.t -> Ast.t err
@@ -550,6 +552,12 @@ module Make
   let _bad_poly_arity env ast ty_vars tys =
     _error env (Ast ast) (Bad_poly_arity (ty_vars, tys))
 
+  let _redundant_cases env ast tl =
+    _error env (Ast ast) (Redundant_cases tl)
+
+  let _inexhaustive_matching env ast tcl =
+    _error env (Ast ast) (Inexhaustive_matching tcl)
+
   let _over_application env ast over_args =
     _error env (Ast ast) (Over_application over_args)
 
@@ -616,6 +624,10 @@ module Make
       _over_application env ast over_args
     | T.Bad_poly_arity (vars, args) ->
       _bad_poly_arity env ast vars args
+    | T.Redundant_cases tl ->
+      _redundant_cases env ast tl
+    | T.Inexhaustive_matching tcl ->
+      _inexhaustive_matching env ast tcl
     | Wildcard_bad_scope (w, w_src, v) ->
       _scope_escape_in_wildcard env ast w w_src v
     | Wildcard_bad_base (w, w_src, inferred, allowed) ->

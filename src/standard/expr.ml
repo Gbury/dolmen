@@ -1176,6 +1176,9 @@ module Term = struct
   exception Over_application of t list
   exception Bad_poly_arity of ty_var list * ty list
 
+  exception Redundant_cases of t list
+  exception Inexhaustive_matching of term_cst list
+
   (* *)
 
   (* Print *)
@@ -1192,6 +1195,13 @@ module Term = struct
   let add_tag_list (t : t) k l = t.term_tags <- Tag.add_list t.term_tags k l
 
   let unset_tag (t: t) k = t.term_tags <- Tag.unset t.term_tags k
+
+  (* Term creation *)
+  let mk ?(tags=Tag.empty) term_descr term_ty =
+    { term_descr; term_ty; term_hash = -1; term_tags = tags; }
+
+  let of_var v = mk (Var v) v.id_ty
+  let of_cst c = mk (Cst c) c.id_ty
 
   (* Hash *)
   let rec hash_aux t =
@@ -1404,9 +1414,77 @@ module Term = struct
         ) l''
     | _ -> assert false
 
-  (* Exhaustivity check
-     TODO: implement this *)
-  let check_exhaustivity _ty _pats = ()
+  (** Iterates of over the constructors [cstrs]
+      - If the constructor [cstr] is one of them, it is removed from [cstrs].
+      - If it's then it is added to [red].
+  *)
+  let rec check_cstr orig_term ty red ({ index = i1; _ } as cstr) cstrs =
+    match cstrs with
+    |  { index = i2; _ } as h :: t ->
+      if i1 = i2
+      then red, t
+      else
+        let nred, ncstrs = check_cstr orig_term ty red cstr t in
+        nred, h :: ncstrs
+    | [] -> cstr :: red, cstrs
+
+  (** Checks that the pattern matching is well-formed,
+      can raise the excpetions ... if it isn't. *)
+  let check_pattern_matching ty (patts: t list) =
+
+    (* The list of the constructors of the type [ty].*)
+    let cstrs =
+      begin match ty.ty_descr with
+        | TyApp (tc, _ ) ->
+          begin match Ty.definition tc with
+            | Some (Adt { cases; record; _ }) when not record ->
+              Array.fold_left (
+                fun acc Ty.{ cstr; _ } ->
+                  cstr :: acc
+              ) [] cases
+            | _ -> []
+          end
+        | _ -> []
+      end
+    in
+
+    (* Supposes that all the matched constructors belong to the type
+        - if one of the patterns is a variable, the ones that follow it
+          are considered as redundant (as well as the duplicated
+          constructors).
+        - if all the patterns are constructors or applications of
+          constructors, they have to cover all the constructors of the type
+          otherwise an [Inexhaustive_matching] exception is raised with the
+          list of unmatched contructors as an argument. *)
+    let rec aux (red, cstrs) patts =
+      match patts with
+      | { term_descr =
+            Cst cstr |
+            App ({ term_descr = Cst cstr; _ }, _, _); _
+        } as hd :: [] ->
+        let nred, ncstrs = check_cstr hd ty red cstr cstrs in
+        if ncstrs == []
+        then
+          if nred == []
+          then ()
+          else raise (Redundant_cases (List.map of_cst red))
+        else raise (Inexhaustive_matching ncstrs)
+
+      | { term_descr =
+            Cst cstr |
+            App ({ term_descr = Cst cstr; _ }, _, _); _
+        } as hd :: tl ->
+        let nred, ncstrs = check_cstr hd ty red cstr cstrs in
+        aux (nred, ncstrs) tl
+
+      | { term_descr = Var _; _ } :: [] -> ()
+
+      | { term_descr = Var _; _ } :: tl ->
+        raise (Redundant_cases (List.map of_cst red @ tl))
+
+      | _ -> ()
+    in
+    aux ([], cstrs) patts
 
   (* Variables *)
   module Var = struct
@@ -2438,13 +2516,6 @@ module Term = struct
 
   end
 
-  (* Term creation *)
-  let mk ?(tags=Tag.empty) term_descr term_ty =
-    { term_descr; term_ty; term_hash = -1; term_tags = tags; }
-
-  let of_var v = mk (Var v) v.id_ty
-  let of_cst c = mk (Cst c) c.id_ty
-
   (* Binder creation *)
   let mk_bind b body =
     match b with
@@ -2691,7 +2762,7 @@ module Term = struct
         (subst s Subst.empty pat, subst s Subst.empty body)
       ) branches in
     (* Check exhaustivity *)
-    let () = check_exhaustivity (ty scrutinee) (List.map fst branches) in
+    let () = check_pattern_matching (ty scrutinee) (List.map fst branches) in
     (* Build the pattern matching *)
     mk (Match (scrutinee, branches)) body_ty
 

@@ -479,6 +479,30 @@ let over_application =
            too@ many@ term@ arguments." over)
     ~name:"Too many arguments for an application" ()
 
+    let redundant_cases =
+      Report.Error.mk ~code ~mnemonic:"redundant-cases"
+        ~message:(fun fmt terml ->
+            Format.fprintf fmt
+              "Redundant cases: The following cases are ureachable and redundant: %a"
+              ( fun fmt ->
+                  List.iter
+                    (Format.fprintf fmt "@\n- %a" Dolmen.Std.Expr.Print.term)
+              ) terml
+          )
+        ~name:"Redundant cases in pattern matching" ()
+
+    let inexhaustive_matching =
+      Report.Error.mk ~code ~mnemonic:"inexhaustive-matching"
+        ~message:(fun fmt tcl ->
+            Format.fprintf fmt
+              "Inexhaustive matching: The following constructors are not covered by the pattern matching: %a"
+              ( fun fmt ->
+                  List.iter
+                    (Format.fprintf fmt "@\n- %a" Dolmen.Std.Expr.Print.term_cst)
+              ) tcl
+          )
+        ~name:"Redundant cases in pattern matching" ()
+
 let repeated_record_field =
   Report.Error.mk ~code ~mnemonic:"repeated-field"
     ~message:(fun fmt f ->
@@ -941,6 +965,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st bad_poly_arity (vars, args)
     | T.Over_application over_args ->
       S.error ~loc st over_application over_args
+    (* Pattern matching errors *)
+    | T.Redundant_cases tl ->
+      S.error ~loc st redundant_cases tl
+    | T.Inexhaustive_matching tcl ->
+      S.error ~loc st inexhaustive_matching tcl
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
       S.error ~loc st repeated_record_field f

@@ -1031,6 +1031,13 @@ module Term : sig
   (** Raised when a polymorphic application does not have an
       adequate number of arguments. *)
 
+  exception Redundant_cases of t list
+  (** Raised when some cases are unreachable in a pattern
+      matching. *)
+
+  exception Inexhaustive_matching of term_cst list
+  (** Raised when a pattern matching is not exhaustive. *)
+
   val ensure : t -> ty -> t
   (** Ensure a term has the given type. *)
 
