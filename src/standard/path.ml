@@ -37,5 +37,3 @@ let absolute path name = Absolute { path; name; }
 let rename f = function
   | Local { name; } -> local (f name)
   | Absolute { path; name; } -> absolute path (f name)
-
-let get_name (Local { name; } | Absolute { name; _ }) = name
