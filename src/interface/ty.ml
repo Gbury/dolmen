@@ -21,6 +21,9 @@ module type Tff = sig
   type 'a tag
   (** A type for tags to attach to arbitrary types. *)
 
+  val print : Format.formatter -> t -> unit
+  (** Printing function. *)
+
   exception Prenex_polymorphism of t
   (** Raised when the type provided is polymorphic, but occurred in a
       place where polymorphic types are forbidden by prenex/rank-1
@@ -36,7 +39,7 @@ module type Tff = sig
     (** Comparison function on variables. *)
 
     val print : Format.formatter -> t -> unit
-    (** print. TODO: remove this *)
+    (** Printing function. *)
 
     val mk : string -> t
     (** Create a new type variable with the given name. *)
@@ -72,6 +75,9 @@ module type Tff = sig
 
     val compare : t -> t -> int
     (** Comparison function on type constants. *)
+
+    val print : Format.formatter -> t -> unit
+    (** Printing function. *)
 
     val arity : t -> int
     (** Return the arity of the given symbol. *)

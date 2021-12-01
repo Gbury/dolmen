@@ -35,6 +35,12 @@ module Lists : sig
       the rest.
       @raise Invalid_argument if [l] has less than [n] elements. *)
 
+  val iter3 : ('a -> 'b -> 'c -> unit) -> 'a list -> 'b list -> 'c list -> unit
+  (** Same as {!List.iter2} but for 3 lists. *)
+
+  val map3 : ('a -> 'b -> 'c -> 'd) -> 'a list -> 'b list -> 'c list -> 'd list
+  (** Same as {!List.map2} but for 3 lists. *)
+
 end
 
 (** String helper *)

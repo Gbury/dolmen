@@ -88,14 +88,20 @@ module type Formulas = sig
       } (**)
   (** *)
 
+  type infer_unbound_var_scheme =
+    | No_inference
+    | Unification_type_variable (**)
+  (** *)
+
   type infer_term_scheme =
     | No_inference
     | Wildcard of wildcard_shape (**)
   (** *)
 
   type var_infer = {
-    infer_type_vars   : bool;
-    infer_term_vars   : infer_term_scheme;
+    infer_unbound_vars              : infer_unbound_var_scheme;
+    infer_type_vars_in_binding_pos  : bool;
+    infer_term_vars_in_binding_pos  : infer_term_scheme;
   }
   (** Specification of how to infer variables. *)
 
@@ -104,6 +110,11 @@ module type Formulas = sig
     infer_term_csts   : infer_term_scheme;
   }
   (** Specification of how to infer symbols. *)
+
+  type free_wildcards =
+    | Forbidden
+    | Implicitly_universally_quantified (**)
+  (** *)
 
   type expect =
     | Type
@@ -282,9 +293,9 @@ module type Formulas = sig
     | Type_mismatch : term * ty -> Dolmen.Std.Term.t err
     (** [Type_mismatch (term, expected)] denotes a context where [term] was
         expected to have type [expected], but it is not the case. *)
-    | Quantified_var_inference : Dolmen.Std.Term.t err
-    (** Quantified variable without a type, and no configured way to
-        infer its type. *)
+    | Var_in_binding_pos_underspecified  : Dolmen.Std.Term.t err
+    (** Variable in a binding pos (e.g. quantifier) without a type,
+        and no configured way to infer its type. *)
     | Unhandled_builtin : Dolmen.Std.Term.builtin -> Dolmen.Std.Term.t err
     (** *)
     | Cannot_tag_tag : Dolmen.Std.Term.t err
@@ -322,7 +333,7 @@ module type Formulas = sig
         with a type that would lead to the variable [v] from escaping its scope;
         [reason] is the reason of the binding for [v]. *)
     | Unbound_type_wildcards :
-        (ty_var * wildcard_source list) list * term -> Dolmen.Std.Term.t err
+        (ty_var * wildcard_source list) list -> Dolmen.Std.Term.t err
     (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
@@ -380,6 +391,7 @@ module type Formulas = sig
     ?order:order ->
     ?poly:poly ->
     ?quants:bool ->
+    ?free_wildcards:free_wildcards ->
     warnings:(warning -> unit) ->
     file:Dolmen.Std.Loc.file ->
     builtin_symbols -> env

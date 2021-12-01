@@ -527,11 +527,11 @@ let type_mismatch =
           (pp_wrap Dolmen.Std.Expr.Ty.print) expected)
     ~name:"Incorrect argument type in an application" ()
 
-let quant_var_inference =
-  Report.Error.mk ~code ~mnemonic:"quant-var-inference"
+let var_in_binding_pos_underspecified =
+  Report.Error.mk ~code ~mnemonic:"var-binding-infer"
     ~message:(fun fmt () ->
-        Format.fprintf fmt "Cannot infer type for a quantified variable")
-    ~name:"Inference of a quantified variable's type" ()
+        Format.fprintf fmt "Cannot infer type for a variable in binding position")
+    ~name:"Inference of a variable in binding position's type" ()
 
 let unhandled_builtin =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unhandled-builtin"
@@ -956,8 +956,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
       S.error ~loc st type_mismatch (t, expected)
-    | T.Quantified_var_inference ->
-      S.error ~loc st quant_var_inference ()
+    | T.Var_in_binding_pos_underspecified ->
+      S.error ~loc st var_in_binding_pos_underspecified ()
     | T.Unhandled_builtin b ->
       S.error ~loc st unhandled_builtin b
     | T.Cannot_tag_tag ->
@@ -991,7 +991,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
       S.error ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
-    | T.Unbound_type_wildcards (tys, _) ->
+    | T.Unbound_type_wildcards tys ->
       S.error ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
       S.error ~loc st unhandled_ast (env, fragment)
@@ -1118,8 +1118,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Some Dimacs | Some ICNF ->
       let poly = T.Flexible in
       let var_infer = T.{
-          infer_type_vars = false;
-          infer_term_vars = No_inference;
+          infer_unbound_vars = No_inference;
+          infer_type_vars_in_binding_pos = false;
+          infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
           infer_type_csts = false;
@@ -1138,9 +1139,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     *)
     | Some Alt_ergo ->
       let poly = T.Flexible in
+      let free_wildcards = T.Implicitly_universally_quantified in
       let var_infer = T.{
-          infer_type_vars = true;
-          infer_term_vars = No_inference;
+          infer_unbound_vars = Unification_type_variable;
+          infer_type_vars_in_binding_pos = true;
+          infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
           infer_type_csts = false;
@@ -1158,7 +1161,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       T.empty_env ~order:First_order
         ~st:(S.ty_state st).typer
         ~var_infer ~sym_infer ~poly
-        ~warnings ~file builtins
+        ~free_wildcards ~warnings ~file
+        builtins
 
     (* Zipperposition Format
        - no inference of constants
@@ -1167,8 +1171,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Some Zf ->
       let poly = T.Flexible in
       let var_infer = T.{
-          infer_type_vars = true;
-          infer_term_vars = Wildcard Any_in_scope;
+          infer_unbound_vars = No_inference;
+          infer_type_vars_in_binding_pos = true;
+          infer_term_vars_in_binding_pos = Wildcard Any_in_scope;
         } in
       let sym_infer = T.{
           infer_type_csts = false;
@@ -1196,8 +1201,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       begin match tptp_kind_of_attrs attrs with
         | Some "thf" ->
           let var_infer = T.{
-              infer_type_vars = true;
-              infer_term_vars = No_inference;
+              infer_unbound_vars = No_inference;
+              infer_type_vars_in_binding_pos = true;
+              infer_term_vars_in_binding_pos = No_inference;
             } in
           let sym_infer = T.{
               infer_type_csts = false;
@@ -1216,11 +1222,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ~warnings ~file builtins
         | Some ("tff" | "tpi" | "fof" | "cnf") ->
           let var_infer = T.{
-              infer_type_vars = true;
-              infer_term_vars = Wildcard (Any_base {
-                  allowed = [Dolmen.Std.Expr.Ty.base];
-                  preferred = Dolmen.Std.Expr.Ty.base;
-                });
+              infer_unbound_vars = No_inference;
+              infer_type_vars_in_binding_pos = true;
+              infer_term_vars_in_binding_pos =
+                Wildcard (Any_base {
+                    allowed = [Dolmen.Std.Expr.Ty.base];
+                    preferred = Dolmen.Std.Expr.Ty.base;
+                  });
             } in
           let sym_infer = T.{
               infer_type_csts = true;
@@ -1268,8 +1276,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | Some Smtlib2 v ->
       let poly = T.Implicit in
       let var_infer = T.{
-          infer_type_vars = true;
-          infer_term_vars = No_inference;
+          infer_unbound_vars = No_inference;
+          infer_type_vars_in_binding_pos = true;
+          infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
           infer_type_csts = false;
@@ -1599,18 +1608,19 @@ module Pipe
         Dolmen.Std.Id.print id Print.ty_cst c
         (Format.pp_print_list Print.ty_var) vars Print.ty body
     | `Term_def (id, c, vars, args, body) ->
+      let pp_sep fmt () = Format.fprintf fmt ",@ " in
       Format.fprintf fmt
         "@[<hv 2>term-def{%a}:@ @[<hv>%a@] =@ @[<hov 2>fun (%a;@ %a) ->@ %a@]@]"
         Dolmen.Std.Id.print id Print.term_cst c
-        (Format.pp_print_list Print.ty_var) vars
-        (Format.pp_print_list Print.term_var) args
+        (Format.pp_print_list ~pp_sep Print.ty_var) vars
+        (Format.pp_print_list ~pp_sep Print.term_var) args
         Print.term body
 
   let print_decl fmt = function
     | `Type_decl c ->
       Format.fprintf fmt "@[<hov 2>type-decl:@ %a@]" Print.ty_cst c
     | `Term_decl c ->
-      Format.fprintf fmt "@<hov 2>term-decl:@ %a@]" Print.term_cst c
+      Format.fprintf fmt "@[<hov 2>term-decl:@ %a@]" Print.term_cst c
 
   let print_typechecked fmt t =
     match (t : typechecked) with
@@ -1661,12 +1671,6 @@ module Pipe
     let l' = List.map Dolmen.Std.Term.fv l in
     List.sort_uniq Dolmen.Std.Id.compare (List.flatten l')
 
-  let fp_list (ty : Dolmen.Std.Term.t) =
-    match ty.term with
-    | Binder (Arrow, params_tys, ret_ty) ->
-      fv_list (ret_ty :: params_tys)
-    | _ -> fv_list [ty]
-
   let quantify ~loc var_ty vars f =
     let vars = List.map (fun v ->
         let c = Dolmen.Std.Term.const ~loc v in
@@ -1676,7 +1680,7 @@ module Pipe
       ) vars in
     Dolmen.Std.Term.forall ~loc vars f
 
-  let normalize st c =
+  let normalize _st c =
     match c with
     (* Clauses without free variables can be typechecked as is
        without worry, but if there are free variables, these must
@@ -1684,7 +1688,6 @@ module Pipe
     | { S.descr = S.Clause l; _ } ->
       begin match fv_list l with
         | [] -> c
-
         | free_vars ->
           let loc = c.S.loc in
           let f = match l with
@@ -1695,45 +1698,6 @@ module Pipe
           let f = quantify ~loc (fun _ -> None) free_vars f in
           { c with descr = S.Antecedent f; }
       end
-    (* Axioms, goals and definitions in alt-ergo have their type variables
-       implicitly quantified. *)
-    | { S.descr = S.Defs { contents = l; recursive; } ; _ } ->
-      let l' = List.map (function ({ S.ty; body; _ } as d) ->
-        match fp_list ty with
-        | [] -> d
-        | l ->
-          let vars = List.map (fun v -> Dolmen.Std.Term.const v) l in
-          let ty = Dolmen.Std.Term.pi vars ty in
-          let body =
-            Dolmen.Std.Term.lambda (List.map (fun v ->
-                Dolmen.Std.Term.colon v (Dolmen.Std.Term.tType ())
-              ) vars) body
-          in
-          { d with ty; body; }
-        ) l
-      in
-      { c with descr = S.Defs { recursive; contents = l'; }; }
-    | { S.descr = S.Antecedent t; _ }
-      when State.input_lang st = Some Logic.Alt_ergo ->
-      begin match fv_list [t] with
-        | [] -> c
-        | free_vars ->
-          let loc = c.S.loc in
-          let var_ttype _ = Some (Dolmen.Std.Term.tType ~loc ()) in
-          let f = quantify ~loc var_ttype free_vars t in
-          { c with descr = S.Antecedent f; }
-      end
-    | { S.descr = S.Consequent t; _ }
-      when State.input_lang st = Some Logic.Alt_ergo ->
-      begin match fv_list [t] with
-        | [] -> c
-        | free_vars ->
-          let loc = c.S.loc in
-          let var_ttype _ = Some (Dolmen.Std.Term.tType ~loc ()) in
-          let f = quantify ~loc var_ttype free_vars t in
-          { c with descr = S.Consequent f; }
-      end
-
 
     (* catch all *)
     | _ -> c

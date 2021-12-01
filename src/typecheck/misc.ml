@@ -36,6 +36,18 @@ module Lists = struct
     in
     aux [] n l
 
+  let rec iter3 f l1 l2 l3 =
+    match l1, l2, l3 with
+    | [], [], [] -> ()
+    | a :: r1, b :: r2, c :: r3 -> f a b c; iter3 f r1 r2 r3
+    | _ -> raise (Invalid_argument "Misc.Lists.iter3")
+
+  let rec map3 f l1 l2 l3 =
+    match l1, l2, l3 with
+    | [], [], [] -> []
+    | a :: r1, b :: r2, c :: r3 -> (f a b c) :: (map3 f r1 r2 r3)
+    | _ -> raise (Invalid_argument "Misc.Lists.map3")
+
 end
 
 (* String manipulation *)

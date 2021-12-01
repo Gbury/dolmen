@@ -58,9 +58,11 @@ type decl =
 
 type def = {
   id : Id.t;
-  ty : term;
-  body : term;
   loc : location;
+  vars    : term list;
+  params  : term list;
+  ret_ty  : term;
+  body    : term;
 }
 (** Term definition. *)
 
