@@ -278,7 +278,6 @@ module Make
     | Cannot_tag_tag : Ast.t err
     | Cannot_tag_ttype : Ast.t err
     | Cannot_find : Id.t * string -> Ast.t err
-    | Type_var_in_type_constructor : Ast.t err
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
     | Type_def_rec : Stmt.def -> Stmt.defs err
@@ -1717,21 +1716,17 @@ module Make
     | t ->
       begin match parse_expr env t with
         | Ttype ->
-          begin match ttype_vars with
-            | (h, _) :: _ ->
-              _error env (Ast h) Type_var_in_type_constructor
-            | [] ->
-              let aux n arg =
-                match (arg : _ * res) with
-                | (_, Ttype) -> n + 1
-                | (ast, res) -> raise (Found (ast, res))
-              in
-              begin
-                match List.fold_left aux 0 ty_args with
-                | n -> `Ty_cstr n
-                | exception Found (err, _) ->
-                  _error env (Ast err) Type_var_in_type_constructor
-              end
+          let n = List.length ttype_vars in
+          let aux n arg =
+            match (arg : _ * res) with
+            | (_, Ttype) -> n + 1
+            | (ast, res) -> raise (Found (ast, res))
+          in
+          begin
+            match List.fold_left aux n ty_args with
+            | n -> `Ty_cstr n
+            | exception Found (ast, res) ->
+              _expected env "tType or a type variable" ast (Some res)
           end
         | Ty ret ->
           let aux acc arg =

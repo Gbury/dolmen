@@ -407,7 +407,7 @@ let logic ?loc ~ac ids ty =
   mk_decls ?loc ~attrs ~recursive:true l
 
 let abstract_type ?loc id vars =
-  let ty = Term.fun_ty ?loc vars (Term.tType ?loc ()) in
+  let ty = Term.pi ?loc vars (Term.tType ?loc ()) in
   mk_decls ?loc ~recursive:false [abstract ?loc id ty]
 
 let record_type ?loc id vars fields =

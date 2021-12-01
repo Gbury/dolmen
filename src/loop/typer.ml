@@ -578,12 +578,6 @@ let forbidden_quant =
         Format.fprintf fmt "Quantified expressions are forbidden by the logic.")
     ~name:"Forbidden quantifier" ()
 
-let type_var_in_type_cstr =
-  Report.Error.mk ~code ~mnemonic:"type-var-in-type-cstr"
-    ~message:(fun fmt () ->
-        Format.fprintf fmt "Type variables cannot appear in the signature of a type constant")
-    ~name:"Type variable in the isgnature of a type constructor" ()
-
 let missing_destructor =
   Report.Error.mk ~code:Code.bug ~mnemonic:"missing-destructor"
     ~message:(fun fmt id ->
@@ -979,8 +973,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.error ~loc st unbound_identifier (id, msg, lit_hint)
     | T.Forbidden_quantifier ->
       S.error ~loc st forbidden_quant ()
-    | T.Type_var_in_type_constructor ->
-      S.error ~loc st type_var_in_type_cstr ()
     | T.Missing_destructor id ->
       S.error ~loc st missing_destructor id
     | T.Higher_order_application ->
