@@ -1,0 +1,5 @@
+(set-logic ALL)
+(declare-fun p (Real) Bool)
+(assert (p (to_real 42)))
+(check-sat)
+(exit)

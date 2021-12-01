@@ -123,6 +123,10 @@ type ty_def =
   | Adt of {
       ty : ty_cst;
       record : bool;
+      (** This field if set to [true] when the type is meant to be a record.
+          If this field its [true], then the type is guaranteed to have a single
+          constructor. However, note that the converse is not valid: there can
+          be ADTs with a single constructors, but that are not records. *)
       cases : ty_def_adt_case array;
     }
   (** Algebraic datatypes, including records (which are seen as a 1-case adt). *)
@@ -242,6 +246,23 @@ module Print : sig
 
   val ty_def : ty_def t
   (** Printer for type definitions. *)
+
+end
+
+(** {2 Views} *)
+(*  ************************************************************************* *)
+
+module View : sig
+
+  module TFF : Dolmen_intf.View.TFF.S
+    with type ty = ty
+     and type ty_var = ty_var
+     and type ty_cst = ty_cst
+     and type ty_def = ty_def
+     and type Sig.t = ty
+     and type term = term
+     and type term_var = term_var
+     and type term_cst = term_cst
 
 end
 
@@ -433,6 +454,9 @@ module Ty : sig
   val expand_head : t -> t
   (** Expand head aliases. *)
 
+  val descr : t -> ty_descr
+  (** Type description (after expansion). *)
+
 
   (** {4 View} *)
 
@@ -503,6 +527,9 @@ module Ty : sig
     type t = ty_var
     (** The type of variables the can occur in types *)
 
+    val path : t -> Path.t
+    (** Return the path of a type variable. *)
+
     val print : Format.formatter -> t -> unit
     (** Printer. *)
 
@@ -549,6 +576,9 @@ module Ty : sig
     val unset_tag : t -> _ Tag.t -> unit
     (** Remove the binding to the given tag. *)
 
+    module Map : Maps.S with type key = t
+    (** Maps of type variables. *)
+
   end
 
   (** A module for constant symbols the occur in types. *)
@@ -556,6 +586,9 @@ module Ty : sig
 
     type t = ty_cst
     (** The type of constant symbols the can occur in types *)
+
+    val path : t -> Path.t
+    (** Return the path of type constant. *)
 
     val print : Format.formatter -> t -> unit
     (** Printer. *)
@@ -568,6 +601,9 @@ module Ty : sig
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)
+
+    module Map : Maps.S with type key = t
+    (** Maps of type constants. *)
 
     val arity : t -> int
     (** Return the arity of the given symbol. *)
@@ -813,6 +849,9 @@ module Term : sig
     type t = term_var
     (** The type of variables the can occur in terms *)
 
+    val path : t -> Path.t
+    (** Return the path of a given term variable. *)
+
     val print : Format.formatter -> t -> unit
     (** Printer. *)
 
@@ -856,6 +895,9 @@ module Term : sig
     val unset_tag : t -> _ Tag.t -> unit
     (** Remove the binding to the given tag. *)
 
+    module Map : Maps.S with type key = t
+    (** Maps of term variables. *)
+
   end
 
   (** A module for constant symbols that occur in terms. *)
@@ -863,6 +905,9 @@ module Term : sig
 
     type t = term_cst
     (** The type of constant symbols that can occur in terms *)
+
+    val path : t -> Path.t
+    (** Return the path of a given term constant. *)
 
     val print : Format.formatter -> t -> unit
     (** Printer. *)
@@ -875,6 +920,9 @@ module Term : sig
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)
+
+    module Map : Maps.S with type key = t
+    (** Maps of term constants. *)
 
     val ty : t -> ty
     (** Returns the type of a term constant. *)

@@ -1,0 +1,2796 @@
+(* this is the prelude for Alt-Ergo, version >= 0.95.2 *)
+(* this is a prelude for Alt-Ergo integer arithmetic *)
+(* this is a prelude for Alt-Ergo real arithmetic *)
+
+type fpa_rounding_mode = NearestTiesToEven
+logic real_of_int : int -> real
+logic abs_real : real -> real
+logic float32 : fpa_rounding_mode, real -> real
+
+logic fp32_max_int : int
+logic fp64_max_int : int
+logic comp_div: int, int -> int
+axiom comp_div_def: forall x, y:int. x >= 0 and y > 0 -> comp_div(x,y) = x / y
+logic comp_mod: int, int -> int
+axiom comp_mod_def: forall x, y:int. x >= 0 and y > 0 -> comp_mod(x,y) = x % y
+logic match_bool : bool, 'a, 'a -> 'a
+
+logic abstr : prop
+
+axiom match_bool_True : abstr
+
+logic abstr1 : prop
+
+axiom match_bool_False : abstr1
+
+logic match_bool1 : bool, 'a, 'a -> 'a
+
+logic abstr2 : prop
+
+axiom match_bool_True1 : abstr2
+
+logic abstr3 : prop
+
+axiom match_bool_False1 : abstr3
+
+logic match_bool2 : bool, 'a, 'a -> 'a
+
+logic abstr4 : prop
+
+axiom match_bool_True2 : abstr4
+
+logic abstr5 : prop
+
+axiom match_bool_False2 : abstr5
+
+logic abstr6 : prop
+
+axiom CompatOrderMult : abstr6
+
+logic abstr7 : prop
+
+axiom add_div : abstr7
+
+logic abstr8 : prop
+
+axiom sub_div : abstr8
+
+logic abstr9 : prop
+
+axiom neg_div : abstr9
+
+logic abstr10 : prop
+
+axiom assoc_mul_div : abstr10
+
+logic abstr11 : prop
+
+axiom assoc_div_mul : abstr11
+
+logic abstr12 : prop
+
+axiom assoc_div_div : abstr12
+
+logic abstr13 : prop
+
+axiom CompatOrderMult1 : abstr13
+
+logic abstr14 : prop
+
+axiom Abs_le : abstr14
+
+logic abstr15 : prop
+
+axiom Abs_pos : abstr15
+
+logic abstr16 : prop
+
+axiom Abs_sum : abstr16
+
+logic abstr17 : prop
+
+axiom Abs_prod : abstr17
+
+logic abstr18 : prop
+
+axiom triangular_inequality : abstr18
+
+logic abstr19 : prop
+
+axiom Sqrt_positive : abstr19
+
+logic abstr20 : prop
+
+axiom Sqrt_square : abstr20
+
+logic abstr21 : prop
+
+axiom Square_sqrt : abstr21
+
+logic abstr22 : prop
+
+axiom Sqrt_mul : abstr22
+
+logic abstr23 : prop
+
+axiom Sqrt_le : abstr23
+
+logic cos : real -> real
+
+logic sin : real -> real
+
+logic abstr24 : prop
+
+axiom Pythagorean_identity : abstr24
+
+logic abstr25 : prop
+
+axiom Cos_le_one : abstr25
+
+logic abstr26 : prop
+
+axiom Sin_le_one : abstr26
+
+logic abstr27 : real
+
+axiom Cos_0 : (abstr27 = 1.0)
+
+logic abstr28 : real
+
+axiom Sin_0 : (abstr28 = 0.0)
+
+logic pi : real
+
+axiom Pi_double_precision_bounds : (0x1.921fb54442d18p1 <  pi)
+
+axiom Pi_double_precision_bounds1 : (pi <  0x1.921fb54442d19p1)
+
+logic abstr29 : real
+
+axiom Cos_pi : (abstr29 = (-1.0))
+
+logic abstr30 : real
+
+axiom Sin_pi : (abstr30 = 0.0)
+
+logic abstr31 : real
+
+axiom Cos_pi2 : (abstr31 = 0.0)
+
+logic abstr32 : real
+
+axiom Sin_pi2 : (abstr32 = 1.0)
+
+logic abstr33 : prop
+
+axiom Cos_plus_pi : abstr33
+
+logic abstr34 : prop
+
+axiom Sin_plus_pi : abstr34
+
+logic abstr35 : prop
+
+axiom Cos_plus_pi2 : abstr35
+
+logic abstr36 : prop
+
+axiom Sin_plus_pi2 : abstr36
+
+logic abstr37 : prop
+
+axiom Cos_neg : abstr37
+
+logic abstr38 : prop
+
+axiom Sin_neg : abstr38
+
+logic abstr39 : prop
+
+axiom Cos_sum : abstr39
+
+logic abstr40 : prop
+
+axiom Sin_sum : abstr40
+
+logic atan : real -> real
+
+logic abstr41 : prop
+
+axiom Tan_atan : abstr41
+
+logic match_mode : fpa_rounding_mode, 'a, 'a, 'a, 'a, 'a -> 'a
+
+logic abstr42 : prop
+
+axiom match_mode_RNE : abstr42
+
+logic abstr43 : prop
+
+axiom match_mode_RNA : abstr43
+
+logic abstr44 : prop
+
+axiom match_mode_RTP : abstr44
+
+logic abstr45 : prop
+
+axiom match_mode_RTN : abstr45
+
+logic abstr46 : prop
+
+axiom match_mode_RTZ : abstr46
+
+logic match_mode1 : fpa_rounding_mode, 'a, 'a, 'a, 'a, 'a -> 'a
+
+logic abstr47 : prop
+
+axiom match_mode_RNE1 : abstr47
+
+logic abstr48 : prop
+
+axiom match_mode_RNA1 : abstr48
+
+logic abstr49 : prop
+
+axiom match_mode_RTP1 : abstr49
+
+logic abstr50 : prop
+
+axiom match_mode_RTN1 : abstr50
+
+logic abstr51 : prop
+
+axiom match_mode_RTZ1 : abstr51
+
+logic match_mode2 : fpa_rounding_mode, 'a, 'a, 'a, 'a, 'a -> 'a
+
+logic abstr52 : prop
+
+axiom match_mode_RNE2 : abstr52
+
+logic abstr53 : prop
+
+axiom match_mode_RNA2 : abstr53
+
+logic abstr54 : prop
+
+axiom match_mode_RTP2 : abstr54
+
+logic abstr55 : prop
+
+axiom match_mode_RTN2 : abstr55
+
+logic abstr56 : prop
+
+axiom match_mode_RTZ2 : abstr56
+
+type t
+
+logic truncate : real -> int
+
+logic abstr57 : prop
+
+axiom Truncate_int : abstr57
+
+logic abstr58 : prop
+
+axiom Truncate_down_pos : abstr58
+
+logic abstr59 : prop
+
+axiom Truncate_up_neg : abstr59
+
+logic abstr60 : prop
+
+axiom Real_of_truncate : abstr60
+
+logic abstr61 : prop
+
+axiom Truncate_monotonic : abstr61
+
+logic abstr62 : prop
+
+axiom Truncate_monotonic_int1 : abstr62
+
+logic abstr63 : prop
+
+axiom Truncate_monotonic_int2 : abstr63
+
+logic abstr64 : prop
+
+axiom Floor_int : abstr64
+
+logic abstr65 : prop
+
+axiom Ceil_int : abstr65
+
+logic abstr66 : prop
+
+axiom Floor_down : abstr66
+
+logic abstr67 : prop
+
+axiom Ceil_up : abstr67
+
+logic abstr68 : prop
+
+axiom Floor_monotonic : abstr68
+
+logic abstr69 : prop
+
+axiom Ceil_monotonic : abstr69
+
+logic eb : int
+
+logic sb : int
+
+axiom eb_gt_1 : (1 <  eb)
+
+axiom sb_gt_1 : (1 <  sb)
+
+logic zeroF : t
+
+logic half : t
+
+logic from_binary : int -> t
+
+logic prefix_ex : fpa_rounding_mode, real -> t
+
+logic abs : t -> t
+
+logic neg : t -> t
+
+logic add : fpa_rounding_mode, t, t -> t
+
+logic sub : fpa_rounding_mode, t, t -> t
+
+logic mul : fpa_rounding_mode, t, t -> t
+
+logic div : fpa_rounding_mode, t, t -> t
+
+logic fma : fpa_rounding_mode, t, t, t -> t
+
+logic sqrt : fpa_rounding_mode, t -> t
+
+logic rem : t, t -> t
+
+logic roundToIntegral : fpa_rounding_mode, t -> t
+
+logic min : t, t -> t
+
+logic max : t, t -> t
+
+logic le : t, t -> prop
+
+logic lt : t, t -> prop
+
+logic eq : t, t -> prop
+
+logic is_normal : t -> prop
+
+logic is_subnormal : t -> prop
+
+logic is_zero : t -> prop
+
+logic is_infinite : t -> prop
+
+logic is_nan : t -> prop
+
+logic is_positive : t -> prop
+
+logic is_negative : t -> prop
+
+logic is_finite : t -> prop
+
+logic abstr70 : prop
+
+axiom is_not_nan : abstr70
+
+logic abstr71 : prop
+
+axiom is_not_finite : abstr71
+
+logic to_real : t -> real
+
+logic abstr72 : prop
+
+axiom zeroF_is_positive : abstr72
+
+logic abstr73 : prop
+
+axiom zeroF_is_zero : abstr73
+
+logic abstr74 : real
+
+axiom half_to_real : (abstr74 = 0.5)
+
+logic abstr75 : prop
+
+axiom zero_to_real : abstr75
+
+logic of_int : fpa_rounding_mode, int -> t
+
+logic to_int : fpa_rounding_mode, t -> int
+
+logic abstr76 : prop
+
+axiom zero_of_int : abstr76
+
+axiom max_real_int : (0x1.FFFFFEp127 = real_of_int(fp32_max_int))
+
+logic abstr77 : prop
+
+axiom is_finite1 : abstr77
+
+logic abstr78 : prop
+
+axiom zero_is_finite : abstr78
+
+logic abstr79 : prop
+
+axiom half_is_finite : abstr79
+
+logic abstr80 : prop
+
+axiom of_int_is_finite : abstr80
+
+logic abstr81 : prop
+
+axiom of_int_to_real : abstr81
+
+logic abstr82 : prop
+
+axiom Bounded_real_no_overflow : abstr82
+
+logic abstr83 : prop
+
+axiom Round_to_real : abstr83
+
+logic abstr84 : prop
+
+axiom Round_down_le : abstr84
+
+logic abstr85 : prop
+
+axiom Round_up_ge : abstr85
+
+logic abstr86 : prop
+
+axiom Round_down_neg : abstr86
+
+logic abstr87 : prop
+
+axiom Round_up_neg : abstr87
+
+logic abstr88 : prop
+
+axiom Exact_rounding_for_integers : abstr88
+
+logic abstr89 : prop
+
+axiom feq_eq : abstr89
+
+logic abstr90 : prop
+
+axiom eq_feq : abstr90
+
+logic abstr91 : prop
+
+axiom eq_refl : abstr91
+
+logic abstr92 : prop
+
+axiom eq_sym : abstr92
+
+logic abstr93 : prop
+
+axiom eq_trans : abstr93
+
+logic abstr94 : real
+
+logic abstr95 : prop
+
+axiom auto_instance : (abstr95 -> ((-0x1.FFFFFEp127) <= abstr94))
+
+axiom auto_instance1 : (abstr95 -> (abstr94 <= 0x1.FFFFFEp127))
+
+logic abstr96 : prop
+
+axiom eq_zero : abstr96
+
+logic abstr97 : prop
+
+axiom eq_to_real_finite : abstr97
+
+logic abstr98 : prop
+
+axiom eq_special : abstr98
+
+logic abstr99 : prop
+
+axiom lt_finite : abstr99
+
+logic abstr100 : prop
+
+axiom le_finite : abstr100
+
+logic abstr101 : prop
+
+axiom le_lt_trans : abstr101
+
+logic abstr102 : prop
+
+axiom lt_le_trans : abstr102
+
+logic abstr103 : prop
+
+axiom le_ge_asym : abstr103
+
+logic abstr104 : prop
+
+axiom not_lt_ge : abstr104
+
+logic abstr105 : prop
+
+axiom not_gt_le : abstr105
+
+logic abstr106 : prop
+
+axiom le_special : abstr106
+
+logic abstr107 : prop
+
+axiom lt_special : abstr107
+
+logic abstr108 : prop
+
+axiom positive_to_real : abstr108
+
+logic abstr109 : prop
+
+axiom to_real_positive : abstr109
+
+logic abstr110 : prop
+
+axiom negative_to_real : abstr110
+
+logic abstr111 : prop
+
+axiom to_real_negative : abstr111
+
+logic abstr112 : prop
+
+axiom negative_xor_positive : abstr112
+
+logic abstr113 : prop
+
+axiom negative_or_positive : abstr113
+
+logic abstr114 : prop
+
+axiom diff_sign_trans : abstr114
+
+logic abstr115 : prop
+
+axiom diff_sign_product : abstr115
+
+logic abstr116 : prop
+
+axiom same_sign_product : abstr116
+
+logic abstr117 : prop
+
+axiom add_finite : abstr117
+
+logic abstr118 : prop
+
+axiom add_finite_rev : abstr118
+
+logic abstr119 : prop
+
+axiom add_finite_rev_n : abstr119
+
+logic abstr120 : prop
+
+axiom sub_finite : abstr120
+
+logic abstr121 : prop
+
+axiom sub_finite_rev : abstr121
+
+logic abstr122 : prop
+
+axiom sub_finite_rev_n : abstr122
+
+logic abstr123 : prop
+
+axiom mul_finite : abstr123
+
+logic abstr124 : prop
+
+axiom mul_finite_rev : abstr124
+
+logic abstr125 : prop
+
+axiom mul_finite_rev_n : abstr125
+
+logic abstr126 : prop
+
+axiom div_finite : abstr126
+
+logic abstr127 : prop
+
+axiom div_finite_rev : abstr127
+
+logic abstr128 : prop
+
+axiom div_finite_rev_n : abstr128
+
+logic abstr129 : prop
+
+axiom neg_finite : abstr129
+
+logic abstr130 : prop
+
+axiom neg_finite_rev : abstr130
+
+logic abstr131 : prop
+
+axiom abs_finite : abstr131
+
+logic abstr132 : prop
+
+axiom abs_finite_rev : abstr132
+
+logic abstr133 : prop
+
+axiom abs_universal : abstr133
+
+logic abstr134 : prop
+
+axiom fma_finite : abstr134
+
+logic abstr135 : prop
+
+axiom fma_finite_rev : abstr135
+
+logic abstr136 : prop
+
+axiom fma_finite_rev_n : abstr136
+
+logic abstr137 : prop
+
+axiom sqrt_finite : abstr137
+
+logic abstr138 : prop
+
+axiom sqrt_finite_rev : abstr138
+
+logic abstr139 : prop
+
+axiom add_special : abstr139
+
+logic abstr140 : prop
+
+axiom sub_special : abstr140
+
+logic abstr141 : prop
+
+axiom mul_special : abstr141
+
+logic abstr142 : prop
+
+axiom div_special : abstr142
+
+logic abstr143 : prop
+
+axiom neg_special : abstr143
+
+logic abstr144 : prop
+
+axiom abs_special : abstr144
+
+logic abstr145 : prop
+
+axiom fma_special : abstr145
+
+logic abstr146 : prop
+
+axiom sqrt_special : abstr146
+
+logic abstr147 : prop
+
+axiom Min_r : abstr147
+
+logic abstr148 : prop
+
+axiom Min_l : abstr148
+
+logic abstr149 : prop
+
+axiom Max_r : abstr149
+
+logic abstr150 : prop
+
+axiom Max_l : abstr150
+
+logic abstr151 : prop
+
+axiom Min_assoc : abstr151
+
+logic abstr152 : prop
+
+axiom Max_assoc : abstr152
+
+logic is_int : t -> prop
+
+logic abstr153 : prop
+
+axiom zeroF_is_int : abstr153
+
+logic abstr154 : prop
+
+axiom of_int_is_int : abstr154
+
+logic abstr155 : prop
+
+axiom is_int_is_finite : abstr155
+
+logic abstr156 : prop
+
+axiom int_to_real : abstr156
+
+logic abstr157 : prop
+
+axiom big_float_is_int : abstr157
+
+logic abstr158 : prop
+
+axiom roundToIntegral_is_int : abstr158
+
+logic abstr159 : prop
+
+axiom truncate_int : abstr159
+
+logic abstr160 : prop
+
+axiom truncate_neg : abstr160
+
+logic abstr161 : prop
+
+axiom truncate_pos : abstr161
+
+logic abstr162 : prop
+
+axiom ceil_le : abstr162
+
+logic abstr163 : prop
+
+axiom ceil_lest : abstr163
+
+logic abstr164 : prop
+
+axiom ceil_to_real : abstr164
+
+logic abstr165 : prop
+
+axiom ceil_to_int : abstr165
+
+logic abstr166 : prop
+
+axiom floor_le : abstr166
+
+logic abstr167 : prop
+
+axiom floor_lest : abstr167
+
+logic abstr168 : prop
+
+axiom floor_to_real : abstr168
+
+logic abstr169 : prop
+
+axiom floor_to_int : abstr169
+
+logic abstr170 : prop
+
+axiom RNA_down : abstr170
+
+logic abstr171 : prop
+
+axiom RNA_up : abstr171
+
+logic abstr172 : prop
+
+axiom RNA_down_tie : abstr172
+
+logic abstr173 : prop
+
+axiom RNA_up_tie : abstr173
+
+logic abstr174 : prop
+
+axiom RNA_near_int : abstr174
+
+logic abstr175 : prop
+
+axiom to_int_roundToIntegral : abstr175
+
+logic abstr176 : prop
+
+axiom to_int_monotonic : abstr176
+
+logic abstr177 : prop
+
+axiom to_int_monotonic_int1 : abstr177
+
+logic abstr178 : prop
+
+axiom to_int_monotonic_int2 : abstr178
+
+logic abstr179 : prop
+
+axiom to_int_of_int : abstr179
+
+logic abstr180 : prop
+
+axiom eq_to_int : abstr180
+
+logic abstr181 : prop
+
+axiom roundToIntegral_is_finite : abstr181
+
+logic abstr182 : prop
+
+axiom round_bound_ne : abstr182
+
+logic abstr183 : prop
+
+axiom round_bound : abstr183
+
+type t1
+
+logic nth : t1, int -> bool
+
+logic abstr184 : prop
+
+axiom nth_out_of_bound : abstr184
+
+logic zeros : t1
+
+logic abstr185 : prop
+
+axiom Nth_zeros : abstr185
+
+logic ones : t1
+
+logic abstr186 : prop
+
+axiom Nth_ones : abstr186
+
+logic bw_and : t1, t1 -> t1
+
+logic abstr187 : prop
+
+axiom Nth_bw_and : abstr187
+
+logic bw_or : t1, t1 -> t1
+
+logic abstr188 : prop
+
+axiom Nth_bw_or : abstr188
+
+logic bw_xor : t1, t1 -> t1
+
+logic abstr189 : prop
+
+axiom Nth_bw_xor : abstr189
+
+logic bw_not : t1 -> t1
+
+logic abstr190 : prop
+
+axiom Nth_bw_not : abstr190
+
+logic lsr : t1, int -> t1
+
+logic abstr191 : prop
+
+axiom Lsr_nth_low : abstr191
+
+logic abstr192 : prop
+
+axiom Lsr_nth_high : abstr192
+
+logic abstr193 : prop
+
+axiom lsr_zeros : abstr193
+
+logic asr : t1, int -> t1
+
+logic abstr194 : prop
+
+axiom Asr_nth_low : abstr194
+
+logic abstr195 : prop
+
+axiom Asr_nth_high : abstr195
+
+logic abstr196 : prop
+
+axiom asr_zeros : abstr196
+
+logic lsl : t1, int -> t1
+
+logic abstr197 : prop
+
+axiom Lsl_nth_high : abstr197
+
+logic abstr198 : prop
+
+axiom Lsl_nth_low : abstr198
+
+logic abstr199 : prop
+
+axiom lsl_zeros : abstr199
+
+logic abstr200 : prop
+
+axiom Div_mod : abstr200
+
+logic abstr201 : prop
+
+axiom Mod_bound : abstr201
+
+logic abstr202 : prop
+
+axiom Div_unique : abstr202
+
+logic abstr203 : prop
+
+axiom Div_bound : abstr203
+
+logic abstr204 : prop
+
+axiom Mod_1 : abstr204
+
+logic abstr205 : prop
+
+axiom Div_1 : abstr205
+
+logic abstr206 : prop
+
+axiom Div_inf : abstr206
+
+logic abstr207 : prop
+
+axiom Div_inf_neg : abstr207
+
+logic abstr208 : prop
+
+axiom Mod_0 : abstr208
+
+logic abstr209 : prop
+
+axiom Div_1_left : abstr209
+
+logic abstr210 : prop
+
+axiom Div_minus1_left : abstr210
+
+logic abstr211 : prop
+
+axiom Mod_1_left : abstr211
+
+logic abstr212 : prop
+
+axiom Mod_minus1_left : abstr212
+
+logic abstr213 : prop
+
+axiom Div_mult : abstr213
+
+logic abstr214 : prop
+
+axiom Mod_mult : abstr214
+
+logic rotate_right : t1, int -> t1
+
+logic abstr215 : prop
+
+axiom Nth_rotate_right : abstr215
+
+logic rotate_left : t1, int -> t1
+
+logic abstr216 : prop
+
+axiom Nth_rotate_left : abstr216
+
+logic pow2 : int -> int
+
+logic abstr217 : int
+
+axiom Power_0 : (abstr217 = 1)
+
+logic abstr218 : prop
+
+axiom Power_s : abstr218
+
+logic abstr219 : int
+
+axiom Power_1 : (abstr219 = 2)
+
+logic abstr220 : prop
+
+axiom Power_sum : abstr220
+
+logic abstr221 : prop
+
+axiom pow2pos : abstr221
+
+axiom pow2_0 : (abstr217 = 1)
+
+axiom pow2_1 : (abstr219 = 2)
+
+logic abstr222 : int
+
+axiom pow2_2 : (abstr222 = 4)
+
+logic abstr223 : int
+
+axiom pow2_3 : (abstr223 = 8)
+
+logic abstr224 : int
+
+axiom pow2_4 : (abstr224 = 16)
+
+logic abstr225 : int
+
+axiom pow2_5 : (abstr225 = 32)
+
+logic abstr226 : int
+
+axiom pow2_6 : (abstr226 = 64)
+
+logic abstr227 : int
+
+axiom pow2_7 : (abstr227 = 128)
+
+logic abstr228 : int
+
+axiom pow2_8 : (abstr228 = 256)
+
+logic abstr229 : int
+
+axiom pow2_9 : (abstr229 = 512)
+
+logic abstr230 : int
+
+axiom pow2_10 : (abstr230 = 1024)
+
+logic abstr231 : int
+
+axiom pow2_11 : (abstr231 = 2048)
+
+logic abstr232 : int
+
+axiom pow2_12 : (abstr232 = 4096)
+
+logic abstr233 : int
+
+axiom pow2_13 : (abstr233 = 8192)
+
+logic abstr234 : int
+
+axiom pow2_14 : (abstr234 = 16384)
+
+logic abstr235 : int
+
+axiom pow2_15 : (abstr235 = 32768)
+
+logic abstr236 : int
+
+axiom pow2_16 : (abstr236 = 65536)
+
+logic abstr237 : int
+
+axiom pow2_17 : (abstr237 = 131072)
+
+logic abstr238 : int
+
+axiom pow2_18 : (abstr238 = 262144)
+
+logic abstr239 : int
+
+axiom pow2_19 : (abstr239 = 524288)
+
+logic abstr240 : int
+
+axiom pow2_20 : (abstr240 = 1048576)
+
+logic abstr241 : int
+
+axiom pow2_21 : (abstr241 = 2097152)
+
+logic abstr242 : int
+
+axiom pow2_22 : (abstr242 = 4194304)
+
+logic abstr243 : int
+
+axiom pow2_23 : (abstr243 = 8388608)
+
+logic abstr244 : int
+
+axiom pow2_24 : (abstr244 = 16777216)
+
+logic abstr245 : int
+
+axiom pow2_25 : (abstr245 = 33554432)
+
+logic abstr246 : int
+
+axiom pow2_26 : (abstr246 = 67108864)
+
+logic abstr247 : int
+
+axiom pow2_27 : (abstr247 = 134217728)
+
+logic abstr248 : int
+
+axiom pow2_28 : (abstr248 = 268435456)
+
+logic abstr249 : int
+
+axiom pow2_29 : (abstr249 = 536870912)
+
+logic abstr250 : int
+
+axiom pow2_30 : (abstr250 = 1073741824)
+
+logic abstr251 : int
+
+axiom pow2_31 : (abstr251 = 2147483648)
+
+logic abstr252 : int
+
+axiom pow2_32 : (abstr252 = 4294967296)
+
+logic abstr253 : int
+
+axiom pow2_33 : (abstr253 = 8589934592)
+
+logic abstr254 : int
+
+axiom pow2_34 : (abstr254 = 17179869184)
+
+logic abstr255 : int
+
+axiom pow2_35 : (abstr255 = 34359738368)
+
+logic abstr256 : int
+
+axiom pow2_36 : (abstr256 = 68719476736)
+
+logic abstr257 : int
+
+axiom pow2_37 : (abstr257 = 137438953472)
+
+logic abstr258 : int
+
+axiom pow2_38 : (abstr258 = 274877906944)
+
+logic abstr259 : int
+
+axiom pow2_39 : (abstr259 = 549755813888)
+
+logic abstr260 : int
+
+axiom pow2_40 : (abstr260 = 1099511627776)
+
+logic abstr261 : int
+
+axiom pow2_41 : (abstr261 = 2199023255552)
+
+logic abstr262 : int
+
+axiom pow2_42 : (abstr262 = 4398046511104)
+
+logic abstr263 : int
+
+axiom pow2_43 : (abstr263 = 8796093022208)
+
+logic abstr264 : int
+
+axiom pow2_44 : (abstr264 = 17592186044416)
+
+logic abstr265 : int
+
+axiom pow2_45 : (abstr265 = 35184372088832)
+
+logic abstr266 : int
+
+axiom pow2_46 : (abstr266 = 70368744177664)
+
+logic abstr267 : int
+
+axiom pow2_47 : (abstr267 = 140737488355328)
+
+logic abstr268 : int
+
+axiom pow2_48 : (abstr268 = 281474976710656)
+
+logic abstr269 : int
+
+axiom pow2_49 : (abstr269 = 562949953421312)
+
+logic abstr270 : int
+
+axiom pow2_50 : (abstr270 = 1125899906842624)
+
+logic abstr271 : int
+
+axiom pow2_51 : (abstr271 = 2251799813685248)
+
+logic abstr272 : int
+
+axiom pow2_52 : (abstr272 = 4503599627370496)
+
+logic abstr273 : int
+
+axiom pow2_53 : (abstr273 = 9007199254740992)
+
+logic abstr274 : int
+
+axiom pow2_54 : (abstr274 = 18014398509481984)
+
+logic abstr275 : int
+
+axiom pow2_55 : (abstr275 = 36028797018963968)
+
+logic abstr276 : int
+
+axiom pow2_56 : (abstr276 = 72057594037927936)
+
+logic abstr277 : int
+
+axiom pow2_57 : (abstr277 = 144115188075855872)
+
+logic abstr278 : int
+
+axiom pow2_58 : (abstr278 = 288230376151711744)
+
+logic abstr279 : int
+
+axiom pow2_59 : (abstr279 = 576460752303423488)
+
+logic abstr280 : int
+
+axiom pow2_60 : (abstr280 = 1152921504606846976)
+
+logic abstr281 : int
+
+axiom pow2_61 : (abstr281 = 2305843009213693952)
+
+logic abstr282 : int
+
+axiom pow2_62 : (abstr282 = 4611686018427387904)
+
+logic abstr283 : int
+
+axiom pow2_63 : (abstr283 = 9223372036854775808)
+
+logic abstr284 : int
+
+axiom pow2_64 : (abstr284 = 18446744073709551616)
+
+logic to_int1 : t1 -> int
+
+logic to_uint : t1 -> int
+
+logic of_int1 : int -> t1
+
+logic abstr285 : prop
+
+axiom to_uint_extensionality : abstr285
+
+logic abstr286 : prop
+
+axiom to_int_extensionality : abstr286
+
+logic abstr287 : prop
+
+axiom to_uint_bounds : abstr287
+
+logic abstr288 : prop
+
+axiom to_uint_of_int : abstr288
+
+logic abstr289 : t1
+
+axiom Of_int_zeros : (zeros = abstr289)
+
+logic abstr290 : t1
+
+axiom Of_int_ones : (ones = abstr290)
+
+logic add1 : t1, t1 -> t1
+
+logic abstr291 : prop
+
+axiom to_uint_add_bounded : abstr291
+
+logic sub1 : t1, t1 -> t1
+
+logic abstr292 : prop
+
+axiom to_uint_sub_bounded : abstr292
+
+logic neg1 : t1 -> t1
+
+logic abstr293 : prop
+
+axiom to_uint_neg : abstr293
+
+logic mul1 : t1, t1 -> t1
+
+logic abstr294 : prop
+
+axiom to_uint_mul_bounded : abstr294
+
+logic udiv : t1, t1 -> t1
+
+logic abstr295 : prop
+
+axiom to_uint_udiv : abstr295
+
+logic urem : t1, t1 -> t1
+
+logic abstr296 : prop
+
+axiom to_uint_urem : abstr296
+
+logic lsr_bv : t1, t1 -> t1
+
+logic abstr297 : prop
+
+axiom lsr_bv_is_lsr : abstr297
+
+logic abstr298 : prop
+
+axiom to_uint_lsr : abstr298
+
+logic asr_bv : t1, t1 -> t1
+
+logic abstr299 : prop
+
+axiom asr_bv_is_asr : abstr299
+
+logic lsl_bv : t1, t1 -> t1
+
+logic abstr300 : prop
+
+axiom lsl_bv_is_lsl : abstr300
+
+logic abstr301 : prop
+
+axiom to_uint_lsl : abstr301
+
+logic rotate_right_bv : t1, t1 -> t1
+
+logic rotate_left_bv : t1, t1 -> t1
+
+logic abstr302 : prop
+
+axiom rotate_left_bv_is_rotate_left : abstr302
+
+logic abstr303 : prop
+
+axiom rotate_right_bv_is_rotate_right : abstr303
+
+logic nth_bv : t1, t1 -> bool
+
+logic abstr304 : prop
+
+axiom Nth_bv_is_nth : abstr304
+
+logic abstr305 : prop
+
+axiom Nth_bv_is_nth2 : abstr305
+
+logic eq_sub_bv : t1, t1, t1, t1 -> prop
+
+logic abstr306 : prop
+
+axiom eq_sub_equiv : abstr306
+
+logic abstr307 : prop
+
+axiom Extensionality : abstr307
+
+type t2
+
+logic eb1 : int
+
+logic sb1 : int
+
+axiom eb_gt_11 : (1 <  eb1)
+
+axiom sb_gt_11 : (1 <  sb1)
+
+logic zeroF1 : t2
+
+logic half1 : t2
+
+logic from_binary1 : int -> t2
+
+logic prefix_ex1 : fpa_rounding_mode, real -> t2
+
+logic abs1 : t2 -> t2
+
+logic neg2 : t2 -> t2
+
+logic add2 : fpa_rounding_mode, t2, t2 -> t2
+
+logic sub2 : fpa_rounding_mode, t2, t2 -> t2
+
+logic mul2 : fpa_rounding_mode, t2, t2 -> t2
+
+logic div1 : fpa_rounding_mode, t2, t2 -> t2
+
+logic fma1 : fpa_rounding_mode, t2, t2, t2 -> t2
+
+logic sqrt1 : fpa_rounding_mode, t2 -> t2
+
+logic rem1 : t2, t2 -> t2
+
+logic roundToIntegral1 : fpa_rounding_mode, t2 -> t2
+
+logic min1 : t2, t2 -> t2
+
+logic max1 : t2, t2 -> t2
+
+logic le1 : t2, t2 -> prop
+
+logic lt1 : t2, t2 -> prop
+
+logic eq1 : t2, t2 -> prop
+
+logic is_normal1 : t2 -> prop
+
+logic is_subnormal1 : t2 -> prop
+
+logic is_zero1 : t2 -> prop
+
+logic is_infinite1 : t2 -> prop
+
+logic is_nan1 : t2 -> prop
+
+logic is_positive1 : t2 -> prop
+
+logic is_negative1 : t2 -> prop
+
+logic is_finite2 : t2 -> prop
+
+logic abstr308 : prop
+
+axiom is_not_nan1 : abstr308
+
+logic abstr309 : prop
+
+axiom is_not_finite1 : abstr309
+
+logic to_real1 : t2 -> real
+
+logic abstr310 : prop
+
+axiom zeroF_is_positive1 : abstr310
+
+logic abstr311 : prop
+
+axiom zeroF_is_zero1 : abstr311
+
+logic abstr312 : real
+
+axiom half_to_real1 : (abstr312 = 0.5)
+
+logic abstr313 : prop
+
+axiom zero_to_real1 : abstr313
+
+logic of_int2 : fpa_rounding_mode, int -> t2
+
+logic to_int2 : fpa_rounding_mode, t2 -> int
+
+logic abstr314 : prop
+
+axiom zero_of_int1 : abstr314
+
+axiom max_real_int1 : (0x1.FFFFFFFFFFFFFp1023 = real_of_int(fp64_max_int))
+
+logic abstr315 : prop
+
+axiom is_finite3 : abstr315
+
+logic abstr316 : prop
+
+axiom zero_is_finite1 : abstr316
+
+logic abstr317 : prop
+
+axiom half_is_finite1 : abstr317
+
+logic abstr318 : prop
+
+axiom of_int_is_finite1 : abstr318
+
+logic abstr319 : prop
+
+axiom of_int_to_real1 : abstr319
+
+logic abstr320 : prop
+
+axiom Bounded_real_no_overflow1 : abstr320
+
+logic abstr321 : prop
+
+axiom Round_to_real1 : abstr321
+
+logic abstr322 : prop
+
+axiom Round_down_le1 : abstr322
+
+logic abstr323 : prop
+
+axiom Round_up_ge1 : abstr323
+
+logic abstr324 : prop
+
+axiom Round_down_neg1 : abstr324
+
+logic abstr325 : prop
+
+axiom Round_up_neg1 : abstr325
+
+logic abstr326 : prop
+
+axiom Exact_rounding_for_integers1 : abstr326
+
+logic abstr327 : prop
+
+axiom feq_eq1 : abstr327
+
+logic abstr328 : prop
+
+axiom eq_feq1 : abstr328
+
+logic abstr329 : prop
+
+axiom eq_refl1 : abstr329
+
+logic abstr330 : prop
+
+axiom eq_sym1 : abstr330
+
+logic abstr331 : prop
+
+axiom eq_trans1 : abstr331
+
+logic abstr332 : real
+
+logic abstr333 : prop
+
+axiom auto_instance2 : (abstr333 -> ((-0x1.FFFFFFFFFFFFFp1023) <= abstr332))
+
+axiom auto_instance3 : (abstr333 -> (abstr332 <= 0x1.FFFFFFFFFFFFFp1023))
+
+logic abstr334 : prop
+
+axiom eq_zero1 : abstr334
+
+logic abstr335 : prop
+
+axiom eq_to_real_finite1 : abstr335
+
+logic abstr336 : prop
+
+axiom eq_special1 : abstr336
+
+logic abstr337 : prop
+
+axiom lt_finite1 : abstr337
+
+logic abstr338 : prop
+
+axiom le_finite1 : abstr338
+
+logic abstr339 : prop
+
+axiom le_lt_trans1 : abstr339
+
+logic abstr340 : prop
+
+axiom lt_le_trans1 : abstr340
+
+logic abstr341 : prop
+
+axiom le_ge_asym1 : abstr341
+
+logic abstr342 : prop
+
+axiom not_lt_ge1 : abstr342
+
+logic abstr343 : prop
+
+axiom not_gt_le1 : abstr343
+
+logic abstr344 : prop
+
+axiom le_special1 : abstr344
+
+logic abstr345 : prop
+
+axiom lt_special1 : abstr345
+
+logic abstr346 : prop
+
+axiom positive_to_real1 : abstr346
+
+logic abstr347 : prop
+
+axiom to_real_positive1 : abstr347
+
+logic abstr348 : prop
+
+axiom negative_to_real1 : abstr348
+
+logic abstr349 : prop
+
+axiom to_real_negative1 : abstr349
+
+logic abstr350 : prop
+
+axiom negative_xor_positive1 : abstr350
+
+logic abstr351 : prop
+
+axiom negative_or_positive1 : abstr351
+
+logic abstr352 : prop
+
+axiom diff_sign_trans1 : abstr352
+
+logic abstr353 : prop
+
+axiom diff_sign_product1 : abstr353
+
+logic abstr354 : prop
+
+axiom same_sign_product1 : abstr354
+
+logic abstr355 : prop
+
+axiom add_finite1 : abstr355
+
+logic abstr356 : prop
+
+axiom add_finite_rev1 : abstr356
+
+logic abstr357 : prop
+
+axiom add_finite_rev_n1 : abstr357
+
+logic abstr358 : prop
+
+axiom sub_finite1 : abstr358
+
+logic abstr359 : prop
+
+axiom sub_finite_rev1 : abstr359
+
+logic abstr360 : prop
+
+axiom sub_finite_rev_n1 : abstr360
+
+logic abstr361 : prop
+
+axiom mul_finite1 : abstr361
+
+logic abstr362 : prop
+
+axiom mul_finite_rev1 : abstr362
+
+logic abstr363 : prop
+
+axiom mul_finite_rev_n1 : abstr363
+
+logic abstr364 : prop
+
+axiom div_finite1 : abstr364
+
+logic abstr365 : prop
+
+axiom div_finite_rev1 : abstr365
+
+logic abstr366 : prop
+
+axiom div_finite_rev_n1 : abstr366
+
+logic abstr367 : prop
+
+axiom neg_finite1 : abstr367
+
+logic abstr368 : prop
+
+axiom neg_finite_rev1 : abstr368
+
+logic abstr369 : prop
+
+axiom abs_finite1 : abstr369
+
+logic abstr370 : prop
+
+axiom abs_finite_rev1 : abstr370
+
+logic abstr371 : prop
+
+axiom abs_universal1 : abstr371
+
+logic abstr372 : prop
+
+axiom fma_finite1 : abstr372
+
+logic abstr373 : prop
+
+axiom fma_finite_rev1 : abstr373
+
+logic abstr374 : prop
+
+axiom fma_finite_rev_n1 : abstr374
+
+logic abstr375 : prop
+
+axiom sqrt_finite1 : abstr375
+
+logic abstr376 : prop
+
+axiom sqrt_finite_rev1 : abstr376
+
+logic abstr377 : prop
+
+axiom add_special1 : abstr377
+
+logic abstr378 : prop
+
+axiom sub_special1 : abstr378
+
+logic abstr379 : prop
+
+axiom mul_special1 : abstr379
+
+logic abstr380 : prop
+
+axiom div_special1 : abstr380
+
+logic abstr381 : prop
+
+axiom neg_special1 : abstr381
+
+logic abstr382 : prop
+
+axiom abs_special1 : abstr382
+
+logic abstr383 : prop
+
+axiom fma_special1 : abstr383
+
+logic abstr384 : prop
+
+axiom sqrt_special1 : abstr384
+
+logic abstr385 : prop
+
+axiom Min_r1 : abstr385
+
+logic abstr386 : prop
+
+axiom Min_l1 : abstr386
+
+logic abstr387 : prop
+
+axiom Max_r1 : abstr387
+
+logic abstr388 : prop
+
+axiom Max_l1 : abstr388
+
+logic abstr389 : prop
+
+axiom Min_assoc1 : abstr389
+
+logic abstr390 : prop
+
+axiom Max_assoc1 : abstr390
+
+logic is_int1 : t2 -> prop
+
+logic abstr391 : prop
+
+axiom zeroF_is_int1 : abstr391
+
+logic abstr392 : prop
+
+axiom of_int_is_int1 : abstr392
+
+logic abstr393 : prop
+
+axiom is_int_is_finite1 : abstr393
+
+logic abstr394 : prop
+
+axiom int_to_real1 : abstr394
+
+logic abstr395 : prop
+
+axiom big_float_is_int1 : abstr395
+
+logic abstr396 : prop
+
+axiom roundToIntegral_is_int1 : abstr396
+
+logic abstr397 : prop
+
+axiom truncate_int1 : abstr397
+
+logic abstr398 : prop
+
+axiom truncate_neg1 : abstr398
+
+logic abstr399 : prop
+
+axiom truncate_pos1 : abstr399
+
+logic abstr400 : prop
+
+axiom ceil_le1 : abstr400
+
+logic abstr401 : prop
+
+axiom ceil_lest1 : abstr401
+
+logic abstr402 : prop
+
+axiom ceil_to_real1 : abstr402
+
+logic abstr403 : prop
+
+axiom ceil_to_int1 : abstr403
+
+logic abstr404 : prop
+
+axiom floor_le1 : abstr404
+
+logic abstr405 : prop
+
+axiom floor_lest1 : abstr405
+
+logic abstr406 : prop
+
+axiom floor_to_real1 : abstr406
+
+logic abstr407 : prop
+
+axiom floor_to_int1 : abstr407
+
+logic abstr408 : prop
+
+axiom RNA_down1 : abstr408
+
+logic abstr409 : prop
+
+axiom RNA_up1 : abstr409
+
+logic abstr410 : prop
+
+axiom RNA_down_tie1 : abstr410
+
+logic abstr411 : prop
+
+axiom RNA_up_tie1 : abstr411
+
+logic abstr412 : prop
+
+axiom RNA_near_int1 : abstr412
+
+logic abstr413 : prop
+
+axiom to_int_roundToIntegral1 : abstr413
+
+logic abstr414 : prop
+
+axiom to_int_monotonic1 : abstr414
+
+logic abstr415 : prop
+
+axiom to_int_monotonic_int11 : abstr415
+
+logic abstr416 : prop
+
+axiom to_int_monotonic_int21 : abstr416
+
+logic abstr417 : prop
+
+axiom to_int_of_int1 : abstr417
+
+logic abstr418 : prop
+
+axiom eq_to_int1 : abstr418
+
+logic abstr419 : prop
+
+axiom roundToIntegral_is_finite1 : abstr419
+
+logic abstr420 : prop
+
+axiom round_bound_ne1 : abstr420
+
+logic abstr421 : prop
+
+axiom round_bound1 : abstr421
+
+type sign = Pos | Neg
+
+logic match_sign : sign, 'a, 'a -> 'a
+
+logic abstr422 : prop
+
+axiom match_sign_Pos : abstr422
+
+logic abstr423 : prop
+
+axiom match_sign_Neg : abstr423
+
+logic match_sign1 : sign, 'a, 'a -> 'a
+
+logic abstr424 : prop
+
+axiom match_sign_Pos1 : abstr424
+
+logic abstr425 : prop
+
+axiom match_sign_Neg1 : abstr425
+
+logic match_sign2 : sign, 'a, 'a -> 'a
+
+logic abstr426 : prop
+
+axiom match_sign_Pos2 : abstr426
+
+logic abstr427 : prop
+
+axiom match_sign_Neg2 : abstr427
+
+type t3
+
+logic float1 : t3 -> t
+
+logic exact : t3 -> real
+
+logic model : t3 -> real
+
+type t4
+
+logic float2 : t4 -> t2
+
+logic exact1 : t4 -> real
+
+logic model1 : t4 -> real
+
+logic sign1 : t4 -> sign
+
+logic abstr428 : prop
+
+axiom sign_pos : abstr428
+
+logic abstr429 : prop
+
+axiom sign_neg : abstr429
+
+logic abstr430 : prop
+
+axiom only_finite_single : abstr430
+
+logic abstr431 : prop
+
+axiom only_finite_double : abstr431
+
+type 't5 alloc_table
+
+type 't5 pointer
+
+type 't5 block
+
+logic base_block : 't5 pointer -> 't5 block
+
+logic offset_max : 't5 alloc_table, 't5 pointer -> int
+
+logic offset_min : 't5 alloc_table, 't5 pointer -> int
+
+logic sub_pointer : 't5 pointer, 't5 pointer -> int
+
+logic shift : 't5 pointer, int -> 't5 pointer
+
+logic null : 't5 pointer
+
+logic pointer_address : 't5 pointer -> unit pointer
+
+logic absolute_address : int -> unit pointer
+
+logic address : 't5 pointer -> int
+
+logic abstr432 : prop
+
+axiom address_injective : abstr432
+
+logic abstr433 : prop
+
+axiom address_shift_lt : abstr433
+
+logic abstr434 : prop
+
+axiom address_shift_le : abstr434
+
+logic abstr435 : prop
+
+axiom shift_zero : abstr435
+
+logic abstr436 : prop
+
+axiom shift_shift : abstr436
+
+logic abstr437 : prop
+
+axiom offset_max_shift : abstr437
+
+logic abstr438 : prop
+
+axiom offset_min_shift : abstr438
+
+logic abstr439 : prop
+
+axiom neq_shift : abstr439
+
+logic abstr440 : prop
+
+axiom null_not_valid : abstr440
+
+logic abstr441 : prop
+
+axiom null_pointer : abstr441
+
+logic eq_pointer_bool : 't5 pointer, 't5 pointer -> bool
+
+logic neq_pointer_bool : 't5 pointer, 't5 pointer -> bool
+
+logic abstr442 : prop
+
+axiom eq_pointer_bool_def : abstr442
+
+logic abstr443 : prop
+
+axiom neq_pointer_bool_def : abstr443
+
+logic abstr444 : prop
+
+axiom same_block_shift_right : abstr444
+
+logic abstr445 : prop
+
+axiom same_block_shift_left : abstr445
+
+logic abstr446 : prop
+
+axiom sub_pointer_shift : abstr446
+
+logic abstr447 : prop
+
+axiom sub_pointer_self : abstr447
+
+logic abstr448 : prop
+
+axiom sub_pointer_zero : abstr448
+
+logic abstr449 : prop
+
+axiom sub_pointer_shift_left : abstr449
+
+logic abstr450 : prop
+
+axiom sub_pointer_shift_right : abstr450
+
+logic abstr451 : prop
+
+axiom sub_pointer_neg : abstr451
+
+type ('t5,
+'v) memory
+
+logic select1 : ('t5, 'v) memory, 't5 pointer -> 'v
+
+logic store1 : ('t5, 'v) memory, 't5 pointer, 'v -> ('t5, 'v) memory
+
+logic abstr452 : prop
+
+axiom select_store_eq : abstr452
+
+logic abstr453 : prop
+
+axiom select_store_neq : abstr453
+
+type 't5 pset
+
+logic pset_empty : 't5 pset
+
+logic pset_singleton : 't5 pointer -> 't5 pset
+
+logic pset_deref : ('t5, 'v pointer) memory, 't5 pset -> 'v pset
+
+logic pset_union : 't5 pset, 't5 pset -> 't5 pset
+
+logic pset_all : 'z pset -> 'z pset
+
+logic pset_range : 't5 pset, int, int -> 't5 pset
+
+logic pset_range_left : 'z pset, int -> 'z pset
+
+logic pset_range_right : 'z pset, int -> 'z pset
+
+logic in_pset : 't5 pointer, 't5 pset -> prop
+
+logic valid_pset : 't5 alloc_table, 't5 pset -> prop
+
+logic abstr454 : prop
+
+axiom pset_included_range : abstr454
+
+logic abstr455 : prop
+
+axiom pset_included_range_all : abstr455
+
+logic abstr456 : prop
+
+axiom in_pset_empty : abstr456
+
+logic abstr457 : prop
+
+axiom in_pset_singleton : abstr457
+
+logic abstr458 : prop
+
+axiom in_pset_deref : abstr458
+
+logic abstr459 : prop
+
+axiom in_pset_all : abstr459
+
+logic abstr460 : prop
+
+axiom in_pset_range : abstr460
+
+logic abstr461 : prop
+
+axiom in_pset_range_left : abstr461
+
+logic abstr462 : prop
+
+axiom in_pset_range_right : abstr462
+
+logic abstr463 : prop
+
+axiom in_pset_union : abstr463
+
+logic abstr464 : prop
+
+axiom valid_pset_empty : abstr464
+
+logic abstr465 : prop
+
+axiom valid_pset_singleton : abstr465
+
+logic abstr466 : prop
+
+axiom valid_pset_deref : abstr466
+
+logic abstr467 : prop
+
+axiom valid_pset_range : abstr467
+
+logic abstr468 : prop
+
+axiom valid_pset_union : abstr468
+
+logic abstr469 : prop
+
+axiom not_assigns_trans : abstr469
+
+logic full_separated : 't11 pointer, 't21 pointer -> prop
+
+logic abstr470 : prop
+
+axiom full_separated_shift1 : abstr470
+
+logic abstr471 : prop
+
+axiom full_separated_shift2 : abstr471
+
+logic abstr472 : prop
+
+axiom full_separated_shift3 : abstr472
+
+logic abstr473 : prop
+
+axiom full_separated_shift4 : abstr473
+
+type 't5 tag_table
+
+type 't5 tag_id
+
+logic int_of_tag : 't5 tag_id -> int
+
+logic typeof : 't5 tag_table, 't5 pointer -> 't5 tag_id
+
+logic parenttag : 't5 tag_id, 't5 tag_id -> prop
+
+logic subtag : 't5 tag_id, 't5 tag_id -> prop
+
+logic subtag_bool : 't5 tag_id, 't5 tag_id -> bool
+
+logic abstr474 : prop
+
+axiom subtag_bool_def : abstr474
+
+logic abstr475 : prop
+
+axiom subtag_refl : abstr475
+
+logic abstr476 : prop
+
+axiom subtag_parent : abstr476
+
+logic downcast : 't5 tag_table, 't5 pointer, 't5 tag_id -> 't5 pointer
+
+logic abstr477 : prop
+
+axiom downcast_instanceof : abstr477
+
+logic bottom_tag : 'a tag_id
+
+logic abstr478 : prop
+
+axiom bottom_tag_axiom : abstr478
+
+logic abstr479 : prop
+
+axiom root_subtag : abstr479
+
+logic bw_compl : int -> int
+
+logic bw_and1 : int, int -> int
+
+logic abstr480 : prop
+
+axiom bw_and_not_null : abstr480
+
+logic bw_xor1 : int, int -> int
+
+logic bw_or1 : int, int -> int
+
+logic lsl1 : int, int -> int
+
+logic abstr481 : prop
+
+axiom lsl_left_positive_returns_positive : abstr481
+
+logic abstr482 : prop
+
+axiom lsl_left_positive_monotone : abstr482
+
+logic lsr1 : int, int -> int
+
+logic abstr483 : prop
+
+axiom lsr_left_positive_returns_positive : abstr483
+
+logic abstr484 : prop
+
+axiom lsr_left_positive_decreases : abstr484
+
+logic asr1 : int, int -> int
+
+logic abstr485 : prop
+
+axiom asr_positive_on_positive : abstr485
+
+logic abstr486 : prop
+
+axiom asr_decreases_on_positive : abstr486
+
+logic abstr487 : prop
+
+axiom asr_lsr_same_on_positive : abstr487
+
+logic abstr488 : prop
+
+axiom lsl_of_lsr_decreases_on_positive : abstr488
+
+logic abstr489 : prop
+
+axiom lsr_of_lsl_identity_on_positive : abstr489
+
+logic alloc_extends : 't5 alloc_table, 't5 alloc_table -> prop
+
+logic abstr490 : prop
+
+axiom alloc_extends_offset_min : abstr490
+
+logic abstr491 : prop
+
+axiom alloc_extends_offset_max : abstr491
+
+logic abstr492 : prop
+
+axiom alloc_extends_not_assigns_empty : abstr492
+
+logic alloc_extends_except : 't5 alloc_table, 't5 alloc_table,
+  't5 pset -> prop
+
+logic abstr493 : prop
+
+axiom alloc_extends_except_offset_min : abstr493
+
+logic abstr494 : prop
+
+axiom alloc_extends_except_offset_max : abstr494
+
+type 'a mybag
+
+logic in_mybag : 'a, 'a mybag -> prop
+
+logic disj_mybag : 'a mybag, 'a mybag -> prop
+
+logic abstr495 : prop
+
+axiom disj_sym : abstr495
+
+logic sub_mybag : 'a mybag, 'a mybag -> prop
+
+logic abstr496 : prop
+
+axiom sub_refl : abstr496
+
+logic abstr497 : prop
+
+axiom sub_disj : abstr497
+
+logic abstr498 : prop
+
+axiom sub_in : abstr498
+
+logic abstr499 : prop
+
+axiom sub_sub : abstr499
+
+logic frame_between : 'a pointer mybag, ('a, 'b) memory, ('a,
+  'b) memory -> prop
+
+logic abstr500 : prop
+
+axiom frame_between_refl : abstr500
+
+logic abstr501 : prop
+
+axiom frame_between_gen : abstr501
+
+logic abstr502 : prop
+
+axiom frame_between_gen2 : abstr502
+
+logic abstr503 : prop
+
+axiom frame_between_gen_sub1 : abstr503
+
+logic abstr504 : prop
+
+axiom frame_between_gen_sub2 : abstr504
+
+logic abstr505 : prop
+
+axiom frame_between_pointer : abstr505
+
+logic abstr506 : prop
+
+axiom frame_between_sub : abstr506
+
+type charP
+
+type int8
+
+type padding
+
+type uint8
+
+type unsigned_charP
+
+type voidP
+
+logic charP_tag : charP tag_id
+
+logic abstr507 : int
+
+axiom charP_int : (abstr507 = 1)
+
+logic charP_of_pointer_address : unit pointer -> charP pointer
+
+logic abstr508 : prop
+
+axiom charP_of_pointer_address_of_pointer_addr : abstr508
+
+logic abstr509 : prop
+
+axiom charP_parenttag_bottom : abstr509
+
+logic abstr510 : prop
+
+axiom charP_tags : abstr510
+
+logic integer_of_int8 : int8 -> int
+
+logic integer_of_uint8 : uint8 -> int
+
+logic int8_of_integer : int -> int8
+
+logic abstr511 : prop
+
+axiom int8_coerce : abstr511
+
+logic abstr512 : prop
+
+axiom int8_extensionality : abstr512
+
+logic abstr513 : prop
+
+axiom int8_range : abstr513
+
+logic abstr514 : prop
+
+axiom pointer_addr_of_charP_of_pointer_address : abstr514
+
+logic unsigned_charP_of_pointer_address : unit pointer -> unsigned_charP pointer
+
+logic abstr515 : prop
+
+axiom pointer_addr_of_unsigned_charP_of_pointer_address : abstr515
+
+logic voidP_of_pointer_address : unit pointer -> voidP pointer
+
+logic abstr516 : prop
+
+axiom pointer_addr_of_voidP_of_pointer_address : abstr516
+
+logic uint8_of_integer : int -> uint8
+
+logic abstr517 : prop
+
+axiom uint8_coerce : abstr517
+
+logic abstr518 : prop
+
+axiom uint8_extensionality : abstr518
+
+logic abstr519 : prop
+
+axiom uint8_range : abstr519
+
+logic unsigned_charP_tag : unsigned_charP tag_id
+
+logic abstr520 : int
+
+axiom unsigned_charP_int : (abstr520 = 1)
+
+logic abstr521 : prop
+
+axiom unsigned_charP_of_pointer_address_of_pointer_addr : abstr521
+
+logic abstr522 : prop
+
+axiom unsigned_charP_parenttag_bottom : abstr522
+
+logic abstr523 : prop
+
+axiom unsigned_charP_tags : abstr523
+
+logic voidP_tag : voidP tag_id
+
+logic abstr524 : int
+
+axiom voidP_int : (abstr524 = 1)
+
+logic abstr525 : prop
+
+axiom voidP_of_pointer_address_of_pointer_addr : abstr525
+
+logic abstr526 : prop
+
+axiom voidP_parenttag_bottom : abstr526
+
+logic abstr527 : prop
+
+axiom voidP_tags : abstr527
+
+type 'a ref = { mk_ref_proj_1 : 'a
+}
+
+logic abstr528 : prop
+
+logic abstr529 : prop
+
+logic abstr530 : prop
+
+logic abstr531 : prop
+
+axiom Div_mod1 : abstr531
+
+logic abstr532 : prop
+
+axiom Div_bound1 : abstr532
+
+logic abstr533 : prop
+
+axiom Mod_bound1 : abstr533
+
+logic abstr534 : prop
+
+axiom Div_sign_pos : abstr534
+
+logic abstr535 : prop
+
+axiom Div_sign_neg : abstr535
+
+logic abstr536 : prop
+
+axiom Mod_sign_pos : abstr536
+
+logic abstr537 : prop
+
+axiom Mod_sign_neg : abstr537
+
+logic abstr538 : prop
+
+axiom Rounds_toward_zero : abstr538
+
+logic abstr539 : prop
+
+axiom Div_11 : abstr539
+
+logic abstr540 : prop
+
+axiom Mod_11 : abstr540
+
+logic abstr541 : prop
+
+axiom Div_inf1 : abstr541
+
+logic abstr542 : prop
+
+axiom Mod_inf : abstr542
+
+logic abstr543 : prop
+
+axiom Div_mult1 : abstr543
+
+logic abstr544 : prop
+
+axiom Mod_mult1 : abstr544
+
+logic x_0 : t3
+
+logic abstr545 : prop
+
+axiom auto_instance4 : abstr545
+
+logic abstr546 : real
+
+axiom auto_instance5 : (abstr545 -> ((-0x1.FFFFFEp127) <= abstr546))
+
+axiom auto_instance6 : (abstr545 -> (abstr546 <= 0x1.FFFFFEp127))
+
+axiom H : (abs_real(abstr546) <= 0x1.0p-5)
+
+logic abstr547 : real
+
+axiom H1 :
+  (abs_real(((1.0 - ((abstr546 * abstr546) * 0.5)) - abstr547)) <= 0x1.0p-24)
+
+logic o : t3
+
+logic abstr548 : prop
+
+axiom auto_instance7 : abstr548
+
+logic abstr549 : real
+
+axiom auto_instance8 : (abstr548 -> ((-0x1.FFFFFEp127) <= abstr549))
+
+axiom auto_instance9 : (abstr548 -> (abstr549 <= 0x1.FFFFFEp127))
+
+axiom H2 : (abstr549 = 0.5)
+
+logic abstr550 : real
+
+axiom H3 : (abstr550 = 0.5)
+
+logic abstr551 : real
+
+axiom H4 : (abstr551 = 0.5)
+
+logic o1 : t3
+
+logic abstr552 : prop
+
+axiom auto_instance10 : abstr552
+
+logic abstr553 : real
+
+axiom auto_instance11 : (abstr552 -> ((-0x1.FFFFFEp127) <= abstr553))
+
+axiom auto_instance12 : (abstr552 -> (abstr553 <= 0x1.FFFFFEp127))
+
+logic abstr554 : real
+
+logic abstr555 : prop
+
+axiom auto_instance13 : (abstr555 -> ((-0x1.FFFFFEp127) <= abstr554))
+
+axiom auto_instance14 : (abstr555 -> (abstr554 <= 0x1.FFFFFEp127))
+
+axiom auto_instance15 : (abstr545 -> (abstr545 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr546 * abstr546))) and
+  (float32(NearestTiesToEven, (abstr546 * abstr546)) <= 0x1.FFFFFEp127)) ->
+  abstr555)))
+
+axiom auto_instance16 : (abstr545 -> (abstr545 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr546 * abstr546))) and
+  (float32(NearestTiesToEven, (abstr546 * abstr546)) <= 0x1.FFFFFEp127)) ->
+  (abstr554 = float32(NearestTiesToEven, (abstr546 * abstr546))))))
+
+logic abstr556 : t
+
+logic abstr557 : t
+
+axiom H5 : (abstr556 = abstr557)
+
+logic abstr558 : real
+
+logic abstr559 : real
+
+axiom H6 : (abstr558 = (abstr559 * abstr559))
+
+logic abstr560 : real
+
+logic abstr561 : real
+
+axiom H7 : (abstr560 = (abstr561 * abstr561))
+
+logic o2 : t3
+
+logic abstr562 : prop
+
+axiom auto_instance17 : abstr562
+
+logic abstr563 : real
+
+axiom auto_instance18 : (abstr562 -> ((-0x1.FFFFFEp127) <= abstr563))
+
+axiom auto_instance19 : (abstr562 -> (abstr563 <= 0x1.FFFFFEp127))
+
+logic abstr564 : real
+
+logic abstr565 : prop
+
+axiom auto_instance20 : (abstr565 -> ((-0x1.FFFFFEp127) <= abstr564))
+
+axiom auto_instance21 : (abstr565 -> (abstr564 <= 0x1.FFFFFEp127))
+
+axiom auto_instance22 : (abstr555 -> (abstr548 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr554 * abstr549))) and
+  (float32(NearestTiesToEven, (abstr554 * abstr549)) <= 0x1.FFFFFEp127)) ->
+  abstr565)))
+
+axiom auto_instance23 : (abstr555 -> (abstr548 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr554 * abstr549))) and
+  (float32(NearestTiesToEven, (abstr554 * abstr549)) <= 0x1.FFFFFEp127)) ->
+  (abstr564 = float32(NearestTiesToEven, (abstr554 * abstr549))))))
+
+logic abstr566 : t
+
+logic abstr567 : t
+
+axiom H8 : (abstr566 = abstr567)
+
+logic abstr568 : real
+
+axiom H9 : (abstr568 = ((abstr559 * abstr559) * 0.5))
+
+logic abstr569 : real
+
+axiom H10 : (abstr569 = ((abstr561 * abstr561) * 0.5))
+
+logic o3 : t3
+
+logic abstr570 : prop
+
+axiom auto_instance24 : abstr570
+
+logic abstr571 : real
+
+axiom auto_instance25 : (abstr570 -> ((-0x1.FFFFFEp127) <= abstr571))
+
+axiom auto_instance26 : (abstr570 -> (abstr571 <= 0x1.FFFFFEp127))
+
+axiom H11 : (abstr571 = 1.0)
+
+logic abstr572 : real
+
+axiom H12 : (abstr572 = 1.0)
+
+logic abstr573 : real
+
+axiom H13 : (abstr573 = 1.0)
+
+logic o4 : t3
+
+logic abstr574 : prop
+
+axiom auto_instance27 : abstr574
+
+logic abstr575 : real
+
+axiom auto_instance28 : (abstr574 -> ((-0x1.FFFFFEp127) <= abstr575))
+
+axiom auto_instance29 : (abstr574 -> (abstr575 <= 0x1.FFFFFEp127))
+
+logic abstr576 : real
+
+logic abstr577 : prop
+
+axiom auto_instance30 : (abstr577 -> ((-0x1.FFFFFEp127) <= abstr576))
+
+axiom auto_instance31 : (abstr577 -> (abstr576 <= 0x1.FFFFFEp127))
+
+axiom auto_instance32 : (abstr570 -> (abstr565 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr571 - abstr564))) and
+  (float32(NearestTiesToEven, (abstr571 - abstr564)) <= 0x1.FFFFFEp127)) ->
+  abstr577)))
+
+axiom auto_instance33 : (abstr570 -> (abstr565 ->
+  ((((-0x1.FFFFFEp127) <= float32(NearestTiesToEven, (abstr571 - abstr564))) and
+  (float32(NearestTiesToEven, (abstr571 - abstr564)) <= 0x1.FFFFFEp127)) ->
+  (abstr576 = float32(NearestTiesToEven, (abstr571 - abstr564))))))
+
+logic abstr578 : t
+
+logic abstr579 : t
+
+axiom H14 : (abstr578 = abstr579)
+
+logic abstr580 : real
+
+axiom H15 : (abstr580 = (1.0 - ((abstr559 * abstr559) * 0.5)))
+
+logic abstr581 : real
+
+axiom H16 : (abstr581 = (1.0 - ((abstr561 * abstr561) * 0.5)))
+
+goal WP_parameter_my_cos1_ensures_default :
+  (abs_real((abstr576 - abstr547)) <= 0x1.0p-23)

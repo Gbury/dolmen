@@ -121,7 +121,7 @@ module Smtlib2 = struct
 
           | "str.is_digit" ->
             Type.builtin_term (Base.term_app1 (module Type) env s T.String.is_digit)
-          | "str._to_code" ->
+          | "str.to_code" ->
             Type.builtin_term (Base.term_app1 (module Type) env s T.String.to_code)
           | "str.from_code" ->
             Type.builtin_term (Base.term_app1 (module Type) env s T.String.of_code)

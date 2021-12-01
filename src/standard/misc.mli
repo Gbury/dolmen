@@ -39,8 +39,14 @@ val opt_map : 'a option -> ('a -> 'b) -> 'b option
 val opt_bind : 'a option -> ('a -> 'b option) -> 'b option
 (** Bind on option. *)
 
-val string_for_all : (char -> bool) -> string -> bool
+val string_for_all : ?start:int -> (char -> bool) -> string -> bool
 (** Equivalent to [String.for_all] (which is only available on ocaml >= 4.10) *)
+
+val string_unicode_map :
+  ?encoding_from:Uutf.decoder_encoding ->
+  ?encoding_to:Uutf.encoding ->
+  (int -> Uchar.t option -> Uchar.t list) ->
+  string -> string
 
 
 (** {2 Printing helpers} *)
@@ -74,6 +80,11 @@ val foldn : int -> ('a -> 'a) -> 'a -> 'a
 val list_concat_map : ('a -> 'b list) -> 'a list -> 'b list
 (** Same as {List.concat_map} (which is not available on ocaml.4.08). *)
 
+val list_map_sharing : ('a -> 'a) -> 'a list -> 'a list
+(** Same as `List.map` but if all elements of the new lists are physically
+    equal to the ones from the original list, then the original list is returned. *)
+
+
 (** {2 Lexbuf helpers} *)
 
 val filename_of_input :
@@ -95,4 +106,8 @@ val mk_lexbuf :
     The [`Contents] constructor expect first a name for the input
     stream (to report errors), and then a string with the actual
     contents to be parsed. *)
+
+val lex_string :
+  (Lexing.lexbuf -> 'a) -> string -> 'a
+(** Tries and parse the string with the given lexer rule. *)
 
