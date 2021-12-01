@@ -170,3 +170,14 @@ module type Header_pipe = sig
   (** Language version number allowed. [None] means allowing everything. *)
 
 end
+
+(** This modules defines the smallest signatures for a solver state that allow
+    to instantiate the {Printer.Pipe} functor. *)
+module type Printer_pipe = sig
+
+  include Common
+  (** common interface *)
+
+end
+
+

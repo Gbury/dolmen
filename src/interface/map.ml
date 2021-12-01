@@ -7,6 +7,7 @@ module type S = sig
   type 'a t
 
   val empty : _ t
+  (** The empty map *)
 
   val find_exn : key -> 'a t -> 'a
   (** Exception-raising find function.
@@ -16,7 +17,7 @@ module type S = sig
   (** Option-returning find function. *)
 
   val add : key -> 'a -> 'a t -> 'a t
-  (** Add a new binding, shadowing any earlier bdingin to the same key. *)
+  (** Add a new binding, shadowing any earlier binding to the same key. *)
 
   val find_add : key -> ('a option -> 'a) -> 'a t -> 'a t
   (** Update the value bound to a key. *)
@@ -28,3 +29,4 @@ module type S = sig
   (** Fold on the map. *)
 
 end
+
