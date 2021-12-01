@@ -1,4 +1,6 @@
 
+(* This file is free software, part of Dolmen. See file "LICENSE" for more details. *)
+
 (* Header check
 
    This module defines a pipe to check the presence of headers in

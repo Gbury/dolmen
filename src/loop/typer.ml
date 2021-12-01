@@ -1999,55 +1999,25 @@ module Typer(State : State.S) = struct
 end
 
 
-(* Pipes functor *)
+(* Type definitions *)
 (* ************************************************************************ *)
 
-module type Typer = Typer_intf.Typer
+type +'a stmt = 'a Typer_intf.stmt = {
+  id : Dolmen.Std.Id.t;
+  loc : Dolmen.Std.Loc.t;
+  contents  : 'a;
+  attrs     : Dolmen.Std.Term.t list;
+  implicit  : bool;
+}
 
-module type S = Typer_intf.S
+module type Types = Typer_intf.Types
 
-module Make
-    (Expr : Expr_intf.S)
-    (Print : Expr_intf.Print
-     with type ty := Expr.ty
-      and type ty_var := Expr.ty_var
-      and type ty_cst := Expr.ty_cst
-      and type ty_def := Expr.ty_def
-      and type term := Expr.term
-      and type term_var := Expr.term_var
-      and type term_cst := Expr.term_cst
-      and type formula := Expr.formula)
-    (State : State.S)
-    (Typer : Typer
-     with type state := State.t
-      and type ty := Expr.ty
-      and type ty_var := Expr.ty_var
-      and type ty_cst := Expr.ty_cst
-      and type ty_def := Expr.ty_def
-      and type term := Expr.term
-      and type term_var := Expr.term_var
-      and type term_cst := Expr.term_cst
-      and type formula := Expr.formula)
-= struct
+module Types(Expr : Expr_intf.S) = struct
 
-  module S = Dolmen.Std.Statement
-
-  let pipe = "Typer_pipe"
-  let type_check : bool State.key = State.create_key ~pipe "type_check"
-
-  let init
-      ~type_check:type_check_value
-      st =
-    st
-    |> State.set type_check type_check_value
-
-  (* Types used in Pipes *)
-  (* ************************************************************************ *)
-
-  type env = Typer.env
+  include Expr
 
   (* Used for representing typed statements *)
-  type +'a stmt = {
+  type +'a stmt = 'a Typer_intf.stmt = {
     id        : Dolmen.Std.Id.t;
     loc       : Dolmen.Std.Loc.t;
     contents  : 'a;
@@ -2117,6 +2087,51 @@ module Make
 
   (* Agregate types *)
   type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+
+end
+
+
+(* Pipes functor *)
+(* ************************************************************************ *)
+
+module type S = Typer_intf.S
+module type Typer = Typer_intf.Typer
+module Make
+    (Expr : Expr_intf.S)
+    (Print : Expr_intf.Print
+     with type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
+    (State : State.S)
+    (Typer : Typer
+     with type state := State.t
+      and type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
+= struct
+
+  include Types(Expr)
+
+  module S = Dolmen.Std.Statement
+
+  let pipe = "Typer_pipe"
+  let type_check : bool State.key = State.create_key ~pipe "type_check"
+
+  let init
+      ~type_check:type_check_value
+      st =
+    st
+    |> State.set type_check type_check_value
 
   (* Simple constructor *)
   let mk_stmt ?(implicit=false) id loc attrs (contents: typechecked) =

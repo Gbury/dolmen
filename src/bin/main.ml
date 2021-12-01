@@ -58,6 +58,7 @@ let run st preludes logic_file =
           @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer_Pipe.typecheck)
           @>|> (op ~name:"debug-typed" debug_typed_pipe)
+          @>>> (op ~name:"export" Loop.Export.export)
           @>>> (op ~name:"check" Loop.Check.check)
           @>>> (op (fun st _ -> st, ())) @>>> _end
         )
@@ -66,8 +67,9 @@ let run st preludes logic_file =
   in
   let st = Loop.Flow.finalise st in
   let st = Loop.Header.check st in
-  let _st = Dolmen_loop.State.flush st () in
-  ()
+  let st = Loop.Export.finalise st in
+  let st = Dolmen_loop.State.flush st () in
+  ignore st
 
 (* Warning/Error list *)
 (* ****************** *)

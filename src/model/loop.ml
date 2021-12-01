@@ -253,7 +253,6 @@ module Make
       and type env = Dolmen_loop.Typer.T.env)
     (Typer_Pipe : Dolmen_loop.Typer.S
      with type state := State.t
-      and type env = Typer.env
       and type 'a key := 'a State.key
       and type ty := Dolmen.Std.Expr.ty
       and type ty_var := Dolmen.Std.Expr.ty_var

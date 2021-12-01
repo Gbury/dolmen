@@ -405,7 +405,6 @@ module Tags = struct
 end
 
 
-
 (* Helpers *)
 (* ************************************************************************* *)
 
@@ -3733,3 +3732,74 @@ module Term = struct
     of_var v
 
 end
+
+
+(* Views *)
+(* ************************************************************************* *)
+
+module View = struct
+
+  (* First-order views *)
+  module FO = struct
+
+    type nonrec builtin = builtin
+
+    module Sig = struct
+
+      type t = ty
+
+      let view _ =
+        assert false
+
+    end
+
+    module Ty = struct
+
+      type t = ty
+
+      module Var = struct
+        type t = ty_var
+      end
+
+      module Cst = struct
+        type t = ty_cst
+        let arity = Ty.Const.arity
+      end
+
+      exception Not_first_order of t
+
+      let view _t =
+        assert false
+    end
+
+    module Term = struct
+
+      type t = term
+
+      module Var = struct
+
+        type t = term_var
+
+        let ty _ = assert false
+
+      end
+
+      module Cst = struct
+
+        type t = term_cst
+
+        let ty _ = assert false
+
+      end
+
+      exception Not_first_order of t
+
+      let view _t =
+        assert false
+
+    end
+
+  end
+
+end
+

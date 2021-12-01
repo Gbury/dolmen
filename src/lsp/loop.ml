@@ -53,7 +53,7 @@ let process preludes path opt_contents =
   let l_file : _ State.file = {
     lang = None; mode = None; dir;
     loc = Dolmen.Std.Loc.mk_file "";
-    source =match opt_contents with
+    source = match opt_contents with
       | None -> `File file
       | Some contents -> `Raw (file, contents);
   } in

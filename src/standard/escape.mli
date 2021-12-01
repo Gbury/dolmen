@@ -1,5 +1,6 @@
 (* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
+(*
 (** Escaping identifiers
 
     This module provides helpers to print identifers
@@ -50,4 +51,4 @@ module Make(Id : Arg) : sig
       avoid name clashes, and then print to the given formatter. *)
 
 end
-
+*)

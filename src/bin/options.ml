@@ -73,15 +73,18 @@ let set_color file_descr formatter color =
   Fmt.set_style_renderer formatter style
 
 
-(* Input format converter *)
+(* Input/Output format converter *)
 (* ************************************************************************* *)
 
 let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
+let output_format_conv = Arg.enum Dolmen_loop.Export.enum
 let response_format_conv = Arg.enum Dolmen_loop.Response.enum
 
 
-(* Input source converter *)
+(* Input/Output source converter *)
 (* ************************************************************************* *)
+
+let output_dest_conv = Arg.string
 
 (* Converter for input file/stdin *)
 let input_to_string = function
@@ -358,11 +361,28 @@ let reports_opts strict warn_modifiers =
   in
   `Ok res
 
+let split_input = function
+  | `Stdin ->
+    Sys.getcwd (), `Stdin
+  | `File f ->
+    Filename.dirname f, `File (Filename.basename f)
+
+let mk_output_file lang filename : Dolmen_loop.Export.file option =
+  match filename, lang with
+  | None, None -> None
+  | None, Some _ -> Some { lang; output = `Stdout; }
+  | Some filename, _ -> Some { lang; output = `File filename; }
+
+let mk_input_file lang mode input : _ Dolmen_loop.State.file =
+  let dir, source = split_input input in
+  { lang; mode; dir; source ;
+    loc = Dolmen.Std.Loc.mk_file ""; }
+
 let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
-    response_file
+    response_file output_file
     flow_check
     header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
@@ -400,6 +420,7 @@ let mk_run_state
     ~check_model
     (* ~check_model_mode *)
   |> Loop.Flow.init ~flow_check
+  |> Loop.Export.init ?output_file
   |> Loop.Header.init
     ~header_check
     ~header_licenses
@@ -510,7 +531,7 @@ let logic_file =
                dolmen will enter interactive mode and read on stdin." in
     Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
   in
-  Term.(const mk_file $ in_lang $ in_mode $ input)
+  Term.(const mk_input_file $ in_lang $ in_mode $ input)
 
 let response_file =
   let docs = model_section in
@@ -534,7 +555,22 @@ let response_file =
     let doc = "Response file." in
     Arg.(value & opt input_source_conv `Stdin & info ["r"; "response"] ~doc ~docs)
   in
-  Term.(const mk_file $ response_lang $ response_mode $ response)
+  Term.(const mk_input_file $ response_lang $ response_mode $ response)
+
+let output_file =
+  let docs = common_section in
+  let lang =
+    let doc = Format.asprintf
+        "Set the export language to $(docv); must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Export.enum) in
+    Arg.(value & opt (some output_format_conv) None &
+         info ["o"; "output"] ~docv:"OUTPUT" ~doc ~docs)
+  in
+  let output =
+    let doc = "Export file. If no file is specified, no export will be performed." in
+    Arg.(value & pos 1 (some output_dest_conv) None & info [] ~docv:"FILE" ~doc)
+  in
+  Term.(const mk_output_file $ lang $ output)
 
 let mk_preludes =
   List.map (fun f -> mk_file None None (`File f))
@@ -693,7 +729,7 @@ let state =
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
-        response_file $
+        response_file $ output_file $
         flow_check $
         header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $

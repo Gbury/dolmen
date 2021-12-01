@@ -1,5 +1,6 @@
 (* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
+(*
 (* Wrapper around polymorphic identifiers *)
 (* ************************************************************************ *)
 
@@ -117,4 +118,4 @@ module Make(Id : Arg) = struct
     Format.fprintf fmt "%s" (escape t id)
 
 end
-
+*)

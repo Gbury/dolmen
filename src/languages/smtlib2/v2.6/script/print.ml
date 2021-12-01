@@ -4,8 +4,6 @@
 (* Printing of identifiers *)
 (* ************************************************************************* *)
 
-module L = Lexer
-
 exception Cannot_print of string
 
 let _cannot_print format =
@@ -95,23 +93,65 @@ let categorize_symbol s =
     else
       Unprintable
 
+let id_aux fmt s =
+  (* TODO: expose/add a cache to not redo the `categorize_symbol` computation each time *)
+  match categorize_symbol s with
+  | Simple -> Format.pp_print_string fmt s
+  | Quoted -> Format.fprintf fmt "|%s|" s
+  | Unprintable ->
+    _cannot_print "symbol \"%s\" cannot be printed due to lexical constraints" s
+
 let id fmt name =
-  let aux fmt s =
-    (* TODO: expose/add a cache to not redo the `categorize_symbol` computation each time *)
-    match categorize_symbol s with
-    | Simple -> Format.pp_print_string fmt s
-    | Quoted -> Format.fprintf fmt "|%s|" s
-    | Unprintable ->
-      _cannot_print "symbol \"%s\" cannot be printed due to lexical constraints" s
-  in
   match (name : Dolmen_std.Name.t) with
-  | Simple s -> aux fmt s
+  | Simple s -> id_aux fmt s
   | Indexed { basename = _; indexes = [] } ->
     _cannot_print "indexed id with no indexes: %a" Dolmen_std.Name.print name
   | Indexed { basename; indexes; } ->
     let pp_sep fmt () = Format.fprintf fmt " " in
     Format.fprintf fmt "(_ %a %a)"
-      aux basename (Format.pp_print_list ~pp_sep aux) indexes
+      id_aux basename (Format.pp_print_list ~pp_sep id_aux) indexes
   | Qualified _ ->
     _cannot_print "qualified identifier: %a" Dolmen_std.Name.print name
+
+
+(* Printing of terms and statements *)
+(* ************************************************************************* *)
+
+module Make(V : Dolmen_intf.View.FO.S)
+= struct
+
+  (* Terms *)
+  (* ***** *)
+
+
+  (* Statements *)
+  (* ********** *)
+
+  let set_logic fmt s =
+    Format.fprintf fmt "(set-logic %a)" id_aux s
+
+  let pop fmt n =
+    Format.fprintf fmt "(pop %d)" n
+
+  let push fmt n =
+    Format.fprintf fmt "(push %d)" n
+
+  let unit_stmt s fmt () =
+    Format.fprintf fmt "(%s)" s
+
+  let reset = unit_stmt "reset"
+  let reset_assertions = unit_stmt "reset-assertions"
+
+  let get_unsat_core = unit_stmt "get-unsat-core"
+  let get_unsat_assumptions = unit_stmt "get-unsat-assumptions"
+
+  let get_proof = unit_stmt "get-proof"
+  let get_model = unit_stmt "get-model"
+
+  let get_assertions = unit_stmt "get-assertions"
+  let get_assignment = unit_stmt "get-assignment"
+
+  let exit = unit_stmt "exit"
+
+end
 

@@ -244,6 +244,23 @@ module Print : sig
 
 end
 
+(** {2 Views} *)
+(*  ************************************************************************* *)
+
+module View : sig
+
+  module FO : Dolmen_intf.View.FO.S
+    with type builtin = builtin
+     and type Ty.t = ty
+     and type Ty.Var.t = ty_var
+     and type Ty.Cst.t = ty_cst
+     and type Sig.t = ty
+     and type Term.t = term
+     and type Term.Var.t = term_var
+     and type Term.Cst.t = term_cst
+
+end
+
 (** {2 Substitutions} *)
 (*  ************************************************************************* *)
 

@@ -11,3 +11,17 @@ exception Cannot_print of string
 
 val id : Format.formatter -> Dolmen_std.Name.t -> unit
 (** Print an identifier, quoting it if necessary. *)
+
+
+(* Printing of Terms and statements *)
+(* ************************************************************************* *)
+
+module Make(V : Dolmen_intf.View.FO.S) : sig
+
+
+  (** {2 Statements} *)
+
+  val set_logic : Format.formatter -> string -> unit
+  (** Print a set-logic statement. *)
+
+end

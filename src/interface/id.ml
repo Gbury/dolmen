@@ -58,10 +58,13 @@ end
 
 module type Response = Logic
 
-module type Escape = sig
+module type Scope = sig
 
   type t
   (** The type of identifiers. *)
+
+  type name
+  (** Names for identifiers. *)
 
   val hash : t -> int
   (** Hash function *)
@@ -69,7 +72,10 @@ module type Escape = sig
   val equal : t -> t -> bool
   (** Equality function *)
 
-  val name : t -> string
-  (** The name / string to print for the identifier *)
+  val name : t -> name
+  (** Identifier name. *)
+
+  module Map : Map.S with type key = t
+  (** A module for Maps on ids. *)
 
 end
