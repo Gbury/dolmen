@@ -88,11 +88,34 @@ module Typer(State : State.S)
                 and type builtin_symbols = T.builtin_symbols
                 and type extension = Ext.t
 
+(** {2 Convenience Types functor} *)
+
+type +'a stmt = 'a Typer_intf.stmt = {
+  id : Dolmen.Std.Id.t;
+  loc : Dolmen.Std.Loc.t;
+  contents  : 'a;
+  attrs       : Dolmen.Std.Term.t list;
+  implicit    : bool;
+}
+(** Re-export of the typed statement type. *)
+
+module type Types = Typer_intf.Types
+
+module Types
+    (Expr : Expr_intf.S)
+    : Typer_intf.Types
+      with type ty = Expr.ty
+       and type ty_var = Expr.ty_var
+       and type ty_cst = Expr.ty_cst
+       and type term = Expr.term
+       and type term_var = Expr.term_var
+       and type term_cst = Expr.term_cst
+       and type formula = Expr.formula
+
 (** {2 Typechecker Pipe} *)
 
-module type Typer = Typer_intf.Typer
-
 module type S = Typer_intf.S
+module type Typer = Typer_intf.Typer
 
 module Make
     (Expr : Expr_intf.S)
@@ -117,7 +140,6 @@ module Make
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
   : S with type state := State.t
-       and type env = Typer.env
        and type 'a key := 'a State.key
        and type ty := Expr.ty
        and type ty_var := Expr.ty_var

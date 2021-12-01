@@ -58,18 +58,34 @@ end
 
 module type Response = Logic
 
-module type Escape = sig
+module type Scope = sig
 
   type t
   (** The type of identifiers. *)
 
-  val hash : t -> int
-  (** Hash function *)
+  type path
+  (** Names for identifiers. *)
 
   val equal : t -> t -> bool
   (** Equality function *)
 
-  val name : t -> string
-  (** The name / string to print for the identifier *)
+  val path : t -> path
+  (** Identifier name. *)
+
+  module Map : Map.S with type key = t
+  (** A module for Maps on ids. *)
+
+end
+
+module type Scope_Full = sig
+
+  include Scope
+  (** We extend the regular `Scope` module. *)
+
+  type namespace
+  (** Namespaces for identifiers. *)
+
+  val namespace : t -> namespace
+  (** Return the namespace of an identifier. *)
 
 end

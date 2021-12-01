@@ -8,4 +8,4 @@ goal g2 : (b ** a) = 1 % (d / c)
 
 (** Inequalities *)
 
-goal g2 : a + d <= a + c * b + b and a + b >= b and b < a
+goal g3 : a + d <= a + c * b + b and a + b >= b and b < a

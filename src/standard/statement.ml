@@ -77,10 +77,10 @@ type descr =
   | Include of string
   | Set_logic of string
 
-  | Get_info of string
+  | Get_info of term
   | Set_info of term
 
-  | Get_option of string
+  | Get_option of term
   | Set_option of term
 
   | Defs of def group
@@ -100,6 +100,8 @@ type descr =
   | Echo of string
   | Reset
   | Exit
+
+  | End
 
 (* Statements are wrapped in a record to have a location. *)
 and t = {
@@ -295,13 +297,13 @@ let rec print_descr fmt = function
   | Set_logic s ->
     Format.fprintf fmt "@[<hov 2>set-logic:@ %s@]" s
 
-  | Get_info s ->
-    Format.fprintf fmt "@[<hov 2>get-info:@ %s@]" s
+  | Get_info t ->
+    Format.fprintf fmt "@[<hov 2>get-info:@ %a@]" Term.print t
   | Set_info t ->
     Format.fprintf fmt "@[<hov 2>set-info:@ %a@]" Term.print t
 
-  | Get_option s ->
-    Format.fprintf fmt "@[<hov 2>get-option:@ %s@]" s
+  | Get_option t ->
+    Format.fprintf fmt "@[<hov 2>get-option:@ %a@]" Term.print t
   | Set_option t ->
     Format.fprintf fmt "@[<hov 2>set-option:@ %a@]" Term.print t
 
@@ -326,10 +328,11 @@ let rec print_descr fmt = function
   | Echo s -> Format.fprintf fmt "echo: %s" s
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
+  | End -> Format.fprintf fmt "end"
 
 and print_id_opt fmt = function
   | None -> ()
-  | Some id -> Format.fprintf fmt "%a@," Id.print id
+  | Some id -> Format.fprintf fmt "%a :@ " Id.print id
 
 and print fmt = function { id; descr; attrs; _ } ->
   Format.fprintf fmt "@[<hv>%a%a%a@]" print_id_opt id print_attrs attrs print_descr descr
@@ -366,10 +369,10 @@ let antecedent ?loc ?attrs t = mk ?loc ?attrs (Antecedent t)
 (* Options statements *)
 let set_logic ?loc s = mk ?loc (Set_logic s)
 
-let get_info ?loc s = mk ?loc (Get_info s)
+let get_info ?loc t = mk ?loc (Get_info t)
 let set_info ?loc t = mk ?loc (Set_info t)
 
-let get_option ?loc s = mk ?loc (Get_option s)
+let get_option ?loc t = mk ?loc (Get_option t)
 let set_option ?loc t = mk ?loc (Set_option t)
 
 (* Definitions, i.e given identifier, with arguments,
@@ -388,6 +391,7 @@ let get_assertions ?loc () = mk ?loc Get_assertions
 let echo ?loc s = mk ?loc (Echo s)
 let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
+let end_ () = mk End
 
 (* decl/def *)
 let group ~recursive contents =

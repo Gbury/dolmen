@@ -2,11 +2,19 @@
 next
 ----
 
-### General
+### General / UI
 
 - Add support for SMT-LIB2.7 (PR#235)
 
+- Add the export feature to the `dolmen` binary (PR#211)
+
+### Printing
+
+- Add printers for the SMT-LIB format (PR#211)
+
 ### Typing
+
+- Add a logic detection mechanism (PR#211)
 
 - Reject application of SMT-LIB2's distinct to less than 2
   arguments (Issue#242, PR#243)

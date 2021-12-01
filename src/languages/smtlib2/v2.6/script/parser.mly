@@ -135,7 +135,7 @@ attribute_value:
   | v=spec_constant
     { v }
   | v=SYMBOL
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk attr v) }
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term v) }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
@@ -243,7 +243,8 @@ info_flag:
   | :version
   */
   | s=KEYWORD
-    { s }
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc I.(mk attr s) }
 ;
 
 /* This definition is useless (not used in the syntax),
@@ -430,7 +431,11 @@ command:
   | OPEN GET_MODEL CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.get_model ~loc () }
   | OPEN GET_OPTION k=KEYWORD CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.get_option ~loc k }
+    { let s =
+        let loc = L.mk_pos $startpos(k) $endpos(k) in
+        T.const ~loc I.(mk attr k)
+      in
+      let loc = L.mk_pos $startpos $endpos in S.get_option ~loc s }
   | OPEN GET_PROOF CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.get_proof ~loc () }
   | OPEN GET_UNSAT_ASSUMPTIONS CLOSE

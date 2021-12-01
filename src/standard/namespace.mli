@@ -41,7 +41,7 @@ type t =
   (** The identifier is a value, encoded in a string. Examples include
       arithmetic constants (e.g. ["123456", "123/456", "123.456e789"]),
       bitvectors (i.e. binary notation), etc... *)
-(** Namespaces, used to record the lexical scop in which an identifier
+(** Namespaces, used to record the lexical scope in which an identifier
     was parsed. *)
 
 val hash : t -> int

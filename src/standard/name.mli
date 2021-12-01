@@ -36,9 +36,17 @@ val print : Format.formatter -> t -> unit
 (** Printing function. *)
 
 
-(** {2 Std functions} *)
+(** {2 Std modules} *)
 
-module Map : Maps.S with type key := t
+module Map : sig
+
+  include Maps.S with type key = t
+  (** Standard Map interface *)
+
+  val add_set : prefix:key -> 'a -> 'a t -> 'a t
+  (** Add bindings for all keys that share the given prefix. *)
+
+end
 
 
 (** {2 Creation functions} *)

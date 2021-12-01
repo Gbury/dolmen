@@ -4,8 +4,7 @@
 (* Main Typedef *)
 (* ************************************************************************* *)
 
-type 'a t = ..
-constraint 'a = < .. >
+type 'a t = 'a Dolmen_intf.Builtin.t = .. constraint 'a = < .. >
 (* Extensible variant type for builtin operations.
    Parameterized over the type of variables, constants, and terms. *)
 
@@ -119,7 +118,6 @@ end
 
 type 'a t += Array of 'a Array.t
 
-
 (* Bitvectors *)
 (* ************************************************************************* *)
 
@@ -172,7 +170,6 @@ module Bitv = struct
 end
 
 type 'a t += Bitv of 'a Bitv.t
-
 
 (* Floats *)
 (* ************************************************************************* *)
