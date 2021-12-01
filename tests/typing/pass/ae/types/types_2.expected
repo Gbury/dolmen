@@ -1,4 +1,0 @@
-File "tests/typing/pass/ae/types/types_2.ae", line 2, character 5-7:
-2 | type 'a list
-         ^^
-Error Unbound identifier: `'a`
