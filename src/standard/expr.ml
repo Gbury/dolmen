@@ -1658,7 +1658,7 @@ module Term = struct
       let b = Ty.Var.mk "beta" in
       mk'
         ~name:"maps_to" ~builtin:Builtin.Maps_to
-        "MapsTo" [] [Ty.of_var a; Ty.of_var b] Ty.prop
+        "MapsTo" [a; b] [Ty.of_var a; Ty.of_var b] Ty.prop
 
     module Int = struct
 
