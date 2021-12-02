@@ -18,4 +18,21 @@
   (action (diff records_1.expected records_1.full)))
 
 
+; Test for records_2.ae
+; Full mode test
+
+(rule
+   (target  records_2.full)
+   (deps    (:input records_2.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff records_2.expected records_2.full)))
+
+
 ; Auto-generated part end

@@ -1,9 +1,0 @@
-File "tests/typing/errors/free_toplevel_type_variables/error_1.ae", line 7, character 9-35:
-7 | goal g : {a1 = v1; b1 = v2}#a1 = v1
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error Top-level formulas should be closed, but the following type variables
-      are free:
-        `_`, the implicit type argument to provide to the polymorphic
-             application at line 7, character 24-26
-        `_`, the implicit type argument to provide to the polymorphic
-             application at line 7, character 33-35
