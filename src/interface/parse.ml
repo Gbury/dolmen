@@ -24,19 +24,5 @@ module type S = sig
   (** A function to parse a single statement. Reutnrs [None] if it encounters
       the end-of-file token. Used for incremental parsing. *)
 
-
-  (** {2 Menhir incremental interface} *)
-(*
-  module MenhirInterpreter : sig
-    include MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE
-      with type token = token
-  end
-
-  module Incremental : sig
-    val file : Lexing.position -> (statement list) MenhirInterpreter.checkpoint
-    val input : Lexing.position -> (statement option) MenhirInterpreter.checkpoint
-  end
-*)
-
 end
 
