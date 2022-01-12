@@ -136,7 +136,7 @@ thf_unitary_formula:
 
 thf_quantified_formula:
   | q=thf_quantifier LEFT_BRACKET l=thf_variable_list RIGHT_BRACKET COLON f=thf_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in q ~loc l f }
+    { let loc = Some (L.mk_pos $startpos $endpos) in q ?loc l f }
 
 thf_variable_list:
   | v=thf_variable
@@ -287,7 +287,7 @@ tff_unitary_formula:
 
 tff_quantified_formula:
   | q=fol_quantifier LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET COLON f=tff_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in q ~loc l f }
+    { let loc = Some (L.mk_pos $startpos $endpos) in q ?loc l f }
 
 tff_variable_list:
   | v=tff_variable
@@ -467,7 +467,7 @@ fof_unitary_formula:
 
 fof_quantified_formula:
   | q=fol_quantifier LEFT_BRACKET l=fof_variable_list RIGHT_BRACKET COLON f=fof_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in q ~loc l f }
+    { let loc = Some (L.mk_pos $startpos $endpos) in q ?loc l f }
 
 fof_variable_list:
   | v=variable

@@ -13,7 +13,7 @@ module type S = sig
   type statement
   (** The type of top-level declarations returned by the parser. *)
 
-  exception Error
+  exception Error of int
   (** Exception raised by the parser when it encounters an error. *)
 
   val file : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> statement list
@@ -26,7 +26,7 @@ module type S = sig
 
 
   (** {2 Menhir incremental interface} *)
-
+(*
   module MenhirInterpreter : sig
     include MenhirLib.IncrementalEngine.INCREMENTAL_ENGINE
       with type token = token
@@ -36,6 +36,7 @@ module type S = sig
     val file : Lexing.position -> (statement list) MenhirInterpreter.checkpoint
     val input : Lexing.position -> (statement option) MenhirInterpreter.checkpoint
   end
+*)
 
 end
 

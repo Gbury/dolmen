@@ -55,14 +55,7 @@ module Make
   (* Menhir state & checkpoint manipulations
      --------------------------------------- *)
 
-  let state checkpoint =
-     match (checkpoint : _ Parser.MenhirInterpreter.checkpoint) with
-     | HandlingError env ->
-       Parser.MenhirInterpreter.current_state_number env
-     | _ -> assert false (* this cannot happen, I promise *)
-
-  let error_message token checkpoint =
-    let s = state checkpoint in
+  let error_message token s =
     match token with
     | None ->
       `Regular (Format.dprintf "Syntax error@ with@ missing@ token@ read,@ \
@@ -95,52 +88,40 @@ module Make
   (* Parsing loop
      ------------ *)
 
-  let parse_aux ~k_exn newline sync lexbuf checkpoint =
+  let parse_aux ~k_exn newline sync lexbuf parser_fun =
     (* Token supplier *)
     let last_token = ref None in
-    let aux =
-      Parser.MenhirInterpreter.lexer_lexbuf_to_supplier
-        (Lexer.token newline) lexbuf
+    let lexer lexbuf =
+      let token = Lexer.token newline lexbuf in
+      last_token := Some token;
+      token
     in
-    let supplier () =
-      let (t, _, _) as res = aux () in
-      last_token := Some t;
-      res
-    in
-    (* Incremental loop *)
-    let succeed res =
-      sync lexbuf;
-      res
-    in
-    let fail checkpoint =
-      sync lexbuf;
-      let pos = Loc.of_lexbuf lexbuf in
-      let msg = error_message !last_token checkpoint in
-      let () = k_exn () in
-      raise (Loc.Syntax_error (pos, msg))
-    in
-    let loop = Parser.MenhirInterpreter.loop_handle succeed fail supplier in
     (* Run the loop *)
     let aux () =
-      begin match loop (checkpoint Lexing.(lexbuf.lex_curr_p)) with
-        | res -> res
-        | exception ((Loc.Syntax_error _) as e) ->
-          raise e
-        | exception ((Loc.Lexing_error _) as e) ->
+      begin match parser_fun lexer lexbuf with
+        | res ->
+          let () = sync lexbuf in
+          res
+        | exception (((Loc.Syntax_error _) | (Loc.Lexing_error _)) as e) ->
+          let () = sync lexbuf in
+          let () = k_exn () in
           raise e
         | exception Lexer.Error ->
           let pos = Loc.of_lexbuf lexbuf in
           let err = Lexing.lexeme lexbuf in
+          let () = sync lexbuf in
           let () = k_exn () in
           raise (Loc.Lexing_error (pos, err))
-        | exception Parser.Error ->
+        | exception Parser.Error state ->
           let pos = Loc.of_lexbuf lexbuf in
-          let msg = `Regular (Format.dprintf "Syntax error") in
+          let msg = error_message !last_token state in
+          let () = sync lexbuf in
           let () = k_exn () in
           raise (Loc.Syntax_error (pos, msg))
         | exception e ->
           let bt = Printexc.get_raw_backtrace () in
           let pos = Loc.of_lexbuf lexbuf in
+          let () = sync lexbuf in
           let () = k_exn () in
           raise (Loc.Uncaught (pos, e, bt))
       end
@@ -156,7 +137,7 @@ module Make
     let newline = Loc.newline locfile in
     let sync = Loc.update_size locfile in
     let k_exn () = cleanup () in
-    let res = parse_aux ~k_exn newline sync lexbuf Parser.Incremental.file () in
+    let res = parse_aux ~k_exn newline sync lexbuf Parser.file () in
     let () = cleanup () in
     locfile, res
 
@@ -169,7 +150,7 @@ module Make
     let res =
       lazy (
         let res =
-          parse_aux ~k_exn newline sync lexbuf Parser.Incremental.file ()
+          parse_aux ~k_exn newline sync lexbuf Parser.file ()
         in
         let () = cleanup () in
         res
@@ -191,7 +172,7 @@ module Make
       raise (Loc.Syntax_error (Loc.of_lexbuf lexbuf, `Regular msg))
     end;
     let k_exn () = Dolmen_line.consume ~newline ~sync lexbuf in
-    let aux = parse_aux ~k_exn newline sync lexbuf Parser.Incremental.input in
+    let aux = parse_aux ~k_exn newline sync lexbuf Parser.input in
     locfile, aux, cleanup
 
 end
