@@ -4,9 +4,7 @@
   (name           dolmen_smtlib2_v6)
   (public_name    dolmen.smtlib2.v6)
   (instrumentation (backend bisect_ppx))
-  (libraries      dolmen_std dolmen_intf menhirLib)
-  (modules        Dolmen_smtlib2_v6 Tokens Lexer Parser Ast Syntax_messages)
+  (libraries      dolmen_smtlib2_v6_script dolmen_smtlib2_v6_check)
+  (modules        Dolmen_smtlib2_v6)
 )
 
-; Common include
-(include ../../dune.common)
