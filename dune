@@ -1,3 +1,7 @@
-; Ensure no inlinging takes place in dev mode to have more accurate backtraces
-(env (dev (ocamlopt_flags -g -inline 0)))
+(env
+  ; Ensure no inlinging takes place in dev mode to have more accurate backtraces
+  (dev (ocamlopt_flags :standard -inline 0))
+  ; Use -03 in release mode when the compiler has flambda enabled
+  (release (ocamlopt_flags :standard -O3))
+)
 
