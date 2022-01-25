@@ -1,0 +1,16 @@
+(library
+  (name           dolmen_model)
+  (public_name    dolmen_model)
+  (instrumentation (backend bisect_ppx))
+  (libraries
+    ; external deps
+    ; dolmen standard deps
+    dolmen dolmen.std dolmen.intf
+  )
+  (modules
+    ; Model checking
+    Value
+    ; Builtins
+    ; Helpers
+  )
+)
