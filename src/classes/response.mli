@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-(** Logic languages for formal proofs *)
+(** Response languages for formal proofs *)
 
 module type S = sig
 
@@ -17,19 +17,9 @@ module type S = sig
   (** {2 Supported languages} *)
 
   type language =
-    | Alt_ergo
-    (** Alt-ergo's native language *)
-    | Dimacs
-    (** Dimacs CNF format *)
-    | ICNF
-    (** iCNF format *)
-    | Smtlib2 of Dolmen_smtlib2.Script.version
+    | Smtlib2 of Dolmen_smtlib2.Check.version
     (** Smtlib v2 latest version *)
-    | Tptp of Dolmen_tptp.version
-    (** TPTP format (including THF), latest version *)
-    | Zf
-    (** Zipperposition format *)
-  (** The languages supported by the Logic class. *)
+  (** The languages supported by the Response class. *)
 
   val enum : (string * language) list
   (** Enumeration of languages together with an appropriate
@@ -99,11 +89,11 @@ end
 
 module Make
     (L : Dolmen_intf.Location.S)
-    (I : Dolmen_intf.Id.Logic)
-    (T : Dolmen_intf.Term.Logic with type location := L.t
-                                 and type id := I.t)
-    (S : Dolmen_intf.Stmt.Logic with type location := L.t
-                                 and type id := I.t
-                                 and type term := T.t)
+    (I : Dolmen_intf.Id.Response)
+    (T : Dolmen_intf.Term.Response with type location := L.t
+                                    and type id := I.t)
+    (S : Dolmen_intf.Stmt.Response with type location := L.t
+                                    and type id := I.t
+                                    and type term := T.t)
   : S with type statement := S.t and type file := L.file
 

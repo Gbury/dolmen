@@ -56,6 +56,8 @@ module type Logic = sig
 
 end
 
+module type Response = Logic
+
 module type Escape = sig
 
   type t

@@ -13,7 +13,7 @@ module Smtlib2 : sig
       | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err
 
-    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
+    val parse : Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
   end
 
 end
