@@ -48,7 +48,7 @@ module Smtlib2 : sig
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : arith:arith -> Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
     end
 
@@ -73,7 +73,7 @@ module Smtlib2 : sig
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : arith:arith -> Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
     end
 
@@ -102,7 +102,7 @@ module Smtlib2 : sig
             int or real), but another type was found. *)
       (** Additional errors specific to arithmetic typing. *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : arith:arith -> Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
 
     end

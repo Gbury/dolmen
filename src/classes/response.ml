@@ -8,12 +8,7 @@ module type S = sig
   exception Extension_not_found of string
 
   type language =
-    | Alt_ergo
-    | Dimacs
-    | ICNF
-    | Smtlib2 of Dolmen_smtlib2.Script.version
-    | Tptp of Dolmen_tptp.version
-    | Zf
+    | Smtlib2 of Dolmen_smtlib2.Check.version
 
   val enum : (string * language) list
   val string_of_language : language -> string
@@ -45,10 +40,10 @@ end
 
 module Make
     (L : Dolmen_intf.Location.S)
-    (I : Dolmen_intf.Id.Logic)
-    (T : Dolmen_intf.Term.Logic with type location := L.t
+    (I : Dolmen_intf.Id.Response)
+    (T : Dolmen_intf.Term.Response with type location := L.t
                                  and type id := I.t)
-    (S : Dolmen_intf.Stmt.Logic with type location := L.t
+    (S : Dolmen_intf.Stmt.Response with type location := L.t
                                  and type id := I.t
                                  and type term := T.t)
   : S with type file := L.file
@@ -62,23 +57,11 @@ module Make
      and type file := L.file
 
   type language =
-    | Alt_ergo
-    | Dimacs
-    | ICNF
-    | Smtlib2 of Dolmen_smtlib2.Script.version
-    | Tptp of Dolmen_tptp.version
-    | Zf
+    | Smtlib2 of Dolmen_smtlib2.Check.version
 
   let enum = [
-    "ae",         Alt_ergo;
-    "dimacs",     Dimacs;
-    "iCNF",       ICNF;
     "smt2",       Smtlib2 `Latest;
     "smt2.6",     Smtlib2 `V2_6;
-    "psmt2",      Smtlib2 `Poly;
-    "tptp",       Tptp `Latest;
-    "tptp-6.3.0", Tptp `V6_3_0;
-    "zf",         Zf;
   ]
 
   let string_of_language l =
@@ -86,35 +69,12 @@ module Make
 
   let assoc = [
 
-    (* Alt-ergo format *)
-    Alt_ergo, ".ae",
-    (module Dolmen_ae.Make(L)(I)(T)(S) : S);
-
-    (* Dimacs *)
-    Dimacs, ".cnf",
-    (module Dolmen_dimacs.Make(L)(T)(S) : S);
-
-    (* iCNF *)
-    ICNF, ".icnf",
-    (module Dolmen_icnf.Make(L)(T)(S) : S);
-
     (* Smtlib2 *)
     Smtlib2 `Latest, ".smt2",
-    (module Dolmen_smtlib2.Script.Latest.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Check.Latest.Make(L)(I)(T)(S) : S);
     Smtlib2 `V2_6, ".smt2",
-    (module Dolmen_smtlib2.Script.V2_6.Make(L)(I)(T)(S) : S);
-    Smtlib2 `Poly, ".psmt2",
-    (module Dolmen_smtlib2.Script.Poly.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Check.V2_6.Make(L)(I)(T)(S) : S);
 
-    (* TPTP *)
-    Tptp `Latest, ".p",
-    (module Dolmen_tptp.Latest.Make(L)(I)(T)(S) : S);
-    Tptp `V6_3_0, ".p",
-    (module Dolmen_tptp.V6_3_0.Make(L)(I)(T)(S) : S);
-
-    (* Zipperposition format *)
-    Zf, ".zf",
-    (module Dolmen_zf.Make(L)(I)(T)(S) : S);
   ]
 
   let of_language l =

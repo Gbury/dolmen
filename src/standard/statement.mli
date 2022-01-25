@@ -172,6 +172,14 @@ val mk_defs :
   ?loc:location -> ?attrs:term list -> recursive:bool -> def list -> t
 (** Create a group of declarations *)
 
+val def :
+  ?loc:location -> Id.t -> vars:term list -> params:term list ->
+  term -> term -> def
+(** Create a single definition. *)
+
+val group : recursive:bool -> 'a list -> 'a group
+(** Make a group 'usually of declarations/definitions. *)
+
 val prove : ?loc:location -> unit -> t
 (** Emit a [Prove] statement. *)
 

@@ -352,6 +352,11 @@ module type Logic = sig
 
 end
 
+(** {2 Signature for Response terms} *)
+
+module type Response = Logic
+(** Simply an alias to the Logic signature. *)
+
 
 (** {2 Signature for Typechecked terms} *)
 

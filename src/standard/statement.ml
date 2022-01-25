@@ -347,6 +347,9 @@ let exit ?loc () = mk ?loc Exit
 let def ?(loc=no_loc) id ~vars ~params ret_ty body =
   { id; vars; params; ret_ty; body; loc; }
 
+let group ~recursive contents =
+  { recursive; contents; }
+
 let abstract ?(loc=no_loc) id ty =
   Abstract { id; ty; loc; }
 

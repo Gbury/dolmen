@@ -190,23 +190,23 @@ definition:
       S.funs_def_rec ~loc res }
 ;
 
-command:
+answer:
   | UNSAT
     { let loc = L.mk_pos $startpos $endpos in
       S.unsat ~loc () }
   | SAT? OPEN MODEL model=definition* CLOSE
     { let loc = L.mk_pos $startpos $endpos in
-      S.sat ~loc model }
+      S.sat ~loc (Some model) }
 
 file:
-  | l=command* EOF
+  | l=answer* EOF
     { l }
 ;
 
 input:
   | EOF
     { None }
-  | c=command
+  | c=answer
     { Some c }
 
 %%

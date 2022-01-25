@@ -5,6 +5,50 @@
     This module defines interfaces for statements, i.e top-level
     declarations in files. *)
 
+module type Response = sig
+
+  (** Signature used by the Response class, which parses prover responses,
+      i.e. SAT/UNSAT answers (with option certificates). *)
+
+  type t
+  (** The type of statements. *)
+
+  type id
+  (** The type of identifiers. *)
+
+  type term
+  (** The type of terms. *)
+
+  type location
+  (** The type of locations. *)
+
+
+  (** {2 Unsat part} *)
+
+  val unsat : ?loc:location -> unit -> t
+  (** Create an `UNSAT` answer. *)
+
+
+  (** {2 SAT/model part} *)
+
+  type defs
+  (** Definition for model values *)
+
+  val fun_def :
+    ?loc:location -> id -> term list -> term list -> term -> term -> defs
+  (** Defines a new function. [fun_def f args ret body] is such that
+      applications of [f] are equal to [body] (module substitution of the arguments),
+      which should be of type [ret]. *)
+
+  val funs_def_rec :
+    ?loc:location -> (id * term list * term list * term * term) list -> defs
+  (** Defines a list of mutually recursive functions. *)
+
+  val sat : ?loc:location -> defs list option -> t
+  (** Create a `SAT` answer with an (optional) model. *)
+
+end
+
 module type Logic = sig
 
   (** Signature used by the Logic class, which parses languages
