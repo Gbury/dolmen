@@ -38,7 +38,7 @@
     | EXISTS -> reserved_descr "exists"
     | FORALL -> reserved_descr "forall"
     | MATCH -> reserved_descr "match"
-    | PAR -> reserved_descr "par"
+    (* | PAR -> reserved_descr "par" *)
     | SAT -> reserved_descr "sat"
     | UNSAT -> reserved_descr "unsat"
     | DEFINE_FUN -> reserved_descr "define-fun"
@@ -69,7 +69,7 @@
     "exists", EXISTS;
     "forall", FORALL;
     "match", MATCH;
-    "par", PAR;
+    (* "par", PAR; *)
     (* results *)
     "sat", SAT;
     "unsat", UNSAT;
