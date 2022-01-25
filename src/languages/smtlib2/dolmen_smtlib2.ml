@@ -4,10 +4,15 @@
 module Check = struct
 
   type version = [
+    | `Latest
     | `V2_6
   ]
 
+  (* Alias to the sub-libraries *)
   module V2_6 = Dolmen_smtlib2_v6.Check
+
+  (* Alias for the latest module *)
+  module Latest = V2_6
 
 end
 
