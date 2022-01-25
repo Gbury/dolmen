@@ -1,0 +1,5 @@
+(set-logic ALL)
+(declare-fun a () (Array Int Int))
+(assert (= (select a 0) 1))
+(assert (= (select a 1) 2))
+(check-sat)
