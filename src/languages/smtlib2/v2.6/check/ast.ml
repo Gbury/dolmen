@@ -103,148 +103,23 @@ module type Statement = sig
   type location
   (** The type of locations. *)
 
-  (** (Re)starting and terminating *)
+  type defs
+  (** Definition for model values *)
 
-  val reset : ?loc:location -> unit -> t
-  (** Full reset of the prover state. *)
-
-  val set_logic : ?loc:location -> string -> t
-  (** Set the problem logic. *)
-
-  val set_option : ?loc:location -> term -> t
-  (** Set the value of a prover option. *)
-
-  val exit : ?loc:location -> unit -> t
-  (** Exit the interactive loop. *)
-
-
-  (** Modifying the assertion stack *)
-
-  val push : ?loc:location -> int -> t
-  (** Push the given number of new level on the stack of assertions. *)
-
-  val pop : ?loc:location -> int -> t
-  (** Pop the given number of level on the stack of assertions. *)
-
-  val reset_assertions : ?loc:location -> unit -> t
-  (** Reset assumed assertions. *)
-
-
-  (** Introducing new symbols *)
-
-  val type_decl : ?loc:location -> id -> int -> t
-  (** Declares a new type constructor with given arity. *)
-
-  val type_def  : ?loc:location -> id -> id list -> term -> t
-  (** Defines an alias for types. [type_def f args body] is such that
-      later occurences of [f] applied to a list of arguments [l] should
-      be replaced by [body] where the [args] have been substituted by
-      their value in [l]. *)
-
-  val datatypes : ?loc:location -> (id * term list * (id * term list) list) list -> t
-  (** Inductive type definitions. *)
-
-  val fun_decl  : ?loc:location -> id -> term list -> term list -> term -> t
-  (** Declares a new term symbol, and its type. [fun_decl f args ret]
-      declares [f] as a new function symbol which takes arguments of types
-      described in [args], and with return type [ret]. *)
-
-  val fun_def   : ?loc:location -> id -> term list -> term list -> term -> term -> t
+  val fun_def   : ?loc:location -> id -> term list -> term list -> term -> term -> defs
   (** Defines a new function. [fun_def f args ret body] is such that
       applications of [f] are equal to [body] (module substitution of the arguments),
       which should be of type [ret]. *)
 
-  val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
-  (** Declare a list of mutually recursive functions. *)
+  val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> defs
+  (** Defines a list of mutually recursive functions. *)
 
+  val sat : ?loc:location -> defs list option -> t
+  (** Create a `SAT` answer with an (optional) model. *)
 
-  (** Asserting and inspecting formulas *)
-
-  val assert_ : ?loc:location -> term -> t
-  (** Add a proposition to the current set of assertions. *)
-
-  val get_assertions : ?loc:location -> unit -> t
-  (** Return the current set of assertions. *)
-
-
-  (** Checking for satisfiablity *)
-
-  val check_sat : ?loc:location -> term list -> t
-  (** Solve the current set of assertions for satisfiability,
-      under the local assumptions specified. *)
-
-
-  (** Models *)
-
-  val get_model : ?loc:location -> unit -> t
-  (** Return the model found. *)
-
-  val get_value : ?loc:location -> term list -> t
-  (** Return the value of the given terms in the current model of the solver. *)
-
-  val get_assignment : ?loc:location -> unit -> t
-  (** Return the values of asserted propositions which have been labelled using
-      the ":named" attribute. *)
-
-  (** Proofs *)
-
-  val get_proof : ?loc:location -> unit -> t
-  (** Return the proof of the lastest [check_sat] if it returned unsat, else
-      is undefined. *)
-
-  val get_unsat_core : ?loc:location -> unit -> t
-  (** Return the unsat core of the latest [check_sat] if it returned unsat,
-      else is undefined. *)
-
-  val get_unsat_assumptions : ?loc:location -> unit -> t
-  (** Return a list of local assumptions (as givne in {!check_sat},
-      that is enough to deduce unsat. *)
-
-  (** Inspecting settings *)
-
-  val get_info : ?loc:location -> string -> t
-  (** Get information (see smtlib manual). *)
-
-  val get_option : ?loc:location -> string -> t
-  (** Get the value of a prover option. *)
-
-  (** Scripts commands *)
-
-  val echo : ?loc:location -> string -> t
-  (** Print back as-is, including the double quotes. *)
-
-  val set_info : ?loc:location -> term -> t
-  (** Set information (see smtlib manual). *)
+  val unsat : ?loc:location -> unit -> t
+  (** Create an `UNSAT` answer. *)
 
 end
 (** implementation requirement for smtlib statements. *)
-
-
-module View = struct
-
-  module type Ty = sig
-
-    type t
-
-    type view
-
-    val view : t -> view
-
-  end
-
-  module type Term = sig
-
-    type t
-
-    type ty
-
-    type view
-
-    val ty : t -> ty
-
-    val view : t -> view
-
-  end
-
-end
 
