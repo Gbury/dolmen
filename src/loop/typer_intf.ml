@@ -43,6 +43,7 @@ module type Pipe_arg = sig
     state -> ?loc:Dolmen.Std.Loc.t -> string -> state
 
   val defs :
+    ?mode:[`Create_id | `Use_declared_id] ->
     state -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.defs ->
     state * [

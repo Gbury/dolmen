@@ -57,6 +57,13 @@ let process path opt_contents =
         | Some contents -> `Raw (file, contents)
       end;
       input_file_loc = Dolmen.Std.Loc.mk_file "";
+      (* dummy values for response file *)
+      response_dir = "";
+      response_lang = None;
+      response_mode = None;
+      response_source = `Stdin;
+      response_file_loc = Dolmen.Std.Loc.mk_file "";
+
       header_check = false;
       header_licenses = [];
       header_lang_version = None;
@@ -64,7 +71,8 @@ let process path opt_contents =
       type_state = Dolmen_loop.Typer.new_state ();
       type_check = true;
       solve_state = [];
-      export_lang = [];
+      check_model = false;
+      check_state = Dolmen_loop.Check.empty ();
     } in
   try
     let st, g = Parser.parse [] st in

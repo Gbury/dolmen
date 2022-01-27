@@ -67,10 +67,10 @@ module Pipe
 
   let set_lang ?loc st l =
     match State.input_lang st with
-    | None -> State.set_lang st l
+    | None -> State.set_input_lang st l
     | Some l' ->
       if l = l'
-      then State.set_lang st l
+      then State.set_input_lang st l
       else State.error ?loc st input_lang_changed (l', l)
 
   (* Parsing *)
