@@ -1,14 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(** Standard imlplementation of answers.
-    This module provides a reasonable and standard implementation of statements,
-    that can directly be used to instantiated the various functors of the dolmen library.
-    These statements are closer to smtlib statements than to other languages statements
-    because it is easier to express other languages statements using smtlib's than the
-    other way around. Still, a generalisation of smtlib statements was needed so as not
-    to lose some important distinctions between conjectures and assertions for instance.
-*)
+(** Standard implementation of answers. *)
 
 
 (** {2 Type definitions} *)

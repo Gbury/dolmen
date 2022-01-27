@@ -1453,9 +1453,9 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs st ?loc ?attrs d =
+  let defs ?mode st ?loc ?attrs d =
     typing_wrap ?attrs ?loc st ~f:(fun env ->
-        let l = T.defs env ?attrs d in
+        let l = T.defs ?mode env ?attrs d in
         let l = List.map (function
             | `Type_def (id, c, vars, body) ->
               (* are recursive defs interesting to expand ? *)
@@ -1771,7 +1771,7 @@ module Pipe
 
         (* Declarations and definitions *)
         | { S.descr = S.Defs d; _ } ->
-          let st, l = Typer.defs st ~loc:c.S.loc ~attrs:c.S.attrs d in
+          let st, l = Typer.defs ~mode:`Create_id st ~loc:c.S.loc ~attrs:c.S.attrs d in
           let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
           st, `Continue (res)
         | { S.descr = S.Decls l; _ } ->

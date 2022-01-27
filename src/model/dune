@@ -9,8 +9,9 @@
   )
   (modules
     ; Model checking
-    Value
+    Value Env Eval
     ; Builtins
+    Bool Fun
     ; Helpers
   )
 )

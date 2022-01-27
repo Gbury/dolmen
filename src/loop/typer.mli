@@ -9,7 +9,7 @@ type ty_state
 val new_state : unit -> ty_state
 (** Generate a fresh typing state.
     The bool argument given decides whether locations are kept (provides
-      better error messages, but uses more memory when running). *)
+    better error messages, but uses more memory when running). *)
 
 module T : Dolmen_type.Tff.S
   with type 'a Tag.t = 'a Dolmen.Std.Tag.t
