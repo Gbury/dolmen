@@ -4,7 +4,6 @@
 (* Type definition *)
 (* ************************************************************************* *)
 
-type lang = Logic.language
 type ty_state = Typer.ty_state
 type solve_state = unit
 
@@ -23,7 +22,7 @@ type 'solve state = {
 
   (* Input settings *)
   input_dir         : string;
-  input_lang        : lang option;
+  input_lang        : Logic.language option;
   input_mode        : [ `Full
                       | `Incremental ] option;
   input_source      : [ `Stdin
@@ -31,6 +30,18 @@ type 'solve state = {
                       | `Raw of string * string ];
 
   input_file_loc    : Dolmen.Std.Loc.file;
+
+  (* Response settings *)
+  response_dir         : string;
+  response_lang        : Response.language option;
+  response_mode        : [ `Full
+                         | `Incremental ] option;
+  response_source      : [ `Stdin
+                         | `File of string
+                         | `Raw of string * string ];
+
+  response_file_loc    : Dolmen.Std.Loc.file;
+
 
   (* Header check *)
   header_check      : bool;
@@ -45,9 +56,9 @@ type 'solve state = {
   (* Solving state *)
   solve_state       : 'solve;
 
-  (* Output settings *)
-  export_lang       : (lang * Format.formatter) list;
-
+  (* Model checking *)
+  check_model       : bool;
+  check_state       : 'solve state Check.t;
 }
 
 type t = solve_state state
@@ -151,9 +162,15 @@ let input_dir t = t.input_dir
 let input_mode t = t.input_mode
 let input_lang t = t.input_lang
 let input_source t = t.input_source
-
 let input_file_loc st = st.input_file_loc
 let set_input_file_loc st f = { st with input_file_loc = f; }
+
+let response_dir t = t.response_dir
+let response_mode t = t.response_mode
+let response_lang t = t.response_lang
+let response_source t = t.response_source
+let response_file_loc st = st.response_file_loc
+let set_response_file_loc st f = { st with response_file_loc = f; }
 
 let set_mode t m = { t with input_mode = Some m; }
 
@@ -163,6 +180,11 @@ let set_header_state st header_state = { st with header_state; }
 let check_headers { header_check; _ } = header_check
 let allowed_licenses { header_licenses; _ } = header_licenses
 let allowed_lang_version { header_lang_version; _ } = header_lang_version
+
+let check_model t = t.check_model
+let check_model_eager _ = false
+let check_state t = t.check_state
+let set_check_state t check_state = { t with check_state; }
 
 let ty_state { type_state; _ } = type_state
 let set_ty_state st type_state = { st with type_state; }
@@ -198,7 +220,9 @@ let switch_to_full_mode lang t =
   | Some `Incremental -> warn t full_mode_switch lang
   | _ -> t
 
-let set_lang t l =
+let set_response_lang t l = { t with response_lang = Some l; }
+
+let set_input_lang t l =
   let t = { t with input_lang = Some l; } in
   match l with
   | Logic.Alt_ergo ->

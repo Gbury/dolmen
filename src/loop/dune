@@ -9,8 +9,8 @@
     dolmen
     dolmen.intf dolmen.std dolmen.class
     dolmen.smtlib2 dolmen.tptp
-    ; typechecker
-    dolmen_type
+    ; typechecker & model-checker
+    dolmen_type dolmen_model
     )
   (modules
     ; Useful utilities
@@ -18,5 +18,7 @@
     ; Interfaces
     Expr_intf Typer_intf Headers_intf State_intf
     ; Implementations
-    Logic Response Code State Parser Typer Headers Pipeline)
+    Logic Response Code State
+    ; Pipeline & Pipes
+    Pipeline Parser Typer Headers Check)
 )

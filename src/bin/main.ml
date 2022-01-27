@@ -49,6 +49,7 @@ let run st =
           @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer.typecheck)
           @>|> (op ~name:"debug-typed" debug_typed_pipe)
+          @>>> (op ~name:"check" Loop.Check.check)
           @>>> (op (fun st _ -> st, ())) @>>> _end
         )
       )
