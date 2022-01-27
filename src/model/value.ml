@@ -53,6 +53,12 @@ let[@inline] extract (type a) ~(ops: a ops) (t : t) : a option =
   | Value (V.Val, _, x) -> Some x
   | _ -> None
 
+let[@inline] extract_exn (type a) ~(ops: a ops) (t : t) : a =
+  let (module V) = ops in
+  match t with
+  | Value (V.Val, _, x) -> x
+  | _ -> assert false
+
 
 (* Wrapper around custom operations *)
 (* ************************************************************************* *)

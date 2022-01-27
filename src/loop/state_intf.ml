@@ -65,12 +65,6 @@ module type Parser_pipe = sig
   type term
   (** The type of solver terms. *)
 
-  val input_file_loc : t -> Dolmen.Std.Loc.file
-  (** CUrrent input file location meta-data. *)
-
-  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
-  (** Set the input file location meta-data. *)
-
   val prelude : t -> string
   (** Some prelude to print at the begining of lines when in interactive mode. *)
 
@@ -80,14 +74,14 @@ module type Parser_pipe = sig
   val set_mode : t -> mode -> t
   (* Set the input mode. *)
 
-  val set_lang : t -> Logic.language -> t
-  (** Set the input language. *)
-
   val input_mode : t -> mode option
   (** Return the current mode (if any). *)
 
   val input_lang : t -> Logic.language option
   (** Return the input language (if any). *)
+
+  val set_input_lang : t -> Logic.language -> t
+  (** Set the input language. *)
 
   val input_dir : t -> string
   (** Return the directory of the input source (e.g. the directory of the
@@ -95,6 +89,13 @@ module type Parser_pipe = sig
 
   val input_source : t -> source
   (** Return the input source. *)
+
+  val input_file_loc : t -> Dolmen.Std.Loc.file
+  (** CUrrent input file location meta-data. *)
+
+  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
+  (** Set the input file location meta-data. *)
+
 
 end
 
@@ -168,5 +169,60 @@ module type Header_pipe = sig
 
   val allowed_lang_version : t -> string option
   (** Language version number allowed. [None] means allowing everything. *)
+
+end
+
+(** This modules defines the smallest signatures for a solver state that allow
+    to instantiate the {Check.Pipe} functor. *)
+module type Check_pipe = sig
+
+  include Common
+  (** common interface *)
+
+  type 'st check_state
+  (** The type of state used for the header check*)
+
+
+  (* Response file specification *)
+
+  val response_mode : t -> mode option
+  (** Return the current mode (if any). *)
+
+  val response_lang : t -> Response.language option
+  (** Return the response language (if any). *)
+
+  val set_response_lang : t -> Response.language -> t
+  (** Set the response file language. *)
+
+  val response_dir : t -> string
+  (** Return the directory of the input source (e.g. the directory of the
+      input file, or the current directory if in interactive mode). *)
+
+  val response_source : t -> source
+  (** Return the input source. *)
+
+  val response_file_loc : t -> Dolmen.Std.Loc.file
+  (** Current response file location meta-data. *)
+
+  val set_response_file_loc : t -> Dolmen.Std.Loc.file -> t
+  (** Current response file location meta-data. *)
+
+  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
+  (** Set the input file location meta-data. *)
+
+
+  (* Checking options *)
+
+  val check_state : t -> t check_state
+  (** Get the checker state. *)
+
+  val set_check_state : t -> t check_state -> t
+  (** Set the checker state. *)
+
+  val check_model : t -> bool
+  (** Whether to check models. *)
+
+  val check_model_eager : t -> bool
+  (** Flag for eager model checking. *)
 
 end

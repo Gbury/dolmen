@@ -318,6 +318,8 @@ module type Formulas = sig
     (** *)
     | Type_def_rec : Dolmen.Std.Statement.def -> Dolmen.Std.Statement.defs err
     (** *)
+    | Id_definition_conflict : Dolmen.Std.Id.t * binding -> Dolmen.Std.Loc.t err
+    (** *)
     | Higher_order_application : Dolmen.Std.Term.t err
     (** *)
     | Higher_order_type : Dolmen.Std.Term.t err
@@ -527,6 +529,7 @@ module type Formulas = sig
   (** Parse a list of potentially mutually recursive declarations. *)
 
   val defs :
+    ?mode:[`Create_id | `Use_declared_id] ->
     env -> ?attrs:Dolmen.Std.Term.t list ->
     Dolmen.Std.Statement.defs -> [
       | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty

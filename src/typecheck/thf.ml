@@ -305,6 +305,7 @@ module Make
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
     | Type_def_rec : Stmt.def -> Stmt.defs err
+    | Id_definition_conflict : Id.t * binding -> Loc.t err
     | Higher_order_application : Ast.t err
     | Higher_order_type : Ast.t err
     | Higher_order_env_in_tff_typechecker : Loc.t err
@@ -607,6 +608,9 @@ module Make
 
   let _cannot_find ?(hint="") env ast s =
     _error env (Ast ast) (Cannot_find (s, hint))
+
+  let _id_def_conflict env loc id binding =
+    _error env (Located loc) (Id_definition_conflict (id, binding))
 
   let _non_prenex_polymorphism env ast ty =
     _error env (Ast ast) (Non_prenex_polymorphism ty)
@@ -2206,6 +2210,20 @@ module Make
         ) tags;
       `Term (d.id, f)
 
+  let lookup_id_for_def _ (env, _, _, ssig) (d: Stmt.def) =
+    match ssig, find_global env d.id with
+    | `Ty_def, `Ty_cst c -> `Ty (d.id, c)
+    | `Term_def _, `Term_cst c -> `Term (d.id, c)
+    | _, `Not_found ->
+      _id_def_conflict env d.loc d.id `Not_found
+    | _, (#cst as c)->
+      _id_def_conflict env d.loc d.id (with_reason (find_reason env c) c)
+
+  let id_for_def ~mode tags ssig d =
+    match mode with
+    | `Create_id -> create_id_for_def tags ssig d
+    | `Use_declared_id -> lookup_id_for_def tags ssig d
+
   let record_def group id (env, _, _, _) (d : Stmt.def) =
     match id with
     | `Ty _ -> _error env (Defs group) (Type_def_rec d)
@@ -2232,13 +2250,13 @@ module Make
     | `Ty _, `Term _
     | `Term _, `Ty _ -> assert false
 
-  let defs env ?(attrs=[]) (d : Stmt.defs) =
+  let defs ?(mode=`Create_id) env ?(attrs=[]) (d : Stmt.defs) =
     let tags = parse_attrs env [] attrs in
     if d.recursive then begin
       let envs = List.map (fun _ -> split_env_for_def env) d.contents in
       let sigs = List.map2 parse_def_sig envs d.contents in
       let sigs = List.map2 close_wildcards_in_sig sigs d.contents in
-      let ids = List.map2 (create_id_for_def tags) sigs d.contents in
+      let ids = List.map2 (id_for_def ~mode tags) sigs d.contents in
       let () = Misc.Lists.iter3 (record_def d) ids sigs d.contents in
       let defs = List.map2 parse_def sigs d.contents in
       Misc.Lists.map3 finalize_def ids sigs defs
@@ -2248,7 +2266,7 @@ module Make
           let ssig = parse_def_sig env t in
           let def = parse_def ssig t in
           let ssig = close_wildcards_in_sig ssig t in
-          let id = create_id_for_def tags ssig t in
+          let id = id_for_def ~mode tags ssig t in
           finalize_def id ssig def
         ) d.contents
     end

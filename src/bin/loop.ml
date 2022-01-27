@@ -6,9 +6,9 @@ module Pipeline = Dolmen_loop.Pipeline.Make(State)
 
 module Parser = Dolmen_loop.Parser.Pipe(Dolmen.Std.Expr)(State)
 module Header = Dolmen_loop.Headers.Pipe(State)
+module Types = Dolmen_loop.Typer.Make(State)
 module Typer = struct
-  module T = Dolmen_loop.Typer.Make(State)
-  include T
-  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(T)
+  include Types
+  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Types)
 end
-
+module Check = Dolmen_loop.Check.Pipe(State)(Types)(Typer)

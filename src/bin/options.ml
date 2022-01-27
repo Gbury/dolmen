@@ -57,6 +57,8 @@ let set_color file_descr formatter color =
 (* ************************************************************************* *)
 
 let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
+let response_format_conv = Arg.enum Dolmen_loop.Response.enum
+
 
 (* Input source converter *)
 (* ************************************************************************* *)
@@ -307,9 +309,10 @@ let mk_run_state
     abort_on_bug
     time_limit size_limit
     input_lang input_mode input
+    response_lang response_mode response
     header_check header_licenses
     header_lang_version
-    type_check
+    type_check check_model
     debug loc_style max_warn reports
   =
   (* Side-effects *)
@@ -321,6 +324,7 @@ let mk_run_state
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
   let input_dir, input_source = split_input input in
+  let response_dir, response_source = split_input response in
   let st : Loop.State.t = {
     debug; loc_style; reports;
 
@@ -332,15 +336,19 @@ let mk_run_state
     input_mode; input_source;
     input_file_loc = Dolmen.Std.Loc.mk_file "";
 
+    response_dir; response_lang;
+    response_mode; response_source;
+    response_file_loc = Dolmen.Std.Loc.mk_file "";
+
     header_check; header_licenses; header_lang_version;
     header_state = Dolmen_loop.Headers.empty;
 
-    type_check;
-    type_state = Dolmen_loop.Typer.new_state ();
+    type_check; type_state = Dolmen_loop.Typer.new_state ();
 
     solve_state = ();
 
-    export_lang = [];
+    check_model; check_state = Dolmen_loop.Check.empty ();
+
   } in
   st
 
@@ -478,6 +486,26 @@ let state =
                dolmen will enter interactive mode and read on stdin." in
     Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
   in
+  let response_lang =
+    let doc = Format.asprintf
+        "Set the language for the response file; must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Response.enum) in
+    Arg.(value & opt (some response_format_conv) None &
+         info ["response-lang"] ~docv:"FORMAT" ~doc ~docs)
+  in
+  let response_mode =
+    let doc = Format.asprintf
+        "Set the response reading mode, must be %s.
+         The full mode parses the entire file before iterating over its
+         contents whereas the incremental mode processes each declaration
+         before parsing the next one. Default is incremental mode."
+        (Arg.doc_alts_enum ~quoted:true mode_list) in
+    Arg.(value & opt (some mode_conv) None & info ["response-mode"] ~doc ~docs)
+  in
+  let response =
+    let doc = "Response file." in
+    Arg.(value & opt input_source_conv `Stdin & info ["r"; "response"] ~doc ~docs)
+  in
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
                input file (and errors raised if they are not present)." in
@@ -501,20 +529,17 @@ let state =
                is done. " in
     Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
-  (*
-  let locs =
-    let doc = "Whether to keep location information during typing. \
-               Setting this to true results in better warning/error \
-               messages, but will use more memory when running." in
-    Arg.(value & opt bool true & info ["locs"] ~doc ~docs)
-  in
-  *)
   let debug =
     let doc = Format.asprintf
         "Activate debug mode. Among other things, this will make dolmen \
          print every statement it parses, and every statement after type \
          checking, as well as activate unique id printing." in
     Arg.(value & flag & info ["debug"] ~docs ~doc)
+  in
+  let check_model =
+    let doc = Format.asprintf
+        "Whether to check models (require providing a response file)." in
+    Arg.(value & opt bool false & info ["check-model"] ~doc ~docs)
   in
   let loc_style =
     let doc = Format.asprintf
@@ -532,10 +557,15 @@ let state =
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
   in
   Term.(const mk_run_state $ profiling_t $
-        gc $ gc_t $ bt $ colors $ abort_on_bug $
-        time $ size $ in_lang $ in_mode $ input $
-        header_check $ header_licenses $ header_lang_version $
-        typing $ debug $ loc_style $ max_warn $ reports)
+        gc $ gc_t $ bt $ colors $
+        abort_on_bug $
+        time $ size $
+        in_lang $ in_mode $ input $
+        response_lang $ response_mode $ response $
+        header_check $ header_licenses $
+        header_lang_version $
+        typing $ check_model $
+        debug $ loc_style $ max_warn $ reports)
 
 
 (* List command term *)

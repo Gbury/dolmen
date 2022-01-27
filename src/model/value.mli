@@ -32,6 +32,9 @@ val mk : ops:'a ops -> 'a -> t
 
 val extract : ops:'a ops -> t -> 'a option
 
+val extract_exn : ops:'a ops -> t -> 'a
+
+
 (** {2 Custom operations} *)
 (** ************************************************************************ *)
 
