@@ -10,6 +10,22 @@
 %start <S.t list> file
 %start <S.t option> input
 
+%{
+
+  let pp_num_list fmt (l, singular, plural) =
+    let n = List.length l in
+    Format.fprintf fmt "%d %s" n (if n = 1 then singular else plural)
+
+  let mismatched_lists ~loc l1 l2 =
+    let msg = Format.dprintf
+      "@[<v>@[<hov>Expected@ two@ lists@ of@ the@ same@ size,@ but@ got:@]@ \
+        - @[<hov>%a@]@ - @[<hov>%a@]@]"
+      pp_num_list l1 pp_num_list l2
+    in
+    raise (L.Syntax_error (loc, `Regular msg))
+
+%}
+
 %%
 
 spec_constant:
@@ -283,8 +299,16 @@ prop_symbol:
    match on the string... */
 not_symbol:
   | s=SYMBOL
-    { if not (s = "not") then assert false;
-      let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+    { let loc = L.mk_pos $startpos $endpos in
+      match s with
+      | "not" ->
+        T.const ~loc I.(mk term s)
+      | _ ->
+        let msg = Format.dprintf
+          "expected the 'not' symbol at that point.@ \
+           Hint: check-sat-assuming only accepts a list of terms of the form 'p' or '(not p)'."
+        in
+        raise (L.Syntax_error (loc, `Regular msg)) }
 ;
 
 prop_literal:
@@ -317,7 +341,10 @@ command:
         try
           List.map2 (fun (s, _) (vars, constructors) -> s, vars, constructors) l1 l2
         with Invalid_argument _ ->
-          assert false
+          let loc = L.mk_pos $startpos($3) $endpos($8) in
+          mismatched_lists ~loc
+            (l1, "sort declaration", "sort declarations")
+            (l2, "datatype definition", "datatype definitions")
       in
       let loc = L.mk_pos $startpos $endpos in
       S.datatypes ~loc res }
@@ -342,7 +369,11 @@ command:
   | OPEN DEFINE_FUNS_REC OPEN l1=nonempty_list(OPEN dec=function_dec(sorted_var) CLOSE { dec }) CLOSE OPEN l2=term+ CLOSE CLOSE
     { let res =
         try List.map2 (fun (id, vars, args, ret) body -> id, vars, args, ret, body) l1 l2
-        with Invalid_argument _ -> assert false
+        with Invalid_argument _ ->
+          let loc = L.mk_pos $startpos($3) $endpos($8) in
+          mismatched_lists ~loc
+            (l1, "function declaration", "function declarations")
+            (l2, "function body", "function bodies")
       in
       let loc = L.mk_pos $startpos $endpos in
       S.funs_def_rec ~loc res }
