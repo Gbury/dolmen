@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/xxx_check_sat_assuming_bad_lit.psmt2", line 7, character 23-25:
+7 | (check-sat-assuming ( (>= a 1) (<= b (/ 1 2)) ))
+                           ^^
+Error expected the 'not' symbol at that point.
+      Hint: check-sat-assuming only accepts a list of terms of the form 'p'
+            or '(not p)', where p is a boolean literal.

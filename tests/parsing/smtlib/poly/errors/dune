@@ -7265,4 +7265,100 @@
   (action (diff 184_par_open_type_var.expected 184_par_open_type_var.full)))
 
 
+; Test for xxx_check_sat_assuming_bad_lit.psmt2
+; Incremental test
+
+(rule
+   (target  xxx_check_sat_assuming_bad_lit.incremental)
+   (deps    (:input xxx_check_sat_assuming_bad_lit.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_check_sat_assuming_bad_lit.expected xxx_check_sat_assuming_bad_lit.incremental)))
+
+; Full mode test
+
+(rule
+   (target  xxx_check_sat_assuming_bad_lit.full)
+   (deps    (:input xxx_check_sat_assuming_bad_lit.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_check_sat_assuming_bad_lit.expected xxx_check_sat_assuming_bad_lit.full)))
+
+
+; Test for xxx_declare_datatypes_mismatched_lists.psmt2
+; Incremental test
+
+(rule
+   (target  xxx_declare_datatypes_mismatched_lists.incremental)
+   (deps    (:input xxx_declare_datatypes_mismatched_lists.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_declare_datatypes_mismatched_lists.expected xxx_declare_datatypes_mismatched_lists.incremental)))
+
+; Full mode test
+
+(rule
+   (target  xxx_declare_datatypes_mismatched_lists.full)
+   (deps    (:input xxx_declare_datatypes_mismatched_lists.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_declare_datatypes_mismatched_lists.expected xxx_declare_datatypes_mismatched_lists.full)))
+
+
+; Test for xxx_define_funs_res_mismatched_lists.psmt2
+; Incremental test
+
+(rule
+   (target  xxx_define_funs_res_mismatched_lists.incremental)
+   (deps    (:input xxx_define_funs_res_mismatched_lists.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_define_funs_res_mismatched_lists.expected xxx_define_funs_res_mismatched_lists.incremental)))
+
+; Full mode test
+
+(rule
+   (target  xxx_define_funs_res_mismatched_lists.full)
+   (deps    (:input xxx_define_funs_res_mismatched_lists.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_define_funs_res_mismatched_lists.expected xxx_define_funs_res_mismatched_lists.full)))
+
+
 ; Auto-generated part end

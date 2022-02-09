@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/xxx_define_funs_res_mismatched_lists.psmt2", line 3, character 2 to line 4, character 22:
+3 | ..( (f () Bool) (g () Bool) )
+4 |   ( (and true false) )
+Error Expected two lists of the same size, but got:
+      - 2 function declarations
+      - 1 function body

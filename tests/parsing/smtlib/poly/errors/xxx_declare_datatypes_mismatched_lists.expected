@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/poly/errors/xxx_declare_datatypes_mismatched_lists.psmt2", line 4, character 2 to line 5, character 13:
+4 | ..( (foo 0) (bar 0) )
+5 |   ( ( (f) ) )
+Error Expected two lists of the same size, but got:
+      - 2 sort declarations
+      - 1 datatype definition
