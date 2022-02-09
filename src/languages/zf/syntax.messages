@@ -1,342 +1,20 @@
-input: ASSERT LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
+file: WITH
 ##
-## Ends in an error in state: 242.
+## Ends in an error in state: 0.
 ##
-## statement -> ASSERT attrs . term DOT [ # ]
+## file' -> . file [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## ASSERT attrs
+##
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-input: ASSERT WILDCARD WITH
+file: VAL WITH
 ##
-## Ends in an error in state: 243.
+## Ends in an error in state: 1.
 ##
-## statement -> ASSERT attrs term . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## ASSERT attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: ASSERT WITH
-##
-## Ends in an error in state: 241.
-##
-## statement -> ASSERT . attrs term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## ASSERT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: DATA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
-##
-## Ends in an error in state: 238.
-##
-## statement -> DATA attrs . mutual_types DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## DATA attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: DATA WITH
-##
-## Ends in an error in state: 237.
-##
-## statement -> DATA . attrs mutual_types DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## DATA
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: DEF LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
-##
-## Ends in an error in state: 234.
-##
-## statement -> DEF attrs . separated_nonempty_list(AND,def) DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## DEF attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: DEF WITH
-##
-## Ends in an error in state: 233.
-##
-## statement -> DEF . attrs separated_nonempty_list(AND,def) DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## DEF
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: GOAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
-##
-## Ends in an error in state: 229.
-##
-## statement -> GOAL attrs . term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## GOAL attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: GOAL WILDCARD WITH
-##
-## Ends in an error in state: 230.
-##
-## statement -> GOAL attrs term . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## GOAL attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: GOAL WITH
-##
-## Ends in an error in state: 228.
-##
-## statement -> GOAL . attrs term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## GOAL
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: INCLUDE QUOTED WITH
-##
-## Ends in an error in state: 226.
-##
-## statement -> INCLUDE QUOTED . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## INCLUDE QUOTED
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: INCLUDE WITH
-##
-## Ends in an error in state: 225.
-##
-## statement -> INCLUDE . QUOTED DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## INCLUDE
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: LEMMA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
-##
-## Ends in an error in state: 222.
-##
-## statement -> LEMMA attrs . term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## LEMMA attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: LEMMA WILDCARD WITH
-##
-## Ends in an error in state: 223.
-##
-## statement -> LEMMA attrs term . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## LEMMA attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: LEMMA WITH
-##
-## Ends in an error in state: 221.
-##
-## statement -> LEMMA . attrs term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## LEMMA
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: REWRITE LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
-##
-## Ends in an error in state: 218.
-##
-## statement -> REWRITE attrs . term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## REWRITE attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: REWRITE WILDCARD WITH
-##
-## Ends in an error in state: 219.
-##
-## statement -> REWRITE attrs term . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## REWRITE attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: REWRITE WITH
-##
-## Ends in an error in state: 217.
-##
-## statement -> REWRITE . attrs term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## REWRITE
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: VAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
-##
-## Ends in an error in state: 212.
-##
-## statement -> VAL attrs . name COLON term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## VAL attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: VAL UPPER_WORD COLON WILDCARD WITH
-##
-## Ends in an error in state: 215.
-##
-## statement -> VAL attrs name COLON term . DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## VAL attrs name COLON term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: VAL UPPER_WORD COLON WITH
-##
-## Ends in an error in state: 214.
-##
-## statement -> VAL attrs name COLON . term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## VAL attrs name COLON
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: VAL UPPER_WORD WITH
-##
-## Ends in an error in state: 213.
-##
-## statement -> VAL attrs name . COLON term DOT [ # ]
-##
-## The known suffix of the stack is as follows:
-## VAL attrs name
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: VAL WITH
-##
-## Ends in an error in state: 211.
-##
-## statement -> VAL . attrs name COLON term DOT [ # ]
+## statement -> VAL . attrs name COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
 ## VAL
@@ -344,157 +22,36 @@ input: VAL WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-input: WITH
+file: ASSERT LEFT_BRACKET WITH
 ##
-## Ends in an error in state: 210.
+## Ends in an error in state: 2.
 ##
-## input' -> . input [ # ]
+## attrs -> LEFT_BRACKET . separated_nonempty_list(COMMA,attr) RIGHT_BRACKET [ WILDCARD UPPER_WORD TYPE PROP PI MATCH LOWER_WORD LOGIC_TRUE LOGIC_NOT LOGIC_FORALL LOGIC_FALSE LOGIC_EXISTS LEFT_PAREN INTEGER INT IF FUN ARITH_MINUS ]
 ##
 ## The known suffix of the stack is as follows:
-##
+## LEFT_BRACKET
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
+file: ASSERT LEFT_BRACKET LEFT_PAREN WITH
 ##
-## Ends in an error in state: 202.
+## Ends in an error in state: 6.
 ##
-## statement -> ASSERT attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## atomic_attr -> LEFT_PAREN . attr RIGHT_PAREN [ UPPER_WORD RIGHT_PAREN RIGHT_BRACKET QUOTED LOWER_WORD LEFT_PAREN COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## ASSERT attrs
+## LEFT_PAREN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT WILDCARD WITH
+file: ASSERT LEFT_BRACKET LOWER_WORD WITH
 ##
-## Ends in an error in state: 203.
+## Ends in an error in state: 7.
 ##
-## statement -> ASSERT attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## ASSERT attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: ASSERT WITH
-##
-## Ends in an error in state: 201.
-##
-## statement -> ASSERT . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## ASSERT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
-##
-## Ends in an error in state: 178.
-##
-## statement -> DATA attrs . mutual_types DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## DATA attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF LOWER_WORD AND WITH
-##
-## Ends in an error in state: 180.
-##
-## separated_nonempty_list(AND,type_def) -> type_def AND . separated_nonempty_list(AND,type_def) [ DOT ]
-##
-## The known suffix of the stack is as follows:
-## type_def AND
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF UPPER_WORD VERTICAL_BAR WITH
-##
-## Ends in an error in state: 195.
-##
-## separated_nonempty_list(VERTICAL_BAR,constructor) -> constructor VERTICAL_BAR . separated_nonempty_list(VERTICAL_BAR,constructor) [ DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## constructor VERTICAL_BAR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF UPPER_WORD WILDCARD WITH
-##
-## Ends in an error in state: 192.
-##
-## list(atomic_term) -> atomic_term . list(atomic_term) [ VERTICAL_BAR DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## atomic_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF UPPER_WORD WITH
-##
-## Ends in an error in state: 190.
-##
-## constructor -> name . list(atomic_term) [ VERTICAL_BAR DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## name
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF VERTICAL_BAR LOGIC_TRUE
-##
-## Ends in an error in state: 188.
-##
-## constructors -> option(VERTICAL_BAR) . separated_nonempty_list(VERTICAL_BAR,constructor) [ DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## option(VERTICAL_BAR)
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD EQDEF WITH
-##
-## Ends in an error in state: 186.
-##
-## type_def -> name list(raw_var) EQDEF . constructors [ DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## name list(raw_var) EQDEF
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: DATA UPPER_WORD UPPER_WORD WITH
-##
-## Ends in an error in state: 183.
-##
-## list(raw_var) -> raw_var . list(raw_var) [ EQDEF ]
+## atomic_attr -> raw_var . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## attr -> raw_var . nonempty_list(atomic_attr) [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## raw_var
@@ -502,359 +59,274 @@ file: DATA UPPER_WORD UPPER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DATA UPPER_WORD WITH
+file: ASSERT LEFT_BRACKET LOWER_WORD LOWER_WORD WITH
 ##
-## Ends in an error in state: 182.
+## Ends in an error in state: 11.
 ##
-## type_def -> name . list(raw_var) EQDEF constructors [ DOT AND ]
+## nonempty_list(atomic_attr) -> atomic_attr . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## nonempty_list(atomic_attr) -> atomic_attr . nonempty_list(atomic_attr) [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## name
+## atomic_attr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DATA WITH
+file: ASSERT LEFT_BRACKET LEFT_PAREN QUOTED WITH
 ##
-## Ends in an error in state: 177.
+## Ends in an error in state: 13.
 ##
-## statement -> DATA . attrs mutual_types DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## atomic_attr -> LEFT_PAREN attr . RIGHT_PAREN [ UPPER_WORD RIGHT_PAREN RIGHT_BRACKET QUOTED LOWER_WORD LEFT_PAREN COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## DATA
+## LEFT_PAREN attr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+file: ASSERT LEFT_BRACKET QUOTED WITH
 ##
-## Ends in an error in state: 161.
+## Ends in an error in state: 18.
 ##
-## statement -> DEF attrs . separated_nonempty_list(AND,def) DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## separated_nonempty_list(COMMA,attr) -> attr . [ RIGHT_BRACKET ]
+## separated_nonempty_list(COMMA,attr) -> attr . COMMA separated_nonempty_list(COMMA,attr) [ RIGHT_BRACKET ]
 ##
 ## The known suffix of the stack is as follows:
-## DEF attrs
+## attr
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON INT EQDEF INT AND WITH
+file: ASSERT LEFT_BRACKET LOWER_WORD COMMA WITH
 ##
-## Ends in an error in state: 175.
+## Ends in an error in state: 19.
 ##
-## separated_nonempty_list(AND,def) -> def AND . separated_nonempty_list(AND,def) [ DOT ]
+## separated_nonempty_list(COMMA,attr) -> attr COMMA . separated_nonempty_list(COMMA,attr) [ RIGHT_BRACKET ]
 ##
 ## The known suffix of the stack is as follows:
-## def AND
+## attr COMMA
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON INT EQDEF INT WITH
+file: VAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
 ##
-## Ends in an error in state: 174.
+## Ends in an error in state: 21.
 ##
-## separated_nonempty_list(AND,def) -> def . [ DOT ]
-## separated_nonempty_list(AND,def) -> def . AND separated_nonempty_list(AND,def) [ DOT ]
+## statement -> VAL attrs . name COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## def
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
-## In state 173, spurious reduction of production def -> name COLON term EQDEF term
+## VAL attrs
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WILDCARD EQDEF WITH
+file: VAL LOWER_WORD WITH
 ##
-## Ends in an error in state: 172.
+## Ends in an error in state: 22.
 ##
-## def -> name COLON term EQDEF . term [ DOT AND ]
+## statement -> VAL attrs name . COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## name COLON term EQDEF
+## VAL attrs name
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WILDCARD WHERE WILDCARD SEMI_COLON WITH
+file: VAL LOWER_WORD COLON WITH
 ##
-## Ends in an error in state: 169.
+## Ends in an error in state: 23.
 ##
-## separated_nonempty_list(SEMI_COLON,term) -> term SEMI_COLON . separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## statement -> VAL attrs name COLON . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## term SEMI_COLON
+## VAL attrs name COLON
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WILDCARD WHERE WILDCARD WITH
+file: ASSERT PI WITH
 ##
-## Ends in an error in state: 168.
+## Ends in an error in state: 27.
 ##
-## separated_nonempty_list(SEMI_COLON,term) -> term . [ DOT AND ]
-## separated_nonempty_list(SEMI_COLON,term) -> term . SEMI_COLON separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## term -> PI . typed_ty_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
+## PI
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WILDCARD WHERE WITH
+file: ASSERT PI LEFT_PAREN WITH
 ##
-## Ends in an error in state: 167.
+## Ends in an error in state: 28.
 ##
-## def -> name COLON term WHERE . separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## typed_ty_var_block -> LEFT_PAREN . nonempty_list(raw_var) COLON t_type RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## name COLON term WHERE
+## LEFT_PAREN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WILDCARD WITH
+file: ASSERT FUN LEFT_PAREN LOWER_WORD WITH
 ##
-## Ends in an error in state: 166.
+## Ends in an error in state: 29.
 ##
-## def -> name COLON term . EQDEF term [ DOT AND ]
-## def -> name COLON term . WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## nonempty_list(raw_var) -> raw_var . [ COLON ]
+## nonempty_list(raw_var) -> raw_var . nonempty_list(raw_var) [ COLON ]
 ##
 ## The known suffix of the stack is as follows:
-## name COLON term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
+## raw_var
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD COLON WITH
+file: ASSERT PI LEFT_PAREN LOWER_WORD COLON WITH
 ##
-## Ends in an error in state: 165.
+## Ends in an error in state: 32.
 ##
-## def -> name COLON . term EQDEF term [ DOT AND ]
-## def -> name COLON . term WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## typed_ty_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON . t_type RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## name COLON
+## LEFT_PAREN nonempty_list(raw_var) COLON
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF UPPER_WORD WITH
+file: ASSERT PI LEFT_PAREN LOWER_WORD COLON TYPE WITH
 ##
-## Ends in an error in state: 164.
+## Ends in an error in state: 34.
 ##
-## def -> name . COLON term EQDEF term [ DOT AND ]
-## def -> name . COLON term WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+## typed_ty_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON t_type . RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## name
+## LEFT_PAREN nonempty_list(raw_var) COLON t_type
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: DEF WITH
+file: ASSERT PI LOWER_WORD DOT WITH
 ##
-## Ends in an error in state: 160.
+## Ends in an error in state: 37.
 ##
-## statement -> DEF . attrs separated_nonempty_list(AND,def) DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## term -> PI typed_ty_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## DEF
+## PI typed_ty_var_list DOT
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: GOAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
+file: ASSERT MATCH WITH
 ##
-## Ends in an error in state: 157.
+## Ends in an error in state: 38.
 ##
-## statement -> GOAL attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## atomic_term -> MATCH . term WITH nonempty_list(match_branch) END [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
 ##
 ## The known suffix of the stack is as follows:
-## GOAL attrs
+## MATCH
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: GOAL WILDCARD WITH
+file: ASSERT LOGIC_NOT WITH
 ##
-## Ends in an error in state: 158.
+## Ends in an error in state: 40.
 ##
-## statement -> GOAL attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## not_term -> LOGIC_NOT . arith_op_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## GOAL attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
+## LOGIC_NOT
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: GOAL WITH
+file: ASSERT LEFT_PAREN WITH
 ##
-## Ends in an error in state: 156.
+## Ends in an error in state: 42.
 ##
-## statement -> GOAL . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## atomic_term -> LEFT_PAREN . term RIGHT_PAREN [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
 ##
 ## The known suffix of the stack is as follows:
-## GOAL
+## LEFT_PAREN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: INCLUDE QUOTED WITH
+file: ASSERT LOGIC_FORALL WITH
 ##
-## Ends in an error in state: 154.
+## Ends in an error in state: 43.
 ##
-## statement -> INCLUDE QUOTED . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## term -> LOGIC_FORALL . typed_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## INCLUDE QUOTED
+## LOGIC_FORALL
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: INCLUDE WITH
+file: ASSERT FUN LEFT_PAREN WITH
 ##
-## Ends in an error in state: 153.
+## Ends in an error in state: 44.
 ##
-## statement -> INCLUDE . QUOTED DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## typed_var_block -> LEFT_PAREN . nonempty_list(raw_var) COLON term RIGHT_PAREN [ WILDCARD UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## INCLUDE
+## LEFT_PAREN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: LEMMA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
+file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON WITH
 ##
-## Ends in an error in state: 150.
+## Ends in an error in state: 46.
 ##
-## statement -> LEMMA attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## typed_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON . term RIGHT_PAREN [ WILDCARD UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## LEMMA attrs
+## LEFT_PAREN nonempty_list(raw_var) COLON
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: LEMMA WILDCARD WITH
+file: ASSERT LOGIC_EXISTS WITH
 ##
-## Ends in an error in state: 151.
+## Ends in an error in state: 47.
 ##
-## statement -> LEMMA attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## term -> LOGIC_EXISTS . typed_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## LEMMA attrs term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
+## LOGIC_EXISTS
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: LEMMA WITH
+file: ASSERT LOGIC_EXISTS LOWER_WORD DOT WITH
 ##
-## Ends in an error in state: 149.
+## Ends in an error in state: 50.
 ##
-## statement -> LEMMA . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## term -> LOGIC_EXISTS typed_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## LEMMA
+## LOGIC_EXISTS typed_var_list DOT
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE ARITH_MINUS WITH
+file: ASSERT IF WITH
 ##
-## Ends in an error in state: 57.
+## Ends in an error in state: 53.
 ##
-## apply_term -> ARITH_MINUS . apply_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+## term -> IF . term THEN term ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## ARITH_MINUS
+## IF
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE FUN WILDCARD DOT WITH
-##
-## Ends in an error in state: 56.
-##
-## term -> FUN typed_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## FUN typed_var_list DOT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE FUN WITH
+file: ASSERT FUN WITH
 ##
 ## Ends in an error in state: 54.
 ##
@@ -866,57 +338,305 @@ file: REWRITE FUN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE IF WILDCARD THEN WILDCARD ELSE WITH
+file: ASSERT FUN LOWER_WORD DOT WITH
 ##
-## Ends in an error in state: 111.
+## Ends in an error in state: 56.
 ##
-## term -> IF term THEN term ELSE . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## term -> FUN typed_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## IF term THEN term ELSE
+## FUN typed_var_list DOT
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE IF WILDCARD THEN WILDCARD WITH
+file: ASSERT ARITH_MINUS WITH
 ##
-## Ends in an error in state: 110.
+## Ends in an error in state: 57.
 ##
-## term -> IF term THEN term . ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## apply_term -> ARITH_MINUS . apply_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
 ##
 ## The known suffix of the stack is as follows:
-## IF term THEN term
+## ARITH_MINUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT VAL
+##
+## Ends in an error in state: 62.
+##
+## apply_term -> atomic_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+## apply_term -> atomic_term . nonempty_list(atomic_term) [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## atomic_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT INT VAL
+##
+## Ends in an error in state: 64.
+##
+## nonempty_list(atomic_term) -> atomic_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+## nonempty_list(atomic_term) -> atomic_term . nonempty_list(atomic_term) [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## atomic_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_LT WITH
+##
+## Ends in an error in state: 69.
+##
+## arith_op_term -> plus_term ARITH_LT . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## plus_term ARITH_LT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_PLUS WITH
+##
+## Ends in an error in state: 72.
+##
+## plus_term -> mult_term ARITH_PLUS . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## mult_term ARITH_PLUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT LOGIC_NOT INT ARROW
+##
+## Ends in an error in state: 74.
+##
+## mult_term -> apply_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+## mult_term -> apply_term . ARITH_PRODUCT mult_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## apply_term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 95, spurious reduction of production mult_term -> apply_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_PRODUCT WITH
+##
+## Ends in an error in state: 75.
+##
+## mult_term -> apply_term ARITH_PRODUCT . mult_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## apply_term ARITH_PRODUCT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_MINUS WITH
+##
+## Ends in an error in state: 77.
+##
+## plus_term -> mult_term ARITH_MINUS . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## mult_term ARITH_MINUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_LEQ WITH
+##
+## Ends in an error in state: 79.
+##
+## arith_op_term -> plus_term ARITH_LEQ . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## plus_term ARITH_LEQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_GT WITH
+##
+## Ends in an error in state: 81.
+##
+## arith_op_term -> plus_term ARITH_GT . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## plus_term ARITH_GT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_GEQ WITH
+##
+## Ends in an error in state: 83.
+##
+## arith_op_term -> plus_term ARITH_GEQ . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## plus_term ARITH_GEQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT ARITH_GEQ INT ARITH_LT
+##
+## Ends in an error in state: 86.
+##
+## eq_term -> not_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+## eq_term -> not_term . LOGIC_EQ not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+## eq_term -> not_term . LOGIC_NEQ not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## not_term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 74, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 84, spurious reduction of production arith_op_term -> plus_term ARITH_GEQ plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_NEQ WITH
+##
+## Ends in an error in state: 87.
+##
+## eq_term -> not_term LOGIC_NEQ . not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## not_term LOGIC_NEQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_EQ WITH
+##
+## Ends in an error in state: 90.
+##
+## eq_term -> not_term LOGIC_EQ . not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## not_term LOGIC_EQ
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_EQ INT LOGIC_NEQ
+##
+## Ends in an error in state: 92.
+##
+## and_term -> eq_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
+## and_term -> eq_term . LOGIC_AND and_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## eq_term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 74, spurious reduction of production mult_term -> apply_term
 ## In state 71, spurious reduction of production plus_term -> mult_term
 ## In state 68, spurious reduction of production arith_op_term -> plus_term
 ## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 86, spurious reduction of production eq_term -> not_term
-## In state 92, spurious reduction of production and_term -> eq_term
-## In state 98, spurious reduction of production or_term -> and_term
-## In state 85, spurious reduction of production term -> or_term
+## In state 91, spurious reduction of production eq_term -> not_term LOGIC_EQ not_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE IF WILDCARD THEN WITH
+file: ASSERT INT LOGIC_AND WITH
 ##
-## Ends in an error in state: 109.
+## Ends in an error in state: 93.
 ##
-## term -> IF term THEN . term ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## and_term -> eq_term LOGIC_AND . and_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## IF term THEN
+## eq_term LOGIC_AND
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE IF WILDCARD WITH
+file: ASSERT INT ARROW WITH
+##
+## Ends in an error in state: 96.
+##
+## term -> apply_term ARROW . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## apply_term ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_OR WITH
+##
+## Ends in an error in state: 99.
+##
+## or_term -> and_term LOGIC_OR . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## and_term LOGIC_OR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_IMPLY WITH
+##
+## Ends in an error in state: 101.
+##
+## or_term -> and_term LOGIC_IMPLY . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## and_term LOGIC_IMPLY
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT LOGIC_EQUIV WITH
+##
+## Ends in an error in state: 103.
+##
+## or_term -> and_term LOGIC_EQUIV . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## and_term LOGIC_EQUIV
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT FUN LOWER_WORD WITH
+##
+## Ends in an error in state: 105.
+##
+## typed_var_list -> typed_var_block . [ DOT ]
+## typed_var_list -> typed_var_block . typed_var_list [ DOT ]
+##
+## The known suffix of the stack is as follows:
+## typed_var_block
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT IF INT WITH
 ##
 ## Ends in an error in state: 108.
 ##
@@ -942,50 +662,26 @@ file: REWRITE IF WILDCARD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE IF WITH
+file: ASSERT IF INT THEN WITH
 ##
-## Ends in an error in state: 53.
+## Ends in an error in state: 109.
 ##
-## term -> IF . term THEN term ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## term -> IF term THEN . term ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## IF
+## IF term THEN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE INT DOT WITH
+file: ASSERT IF INT THEN INT WITH
 ##
-## Ends in an error in state: 205.
+## Ends in an error in state: 110.
 ##
-## list(statement) -> statement . list(statement) [ EOF ]
-##
-## The known suffix of the stack is as follows:
-## statement
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LEFT_BRACKET LOWER_WORD RIGHT_BRACKET ARITH_LT
-##
-## Ends in an error in state: 146.
-##
-## statement -> REWRITE attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## term -> IF term THEN term . ELSE term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## REWRITE attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LEFT_PAREN WILDCARD WITH
-##
-## Ends in an error in state: 119.
-##
-## atomic_term -> LEFT_PAREN term . RIGHT_PAREN [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN term
+## IF term THEN term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1004,43 +700,19 @@ file: REWRITE LEFT_PAREN WILDCARD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE LEFT_PAREN WITH
+file: ASSERT IF INT THEN INT ELSE WITH
 ##
-## Ends in an error in state: 42.
+## Ends in an error in state: 111.
 ##
-## atomic_term -> LEFT_PAREN . term RIGHT_PAREN [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+## term -> IF term THEN term ELSE . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## LEFT_PAREN
+## IF term THEN term ELSE
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE LOGIC_EXISTS WILDCARD DOT WITH
-##
-## Ends in an error in state: 50.
-##
-## term -> LOGIC_EXISTS typed_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## LOGIC_EXISTS typed_var_list DOT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_EXISTS WITH
-##
-## Ends in an error in state: 47.
-##
-## term -> LOGIC_EXISTS . typed_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## LOGIC_EXISTS
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_FORALL LEFT_PAREN UPPER_WORD COLON WILDCARD WITH
+file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON INT WITH
 ##
 ## Ends in an error in state: 114.
 ##
@@ -1066,31 +738,7 @@ file: REWRITE LOGIC_FORALL LEFT_PAREN UPPER_WORD COLON WILDCARD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE LOGIC_FORALL LEFT_PAREN UPPER_WORD COLON WITH
-##
-## Ends in an error in state: 46.
-##
-## typed_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON . term RIGHT_PAREN [ WILDCARD UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN nonempty_list(raw_var) COLON
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_FORALL LEFT_PAREN WITH
-##
-## Ends in an error in state: 44.
-##
-## typed_var_block -> LEFT_PAREN . nonempty_list(raw_var) COLON term RIGHT_PAREN [ WILDCARD UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_FORALL WILDCARD DOT WITH
+file: ASSERT LOGIC_FORALL LOWER_WORD DOT WITH
 ##
 ## Ends in an error in state: 117.
 ##
@@ -1102,63 +750,33 @@ file: REWRITE LOGIC_FORALL WILDCARD DOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE LOGIC_FORALL WILDCARD WITH
+file: ASSERT LEFT_PAREN INT WITH
 ##
-## Ends in an error in state: 105.
+## Ends in an error in state: 119.
 ##
-## typed_var_list -> typed_var_block . [ DOT ]
-## typed_var_list -> typed_var_block . typed_var_list [ DOT ]
-##
-## The known suffix of the stack is as follows:
-## typed_var_block
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_FORALL WITH
-##
-## Ends in an error in state: 43.
-##
-## term -> LOGIC_FORALL . typed_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## atomic_term -> LEFT_PAREN term . RIGHT_PAREN [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
 ##
 ## The known suffix of the stack is as follows:
-## LOGIC_FORALL
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE LOGIC_NOT WILDCARD ARROW
-##
-## Ends in an error in state: 74.
-##
-## mult_term -> apply_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-## mult_term -> apply_term . ARITH_PRODUCT mult_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## apply_term
+## LEFT_PAREN term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE LOGIC_NOT WITH
-##
-## Ends in an error in state: 40.
-##
-## not_term -> LOGIC_NOT . arith_op_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## LOGIC_NOT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WILDCARD WHERE
+file: ASSERT MATCH INT WHERE
 ##
 ## Ends in an error in state: 122.
 ##
@@ -1184,7 +802,67 @@ file: REWRITE MATCH WILDCARD WHERE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD ARROW INT WITH
+file: ASSERT MATCH INT WITH WITH
+##
+## Ends in an error in state: 123.
+##
+## atomic_term -> MATCH term WITH . nonempty_list(match_branch) END [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
+##
+## The known suffix of the stack is as follows:
+## MATCH term WITH
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT MATCH INT WITH VERTICAL_BAR WITH
+##
+## Ends in an error in state: 124.
+##
+## match_branch -> VERTICAL_BAR . raw_var list(var_or_wildcard) ARROW term [ VERTICAL_BAR END ]
+##
+## The known suffix of the stack is as follows:
+## VERTICAL_BAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD WITH
+##
+## Ends in an error in state: 125.
+##
+## match_branch -> VERTICAL_BAR raw_var . list(var_or_wildcard) ARROW term [ VERTICAL_BAR END ]
+##
+## The known suffix of the stack is as follows:
+## VERTICAL_BAR raw_var
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD LOWER_WORD WITH
+##
+## Ends in an error in state: 127.
+##
+## list(var_or_wildcard) -> var_or_wildcard . list(var_or_wildcard) [ ARROW ]
+##
+## The known suffix of the stack is as follows:
+## var_or_wildcard
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW WITH
+##
+## Ends in an error in state: 131.
+##
+## match_branch -> VERTICAL_BAR raw_var list(var_or_wildcard) ARROW . term [ VERTICAL_BAR END ]
+##
+## The known suffix of the stack is as follows:
+## VERTICAL_BAR raw_var list(var_or_wildcard) ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW INT WITH
 ##
 ## Ends in an error in state: 135.
 ##
@@ -1212,128 +890,7 @@ file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD ARROW INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD ARROW WITH
-##
-## Ends in an error in state: 131.
-##
-## match_branch -> VERTICAL_BAR raw_var list(var_or_wildcard) ARROW . term [ VERTICAL_BAR END ]
-##
-## The known suffix of the stack is as follows:
-## VERTICAL_BAR raw_var list(var_or_wildcard) ARROW
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD WILDCARD WITH
-##
-## Ends in an error in state: 127.
-##
-## list(var_or_wildcard) -> var_or_wildcard . list(var_or_wildcard) [ ARROW ]
-##
-## The known suffix of the stack is as follows:
-## var_or_wildcard
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR UPPER_WORD WITH
-##
-## Ends in an error in state: 125.
-##
-## match_branch -> VERTICAL_BAR raw_var . list(var_or_wildcard) ARROW term [ VERTICAL_BAR END ]
-##
-## The known suffix of the stack is as follows:
-## VERTICAL_BAR raw_var
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WILDCARD WITH VERTICAL_BAR WITH
-##
-## Ends in an error in state: 124.
-##
-## match_branch -> VERTICAL_BAR . raw_var list(var_or_wildcard) ARROW term [ VERTICAL_BAR END ]
-##
-## The known suffix of the stack is as follows:
-## VERTICAL_BAR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WILDCARD WITH WITH
-##
-## Ends in an error in state: 123.
-##
-## atomic_term -> MATCH term WITH . nonempty_list(match_branch) END [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## MATCH term WITH
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE MATCH WITH
-##
-## Ends in an error in state: 38.
-##
-## atomic_term -> MATCH . term WITH nonempty_list(match_branch) END [ WITH WILDCARD WHERE VERTICAL_BAR UPPER_WORD TYPE THEN SEMI_COLON RIGHT_PAREN PROP MATCH LOWER_WORD LOGIC_TRUE LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_FALSE LOGIC_EQUIV LOGIC_EQ LOGIC_AND LEFT_PAREN INTEGER INT EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## MATCH
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI LEFT_PAREN UPPER_WORD COLON TYPE WITH
-##
-## Ends in an error in state: 34.
-##
-## typed_ty_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON t_type . RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN nonempty_list(raw_var) COLON t_type
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI LEFT_PAREN UPPER_WORD COLON WITH
-##
-## Ends in an error in state: 32.
-##
-## typed_ty_var_block -> LEFT_PAREN nonempty_list(raw_var) COLON . t_type RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN nonempty_list(raw_var) COLON
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI LEFT_PAREN UPPER_WORD WITH
-##
-## Ends in an error in state: 29.
-##
-## nonempty_list(raw_var) -> raw_var . [ COLON ]
-## nonempty_list(raw_var) -> raw_var . nonempty_list(raw_var) [ COLON ]
-##
-## The known suffix of the stack is as follows:
-## raw_var
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI LEFT_PAREN WITH
-##
-## Ends in an error in state: 28.
-##
-## typed_ty_var_block -> LEFT_PAREN . nonempty_list(raw_var) COLON t_type RIGHT_PAREN [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## LEFT_PAREN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI UPPER_WORD COLON TYPE WITH
+file: ASSERT PI LOWER_WORD COLON TYPE WITH
 ##
 ## Ends in an error in state: 138.
 ##
@@ -1346,31 +903,7 @@ file: REWRITE PI UPPER_WORD COLON TYPE WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE PI UPPER_WORD COLON WITH
-##
-## Ends in an error in state: 141.
-##
-## typed_ty_var_block -> raw_var COLON . t_type [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
-##
-## The known suffix of the stack is as follows:
-## raw_var COLON
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI UPPER_WORD DOT WITH
-##
-## Ends in an error in state: 37.
-##
-## term -> PI typed_ty_var_list DOT . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## PI typed_ty_var_list DOT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE PI UPPER_WORD WITH
+file: ASSERT PI LOWER_WORD WITH
 ##
 ## Ends in an error in state: 140.
 ##
@@ -1383,268 +916,26 @@ file: REWRITE PI UPPER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE PI WITH
+file: ASSERT PI LOWER_WORD COLON WITH
 ##
-## Ends in an error in state: 27.
+## Ends in an error in state: 141.
 ##
-## term -> PI . typed_ty_var_list DOT term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
+## typed_ty_var_block -> raw_var COLON . t_type [ UPPER_WORD LOWER_WORD LEFT_PAREN DOT ]
 ##
 ## The known suffix of the stack is as follows:
-## PI
+## raw_var COLON
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: REWRITE WILDCARD ARITH_GEQ INT ARITH_LT
+file: VAL LOWER_WORD COLON INT WITH
 ##
-## Ends in an error in state: 86.
+## Ends in an error in state: 143.
 ##
-## eq_term -> not_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
-## eq_term -> not_term . LOGIC_EQ not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
-## eq_term -> not_term . LOGIC_NEQ not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
+## statement -> VAL attrs name COLON term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## not_term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 74, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 84, spurious reduction of production arith_op_term -> plus_term ARITH_GEQ plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_GEQ WITH
-##
-## Ends in an error in state: 83.
-##
-## arith_op_term -> plus_term ARITH_GEQ . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## plus_term ARITH_GEQ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_GT WITH
-##
-## Ends in an error in state: 81.
-##
-## arith_op_term -> plus_term ARITH_GT . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## plus_term ARITH_GT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_LEQ WITH
-##
-## Ends in an error in state: 79.
-##
-## arith_op_term -> plus_term ARITH_LEQ . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## plus_term ARITH_LEQ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_LT WITH
-##
-## Ends in an error in state: 69.
-##
-## arith_op_term -> plus_term ARITH_LT . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## plus_term ARITH_LT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_MINUS WITH
-##
-## Ends in an error in state: 77.
-##
-## plus_term -> mult_term ARITH_MINUS . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## mult_term ARITH_MINUS
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_PLUS WITH
-##
-## Ends in an error in state: 72.
-##
-## plus_term -> mult_term ARITH_PLUS . plus_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## mult_term ARITH_PLUS
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARITH_PRODUCT WITH
-##
-## Ends in an error in state: 75.
-##
-## mult_term -> apply_term ARITH_PRODUCT . mult_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## apply_term ARITH_PRODUCT
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD ARROW WITH
-##
-## Ends in an error in state: 96.
-##
-## term -> apply_term ARROW . term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## apply_term ARROW
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_AND WITH
-##
-## Ends in an error in state: 93.
-##
-## and_term -> eq_term LOGIC_AND . and_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## eq_term LOGIC_AND
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_EQ INT LOGIC_NEQ
-##
-## Ends in an error in state: 92.
-##
-## and_term -> eq_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
-## and_term -> eq_term . LOGIC_AND and_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## eq_term
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 62, spurious reduction of production apply_term -> atomic_term
-## In state 74, spurious reduction of production mult_term -> apply_term
-## In state 71, spurious reduction of production plus_term -> mult_term
-## In state 68, spurious reduction of production arith_op_term -> plus_term
-## In state 89, spurious reduction of production not_term -> arith_op_term
-## In state 91, spurious reduction of production eq_term -> not_term LOGIC_EQ not_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_EQ WITH
-##
-## Ends in an error in state: 90.
-##
-## eq_term -> not_term LOGIC_EQ . not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## not_term LOGIC_EQ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_EQUIV WITH
-##
-## Ends in an error in state: 103.
-##
-## or_term -> and_term LOGIC_EQUIV . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## and_term LOGIC_EQUIV
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_IMPLY WITH
-##
-## Ends in an error in state: 101.
-##
-## or_term -> and_term LOGIC_IMPLY . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## and_term LOGIC_IMPLY
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_NEQ WITH
-##
-## Ends in an error in state: 87.
-##
-## eq_term -> not_term LOGIC_NEQ . not_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_IMPLY LOGIC_EQUIV LOGIC_AND EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## not_term LOGIC_NEQ
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD LOGIC_OR WITH
-##
-## Ends in an error in state: 99.
-##
-## or_term -> and_term LOGIC_OR . or_term [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN EQDEF END ELSE DOT AND ]
-##
-## The known suffix of the stack is as follows:
-## and_term LOGIC_OR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD VAL
-##
-## Ends in an error in state: 62.
-##
-## apply_term -> atomic_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-## apply_term -> atomic_term . nonempty_list(atomic_term) [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## atomic_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD WILDCARD VAL
-##
-## Ends in an error in state: 64.
-##
-## nonempty_list(atomic_term) -> atomic_term . [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-## nonempty_list(atomic_term) -> atomic_term . nonempty_list(atomic_term) [ WITH WHERE VERTICAL_BAR THEN SEMI_COLON RIGHT_PAREN LOGIC_OR LOGIC_NEQ LOGIC_IMPLY LOGIC_EQUIV LOGIC_EQ LOGIC_AND EQDEF END ELSE DOT ARROW ARITH_PRODUCT ARITH_PLUS ARITH_MINUS ARITH_LT ARITH_LEQ ARITH_GT ARITH_GEQ AND ]
-##
-## The known suffix of the stack is as follows:
-## atomic_term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: REWRITE WILDCARD WITH
-##
-## Ends in an error in state: 147.
-##
-## statement -> REWRITE attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## REWRITE attrs term
+## VAL attrs name COLON term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -1675,100 +966,401 @@ file: REWRITE WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET LEFT_PAREN UPPER_WORD RIGHT_BRACKET
+file: REWRITE LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
 ##
-## Ends in an error in state: 13.
+## Ends in an error in state: 146.
 ##
-## atomic_attr -> LEFT_PAREN attr . RIGHT_PAREN [ UPPER_WORD RIGHT_PAREN RIGHT_BRACKET QUOTED LOWER_WORD LEFT_PAREN COMMA ]
+## statement -> REWRITE attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## LEFT_PAREN attr
+## REWRITE attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: REWRITE INT WITH
+##
+## Ends in an error in state: 147.
+##
+## statement -> REWRITE attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## REWRITE attrs term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 7, spurious reduction of production atomic_attr -> raw_var
-## In state 15, spurious reduction of production attr -> atomic_attr
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET LEFT_PAREN WITH
+file: LEMMA WITH
 ##
-## Ends in an error in state: 6.
+## Ends in an error in state: 149.
 ##
-## atomic_attr -> LEFT_PAREN . attr RIGHT_PAREN [ UPPER_WORD RIGHT_PAREN RIGHT_BRACKET QUOTED LOWER_WORD LEFT_PAREN COMMA ]
+## statement -> LEMMA . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## LEFT_PAREN
+## LEMMA
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET UPPER_WORD COMMA WITH
+file: LEMMA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
 ##
-## Ends in an error in state: 19.
+## Ends in an error in state: 150.
 ##
-## separated_nonempty_list(COMMA,attr) -> attr COMMA . separated_nonempty_list(COMMA,attr) [ RIGHT_BRACKET ]
+## statement -> LEMMA attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## attr COMMA
+## LEMMA attrs
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET UPPER_WORD RIGHT_BRACKET WITH
+file: LEMMA INT WITH
 ##
-## Ends in an error in state: 21.
+## Ends in an error in state: 151.
 ##
-## statement -> VAL attrs . name COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## VAL attrs
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: VAL LEFT_BRACKET UPPER_WORD RIGHT_PAREN
-##
-## Ends in an error in state: 18.
-##
-## separated_nonempty_list(COMMA,attr) -> attr . [ RIGHT_BRACKET ]
-## separated_nonempty_list(COMMA,attr) -> attr . COMMA separated_nonempty_list(COMMA,attr) [ RIGHT_BRACKET ]
+## statement -> LEMMA attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## attr
+## LEMMA attrs term
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 7, spurious reduction of production atomic_attr -> raw_var
-## In state 15, spurious reduction of production attr -> atomic_attr
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET UPPER_WORD UPPER_WORD WITH
+file: INCLUDE WITH
 ##
-## Ends in an error in state: 11.
+## Ends in an error in state: 153.
 ##
-## nonempty_list(atomic_attr) -> atomic_attr . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
-## nonempty_list(atomic_attr) -> atomic_attr . nonempty_list(atomic_attr) [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## statement -> INCLUDE . QUOTED DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
 ##
 ## The known suffix of the stack is as follows:
-## atomic_attr
+## INCLUDE
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET UPPER_WORD WITH
+file: INCLUDE QUOTED WITH
 ##
-## Ends in an error in state: 7.
+## Ends in an error in state: 154.
 ##
-## atomic_attr -> raw_var . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
-## attr -> raw_var . nonempty_list(atomic_attr) [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## statement -> INCLUDE QUOTED . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE QUOTED
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: GOAL WITH
+##
+## Ends in an error in state: 156.
+##
+## statement -> GOAL . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## GOAL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: GOAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 157.
+##
+## statement -> GOAL attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## GOAL attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: GOAL INT WITH
+##
+## Ends in an error in state: 158.
+##
+## statement -> GOAL attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## GOAL attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF WITH
+##
+## Ends in an error in state: 160.
+##
+## statement -> DEF . attrs separated_nonempty_list(AND,def) DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## DEF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 161.
+##
+## statement -> DEF attrs . separated_nonempty_list(AND,def) DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## DEF attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD WITH
+##
+## Ends in an error in state: 164.
+##
+## def -> name . COLON term EQDEF term [ DOT AND ]
+## def -> name . COLON term WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON WITH
+##
+## Ends in an error in state: 165.
+##
+## def -> name COLON . term EQDEF term [ DOT AND ]
+## def -> name COLON . term WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT WITH
+##
+## Ends in an error in state: 166.
+##
+## def -> name COLON term . EQDEF term [ DOT AND ]
+## def -> name COLON term . WHERE separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name COLON term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT WHERE WITH
+##
+## Ends in an error in state: 167.
+##
+## def -> name COLON term WHERE . separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name COLON term WHERE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT WHERE INT WITH
+##
+## Ends in an error in state: 168.
+##
+## separated_nonempty_list(SEMI_COLON,term) -> term . [ DOT AND ]
+## separated_nonempty_list(SEMI_COLON,term) -> term . SEMI_COLON separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT WHERE INT SEMI_COLON WITH
+##
+## Ends in an error in state: 169.
+##
+## separated_nonempty_list(SEMI_COLON,term) -> term SEMI_COLON . separated_nonempty_list(SEMI_COLON,term) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## term SEMI_COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT EQDEF WITH
+##
+## Ends in an error in state: 172.
+##
+## def -> name COLON term EQDEF . term [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name COLON term EQDEF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT EQDEF INT WITH
+##
+## Ends in an error in state: 174.
+##
+## separated_nonempty_list(AND,def) -> def . [ DOT ]
+## separated_nonempty_list(AND,def) -> def . AND separated_nonempty_list(AND,def) [ DOT ]
+##
+## The known suffix of the stack is as follows:
+## def
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+## In state 173, spurious reduction of production def -> name COLON term EQDEF term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DEF LOWER_WORD COLON INT EQDEF INT AND WITH
+##
+## Ends in an error in state: 175.
+##
+## separated_nonempty_list(AND,def) -> def AND . separated_nonempty_list(AND,def) [ DOT ]
+##
+## The known suffix of the stack is as follows:
+## def AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA WITH
+##
+## Ends in an error in state: 177.
+##
+## statement -> DATA . attrs mutual_types DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## DATA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 178.
+##
+## statement -> DATA attrs . mutual_types DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## DATA attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD EQDEF LOWER_WORD AND WITH
+##
+## Ends in an error in state: 180.
+##
+## separated_nonempty_list(AND,type_def) -> type_def AND . separated_nonempty_list(AND,type_def) [ DOT ]
+##
+## The known suffix of the stack is as follows:
+## type_def AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD WITH
+##
+## Ends in an error in state: 182.
+##
+## type_def -> name . list(raw_var) EQDEF constructors [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD LOWER_WORD WITH
+##
+## Ends in an error in state: 183.
+##
+## list(raw_var) -> raw_var . list(raw_var) [ EQDEF ]
 ##
 ## The known suffix of the stack is as follows:
 ## raw_var
@@ -1776,23 +1368,193 @@ file: VAL LEFT_BRACKET UPPER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL LEFT_BRACKET WITH
+file: DATA LOWER_WORD EQDEF WITH
 ##
-## Ends in an error in state: 2.
+## Ends in an error in state: 186.
 ##
-## attrs -> LEFT_BRACKET . separated_nonempty_list(COMMA,attr) RIGHT_BRACKET [ WILDCARD UPPER_WORD TYPE PROP PI MATCH LOWER_WORD LOGIC_TRUE LOGIC_NOT LOGIC_FORALL LOGIC_FALSE LOGIC_EXISTS LEFT_PAREN INTEGER INT IF FUN ARITH_MINUS ]
+## type_def -> name list(raw_var) EQDEF . constructors [ DOT AND ]
 ##
 ## The known suffix of the stack is as follows:
-## LEFT_BRACKET
+## name list(raw_var) EQDEF
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL UPPER_WORD COLON WILDCARD WITH
+file: DATA LOWER_WORD EQDEF VERTICAL_BAR WITH
 ##
-## Ends in an error in state: 143.
+## Ends in an error in state: 188.
 ##
-## statement -> VAL attrs name COLON term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## constructors -> option(VERTICAL_BAR) . separated_nonempty_list(VERTICAL_BAR,constructor) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## option(VERTICAL_BAR)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD EQDEF LOWER_WORD WITH
+##
+## Ends in an error in state: 190.
+##
+## constructor -> name . list(atomic_term) [ VERTICAL_BAR DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD EQDEF LOWER_WORD INT WITH
+##
+## Ends in an error in state: 192.
+##
+## list(atomic_term) -> atomic_term . list(atomic_term) [ VERTICAL_BAR DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## atomic_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: DATA LOWER_WORD EQDEF LOWER_WORD VERTICAL_BAR WITH
+##
+## Ends in an error in state: 195.
+##
+## separated_nonempty_list(VERTICAL_BAR,constructor) -> constructor VERTICAL_BAR . separated_nonempty_list(VERTICAL_BAR,constructor) [ DOT AND ]
+##
+## The known suffix of the stack is as follows:
+## constructor VERTICAL_BAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT WITH
+##
+## Ends in an error in state: 201.
+##
+## statement -> ASSERT . attrs term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 202.
+##
+## statement -> ASSERT attrs . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT WITH
+##
+## Ends in an error in state: 203.
+##
+## statement -> ASSERT attrs term . DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: ASSERT INT DOT WITH
+##
+## Ends in an error in state: 205.
+##
+## list(statement) -> statement . list(statement) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## statement
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: WITH
+##
+## Ends in an error in state: 210.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: VAL WITH
+##
+## Ends in an error in state: 211.
+##
+## statement -> VAL . attrs name COLON term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## VAL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: VAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 212.
+##
+## statement -> VAL attrs . name COLON term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## VAL attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: VAL LOWER_WORD WITH
+##
+## Ends in an error in state: 213.
+##
+## statement -> VAL attrs name . COLON term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## VAL attrs name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: VAL LOWER_WORD COLON WITH
+##
+## Ends in an error in state: 214.
+##
+## statement -> VAL attrs name COLON . term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## VAL attrs name COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: VAL LOWER_WORD COLON INT WITH
+##
+## Ends in an error in state: 215.
+##
+## statement -> VAL attrs name COLON term . DOT [ # ]
 ##
 ## The known suffix of the stack is as follows:
 ## VAL attrs name COLON term
@@ -1814,50 +1576,274 @@ file: VAL UPPER_WORD COLON WILDCARD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL UPPER_WORD COLON WITH
+input: REWRITE WITH
 ##
-## Ends in an error in state: 23.
+## Ends in an error in state: 217.
 ##
-## statement -> VAL attrs name COLON . term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## statement -> REWRITE . attrs term DOT [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## VAL attrs name COLON
+## REWRITE
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL UPPER_WORD WITH
+input: REWRITE LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
 ##
-## Ends in an error in state: 22.
+## Ends in an error in state: 218.
 ##
-## statement -> VAL attrs name . COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## statement -> REWRITE attrs . term DOT [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## VAL attrs name
+## REWRITE attrs
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: VAL WITH
+input: REWRITE INT WITH
 ##
-## Ends in an error in state: 1.
+## Ends in an error in state: 219.
 ##
-## statement -> VAL . attrs name COLON term DOT [ VAL REWRITE LEMMA INCLUDE GOAL EOF DEF DATA ASSERT ]
+## statement -> REWRITE attrs term . DOT [ # ]
 ##
 ## The known suffix of the stack is as follows:
-## VAL
+## REWRITE attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: WITH
+input: LEMMA WITH
 ##
-## Ends in an error in state: 0.
+## Ends in an error in state: 221.
 ##
-## file' -> . file [ # ]
+## statement -> LEMMA . attrs term DOT [ # ]
 ##
 ## The known suffix of the stack is as follows:
+## LEMMA
 ##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: LEMMA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 222.
+##
+## statement -> LEMMA attrs . term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## LEMMA attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: LEMMA INT WITH
+##
+## Ends in an error in state: 223.
+##
+## statement -> LEMMA attrs term . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## LEMMA attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE WITH
+##
+## Ends in an error in state: 225.
+##
+## statement -> INCLUDE . QUOTED DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE QUOTED WITH
+##
+## Ends in an error in state: 226.
+##
+## statement -> INCLUDE QUOTED . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE QUOTED
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: GOAL WITH
+##
+## Ends in an error in state: 228.
+##
+## statement -> GOAL . attrs term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## GOAL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: GOAL LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 229.
+##
+## statement -> GOAL attrs . term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## GOAL attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: GOAL INT WITH
+##
+## Ends in an error in state: 230.
+##
+## statement -> GOAL attrs term . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## GOAL attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: DEF WITH
+##
+## Ends in an error in state: 233.
+##
+## statement -> DEF . attrs separated_nonempty_list(AND,def) DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## DEF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: DEF LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 234.
+##
+## statement -> DEF attrs . separated_nonempty_list(AND,def) DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## DEF attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: DATA WITH
+##
+## Ends in an error in state: 237.
+##
+## statement -> DATA . attrs mutual_types DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## DATA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: DATA LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 238.
+##
+## statement -> DATA attrs . mutual_types DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## DATA attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: ASSERT WITH
+##
+## Ends in an error in state: 241.
+##
+## statement -> ASSERT . attrs term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: ASSERT LEFT_BRACKET LOWER_WORD RIGHT_BRACKET WITH
+##
+## Ends in an error in state: 242.
+##
+## statement -> ASSERT attrs . term DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT attrs
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: ASSERT INT WITH
+##
+## Ends in an error in state: 243.
+##
+## statement -> ASSERT attrs term . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## ASSERT attrs term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 62, spurious reduction of production apply_term -> atomic_term
+## In state 95, spurious reduction of production mult_term -> apply_term
+## In state 71, spurious reduction of production plus_term -> mult_term
+## In state 68, spurious reduction of production arith_op_term -> plus_term
+## In state 89, spurious reduction of production not_term -> arith_op_term
+## In state 86, spurious reduction of production eq_term -> not_term
+## In state 92, spurious reduction of production and_term -> eq_term
+## In state 98, spurious reduction of production or_term -> and_term
+## In state 85, spurious reduction of production term -> or_term
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
