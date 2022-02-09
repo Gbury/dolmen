@@ -425,7 +425,7 @@ module Ty : sig
   (** View on types. *)
 
   val pi_arity : t -> int
-  (** Reutnrs the number of expected type arguments that the given
+  (** Returns the number of expected type arguments that the given
       type expects (i.e. the number of prenex polymorphic variables
       in the given type). *)
 
