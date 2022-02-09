@@ -7265,12 +7265,12 @@
   (action (diff 184_par_open_type_var.expected 184_par_open_type_var.full)))
 
 
-; Test for xxx_check_sat_assuming_bad_lit.smt2
+; Test for xxx_check_sat_assuming_bad_lit.psmt2
 ; Incremental test
 
 (rule
    (target  xxx_check_sat_assuming_bad_lit.incremental)
-   (deps    (:input xxx_check_sat_assuming_bad_lit.smt2))
+   (deps    (:input xxx_check_sat_assuming_bad_lit.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -7285,7 +7285,7 @@
 
 (rule
    (target  xxx_check_sat_assuming_bad_lit.full)
-   (deps    (:input xxx_check_sat_assuming_bad_lit.smt2))
+   (deps    (:input xxx_check_sat_assuming_bad_lit.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -7297,12 +7297,12 @@
   (action (diff xxx_check_sat_assuming_bad_lit.expected xxx_check_sat_assuming_bad_lit.full)))
 
 
-; Test for xxx_declare_datatypes_mismatched_lists.smt2
+; Test for xxx_declare_datatypes_mismatched_lists.psmt2
 ; Incremental test
 
 (rule
    (target  xxx_declare_datatypes_mismatched_lists.incremental)
-   (deps    (:input xxx_declare_datatypes_mismatched_lists.smt2))
+   (deps    (:input xxx_declare_datatypes_mismatched_lists.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -7317,7 +7317,7 @@
 
 (rule
    (target  xxx_declare_datatypes_mismatched_lists.full)
-   (deps    (:input xxx_declare_datatypes_mismatched_lists.smt2))
+   (deps    (:input xxx_declare_datatypes_mismatched_lists.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -7329,12 +7329,12 @@
   (action (diff xxx_declare_datatypes_mismatched_lists.expected xxx_declare_datatypes_mismatched_lists.full)))
 
 
-; Test for xxx_define_funs_res_mismatched_lists.smt2
+; Test for xxx_define_funs_res_mismatched_lists.psmt2
 ; Incremental test
 
 (rule
    (target  xxx_define_funs_res_mismatched_lists.incremental)
-   (deps    (:input xxx_define_funs_res_mismatched_lists.smt2))
+   (deps    (:input xxx_define_funs_res_mismatched_lists.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -7349,7 +7349,7 @@
 
 (rule
    (target  xxx_define_funs_res_mismatched_lists.full)
-   (deps    (:input xxx_define_funs_res_mismatched_lists.smt2))
+   (deps    (:input xxx_define_funs_res_mismatched_lists.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}

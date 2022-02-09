@@ -304,9 +304,11 @@ not_symbol:
       | "not" ->
         T.const ~loc I.(mk term s)
       | _ ->
-        let msg = Format.dprintf
-          "expected the 'not' symbol at that point.@ \
-           Hint: check-sat-assuming only accepts a list of terms of the form 'p' or '(not p)'."
+        let msg = Format.dprintf "@[<v>@[<hov>%a@]@ Hint: @[<hov>%a@]@]"
+          Format.pp_print_text "expected the 'not' symbol at that point."
+          Format.pp_print_text
+           "check-sat-assuming only accepts a list of terms \
+            of the form 'p' or '(not p)', where p is a boolean literal."
         in
         raise (L.Syntax_error (loc, `Regular msg)) }
 ;
