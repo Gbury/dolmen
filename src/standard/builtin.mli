@@ -103,7 +103,7 @@ type _ t +=
   | Equal     (** [Equal: 'a. 'a -> ... -> Prop]: equality beetween values. *)
   | Distinct  (** [Distinct: 'a. 'a -> ... -> Prop]: pairwise dis-equality beetween arguments. *)
   | Neg       (** [Neg: Prop -> Prop]: propositional negation. *)
-  | And       (** [And: Prop -> Prop]: propositional conjunction. *)
+  | And       (** [And: Prop -> ... -> Prop]: propositional conjunction. *)
   | Or        (** [Or: Prop -> ... -> Prop]: propositional disjunction. *)
   | Nand      (** [Nand: Prop -> Prop -> Prop]: propositional negated conjunction. *)
   | Nor       (** [Nor: Prop -> Prop -> Prop]: propositional negated disjunction. *)
