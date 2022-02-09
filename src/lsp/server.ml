@@ -10,6 +10,15 @@ class dolmen_lsp_server =
     (* one env per document *)
     val buffers: (Lsp.Types.DocumentUri.t, State.t) Hashtbl.t = Hashtbl.create 32
 
+    method! config_sync_opts =
+      (* configure how sync happens *)
+      let change = Lsp.Types.TextDocumentSyncKind.Incremental in
+        (* Lsp.Types.TextDocumentSyncKind.Full *)
+      Lsp.Types.TextDocumentSyncOptions.create ~openClose:true ~change
+        ~save:(Lsp.Types.SaveOptions.create ~includeText:false ())
+        ()
+
+
     method private _on_doc
         ~(notify_back:Linol_lwt.Jsonrpc2.notify_back)
         (uri:Lsp.Types.DocumentUri.t) (contents:string) =
