@@ -14,6 +14,11 @@ let full_output_of_problem file =
 let expected_of_problem file =
   Filename.chop_extension file ^ ".expected"
 
+let response_of_problem file =
+  match Filename.extension file with
+  | ".smt2" -> Some (Filename.chop_extension file ^ ".rsmt2")
+  | _ -> None
+
 let supports_incremental file =
   match Filename.extension file with
   | ".ae" -> false
@@ -55,6 +60,12 @@ let cat fmt file =
     done
   with End_of_file ->
     Format.fprintf fmt "@."
+
+(* does the file exists ? *)
+let exists file =
+  match open_in file with
+  | _ -> true
+  | exception Sys_error _ -> false
 
 (* is the file empty ? *)
 let is_empty file =
@@ -133,7 +144,8 @@ let pp_deps fmt (pb_file, additional) =
   Format.pp_print_list Format.pp_print_string fmt l
     ~pp_sep:Format.pp_print_space
 
-let test_stanza_aux ?(deps=[]) mode fmt (res_file, pb_file, exit_codes, expected_file) =
+let test_stanza_aux ?(deps=[]) mode fmt
+    (res_file, pb_file, response_file, exit_codes, expected_file) =
   Format.fprintf fmt "
 @[<v 2>(rule@ \
   (target  %s)@ \
@@ -142,7 +154,7 @@ let test_stanza_aux ?(deps=[]) mode fmt (res_file, pb_file, exit_codes, expected
   (action @[<hov 1>(chdir %%{workspace_root}@ \
            @[<hov 1>(with-outputs-to %%{target}@ \
             @[<hov 1>(with-accepted-exit-codes %a@ \
-             @[<hov 1>(run dolmen --mode=%s --color=never %%{input} %%{read-lines:flags.dune})@]\
+             @[<hov 1>(run dolmen %s--mode=%s --color=never %%{input} %%{read-lines:flags.dune})@]\
              )@]\
              )@]\
              )@]\
@@ -154,9 +166,13 @@ let test_stanza_aux ?(deps=[]) mode fmt (res_file, pb_file, exit_codes, expected
     res_file
     pp_deps (pb_file, deps)
     pp_exit_codes exit_codes
+    (match response_file with
+     | None -> ""
+     | Some f -> Format.asprintf "--check-model -r %s " f
+    )
     mode expected_file res_file
 
-let test_stanza_incr ?deps fmt ((_, pb_file, _, _) as data) =
+let test_stanza_incr ?deps fmt ((_, pb_file, _, _, _) as data) =
   if not (supports_incremental pb_file) then ()
   else
     Format.fprintf fmt "; Incremental test@\n%a@\n"
@@ -166,13 +182,13 @@ let test_stanza_full ?deps fmt data =
   Format.fprintf fmt "; Full mode test@\n%a@\n"
     (test_stanza_aux ?deps "full") data
 
-let test_stanza ?deps fmt (exit_codes, pb_file) =
+let test_stanza ?deps fmt (exit_codes, pb_file, response_file) =
   let incr_file = incr_output_of_problem pb_file in
   let full_file = full_output_of_problem pb_file in
   let expected_file = expected_of_problem pb_file in
   Format.fprintf fmt "; Test for %s@\n%a%a@\n" pb_file
-    (test_stanza_incr ?deps) (incr_file, pb_file, exit_codes, expected_file)
-    (test_stanza_full ?deps) (full_file, pb_file, exit_codes, expected_file)
+    (test_stanza_incr ?deps) (incr_file, pb_file, response_file, exit_codes, expected_file)
+    (test_stanza_full ?deps) (full_file, pb_file, response_file, exit_codes, expected_file)
 
 
 
@@ -198,10 +214,20 @@ let test_deps path pb =
   | _ -> []
 
 let gen_test fmt path pb =
+  (* check exit codes and the expected output *)
   let expected_file = Filename.concat path (expected_of_problem pb) in
   let exit_codes = check_expect_file expected_file in
+  (* see whether a response file exists *)
+  let response_file =
+    match response_of_problem pb with
+    | None -> None
+    | Some f ->
+      let f = Filename.concat path f in
+      if exists f then Some f else None
+  in
+  (* check for deps *)
   let deps = test_deps path pb in
-  test_stanza ~deps fmt (exit_codes, pb)
+  test_stanza ~deps fmt (exit_codes, pb, response_file)
 
 
 (* Generating tests for a folder and its files *)

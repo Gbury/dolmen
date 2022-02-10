@@ -32,3 +32,8 @@ module Script = struct
   module Latest = V2_6
 
 end
+
+type version = [
+  | `Check of Check.version
+  | `Script of Script.version
+]

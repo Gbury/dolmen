@@ -11,4 +11,4 @@ module Typer = struct
   include Types
   include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Types)
 end
-module Check = Dolmen_loop.Check.Pipe(State)(Types)(Typer)
+module Check = Dolmen_loop.Check.Pipe(State)(Parser)(Types)(Typer)
