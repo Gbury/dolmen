@@ -1,0 +1,3 @@
+dolmen: option `--check-model' needs an argument
+Usage: dolmen [OPTION]... [FILE]
+Try `dolmen --help' for more information.

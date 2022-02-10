@@ -7,6 +7,8 @@
 type ty_state = Typer.ty_state
 type solve_state = unit
 
+type 'lang file = 'lang State_intf.file
+
 type 'solve state = {
 
   (* Debug, warnings, and error options *)
@@ -20,28 +22,9 @@ type 'solve state = {
   time_limit        : float;
   size_limit        : float;
 
-  (* Input settings *)
-  input_dir         : string;
-  input_lang        : Logic.language option;
-  input_mode        : [ `Full
-                      | `Incremental ] option;
-  input_source      : [ `Stdin
-                      | `File of string
-                      | `Raw of string * string ];
-
-  input_file_loc    : Dolmen.Std.Loc.file;
-
-  (* Response settings *)
-  response_dir         : string;
-  response_lang        : Response.language option;
-  response_mode        : [ `Full
-                         | `Incremental ] option;
-  response_source      : [ `Stdin
-                         | `File of string
-                         | `Raw of string * string ];
-
-  response_file_loc    : Dolmen.Std.Loc.file;
-
+  (* Input files *)
+  logic_file        : Logic.language file;
+  response_file     : Response.language file;
 
   (* Header check *)
   header_check      : bool;
@@ -69,32 +52,33 @@ exception Error of t
 (* State and locations *)
 (* ************************************************************************* *)
 
-let loc_input st (loc : Dolmen.Std.Loc.loc) =
+let loc_input ?file st (loc : Dolmen.Std.Loc.loc) =
   (* sanity check to avoid pp_loc trying to read and/or print
      too much when printing the source code snippet) *)
   if loc.max_line_length >= 150 ||
      loc.stop_line - loc.start_line >= 100 then
     None
   else begin
-    match st.loc_style, st.input_source with
-    | _, `Stdin -> None
+    match st.loc_style, (file : _ file option) with
+    | _, None -> None
+    | _, Some { source = `Stdin; _ } -> None
     | `Short, _ -> None
-    | `Contextual, `File filename ->
-      let full_filename = Filename.concat st.input_dir filename in
+    | `Contextual, Some { source = `File filename; dir; _ } ->
+      let full_filename = Filename.concat dir filename in
       let input = Pp_loc.Input.file full_filename in
       Some input
-    | `Contextual, `Raw (_, contents) ->
+    | `Contextual, Some { source = `Raw (_, contents); _ } ->
       let input = Pp_loc.Input.string contents in
       Some input
   end
 
-let pp_loc st fmt o =
+let pp_loc ?file st fmt o =
   match o with
   | None -> ()
   | Some loc ->
     if Dolmen.Std.Loc.is_dummy loc then ()
     else begin
-      match loc_input st loc with
+      match loc_input ?file st loc with
       | None ->
         Format.fprintf fmt "%a:@ "
           Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
@@ -105,17 +89,17 @@ let pp_loc st fmt o =
           (Pp_loc.pp ~max_lines:3 ~input) [locs]
     end
 
-let error ?loc st error payload =
+let error ?file ?loc st error payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   let aux _ = Code.exit (Report.Error.code error) in
   Format.kfprintf aux Format.err_formatter
     ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-    (pp_loc st) loc
+    (pp_loc ?file st) loc
     Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Error"
     Report.Error.print (error, payload)
     Report.Error.print_hints (error, payload)
 
-let warn ?loc st warn payload =
+let warn ?file ?loc st warn payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   match Report.Conf.status st.reports warn with
   | Disabled -> st
@@ -126,7 +110,7 @@ let warn ?loc st warn payload =
     else
       Format.kfprintf aux Format.err_formatter
         ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-        (pp_loc st) loc
+        (pp_loc ?file st) loc
         Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
         Report.Warning.print (warn, payload)
         Report.Warning.print_hints (warn, payload)
@@ -135,7 +119,7 @@ let warn ?loc st warn payload =
     let aux _ = Code.exit (Report.Warning.code warn) in
     Format.kfprintf aux Format.err_formatter
       ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-      (pp_loc st) loc
+      (pp_loc ?file st) loc
       Fmt.(styled `Bold @@ styled (`Fg (`Hi `Red)) string) "Fatal Warning"
       Report.Warning.print (warn, payload)
       Report.Warning.print_hints (warn, payload)
@@ -158,21 +142,11 @@ let flush st () =
 let time_limit t = t.time_limit
 let size_limit t = t.size_limit
 
-let input_dir t = t.input_dir
-let input_mode t = t.input_mode
-let input_lang t = t.input_lang
-let input_source t = t.input_source
-let input_file_loc st = st.input_file_loc
-let set_input_file_loc st f = { st with input_file_loc = f; }
+let logic_file t = t.logic_file
+let set_logic_file t logic_file = { t with logic_file; }
 
-let response_dir t = t.response_dir
-let response_mode t = t.response_mode
-let response_lang t = t.response_lang
-let response_source t = t.response_source
-let response_file_loc st = st.response_file_loc
-let set_response_file_loc st f = { st with response_file_loc = f; }
-
-let set_mode t m = { t with input_mode = Some m; }
+let response_file t = t.response_file
+let set_response_file t response_file = { t with response_file; }
 
 let header_state { header_state; _ } = header_state
 let set_header_state st header_state = { st with header_state; }
@@ -192,40 +166,12 @@ let set_ty_state st type_state = { st with type_state; }
 let typecheck st = st.type_check
 
 let is_interactive = function
-  | { input_source = `Stdin; _ } -> true
+  | { logic_file = { source = `Stdin; _ }; _ } -> true
   | _ -> false
 
 let prelude st =
-  match st.input_lang with
+  match st.logic_file.lang with
   | None -> "prompt> @?"
   | Some l ->
     Format.asprintf "(%s)# @?" (Logic.string_of_language l)
-
-(* Setting language *)
-(* ************************************************************************* *)
-
-let full_mode_switch =
-  Report.Warning.mk ~code:Code.generic ~mnemonic:"full-mode-switch"
-    ~message:(fun fmt lang ->
-        Format.fprintf fmt
-          "The@ %s@ format@ does@ not@ support@ \
-           incremental@ mode,@ switching@ to@ full@ mode"
-          lang)
-    ~name:"Forced switch to full mode" ()
-
-let switch_to_full_mode lang t =
-  let old_mode = input_mode t in
-  let t = set_mode t `Full in
-  match old_mode with
-  | Some `Incremental -> warn t full_mode_switch lang
-  | _ -> t
-
-let set_response_lang t l = { t with response_lang = Some l; }
-
-let set_input_lang t l =
-  let t = { t with input_lang = Some l; } in
-  match l with
-  | Logic.Alt_ergo ->
-    switch_to_full_mode "Alt-Ergo" t
-  | _ -> t
 

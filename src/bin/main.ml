@@ -38,7 +38,7 @@ let run st =
   if st.Loop.State.debug then
     Dolmen.Std.Expr.Print.print_index := true;
   let st, g =
-    try Loop.Parser.parse [] st
+    try Loop.Parser.parse_logic [] st (Loop.State.logic_file st)
     with exn -> handle_exn st exn
   in
   let st =

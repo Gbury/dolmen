@@ -41,6 +41,18 @@ let finally st e =
 let process path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
+  let l_file : _ State.file = {
+    lang = None; mode = None; dir;
+    loc = Dolmen.Std.Loc.mk_file "";
+    source =match opt_contents with
+      | None -> `File file
+      | Some contents -> `Raw (file, contents);
+  } in
+  let r_file : _ State.file = {
+    lang = None; mode = None; dir;
+    loc = Dolmen.Std.Loc.mk_file "";
+    source = `Raw ("", "");
+  } in
   let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let st = State.{
       debug = false;
@@ -49,20 +61,9 @@ let process path opt_contents =
       cur_warn = 0;
       time_limit = 0.; (* disable the timer *)
       size_limit = max_float;
-      input_dir = dir;
-      input_lang = None;
-      input_mode = None;
-      input_source = begin match opt_contents with
-        | None -> `File file
-        | Some contents -> `Raw (file, contents)
-      end;
-      input_file_loc = Dolmen.Std.Loc.mk_file "";
-      (* dummy values for response file *)
-      response_dir = "";
-      response_lang = None;
-      response_mode = None;
-      response_source = `Stdin;
-      response_file_loc = Dolmen.Std.Loc.mk_file "";
+
+      logic_file = l_file;
+      response_file = r_file;
 
       header_check = false;
       header_licenses = [];
@@ -75,7 +76,7 @@ let process path opt_contents =
       check_state = Dolmen_loop.Check.empty ();
     } in
   try
-    let st, g = Parser.parse [] st in
+    let st, g = Parser.parse_logic [] st l_file in
     let open Pipeline in
     let st = run ~finally g st (
         (fix (op ~name:"expand" Parser.expand) (
