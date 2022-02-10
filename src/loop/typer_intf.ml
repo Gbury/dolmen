@@ -24,6 +24,11 @@ module type Pipe_arg = sig
 
   include Pipe_types
 
+  type input = [
+    | `Logic of Logic.language State_intf.file
+    | `Response of Response.language State_intf.file
+  ]
+
   val typecheck :
     state -> bool
 
@@ -34,17 +39,17 @@ module type Pipe_arg = sig
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
   val push :
-    state -> ?loc:Dolmen.Std.Loc.t -> int -> state
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val pop :
-    state -> ?loc:Dolmen.Std.Loc.t -> int -> state
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val set_logic :
-    state -> ?loc:Dolmen.Std.Loc.t -> string -> state
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> string -> state
 
   val defs :
     ?mode:[`Create_id | `Use_declared_id] ->
-    state -> ?loc:Dolmen.Std.Loc.t ->
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.defs ->
     state * [
      | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
@@ -52,7 +57,7 @@ module type Pipe_arg = sig
     ] list
 
   val decls :
-    state -> ?loc:Dolmen.Std.Loc.t ->
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.decls ->
     state * [
       | `Type_decl of ty_cst
@@ -60,17 +65,17 @@ module type Pipe_arg = sig
     ] list
 
   val terms :
-    state -> ?loc:Dolmen.Std.Loc.t ->
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Term.t list ->
     state * term list
 
   val formula :
-    state -> ?loc:Dolmen.Std.Loc.t ->
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> goal:bool -> Dolmen.Std.Term.t ->
     state * formula
 
   val formulas :
-    state -> ?loc:Dolmen.Std.Loc.t ->
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Term.t list ->
     state * formula list
 
@@ -112,10 +117,10 @@ module type S = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
-  val report_error : state -> error -> state
+  val report_error : input:input -> state -> error -> state
   (** Report a typing error by calling the appropriate state function. *)
 
-  val report_warning : state -> warning -> state
+  val report_warning : input:input -> state -> warning -> state
   (** Return a typing warning by calling the appropriate state function. *)
 
   val additional_builtins : builtin_symbols ref

@@ -885,6 +885,50 @@ module type S = Typer_intf.S
 
 module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
+  (* Type aliases & helpers *)
+  (* ************************************************************************ *)
+
+  type 'a file = 'a State_intf.file
+
+  type input = [
+    | `Logic of Logic.language file
+    | `Response of Response.language file
+  ]
+
+  type lang = [
+    | `Missing
+    | `Logic of Logic.language
+    | `Response of Response.language
+  ]
+
+  let warn ~input ~loc st warn payload =
+    match (input : input) with
+    | `Logic file -> S.warn ~file ~loc st warn payload
+    | `Response file -> S.warn ~file ~loc st warn payload
+
+  let error ~input ~loc st err payload =
+    match (input : input) with
+    | `Logic file -> S.error ~file ~loc st err payload
+    | `Response file -> S.error ~file ~loc st err payload
+
+  let file_loc_of_input (input : input) =
+    match input with
+    | `Logic f -> f.loc
+    | `Response f -> f.loc
+
+  let lang_of_input (input : input) : lang =
+    match input with
+    | `Logic f ->
+      begin match f.lang with
+        | None -> `Missing
+        | Some l -> `Logic l
+      end
+    | `Response f ->
+      begin match f.lang with
+        | None -> `Missing
+        | Some l -> `Response l
+      end
+
   (* New warnings & errors *)
   (* ************************************************************************ *)
 
@@ -899,193 +943,190 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Report type warnings *)
   (* ************************************************************************ *)
 
-  let smtlib2_6_shadow_rules st =
-    match (S.input_lang st : Logic.language option) with
-    | Some Smtlib2 (`Latest | `V2_6 | `Poly) -> true
+  let smtlib2_6_shadow_rules (input : input) =
+    match input with
+    | `Logic { lang = Some Smtlib2 (`Latest | `V2_6 | `Poly); _ }
+    | `Response { lang = Some Smtlib2 (`Latest | `V2_6); _ }
+      -> true
     | _ -> false
 
-  let report_warning st (T.Warning (env, fragment, warn)) =
+  let report_warning ~input st (T.Warning (env, fragment, w)) =
     let loc = T.fragment_loc env fragment in
-    match warn with
+    match w with
     (* typer warnings that are actually errors given some languages spec *)
     | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)
     | T.Shadowing (id, ((`Constant _ | `Builtin _ | `Not_found) as old), `Constant _)
-      when smtlib2_6_shadow_rules st ->
-      S.error ~loc st multiple_declarations (id, old)
+      when smtlib2_6_shadow_rules input ->
+      error ~input ~loc st multiple_declarations (id, old)
 
     (* warnings *)
     | T.Unused_type_variable (kind, v) ->
-      S.warn ~loc st unused_type_variable (kind, v)
+      warn ~input ~loc st unused_type_variable (kind, v)
     | T.Unused_term_variable (kind, v) ->
-      S.warn ~loc st unused_term_variable (kind, v)
+      warn ~input ~loc st unused_term_variable (kind, v)
     | T.Error_in_attribute exn ->
-      S.warn ~loc st error_in_attribute exn
+      warn ~input ~loc st error_in_attribute exn
     | T.Superfluous_destructor _ ->
-      S.warn ~loc st superfluous_destructor ()
+      warn ~input ~loc st superfluous_destructor ()
     | T.Shadowing (id, old, _cur) ->
-      S.warn ~loc st shadowing (id, old)
+      warn ~input ~loc st shadowing (id, old)
     | T.Redundant_pattern pattern ->
-      S.warn ~loc st redundant_pattern pattern
+      warn ~input ~loc st redundant_pattern pattern
     | Smtlib2_Ints.Restriction msg
     | Smtlib2_Reals.Restriction msg
     | Smtlib2_Reals_Ints.Restriction msg ->
-      S.warn ~loc st almost_linear msg
+      warn ~input ~loc st almost_linear msg
     | _ ->
-      S.warn ~loc st unknown_warning
+      warn ~input ~loc st unknown_warning
           (Obj.Extension_constructor.(name (of_val warn)))
 
   (* Report type errors *)
   (* ************************************************************************ *)
 
-  let report_error st (T.Error (env, fragment, err)) =
+  let report_error ~input st (T.Error (env, fragment, err)) =
     let loc = T.fragment_loc env fragment in
     match err with
     (* Datatype definition not well founded *)
     | T.Not_well_founded_datatypes _ ->
-      S.error ~loc st not_well_founded_datatype ()
+      error ~input ~loc st not_well_founded_datatype ()
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
-      S.error ~loc st expect_error (expect, got)
+      error ~input ~loc st expect_error (expect, got)
       (* Arity errors *)
     | T.Bad_index_arity (s, expected, actual) ->
-      S.error ~loc st bad_index_arity (s, expected, actual)
+      error ~input ~loc st bad_index_arity (s, expected, actual)
     | T.Bad_ty_arity (c, actual) ->
-      S.error ~loc st bad_type_arity (c, actual)
+      error ~input ~loc st bad_type_arity (c, actual)
     | T.Bad_op_arity (symbol, expected, actual) ->
-      S.error ~loc st bad_op_arity (symbol, expected, actual)
+      error ~input ~loc st bad_op_arity (symbol, expected, actual)
     | T.Bad_cstr_arity (c, expected, actual) ->
-      S.error ~loc st bad_cstr_arity (c, expected, actual)
+      error ~input ~loc st bad_cstr_arity (c, expected, actual)
     | T.Bad_term_arity (c, expected, actual) ->
-      S.error ~loc st bad_term_arity (c, expected, actual)
+      error ~input ~loc st bad_term_arity (c, expected, actual)
     | T.Bad_poly_arity (vars, args) ->
-      S.error ~loc st bad_poly_arity (vars, args)
+      error ~input ~loc st bad_poly_arity (vars, args)
     | T.Over_application over_args ->
-      S.error ~loc st over_application over_args
+      error ~input ~loc st over_application over_args
     (* Pattern matching errors *)
     | T.Partial_pattern_match missing ->
-      S.error ~loc st partial_pattern_match missing
+      error ~input ~loc st partial_pattern_match missing
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
-      S.error ~loc st repeated_record_field f
+      error ~input ~loc st repeated_record_field f
     | T.Missing_record_field f ->
-      S.error ~loc st missing_record_field f
+      error ~input ~loc st missing_record_field f
     | T.Mismatch_record_type (f, r) ->
-      S.error ~loc st mismatch_record_type (f, r)
+      error ~input ~loc st mismatch_record_type (f, r)
     (* Application of a variable *)
     | T.Var_application v ->
-      S.error ~loc st var_application v
+      error ~input ~loc st var_application v
     | T.Ty_var_application v ->
-      S.error ~loc st ty_var_application v
+      error ~input ~loc st ty_var_application v
     (* Wrong type *)
     | T.Type_mismatch (t, expected) ->
-      S.error ~loc st type_mismatch (t, expected)
+      error ~input ~loc st type_mismatch (t, expected)
     | T.Var_in_binding_pos_underspecified ->
-      S.error ~loc st var_in_binding_pos_underspecified ()
+      error ~input ~loc st var_in_binding_pos_underspecified ()
     | T.Unhandled_builtin b ->
-      S.error ~loc st unhandled_builtin b
+      error ~input ~loc st unhandled_builtin b
     | T.Cannot_tag_tag ->
-      S.error ~loc st cannot_tag_tag ()
+      error ~input ~loc st cannot_tag_tag ()
     | T.Cannot_tag_ttype ->
-      S.error ~loc st cannot_tag_ttype ()
+      error ~input ~loc st cannot_tag_ttype ()
     | T.Cannot_find (id, msg) ->
-      let lit_hint =
-        match S.input_lang st with
-        | Some Smtlib2 _ -> true
-        | _ -> false
-      in
-      S.error ~loc st unbound_identifier (id, msg, lit_hint)
+      error ~input ~loc st unbound_identifier (id, msg, true)
     | T.Forbidden_quantifier ->
-      S.error ~loc st forbidden_quant ()
+      error ~input ~loc st forbidden_quant ()
     | T.Missing_destructor id ->
-      S.error ~loc st missing_destructor id
+      error ~input ~loc st missing_destructor id
     | T.Higher_order_application ->
-      S.error ~loc st higher_order_app ()
+      error ~input ~loc st higher_order_app ()
     | T.Higher_order_type ->
-      S.error ~loc st higher_order_type ()
+      error ~input ~loc st higher_order_type ()
     | T.Higher_order_env_in_tff_typechecker ->
-      S.error ~loc st higher_order_env_in_tff_typer ()
+      error ~input ~loc st higher_order_env_in_tff_typer ()
     | T.Polymorphic_function_argument ->
-      S.error ~loc st poly_arg ()
+      error ~input ~loc st poly_arg ()
     | T.Non_prenex_polymorphism ty ->
-      S.error ~loc st non_prenex_polymorphism ty
+      error ~input ~loc st non_prenex_polymorphism ty
     | T.Inference_forbidden (_, w_src, inferred_ty) ->
-      S.error ~loc st inference_forbidden (env, w_src, inferred_ty)
+      error ~input ~loc st inference_forbidden (env, w_src, inferred_ty)
     | T.Inference_conflict (_, w_src, inferred_ty, allowed_tys) ->
-      S.error ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
+      error ~input ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
-      S.error ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
+      error ~input ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
     | T.Unbound_type_wildcards tys ->
-      S.error ~loc st unbound_type_wildcards (env, tys)
+      error ~input ~loc st unbound_type_wildcards (env, tys)
     | T.Unhandled_ast ->
-      S.error ~loc st unhandled_ast (env, fragment)
+      error ~input ~loc st unhandled_ast (env, fragment)
     (* Alt-Ergo Functional Array errors *)
     | Ae_Arrays.Bad_farray_arity ->
-      S.error ~loc st bad_farray_arity ()
+      error ~input ~loc st bad_farray_arity ()
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
-      S.error ~loc st expected_arith_type (ty, "")
+      error ~input ~loc st expected_arith_type (ty, "")
     (* Tptp Arithmetic errors *)
     | Tptp_Arith.Expected_arith_type ty ->
-      S.error ~loc st expected_arith_type
+      error ~input ~loc st expected_arith_type
         (ty, "Tptp arithmetic symbols are only polymorphic over the arithmetic \
               types $int, $rat and $real.")
     | Tptp_Arith.Cannot_apply_to ty ->
-      S.error ~loc st expected_specific_arith_type ty
+      error ~input ~loc st expected_specific_arith_type ty
     (* Smtlib Array errors *)
     | Smtlib2_Arrays.Forbidden msg ->
-      S.error ~loc st forbidden_array_sort msg
+      error ~input ~loc st forbidden_array_sort msg
     (* Smtlib Arithmetic errors *)
     | Smtlib2_Ints.Forbidden msg
     | Smtlib2_Reals.Forbidden msg
     | Smtlib2_Reals_Ints.Forbidden msg ->
-      S.error ~loc st non_linear_expression msg
+      error ~input ~loc st non_linear_expression msg
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
-      S.error ~loc st expected_arith_type
+      error ~input ~loc st expected_arith_type
         (ty, "The stmlib Reals_Ints theory requires an arithmetic type in order to \
               correctly desugar the expression.")
     (* Smtlib Bitvector errors *)
     | Smtlib2_Bitv.Invalid_bin_char c
     | Smtlib2_Float.Invalid_bin_char c ->
-      S.error ~loc st invalid_bin_bitvector_char c
+      error ~input ~loc st invalid_bin_bitvector_char c
     | Smtlib2_Bitv.Invalid_hex_char c
     | Smtlib2_Float.Invalid_hex_char c ->
-      S.error ~loc st invalid_hex_bitvector_char c
+      error ~input ~loc st invalid_hex_bitvector_char c
     | Smtlib2_Bitv.Invalid_dec_char c
     | Smtlib2_Float.Invalid_dec_char c ->
-      S.error ~loc st invalid_dec_bitvector_char c
+      error ~input ~loc st invalid_dec_bitvector_char c
     (* Smtlib String errors *)
     | Smtlib2_String.Invalid_hexadecimal s ->
-      S.error ~loc st invalid_hex_string_char s
+      error ~input ~loc st invalid_hex_string_char s
     | Smtlib2_String.Invalid_string_char c ->
-      S.error ~loc st invalid_string_char c
+      error ~input ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
-      S.error ~loc st invalid_string_escape_sequence (s, i)
+      error ~input ~loc st invalid_string_escape_sequence (s, i)
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn ((Pipeline.Out_of_time |
                        Pipeline.Out_of_space |
                        Pipeline.Sigint) as exn, bt) ->
       Printexc.raise_with_backtrace exn bt
     | T.Uncaught_exn (exn, bt) ->
-      S.error ~loc st Report.Error.uncaught_exn (exn, bt)
+      error ~input ~loc st Report.Error.uncaught_exn (exn, bt)
     (* Bad tptp kind *)
     | Bad_tptp_kind o ->
-      S.error ~loc st bad_tptp_kind o
+      error ~input ~loc st bad_tptp_kind o
     (* Missing smtlib logic *)
     | Missing_smtlib_logic ->
-      S.error ~loc st missing_smtlib_logic ()
+      error ~input ~loc st missing_smtlib_logic ()
     (* Illegal declarations *)
     | Illegal_decl ->
-      S.error ~loc st illegal_decl ()
+      error ~input ~loc st illegal_decl ()
     (* Push/Pop errors *)
     | Invalid_push_n ->
-      S.error ~loc st invalid_push ()
+      error ~input ~loc st invalid_push ()
     | Invalid_pop_n ->
-      S.error ~loc st invalid_pop ()
+      error ~input ~loc st invalid_pop ()
     | Pop_with_empty_stack ->
-      S.error ~loc st empty_pop ()
+      error ~input ~loc st empty_pop ()
     (* Catch-all *)
     | _ ->
-      S.error ~loc st unknown_error
+      error ~input ~loc st unknown_error
         (Obj.Extension_constructor.(name (of_val err)))
 
   (* Generate typing env from state *)
@@ -1125,20 +1166,20 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env ?(attrs=[]) ~loc warnings (st : S.t) =
-    let file = S.input_file_loc st in
+  let typing_env ?(attrs=[]) ~loc warnings (st : S.t) (input : input) =
     let additional_builtins env args = !additional_builtins env args in
+    let file = file_loc_of_input input in
 
     (* Match the language to determine bultins and other options *)
-    match (S.input_lang st : Logic.language option) with
-    | None -> assert false
+    match lang_of_input input with
+    | `Missing -> assert false
 
     (* Dimacs & iCNF
        - these infer the declarations of their constants
          (we could declare them when the number of clauses and variables
          is declared in the file, but it's easier this way).
        - there are no explicit declaration or definitions, hence no builtins *)
-    | Some Dimacs | Some ICNF ->
+    | `Logic Dimacs | `Logic ICNF ->
       let poly = T.Flexible in
       let var_infer = T.{
           infer_unbound_vars = No_inference;
@@ -1158,9 +1199,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
-    (* Alt-Ergo format
-    *)
-    | Some Alt_ergo ->
+    (* Alt-Ergo format *)
+    | `Logic Alt_ergo ->
       let poly = T.Flexible in
       let free_wildcards = T.Implicitly_universally_quantified in
       let var_infer = T.{
@@ -1191,7 +1231,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
        - no inference of constants
        - only the base builtin
     *)
-    | Some Zf ->
+    | `Logic Zf ->
       let poly = T.Flexible in
       let var_infer = T.{
           infer_unbound_vars = No_inference;
@@ -1219,7 +1259,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
        - 2 base theories (Core and Arith) + the builtin Decl and Subst
          for explicit declaration and definitions
     *)
-    | Some Tptp v ->
+    | `Logic Tptp v ->
       let poly = T.Explicit in
       begin match tptp_kind_of_attrs attrs with
         | Some "thf" ->
@@ -1242,7 +1282,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           T.empty_env ~order:Higher_order
             ~st:(S.ty_state st).typer
             ~var_infer ~sym_infer ~poly
-            ~warnings ~file builtins
+            ~warnings ~file:file builtins
         | Some ("tff" | "tpi" | "fof" | "cnf") ->
           let var_infer = T.{
               infer_unbound_vars = No_inference;
@@ -1296,7 +1336,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
        - restrictions come from the logic declaration
        - shadowing is forbidden
     *)
-    | Some Smtlib2 v ->
+    | `Logic Smtlib2 v ->
       let poly = T.Implicit in
       let var_infer = T.{
           infer_unbound_vars = No_inference;
@@ -1320,7 +1360,39 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               Decl.parse :: Subst.parse :: additional_builtins ::
-              builtins_of_smtlib2_logic v logic
+              builtins_of_smtlib2_logic (`Script v) logic
+            ) in
+          let quants = logic.features.quantifiers in
+          T.empty_env ~order:First_order
+            ~st:(S.ty_state st).typer
+            ~var_infer ~sym_infer ~poly ~quants
+            ~warnings ~file builtins
+      end
+    | `Response Smtlib2 v ->
+      let poly = T.Implicit in
+      let var_infer = T.{
+          infer_unbound_vars = No_inference;
+          infer_type_vars_in_binding_pos = true;
+          infer_term_vars_in_binding_pos = No_inference;
+        } in
+      let sym_infer = T.{
+          infer_type_csts = false;
+          infer_term_csts = No_inference;
+        } in
+      begin match (S.ty_state st).logic with
+        | Auto ->
+          let builtins = Dolmen_type.Base.noop in
+          let env =
+            T.empty_env ~order:First_order
+              ~st:(S.ty_state st).typer
+              ~var_infer ~sym_infer ~poly
+              ~warnings ~file builtins
+          in
+          T._error env (Located loc) Missing_smtlib_logic
+        | Smtlib2 logic ->
+          let builtins = Dolmen_type.Base.merge (
+              Decl.parse :: Subst.parse :: additional_builtins ::
+              builtins_of_smtlib2_logic (`Check v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
@@ -1329,13 +1401,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ~warnings ~file builtins
       end
 
-  let typing_wrap ?attrs ?(loc=Dolmen.Std.Loc.no_loc) st ~f =
+  let typing_wrap ?attrs ?(loc=Dolmen.Std.Loc.no_loc) ~input st ~f =
     let st = ref st in
-    let report warn = st := report_warning !st warn in
-    match f (typing_env ?attrs ~loc report !st) with
+    let report w = st := report_warning ~input !st w in
+    match f (typing_env ?attrs ~loc report !st input) with
     | res -> !st, res
     | exception T.Typing_error err ->
-      let st = report_error !st err in
+      let st = report_error ~input !st err in
       raise (S.Error st)
 
 
@@ -1355,11 +1427,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     }
 
 
-  let rec push st ?(loc=Dolmen.Std.Loc.no_loc) = function
+  let rec push st ~input ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
       if i < 0 then
-        fst @@ typing_wrap ~loc st ~f:(fun env ->
+        fst @@ typing_wrap ~input ~loc st ~f:(fun env ->
             T._error env (Located loc) Invalid_push_n
           )
       else begin
@@ -1367,39 +1439,39 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         let st' = T.copy_state t.typer in
         let t' = { t with stack = st' :: t.stack; } in
         let st' = S.set_ty_state st t' in
-        push st' (i - 1)
+        push st' ~input ~loc (i - 1)
       end
 
-  let rec pop st ?(loc=Dolmen.Std.Loc.no_loc) = function
+  let rec pop st ~input ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
       if i < 0 then
-        fst @@ typing_wrap ~loc st ~f:(fun env ->
+        fst @@ typing_wrap ~loc st ~input ~f:(fun env ->
             T._error env (Located loc) Invalid_pop_n
           )
       else begin
         let t = S.ty_state st in
         match t.stack with
         | [] ->
-          fst @@ typing_wrap ~loc st ~f:(fun env ->
+          fst @@ typing_wrap ~input ~loc st ~f:(fun env ->
               T._error env (Located loc) Pop_with_empty_stack
             )
         | ty :: r ->
           let t' = { t with typer = ty; stack = r; } in
           let st' = S.set_ty_state st t' in
-          pop st' (i - 1)
+          pop st' ~input ~loc (i - 1)
       end
 
 
   (* Setting the logic *)
   (* ************************************************************************ *)
 
-  let set_logic_aux ~loc st new_logic =
+  let set_logic_aux ~input ~loc st new_logic =
     let ty_st = S.ty_state st in
     let st =
       match ty_st.logic with
       | Auto -> st
-      | Smtlib2 _ -> S.warn ~loc st logic_reset ty_st.logic_loc
+      | Smtlib2 _ -> warn ~input ~loc st logic_reset ty_st.logic_loc
     in
     S.set_ty_state st {
       ty_st with
@@ -1407,23 +1479,23 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       logic_loc = Dolmen.Std.Loc.full_loc loc;
     }
 
-  let set_logic (st : S.t) ?(loc=Dolmen.Std.Loc.no_loc) s =
-    let file = S.input_file_loc st in
-    let loc : Dolmen.Std.Loc.full = { file; loc; } in
-    match (S.input_lang st : Logic.language option) with
-    | Some ICNF -> st
-    | Some Dimacs -> st
-    | Some Smtlib2 _ ->
+  let set_logic (st : S.t) ~input ?(loc=Dolmen.Std.Loc.no_loc) s =
+    let file_loc = file_loc_of_input input in
+    let loc : Dolmen.Std.Loc.full = { file = file_loc; loc; } in
+    match lang_of_input input with
+    | `Logic ICNF -> st
+    | `Logic Dimacs -> st
+    | `Logic Smtlib2 _ ->
       let st, l =
         match Dolmen_type.Logic.Smtlib2.parse s with
         | Some l -> st, l
         | None ->
-          let st = S.warn ~loc st unknown_logic s in
+          let st = warn ~input ~loc st unknown_logic s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
-      set_logic_aux ~loc st (Smtlib2 l)
+      set_logic_aux ~input ~loc st (Smtlib2 l)
     | _ ->
-      S.warn ~loc st set_logic_not_supported ()
+      warn ~input ~loc st set_logic_not_supported ()
 
 
   (* Declarations *)
@@ -1465,8 +1537,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls (st : S.t) ?loc ?attrs d =
-    typing_wrap ?attrs ?loc st ~f:(fun env ->
+  let decls (st : S.t) ~input ?loc ?attrs d =
+    typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
         let decls = T.decls env ?attrs d in
         let () = check_decls st env d.contents decls in
         decls
@@ -1476,8 +1548,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs ?mode st ?loc ?attrs d =
-    typing_wrap ?attrs ?loc st ~f:(fun env ->
+  let defs ?mode st ~input ?loc ?attrs d =
+    typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
         let l = T.defs ?mode env ?attrs d in
         let l = List.map (function
             | `Type_def (id, c, vars, body) ->
@@ -1500,24 +1572,21 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let typecheck = S.typecheck
 
-  let terms st ?loc ?attrs = function
+  let terms st ~input ?loc ?attrs = function
     | [] -> st, []
     | l ->
-      typing_wrap ?attrs ?loc st ~f:(fun env ->
-          List.map (T.parse_term env) l
-        )
+      typing_wrap ?attrs ?loc ~input st
+        ~f:(fun env -> List.map (T.parse_term env) l)
 
-  let formula st ?loc ?attrs ~goal:_ (t : Dolmen.Std.Term.t) =
-    typing_wrap ?attrs ?loc st ~f:(fun env ->
-        T.parse env t
-      )
+  let formula st ~input ?loc ?attrs ~goal:_ (t : Dolmen.Std.Term.t) =
+    typing_wrap ?attrs ?loc ~input st
+      ~f:(fun env -> T.parse env t)
 
-  let formulas st ?loc ?attrs = function
+  let formulas st ~input ?loc ?attrs = function
     | [] -> st, []
     | l ->
-      typing_wrap ?attrs ?loc st ~f:(fun env ->
-          List.map (T.parse env) l
-        )
+      typing_wrap ?attrs ?loc ~input st
+        ~f:(fun env -> List.map (T.parse env) l)
 
 end
 
@@ -1729,7 +1798,9 @@ module Pipe
     let res =
       if not (Typer.typecheck st) then
         st, `Done ()
-      else match normalize st c with
+      else
+        let input = `Logic (State.logic_file st) in
+        match normalize st c with
 
         (* Pack and includes.
            These should have been filtered out before this point.
@@ -1742,10 +1813,10 @@ module Pipe
           let st = Typer.reset st ~loc:c.S.loc () in
           st, `Continue (simple (other_id c) c.S.loc `Reset)
         | { S.descr = S.Pop i; _ } ->
-          let st = Typer.pop st ~loc:c.S.loc i in
+          let st = Typer.pop st ~input ~loc:c.S.loc i in
           st, `Continue (simple (other_id c) c.S.loc (`Pop i))
         | { S.descr = S.Push i; _ } ->
-          let st = Typer.push st ~loc:c.S.loc i in
+          let st = Typer.push st ~input ~loc:c.S.loc i in
           st, `Continue (simple (other_id c) c.S.loc (`Push i))
         | { S.descr = S.Reset_assertions; _ } ->
           let st = Typer.reset_assertions st ~loc:c.S.loc () in
@@ -1758,26 +1829,26 @@ module Pipe
 
         (* Hypotheses and goal statements *)
         | { S.descr = S.Prove l; _ } ->
-          let st, l = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
           st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
 
         (* Hypotheses & Goals *)
         | { S.descr = S.Clause l; _ } ->
-          let st, res = Typer.formulas st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let st, res = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
           let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
           st, `Continue stmt
         | { S.descr = S.Antecedent t; _ } ->
-          let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
+          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
           let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
           st, `Continue stmt
         | { S.descr = S.Consequent t; _ } ->
-          let st, ret = Typer.formula st ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
+          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
           let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
           st, `Continue stmt
 
         (* Other set_logics should check whether corresponding plugins are activated ? *)
         | { S.descr = S.Set_logic s; _ } ->
-          let st = Typer.set_logic st ~loc:c.S.loc s in
+          let st = Typer.set_logic st ~input ~loc:c.S.loc s in
           st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
 
         (* Set/Get info *)
@@ -1794,11 +1865,11 @@ module Pipe
 
         (* Declarations and definitions *)
         | { S.descr = S.Defs d; _ } ->
-          let st, l = Typer.defs ~mode:`Create_id st ~loc:c.S.loc ~attrs:c.S.attrs d in
+          let st, l = Typer.defs ~mode:`Create_id st ~input ~loc:c.S.loc ~attrs:c.S.attrs d in
           let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
           st, `Continue (res)
         | { S.descr = S.Decls l; _ } ->
-          let st, l = Typer.decls st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let st, l = Typer.decls st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
           let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
           st, `Continue (res)
 
@@ -1812,7 +1883,7 @@ module Pipe
         | { S.descr = S.Get_model; _ } ->
           st, `Continue (simple (other_id c) c.S.loc `Get_model)
         | { S.descr = S.Get_value l; _ } ->
-          let st, l = Typer.terms st ~loc:c.S.loc ~attrs:c.S.attrs l in
+          let st, l = Typer.terms st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
           st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
         | { S.descr = S.Get_assignment; _ } ->
           st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
