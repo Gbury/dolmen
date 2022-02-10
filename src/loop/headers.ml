@@ -262,7 +262,7 @@ module Pipe(State : State_intf.Header_pipe
   (* Final check for headers *)
 
   let check_wanted st h =
-    let lang = State.input_lang st in
+    let lang = (State.logic_file st).lang in
     let wanted =
       match lang with
       | Some Logic.Smtlib2 _ -> smtlib2_wanted
@@ -274,7 +274,7 @@ module Pipe(State : State_intf.Header_pipe
       State.warn st empty_header_field (lang, missing)
 
   let check_required st h =
-    let lang = State.input_lang st in
+    let lang = (State.logic_file st).lang in
     let required =
       match lang with
       | Some Logic.Smtlib2 _ -> smtlib2_required
@@ -297,12 +297,12 @@ module Pipe(State : State_intf.Header_pipe
   (* Incremental checks and construction of the header set *)
 
   let error st loc err param =
-    let file = State.input_file_loc st in
+    let file = (State.logic_file st).loc in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
     State.error ~loc st err param
 
   let invalid_header_value st loc field msg =
-    let lang = State.input_lang st in
+    let lang = (State.logic_file st).lang in
     error st loc invalid_header_value_error (field, lang, msg)
 
   let check_header st loc field value =
@@ -328,7 +328,7 @@ module Pipe(State : State_intf.Header_pipe
   let inspect st c =
     if not (State.check_headers st) then (st, c)
     else begin
-      let lang = State.input_lang st in
+      let lang = (State.logic_file st).lang in
       let h = State.header_state st in
       let st =
         match (c : Dolmen.Std.Statement.t) with

@@ -40,7 +40,7 @@ module Smtlib2 : sig
       (** Raised when a restriction on the sort of arrays is breached. *)
     (** Errors for array type-checking. *)
 
-    val parse : arrays:arrays -> Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
+    val parse : arrays:arrays -> Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
 
 end

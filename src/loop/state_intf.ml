@@ -18,6 +18,14 @@ type mode = [
   | `Incremental
 ]
 
+type 'lang file = {
+  lang    : 'lang option;
+  mode    : mode option;
+  loc     : Dolmen.Std.Loc.file;
+  dir     : string;
+  source  : source;
+}
+
 (** {1 Signatures} *)
 
 module type Common = sig
@@ -29,11 +37,13 @@ module type Common = sig
   (** Convenient exception. *)
 
   val warn :
+    ?file:_ file ->
     ?loc:Dolmen.Std.Loc.full ->
     t -> 'a Report.Warning.t -> 'a -> t
   (** Emit a warning *)
 
   val error :
+    ?file:_ file ->
     ?loc:Dolmen.Std.Loc.full ->
     t -> 'a Report.Error.t -> 'a -> t
   (** Emit an error. *)
@@ -71,31 +81,17 @@ module type Parser_pipe = sig
   val is_interactive : t -> bool
   (** Whether we are running in interactive mode. *)
 
-  val set_mode : t -> mode -> t
-  (* Set the input mode. *)
+  val logic_file : t -> Logic.language file
+  (** Get the logic file info. *)
 
-  val input_mode : t -> mode option
-  (** Return the current mode (if any). *)
+  val set_logic_file : t -> Logic.language file -> t
+  (** Set the logic file info. *)
 
-  val input_lang : t -> Logic.language option
-  (** Return the input language (if any). *)
+  val response_file : t -> Response.language file
+  (** Get the logic file info. *)
 
-  val set_input_lang : t -> Logic.language -> t
-  (** Set the input language. *)
-
-  val input_dir : t -> string
-  (** Return the directory of the input source (e.g. the directory of the
-      input file, or the current directory if in interactive mode). *)
-
-  val input_source : t -> source
-  (** Return the input source. *)
-
-  val input_file_loc : t -> Dolmen.Std.Loc.file
-  (** CUrrent input file location meta-data. *)
-
-  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
-  (** Set the input file location meta-data. *)
-
+  val set_response_file : t -> Response.language file -> t
+  (** Set the logic file info. *)
 
 end
 
@@ -109,11 +105,8 @@ module type Typer = sig
   type ty_state
   (** The type of state used by the typer. *)
 
-  val input_file_loc : t -> Dolmen.Std.Loc.file
-  (** CUrrent input file location meta-data. *)
-
-  val input_lang : t -> Logic.language option
-  (** The current input language. *)
+  val logic_file : t -> Logic.language file
+  (** Get the logic file info. *)
 
   val typecheck : t -> bool
   (** Whether to type-check expressions. *)
@@ -133,8 +126,8 @@ module type Typer_pipe = sig
   include Common
   (** common interface *)
 
-  val input_lang : t -> Logic.language option
-  (** Return the input language (if any). *)
+  val logic_file : t -> Logic.language file
+  (** Get the logic file info. *)
 
 end
 
@@ -149,11 +142,8 @@ module type Header_pipe = sig
   type header_state
   (** The type of state used for the header check*)
 
-  val input_file_loc : t -> Dolmen.Std.Loc.file
-  (** CUrrent input file location meta-data. *)
-
-  val input_lang : t -> Logic.language option
-  (** Return the input language (if any). *)
+  val logic_file : t -> Logic.language file
+  (** Get the logic file info. *)
 
   val header_state : t -> header_state
   (** Get the header-check state. *)
@@ -183,32 +173,10 @@ module type Check_pipe = sig
   (** The type of state used for the header check*)
 
 
-  (* Response file specification *)
+  (* Response file *)
 
-  val response_mode : t -> mode option
-  (** Return the current mode (if any). *)
-
-  val response_lang : t -> Response.language option
-  (** Return the response language (if any). *)
-
-  val set_response_lang : t -> Response.language -> t
-  (** Set the response file language. *)
-
-  val response_dir : t -> string
-  (** Return the directory of the input source (e.g. the directory of the
-      input file, or the current directory if in interactive mode). *)
-
-  val response_source : t -> source
-  (** Return the input source. *)
-
-  val response_file_loc : t -> Dolmen.Std.Loc.file
-  (** Current response file location meta-data. *)
-
-  val set_response_file_loc : t -> Dolmen.Std.Loc.file -> t
-  (** Current response file location meta-data. *)
-
-  val set_input_file_loc : t -> Dolmen.Std.Loc.file -> t
-  (** Set the input file location meta-data. *)
+  val response_file : t -> Response.language file
+  (** Get the logic file info. *)
 
 
   (* Checking options *)

@@ -68,7 +68,7 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
-    val parse : Dolmen.Smtlib2.Script.version -> Type.builtin_symbols
+    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
 end
 

@@ -7,6 +7,7 @@ open Cmdliner
 (* ************************************************************************* *)
 
 let gc_section = "GC OPTIONS"
+let model_section = "MODEL CHECKING"
 let error_section = "ERROR HANDLING"
 let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
@@ -304,12 +305,16 @@ let split_input = function
   | `File f ->
     Filename.dirname f, `File (Filename.basename f)
 
+let mk_file lang mode input : _ Dolmen_loop.State.file =
+  let dir, source = split_input input in
+  { lang; mode; dir; source ;
+    loc = Dolmen.Std.Loc.mk_file ""; }
+
 let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
-    input_lang input_mode input
-    response_lang response_mode response
+    logic_file response_file
     header_check header_licenses
     header_lang_version
     type_check check_model
@@ -323,8 +328,6 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
-  let input_dir, input_source = split_input input in
-  let response_dir, response_source = split_input response in
   let st : Loop.State.t = {
     debug; loc_style; reports;
 
@@ -332,13 +335,7 @@ let mk_run_state
 
     time_limit; size_limit;
 
-    input_dir; input_lang;
-    input_mode; input_source;
-    input_file_loc = Dolmen.Std.Loc.mk_file "";
-
-    response_dir; response_lang;
-    response_mode; response_source;
-    response_file_loc = Dolmen.Std.Loc.mk_file "";
+    logic_file; response_file;
 
     header_check; header_licenses; header_lang_version;
     header_state = Dolmen_loop.Headers.empty;
@@ -428,6 +425,58 @@ let reports =
   in
   Term.(ret (const reports_opts $ strict $ warns))
 
+(* File inputs *)
+(* ************************************************************************* *)
+
+let logic_file =
+  let docs = common_section in
+  let in_lang =
+    let doc = Format.asprintf
+        "Set the input language to $(docv); must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Logic.enum) in
+    Arg.(value & opt (some input_format_conv) None &
+         info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
+  in
+  let in_mode =
+    let doc = Format.asprintf
+        "Set the input mode, must be %s.
+         The full mode parses the entire file before iterating over its
+         contents whereas the incremental mode processes each declaration
+         before parsing the next one. Default is incremental mode."
+        (Arg.doc_alts_enum ~quoted:true mode_list) in
+    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc ~docs)
+  in
+  let input =
+    let doc = "Input problem file. If no file is specified,
+               dolmen will enter interactive mode and read on stdin." in
+    Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
+  in
+  Term.(const mk_file $ in_lang $ in_mode $ input)
+
+let response_file =
+  let docs = model_section in
+  let response_lang =
+    let doc = Format.asprintf
+        "Set the language for the response file; must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Response.enum) in
+    Arg.(value & opt (some response_format_conv) None &
+         info ["response-lang"] ~docv:"FORMAT" ~doc ~docs)
+  in
+  let response_mode =
+    let doc = Format.asprintf
+        "Set the response reading mode, must be %s.
+         The full mode parses the entire file before iterating over its
+         contents whereas the incremental mode processes each declaration
+         before parsing the next one. Default is incremental mode."
+        (Arg.doc_alts_enum ~quoted:true mode_list) in
+    Arg.(value & opt (some mode_conv) None & info ["response-mode"] ~doc ~docs)
+  in
+  let response =
+    let doc = "Response file." in
+    Arg.(value & opt input_source_conv `Stdin & info ["r"; "response"] ~doc ~docs)
+  in
+  Term.(const mk_file $ response_lang $ response_mode $ response)
+
 
 (* State term *)
 (* ************************************************************************* *)
@@ -464,47 +513,6 @@ let state =
               "Without suffix, default to a size in octet." in
     Arg.(value & opt c_size 1_000_000_000. &
          info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
-  in
-  let in_lang =
-    let doc = Format.asprintf
-        "Set the input language to $(docv); must be %s."
-        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Logic.enum) in
-    Arg.(value & opt (some input_format_conv) None &
-         info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
-  in
-  let in_mode =
-    let doc = Format.asprintf
-        "Set the input mode, must be %s.
-         The full mode parses the entire file before iterating over its
-         contents whereas the incremental mode processes each declaration
-         before parsing the next one. Default is incremental mode."
-        (Arg.doc_alts_enum ~quoted:true mode_list) in
-    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc ~docs)
-  in
-  let input =
-    let doc = "Input problem file. If no file is specified,
-               dolmen will enter interactive mode and read on stdin." in
-    Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
-  in
-  let response_lang =
-    let doc = Format.asprintf
-        "Set the language for the response file; must be %s."
-        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Response.enum) in
-    Arg.(value & opt (some response_format_conv) None &
-         info ["response-lang"] ~docv:"FORMAT" ~doc ~docs)
-  in
-  let response_mode =
-    let doc = Format.asprintf
-        "Set the response reading mode, must be %s.
-         The full mode parses the entire file before iterating over its
-         contents whereas the incremental mode processes each declaration
-         before parsing the next one. Default is incremental mode."
-        (Arg.doc_alts_enum ~quoted:true mode_list) in
-    Arg.(value & opt (some mode_conv) None & info ["response-mode"] ~doc ~docs)
-  in
-  let response =
-    let doc = "Response file." in
-    Arg.(value & opt input_source_conv `Stdin & info ["r"; "response"] ~doc ~docs)
   in
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
@@ -560,8 +568,7 @@ let state =
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
-        in_lang $ in_mode $ input $
-        response_lang $ response_mode $ response $
+        logic_file $ response_file $
         header_check $ header_licenses $
         header_lang_version $
         typing $ check_model $

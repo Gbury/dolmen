@@ -48,6 +48,8 @@ let response_lang_changed =
 
 module Pipe
     (State : State_intf.Check_pipe with type 'st check_state := 'st t)
+    (Parse : Parser.Pipe_res
+     with type state := State.t)
     (Typing : Typer.Pipe_arg
      with type state := State.t
       and type ty := Dolmen.Std.Expr.ty
@@ -68,125 +70,6 @@ module Pipe
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
-
-  (* Parsing response files *)
-  (* ************************************************************************ *)
-
-  (* Code copied from loop/parser.ml.
-     TODO: factorise the code. *)
-
-  let gen_of_llist l =
-    let l = ref l in
-    (fun () -> match Lazy.force !l with
-       | [] -> None
-       | x :: r ->
-         l := (lazy r); Some x
-    )
-
-  let set_lang ?loc st l =
-    match State.response_lang st with
-    | None -> State.set_response_lang st l
-    | Some l' ->
-      if l = l'
-      then State.set_response_lang st l
-      else State.error ?loc st response_lang_changed (l', l)
-
-  let gen_finally (gen : 'a Gen.t) cl : 'a Gen.t =
-    (* Register a finaliser for the original generator in case an exception is
-       raised at some point in one of the pipes, which would prevent gen from
-       reaching its end and thus prevent closing of the underlying file. *)
-    let () = Gc.finalise_last cl gen in
-    (* Return a new generator which wraps gen and calls the closing function
-       once gen is finished. *)
-    let aux () =
-      match gen () with
-      | Some _ as res -> res
-      | None -> cl (); None
-      | exception exn ->
-        let bt = Printexc.get_raw_backtrace () in
-        cl ();
-        Printexc.raise_with_backtrace exn bt
-    in
-    aux
-
-  let wrap_parser g = fun st ->
-    match g () with
-    | ret -> st, ret
-    | exception Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
-      let file = State.response_file_loc st in
-      let st =
-        State.error st ~loc:{ file; loc; } Report.Error.uncaught_exn (exn, bt)
-      in
-      st, None
-    | exception Dolmen.Std.Loc.Lexing_error (loc, lex) ->
-      let file = State.response_file_loc st in
-      let st = State.error st ~loc:{ file; loc; } Parser.lexing_error lex in
-      st, None
-    | exception Dolmen.Std.Loc.Syntax_error (loc, perr) ->
-      let file = State.response_file_loc st in
-      let st = State.error st ~loc:{ file; loc; } Parser.parsing_error perr in
-      st, None
-
-  let parse prelude st =
-    (* Parse the input *)
-    let st', g =
-      try
-        match State.response_source st with
-        | `Stdin ->
-          let lang, file_loc, gen, _ = Response.parse_input
-              ?language:(State.response_lang st)
-              (`Stdin (Response.Smtlib2 `Latest))
-          in
-          let st = State.set_response_file_loc st file_loc in
-          let st = set_lang st lang in
-          st, gen
-        | `Raw (filename, contents) ->
-          let lang =
-            match State.response_lang st with
-            | Some l -> l
-            | None ->
-              let res, _, _ = Response.of_filename filename in
-              res
-          in
-          let lang, file_loc, gen, cl = Response.parse_input
-              ~language:lang (`Raw (filename, lang, contents)) in
-          let st = State.set_response_file_loc st file_loc in
-          let st = set_lang st lang in
-          st, gen_finally gen cl
-        | `File file ->
-          let loc = {
-            Dolmen.Std.Loc.file = State.response_file_loc st;
-            loc = Dolmen.Std.Loc.no_loc;
-          } in
-          let language = State.response_lang st in
-          let dir = State.response_dir st in
-          begin match Response.find ?language ~dir file with
-          | None ->
-            let st = State.error ~loc st Parser.file_not_found (dir, file) in
-            st, Gen.empty
-            | Some file ->
-              begin match State.response_mode st with
-                | None
-                | Some `Incremental ->
-                  let lang, file_loc, gen, cl = Response.parse_input ?language (`File file) in
-                  let st = State.set_response_file_loc st file_loc in
-                  let st = set_lang ~loc st lang in
-                  st, gen_finally gen cl
-                | Some `Full ->
-                  let lang, file_loc, l = Response.parse_file_lazy ?language file in
-                  let st = State.set_response_file_loc st file_loc in
-                  let st = set_lang ~loc st lang in
-                  st, gen_of_llist l
-              end
-          end
-      with
-      | Response.Extension_not_found ext ->
-        State.error st Parser.extension_not_found ext, Gen.empty
-    in
-    (* Wrap the resulting parser *)
-    st', wrap_parser (Gen.append (Gen.of_list prelude) g)
-
-
   (* Typing models *)
   (* ************************************************************************ *)
 
@@ -197,10 +80,13 @@ module Pipe
     let env = Dolmen_model.Env.empty ~builtins in
     env
 
-  let type_model st ?loc ?attrs l =
+  let type_model st ~file ?loc ?attrs l =
     let env = empty_model () in
+    let input = `Response file in
     List.fold_left (fun (st, env) defs ->
-        let st, defs = Typing.defs ~mode:`Use_declared_id st ?loc ?attrs defs in
+        let st, defs =
+          Typing.defs ~mode:`Use_declared_id st ~input ?loc ?attrs defs
+        in
         let env =
           List.fold_left (fun env def ->
               match def with
@@ -226,10 +112,10 @@ module Pipe
     match t.answers with
     | Response_loaded gen -> gen st
     | Init ->
-      let st, gen = parse [] st in
+      let file = State.response_file st in
+      let st, gen = Parse.parse_response [] st file in
       let answers st =
-        let file_loc = State.response_file_loc st in
-        let st = State.set_input_file_loc st file_loc in
+        let file = State.response_file st in
         match gen st with
         | st, None -> st, None
         | st, Some answer ->
@@ -237,7 +123,7 @@ module Pipe
             | Unsat -> st, Some Unsat
             | Sat None -> st, Some (Sat (empty_model ()))
             | Sat Some model ->
-              let st, env = type_model st model in
+              let st, env = type_model ~file st model in
               st, Some (Sat env)
           end
       in

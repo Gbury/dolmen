@@ -20,10 +20,11 @@ let full_loc t = function
   | Some full ->
     Dolmen.Std.Loc.full_loc full
   | None ->
-    let file = input_file_loc t in
+    let file = (logic_file t).loc in
     Dolmen.Std.Loc.loc file Dolmen.Std.Loc.no_loc
 
-let warn ?loc t warn payload =
+(* TODO: currently, errors from included file will be incorrectly reported *)
+let warn ?file:_ ?loc t warn payload =
   let loc = full_loc t loc in
   (* Flush the str formatter to clear any unflushed leftover *)
   let _ = Format.flush_str_formatter () in
@@ -44,7 +45,7 @@ let warn ?loc t warn payload =
       add_diag d t) Format.str_formatter "%a"
     Dolmen_loop.Report.Warning.print (warn, payload)
 
-let error ?loc t err payload =
+let error ?file:_ ?loc t err payload =
   let loc = full_loc t loc in
   (* Flush the str formatter to clear any unflushed leftover *)
   let _ = Format.flush_str_formatter () in
