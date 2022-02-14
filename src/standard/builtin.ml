@@ -78,25 +78,41 @@ type _ t +=
 type _ t +=
   | Bitv of int
   | Bitvec of string
-  | Bitv_concat of int * int
-  | Bitv_extract of int * int * int
-  | Bitv_repeat of int * int
-  | Bitv_zero_extend of int * int
-  | Bitv_sign_extend of int * int
-  | Bitv_rotate_right of int * int
-  | Bitv_rotate_left of int * int
-  | Bitv_not of int | Bitv_and of int | Bitv_or of int
-  | Bitv_nand of int | Bitv_nor of int
-  | Bitv_xor of int | Bitv_xnor of int
+  | Bitv_concat of { n : int; m : int }
+  | Bitv_extract of { n : int; i : int; j : int }
+  | Bitv_repeat of { n : int; k : int }
+  | Bitv_zero_extend of { n : int; k : int }
+  | Bitv_sign_extend of { n : int; k : int }
+  | Bitv_rotate_right of { n : int; i : int }
+  | Bitv_rotate_left of { n : int; i : int }
+  | Bitv_not of int
+  | Bitv_and of int
+  | Bitv_or of int
+  | Bitv_nand of int
+  | Bitv_nor of int
+  | Bitv_xor of int
+  | Bitv_xnor of int
   | Bitv_comp of int
-  | Bitv_neg of int | Bitv_add of int | Bitv_sub of int | Bitv_mul of int
-  | Bitv_udiv of int | Bitv_urem of int
-  | Bitv_sdiv of int | Bitv_srem of int | Bitv_smod of int
-  | Bitv_shl of int | Bitv_lshr of int | Bitv_ashr of int
-  | Bitv_ult of int | Bitv_ule of int
-  | Bitv_ugt of int | Bitv_uge of int
-  | Bitv_slt of int | Bitv_sle of int
-  | Bitv_sgt of int | Bitv_sge of int
+  | Bitv_neg of int
+  | Bitv_add of int
+  | Bitv_sub of int
+  | Bitv_mul of int
+  | Bitv_udiv of int
+  | Bitv_urem of int
+  | Bitv_sdiv of int
+  | Bitv_srem of int
+  | Bitv_smod of int
+  | Bitv_shl of int
+  | Bitv_lshr of int
+  | Bitv_ashr of int
+  | Bitv_ult of int
+  | Bitv_ule of int
+  | Bitv_ugt of int
+  | Bitv_uge of int
+  | Bitv_slt of int
+  | Bitv_sle of int
+  | Bitv_sgt of int
+  | Bitv_sge of int
 
 (* Floats *)
 type _ t +=

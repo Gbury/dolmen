@@ -322,27 +322,27 @@ type _ t +=
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
       ['0'], and ['1'] (lsb last) *)
-  | Bitv_concat of int * int
+  | Bitv_concat of { n : int; m : int }
   (** [Bitv_concat(n,m): Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
       concatenation operator on bitvectors. *)
-  | Bitv_extract of int * int * int
+  | Bitv_extract of { n : int; i : int; j : int }
   (** [Bitv_extract(n, i, j): Bitv(n) -> Bitv(i - j + 1)]:
       bitvector extraction, from index [j] up to [i] (both included). *)
-  | Bitv_repeat of int * int
-  (** [Bitv_repeat(n): Bitv(n) -> Bitv(n*k)]:
+  | Bitv_repeat of { n : int; k : int }
+  (** [Bitv_repeat(n,k): Bitv(n) -> Bitv(n*k)]:
       bitvector repeatition. *)
-  | Bitv_zero_extend of int * int
+  | Bitv_zero_extend of { n : int; k : int }
   (** [Bitv_zero_extend(n,k): Bitv(n) -> Bitv(n + k)]:
       zero extension for bitvectors (produces a representation of the
       same unsigned integer). *)
-  | Bitv_sign_extend of int * int
+  | Bitv_sign_extend of { n : int; k : int }
   (** [Bitv_sign_extend(n,k): Bitv(n) -> Bitv(n + k)]:
       sign extension for bitvectors ((produces a representation of the
       same signed integer). *)
-  | Bitv_rotate_right of int * int
+  | Bitv_rotate_right of { n : int; i : int }
   (** [Bitv_rotate_right(n,i): Bitv(n) -> Bitv(n)]:
       logical rotate right for bitvectors by [i]. *)
-  | Bitv_rotate_left of int * int
+  | Bitv_rotate_left of { n : int; i : int }
   (** [Bitv_rotate_left(n,i): Bitv(n) -> Bitv(n)]:
       logical rotate left for bitvectors by [i]. *)
   | Bitv_not of int
@@ -541,7 +541,7 @@ type _ t +=
   | To_sbv of int * int * int
   (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv(m)]: Convert to an signed integer *)
   | To_real of int * int
-  (** [To_real(s,e,m): RoundingMode -> Fp(s,e) -> Real]: Convert to real *)
+  (** [To_real(s,e): Fp(s,e) -> Real]: Convert to real *)
 
 
 (** {2 String and Regexp Builtins} *)

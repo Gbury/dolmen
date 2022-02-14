@@ -1856,46 +1856,46 @@ module Term = struct
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
       let concat =
-        with_cache ~cache:(Hashtbl.create 13) (fun (i, j) ->
-            mk' ~builtin:(Builtin.Bitv_concat(i,j)) "bitv_concat"
-              [] [Ty.bitv i; Ty.bitv j] (Ty.bitv (i + j))
+        with_cache ~cache:(Hashtbl.create 13) (fun (n, m) ->
+            mk' ~builtin:(Builtin.Bitv_concat{n;m}) "bitv_concat"
+              [] [Ty.bitv n; Ty.bitv m] (Ty.bitv (n + m))
           )
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            mk' ~builtin:(Builtin.Bitv_extract (n, i, j))
+            mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
               (Format.asprintf "bitv_extract_%d_%d" i j) []
               [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
 
       let repeat =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_repeat(n,k)) (Format.asprintf "bitv_repeat_%d" k)
+            mk' ~builtin:(Builtin.Bitv_repeat{n;k}) (Format.asprintf "bitv_repeat_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n * k))
           )
 
       let zero_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_zero_extend(n,k)) (Format.asprintf "zero_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv_zero_extend{n;k}) (Format.asprintf "zero_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let sign_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_sign_extend(n,k)) (Format.asprintf "sign_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv_sign_extend{n;k}) (Format.asprintf "sign_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let rotate_right =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_right (n,k))
-              (Format.asprintf "rotate_right_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+            mk' ~builtin:(Builtin.Bitv_rotate_right{n;i})
+              (Format.asprintf "rotate_right_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let rotate_left =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_left(n,k))
-              (Format.asprintf "rotate_left_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+            mk' ~builtin:(Builtin.Bitv_rotate_left{n;i})
+              (Format.asprintf "rotate_left_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let not =
