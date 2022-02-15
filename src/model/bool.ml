@@ -19,27 +19,19 @@ let false_v = Value.mk ~ops false
 let mk b = if b then true_v else false_v
 
 let fun1 f ~cst =
-  let func = function
-    | [b] -> mk (f (Value.extract_exn ~ops b))
-    | _ -> assert false
-  in
-  Fun.builtin ~arity:1 ~cst func
+  Fun.fun_1 ~cst (fun x -> mk @@ f (Value.extract_exn ~ops x))
 
 let fun2 f ~cst =
-  let func = function
-    | [a; b] ->
-      mk (f (Value.extract_exn ~ops a) (Value.extract_exn ~ops b))
-    | _ -> assert false
-  in
-  Fun.builtin ~arity:2 ~cst func
+  Fun.fun_2 ~cst (fun x y ->
+      mk @@ f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y)
+    )
 
 let fun_n f ~cst =
-  let _, arity = E.Term.Const.arity cst in
   let func l =
     let l' = List.map (Value.extract_exn ~ops) l in
     mk (f l')
   in
-  Fun.builtin ~arity ~cst func
+  Fun.fun_n ~cst func
 
 let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with

@@ -885,7 +885,19 @@ module type S = Typer_intf.S
 
 module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
-  (* Type aliases & helpers *)
+  (* Type aliases *)
+  (* ************************************************************************ *)
+
+  type state = S.t
+  type nonrec ty_state = ty_state
+  type env = T.env
+  type 'a fragment = 'a T.fragment
+  type error = T.error
+  type warning = T.warning
+  type builtin_symbols = T.builtin_symbols
+
+
+  (* Input elpers *)
   (* ************************************************************************ *)
 
   type 'a file = 'a State_intf.file
@@ -1129,6 +1141,21 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       error ~input ~loc st unknown_error
         (Obj.Extension_constructor.(name (of_val err)))
 
+  (* Some misc functions *)
+  (* ************************************************************************ *)
+
+  let pop_inferred_model_constants st =
+    let key = Smtlib2_Core.inferred_model_constants in
+    let state = (S.ty_state st).typer in
+    let res =
+      match T.get_global_custom_state state key with
+      | None -> []
+      | Some l -> l
+    in
+    let () = T.set_global_custom_state state key [] in
+    res
+
+
   (* Generate typing env from state *)
   (* ************************************************************************ *)
 
@@ -1182,11 +1209,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | `Logic Dimacs | `Logic ICNF ->
       let poly = T.Flexible in
       let var_infer = T.{
+          var_hook = ignore;
           infer_unbound_vars = No_inference;
           infer_type_vars_in_binding_pos = false;
           infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
+          sym_hook = ignore;
           infer_type_csts = false;
           infer_term_csts = Wildcard (Any_base {
               allowed = [Dolmen.Std.Expr.Ty.prop];
@@ -1204,11 +1233,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       let poly = T.Flexible in
       let free_wildcards = T.Implicitly_universally_quantified in
       let var_infer = T.{
+          var_hook = ignore;
           infer_unbound_vars = Unification_type_variable;
           infer_type_vars_in_binding_pos = true;
           infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
+          sym_hook = ignore;
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
@@ -1234,11 +1265,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | `Logic Zf ->
       let poly = T.Flexible in
       let var_infer = T.{
+          var_hook = ignore;
           infer_unbound_vars = No_inference;
           infer_type_vars_in_binding_pos = true;
           infer_term_vars_in_binding_pos = Wildcard Any_in_scope;
         } in
       let sym_infer = T.{
+          sym_hook = ignore;
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
@@ -1264,11 +1297,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       begin match tptp_kind_of_attrs attrs with
         | Some "thf" ->
           let var_infer = T.{
+              var_hook = ignore;
               infer_unbound_vars = No_inference;
               infer_type_vars_in_binding_pos = true;
               infer_term_vars_in_binding_pos = No_inference;
             } in
           let sym_infer = T.{
+              sym_hook = ignore;
               infer_type_csts = false;
               infer_term_csts = No_inference;
             } in
@@ -1285,6 +1320,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ~warnings ~file:file builtins
         | Some ("tff" | "tpi" | "fof" | "cnf") ->
           let var_infer = T.{
+              var_hook = ignore;
               infer_unbound_vars = No_inference;
               infer_type_vars_in_binding_pos = true;
               infer_term_vars_in_binding_pos =
@@ -1294,6 +1330,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
                   });
             } in
           let sym_infer = T.{
+              sym_hook = ignore;
               infer_type_csts = true;
               infer_term_csts = Wildcard (Arrow {
                   arg_shape = Any_base {
@@ -1339,11 +1376,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | `Logic Smtlib2 v ->
       let poly = T.Implicit in
       let var_infer = T.{
+          var_hook = ignore;
           infer_unbound_vars = No_inference;
           infer_type_vars_in_binding_pos = true;
           infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
+          sym_hook = ignore;
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
@@ -1371,11 +1410,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | `Response Smtlib2 v ->
       let poly = T.Implicit in
       let var_infer = T.{
+          var_hook = ignore;
           infer_unbound_vars = No_inference;
           infer_type_vars_in_binding_pos = true;
           infer_term_vars_in_binding_pos = No_inference;
         } in
       let sym_infer = T.{
+          sym_hook = ignore;
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in

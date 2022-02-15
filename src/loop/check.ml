@@ -1,7 +1,5 @@
 
-(* Model(/Proof) check
-
-*)
+(* Model(/Proof) check *)
 
 
 (* State *)
@@ -50,15 +48,10 @@ module Pipe
     (State : State_intf.Check_pipe with type 'st check_state := 'st t)
     (Parse : Parser.Pipe_res
      with type state := State.t)
-    (Typing : Typer.Pipe_arg
+    (Typing : Typer.S
      with type state := State.t
-      and type ty := Dolmen.Std.Expr.ty
-      and type ty_var := Dolmen.Std.Expr.ty_var
-      and type ty_cst := Dolmen.Std.Expr.ty_cst
-      and type term := Dolmen.Std.Expr.term
-      and type term_var := Dolmen.Std.Expr.term_var
-      and type term_cst := Dolmen.Std.Expr.term_cst
-      and type formula := Dolmen.Std.Expr.formula)
+      and type ty_state := Typer.ty_state
+      and type env := Typer.T.env)
     (Types : Typer.Pipe_res
      with type state := State.t
       and type ty := Dolmen.Std.Expr.ty
@@ -76,6 +69,7 @@ module Pipe
   let empty_model () =
     let builtins = Dolmen_model.Eval.builtins [
         Dolmen_model.Bool.builtins;
+        Dolmen_model.Core.builtins;
       ] in
     let env = Dolmen_model.Env.empty ~builtins in
     env
@@ -87,14 +81,22 @@ module Pipe
         let st, defs =
           Typing.defs ~mode:`Use_declared_id st ~input ?loc ?attrs defs
         in
+        (* Record inferred abstract values *)
+        let env =
+          List.fold_left (fun env c ->
+              let value = Dolmen_model.Abstract.from_cst c in
+              Dolmen_model.Env.Cst.add c value env
+            ) env (Typing.pop_inferred_model_constants st)
+        in
+        (* Record the explicit definitions *)
         let env =
           List.fold_left (fun env def ->
               match def with
               | `Type_def _ -> assert false (* TODO: proper error *)
               | `Term_def (_id, cst, ty_params, term_params, body) ->
                 let value =
-                  Dolmen_model.Fun.mk
-                    ~eval:(Dolmen_model.Eval.eval env)
+                  Dolmen_model.Fun.mk ~env
+                    ~eval:Dolmen_model.Eval.eval
                     ty_params term_params body
                 in
                 Dolmen_model.Env.Cst.add cst value env

@@ -70,9 +70,9 @@ module Make
   let assoc = [
 
     (* Smtlib2 *)
-    Smtlib2 `Latest, ".smt2",
+    Smtlib2 `Latest, ".rsmt2",
     (module Dolmen_smtlib2.Check.Latest.Make(L)(I)(T)(S) : S);
-    Smtlib2 `V2_6, ".smt2",
+    Smtlib2 `V2_6, ".rsmt2",
     (module Dolmen_smtlib2.Check.V2_6.Make(L)(I)(T)(S) : S);
 
   ]

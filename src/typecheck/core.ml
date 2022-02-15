@@ -327,6 +327,17 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) = struct
 
+    let inferred_model_constants = Dolmen.Std.Tag.create ()
+
+    let add_model_constant state c =
+      let l =
+        match Type.get_global_custom_state state
+                inferred_model_constants with
+        | None -> []
+        | Some l -> l
+      in
+      Type.set_global_custom_state state inferred_model_constants (c :: l)
+
     let parse_name env = function
       | ({ Ast.term = Ast.Symbol s; _ } as ast)
       | ({ Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } as ast) ->
@@ -354,7 +365,7 @@ module Smtlib2 = struct
       let t = Ast.apply ~loc cstr args in
       Type.parse_term env t
 
-    let parse _version env s =
+    let parse (version : Dolmen.Smtlib2.version) env s =
       match s with
       (* Bool sort and constants *)
       | Type.Id { name = Simple "Bool"; ns = Sort } ->
@@ -437,6 +448,32 @@ module Smtlib2 = struct
                   end)
               | _ -> `Not_indexed
             )
+
+      (* Abstract *)
+      | Type.Id { Id.ns = Term; name = Simple name; } ->
+        if String.length name <= 1 then `Not_found
+        else if name.[0] = '@' then begin
+          match version with
+          | `Check _ ->
+            (* the var infer does not matter *)
+            let var_infer = Type.var_infer env in
+            let sym_infer = Type.sym_infer env in
+            (* Avoid capturing `env` in the hook. *)
+            let state = Type.state env in
+            let sym_hook cst =
+              sym_infer.sym_hook cst;
+              match cst with
+              | `Ty_cst _ -> ()
+              | `Term_cst c -> add_model_constant state c
+            in
+            let sym_infer : Type.sym_infer = {
+              sym_hook;
+              infer_type_csts = false;
+              infer_term_csts = Wildcard Any_in_scope;
+            } in
+            `Infer (var_infer, sym_infer)
+          | `Script _ -> `Not_found
+        end else `Not_found
 
       | _ -> `Not_found
 
