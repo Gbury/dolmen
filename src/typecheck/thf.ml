@@ -92,17 +92,6 @@ module Make
     | No_inference
     | Wildcard of wildcard_shape
 
-  type var_infer = {
-    infer_unbound_vars              : infer_unbound_var_scheme;
-    infer_type_vars_in_binding_pos  : bool;
-    infer_term_vars_in_binding_pos  : infer_term_scheme;
-  }
-
-  type sym_infer = {
-    infer_type_csts   : bool;
-    infer_term_csts   : infer_term_scheme;
-  }
-
   type free_wildcards =
     | Forbidden (* the reasonable default *)
     | Implicitly_universally_quantified
@@ -124,11 +113,6 @@ module Make
     | Term  of T.t
     | Tags  of tag list
 
-
-  (* Things that can be inferred *)
-  type inferred =
-    | Ty_fun of Ty.Const.t
-    | Term_fun of T.Const.t
 
   (* Wrapper around potential function symbols in Dolmen *)
   type symbol = Intf.symbol =
@@ -155,20 +139,51 @@ module Make
     | ty_var | term_var | 'env let_var
   ]
 
-  (* Constants that can be bound to a dolmen identifier. *)
-  type cst = [
-    | `Cstr of T.Cstr.t
-    | `Field of T.Field.t
+  (* various contants *)
+  type ty_cst = [
     | `Ty_cst of Ty.Const.t
+  ]
+
+  type term_cst = [
     | `Term_cst of T.Const.t
   ]
 
+  type term_cstr = [
+    | `Cstr of T.Cstr.t
+  ]
+
+  type term_field = [
+    | `Field of T.Field.t
+  ]
+
+  (* Constants that can be bound to a dolmen identifier. *)
+  type cst = [ ty_cst | term_cst | term_cstr | term_field ]
+
+  (* Inference of variables and symbols *)
+  type var_infer = {
+    infer_unbound_vars              : infer_unbound_var_scheme;
+    infer_type_vars_in_binding_pos  : bool;
+    infer_term_vars_in_binding_pos  : infer_term_scheme;
+    var_hook : [ ty_var | term_var ] -> unit;
+  }
+
+  type sym_infer = {
+    infer_type_csts   : bool;
+    infer_term_csts   : infer_term_scheme;
+    sym_hook : [ ty_cst | term_cst ] -> unit;
+  }
+
   (* Result of parsing a symbol by the theory *)
-  type builtin_res = [
+  type builtin_common = [
     | `Ttype of (Ast.t -> Ast.t list -> unit)
     | `Ty    of (Ast.t -> Ast.t list -> Ty.t)
     | `Term  of (Ast.t -> Ast.t list -> T.t)
     | `Tags  of (Ast.t -> Ast.t list -> tag list)
+  ]
+
+  type builtin_res = [
+    | builtin_common
+    | `Infer of var_infer * sym_infer
   ]
 
   (* Names that are bound to a dolmen identifier by the builtins *)
@@ -418,6 +433,16 @@ module Make
   exception Typing_error of error
 
 
+  (* Accessors to the env *)
+  (* ************************************************************************ *)
+
+  let state env = env.st
+
+  let var_infer env = env.var_infer
+
+  let sym_infer env = env.sym_infer
+
+
   (* Warnings/Error helpers *)
   (* ************************************************************************ *)
 
@@ -468,6 +493,10 @@ module Make
   let with_reason reason bound : binding =
     match (bound : [ bound | not_found ]) with
     | `Not_found -> `Not_found
+    | `Builtin `Infer _ ->
+      (* infer-builtins should not last long: they should be instantly
+         replaced by the corresponding inferred constant. *)
+      assert false
     | `Builtin `Ttype _ -> `Builtin `Ttype
     | `Builtin `Ty _ -> `Builtin `Ty
     | `Builtin `Term _ -> `Builtin `Term
@@ -698,6 +727,7 @@ module Make
   let add_global env fragment id reason (v : cst) =
     begin match find_bound env id with
       | `Not_found -> ()
+      | `Builtin `Infer _ -> () (* inferred builtins are meant to be shadowed/replaced *)
       | #bound as old -> _shadow env fragment id old reason v
     end;
     env.st.csts <- M.add id v env.st.csts
@@ -720,11 +750,13 @@ module Make
 
 
   (* Custom theory data in the global state *)
-  let get_global_custom env key =
-    Hmap.get env.st.custom key
+  let get_global_custom_state st key = Hmap.get st.custom key
+  let get_global_custom env key = get_global_custom_state env.st key
 
+  let set_global_custom_state st key value =
+    st.custom <- Hmap.set st.custom key value
   let set_global_custom env key value =
-    env.st.custom <- Hmap.set env.st.custom key value
+    set_global_custom_state env.st key value
 
 
   (* Local Environment *)
@@ -737,11 +769,13 @@ module Make
       ?(st=global)
       ?(expect=Anything)
       ?(var_infer={
+          var_hook = ignore;
           infer_unbound_vars = No_inference;
           infer_type_vars_in_binding_pos = true;
           infer_term_vars_in_binding_pos = Wildcard Any_in_scope;
         })
       ?(sym_infer={
+          sym_hook = ignore;
           infer_type_csts = true;
           infer_term_csts = Wildcard Any_in_scope;
         })
@@ -1109,9 +1143,9 @@ module Make
     in
     ty_l, t_l
 
-  (* wrapper for builtin application *)
-  let builtin_apply env b ast args : res =
-    match (b : builtin_res) with
+  (* helper for builtins *)
+  and builtin_apply_common env b ast args =
+    match (b : builtin_common) with
     | `Ttype f -> _wrap2 env ast f ast args; Ttype
     | `Ty f -> Ty (_wrap2 env ast f ast args)
     | `Term f -> Term (_wrap2 env ast f ast args)
@@ -1618,9 +1652,15 @@ module Make
     | `Field _f ->
       _expected env "not a field name" s_ast None
     | `Builtin b ->
-      builtin_apply env b ast args
+      builtin_apply_id env b ast s s_ast args
     | `Not_found ->
       infer_sym env ast s args s_ast
+
+  and builtin_apply_id env b ast s s_ast args : res =
+    match (b : builtin_res) with
+    | `Infer (var_infer, sym_infer) ->
+      infer_sym_aux env var_infer sym_infer ast s args s_ast
+    | #builtin_common as b -> builtin_apply_common env b ast args
 
   and parse_app_ty_var env ast v _v_ast args =
     Ty.Var.set_tag v used_var_tag ();
@@ -1689,7 +1729,14 @@ module Make
   and parse_app_builtin env ast b args =
     match env.builtins env (Builtin b) with
     | `Not_found -> _unknown_builtin env ast b
-    | #builtin_res as b -> builtin_apply env b ast args
+    | #builtin_res as b -> builtin_apply_builtin env b ast args
+
+  and builtin_apply_builtin env b ast args : res =
+    match (b : builtin_res) with
+    | #builtin_common as b -> builtin_apply_common env b ast args
+    | `Infer _ ->
+      (* TODO: proper error *)
+      assert false
 
   and parse_builtin env ast b =
     parse_app_builtin env ast b []
@@ -1744,8 +1791,11 @@ module Make
     | Type ->
       if not env.var_infer.infer_type_vars_in_binding_pos then
         _cannot_infer_var_in_binding_pos env ast
-      else
-        `Ty (s, mk_ty_var env (Id.name s))
+      else begin
+        let v = mk_ty_var env (Id.name s) in
+        env.var_infer.var_hook (`Ty_var v);
+        `Ty (s, v)
+      end
     | Term ->
       begin match env.var_infer.infer_term_vars_in_binding_pos with
         | No_inference -> _cannot_infer_var_in_binding_pos env ast
@@ -1757,49 +1807,57 @@ module Make
             } in
           let ty = infer_ty env ast (Variable_inference var_infer) shape [] in
           var_infer.inferred_ty <- ty;
-          `Term (s, mk_term_var env (Id.name s) ty)
+          let v = mk_term_var env (Id.name s) ty in
+          env.var_infer.var_hook (`Term_var v);
+          `Term (s, v)
       end
 
   and infer_sym env ast s args s_ast =
+    infer_sym_aux env env.var_infer env.sym_infer ast s args s_ast
+
+  and infer_sym_aux env var_infer sym_infer ast s args s_ast =
     (* variables must be bound explicitly *)
     if Id.(s.ns = Var) then begin
-      match env.var_infer.infer_unbound_vars with
+      match var_infer.infer_unbound_vars with
       | No_inference -> _cannot_find env ast s
       | Unification_type_variable ->
         let v = wildcard_var env (From_source s_ast) Any_in_scope in
         add_inferred_type_var env s v s_ast;
+        var_infer.var_hook (`Ty_var v);
         parse_app_ty_var env ast v s_ast args
     end else
       match env.expect with
       | Anything -> _cannot_find env ast s
       | Type ->
-        if not env.sym_infer.infer_type_csts
+        if not sym_infer.infer_type_csts
         then _cannot_find env ast s
         else begin
           let n = List.length args in
           let f = mk_ty_cst env (Id.name s) n in
           decl_ty_const env (Ast ast) s f (Inferred (env.file, s_ast));
+          sym_infer.sym_hook (`Ty_cst f);
           parse_app_ty_cst env ast f args
         end
       | Term ->
-        begin match env.sym_infer.infer_term_csts with
+        begin match sym_infer.infer_term_csts with
           | No_inference -> _cannot_find env ast s
           | Wildcard shape ->
             let t_args = List.map (parse_term env) args in
             let f =
               match find_bound env s with
               | `Term_cst f -> f
-              | `Not_found ->
-                let sym_infer = {
+              | `Not_found | `Builtin `Infer _ ->
+                let sym = {
                   symbol = s;
-                  symbol_loc = s_ast.loc;
+                  symbol_loc = s_ast.Ast.loc;
                   inferred_ty = Ty.prop;
                 } in
-                let src = Symbol_inference sym_infer in
+                let src = Symbol_inference sym in
                 let f_ty = infer_ty env ast src shape t_args in
-                sym_infer.inferred_ty <- f_ty;
+                sym.inferred_ty <- f_ty;
                 let f = mk_term_cst env (Id.name s) f_ty in
                 decl_term_const env (Ast ast) s f (Inferred (env.file, s_ast));
+                sym_infer.sym_hook (`Term_cst f);
                 f
               | _ -> assert false
             in

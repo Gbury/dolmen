@@ -29,13 +29,13 @@ module type S = Typer_intf.S
 
 module Make
     (S : State_intf.Typer with type ty_state := ty_state)
-  : S with type state := S.t
-       and type ty_state := ty_state
-       and type env := T.env
-       and type 'a fragment := 'a T.fragment
-       and type error := T.error
-       and type warning := T.warning
-       and type builtin_symbols := T.builtin_symbols
+  : S with type state = S.t
+       and type ty_state = ty_state
+       and type env = T.env
+       and type 'a fragment = 'a T.fragment
+       and type error = T.error
+       and type warning = T.warning
+       and type builtin_symbols = T.builtin_symbols
 
 (** {2 Typechecker Pipe} *)
 

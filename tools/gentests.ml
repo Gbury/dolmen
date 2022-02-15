@@ -168,7 +168,7 @@ let test_stanza_aux ?(deps=[]) mode fmt
     pp_exit_codes exit_codes
     (match response_file with
      | None -> ""
-     | Some f -> Format.asprintf "--check-model -r %s " f
+     | Some f -> Format.asprintf "--check-model=true -r %s " f
     )
     mode expected_file res_file
 

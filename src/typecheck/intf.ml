@@ -102,12 +102,14 @@ module type Formulas = sig
     infer_unbound_vars              : infer_unbound_var_scheme;
     infer_type_vars_in_binding_pos  : bool;
     infer_term_vars_in_binding_pos  : infer_term_scheme;
+    var_hook : [ `Ty_var of ty_var | `Term_var of term_var ] -> unit;
   }
   (** Specification of how to infer variables. *)
 
   type sym_infer = {
     infer_type_csts   : bool;
     infer_term_csts   : infer_term_scheme;
+    sym_hook : [ `Ty_cst of ty_cst | `Term_cst of term_cst ] -> unit;
   }
   (** Specification of how to infer symbols. *)
 
@@ -139,16 +141,12 @@ module type Formulas = sig
     | `Ty    of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty)
     | `Term  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term)
     | `Tags  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list)
+    | `Infer of var_infer * sym_infer
   ]
   (** The result of parsing a symbol by the theory *)
 
   type not_found = [ `Not_found ]
   (** Not bound bindings *)
-
-  type inferred =
-    | Ty_fun of ty_cst
-    | Term_fun of term_cst (**)
-  (** The type for inferred symbols. *)
 
   type reason =
     | Builtin
@@ -399,6 +397,15 @@ module type Formulas = sig
     builtin_symbols -> env
   (** Create a new environment. *)
 
+  val var_infer : env -> var_infer
+  (** Getter for an env's var infer. *)
+
+  val sym_infer : env -> sym_infer
+  (** Getter for an env's sym infer. *)
+
+  val state : env -> state
+  (** Get the mutable state for an env. *)
+
 
   (** {2 Location helpers} *)
 
@@ -462,10 +469,12 @@ module type Formulas = sig
       symbols bound by the builtin theory. *)
 
   val get_global_custom : env -> 'a Dolmen.Std.Tag.t -> 'a option
-  (** Get a custom value from the global environment. *)
+  val get_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a option
+  (** Get a custom value from the global environment or state. *)
 
   val set_global_custom : env -> 'a Dolmen.Std.Tag.t -> 'a -> unit
-  (** Set a custom value in the global environment. *)
+  val set_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a -> unit
+  (** Set a custom value in the global environment or state. *)
 
 
   (** {2 Errors & Warnings} *)
@@ -479,6 +488,12 @@ module type Formulas = sig
   val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** From a dolmen identifier, return a list of existing bound identifiers
       in the env that are up to [~limit] in terms of distance of edition. *)
+
+  val _wrap : env -> Dolmen.Std.Term.t -> ('a -> 'b) -> 'a -> 'b
+  val _wrap2 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+  val _wrap3 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd
+  (* Convenient wrapping function to catch exceptions and raise the appropriate
+     typing error. *)
 
 
   (** {2 Parsing functions} *)
