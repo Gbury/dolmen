@@ -194,7 +194,7 @@ answer:
   | UNSAT
     { let loc = L.mk_pos $startpos $endpos in
       S.unsat ~loc () }
-  | SAT OPEN MODEL model=definition* CLOSE
+  | SAT OPEN MODEL? model=definition* CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       S.sat ~loc (Some model) }
 

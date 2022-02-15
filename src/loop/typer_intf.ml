@@ -128,6 +128,9 @@ module type S = sig
       additional builtin symbols are parsed. It is added for all the languages
       except Dimacs, and iCNF. *)
 
+  val pop_inferred_model_constants : state -> Dolmen.Std.Expr.term_cst list
+  (** TODO:doc *)
+
 end
 
 (** This modules defines the result signature of the {Typer.Pipe} functor *)
