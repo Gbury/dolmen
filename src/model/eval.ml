@@ -4,6 +4,7 @@
 (* Type definitions *)
 (* ************************************************************************* *)
 
+module E = Dolmen.Std.Expr
 module B = Dolmen.Std.Builtin
 module Term = Dolmen.Std.Expr.Term
 module Var = Dolmen.Std.Expr.Term.Var
@@ -13,9 +14,11 @@ module Cst = Dolmen.Std.Expr.Term.Const
 (* Exceptions *)
 (* ************************************************************************* *)
 
+exception Quantifier
 exception Unhandled_builtin of Cst.t
 exception Undefined_variable of Var.t
 exception Undefined_constant of Cst.t
+
 
 (* Builtins *)
 (* ************************************************************************* *)
@@ -60,7 +63,34 @@ and eval_apply env f t_args =
   let args_v = List.map (eval env) t_args in
   Fun.apply ~eval env f_v args_v
 
-and eval_binder _env _b _body = assert false
+and eval_binder env b body =
+  match (b : E.binder) with
+  | Let_seq l ->
+    let env =
+      List.fold_left (fun env (v, expr) ->
+          let value = eval env expr in
+          Env.Var.add v value env
+        ) env l
+    in
+    eval env body
+  | Let_par l ->
+    (* Note: this parrallel treatment is not strictly speaking necessary,
+       since for typed expressions, there is no shadowing of variables,
+       and we have pure logic semantics (e.g. no side-effects of evaluating
+       expressions), but let's keep that for now and potentially change that
+       later. *)
+    let l' = List.map (fun (v, expr) -> v, eval env expr) l in
+    let env =
+      List.fold_left (fun env (v, value) ->
+          Env.Var.add v value env
+        ) env l'
+    in
+    eval env body
+  | Lambda (tys, params) ->
+    Fun.mk ~env ~eval tys params body
+  | Exists (_tys, _terms)
+  | Forall (_tys, _terms) ->
+    raise Quantifier
 
 and eval_match _env _scrutinee _arms = assert false
 

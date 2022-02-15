@@ -54,9 +54,9 @@ let ops = Value.ops ~compare ~print
 (* Creation *)
 (* ************************************************************************* *)
 
-let mk ~eval ty_params term_params body =
+let mk ~env ~eval ty_params term_params body =
   match term_params with
-  | [] -> eval body
+  | [] -> eval env body
   | _ ->
     let func = Lambda { ty_params; term_params; body; } in
     Value.mk ~ops { args = []; func; }
@@ -64,6 +64,28 @@ let mk ~eval ty_params term_params body =
 let builtin ~arity ~cst eval_f =
   let func = Builtin { arity; cst; eval_f; } in
   Value.mk ~ops { args = []; func; }
+
+let fun_1 ~cst f =
+  builtin ~arity:1 ~cst (function
+      | [x] -> f x
+      | _ -> assert false
+    )
+
+let fun_2 ~cst f =
+  builtin ~arity:2 ~cst (function
+      | [x; y] -> f x y
+      | _ -> assert false
+    )
+
+let fun_3 ~cst f =
+  builtin ~arity:3 ~cst (function
+      | [x; y; z] -> f x y z
+      | _ -> assert false
+    )
+
+let fun_n ~cst eval_f =
+  let _, arity = E.Term.Const.arity cst in
+  builtin ~arity ~cst eval_f
 
 
 (* Application&Reduction *)
