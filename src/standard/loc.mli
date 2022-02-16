@@ -85,7 +85,11 @@ val pp : Buffer.t -> loc -> unit
 val fmt : Format.formatter -> loc -> unit
 val fmt_pos : Format.formatter -> loc -> unit
 val fmt_hint : Format.formatter -> loc -> unit
+val fmt_compact : Format.formatter -> loc -> unit
 (** Printing functions *)
+
+val print_compact : Format.formatter -> t -> unit
+(** misc *)
 
 val file_name : file -> string
 (** Filename for a file *)

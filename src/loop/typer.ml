@@ -366,6 +366,14 @@ let almost_linear =
     ~hints:[text_hint]
     ~name:"Non-linear expression in linear arithmetic" ()
 
+let array_extension =
+  Report.Warning.mk ~code ~mnemonic:"array-extension"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The symbol %a is an extension of the array theory and is not \
+           defined by the smtlib specification." Dolmen.Std.Id.print c)
+    ~name:"Use of Extensions of the Array theory" ()
+
 let logic_reset =
   Report.Warning.mk ~code ~mnemonic:"logic-reset"
     ~message:(fun fmt old_loc ->
@@ -964,13 +972,15 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       warn ~input ~loc st superfluous_destructor ()
     | T.Shadowing (id, old, _cur) ->
       warn ~input ~loc st shadowing (id, old)
+    | Smtlib2_Arrays.Extension id ->
+      warn ~input ~loc st array_extension id
     | Smtlib2_Ints.Restriction msg
     | Smtlib2_Reals.Restriction msg
     | Smtlib2_Reals_Ints.Restriction msg ->
       warn ~input ~loc st almost_linear msg
     | _ ->
       warn ~input ~loc st unknown_warning
-          (Obj.Extension_constructor.(name (of_val warn)))
+          (Obj.Extension_constructor.(name (of_val w)))
 
   (* Report type errors *)
   (* ************************************************************************ *)

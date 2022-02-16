@@ -220,6 +220,11 @@ and pp b = function
 
 (* Pretty-printing *)
 
+let print_locs = false
+
+let print_loc fmt loc =
+  if print_locs then Format.fprintf fmt "[%a]" Loc.print_compact loc
+
 let print_builtin fmt builtin =
   Format.fprintf fmt "%s" (builtin_to_string builtin)
 
@@ -256,14 +261,16 @@ and print_attr fmt = function
     Format.fprintf fmt "{%a}@,%a" print a print_attr r
 
 and print fmt = function
-  | { term = (Symbol _) as d ; attr; _ }
-  | { term = (Builtin _) as d ; attr; _ } ->
-    Format.fprintf fmt "@[<hov 2>%a@,%a@]"
+  | { term = (Symbol _) as d ; attr; loc; }
+  | { term = (Builtin _) as d ; attr; loc; } ->
+    Format.fprintf fmt "@[<hov 2>%a@,%a@,%a@]"
       print_descr d
+      print_loc loc
       print_attr attr
   | e ->
-    Format.fprintf fmt "@[<hov 2>(%a)@,%a@]"
+    Format.fprintf fmt "@[<hov 2>(%a)@,%a@,%a@]"
       print_descr e.term
+      print_loc e.loc
       print_attr e.attr
 
 (* Comparison *)
