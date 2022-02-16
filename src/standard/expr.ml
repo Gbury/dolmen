@@ -1856,193 +1856,193 @@ module Term = struct
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
       let concat =
-        with_cache ~cache:(Hashtbl.create 13) (fun (i, j) ->
-            mk' ~builtin:Builtin.Bitv_concat "bitv_concat"
-              [] [Ty.bitv i; Ty.bitv j] (Ty.bitv (i + j))
+        with_cache ~cache:(Hashtbl.create 13) (fun (n, m) ->
+            mk' ~builtin:(Builtin.Bitv_concat{n;m}) "bitv_concat"
+              [] [Ty.bitv n; Ty.bitv m] (Ty.bitv (n + m))
           )
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            mk' ~builtin:(Builtin.Bitv_extract (i, j))
+            mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
               (Format.asprintf "bitv_extract_%d_%d" i j) []
               [Ty.bitv n] (Ty.bitv (i - j + 1))
           )
 
       let repeat =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:Builtin.Bitv_repeat (Format.asprintf "bitv_repeat_%d" k)
+            mk' ~builtin:(Builtin.Bitv_repeat{n;k}) (Format.asprintf "bitv_repeat_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n * k))
           )
 
       let zero_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:Builtin.Bitv_zero_extend (Format.asprintf "zero_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv_zero_extend{n;k}) (Format.asprintf "zero_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let sign_extend =
         with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:Builtin.Bitv_sign_extend (Format.asprintf "sign_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv_sign_extend{n;k}) (Format.asprintf "sign_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let rotate_right =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_right k)
-              (Format.asprintf "rotate_right_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+            mk' ~builtin:(Builtin.Bitv_rotate_right{n;i})
+              (Format.asprintf "rotate_right_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let rotate_left =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_left k)
-              (Format.asprintf "rotate_left_%d" k) [] [Ty.bitv n] (Ty.bitv n)
+        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+            mk' ~builtin:(Builtin.Bitv_rotate_left{n;i})
+              (Format.asprintf "rotate_left_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let not =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_not "bvnot" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_not n) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let and_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_and "bvand" []
+            mk' ~builtin:(Builtin.Bitv_and n) "bvand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_or "bvor" []
+            mk' ~builtin:(Builtin.Bitv_or n) "bvor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_nand "bvnand" []
+            mk' ~builtin:(Builtin.Bitv_nand n) "bvnand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_nor "bvnor" []
+            mk' ~builtin:(Builtin.Bitv_nor n) "bvnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_xor "bvxor" []
+            mk' ~builtin:(Builtin.Bitv_xor n) "bvxor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_xnor "bvxnor" []
+            mk' ~builtin:(Builtin.Bitv_xnor n) "bvxnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_comp "bvcomp" []
+            mk' ~builtin:(Builtin.Bitv_comp n) "bvcomp" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_neg "bvneg" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_neg n) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let add =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_add "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_add n) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sub =
       with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          mk' ~builtin:Builtin.Bitv_sub "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
         )
 
       let mul =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_mul "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_mul n) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let udiv =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_udiv "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_udiv n) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let urem =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_urem "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_urem n) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sdiv =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_sdiv "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_sdiv n) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let srem =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_srem "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_srem n) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let smod =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_smod "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_smod n) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let shl =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_shl "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_shl n) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let lshr =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_lshr "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_lshr n) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ashr =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_ashr "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv_ashr n) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ult =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_ult "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_ult n) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ule =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_ule "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_ule n) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ugt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_ugt "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_ugt n) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let uge =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_uge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_uge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let slt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_slt "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_slt n) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sle =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_sle "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_sle n) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sgt =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_sgt "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_sgt n) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sge =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
-            mk' ~builtin:Builtin.Bitv_sge "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv_sge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
     end

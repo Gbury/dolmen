@@ -322,125 +322,125 @@ type _ t +=
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
       ['0'], and ['1'] (lsb last) *)
-  | Bitv_concat
-  (** [Bitv_concat: Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
+  | Bitv_concat of { n : int; m : int }
+  (** [Bitv_concat(n,m): Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
       concatenation operator on bitvectors. *)
-  | Bitv_extract of int * int
-  (** [Bitv_extract(i, j): Bitv(n) -> Bitv(i - j + 1)]:
+  | Bitv_extract of { n : int; i : int; j : int }
+  (** [Bitv_extract(n, i, j): Bitv(n) -> Bitv(i - j + 1)]:
       bitvector extraction, from index [j] up to [i] (both included). *)
-  | Bitv_repeat
-  (** [Bitv_repeat: Bitv(n) -> Bitv(n*k)]:
-      bitvector repeatition. NOTE: inlcude [k] in the builtin ? *)
-  | Bitv_zero_extend
-  (** [Bitv_zero_extend: Bitv(n) -> Bitv(n + k)]:
+  | Bitv_repeat of { n : int; k : int }
+  (** [Bitv_repeat(n,k): Bitv(n) -> Bitv(n*k)]:
+      bitvector repeatition. *)
+  | Bitv_zero_extend of { n : int; k : int }
+  (** [Bitv_zero_extend(n,k): Bitv(n) -> Bitv(n + k)]:
       zero extension for bitvectors (produces a representation of the
       same unsigned integer). *)
-  | Bitv_sign_extend
-  (** [Bitv_sign_extend: Bitv(n) -> Bitv(n + k)]:
+  | Bitv_sign_extend of { n : int; k : int }
+  (** [Bitv_sign_extend(n,k): Bitv(n) -> Bitv(n + k)]:
       sign extension for bitvectors ((produces a representation of the
       same signed integer). *)
-  | Bitv_rotate_right of int
-  (** [Bitv_rotate_right(i): Bitv(n) -> Bitv(n)]:
+  | Bitv_rotate_right of { n : int; i : int }
+  (** [Bitv_rotate_right(n,i): Bitv(n) -> Bitv(n)]:
       logical rotate right for bitvectors by [i]. *)
-  | Bitv_rotate_left of int
-  (** [Bitv_rotate_left(i): Bitv(n) -> Bitv(n)]:
+  | Bitv_rotate_left of { n : int; i : int }
+  (** [Bitv_rotate_left(n,i): Bitv(n) -> Bitv(n)]:
       logical rotate left for bitvectors by [i]. *)
-  | Bitv_not
-  (** [Bitv_not: Bitv(n) -> Bitv(n)]:
+  | Bitv_not of int
+  (** [Bitv_not(n): Bitv(n) -> Bitv(n)]:
       bitwise negation for bitvectors. *)
-  | Bitv_and
-  (** [Bitv_and: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_and of int
+  (** [Bitv_and(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise conjunction for bitvectors. *)
-  | Bitv_or
-  (** [bitv_or: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_or of int
+  (** [bitv_or(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise disjunction for bitvectors. *)
-  | Bitv_nand
-  (** [Bitv_nand: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_nand of int
+  (** [Bitv_nand(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise negated conjunction for bitvectors.
       [Bitv_nand s t] abbreviates [Bitv_not (Bitv_and s t))]. *)
-  | Bitv_nor
-  (** [Bitv_nor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_nor of int
+  (** [Bitv_nor(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise negated disjunction for bitvectors.
       [Bitv_nor s t] abbreviates [Bitv_not (Bitv_or s t))]. *)
-  | Bitv_xor
-  (** [Bitv_xor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_xor of int
+  (** [Bitv_xor(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise exclusive disjunction for bitvectors.
       [Bitv_xor s t] abbreviates
       [Bitv_or (Bitv_and s (Bitv_not t))
                (Bitv_and (Bitv_not s) t) ]. *)
-  | Bitv_xnor
-  (** [Bitv_xnor: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_xnor of int
+  (** [Bitv_xnor(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       bitwise negated exclusive disjunction for bitvectors.
       [Bitv_xnor s t] abbreviates
       [Bitv_or (Bitv_and s t)
                (Bitv_and (Bitv_not s) (Bitv_not t))]. *)
-  | Bitv_comp
-  (** [Bitv_comp: Bitv(n) -> Bitv(n) -> Bitv(1)]:
+  | Bitv_comp of int
+  (** [Bitv_comp(n): Bitv(n) -> Bitv(n) -> Bitv(1)]:
       Returns the constant bitvector ["1"] is all bits are equal,
       and the bitvector ["0"] if not. *)
-  | Bitv_neg
-  (** [Bitv_neg: Bitv(n) -> Bitv(n)]:
+  | Bitv_neg of int
+  (** [Bitv_neg(n): Bitv(n) -> Bitv(n)]:
       2's complement unary minus. *)
-  | Bitv_add
-  (** [Bitv_add: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_add of int
+  (** [Bitv_add(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       addition modulo 2^n. *)
-  | Bitv_sub
-  (** [Bitv_sub: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_sub of int
+  (** [Bitv_sub(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       2's complement subtraction modulo 2^n. *)
-  | Bitv_mul
-  (** [Bitv_mul: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_mul of int
+  (** [Bitv_mul(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       multiplication modulo 2^n. *)
-  | Bitv_udiv
-  (** [Bitv_udiv: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_udiv of int
+  (** [Bitv_udiv(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       unsigned division, truncating towards 0. *)
-  | Bitv_urem
-  (** [Bitv_urem: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_urem of int
+  (** [Bitv_urem(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       unsigned remainder from truncating division. *)
-  | Bitv_sdiv
-  (** [Bitv_sdiv: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_sdiv of int
+  (** [Bitv_sdiv(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       2's complement signed division. *)
-  | Bitv_srem
-  (** [Bitv_srem: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_srem of int
+  (** [Bitv_srem(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       2's complement signed remainder (sign follows dividend). *)
-  | Bitv_smod
-  (** [Bitv_smod: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_smod of int
+  (** [Bitv_smod(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       2's complement signed remainder (sign follows divisor). *)
-  | Bitv_shl
-  (** [Bitv_shl: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_shl of int
+  (** [Bitv_shl(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       shift left (equivalent to multiplication by 2^x where x
       is the value of the second argument). *)
-  | Bitv_lshr
-  (** [Bitv_lshr: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_lshr of int
+  (** [Bitv_lshr(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       logical shift right (equivalent to unsigned division by 2^x,
       where x is the value of the second argument). *)
-  | Bitv_ashr
-  (** [Bitv_ashr: Bitv(n) -> Bitv(n) -> Bitv(n)]:
+  | Bitv_ashr of int
+  (** [Bitv_ashr(n): Bitv(n) -> Bitv(n) -> Bitv(n)]:
       Arithmetic shift right, like logical shift right except that
       the most significant bits of the result always copy the most
       significant bit of the first argument. *)
-  | Bitv_ult
-  (** [Bitv_ult: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_ult of int
+  (** [Bitv_ult(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for unsigned less-than. *)
-  | Bitv_ule
-  (** [Bitv_ule: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_ule of int
+  (** [Bitv_ule(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for unsigned less than or equal. *)
-  | Bitv_ugt
-  (** [Bitv_ugt: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_ugt of int
+  (** [Bitv_ugt(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for unsigned greater-than. *)
-  | Bitv_uge
-  (** [Bitv_uge: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_uge of int
+  (** [Bitv_uge(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for unsigned greater than or equal. *)
-  | Bitv_slt
-  (** [Bitv_slt: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_slt of int
+  (** [Bitv_slt(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed less-than. *)
-  | Bitv_sle
-  (** [Bitv_sle: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_sle of int
+  (** [Bitv_sle(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed less than or equal. *)
-  | Bitv_sgt
-  (** [Bitv_sgt: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_sgt of int
+  (** [Bitv_sgt(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed greater-than. *)
-  | Bitv_sge
-  (** [Bitv_sge: Bitv(n) -> Bitv(n) -> Prop]:
+  | Bitv_sge of int
+  (** [Bitv_sge(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed greater than or equal. *)
 
 
@@ -541,7 +541,7 @@ type _ t +=
   | To_sbv of int * int * int
   (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv(m)]: Convert to an signed integer *)
   | To_real of int * int
-  (** [To_real(s,e,m): RoundingMode -> Fp(s,e) -> Real]: Convert to real *)
+  (** [To_real(s,e): Fp(s,e) -> Real]: Convert to real *)
 
 
 (** {2 String and Regexp Builtins} *)
