@@ -111,8 +111,9 @@ qual_identifier:
   | s=identifier
     { let loc = L.mk_pos $startpos $endpos in `NoAs (T.const ~loc (s I.term)) }
   | OPEN AS s=identifier ty=sort CLOSE
-    { let loc = L.mk_pos $startpos $endpos in
-      `As (T.const ~loc (s I.term),ty) }
+    { let loc = L.mk_pos $startpos(s) $endpos(s) in
+      let as_loc = L.mk_pos $startpos $endpos in
+      `As (T.const ~loc (s I.term), ty, as_loc) }
 ;
 
 var_binding:
@@ -157,15 +158,14 @@ term:
   | c=spec_constant
     { c }
   | s=qual_identifier
-    { let loc = L.mk_pos $startpos $endpos in
-      match s with
+    { match s with
       | `NoAs f -> f
-      | `As (f,ty) -> T.colon ~loc f ty }
+      | `As (f, ty, loc) -> T.colon ~loc f ty }
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
       | `NoAs f -> T.apply ~loc f args
-      | `As (f,ty) -> T.colon (T.apply ~loc f args) ty }
+      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.apply ~loc f args) ty }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.letand ~loc l t }
   | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE

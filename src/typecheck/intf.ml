@@ -498,6 +498,9 @@ module type Formulas = sig
 
   (** {2 Parsing functions} *)
 
+  val wildcard : env -> wildcard_source -> wildcard_shape -> ty
+  (** Create a wildcard type. *)
+
   val monomorphize : env -> Dolmen.Std.Term.t -> term -> term
   (** Monomorphize a term. *)
 

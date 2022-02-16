@@ -241,6 +241,10 @@ let compact (t : loc) =
 (* Printing and lexbuf handling *)
 (* ************************************************************************* *)
 
+let print_compact fmt t =
+  let offset, length = split_compact t in
+  Format.fprintf fmt "%d:%d" offset length
+
 let pp buf pos =
   if pos.start_line = pos.stop_line then
     if pos.start_column = pos.stop_column then
@@ -288,6 +292,18 @@ let fmt_pos fmt pos =
         pos.start_line pos.start_column pos.stop_column
   else
     Format.fprintf fmt "line %d, character %d to line %d, character %d"
+      pos.start_line pos.start_column
+      pos.stop_line pos.stop_column
+
+let fmt_compact fmt pos =
+  if pos.start_line = pos.stop_line then
+    if pos.start_column = pos.stop_column then
+      Format.fprintf fmt ""
+    else
+      Format.fprintf fmt "%d:%d-%d"
+        pos.start_line pos.start_column pos.stop_column
+  else
+    Format.fprintf fmt "%d:%d-%d:%d"
       pos.start_line pos.start_column
       pos.stop_line pos.stop_column
 

@@ -32,3 +32,9 @@ include Dolmen_intf.Stmt.Response
    and type defs := defs
 
 
+(** {2 Std function} *)
+
+val print : Format.formatter -> t -> unit
+(** Printing function *)
+
+

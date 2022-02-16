@@ -181,6 +181,9 @@ module type Check_pipe = sig
 
   (* Checking options *)
 
+  val debug : t -> bool
+  (** Are we in debug mode ? *)
+
   val check_state : t -> t check_state
   (** Get the checker state. *)
 

@@ -47,3 +47,10 @@ val print : Format.formatter -> t -> unit
 
 val compare : t -> t -> int
 
+(** {2 Sets and Maps} *)
+(** ************************************************************************ *)
+
+module Set : Set.S with type elt = t
+module Map : Map.S with type key = t
+
+

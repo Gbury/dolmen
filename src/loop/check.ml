@@ -70,6 +70,7 @@ module Pipe
     let builtins = Dolmen_model.Eval.builtins [
         Dolmen_model.Bool.builtins;
         Dolmen_model.Core.builtins;
+        Dolmen_model.Array.builtins;
       ] in
     let env = Dolmen_model.Env.empty ~builtins in
     env
@@ -78,6 +79,9 @@ module Pipe
     let env = empty_model () in
     let input = `Response file in
     List.fold_left (fun (st, env) defs ->
+        if State.debug st then
+          Format.eprintf "[model][parsed] @[<hov>%a@]@."
+            Dolmen.Std.Statement.(print_group print_def) defs;
         let st, defs =
           Typing.defs ~mode:`Use_declared_id st ~input ?loc ?attrs defs
         in
@@ -94,11 +98,20 @@ module Pipe
               match def with
               | `Type_def _ -> assert false (* TODO: proper error *)
               | `Term_def (_id, cst, ty_params, term_params, body) ->
+                if State.debug st then
+                  Format.eprintf "[model][typed] @[<hov>%a := %a@]@."
+                    Dolmen.Std.Expr.Term.Const.print cst
+                    Dolmen.Std.Expr.Term.print
+                    (Dolmen.Std.Expr.Term.lam (ty_params, term_params) body);
                 let value =
                   Dolmen_model.Fun.mk ~env
                     ~eval:Dolmen_model.Eval.eval
                     ty_params term_params body
                 in
+                if State.debug st then
+                  Format.eprintf "[model][value] @[<hov>%a -> %a@]@\n@."
+                    Dolmen.Std.Expr.Term.Const.print cst
+                    Dolmen_model.Value.print value;
                 Dolmen_model.Env.Cst.add cst value env
             ) env defs
         in
@@ -135,22 +148,26 @@ module Pipe
       in
       answers st
 
-  let eval_term env term =
+  let eval_term st env term =
     let value = Dolmen_model.Eval.eval env term in
+    if State.debug st then
+      Format.eprintf "[model][eval] @[<hov>%a -> %a@]@\n@."
+        Dolmen.Std.Expr.Term.print term Dolmen_model.Value.print value;
     match Dolmen_model.Value.extract ~ops:Dolmen_model.Bool.ops value with
     | None -> assert false (* internal failure: wrong sort ? *)
-    | Some b -> b
+    | Some b ->
+      b
 
   let eval_hyp env st (_loc, hyp) =
-    let res = eval_term env hyp in
+    let res = eval_term st env hyp in
     if res then st else assert false (* incorrect model *)
 
   let eval_goal env st (_loc, goal) =
-    let res = eval_term env goal in
+    let res = eval_term st env goal in
     if not res then st else assert false (* incorrect model *)
 
   let eval_clause env st (_loc, clause) =
-    let l = List.map (eval_term env) clause in
+    let l = List.map (eval_term st env) clause in
     if List.exists Fun.id l then st else assert false (* incorrect model *)
 
   let check_model st t = function

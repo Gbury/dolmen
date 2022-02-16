@@ -139,6 +139,8 @@ let flush st () =
 (* Getting/Setting options *)
 (* ************************************************************************* *)
 
+let debug t = t.debug
+
 let time_limit t = t.time_limit
 let size_limit t = t.size_limit
 

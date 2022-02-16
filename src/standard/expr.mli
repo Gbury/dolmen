@@ -1117,11 +1117,18 @@ module Term : sig
   val equiv : t -> t -> t
   (** Equivalence *)
 
+  val const : ty -> t -> t
+  (** [const index_ty base] creates a constant array that maps any value of type
+      [index_ty] to the value [base].
+      TODO: split into an [Array] sub-module. *)
+
   val select : t -> t -> t
-  (** Array selection. *)
+  (** Array selection.
+      TODO: split into an [Array] sub-module. *)
 
   val store : t -> t -> t -> t
-  (** Array store *)
+  (** Array store.
+      TODO: split into an [Array] sub-module. *)
 
   val lam : ty_var list * Var.t list -> t -> t
   (** Create a local function.

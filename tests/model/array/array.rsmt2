@@ -1,4 +1,9 @@
 sat
 (
-(define-fun a () (Array Int Int) (store (store ((as const (Array Int Int)) 0) 0 1) 1 2))
+; cardinality of t is 2
+; rep: (as @a0 t)
+; rep: (as @a1 t)
+(define-fun x () t (as @a0 t))
+(define-fun y () t (as @a1 t))
+(define-fun a () (Array t t) (store ((as const (Array t t)) (as @a0 t)) (as @a1 t) (as @a1 t)))
 )
