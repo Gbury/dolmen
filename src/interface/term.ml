@@ -1197,6 +1197,13 @@ module type Smtlib_Array = sig
   type t
   (** The type of terms *)
 
+  type ty
+  (** Type of of types. *)
+
+  val const : ty -> t -> t
+  (** [const ty base] creates a constant array that maps any value
+      of type [ty] to [base]. *)
+
   val select : t -> t -> t
   (** [select arr idx] creates the get operation on functionnal
         array [arr] for index [idx]. *)

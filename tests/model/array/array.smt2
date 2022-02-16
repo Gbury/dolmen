@@ -1,5 +1,10 @@
 (set-logic ALL)
-(declare-fun a () (Array Int Int))
-(assert (= (select a 0) 1))
-(assert (= (select a 1) 2))
+
+(declare-sort t 0)
+(declare-fun x () t)
+(declare-fun y () t)
+
+(declare-fun a () (Array t t))
+(assert (= (select a x) x))
+(assert (= (select a y) y))
 (check-sat)

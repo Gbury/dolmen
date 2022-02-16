@@ -317,6 +317,9 @@ type _ t +=
       polymorphic functional arrays. An [(src, dst) Array] is an array
       from expressions of type [src] to expressions of type [dst].
       Typically, such arrays are immutables. *)
+  | Const
+  (** [Store: 'a 'b. 'b -> ('a, 'b) Array]: returns a constant array,
+      which maps any value of type ['a] to the given base value. *)
   | Store
   (** [Store: 'a 'b. ('a, 'b) Array -> 'a -> 'b -> ('a, 'b) Array]:
       store operation on arrays. Returns a new array with the key bound

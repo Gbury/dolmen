@@ -73,3 +73,15 @@ let compare t t' =
   | Value (V.Val, _, y) -> (V.compare x y : int)
   | Value (w', _, _) -> Stdlib.compare (Any w) (Any w')
 
+(* Sets/Maps *)
+(* ************************************************************************* *)
+
+module Aux = struct
+  type aux = t
+  type t = aux
+  let compare = compare
+end
+
+module Set = Set.Make(Aux)
+module Map = Map.Make(Aux)
+
