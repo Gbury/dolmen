@@ -1808,6 +1808,15 @@ module Term = struct
       mk' ~name:"Σ" ~builtin:Builtin.Sigma
         "Sigma" [a] [Ty.(arrow [a_ty] prop)] Ty.prop
 
+    let const =
+      let a = Ty.Var.mk "alpha" in
+      let a_ty = Ty.of_var a in
+      let b = Ty.Var.mk "beta" in
+      let b_ty = Ty.of_var b in
+      mk'
+        ~name:"const" ~builtin:Builtin.Const
+        "Const" [a; b] [b_ty] (Ty.array a_ty b_ty)
+
     let select =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
@@ -3213,6 +3222,9 @@ module Term = struct
            | exception Not_found -> assert false (* internal error *)
          end
     )
+
+  let const index_ty base =
+    apply_cst Const.const [index_ty; ty base] [base]
 
   let select t idx =
     let src, dst = match_array_type t in

@@ -59,10 +59,14 @@ module Smtlib2 = struct
   module Tff
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Smtlib_Array with type t := Type.Ty.t)
-      (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t) = struct
+      (T : Dolmen.Intf.Term.Smtlib_Array with type t := Type.T.t
+                                          and type ty := Type.Ty.t) = struct
 
     type _ Type.err +=
       | Forbidden : string -> Dolmen.Std.Term.t Type.err
+
+    type _ Type.warn +=
+      | Extension : Id.t -> Dolmen.Std.Term.t Type.warn
 
     let msg = function
       | All -> assert false
@@ -96,14 +100,29 @@ module Smtlib2 = struct
       end;
       Ty.array src dst
 
-    let parse ~arrays _version env s =
+    let parse ~arrays version env s =
       match s with
+      (* Array theory according to the spec *)
       | Type.Id { name = Simple "Array"; ns = Sort } ->
         `Ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env arrays))
       | Type.Id { name = Simple "select"; ns = Term } ->
         `Term (Base.term_app2 (module Type) env s T.select)
       | Type.Id { name = Simple "store"; ns = Term } ->
         `Term (Base.term_app3 (module Type) env s T.store)
+
+      (* Extension, particularly needed for models *)
+      | Type.Id ({ name = Simple "const"; ns = Term; } as c) ->
+        begin match version with
+          | `Script _ -> `Not_found
+          | `Check _ ->
+            `Term (fun ast args ->
+                Type._warn env (Ast ast) (Extension c);
+                let index_ty =
+                  Type.wildcard env (Added_type_argument ast) Any_in_scope
+                in
+                Base.term_app1 (module Type) env s (T.const index_ty) ast args)
+        end
+
       | _ -> `Not_found
 
   end

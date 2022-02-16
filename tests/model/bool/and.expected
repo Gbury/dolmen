@@ -1,3 +1,1 @@
-dolmen: option `--check-model' needs an argument
-Usage: dolmen [OPTION]... [FILE]
-Try `dolmen --help' for more information.
+Error File not found: 'and.rsmt2' in directory 'tests/model/bool'

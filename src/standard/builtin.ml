@@ -76,7 +76,7 @@ type _ t +=
 
 (* arrays *)
 type _ t +=
-  | Array | Store | Select
+  | Array | Const | Store | Select
 
 (* Bitvectors *)
 type _ t +=

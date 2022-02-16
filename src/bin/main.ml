@@ -7,13 +7,13 @@
 
 let debug_parsed_pipe st c =
   if st.Loop.State.debug then
-    Format.eprintf "[parsed] @[<hov>%a@]@."
+    Format.eprintf "[logic][parsed] @[<hov>%a@]@."
       Dolmen.Std.Statement.print c;
   st, c
 
 let debug_typed_pipe st stmt =
   if st.Loop.State.debug then
-    Format.eprintf "[typed] @[<hov>%a@]@\n@."
+    Format.eprintf "[logic][typed] @[<hov>%a@]@\n@."
       Loop.Typer.print stmt;
   st, stmt
 
@@ -35,8 +35,10 @@ let finally st e =
     handle_exn st exn
 
 let run st =
-  if st.Loop.State.debug then
+  if st.Loop.State.debug then begin
     Dolmen.Std.Expr.Print.print_index := true;
+    ()
+  end;
   let st, g =
     try Loop.Parser.parse_logic [] st (Loop.State.logic_file st)
     with exn -> handle_exn st exn

@@ -1907,7 +1907,7 @@ module Make
     (* variables must be bound explicitly *)
     if Id.(s.ns = Var) then begin
       match var_infer.infer_unbound_vars with
-      | No_inference -> _cannot_find env ast s
+      | No_inference -> _cannot_find env s_ast s
       | Unification_type_variable ->
         let v = wildcard_var env (From_source s_ast) Any_in_scope in
         add_inferred_type_var env s v s_ast;
@@ -1915,10 +1915,10 @@ module Make
         parse_app_ty_var env ast v s_ast args
     end else
       match env.expect with
-      | Anything -> _cannot_find env ast s
+      | Anything -> _cannot_find env s_ast s
       | Type ->
         if not sym_infer.infer_type_csts
-        then _cannot_find env ast s
+        then _cannot_find env s_ast s
         else begin
           let n = List.length args in
           let f = mk_ty_cst env (Id.name s) n in
@@ -1928,7 +1928,7 @@ module Make
         end
       | Term ->
         begin match sym_infer.infer_term_csts with
-          | No_inference -> _cannot_find env ast s
+          | No_inference -> _cannot_find env s_ast s
           | Wildcard shape ->
             let t_args = List.map (parse_term env) args in
             let f =
