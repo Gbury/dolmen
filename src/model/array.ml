@@ -14,6 +14,7 @@ type t = {
 (* invariant : none of the keys in the map binds to the [base] value *)
 
 
+(* Printing functions *)
 let print_base fmt = function
   | None -> ()
   | Some base ->
@@ -29,6 +30,7 @@ let print fmt { map; base; } =
   Format.fprintf fmt "@[<hv 1>{ %a%a@] }"
     print_map map print_base base
 
+(* Comparison *)
 let compare_base base base' =
   match base, base' with
   | None, None -> 0
@@ -44,7 +46,9 @@ let compare t t' =
   | 0 -> compare_map t.map t'.map
   | x -> x
 
+(* value ops *)
 let ops = Value.ops ~print ~compare
+
 
 (* Manipulation functions *)
 (* ************************************************************************* *)
