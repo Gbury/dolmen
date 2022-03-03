@@ -1,0 +1,4 @@
+File "tests/model/array/array_const.rsmt2", line 8, character 36-71:
+8 | (define-fun a () (Array t t) (store ((as const (Array t t)) (as @a0 t)) (as @a1 t) (as @a1 t)))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning The symbol const is an extension of the array theory and is not defined by the smtlib specification.

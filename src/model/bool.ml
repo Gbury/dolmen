@@ -7,6 +7,7 @@
 let ops = Value.ops
     ~compare:(fun b b' -> Stdlib.compare b b')
     ~print:(fun fmt b -> Format.fprintf fmt "%b" b)
+    ()
 
 (* Builtins *)
 (* ************************************************************************* *)
