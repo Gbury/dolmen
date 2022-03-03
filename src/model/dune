@@ -11,7 +11,7 @@
     ; Model checking
     Value Env Eval
     ; Builtins
-    Array Bool Core Fun Abstract
+    Array Bool Core Fun
     ; Helpers
   )
 )
