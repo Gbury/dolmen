@@ -139,8 +139,14 @@ let pp_exit_codes fmt = function
 (* Base stanza *)
 (* ************************************************************************* *)
 
-let pp_deps fmt (pb_file, additional) =
+let pp_deps fmt (pb_file, response_file, additional) =
   let l = (Format.asprintf "@[<h>(:input %s)@]" pb_file) :: additional in
+  let l =
+    match response_file with
+    | None -> l
+    | Some f ->
+      (Format.asprintf "@[<h>(:response %s)@]" f) :: l
+  in
   Format.pp_print_list Format.pp_print_string fmt l
     ~pp_sep:Format.pp_print_space
 
@@ -164,11 +170,11 @@ let test_stanza_aux ?(deps=[]) mode fmt
   (package dolmen_bin)@ \
   (action (diff %s %s))@])@\n"
     res_file
-    pp_deps (pb_file, deps)
+    pp_deps (pb_file, response_file, deps)
     pp_exit_codes exit_codes
     (match response_file with
      | None -> ""
-     | Some f -> Format.asprintf "--check-model=true -r %s " f
+     | Some _ -> Format.asprintf "--check-model=true -r %%{response} "
     )
     mode expected_file res_file
 
@@ -222,8 +228,8 @@ let gen_test fmt path pb =
     match response_of_problem pb with
     | None -> None
     | Some f ->
-      let f = Filename.concat path f in
-      if exists f then Some f else None
+      let full_path = Filename.concat path f in
+      if exists full_path then Some f else None
   in
   (* check for deps *)
   let deps = test_deps path pb in

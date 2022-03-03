@@ -6,12 +6,12 @@
 
 (rule
    (target  and.incremental)
-   (deps    (:input and.smt2))
+   (deps    (:response and.rsmt2) (:input and.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/and.rsmt2 --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -21,12 +21,12 @@
 
 (rule
    (target  and.full)
-   (deps    (:input and.smt2))
+   (deps    (:response and.rsmt2) (:input and.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/and.rsmt2 --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -38,12 +38,12 @@
 
 (rule
    (target  imply.incremental)
-   (deps    (:input imply.smt2))
+   (deps    (:response imply.rsmt2) (:input imply.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/imply.rsmt2 --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -53,12 +53,12 @@
 
 (rule
    (target  imply.full)
-   (deps    (:input imply.smt2))
+   (deps    (:response imply.rsmt2) (:input imply.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/imply.rsmt2 --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -70,12 +70,12 @@
 
 (rule
    (target  neg_false.incremental)
-   (deps    (:input neg_false.smt2))
+   (deps    (:response neg_false.rsmt2) (:input neg_false.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/neg_false.rsmt2 --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -85,12 +85,12 @@
 
 (rule
    (target  neg_false.full)
-   (deps    (:input neg_false.smt2))
+   (deps    (:response neg_false.rsmt2) (:input neg_false.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/neg_false.rsmt2 --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -102,12 +102,12 @@
 
 (rule
    (target  or.incremental)
-   (deps    (:input or.smt2))
+   (deps    (:response or.rsmt2) (:input or.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/or.rsmt2 --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -117,12 +117,12 @@
 
 (rule
    (target  or.full)
-   (deps    (:input or.smt2))
+   (deps    (:response or.rsmt2) (:input or.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/or.rsmt2 --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -134,12 +134,12 @@
 
 (rule
    (target  true.incremental)
-   (deps    (:input true.smt2))
+   (deps    (:response true.rsmt2) (:input true.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/true.rsmt2 --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)
@@ -149,12 +149,12 @@
 
 (rule
    (target  true.full)
-   (deps    (:input true.smt2))
+   (deps    (:response true.rsmt2) (:input true.smt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --check-model=true -r tests/model/bool/true.rsmt2 --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
   (package dolmen_bin)

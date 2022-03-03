@@ -13,6 +13,11 @@ type t = {
 }
 (* invariant : none of the keys in the map binds to the [base] value *)
 
+(* abstract arrays *)
+let abstract = {
+  base = None;
+  map = Value.Map.empty;
+}
 
 (* Printing functions *)
 let print_base fmt = function
@@ -47,7 +52,7 @@ let compare t t' =
   | x -> x
 
 (* value ops *)
-let ops = Value.ops ~print ~compare
+let ops = Value.ops ~abstract ~print ~compare ()
 
 
 (* Manipulation functions *)
