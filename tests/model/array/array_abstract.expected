@@ -1,0 +1,8 @@
+File "tests/model/array/array_abstract.rsmt2", line 10, character 9-12:
+10 |   (let ((arr (store arr (as @a0 t) (as @a0 t))))
+              ^^^
+Warning Shadowing: `arr` was already bound at line 9, character 9-12
+File "tests/model/array/array_abstract.rsmt2", line 11, character 9-12:
+11 |   (let ((arr (store arr (as @a1 t) (as @a1 t))))
+              ^^^
+Warning Shadowing: `arr` was already bound at line 10, character 9-12

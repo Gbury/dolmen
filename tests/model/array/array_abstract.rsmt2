@@ -1,0 +1,15 @@
+sat
+(
+; cardinality of t is 2
+; rep: (as @a0 t)
+; rep: (as @a1 t)
+(define-fun x () t (as @a0 t))
+(define-fun y () t (as @a1 t))
+(define-fun a () (Array t t)
+  (let ((arr (as @arr (Array t t))))
+  (let ((arr (store arr (as @a0 t) (as @a0 t))))
+  (let ((arr (store arr (as @a1 t) (as @a1 t))))
+  arr
+  )))
+)
+)

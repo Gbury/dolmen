@@ -48,7 +48,7 @@ let compare _ _ =
   raise Comparison_of_functional_values
 
 (* Value definition *)
-let ops = Value.ops ~compare ~print
+let ops = Value.ops ~compare ~print ()
 
 
 (* Creation *)

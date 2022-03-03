@@ -31,15 +31,15 @@ let empty () = {
 (* Warnings and errors *)
 (* ************************************************************************ *)
 
-let response_lang_changed =
-  Report.Error.mk ~code:Code.generic ~mnemonic:"response-lang-changed"
-    ~message:(fun fmt (old_lang, new_lang) ->
-        Format.fprintf fmt
-          "Response language changed from %s to %s (probably because of an include statement)"
-          (Response.string_of_language old_lang)
-          (Response.string_of_language new_lang))
-    ~name:"Response language change" ()
+let code = Code.create
+    ~category:"Model"
+    ~descr:"on model verification errors"
 
+let bad_model =
+  Report.Error.mk ~code ~mnemonic:"bad-model"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Incorrect model")
+    ~name:"Incorrect model" ()
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -88,7 +88,7 @@ module Pipe
         (* Record inferred abstract values *)
         let env =
           List.fold_left (fun env c ->
-              let value = Dolmen_model.Abstract.from_cst c in
+              let value = Dolmen_model.Value.abstract_cst c in
               Dolmen_model.Env.Cst.add c value env
             ) env (Typing.pop_inferred_model_constants st)
         in
