@@ -1,0 +1,4 @@
+File "tests/model/error/fo.smt2", line 3, character 0-33:
+3 | (assert (forall ((x Int)) (p x)))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Models cannot be checked for formulas that contain quantifiers

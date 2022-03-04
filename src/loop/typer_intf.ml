@@ -208,11 +208,15 @@ module type Pipe_res = sig
     | `Push of int
     | `Reset_assertions
     | `Reset
-    | `Exit
   ]
   (** Stack control *)
 
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
+  type exit = [
+    | `Exit
+  ]
+  (** Exit statement *)
+
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
   (** The type of statements after typechecking *)
 
   val print : Format.formatter -> typechecked stmt -> unit
