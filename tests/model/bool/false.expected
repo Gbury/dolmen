@@ -1,0 +1,4 @@
+File "tests/model/bool/false.smt2", line 2, character 0-14:
+2 | (assert false)
+    ^^^^^^^^^^^^^^
+Error This hypothesis/assertion evaluates to false

@@ -1,0 +1,4 @@
+File "tests/model/error/missing_answer.smt2", line 3, character 0-11:
+3 | (check-sat)
+    ^^^^^^^^^^^
+Error This solve/check-sat statement lacks an answer in the response file

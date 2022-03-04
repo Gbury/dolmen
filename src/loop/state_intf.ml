@@ -173,10 +173,13 @@ module type Check_pipe = sig
   (** The type of state used for the header check*)
 
 
-  (* Response file *)
+  (* Logic & Response file *)
+
+  val logic_file : t -> Logic.language file
+  (** Get the logic file info. *)
 
   val response_file : t -> Response.language file
-  (** Get the logic file info. *)
+  (** Get the response file info. *)
 
 
   (* Checking options *)
