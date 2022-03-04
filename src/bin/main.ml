@@ -7,13 +7,15 @@
 
 let debug_parsed_pipe st c =
   if st.Loop.State.debug then
-    Format.eprintf "[logic][parsed] @[<hov>%a@]@."
+    Format.eprintf "[logic][parsed][%a] @[<hov>%a@]@."
+      Dolmen.Std.Loc.print_compact c.Dolmen.Std.Statement.loc
       Dolmen.Std.Statement.print c;
   st, c
 
 let debug_typed_pipe st stmt =
   if st.Loop.State.debug then
-    Format.eprintf "[logic][typed] @[<hov>%a@]@\n@."
+    Format.eprintf "[logic][typed][%a] @[<hov>%a@]@\n@."
+      Dolmen.Std.Loc.print_compact stmt.Loop.Typer.loc
       Loop.Typer.print stmt;
   st, stmt
 

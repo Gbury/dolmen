@@ -24,8 +24,11 @@ module type S = sig
 end
 
 type 'a ops = (module S with type t = 'a)
+type any_ops = Ops : _ ops -> any_ops
 
 type t = Value : 'a witness * 'a ops * 'a -> t
+
+exception Extraction_failed of t * any_ops
 
 
 (* Creating ops and values *)
@@ -119,7 +122,7 @@ let[@inline] extract_exn (type a) ~(ops: a ops) (t : t) : a =
   | Value (A.Val, _, _) ->
    begin match V.abstract with
      | Some res -> res
-     | None -> assert false
+     | None -> raise (Extraction_failed (t, (Ops ops)))
    end
-  | _ -> assert false
+  | _ -> raise (Extraction_failed (t, (Ops ops)))
 

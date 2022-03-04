@@ -1,0 +1,4 @@
+File "tests/proof/not_supported.rsmt2", line 1, character 0-5:
+1 | unsat
+    ^^^^^
+Warning Unsat/proofs are not checked
