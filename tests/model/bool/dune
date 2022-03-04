@@ -33,6 +33,38 @@
   (action (diff and.expected and.full)))
 
 
+; Test for false.smt2
+; Incremental test
+
+(rule
+   (target  false.incremental)
+   (deps    (:response false.rsmt2) (:input false.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff false.expected false.incremental)))
+
+; Full mode test
+
+(rule
+   (target  false.full)
+   (deps    (:response false.rsmt2) (:input false.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (not 0)
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff false.expected false.full)))
+
+
 ; Test for imply.smt2
 ; Incremental test
 

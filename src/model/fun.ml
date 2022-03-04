@@ -7,6 +7,7 @@
 module E = Dolmen.Std.Expr
 
 exception Comparison_of_functional_values
+exception Bad_arity of E.Term.Const.t * int * Value.t list
 
 type value_function =
   | Builtin of {
@@ -68,19 +69,19 @@ let builtin ~arity ~cst eval_f =
 let fun_1 ~cst f =
   builtin ~arity:1 ~cst (function
       | [x] -> f x
-      | _ -> assert false
+      | l -> raise (Bad_arity (cst, 1, l))
     )
 
 let fun_2 ~cst f =
   builtin ~arity:2 ~cst (function
       | [x; y] -> f x y
-      | _ -> assert false
+      | l -> raise (Bad_arity (cst, 2, l))
     )
 
 let fun_3 ~cst f =
   builtin ~arity:3 ~cst (function
       | [x; y; z] -> f x y z
-      | _ -> assert false
+      | l -> raise (Bad_arity (cst, 3, l))
     )
 
 let fun_n ~cst eval_f =
@@ -120,22 +121,18 @@ let take_drop n l =
 let[@specialise] rec apply ~eval env v = function
   | [] -> v
   | new_args ->
-    begin match Value.extract ~ops v with
-      | None ->
-        assert false (* internal error: well-typed terms should not allow this *)
-      | Some { func; args = partial_args; } ->
-        let f_arity = arity func in
-        let n = List.length partial_args in
-        let m = List.length new_args in
-        if n + m < f_arity then begin
-          (* partial application *)
-          let args = List.rev_append new_args partial_args in
-          Value.mk ~ops { func; args; }
-        end else begin
-          let all_args = List.rev_append partial_args new_args in
-          let full_args, over_args = take_drop f_arity all_args in
-          let v' = reduce ~eval env func full_args in
-          apply ~eval env v' over_args
-        end
+    let {func; args = partial_args; } = Value.extract_exn ~ops v in
+    let f_arity = arity func in
+    let n = List.length partial_args in
+    let m = List.length new_args in
+    if n + m < f_arity then begin
+      (* partial application *)
+      let args = List.rev_append new_args partial_args in
+      Value.mk ~ops { func; args; }
+    end else begin
+      let all_args = List.rev_append partial_args new_args in
+      let full_args, over_args = take_drop f_arity all_args in
+      let v' = reduce ~eval env func full_args in
+      apply ~eval env v' over_args
     end
 
