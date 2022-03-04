@@ -1735,11 +1735,14 @@ module Pipe
     | `Push of int
     | `Reset_assertions
     | `Reset
+  ]
+
+  type exit = [
     | `Exit
   ]
 
   (* Agregate types *)
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control ]
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
 
   (* Simple constructor *)
   (* let tr implicit contents = { implicit; contents; } *)

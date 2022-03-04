@@ -243,7 +243,7 @@ let compact (t : loc) =
 
 let print_compact fmt t =
   let offset, length = split_compact t in
-  Format.fprintf fmt "%d:%d" offset length
+  Format.fprintf fmt "%d-%d" offset (offset + length)
 
 let pp buf pos =
   if pos.start_line = pos.stop_line then

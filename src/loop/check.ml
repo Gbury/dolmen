@@ -23,14 +23,25 @@ type 't assertion = {
 }
 
 type 'st t = {
+  model : model;
   answers : 'st answers;
   hyps : term assertion list;
   goals : term assertion list;
   clauses : term list assertion list;
 }
 
+let empty_model () =
+  let builtins = Dolmen_model.Eval.builtins [
+      Dolmen_model.Bool.builtins;
+      Dolmen_model.Core.builtins;
+      Dolmen_model.Array.builtins;
+    ] in
+  let env = Dolmen_model.Env.empty ~builtins in
+  env
+
 let empty () = {
   answers = Init;
+  model = empty_model ();
   hyps = []; goals = []; clauses = [];
 }
 
@@ -82,6 +93,13 @@ let assertion_stack_not_supported =
            the assertion stack using push/pop/reset statements")
     ~name:"Assertion Stack in Model" ()
 
+let fo_model =
+  Report.Error.mk ~code ~mnemonic:"fo-model"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt
+          "Models cannot be checked for formulas that contain quantifiers")
+    ~name:"First-Order Model" ()
+
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -105,27 +123,53 @@ module Pipe
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
+  (* Evaluation and errors *)
+  (* ************************************************************************ *)
+
+  let eval st ~file ~loc env term =
+    try
+      Dolmen_model.Eval.eval env term
+    with
+    | Dolmen_model.Eval.Quantifier ->
+      raise (State.Error (State.error st ~file ~loc fo_model ()))
+
   (* Typing models *)
   (* ************************************************************************ *)
 
-  let empty_model () =
-    let builtins = Dolmen_model.Eval.builtins [
-        Dolmen_model.Bool.builtins;
-        Dolmen_model.Core.builtins;
-        Dolmen_model.Array.builtins;
-      ] in
-    let env = Dolmen_model.Env.empty ~builtins in
-    env
+  let record_defs st env ~loc ~(file : _ State_intf.file) typed_defs =
+    List.fold_left (fun (st, env) def ->
+        match def with
+        | `Type_def _ ->
+          let st = State.error ~file ~loc st type_def_in_model () in
+          st, env
+        | `Term_def (_id, cst, ty_params, term_params, body) ->
+          let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
+          if State.debug st then
+            Format.eprintf "[model][typed][%a] @[<hov>%a := %a@]@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              Dolmen.Std.Expr.Term.print func;
+          let value = eval st ~file ~loc env func in
+          if State.debug st then
+            Format.eprintf "[model][value][%a] @[<hov>%a -> %a@]@\n@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              Dolmen_model.Value.print value;
+          let env = Dolmen_model.Env.Cst.add cst value env in
+          st, env
+      ) (st, env) typed_defs
 
-  let type_model st ~file ?loc ?attrs l =
-    let env = empty_model () in
+  let type_model st ~file ~(loc : Dolmen.Std.Loc.full) ?attrs l =
+    let check_st = State.check_state st in
+    let env = check_st.model in
     let input = `Response file in
     List.fold_left (fun (st, env) parsed_defs ->
         if State.debug st then
-          Format.eprintf "[model][parsed] @[<hov>%a@]@."
+          Format.eprintf "[model][parsed][%a] @[<hov>%a@]@."
+            Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
             Dolmen.Std.Statement.(print_group print_def) parsed_defs;
         let st, defs =
-          Typing.defs ~mode:`Use_declared_id st ~input ?loc ?attrs parsed_defs
+          Typing.defs ~mode:`Use_declared_id st ~input ~loc:loc.loc ?attrs parsed_defs
         in
         (* Record inferred abstract values *)
         let env =
@@ -135,35 +179,7 @@ module Pipe
             ) env (Typing.pop_inferred_model_constants st)
         in
         (* Record the explicit definitions *)
-        let env =
-          List.fold_left2 (fun env def (parsed : Dolmen.Std.Statement.def) ->
-              match def with
-              | `Type_def _ ->
-                let loc = Dolmen.Std.Loc.{
-                    file = file.loc;
-                    loc = parsed.loc;
-                  } in
-                let st = State.error ~file ~loc st type_def_in_model () in
-                raise (State.Error st)
-              | `Term_def (_id, cst, ty_params, term_params, body) ->
-                if State.debug st then
-                  Format.eprintf "[model][typed] @[<hov>%a := %a@]@."
-                    Dolmen.Std.Expr.Term.Const.print cst
-                    Dolmen.Std.Expr.Term.print
-                    (Dolmen.Std.Expr.Term.lam (ty_params, term_params) body);
-                let value =
-                  Dolmen_model.Fun.mk ~env
-                    ~eval:Dolmen_model.Eval.eval
-                    ty_params term_params body
-                in
-                if State.debug st then
-                  Format.eprintf "[model][value] @[<hov>%a -> %a@]@\n@."
-                    Dolmen.Std.Expr.Term.Const.print cst
-                    Dolmen_model.Value.print value;
-                Dolmen_model.Env.Cst.add cst value env
-            ) env defs parsed_defs.contents
-        in
-        st, env
+        record_defs st ~file ~loc env defs
       ) (st, env) l
 
 
@@ -182,13 +198,13 @@ module Pipe
         match gen st with
         | st, None -> st, None
         | st, Some answer ->
+          let loc = Dolmen.Std.Loc.{ file = file.loc; loc = answer.loc; } in
           begin match answer.Dolmen.Std.Answer.descr with
             | Unsat ->
-              let loc = Dolmen.Std.Loc.{ file = file.loc; loc = answer.loc; } in
               st, Some (Unsat loc)
             | Sat None -> st, Some (Sat (empty_model ()))
             | Sat Some model ->
-              let st, env = type_model ~file st model in
+              let st, env = type_model ~loc ~file st model in
               st, Some (Sat env)
           end
       in
@@ -198,25 +214,26 @@ module Pipe
       in
       answers st
 
-  let eval_term st env term =
-    let value = Dolmen_model.Eval.eval env term in
+  let eval_term st ~file ~loc env term =
+    let value = eval st ~file ~loc env term in
     if State.debug st then
-      Format.eprintf "[model][eval] @[<hov>%a -> %a@]@\n@."
+      Format.eprintf "[model][eval][%a] @[<hov>%a -> %a@]@\n@."
+        Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
         Dolmen.Std.Expr.Term.print term Dolmen_model.Value.print value;
     Dolmen_model.Value.extract_exn ~ops:Dolmen_model.Bool.ops value
 
   let eval_hyp env st { file; loc; contents = hyp; } =
-    let res = eval_term st env hyp in
+    let res = eval_term st ~file ~loc env hyp in
     if res then st else
       State.error ~file ~loc st bad_model `Hyp
 
   let eval_goal env st { file; loc; contents = goal; } =
-    let res = eval_term st env goal in
+    let res = eval_term st ~file ~loc env goal in
     if not res then st else
       State.error ~file ~loc st bad_model `Goal
 
   let eval_clause env st { file; loc; contents = clause; } =
-    let l = List.map (eval_term st env) clause in
+    let l = List.map (eval_term st ~file ~loc env) clause in
     if List.exists Fun.id l then st else
       State.error ~file ~loc st bad_model `Clause
 
@@ -237,6 +254,17 @@ module Pipe
         let file = State.logic_file st in
         let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
         match c.contents with
+        | #Types.exit
+        | #Types.decls
+        | #Types.get_info
+        | #Types.set_info -> st
+        | #Types.stack_control ->
+          State.error ~file ~loc st assertion_stack_not_supported ()
+        | `Defs defs ->
+          let check_st = State.check_state st in
+          let st, model = record_defs st check_st.model ~file ~loc defs in
+          let st = State.set_check_state st { check_st with model; } in
+          st
         | `Hyp contents ->
           let assertion = { file; loc; contents; } in
           State.set_check_state st { t with hyps = assertion :: t.hyps; }
@@ -256,9 +284,6 @@ module Pipe
               let st = check_aux st t answer in
               State.set_check_state st { t with hyps = []; goals = []; clauses = []; }
           end
-        | `Pop _ | `Push _ | `Reset_assertions | `Reset ->
-          State.error ~file ~loc st assertion_stack_not_supported ()
-        | _ -> st
       else
         st
     in
