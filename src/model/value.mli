@@ -4,9 +4,11 @@
 (** {2 Type definitions} *)
 (** ************************************************************************ *)
 
-type 'a ops
-
 type t
+type 'a ops
+type any_ops = Ops : _ ops -> any_ops
+
+exception Extraction_failed of t * any_ops
 
 (* Creating/extracting values *)
 (* ************************************************************************* *)
