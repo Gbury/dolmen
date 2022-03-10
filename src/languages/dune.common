@@ -12,7 +12,7 @@
 )
 
 (menhir
- (flags (--explain --table --external-tokens Tokens))
+ (flags (--explain --exn-carries-state --external-tokens Tokens))
  (modules tokens parser)
  (merge_into parser)
 )
