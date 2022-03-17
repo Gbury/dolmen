@@ -5,13 +5,13 @@
   (libraries
     ; external deps
     ; dolmen standard deps
-    dolmen dolmen.std dolmen.intf
+    dolmen dolmen.std dolmen.intf zarith
   )
   (modules
     ; Model checking
     Value Env Eval
     ; Builtins
-    Array Bool Core Fun
+    Array Bool Core Fun Int Real
     ; Helpers
   )
 )
