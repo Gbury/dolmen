@@ -36,6 +36,7 @@ let empty_model () =
       Dolmen_model.Core.builtins;
       Dolmen_model.Array.builtins;
       Dolmen_model.Int.builtins;
+      Dolmen_model.Real.builtins;
     ] in
   let env = Dolmen_model.Env.empty ~builtins in
   env

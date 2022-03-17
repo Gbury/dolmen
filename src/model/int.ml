@@ -58,7 +58,7 @@ let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Integer i -> Some (mk (Z.of_string i))
   | B.Lt when arg_is_int () -> cmp ~cst Z.lt
-  | B.Gt when arg_is_int () -> cmp ~cst Z.lt
+  | B.Gt when arg_is_int () -> cmp ~cst Z.gt
   | B.Geq when arg_is_int () -> cmp ~cst Z.geq
   | B.Leq when arg_is_int () -> cmp ~cst Z.leq
   | B.Minus when arg_is_int () -> Some (fun1 ~cst (fun x -> Z.neg x))

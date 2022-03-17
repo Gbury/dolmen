@@ -3,15 +3,11 @@
 (** {2 Value definition} *)
 (** ************************************************************************ *)
 
-val ops : Z.t Value.ops
+val ops : Q.t Value.ops
 (** ops for Z.tean values. *)
 
-val mk : Z.t -> Value.t
+val mk : Q.t -> Value.t
 (** Z.Tean value creation. *)
 
 val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for Integers *)
-
-val truncate : Q.t -> Z.t
-val floor : Q.t -> Z.t
-val ceil : Q.t -> Z.t
