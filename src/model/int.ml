@@ -50,35 +50,30 @@ let mod_f a b = Z.sub a (div_f a b)
 
 
 let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
-  let arg_is_int () =
-    match E.Ty.poly_sig cst.id_ty with
-    | _, ty::_, _ -> E.Ty.equal E.Ty.int ty
-    | _ -> false
-  in
   match cst.builtin with
   | B.Integer i -> Some (mk (Z.of_string i))
-  | B.Lt when arg_is_int () -> cmp ~cst Z.lt
-  | B.Gt when arg_is_int () -> cmp ~cst Z.gt
-  | B.Geq when arg_is_int () -> cmp ~cst Z.geq
-  | B.Leq when arg_is_int () -> cmp ~cst Z.leq
-  | B.Minus when arg_is_int () -> Some (fun1 ~cst (fun x -> Z.neg x))
-  | B.Add when arg_is_int () -> op2 ~cst Z.add
-  | B.Sub when arg_is_int () -> op2 ~cst Z.sub
-  | B.Mul when arg_is_int () -> op2 ~cst Z.mul
-  | B.Pow when arg_is_int () ->
+  | B.Lt `Int -> cmp ~cst Z.lt
+  | B.Gt `Int -> cmp ~cst Z.gt
+  | B.Geq `Int -> cmp ~cst Z.geq
+  | B.Leq `Int -> cmp ~cst Z.leq
+  | B.Minus `Int -> Some (fun1 ~cst (fun x -> Z.neg x))
+  | B.Add `Int -> op2 ~cst Z.add
+  | B.Sub `Int -> op2 ~cst Z.sub
+  | B.Mul `Int -> op2 ~cst Z.mul
+  | B.Pow `Int ->
     op2 ~cst (fun x y -> if Z.equal Z.zero x then Z.zero else
               if Z.equal Z.one x then Z.one
               else if Z.equal Z.minus_one x then
                 if Z.is_odd y then Z.minus_one else Z.one
               else Z.pow x (Z.to_int y))
-  | B.Div_e when arg_is_int () -> op2 ~cst div_e
-  | B.Div_t when arg_is_int () -> op2 ~cst div_t
-  | B.Div_f when arg_is_int () -> op2 ~cst div_f
-  | B.Modulo_e when arg_is_int () -> op2 ~cst mod_e
-  | B.Modulo_t when arg_is_int () -> op2 ~cst mod_t
-  | B.Modulo_f when arg_is_int () -> op2 ~cst mod_f
+  | B.Div_e `Int -> op2 ~cst div_e
+  | B.Div_t `Int -> op2 ~cst div_t
+  | B.Div_f `Int -> op2 ~cst div_f
+  | B.Modulo_e `Int -> op2 ~cst mod_e
+  | B.Modulo_t `Int -> op2 ~cst mod_t
+  | B.Modulo_f `Int -> op2 ~cst mod_f
   | B.Divisible -> Some (fun2 ~cst (fun x y -> Bool.mk @@ Z.divisible x y))
-  | B.Abs when arg_is_int () -> op1 ~cst Z.abs
-  | (B.Is_int| B.Is_rat) when arg_is_int () -> Some (Bool.mk true)
-  | B.Floor | B.Ceiling | B.Truncate | B.Round when arg_is_int () -> op1 ~cst (fun x -> x)
+  | B.Abs -> op1 ~cst Z.abs
+  | (B.Is_int `Int| B.Is_rat `Int) -> Some (Bool.mk true)
+  | B.Floor `Int | B.Ceiling `Int | B.Truncate `Int | B.Round `Int -> op1 ~cst (fun x -> x)
   | _ -> None
