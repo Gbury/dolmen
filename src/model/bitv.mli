@@ -4,14 +4,10 @@
 (** ************************************************************************ *)
 
 val ops : Z.t Value.ops
-(** ops for integer values. *)
+(** ops for bitvector values. *)
 
-val mk : Z.t -> Value.t
-(** integer value creation. *)
+val mk : int -> Z.t -> Value.t
+(** [mk n z] Bitvector of size [n] value creation. *)
 
 val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
-(** builtins for integers *)
-
-val truncate : Q.t -> Z.t
-val floor : Q.t -> Z.t
-val ceil : Q.t -> Z.t
+(** builtins for bitvectors *)

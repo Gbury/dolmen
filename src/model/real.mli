@@ -4,10 +4,10 @@
 (** ************************************************************************ *)
 
 val ops : Q.t Value.ops
-(** ops for Z.tean values. *)
+(** ops for real values. *)
 
 val mk : Q.t -> Value.t
-(** Z.Tean value creation. *)
+(** real value creation. *)
 
 val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
-(** builtins for Integers *)
+(** builtins for reals *)
