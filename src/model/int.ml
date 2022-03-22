@@ -36,9 +36,9 @@ let div_e a b =
 
 let div_t a b = truncate (Q.div (Q.of_bigint a) (Q.of_bigint b))
 let div_f a b = floor (Q.div (Q.of_bigint a) (Q.of_bigint b))
-let mod_e a b = Z.sub a (div_e a b)
-let mod_t a b = Z.sub a (div_t a b)
-let mod_f a b = Z.sub a (div_f a b)
+let mod_e a b = Z.sub a (Z.mul (div_e a b) b)
+let mod_t a b = Z.sub a (Z.mul (div_t a b) b)
+let mod_f a b = Z.sub a (Z.mul (div_f a b) b)
 
 let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with

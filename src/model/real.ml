@@ -40,9 +40,9 @@ let div_e a b =
 
 let div_t a b = truncate (Q.div a b)
 let div_f a b = floor (Q.div a b)
-let mod_e a b = Q.sub a (div_e a b)
-let mod_t a b = Q.sub a (div_t a b)
-let mod_f a b = Q.sub a (div_f a b)
+let mod_e a b = Q.sub a (Q.mul (div_e a b) b)
+let mod_t a b = Q.sub a (Q.mul (div_t a b) b)
+let mod_f a b = Q.sub a (Q.mul (div_f a b) b)
 
 let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
