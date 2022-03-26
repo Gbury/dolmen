@@ -13,6 +13,7 @@ depends: [
   "dolmen" {= version }
   "dune" { >= "2.7" }
   "odoc" { with-doc }
+  "zarith"
 ]
 tags: [ "logic" "type" "model" "modelchecking" "first order" ]
 homepage: "https://github.com/Gbury/dolmen"
