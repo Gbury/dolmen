@@ -11,7 +11,7 @@
     ; Model checking
     Value Env Eval
     ; Builtins
-    Array Bool Core Fun Int Real Bitv
+    Array Bool Core Fun Int Rat Real Bitv
     ; Helpers
   )
 )

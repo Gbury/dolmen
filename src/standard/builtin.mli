@@ -165,7 +165,7 @@ type _ t +=
   (** [Real: ttype] the type for signed reals. *)
   | Decimal of string
   (** [Decimal s: Real]: real litterals. The string [s] should be a
-      floating point representatoin of a real. Not however that reals
+      floating point representation of a real. Not however that reals
       here means the mathematical abstract notion of real numbers, including
       irrational, non-algebric numbers, and is thus not restricted to
       floating point numbers, although these are the only litterals

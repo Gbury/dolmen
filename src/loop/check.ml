@@ -1,6 +1,7 @@
 
-(* Model(/Proof) check *)
+(* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(* Model(/Proof) check *)
 
 (* State *)
 (* ************************************************************************ *)
@@ -36,6 +37,7 @@ let empty_model () =
       Dolmen_model.Core.builtins;
       Dolmen_model.Array.builtins;
       Dolmen_model.Int.builtins;
+      Dolmen_model.Rat.builtins;
       Dolmen_model.Real.builtins;
       Dolmen_model.Bitv.builtins;
     ] in

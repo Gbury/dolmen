@@ -5,9 +5,7 @@
 (** ************************************************************************ *)
 
 type t = Q.t
-(* Reals as rationals. Currently works because we have limited operations
-   on reals, but we might need to upgrade to a more complete represetnation
-   at one point. *)
+(* Rationals, using zarith. *)
 
 val ops : t Value.ops
 (** ops for real values. *)

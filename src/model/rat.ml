@@ -4,12 +4,7 @@
 (* Value definition *)
 (* ************************************************************************* *)
 
-(* Real are currently represented as rationals.
-   This is correct for quantifier free logic, since without non-rational
-   contants, we do not have a way to create non-rational values.
-   However, we may need to upgrade this representation to a more complete
-   one when we add quantifiers and/or new constants/operators on real
-   values. *)
+(* Rationals, represented using zarith. *)
 type t = Q.t
 
 let print = Q.pp_print
@@ -65,27 +60,27 @@ let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Decimal i -> Some (mk (Q.of_string i))
-  | B.Lt `Real -> cmp ~cst Q.lt
-  | B.Gt `Real -> cmp ~cst Q.gt
-  | B.Geq `Real -> cmp ~cst Q.geq
-  | B.Leq `Real -> cmp ~cst Q.leq
-  | B.Minus `Real -> op1 ~cst (fun x -> Q.neg x)
-  | B.Add `Real -> op2 ~cst Q.add
-  | B.Sub `Real -> op2 ~cst Q.sub
-  | B.Mul `Real -> op2 ~cst Q.mul
-  | B.Div `Real -> op2 ~cst Q.div
-  | B.Div_e `Real -> op2 ~cst div_e
-  | B.Div_t `Real -> op2 ~cst div_t
-  | B.Div_f `Real -> op2 ~cst div_f
-  | B.Modulo_e `Real -> op2 ~cst mod_e
-  | B.Modulo_t `Real -> op2 ~cst mod_t
-  | B.Modulo_f `Real -> op2 ~cst mod_f
-  | B.Is_rat `Real -> Some (Bool.mk true)
-  | B.Floor `Real -> op1 ~cst floor
-  | B.Ceiling `Real -> op1 ~cst ceil
-  | B.Truncate `Real -> op1 ~cst truncate
-  | B.Round `Real -> op1 ~cst round
-  | B.Is_int `Real ->
+  | B.Lt `Rat -> cmp ~cst Q.lt
+  | B.Gt `Rat -> cmp ~cst Q.gt
+  | B.Geq `Rat -> cmp ~cst Q.geq
+  | B.Leq `Rat -> cmp ~cst Q.leq
+  | B.Minus `Rat -> op1 ~cst (fun x -> Q.neg x)
+  | B.Add `Rat -> op2 ~cst Q.add
+  | B.Sub `Rat -> op2 ~cst Q.sub
+  | B.Mul `Rat -> op2 ~cst Q.mul
+  | B.Div `Rat -> op2 ~cst Q.div
+  | B.Div_e `Rat -> op2 ~cst div_e
+  | B.Div_t `Rat -> op2 ~cst div_t
+  | B.Div_f `Rat -> op2 ~cst div_f
+  | B.Modulo_e `Rat -> op2 ~cst mod_e
+  | B.Modulo_t `Rat -> op2 ~cst mod_t
+  | B.Modulo_f `Rat -> op2 ~cst mod_f
+  | B.Is_rat `Rat -> Some (Bool.mk true)
+  | B.Floor `Rat -> op1 ~cst floor
+  | B.Ceiling `Rat -> op1 ~cst ceil
+  | B.Truncate `Rat -> op1 ~cst truncate
+  | B.Round `Rat -> op1 ~cst round
+  | B.Is_int `Rat ->
     Some (fun1 ~cst (fun x -> Bool.mk (Z.equal Z.one x.Q.den)))
   | _ -> None
 
