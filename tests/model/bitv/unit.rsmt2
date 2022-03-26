@@ -1,0 +1,10 @@
+sat
+(model
+(define-fun a1 () (_ BitVec 8) #b11000000)
+(define-fun b1 () (_ BitVec 8) #b10100000)
+(define-fun c1 () (_ BitVec 8) #b10000000)
+(define-fun a2 () (_ BitVec 8) #b11000000)
+(define-fun b2 () (_ BitVec 8) #b00000011)
+(define-fun a3 () (_ BitVec 8) #b11000000)
+(define-fun b3 () (_ BitVec 8) #b00110000)
+)

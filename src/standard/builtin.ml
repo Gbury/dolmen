@@ -54,21 +54,23 @@ type _ t +=
 
 (* Arithmetic builtins *)
 (* ************************************************************************* *)
+type int_rat_real = [ `Int | `Rat | `Real ]
+type rat_real = [ `Rat | `Real ]
 
 type _ t +=
   | Int | Integer of string
   | Rat | Rational of string
   | Real | Decimal of string
-  | Lt | Leq | Gt | Geq
-  | Minus | Add | Sub | Mul | Pow
-  | Div
-  | Div_e | Modulo_e
-  | Div_t | Modulo_t
-  | Div_f | Modulo_f
+  | Lt of int_rat_real | Leq of int_rat_real | Gt of int_rat_real | Geq of int_rat_real
+  | Minus of int_rat_real | Add of int_rat_real | Sub of int_rat_real | Mul of int_rat_real | Pow of int_rat_real
+  | Div of rat_real
+  | Div_e of int_rat_real | Modulo_e of int_rat_real
+  | Div_t of int_rat_real | Modulo_t of int_rat_real
+  | Div_f of int_rat_real | Modulo_f of int_rat_real
   | Abs | Divisible
-  | Is_int | Is_rat
-  | Floor | Floor_to_int
-  | Ceiling | Truncate | Round
+  | Is_int of int_rat_real | Is_rat of int_rat_real
+  | Floor of int_rat_real | Floor_to_int of rat_real
+  | Ceiling of int_rat_real | Truncate of int_rat_real | Round of int_rat_real
 
 (* arrays *)
 type _ t +=
