@@ -1,0 +1,11 @@
+
+type t =
+  A
+| B
+
+goal g:
+  match A with
+  | A -> 1 <= 1
+  | A -> false
+  | B -> true
+  end

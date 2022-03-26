@@ -1,0 +1,4 @@
+File "tests/typing/warnings/redundant_pattern/redundant_1.ae", line 9, character 4-5:
+9 |   | A -> false
+        ^
+Warning This pattern is useless (i.e. it is made redundant by earlier patterns)

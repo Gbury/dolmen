@@ -1,6 +1,0 @@
-File "tests/typing/errors/useless_patterns/error_1.ae", line 8, character 4 to line 11, character 7:
- 8 | ....match x with
-...
-11 |     end.....
-Error Redundant cases: The following cases are ureachable and redundant: 
-      - A y

@@ -358,6 +358,16 @@ let replicate n x =
   in
   aux x [] n
 
+(* list split *)
+let list_take l n =
+  let rec aux acc l n =
+    match l with
+    | _ when n <= 0 -> List.rev acc, l
+    | [] -> failwith "Expr.list_take: not enough arguments"
+    | x :: r -> aux (x :: acc) r (n - 1)
+  in
+  aux [] l n
+
 (* automatic cache *)
 let with_cache ~cache f x =
   match Hashtbl.find cache x with
@@ -964,6 +974,10 @@ module Ty = struct
     let l, _ = split_pi t in
     List.length l
 
+  let t_arity t =
+    let _, l, _ = poly_sig t in
+    List.length l
+
   (* Matching *)
   exception Impossible_matching of ty * ty
 
@@ -1171,13 +1185,14 @@ module Term = struct
   exception Field_missing of term_cst
   exception Field_expected of term_cst
 
+  exception Pattern_expected of t
+  exception Empty_pattern_matching
+  exception Partial_pattern_match of t list
   exception Constructor_expected of term_cst
 
   exception Over_application of t list
   exception Bad_poly_arity of ty_var list * ty list
 
-  exception Redundant_cases of t list
-  exception Inexhaustive_matching of term_cst list
 
   (* *)
 
@@ -1414,77 +1429,227 @@ module Term = struct
         ) l''
     | _ -> assert false
 
-  (** Iterates of over the constructors [cstrs]
-      - If the constructor [cstr] is one of them, it is removed from [cstrs].
-      - If it's then it is added to [red].
-  *)
-  let rec check_cstr orig_term ty red ({ index = i1; _ } as cstr) cstrs =
-    match cstrs with
-    |  { index = i2; _ } as h :: t ->
-      if i1 = i2
-      then red, t
-      else
-        let nred, ncstrs = check_cstr orig_term ty red cstr t in
-        nred, h :: ncstrs
-    | [] -> cstr :: red, cstrs
 
-  (** Checks that the pattern matching is well-formed,
-      can raise the excpetions ... if it isn't. *)
-  let check_pattern_matching ty (patts: t list) =
+  module Pattern_matching = struct
+    (* Pattern matching analysis
 
-    (* The list of the constructors of the type [ty].*)
-    let cstrs =
-      begin match ty.ty_descr with
-        | TyApp (tc, _ ) ->
-          begin match Ty.definition tc with
-            | Some (Adt { cases; record; _ }) when not record ->
-              Array.fold_left (
-                fun acc Ty.{ cstr; _ } ->
-                  cstr :: acc
-              ) [] cases
-            | _ -> []
+       We perform an analysis on pattern matching to determine two things:
+       - which patterns are redundant, if any
+       - which patterns are missing from the match, if any
+
+       The analysis is taken from the following research paper:
+       Warnings for pattern matching - LUC MARANGET
+       http://moscova.inria.fr/~maranget/papers/warn/warn.pdf
+    *)
+
+    type pattern_head =
+      | Wildcard
+      | Cstr of {
+          case : int;
+          adt : ty_cst;
+          cstr : term_cst;
+          args : term list;
+        }
+
+    type pat = {
+      term : term;
+      head : pattern_head;
+    }
+
+    let pp_pat fmt { term; _ } =
+      Format.fprintf fmt "%a" Print.term term
+
+    type matrix = pat list list
+
+    let pp_row fmt r =
+      let pp_sep fmt () = Format.fprintf fmt "\t@ " in
+      Format.fprintf fmt "(@[<h>%a@])" (Format.pp_print_list ~pp_sep pp_pat) r
+
+    let _pp_matrix fmt m =
+      let pp_sep fmt () = Format.fprintf fmt "@ " in
+      Format.fprintf fmt "(@[<v>%a@])" (Format.pp_print_list ~pp_sep pp_row) m
+
+    let view_pat t =
+      match t.term_descr with
+      | Var _ -> Wildcard
+      | Cst ( { builtin = Builtin.Constructor { adt; case; }; _ } as cstr ) ->
+        Cstr { cstr; adt; case; args = []; }
+      | App ({ term_descr = Cst ({
+          builtin = Builtin.Constructor { adt; case; }; _ } as cstr); _ }, _, args) ->
+        Cstr { cstr; adt; case; args; }
+      | Cst _ | App _ | Binder _ | Match _ ->
+        raise (Pattern_expected t)
+
+    let mk_pat term =
+      { term; head = view_pat term; }
+
+    let specialise_row arity c = function
+      | [] -> assert false
+      | p_i_1 :: p_r ->
+        begin match p_i_1.head with
+          | Wildcard ->
+            [init_list arity (fun _ -> p_i_1) @ p_r]
+          | Cstr { cstr = c'; args = r; _ } ->
+            if Id.equal c c' then [List.map mk_pat r @ p_r] else []
+        end
+
+    let specialise_vector arity c q =
+      match specialise_row arity c q with
+      | [q'] -> q'
+      | [] | _ :: _ :: _-> assert false (* internal error *)
+
+    let specialise_matrix arity c p =
+      List.concat_map (specialise_row arity c) p
+
+    let default_matrix (p : matrix) : matrix =
+      List.concat_map (function
+          | [] -> assert false
+          | p_i_1 :: p_i_r ->
+            begin match p_i_1.head with
+              | Wildcard -> [p_i_r]
+              | Cstr _ -> []
+            end) p
+
+    let all_constructors_appear_in_first_col (p : matrix) =
+      let r = ref None in
+      let cstrs = ref [| |] in
+      let expand_for adt =
+        match !r with
+        | Some a -> a
+        | None ->
+          begin match Ty.definition adt with
+            | Some Adt { cases; _ } ->
+              let a = Array.map (fun _ -> false) cases in
+              cstrs := cases;
+              r := Some a;
+              a
+            | _ -> assert false
           end
-        | _ -> []
-      end
-    in
+      in
+      let set adt i =
+        let a = expand_for adt in
+        a.(i) <- true
+      in
+      List.iter (function
+          | [] -> ()
+          | p_1 :: _ ->
+            begin match p_1.head with
+              | Wildcard -> ()
+              | Cstr { case; adt; _ } ->
+                set adt case
+            end
+        ) p;
+      match !r with
+      | None -> `Missing []
+      | Some a ->
+        let all_occurs = ref true in
+        let missing = ref [] in
+        let all = ref [] in
+        Array.iter2 (fun (case : Ty.adt_case) occurs ->
+            if occurs
+            then (all := case.cstr :: !all)
+            else (all_occurs := false; missing := case.cstr :: !missing)
+          ) !cstrs a;
+        if !all_occurs
+        then `All_present !all
+        else `Missing !missing
 
-    (* Supposes that all the matched constructors belong to the type
-        - if one of the patterns is a variable, the ones that follow it
-          are considered as redundant (as well as the duplicated
-          constructors).
-        - if all the patterns are constructors or applications of
-          constructors, they have to cover all the constructors of the type
-          otherwise an [Inexhaustive_matching] exception is raised with the
-          list of unmatched contructors as an argument. *)
-    let rec aux (red, cstrs) patts =
-      match patts with
-      | { term_descr =
-            Cst cstr |
-            App ({ term_descr = Cst cstr; _ }, _, _); _
-        } as hd :: [] ->
-        let nred, ncstrs = check_cstr hd ty red cstr cstrs in
-        if ncstrs == []
-        then
-          if nred == []
-          then ()
-          else raise (Redundant_cases (List.map of_cst red))
-        else raise (Inexhaustive_matching ncstrs)
+    let rec u_rec (p : matrix) = function
+      | [] ->
+        begin match p with
+          | [] -> true
+          | _ :: _ -> false
+        end
+      | (q_1 :: q_r) as q ->
+        begin match q_1.head with
+          | Cstr { cstr; args; _ } ->
+            let arity = List.length args in
+            let p' = specialise_matrix arity cstr p in
+            let q' = specialise_vector arity cstr q in
+            u_rec p' q'
+          | Wildcard ->
+            begin match all_constructors_appear_in_first_col p with
+              | `All_present cstrs ->
+                List.for_all (fun cstr ->
+                    let arity = Ty.t_arity cstr.id_ty in
+                    let p' = specialise_matrix arity cstr p in
+                    let q' = specialise_vector arity cstr q in
+                    u_rec p' q'
+                  ) cstrs
+              | `Missing _ ->
+                let p' = default_matrix p in
+                let q' = q_r in
+                u_rec p' q'
+            end
+        end
 
-      | { term_descr =
-            Cst cstr |
-            App ({ term_descr = Cst cstr; _ }, _, _); _
-        } as hd :: tl ->
-        let nred, ncstrs = check_cstr hd ty red cstr cstrs in
-        aux (nred, ncstrs) tl
+    let wildcard_ty () =
+      Ty.of_var @@ Ty.wildcard_var ()
 
-      | { term_descr = Var _; _ } :: [] -> ()
+    let wildcard_term () =
+      of_var (Id.mk (Path.local "_") (wildcard_ty ()))
 
-      | { term_descr = Var _; _ } :: tl ->
-        raise (Redundant_cases (List.map of_cst red @ tl))
+    let rec i ~apply (p : matrix) n =
+      match p, n with
+      | [], _ -> Some (init_list n (fun _ -> wildcard_term ()))
+      | _ :: _, 0 -> None
+      | _, _ ->
+        begin match all_constructors_appear_in_first_col p with
+          | `All_present cstrs ->
+            List.find_map (fun cstr ->
+                let vars, params, _ = Ty.poly_sig cstr.id_ty in
+                let arity = List.length params in
+                let p' = specialise_matrix arity cstr p in
+                match i ~apply p' (arity + n - 1) with
+                | None -> None
+                | Some res ->
+                  let args, rest = list_take res arity in
+                  let tys = List.map (fun _ -> wildcard_ty ()) vars in
+                  let t = apply (of_cst cstr) tys args in
+                  Some (t :: rest)
+              ) cstrs
+          | `Missing cstrs ->
+            let p' = default_matrix p in
+            begin match i ~apply p' (n - 1) with
+              | None -> None
+              | Some res ->
+                let head =
+                  match cstrs with
+                  | [] -> wildcard_term ()
+                  | cstr :: _ ->
+                    let vars, params, _ = Ty.poly_sig cstr.id_ty in
+                    let tys = List.map (fun _ -> wildcard_ty ()) vars in
+                    let args = List.map (fun _ -> wildcard_term ()) params in
+                    apply (of_cst cstr) tys args
+                in
+                Some (head :: res)
+            end
+        end
 
-      | _ -> ()
-    in
-    aux ([], cstrs) patts
+    let analyze ~apply patterns =
+      let redundant, matrix =
+        List.fold_left (fun (redundant, matrix) pattern ->
+            let pat = mk_pat pattern in
+            let redundant =
+              if u_rec matrix [pat]
+              then redundant
+              else pattern :: redundant
+            in
+            let matrix = matrix @ [[pat]] in
+            (redundant, matrix)
+          ) ([], []) patterns
+      in
+      let missing =
+        match i ~apply matrix 1 with
+        | None -> []
+        | Some ([_] as res) -> res
+        | Some _ -> assert false
+      in
+      redundant, missing
+
+  end
+
+
 
   (* Variables *)
   module Var = struct
@@ -2737,7 +2902,12 @@ module Term = struct
       mk (App (f, tys, args)) ret_ty
 
   (* Pattern matching *)
-  and pattern_match scrutinee branches =
+  and pattern_match ?(redundant=(fun _ -> ())) scrutinee branches =
+    (* fail on empty pattern matching *)
+    begin match branches with
+      | [] -> raise Empty_pattern_matching
+      | _ -> ()
+    end;
     let scrutinee_ty = ty scrutinee in
     (* first,
        unify the type of the scrutinee and all patterns,
@@ -2762,9 +2932,19 @@ module Term = struct
         (subst s Subst.empty pat, subst s Subst.empty body)
       ) branches in
     (* Check exhaustivity *)
-    let () = check_pattern_matching (ty scrutinee) (List.map fst branches) in
-    (* Build the pattern matching *)
-    mk (Match (scrutinee, branches)) body_ty
+    let redundant_cases, missing_cases =
+      Pattern_matching.analyze ~apply (List.map fst branches)
+    in
+    (* warn about redundant cases *)
+    List.iter redundant redundant_cases;
+    (* *)
+    match missing_cases with
+    | [] ->
+      (* Build the pattern matching *)
+      mk (Match (scrutinee, branches)) body_ty
+    | _ :: _ ->
+      (* Partial matches are not allowed *)
+      raise (Partial_pattern_match missing_cases)
 
 
   (* Wrappers around application *)

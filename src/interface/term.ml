@@ -511,6 +511,18 @@ module type Tff = sig
   exception Field_missing of Field.t
   (** Field missing in a record expression. *)
 
+  exception Pattern_expected of t
+  (** Raised when trying to create a pattern matching, but a non-pattern term
+      was provided where a pattern was expected. *)
+
+  exception Empty_pattern_matching
+  (** Raise when creating a pattern matching but an empty list of branches
+      was provided *)
+
+  exception Partial_pattern_match of t list
+  (** Raised when a partial pattern matching was created. A list of terms not
+      covered by the patterns is provided. *)
+
   exception Over_application of t list
   (** Raised when an application was provided too many term arguments. The
       extraneous arguments are returned by the exception. *)
@@ -519,12 +531,6 @@ module type Tff = sig
   (** Raised when a polymorphic application does not have an
       adequate number of arguments. *)
 
-  exception Redundant_cases of t list
-  (** Raised when some cases are unreachable in a pattern
-      matching. *)
-
-  exception Inexhaustive_matching of Const.t list
-  (** Raised when a pattern matching is not exhaustive. *)
 
   val ensure : t -> ty -> t
   (** Ensure that a given term has the given type. *)
@@ -572,7 +578,8 @@ module type Tff = sig
   val letand : (Var.t * t) list -> t -> t
   (** Create a parrallel let-binding. *)
 
-  val pattern_match : t -> (t * t) list -> t
+  val pattern_match :
+    ?redundant:(t -> unit) -> t -> (t * t) list -> t
   (** [pattern_match scrutinee branches] creates a pattern match expression
       on the scrutinee with the given branches, each of the form
       [(pattern, body)] *)

@@ -255,6 +255,8 @@ module Make
     | Superfluous_destructor : Id.t * Id.t * T.Const.t -> Ast.t warn
     (* The user implementation of typed terms returned a destructor where
        was asked for. This warning can very safely be ignored. *)
+    | Redundant_pattern : T.t -> Ast.t warn
+    (* Redundant cases in pattern matching *)
 
   (* Special case for shadowing, as it can happen both from a term but also
      a declaration, hence why the type variable of [warn] is left wild. *)
@@ -289,8 +291,7 @@ module Make
     | Missing_record_field : T.Field.t -> Ast.t err
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
     | Mismatch_sum_type : T.Cstr.t * Ty.t -> Ast.t err
-    | Redundant_cases : T.t list -> Ast.t err
-    | Inexhaustive_matching : T.Const.t list -> Ast.t err
+    | Partial_pattern_match : T.t list -> Ast.t err
     | Var_application : T.Var.t -> Ast.t err
     | Ty_var_application : Ty.Var.t -> Ast.t err
     | Type_mismatch : T.t * Ty.t -> Ast.t err
@@ -447,6 +448,12 @@ module Make
     { file = env.file;
       loc = loc; }
 
+  let rec find_pattern_ast pat asts parsed =
+    match asts, parsed with
+    | [], _ | _, [] -> assert false
+    | (ast, _) :: r, (t, _) :: r' ->
+      if pat == t then ast else find_pattern_ast pat r r'
+
   (* Binding lookups *)
   (* ************************************************************************ *)
 
@@ -552,11 +559,11 @@ module Make
   let _bad_poly_arity env ast ty_vars tys =
     _error env (Ast ast) (Bad_poly_arity (ty_vars, tys))
 
-  let _redundant_cases env ast tl =
-    _error env (Ast ast) (Redundant_cases tl)
+  let _redundant_pattern env ast pat =
+    _warn env (Ast ast) (Redundant_pattern pat)
 
-  let _inexhaustive_matching env ast tcl =
-    _error env (Ast ast) (Inexhaustive_matching tcl)
+  let _partial_pattern_match env ast missing =
+    _error env (Ast ast) (Partial_pattern_match missing)
 
   let _over_application env ast over_args =
     _error env (Ast ast) (Over_application over_args)
@@ -624,10 +631,8 @@ module Make
       _over_application env ast over_args
     | T.Bad_poly_arity (vars, args) ->
       _bad_poly_arity env ast vars args
-    | T.Redundant_cases tl ->
-      _redundant_cases env ast tl
-    | T.Inexhaustive_matching tcl ->
-      _inexhaustive_matching env ast tcl
+    | T.Partial_pattern_match missing ->
+      _partial_pattern_match env ast missing
     | Wildcard_bad_scope (w, w_src, v) ->
       _scope_escape_in_wildcard env ast w w_src v
     | Wildcard_bad_base (w, w_src, inferred, allowed) ->
@@ -1401,7 +1406,12 @@ module Make
   and parse_match env ast scrutinee branches =
     let t = parse_term env scrutinee in
     let l = List.map (parse_branch (T.ty t) env) branches in
-    Term (_wrap2 env ast T.pattern_match t l)
+    (* small hack to get back the correct pattern ast for the warning *)
+    let redundant t =
+      let ast = find_pattern_ast t branches l in
+      _redundant_pattern env ast t
+    in
+    Term (_wrap2 env ast (T.pattern_match ~redundant) t l)
 
   and parse_branch ty env (pattern, body) =
     let p, env = parse_pattern ty env pattern in

@@ -213,6 +213,8 @@ module type Formulas = sig
         Dolmen.Std.Id.t * Dolmen.Std.Id.t * term_cst -> Dolmen.Std.Term.t warn
     (** The user implementation of typed terms returned a destructor where
         was asked for. This warning can very safely be ignored. *)
+    | Redundant_pattern : term -> Dolmen.Std.Term.t warn
+    (** Redundant cases in pattern matching *)
   (** Warnings that cna trigger on regular parsed terms. *)
 
   type _ warn +=
@@ -284,13 +286,11 @@ module type Formulas = sig
         to another record type was used. *)
     | Mismatch_sum_type : term_cstr * ty -> Dolmen.Std.Term.t err
     (** *)
-    | Redundant_cases : term list -> Dolmen.Std.Term.t err
-    (** [Redundant_cases tl] denotes an error whitin a pattern matching
-        in which some of the cases (the ones in [tl]) are unreachable. *)
-    | Inexhaustive_matching : term_cst list -> Dolmen.Std.Term.t err
-    (** [Inexhaustive_matching tcl] denotes an error whitin a pattern
-        matching in which some of the constructors of the type of the
-        matched value where not matched by the pattern matching. *)
+    | Partial_pattern_match : term list -> Dolmen.Std.Term.t err
+    (** [Partial_pattern_match missing] denotes an error within a pattern
+        matching in which the list of patterns do not cover all of the values
+        of the type being matched. A list of non-matched terms is given
+        to help users complete the pattern matching. *)
     | Var_application : term_var -> Dolmen.Std.Term.t err
     (** [Var_application v] denotes a variable which was applied to other
         terms, which is forbidden in first-order formulas. *)

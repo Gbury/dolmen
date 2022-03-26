@@ -1,0 +1,6 @@
+File "tests/typing/errors/partial_pattern_match/partial_1.ae", line 8, character 2 to line 11, character 5:
+ 8 | ..match A with
+...
+11 |   end
+Error This pattern matching is not exhaustive.
+      Here is an example of a non-matching value: C

@@ -358,6 +358,13 @@ let shadowing =
           print_reason_opt (T.binding_reason old))
     ~name:"Shadowing of identifier" ()
 
+let redundant_pattern =
+  Report.Warning.mk ~code ~mnemonic:"redundant-pattern"
+    ~message:(fun fmt _pattern ->
+        Format.fprintf fmt
+          "This pattern is useless (i.e. it is made redundant by earlier patterns)")
+    ~name:"Redundant pattern" ()
+
 let almost_linear =
   Report.Warning.mk ~code ~mnemonic:"almost-linear-expr"
     ~message:(fun fmt _ ->
@@ -479,29 +486,16 @@ let over_application =
            too@ many@ term@ arguments." over)
     ~name:"Too many arguments for an application" ()
 
-    let redundant_cases =
-      Report.Error.mk ~code ~mnemonic:"redundant-cases"
-        ~message:(fun fmt terml ->
-            Format.fprintf fmt
-              "Redundant cases: The following cases are ureachable and redundant: %a"
-              ( fun fmt ->
-                  List.iter
-                    (Format.fprintf fmt "@\n- %a" Dolmen.Std.Expr.Print.term)
-              ) terml
-          )
-        ~name:"Redundant cases in pattern matching" ()
-
-    let inexhaustive_matching =
-      Report.Error.mk ~code ~mnemonic:"inexhaustive-matching"
-        ~message:(fun fmt tcl ->
-            Format.fprintf fmt
-              "Inexhaustive matching: The following constructors are not covered by the pattern matching: %a"
-              ( fun fmt ->
-                  List.iter
-                    (Format.fprintf fmt "@\n- %a" Dolmen.Std.Expr.Print.term_cst)
-              ) tcl
-          )
-        ~name:"Redundant cases in pattern matching" ()
+let partial_pattern_match =
+  Report.Error.mk ~code ~mnemonic:"partial-pattern-match"
+    ~message:(fun fmt missing ->
+        let pp_sep fmt () = Format.fprintf fmt "@ " in
+        Format.fprintf fmt
+          "This pattern matching is not exhaustive.@ \
+           Here is an example of a non-matching value:@ @[<v>%a@]"
+          (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Term.print) missing
+      )
+    ~name:"Missing cases in pattern matching" ()
 
 let repeated_record_field =
   Report.Error.mk ~code ~mnemonic:"repeated-field"
@@ -930,6 +924,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
       S.warn ~loc st superfluous_destructor ()
     | T.Shadowing (id, old, _cur) ->
       S.warn ~loc st shadowing (id, old)
+    | T.Redundant_pattern pattern ->
+      S.warn ~loc st redundant_pattern pattern
     | Smtlib2_Ints.Restriction msg
     | Smtlib2_Reals.Restriction msg
     | Smtlib2_Reals_Ints.Restriction msg ->
@@ -966,10 +962,8 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | T.Over_application over_args ->
       S.error ~loc st over_application over_args
     (* Pattern matching errors *)
-    | T.Redundant_cases tl ->
-      S.error ~loc st redundant_cases tl
-    | T.Inexhaustive_matching tcl ->
-      S.error ~loc st inexhaustive_matching tcl
+    | T.Partial_pattern_match missing ->
+      S.error ~loc st partial_pattern_match missing
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
       S.error ~loc st repeated_record_field f

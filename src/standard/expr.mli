@@ -1019,6 +1019,18 @@ module Term : sig
   exception Field_expected of term_cst
   (** A field was expected but the returned term constant is not a record field. *)
 
+  exception Pattern_expected of t
+  (** Raised when trying to create a pattern matching, but a non-pattern term
+      was provided where a pattern was expected. *)
+
+  exception Empty_pattern_matching
+  (** Raise when creating a pattern matching but an empty list of branches
+      was provided *)
+
+  exception Partial_pattern_match of t list
+  (** Raised when a partial pattern matching was created. A list of terms not
+      covered by the patterns is provided. *)
+
   exception Constructor_expected of Cstr.t
   (** Raised when trying to access the tester of an ADT constructor, but the constant
       provided was not a constructor. *)
@@ -1031,12 +1043,6 @@ module Term : sig
   (** Raised when a polymorphic application does not have an
       adequate number of arguments. *)
 
-  exception Redundant_cases of t list
-  (** Raised when some cases are unreachable in a pattern
-      matching. *)
-
-  exception Inexhaustive_matching of term_cst list
-  (** Raised when a pattern matching is not exhaustive. *)
 
   val ensure : t -> ty -> t
   (** Ensure a term has the given type. *)
@@ -1068,7 +1074,8 @@ module Term : sig
   val record_access : t -> Field.t -> t
   (** Access a field in an record. *)
 
-  val pattern_match : t -> (pattern * t) list -> t
+  val pattern_match :
+    ?redundant:(t -> unit) -> t -> (pattern * t) list -> t
   (** Create a pattern match. *)
 
   val void : t
