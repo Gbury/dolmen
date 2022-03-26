@@ -182,52 +182,52 @@ type _ t +=
   (** [Real: ttype] the type for signed reals. *)
   | Decimal of string
   (** [Decimal s: Real]: real litterals. The string [s] should be a
-      floating point representatoin of a real. Not however that reals
+      floating point representation of a real. Not however that reals
       here means the mathematical abstract notion of real numbers, including
       irrational, non-algebric numbers, and is thus not restricted to
       floating point numbers, although these are the only litterals
       supported. *)
-  | Lt
+  | Lt of [ `Int | `Rat | `Real ]
   (** [Lt: {a=(Int|Rational|Real)} a -> a -> Prop]:
       strict comparison (less than) on numbers
       (whether integers, rationals, or reals). *)
-  | Leq
+  | Leq of [ `Int | `Rat | `Real ]
   (** [Leq:{a=(Int|Rational|Real)} a -> a -> Prop]:
       large comparison (less or equal than) on numbers
       (whether integers, rationals, or reals). *)
-  | Gt
+  | Gt of [ `Int | `Rat | `Real ]
   (** [Gt:{a=(Int|Rational|Real)} a -> a -> Prop]:
       strict comparison (greater than) on numbers
       (whether integers, rationals, or reals). *)
-  | Geq
+  | Geq of [ `Int | `Rat | `Real ]
   (** [Geq:{a=(Int|Rational|Real)} a -> a -> Prop]:
       large comparison (greater or equal than) on numbers
       (whether integers, rationals, or reals). *)
-  | Minus
+  | Minus of [ `Int | `Rat | `Real ]
   (** [Minus:{a=(Int|Rational|Real)} a -> a]:
       arithmetic unary negation/minus on numbers
       (whether integers, rationals, or reals). *)
-  | Add
+  | Add of [ `Int | `Rat | `Real ]
   (** [Add:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic addition on numbers
       (whether integers, rationals, or reals). *)
-  | Sub
+  | Sub of [ `Int | `Rat | `Real ]
   (** [Sub:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic substraction on numbers
       (whether integers, rationals, or reals). *)
-  | Mul
+  | Mul of [ `Int | `Rat | `Real ]
   (** [Mul:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic multiplication on numbers
       (whether integers, rationals, or reals). *)
-  | Pow
+  | Pow of [ `Int | `Rat | `Real ]
   (** [Pow:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic exponentiation on numbers
       (whether integers, rationals, or reals). *)
-  | Div
+  | Div of [ `Rat | `Real ]
   (** [Div:{a=(Rational|Real)} a -> a -> a]:
       arithmetic exact division on numbers
       (rationals, or reals, but **not** integers). *)
-  | Div_e
+  | Div_e of [ `Int | `Rat | `Real ]
   (** [Div_e:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer euclidian quotient
       (whether integers, rationals, or reals).
@@ -235,31 +235,31 @@ type _ t +=
       (in the type of N and D) of the real division [N/D],
       and if D is negative then [Div_e (N,D)] is the ceiling
       of [N/D]. *)
-  | Div_t
+  | Div_t of [ `Int | `Rat | `Real ]
   (** [Div_t:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer truncated quotient
       (whether integers, rationals, or reals).
       [Div_t (N,D)] is the truncation of the real
       division [N/D]. *)
-  | Div_f
+  | Div_f of [ `Int | `Rat | `Real ]
   (** [Div_f:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer floor quotient
       (whether integers, rationals, or reals).
       [Div_t (N,D)] is the floor of the real
       division [N/D]. *)
-  | Modulo_e
+  | Modulo_e of [ `Int | `Rat | `Real ]
   (** [Modulo_e:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer euclidian remainder
       (whether integers, rationals, or reals).
       It is defined by the following equation:
       [Div_e (N, D) * D + Modulo(N, D) = N]. *)
-  | Modulo_t
+  | Modulo_t of [ `Int | `Rat | `Real ]
   (** [Modulo_t:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer truncated remainder
       (whether integers, rationals, or reals).
       It is defined by the following equation:
       [Div_t (N, D) * D + Modulo_t(N, D) = N]. *)
-  | Modulo_f
+  | Modulo_f of [ `Int | `Rat | `Real ]
   (** [Modulo_f:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer floor remainder
       (whether integers, rationals, or reals).
@@ -273,34 +273,34 @@ type _ t +=
       divisibility predicate on integers. Smtlib restricts
       applications of this predicate to have a litteral integer
       for the divisor/second argument. *)
-  | Is_int
+  | Is_int of [ `Int | `Rat | `Real ]
   (** [Is_int:{a=(Int|Rational|Real)} a -> Prop]:
       integer predicate for numbers: is the given number
       an integer. *)
-  | Is_rat
+  | Is_rat of [ `Int | `Rat | `Real ]
   (** [Is_rat:{a=(Int|Rational|Real)} a -> Prop]:
       rational predicate for numbers: is the given number
       an rational. *)
-  | Floor
+  | Floor of [ `Int | `Rat | `Real ]
   (** [Floor:{a=(Int|Rational|Real)} a -> a]:
       floor function on numbers, defined in tptp as
       the largest integer not greater than the argument. *)
-  | Floor_to_int
+  | Floor_to_int of [ `Rat | `Real ]
   (** [Floor_to_int:{a=(Rational|Real)} a -> Int]:
-      floor and conversion to integers in a single funciton.
+      floor and conversion to integers in a single function.
       Should return the greatest integer [i] such that the
       rational or real intepretation of [i] is less than, or
       equal to, the argument. *)
-  | Ceiling
+  | Ceiling of [ `Int | `Rat | `Real ]
   (** [Ceiling:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as
       the smallest integer not less than the argument. *)
-  | Truncate
+  | Truncate of [ `Int | `Rat | `Real ]
   (** [Truncate:{a=(Int|Rational|Real)} a -> a]:
       ceiling function on numbers, defined in tptp as
       the nearest integer value with magnitude not greater
       than the absolute value of the argument. *)
-  | Round
+  | Round of [ `Int | `Rat | `Real ]
   (** [Round:{a=(Int|Rational|Real)} a -> a]:
       rounding function on numbers, defined in tptp as
       the nearest intger to the argument; when the argument

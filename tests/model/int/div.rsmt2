@@ -1,0 +1,7 @@
+sat
+(model
+(define-fun a () Int 10)
+(define-fun b () Int 4)
+(define-fun c () Int 2)
+(define-fun d () Int 2)
+)
