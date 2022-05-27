@@ -153,7 +153,7 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
         let a = sbitv n a in
-        if Z.equal b Z.zero then assert false (* TODO *)
+        if Z.equal b Z.zero then  from_bitv n (ubitv n a)
         else extract n (Z.sub a (Z.mul (Z.fdiv a b) b)))
   | B.Bitv_shl n ->
     op2 ~cst ~size:n (fun a b ->
