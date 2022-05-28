@@ -12,6 +12,12 @@ val ops : t Value.ops
 val mk : int -> Z.t -> Value.t
 (** [mk n z] Bitvector of size [n], and bits [z] creation. *)
 
+val ubitv : int -> Value.t -> Z.t
+(** Extract the value as an unsigned integer *)
+
+val sbitv : int -> Value.t -> Z.t
+(** Extract the value as a signed integer *)
+
 val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for bitvectors *)
 
