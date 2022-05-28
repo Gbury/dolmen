@@ -20,6 +20,7 @@ let is_unsigned_integer size z =
   Z.sign z >= 0 && Z.numbits z <= size
 
 let ubitv n t =
+  let t = Value.extract_exn ~ops t in
   (* the typing of expressions should guarantee that this never happens *)
   if not (is_unsigned_integer n t) then invalid_arg "not unsigned integer";
   t
@@ -30,12 +31,11 @@ let from_bitv n t =
     Format.eprintf "@[[BV] %s(%a) is not of size %i@]@."
       (Z.format (Printf.sprintf "%%0+#%ib" n) t)
       Z.pp_print t n;
-    assert false
+    assert false (* Internal error *)
   );
   t
 
 let extract n t = Z.extract t 0 n
-let sbitv n t = Z.signed_extract (ubitv n t) 0 n
 
 let concat n m a b =
   Z.logor (Z.shift_left (ubitv n a) m) (ubitv m b)
@@ -64,23 +64,14 @@ let rotate_right n i a =
 module E = Dolmen.Std.Expr
 module B = Dolmen.Std.Builtin
 
-let mk n i =
-  Value.mk ~ops (from_bitv n i)
+let mk n i = Value.mk ~ops (from_bitv n i)
 
-let fun1 f ~cst =
-  Fun.fun_1 ~cst (fun x ->
-      f (Value.extract_exn ~ops x))
+let cmp ~cst p = Some (Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p x y))
+let op2 ~cst ~size f = Some (Fun.fun_2 ~cst (fun x y -> mk size @@ f x y))
+let op1 ~cst ~size f = Some (Fun.fun_1 ~cst (fun x -> mk size @@ f x))
 
-let fun2 f ~cst =
-  Fun.fun_2 ~cst (fun x y ->
-      f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y))
-
-let op1 ~cst ~size f =
-  Some (fun1 ~cst (fun x -> mk size @@ f x))
-let op2 ~cst ~size f =
-  Some (fun2 ~cst (fun x y -> mk size @@ f x y))
-let cmp ~cst p =
-  Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
+let sbitv n t = Z.signed_extract (ubitv n t) 0 n
+let extract n t = Z.extract t 0 n
 
 let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
@@ -153,7 +144,7 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
         let a = sbitv n a in
-        if Z.equal b Z.zero then  from_bitv n (ubitv n a)
+        if Z.equal b Z.zero then  from_bitv n a
         else extract n (Z.sub a (Z.mul (Z.fdiv a b) b)))
   | B.Bitv_shl n ->
     op2 ~cst ~size:n (fun a b ->

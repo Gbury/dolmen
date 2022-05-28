@@ -15,3 +15,10 @@ val mk : int -> Z.t -> Value.t
 val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for bitvectors *)
 
+val ubitv : int -> Value.t -> Z.t
+(** Extract the value as an unsigned integer *)
+
+val sbitv : int -> Value.t -> Z.t
+(** Extract the value as a signed integer *)
+
+
