@@ -202,6 +202,7 @@ module Make
             ?div_by_zero:corner.div_by_zero_real
         );
         Bitv.builtins;
+        Fp.builtins;
       ] c
     in
     let env = Env.mk model ~builtins in

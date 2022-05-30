@@ -94,6 +94,12 @@ let fun_3 ~cst f =
       | l -> raise (Bad_arity (cst, 3, l))
     )
 
+let fun_4 ~cst f =
+  builtin ~arity:4 ~cst (function
+      | [x; y; z; t] -> f x y z t
+      | l -> raise (Bad_arity (cst, 4, l))
+    )
+
 let fun_n ~cst eval_f =
   let _, arity = E.Term.Const.arity cst in
   builtin ~arity ~cst eval_f

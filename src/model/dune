@@ -8,14 +8,21 @@
     dolmen dolmen.std dolmen.intf
     ; dolmen loop
     dolmen_loop
-    ; other deps
+    ; arbitrary int/rationals
     zarith
+    ; floats
+    ; about ppx_deriving.runtime: a type alias from that lib appears in the
+    ; .cmi file of farith. Since we use (implicit_dependencies false), if we omit
+    ; ppx_deriving.runtime from the dependencies, this could result in weird
+    ; compilation errors due to a missing .cmi file (and type aliases not being
+    ; fully resolved).
+    farith ppx_deriving.runtime
   )
   (modules
     ; Model checking
     Value Model Env Eval
     ; Builtins
-    Adt Array Bool Core Fun Int Rat Real Bitv
+    Adt Array Bool Core Fun Int Rat Real Bitv Fp
     ; Loop Pipe
     Loop
   )
