@@ -49,6 +49,7 @@ module E = Dolmen.Std.Expr
 module B = Dolmen.Std.Builtin
 
 let mk i = Value.mk ~ops i
+let get v = Value.extract_exn ~ops v
 
 let fun1 f ~cst =
   Fun.fun_1 ~cst (fun x ->
