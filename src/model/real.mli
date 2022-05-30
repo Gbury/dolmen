@@ -15,6 +15,10 @@ val ops : t Value.ops
 val mk : t -> Value.t
 (** real value creation. *)
 
+val get : Value.t -> Q.t
+(** Get a rational value. *)
+
+
 (** {2 Corner cases & builtins} *)
 (** ************************************************************************ *)
 
@@ -26,4 +30,5 @@ val conf :
 
 val builtins : conf:conf -> Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for reals *)
+
 
