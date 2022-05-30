@@ -121,25 +121,22 @@ let () =
   let exits =
     List.map (fun code ->
         let retcode, doc = Dolmen_loop.Code.descr code in
-        Cmdliner.Term.exit_info ~doc retcode
+        Cmdliner.Cmd.Exit.info ~doc retcode
       ) (Dolmen_loop.Code.errors ())
-    @ Cmdliner.Term.default_exits
+    @ Cmdliner.Cmd.Exit.defaults
   in
-  let cli_term = (
-    Options.cli,
-    Cmdliner.Term.info "dolmen"
-      ~exits ~man:Man.cli ~version)
+  let cli_term = Cmdliner.Cmd.v
+      (Cmdliner.Cmd.info "dolmen" ~exits ~man:Man.cli ~version)
+      Options.cli
   in
-  match Cmdliner.Term.eval cli_term with
-  | `Version | `Help ->
+  match Cmdliner.Cmd.eval_value cli_term with
+  | Ok (`Version | `Help) ->
     exit 0
-  | `Error `Parse | `Error `Term | `Error `Exn ->
-    exit Cmdliner.Term.exit_status_cli_error
-  | `Ok Run { state } ->
+  | Error (`Parse | `Term | `Exn) ->
+    exit Cmdliner.Cmd.Exit.cli_error
+  | Ok (`Ok Run { state }) ->
     run state
-  | `Ok Doc { report; conf; } ->
+  | Ok (`Ok Doc { report; conf; }) ->
     doc conf report
-  | `Ok List_reports { conf; } ->
+  | Ok (`Ok List_reports { conf; }) ->
     list conf
-
-
