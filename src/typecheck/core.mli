@@ -11,10 +11,7 @@ module Ae : sig
                                       and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t
-                                     and type term_field := Type.T.Field.t
-                                     and type term_var := Type.T.Var.t
-                                     and type term_cst := Type.T.Const.t
-                                     and type term_cstr := Type.T.Cstr.t) : sig
+                                     and type term_var := Type.T.Var.t) : sig
 
     val parse : Type.builtin_symbols
 

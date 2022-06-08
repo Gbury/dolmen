@@ -629,15 +629,6 @@ module type Ae_Base = sig
   type term_var
   (** The type of term variables *)
 
-  type term_cst
-  (** The type of term symbols and constants *)
-
-  type term_field
-  (** The type of record fields *)
-
-  type term_cstr
-  (** The type of algebraic data type constructors *)
-
   val void : t
   (** The only value of type unit. *)
 
@@ -673,12 +664,6 @@ module type Ae_Base = sig
 
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
-
-  val adt_project : t -> term_cst -> t
-  (** Access a field in an ADT. *)
-
-  val record_access : t -> term_field -> t
-  (** Access a field in an record. *)
 
   val in_interval : t -> bool * bool -> t -> t -> t
   (** Semantic trigger: "in interval" check. *)

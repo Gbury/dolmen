@@ -2973,12 +2973,6 @@ module Term = struct
     in
     apply_cst tester ty_args [t]
 
-  let adt_project t f =
-    apply_field f t
-
-  let record_access t f =
-    apply_field f t
-
   (* Record creation *)
   let build_record_fields ty_c l =
     let n =
