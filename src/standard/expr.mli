@@ -390,7 +390,7 @@ module Ty : sig
 
   type view = [
     | `Prop
-    (** Propositions (Also used as booleans in AE) *)
+    (** Propositions/booleans *)
     | `Int
     (** Integers *)
     | `Rat
@@ -1069,7 +1069,7 @@ module Term : sig
   (** Test expression for a constructor. *)
 
   val pattern_match :
-    ?redundant:(t -> unit) -> t -> (pattern * t) list -> t
+    ?redundant:(pattern -> unit) -> t -> (pattern * t) list -> t
   (** Create a pattern match. *)
 
   val void : t
