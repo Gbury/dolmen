@@ -1,0 +1,17 @@
+
+type t = A | B of { b : int } | C of { c : t }
+
+type r = { rf : int }
+
+goal g:
+  C(A)#c = A
+  and
+  {rf = 10}#rf = 10
+  and
+  C(B(10))#c#b = {rf = 10}#rf
+  and
+  C(B(10)) ? C
+  and
+  C(B(10))#c ? B
+  and
+  A ? A

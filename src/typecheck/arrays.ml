@@ -16,7 +16,7 @@ module Ae = struct
 
     let parse env s =
       match s with
-      | Type.Id { name = Simple "farray"; ns = Term } ->
+      | Type.Id { name = Simple "farray"; ns = Sort } ->
         `Ty (
           fun ast args ->
             match args with

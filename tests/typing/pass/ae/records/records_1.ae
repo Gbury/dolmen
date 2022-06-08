@@ -1,0 +1,8 @@
+
+type t = { c_1 : int }
+
+goal g_valid_3_1:
+  let c = {c_1 = 10} in
+  c#c_1 = c.c_1
+  and
+  c.c_1 = 10

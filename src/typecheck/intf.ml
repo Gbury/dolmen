@@ -173,6 +173,7 @@ module type Formulas = sig
     | `Constant of [
         | `Ty of ty_cst * reason option
         | `Cstr of term_cstr * reason option
+        | `Dstr of term_cst * reason option
         | `Term of term_cst * reason option
         | `Field of term_field * reason option
       ]
@@ -213,6 +214,8 @@ module type Formulas = sig
         Dolmen.Std.Id.t * Dolmen.Std.Id.t * term_cst -> Dolmen.Std.Term.t warn
     (** The user implementation of typed terms returned a destructor where
         was asked for. This warning can very safely be ignored. *)
+    | Redundant_pattern : term -> Dolmen.Std.Term.t warn
+    (** Redundant cases in pattern matching *)
   (** Warnings that cna trigger on regular parsed terms. *)
 
   type _ warn +=
@@ -284,6 +287,11 @@ module type Formulas = sig
         to another record type was used. *)
     | Mismatch_sum_type : term_cstr * ty -> Dolmen.Std.Term.t err
     (** *)
+    | Partial_pattern_match : term list -> Dolmen.Std.Term.t err
+    (** [Partial_pattern_match missing] denotes an error within a pattern
+        matching in which the list of patterns do not cover all of the values
+        of the type being matched. A list of non-matched terms is given
+        to help users complete the pattern matching. *)
     | Var_application : term_var -> Dolmen.Std.Term.t err
     (** [Var_application v] denotes a variable which was applied to other
         terms, which is forbidden in first-order formulas. *)
@@ -431,6 +439,7 @@ module type Formulas = sig
 
   type cst = [
     | `Cstr of term_cstr
+    | `Dstr of term_cst
     | `Field of term_field
     | `Ty_cst of ty_cst
     | `Term_cst of term_cst

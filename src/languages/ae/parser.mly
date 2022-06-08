@@ -53,6 +53,11 @@ named_ident:
     { let loc = L.mk_pos $startpos $endpos in
       T.const ~loc id }
 
+ty_ident:
+  | id=raw_ident
+    { let loc = L.mk_pos $startpos $endpos in
+      T.const ~loc (id I.sort) }
+
 
 /* Binders */
 
@@ -111,18 +116,18 @@ primitive_type:
       in
       T.ty_bitv ~loc n }
 
-  | c=ident
+  | c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
       T.apply ~loc c [] }
 
   | v=type_var
     { v }
 
-  | arg=primitive_type c=ident
+  | arg=primitive_type c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
       T.apply ~loc c [arg] }
 
-  | LEFTPAR args=separated_nonempty_list(COMMA, primitive_type) RIGHTPAR c=ident
+  | LEFTPAR args=separated_nonempty_list(COMMA, primitive_type) RIGHTPAR c=ty_ident
     { let loc = L.mk_pos $startpos $endpos in
       T.apply ~loc c args }
 
@@ -484,7 +489,7 @@ algebraic_constructor:
 algebraic_typedef:
   | vars=type_vars c=raw_ident EQUAL l=separated_nonempty_list(BAR, algebraic_constructor)
     { let loc = L.mk_pos $startpos $endpos in
-      S.algebraic_type ~loc (c I.term) vars l }
+      S.algebraic_type ~loc (c I.sort) vars l }
 
 
 /* Top-level declarations */
@@ -518,7 +523,7 @@ decl:
 
   | TYPE vars=type_vars id=raw_ident
     { let loc = L.mk_pos $startpos $endpos in
-      S.abstract_type ~loc (id I.term) vars }
+      S.abstract_type ~loc (id I.sort) vars }
 
   | TYPE l=separated_nonempty_list(AND, algebraic_typedef)
     { let loc = L.mk_pos $startpos $endpos in
@@ -526,7 +531,7 @@ decl:
 
   | TYPE vars=type_vars id=raw_ident EQUAL r=record_type
     { let loc = L.mk_pos $startpos $endpos in
-      S.record_type ~loc (id I.term) vars r }
+      S.record_type ~loc (id I.sort) vars r }
 
   | LOGIC ac=ac_modifier args=separated_nonempty_list(COMMA, raw_named_ident) COLON ty=logic_type
     { let loc = L.mk_pos $startpos $endpos in

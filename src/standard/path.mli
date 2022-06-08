@@ -49,5 +49,3 @@ val absolute : path -> string -> t
 
 val rename : (string -> string) -> t -> t
 (** Change the basename of a path. *)
-
-

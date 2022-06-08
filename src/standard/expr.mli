@@ -389,6 +389,8 @@ module Ty : sig
   (** {4 View} *)
 
   type view = [
+    | `Prop
+    (** Propositions/booleans *)
     | `Int
     (** Integers *)
     | `Rat
@@ -1017,6 +1019,18 @@ module Term : sig
   exception Field_expected of term_cst
   (** A field was expected but the returned term constant is not a record field. *)
 
+  exception Pattern_expected of t
+  (** Raised when trying to create a pattern matching, but a non-pattern term
+      was provided where a pattern was expected. *)
+
+  exception Empty_pattern_matching
+  (** Raise when creating a pattern matching but an empty list of branches
+      was provided *)
+
+  exception Partial_pattern_match of t list
+  (** Raised when a partial pattern matching was created. A list of terms not
+      covered by the patterns is provided. *)
+
   exception Constructor_expected of Cstr.t
   (** Raised when trying to access the tester of an ADT constructor, but the constant
       provided was not a constructor. *)
@@ -1028,6 +1042,7 @@ module Term : sig
   exception Bad_poly_arity of ty_var list * ty list
   (** Raised when a polymorphic application does not have an
       adequate number of arguments. *)
+
 
   val ensure : t -> ty -> t
   (** Ensure a term has the given type. *)
@@ -1053,7 +1068,8 @@ module Term : sig
   val cstr_tester : Cstr.t -> t -> t
   (** Test expression for a constructor. *)
 
-  val pattern_match : t -> (pattern * t) list -> t
+  val pattern_match :
+    ?redundant:(pattern -> unit) -> t -> (pattern * t) list -> t
   (** Create a pattern match. *)
 
   val void : t
@@ -1157,6 +1173,14 @@ module Term : sig
 
   val subst : ?fix:bool -> Ty.subst -> subst -> t -> t
   (** Substitution over terms. *)
+
+  (* Alt-Ergo's semantic triggers *)
+
+  val in_interval : t -> bool * bool -> t -> t -> t
+  (** Interger interval inclusion. *)
+
+  val maps_to : Var.t -> t -> t
+  (** Variable mapping to term. *)
 
   (* Bitvector manipulation *)
   module Bitv : sig

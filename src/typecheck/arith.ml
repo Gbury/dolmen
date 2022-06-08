@@ -29,6 +29,13 @@ module Ae = struct
         | `Real -> mk_real a b
         | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
 
+      let promote_to_real t =
+        let ty = T.ty t in
+        match Ty.view ty with
+        | `Int -> T.Int.to_real t
+        | `Real -> t
+        (* this will result in a more precise typing error later, so it's okay *)
+        | _ -> t
 
       let parse env s =
         match s with
@@ -68,29 +75,69 @@ module Ae = struct
           `Term (fun ast args ->
             Base.term_app2 (module Type) env s
               (fun a b ->
-                let tya = T.ty a in
-                let a', b' =
-                  match Ty.view tya, Ty.view (T.ty b) with
-                  | `Real, `Real -> a, b
-                  | `Real, `Int -> a, T.Int.to_real b
-                  | `Int, `Real -> T.Int.to_real a, b
-                  | `Int, `Int -> T.Int.to_real a, T.Int.to_real b
-                  | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
-                in
-                T.Real.pow a' b') ast args
+                 let a' = promote_to_real a in
+                 let b' = promote_to_real b in
+                 T.Real.pow a' b') ast args)
+
+      | Type.Builtin Term.Lt ->
+        `Term (fun ast args ->
+            match args with
+            | [Term.{
+                term = App (
+                    { term = Builtin (Lt | Leq); _ }, [_; lr_st]
+                  ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Term.lt lr_st r_st]
+            | _ ->
+              Base.term_app2_ast (module Type) env s
+                (dispatch2 env (T.Int.lt, T.Real.lt)) ast args
           )
-        | Type.Builtin Term.Lt ->
-          `Term (Base.term_app2_ast (module Type) env s
-            (dispatch2 env (T.Int.lt, T.Real.lt)))
-        | Type.Builtin Term.Leq ->
-          `Term (Base.term_app2_ast (module Type) env s
-            (dispatch2 env (T.Int.le, T.Real.le)))
-        | Type.Builtin Term.Gt ->
-          `Term (Base.term_app2_ast (module Type) env s
-            (dispatch2 env (T.Int.gt, T.Real.gt)))
-        | Type.Builtin Term.Geq ->
-          `Term (Base.term_app2_ast (module Type) env s
-            (dispatch2 env (T.Int.ge, T.Real.ge)))
+
+      | Type.Builtin Term.Leq ->
+        `Term (fun ast args ->
+            match args with
+            | [Term.{
+                term = App (
+                    { term = Builtin (Lt | Leq); _ }, [_; lr_st]
+                  ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Term.leq lr_st r_st]
+            | _ ->
+              Base.term_app2_ast (module Type) env s
+                (dispatch2 env (T.Int.le, T.Real.le)) ast args
+          )
+
+      | Type.Builtin Term.Gt ->
+        `Term (fun ast args ->
+            match args with
+            | [Term.{
+                term = App (
+                    { term = Builtin (Gt | Geq); _ }, [_; lr_st]
+                  ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Term.gt lr_st r_st]
+            | _ ->
+              Base.term_app2_ast (module Type) env s
+                (dispatch2 env (T.Int.gt, T.Real.gt)) ast args
+          )
+
+      | Type.Builtin Term.Geq ->
+        `Term (fun ast args ->
+            match args with
+            | [Term.{
+                term = App (
+                    { term = Builtin (Gt | Geq); _ }, [_; lr_st]
+                  ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Term.geq lr_st r_st]
+            | _ ->
+              Base.term_app2_ast (module Type) env s
+                (dispatch2 env (T.Int.ge, T.Real.ge)) ast args
+          )
 
         (* Catch-all *)
         | _ -> `Not_found

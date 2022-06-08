@@ -93,6 +93,23 @@ type _ t +=
       or the cast of a rational into an integer, as long as the cast is
       guarded by a clause verifying the rational is an integer). *)
 
+type _ t +=
+  | In_interval of bool * bool
+  (** [In_interval (b1, b2): Int -> Int -> Int -> Prop]:
+      Tests whether or not an interger is in an interval, [b1] (resp. [b2])
+      determines if the interval is open on the lower bound
+      (resp. upper bound).
+
+      [warning:] It is an Alt-Ergo semantic trigger that should only be
+      allowed inside theories. *)
+
+  | Maps_to
+  (** [Maps_to: 'term_var -> 'term -> 'term]:
+      Used in semantic triggers for floating point arithmetic.
+      See [alt-ergo/src/preludes/fpa-theory-2017-01-04-16h00.ae].
+
+      [warning:] It is an Alt-Ergo semantic trigger that should only be
+      allowed inside theories. *)
 
 (** {2 Boolean Builtins} *)
 (*  ************************************************************************* *)
@@ -131,7 +148,7 @@ type _ t +=
       { adt: 'ty_cst; case: int; cstr : 'term_cst; } ->
       < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
   (** [Tester { adt; cstr; case; }] is the tester of the case-th constructor
-     of type [adt] which should be [cstr]. *)
+      of type [adt] which should be [cstr]. *)
   | Constructor :
       { adt : 'ty_cst; case : int; } ->
       < ty_cst : 'ty_cst ; .. > t
@@ -462,8 +479,8 @@ type _ t +=
   (** [RoundTowardZero : RoundingMode *)
   | Float of int * int
   (** [Float(e,s): ttype]: type constructor for floating point of exponent of
-     size [e] and significand of size [s] (hidden bit included). Those size are
-     greater than 1 *)
+      size [e] and significand of size [s] (hidden bit included). Those size are
+      greater than 1 *)
   | Fp of int * int
   (** [Fp(e, s): Bitv(1) -> Bitv(e) -> Bitv(s-1) -> Fp(e,s)]: bitvector literal.
       The IEEE-format is used for the conversion [sb^se^ss].

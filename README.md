@@ -64,7 +64,7 @@ Supported languages
 
 Currently the following parsers are working:
 
-- ae (alt-ergo format) (parsing only)
+- ae (alt-ergo format)
 - dimacs
 - iCNF
 - smtlib
@@ -74,7 +74,6 @@ Currently the following parsers are working:
 The following parsers are either work in progress, or soon to be
 work in progress:
 
-- alt-ergo format
 - coq
 - dedukti
 

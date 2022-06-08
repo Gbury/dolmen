@@ -1,0 +1,6 @@
+File "tests/typing/errors/partial_pattern_match/partial_3.zf", line 11, character 2 to line 14, character 5:
+11 | ..match x with
+...
+14 |   end.
+Error This pattern matching is not exhaustive.
+      Here is an example of a non-matching value: A

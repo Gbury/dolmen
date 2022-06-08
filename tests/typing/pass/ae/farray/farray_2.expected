@@ -1,0 +1,4 @@
+File "tests/typing/pass/ae/farray/farray_2.ae", line 4, character 17-30:
+4 | axiom a : forall t : 'a farray.
+                     ^^^^^^^^^^^^^
+Warning Shadowing: `t` was already declared at line 2, character 0-20

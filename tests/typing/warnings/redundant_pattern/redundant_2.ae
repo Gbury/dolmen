@@ -1,0 +1,14 @@
+
+type t =
+  A
+| B
+| C of { c : int }
+
+goal g:
+  match A with
+  | A -> 1 <= 1
+  | C(_) -> true
+  | B -> false
+  | C(x) -> x = 3
+  end
+

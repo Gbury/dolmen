@@ -158,6 +158,7 @@ module Make
   (* Constants that can be bound to a dolmen identifier. *)
   type cst = [
     | `Cstr of T.Cstr.t
+    | `Dstr of T.Const.t
     | `Field of T.Field.t
     | `Ty_cst of Ty.Const.t
     | `Term_cst of T.Const.t
@@ -199,6 +200,7 @@ module Make
     | `Constant of [
         | `Ty of Ty.Const.t * reason option
         | `Cstr of T.Cstr.t * reason option
+        | `Dstr of T.Const.t * reason option
         | `Term of T.Const.t * reason option
         | `Field of T.Field.t * reason option
       ]
@@ -255,6 +257,8 @@ module Make
     | Superfluous_destructor : Id.t * Id.t * T.Const.t -> Ast.t warn
     (* The user implementation of typed terms returned a destructor where
        was asked for. This warning can very safely be ignored. *)
+    | Redundant_pattern : T.t -> Ast.t warn
+    (* Redundant cases in pattern matching *)
 
   (* Special case for shadowing, as it can happen both from a term but also
      a declaration, hence why the type variable of [warn] is left wild. *)
@@ -289,6 +293,7 @@ module Make
     | Missing_record_field : T.Field.t -> Ast.t err
     | Mismatch_record_type : T.Field.t * Ty.Const.t -> Ast.t err
     | Mismatch_sum_type : T.Cstr.t * Ty.t -> Ast.t err
+    | Partial_pattern_match : T.t list -> Ast.t err
     | Var_application : T.Var.t -> Ast.t err
     | Ty_var_application : Ty.Var.t -> Ast.t err
     | Type_mismatch : T.t * Ty.t -> Ast.t err
@@ -336,7 +341,9 @@ module Make
     mutable const_locs : reason S.t;
     (* stores reasons for typing of constants *)
     mutable cstrs_locs : reason U.t;
-    (* stores reasons for typing constructors *)
+    (* stores reasons for typing adt constructors *)
+    mutable dstrs_locs : reason S.t;
+    (* stores reasons for typing adt destrcutros/projectors *)
     mutable field_locs : reason V.t;
     (* stores reasons for typing record fields *)
 
@@ -445,6 +452,12 @@ module Make
     { file = env.file;
       loc = loc; }
 
+  let rec find_pattern_ast pat asts parsed =
+    match asts, parsed with
+    | [], _ | _, [] -> assert false
+    | (ast, _) :: r, (t, _) :: r' ->
+      if pat == t then ast else find_pattern_ast pat r r'
+
   (* Binding lookups *)
   (* ************************************************************************ *)
 
@@ -459,6 +472,7 @@ module Make
         | `Ty_cst c -> R.find c env.st.ttype_locs
         | `Term_cst c -> S.find c env.st.const_locs
         | `Cstr c -> U.find c env.st.cstrs_locs
+        | `Dstr c -> S.find c env.st.dstrs_locs
         | `Field f -> V.find f env.st.field_locs
       in
       Some r
@@ -477,6 +491,7 @@ module Make
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
+    | `Dstr c -> `Constant (`Dstr (c, reason))
     | `Field f -> `Constant (`Field (f, reason))
 
   let binding_reason binding : reason option =
@@ -488,6 +503,7 @@ module Make
     | `Constant `Ty (_, reason)
     | `Constant `Term (_, reason)
     | `Constant `Cstr (_, reason)
+    | `Constant `Dstr (_, reason)
     | `Constant `Field (_, reason)
       -> reason
 
@@ -549,6 +565,12 @@ module Make
 
   let _bad_poly_arity env ast ty_vars tys =
     _error env (Ast ast) (Bad_poly_arity (ty_vars, tys))
+
+  let _redundant_pattern env ast pat =
+    _warn env (Ast ast) (Redundant_pattern pat)
+
+  let _partial_pattern_match env ast missing =
+    _error env (Ast ast) (Partial_pattern_match missing)
 
   let _over_application env ast over_args =
     _error env (Ast ast) (Over_application over_args)
@@ -616,6 +638,8 @@ module Make
       _over_application env ast over_args
     | T.Bad_poly_arity (vars, args) ->
       _bad_poly_arity env ast vars args
+    | T.Partial_pattern_match missing ->
+      _partial_pattern_match env ast missing
     | Wildcard_bad_scope (w, w_src, v) ->
       _scope_escape_in_wildcard env ast w w_src v
     | Wildcard_bad_base (w, w_src, inferred, allowed) ->
@@ -648,6 +672,7 @@ module Make
     ttype_locs = R.empty;
     const_locs = S.empty;
     cstrs_locs = U.empty;
+    dstrs_locs = S.empty;
     field_locs = V.empty;
     custom = Hmap.empty;
   }
@@ -658,6 +683,7 @@ module Make
     ttype_locs = st.ttype_locs;
     const_locs = st.const_locs;
     cstrs_locs = st.cstrs_locs;
+    dstrs_locs = st.dstrs_locs;
     field_locs = st.field_locs;
   }
 
@@ -709,6 +735,10 @@ module Make
   let decl_term_cstr env fg id c reason =
     add_global env fg id reason (`Cstr c);
     env.st.cstrs_locs <- U.add c reason env.st.cstrs_locs
+
+  let decl_term_dstr env fg id d reason =
+    add_global env fg id reason (`Dstr d);
+    env.st.dstrs_locs <- S.add d reason env.st.dstrs_locs
 
   let decl_term_field env fg id f reason =
     add_global env fg id reason (`Field f);
@@ -1281,6 +1311,13 @@ module Make
     | { Ast.term = Ast.Match (scrutinee, branches); _ } as ast ->
       parse_match env ast scrutinee branches
 
+    (* ADT operations *)
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Adt_check; _ }, l); _ } as ast ->
+      parse_adt_check env ast l
+
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Adt_project; _ }, l); _ } as ast ->
+      parse_adt_project env ast l
+
     (* Record creation *)
     | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record; _ }, l); _ } as ast ->
       parse_record env ast l
@@ -1389,7 +1426,12 @@ module Make
   and parse_match env ast scrutinee branches =
     let t = parse_term env scrutinee in
     let l = List.map (parse_branch (T.ty t) env) branches in
-    Term (_wrap2 env ast T.pattern_match t l)
+    (* small hack to get back the correct pattern ast for the warning *)
+    let redundant t =
+      let ast = find_pattern_ast t branches l in
+      _redundant_pattern env ast t
+    in
+    Term (_wrap2 env ast (T.pattern_match ~redundant) t l)
 
   and parse_branch ty env (pattern, body) =
     let p, env = parse_pattern ty env pattern in
@@ -1516,6 +1558,48 @@ module Make
         | t -> _expected env "variable binding" t None
       end
 
+  and parse_adt_cstr env ast =
+    match ast with
+    | { Ast.term = Ast.Symbol s; _ }
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
+      begin match find_bound env s with
+        | `Cstr c -> c
+        | `Not_found -> _cannot_find env ast s
+        | _ -> _expected env "adt constructor" ast None
+      end
+    | _ -> _expected env "adt constructor name" ast None
+
+  and parse_adt_check env ast = function
+    | [ adt_ast; cstr_ast ] ->
+      let adt = parse_term env adt_ast in
+      let c = parse_adt_cstr env cstr_ast in
+      Term (_wrap2 env ast T.cstr_tester c adt)
+    | l ->
+      _bad_op_arity env (Builtin Ast.Adt_check) 2 (List.length l) ast
+
+  and parse_adt_project env ast = function
+    | [ adt_ast; dstr_ast ] ->
+      begin match dstr_ast with
+        | { Ast.term = Ast.Symbol s; _ }
+        | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
+          begin match find_bound env s with
+            | `Dstr d ->
+              parse_app_term_cst env ast d [adt_ast]
+            (* field access for records can be seen as a special case of adt
+               projection (the same way record type definition are a special
+               case of adt type definition with a single case). *)
+            | `Field field ->
+              let t = parse_term env adt_ast in
+              Term (create_record_access env ast t field)
+            (* error cases *)
+            | `Not_found -> _cannot_find env ast s
+            | _ -> _expected env "adt destructor/field" ast None
+          end
+        | _ -> _expected env "adt destructor/field name" ast None
+      end
+    | l ->
+      _bad_op_arity env (Builtin Ast.Adt_project) 2 (List.length l) ast
+
   and parse_record_field env ast =
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
@@ -1609,6 +1693,7 @@ module Make
     | `Letin (_, _, v, t) -> parse_app_letin_var env ast v s_ast t args
     | `Ty_cst f -> parse_app_ty_cst env ast f args
     | `Term_cst f -> parse_app_term_cst env ast f args
+    | `Dstr c -> parse_app_term_cst env ast c args
     | `Cstr c ->
       parse_app_cstr env ast c args
     | `Field _f ->
@@ -1971,7 +2056,7 @@ module Make
             | None, Some c ->
               _warn env (Ast t) (Superfluous_destructor (id, cid, c))
             | Some id, Some const ->
-              decl_term_const env (Decl d) id const (Declared (env.file, d))
+              decl_term_dstr env (Decl d) id const (Declared (env.file, d))
             | Some id, None ->
               _error env (Ast t) (Missing_destructor id)
           ) pargs targs

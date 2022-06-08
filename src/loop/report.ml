@@ -281,7 +281,7 @@ module Conf = struct
 
   let update f param conf = function
     | `All ->
-      for i = 0 to Array.length conf.warnings do
+      for i = 0 to Array.length conf.warnings - 1 do
         f conf i param
       done;
       conf

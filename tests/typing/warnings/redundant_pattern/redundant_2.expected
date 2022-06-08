@@ -1,0 +1,4 @@
+File "tests/typing/warnings/redundant_pattern/redundant_2.ae", line 12, character 4-8:
+12 |   | C(x) -> x = 3
+         ^^^^
+Warning This pattern is useless (i.e. it is made redundant by earlier patterns)

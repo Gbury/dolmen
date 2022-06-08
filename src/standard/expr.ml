@@ -358,6 +358,35 @@ let replicate n x =
   in
   aux x [] n
 
+(* list split *)
+let list_take l n =
+  let rec aux acc l n =
+    match l with
+    | _ when n <= 0 -> List.rev acc, l
+    | [] -> failwith "Expr.list_take: not enough arguments"
+    | x :: r -> aux (x :: acc) r (n - 1)
+  in
+  aux [] l n
+
+(* List.concat_map *)
+let list_concat_map f l =
+  let rec aux acc f = function
+    | [] -> List.rev acc
+    | x :: r ->
+      let l = f x in
+      aux (List.rev_append l acc) f r
+  in
+  aux [] f l
+
+(* List.find_map *)
+let rec list_find_map f = function
+  | [] -> None
+  | x :: r ->
+    begin match f x with
+      | (Some _) as res -> res
+      | None -> list_find_map f r
+    end
+
 (* automatic cache *)
 let with_cache ~cache f x =
   match Hashtbl.find cache x with
@@ -732,17 +761,17 @@ module Ty = struct
   and expand_head t =
     if t.ty_head != dummy then t.ty_head
     else match t.ty_descr with
-    | TyApp (f, args) ->
-      begin match f.id_ty.alias with
-        | No_alias -> t.ty_head <- t; t
-        | Alias { alias_vars; alias_body; } ->
-          assert (List.compare_lengths alias_vars args = 0);
-          let map = List.fold_left2 Subst.Var.bind Subst.empty alias_vars args in
-          let res = expand_head (subst map alias_body) in
-          t.ty_head <- res;
-          res
-      end
-    | _ -> t.ty_head <- t; t
+      | TyApp (f, args) ->
+        begin match f.id_ty.alias with
+          | No_alias -> t.ty_head <- t; t
+          | Alias { alias_vars; alias_body; } ->
+            assert (List.compare_lengths alias_vars args = 0);
+            let map = List.fold_left2 Subst.Var.bind Subst.empty alias_vars args in
+            let res = expand_head (subst map alias_body) in
+            t.ty_head <- res;
+            res
+        end
+      | _ -> t.ty_head <- t; t
 
   (* hash function *)
   let rec hash_aux (t : t) =
@@ -964,6 +993,10 @@ module Ty = struct
     let l, _ = split_pi t in
     List.length l
 
+  let t_arity t =
+    let _, l, _ = poly_sig t in
+    List.length l
+
   (* Matching *)
   exception Impossible_matching of ty * ty
 
@@ -1094,6 +1127,7 @@ module Ty = struct
 
   (* View *)
   type view = [
+    | `Prop
     | `Int
     | `Rat
     | `Real
@@ -1128,6 +1162,7 @@ module Ty = struct
       `Arrow (args, ret)
     | TyApp (({ builtin; _ } as c), l) ->
       begin match builtin with
+        | Builtin.Prop -> `Prop
         | Builtin.Int -> `Int
         | Builtin.Rat -> `Rat
         | Builtin.Real -> `Real
@@ -1169,10 +1204,14 @@ module Term = struct
   exception Field_missing of term_cst
   exception Field_expected of term_cst
 
+  exception Pattern_expected of t
+  exception Empty_pattern_matching
+  exception Partial_pattern_match of t list
   exception Constructor_expected of term_cst
 
   exception Over_application of t list
   exception Bad_poly_arity of ty_var list * ty list
+
 
   (* *)
 
@@ -1190,6 +1229,13 @@ module Term = struct
   let add_tag_list (t : t) k l = t.term_tags <- Tag.add_list t.term_tags k l
 
   let unset_tag (t: t) k = t.term_tags <- Tag.unset t.term_tags k
+
+  (* Term creation *)
+  let mk ?(tags=Tag.empty) term_descr term_ty =
+    { term_descr; term_ty; term_hash = -1; term_tags = tags; }
+
+  let of_var v = mk (Var v) v.id_ty
+  let of_cst c = mk (Cst c) c.id_ty
 
   (* Hash *)
   let rec hash_aux t =
@@ -1402,9 +1448,227 @@ module Term = struct
         ) l''
     | _ -> assert false
 
-  (* Exhaustivity check
-     TODO: implement this *)
-  let check_exhaustivity _ty _pats = ()
+
+  module Pattern_matching = struct
+    (* Pattern matching analysis
+
+       We perform an analysis on pattern matching to determine two things:
+       - which patterns are redundant, if any
+       - which patterns are missing from the match, if any
+
+       The analysis is taken from the following research paper:
+       Warnings for pattern matching - LUC MARANGET
+       http://moscova.inria.fr/~maranget/papers/warn/warn.pdf
+    *)
+
+    type pattern_head =
+      | Wildcard
+      | Cstr of {
+          case : int;
+          adt : ty_cst;
+          cstr : term_cst;
+          args : term list;
+        }
+
+    type pat = {
+      term : term;
+      head : pattern_head;
+    }
+
+    let pp_pat fmt { term; _ } =
+      Format.fprintf fmt "%a" Print.term term
+
+    type matrix = pat list list
+
+    let pp_row fmt r =
+      let pp_sep fmt () = Format.fprintf fmt "\t@ " in
+      Format.fprintf fmt "(@[<h>%a@])" (Format.pp_print_list ~pp_sep pp_pat) r
+
+    let _pp_matrix fmt m =
+      let pp_sep fmt () = Format.fprintf fmt "@ " in
+      Format.fprintf fmt "(@[<v>%a@])" (Format.pp_print_list ~pp_sep pp_row) m
+
+    let view_pat t =
+      match t.term_descr with
+      | Var _ -> Wildcard
+      | Cst ( { builtin = Builtin.Constructor { adt; case; }; _ } as cstr ) ->
+        Cstr { cstr; adt; case; args = []; }
+      | App ({ term_descr = Cst ({
+          builtin = Builtin.Constructor { adt; case; }; _ } as cstr); _ }, _, args) ->
+        Cstr { cstr; adt; case; args; }
+      | Cst _ | App _ | Binder _ | Match _ ->
+        raise (Pattern_expected t)
+
+    let mk_pat term =
+      { term; head = view_pat term; }
+
+    let specialise_row arity c = function
+      | [] -> assert false
+      | p_i_1 :: p_r ->
+        begin match p_i_1.head with
+          | Wildcard ->
+            [init_list arity (fun _ -> p_i_1) @ p_r]
+          | Cstr { cstr = c'; args = r; _ } ->
+            if Id.equal c c' then [List.map mk_pat r @ p_r] else []
+        end
+
+    let specialise_vector arity c q =
+      match specialise_row arity c q with
+      | [q'] -> q'
+      | [] | _ :: _ :: _-> assert false (* internal error *)
+
+    let specialise_matrix arity c p =
+      list_concat_map (specialise_row arity c) p
+
+    let default_matrix (p : matrix) : matrix =
+      list_concat_map (function
+          | [] -> assert false
+          | p_i_1 :: p_i_r ->
+            begin match p_i_1.head with
+              | Wildcard -> [p_i_r]
+              | Cstr _ -> []
+            end) p
+
+    let all_constructors_appear_in_first_col (p : matrix) =
+      let r = ref None in
+      let cstrs = ref [| |] in
+      let expand_for adt =
+        match !r with
+        | Some a -> a
+        | None ->
+          begin match Ty.definition adt with
+            | Some Adt { cases; _ } ->
+              let a = Array.map (fun _ -> false) cases in
+              cstrs := cases;
+              r := Some a;
+              a
+            | _ -> assert false
+          end
+      in
+      let set adt i =
+        let a = expand_for adt in
+        a.(i) <- true
+      in
+      List.iter (function
+          | [] -> ()
+          | p_1 :: _ ->
+            begin match p_1.head with
+              | Wildcard -> ()
+              | Cstr { case; adt; _ } ->
+                set adt case
+            end
+        ) p;
+      match !r with
+      | None -> `Missing []
+      | Some a ->
+        let all_occurs = ref true in
+        let missing = ref [] in
+        let all = ref [] in
+        Array.iter2 (fun (case : Ty.adt_case) occurs ->
+            if occurs
+            then (all := case.cstr :: !all)
+            else (all_occurs := false; missing := case.cstr :: !missing)
+          ) !cstrs a;
+        if !all_occurs
+        then `All_present !all
+        else `Missing !missing
+
+    let rec u_rec (p : matrix) = function
+      | [] ->
+        begin match p with
+          | [] -> true
+          | _ :: _ -> false
+        end
+      | (q_1 :: q_r) as q ->
+        begin match q_1.head with
+          | Cstr { cstr; args; _ } ->
+            let arity = List.length args in
+            let p' = specialise_matrix arity cstr p in
+            let q' = specialise_vector arity cstr q in
+            u_rec p' q'
+          | Wildcard ->
+            begin match all_constructors_appear_in_first_col p with
+              | `All_present cstrs ->
+                List.for_all (fun cstr ->
+                    let arity = Ty.t_arity cstr.id_ty in
+                    let p' = specialise_matrix arity cstr p in
+                    let q' = specialise_vector arity cstr q in
+                    u_rec p' q'
+                  ) cstrs
+              | `Missing _ ->
+                let p' = default_matrix p in
+                let q' = q_r in
+                u_rec p' q'
+            end
+        end
+
+    let wildcard_ty () =
+      Ty.of_var @@ Ty.wildcard_var ()
+
+    let wildcard_term () =
+      of_var (Id.mk (Path.local "_") (wildcard_ty ()))
+
+    let rec i ~apply (p : matrix) n =
+      match p, n with
+      | [], _ -> Some (init_list n (fun _ -> wildcard_term ()))
+      | _ :: _, 0 -> None
+      | _, _ ->
+        begin match all_constructors_appear_in_first_col p with
+          | `All_present cstrs ->
+            list_find_map (fun cstr ->
+                let vars, params, _ = Ty.poly_sig cstr.id_ty in
+                let arity = List.length params in
+                let p' = specialise_matrix arity cstr p in
+                match i ~apply p' (arity + n - 1) with
+                | None -> None
+                | Some res ->
+                  let args, rest = list_take res arity in
+                  let tys = List.map (fun _ -> wildcard_ty ()) vars in
+                  let t = apply (of_cst cstr) tys args in
+                  Some (t :: rest)
+              ) cstrs
+          | `Missing cstrs ->
+            let p' = default_matrix p in
+            begin match i ~apply p' (n - 1) with
+              | None -> None
+              | Some res ->
+                let head =
+                  match cstrs with
+                  | [] -> wildcard_term ()
+                  | cstr :: _ ->
+                    let vars, params, _ = Ty.poly_sig cstr.id_ty in
+                    let tys = List.map (fun _ -> wildcard_ty ()) vars in
+                    let args = List.map (fun _ -> wildcard_term ()) params in
+                    apply (of_cst cstr) tys args
+                in
+                Some (head :: res)
+            end
+        end
+
+    let analyze ~apply patterns =
+      let redundant, matrix =
+        List.fold_left (fun (redundant, matrix) pattern ->
+            let pat = mk_pat pattern in
+            let redundant =
+              if u_rec matrix [pat]
+              then redundant
+              else pattern :: redundant
+            in
+            let matrix = matrix @ [[pat]] in
+            (redundant, matrix)
+          ) ([], []) patterns
+      in
+      let missing =
+        match i ~apply matrix 1 with
+        | None -> []
+        | Some ([_] as res) -> res
+        | Some _ -> assert false
+      in
+      redundant, missing
+
+  end
+
+
 
   (* Variables *)
   module Var = struct
@@ -1568,6 +1832,17 @@ module Term = struct
       let b = Ty.Var.mk "beta" in
       mk' ~builtin:Builtin.Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
+
+    let in_interval (b1, b2) = mk'
+        ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
+        "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
+
+    let maps_to =
+      let a = Ty.Var.mk "alpha" in
+      let b = Ty.Var.mk "beta" in
+      mk'
+        ~name:"maps_to" ~builtin:Builtin.Maps_to
+        "MapsTo" [a; b] [Ty.of_var a; Ty.of_var b] Ty.prop
 
     module Int = struct
 
@@ -1956,9 +2231,9 @@ module Term = struct
           )
 
       let sub =
-      with_cache ~cache:(Hashtbl.create 13) (fun n ->
-          mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
-        )
+        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+            mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+          )
 
       let mul =
         with_cache ~cache:(Hashtbl.create 13) (fun n ->
@@ -2071,8 +2346,8 @@ module Term = struct
         mk' ~builtin:Builtin.RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
 
       (** Generic function for creating functions primarily on the same floating
-         point format with optionally a rounding mode and a particular result
-         type *)
+          point format with optionally a rounding mode and a particular result
+          type *)
       let fp_gen_fun ~args ?rm ?res name builtin =
         with_cache ~cache:(Hashtbl.create 13) (fun es ->
             let fp = Ty.float' es in
@@ -2425,13 +2700,6 @@ module Term = struct
 
   end
 
-  (* Term creation *)
-  let mk ?(tags=Tag.empty) term_descr term_ty =
-    { term_descr; term_ty; term_hash = -1; term_tags = tags; }
-
-  let of_var v = mk (Var v) v.id_ty
-  let of_cst c = mk (Cst c) c.id_ty
-
   (* Binder creation *)
   let mk_bind b body =
     match b with
@@ -2653,7 +2921,12 @@ module Term = struct
       mk (App (f, tys, args)) ret_ty
 
   (* Pattern matching *)
-  and pattern_match scrutinee branches =
+  and pattern_match ?(redundant=(fun _ -> ())) scrutinee branches =
+    (* fail on empty pattern matching *)
+    begin match branches with
+      | [] -> raise Empty_pattern_matching
+      | _ -> ()
+    end;
     let scrutinee_ty = ty scrutinee in
     (* first,
        unify the type of the scrutinee and all patterns,
@@ -2678,9 +2951,19 @@ module Term = struct
         (subst s Subst.empty pat, subst s Subst.empty body)
       ) branches in
     (* Check exhaustivity *)
-    let () = check_exhaustivity (ty scrutinee) (List.map fst branches) in
-    (* Build the pattern matching *)
-    mk (Match (scrutinee, branches)) body_ty
+    let redundant_cases, missing_cases =
+      Pattern_matching.analyze ~apply (List.map fst branches)
+    in
+    (* warn about redundant cases *)
+    List.iter redundant redundant_cases;
+    (* *)
+    match missing_cases with
+    | [] ->
+      (* Build the pattern matching *)
+      mk (Match (scrutinee, branches)) body_ty
+    | _ :: _ ->
+      (* Partial matches are not allowed *)
+      raise (Partial_pattern_match missing_cases)
 
 
   (* Wrappers around application *)
@@ -2709,7 +2992,7 @@ module Term = struct
     in
     apply_cst tester ty_args [t]
 
-  (* Recor creation *)
+  (* Record creation *)
   let build_record_fields ty_c l =
     let n =
       match Ty.definition ty_c with
@@ -2761,6 +3044,16 @@ module Term = struct
         apply_field f t
       in
       mk_record aux l
+
+  (* Alt-Ergo's semantic triggers *)
+  let in_interval t (b1, b2) t1 t2 =
+    apply_cst (Const.in_interval (b1, b2)) [] [t; t1; t2]
+
+  let maps_to tv t =
+    let ntv = of_var tv in
+    let tv_ty = ty ntv in
+    let t_ty = ty t in
+    apply_cst Const.maps_to [tv_ty; t_ty] [ntv; t]
 
   (* typing annotations *)
   let ensure t ty =

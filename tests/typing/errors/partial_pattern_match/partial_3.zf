@@ -1,0 +1,15 @@
+
+
+data t :=
+  | A
+  | B
+  | C int.
+
+val x : t.
+
+def foo : int :=
+  match x with
+  | B -> 1
+  | C y -> y
+  end.
+

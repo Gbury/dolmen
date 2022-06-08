@@ -12,7 +12,8 @@ module Ae = struct
       (Tag : Dolmen.Intf.Tag.Ae_Base with type 'a t = 'a Type.Tag.t
                                       and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Ae_Base with type t = Type.Ty.t)
-      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t) = struct
+      (T : Dolmen.Intf.Term.Ae_Base with type t = Type.T.t
+                                     and type term_var := Type.T.Var.t) = struct
 
     let mk_or a b = T._or [a; b]
     let mk_and a b = T._and [a; b]
@@ -72,13 +73,28 @@ module Ae = struct
 
       (* Equality *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env s T.eq)
+        `Term (
+          fun ast args ->
+            match args with
+            | [Ast.{
+                term = App ( { term = Builtin Eq; _ }, [_; lr_st] ); _
+              } as l_st; r_st] ->
+              Base.term_app_list (module Type) env s
+                T._and ast [l_st; Ast.eq lr_st r_st]
+            | _ ->
+              Base.term_app2 (module Type) env s T.eq ast args
+        )
+
       | Type.Builtin Ast.Distinct ->
         `Term (Base.term_app_list (module Type) env s T.distinct)
 
       (* AC (Associative Commutative) symbol *)
       | Type.Id { name = Simple "ac"; ns = Attr; }->
         `Tags (fun _ _ -> [Type.Set (Tag.ac, ())])
+
+      (* Named terms *)
+      | Type.Id { name = Simple n; ns = Track; }->
+        `Tags (fun _ _ -> [Type.Set (Tag.named, n)])
 
       (* Triggers *)
       | Type.Id { name = Simple "triggers"; ns = Attr; } ->
@@ -93,6 +109,34 @@ module Ae = struct
             let l = List.map (Type.parse_prop env) l in
             [Type.Set (Tag.filters, l)]
           )
+
+      (* Semantic triggers *)
+      | Type.Builtin (Ast.In_interval (b1, b2)) ->
+        `Term (Base.term_app3_ast (module Type) env s
+                 (fun _ast _a1 _a2 _a3 ->
+                    T.in_interval _a1 (b1, b2) _a2 _a3))
+
+      | Type.Builtin Ast.Maps_to ->
+        `Term (
+          fun ast args ->
+            begin match args with
+              | [var; t] ->
+                let t = Type.parse_term env t in
+                begin match var with
+                  | { Ast.term = Ast.Symbol sym; _ }
+                  | { Ast.term =
+                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
+                    } ->
+                    begin
+                      match Type.find_bound env sym with
+                      | `Term_var v -> T.maps_to v t
+                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
+                    end
+                  | _ -> Type._error env (Ast ast) (Type.Expected ("Variable name", None))
+                end
+              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
+            end
+        )
 
       | _ -> `Not_found
 
@@ -388,7 +432,7 @@ module Smtlib2 = struct
                   let id = Id.mk Term s in
                   begin match Type.find_bound env id with
                     | `Cstr c ->
-                      `Term (Base.term_app1 (module Type) env symbol (T.cstr_tester c))
+                      `Term (Base.term_app1 (module Type) env symbol (Type.T.cstr_tester c))
                     | _ -> `Not_found
                   end)
               | _ -> `Not_indexed
