@@ -889,14 +889,16 @@ let new_state () = {
 (* Make functor *)
 (* ************************************************************************ *)
 
-module type S = Typer_intf.S
+type 'a file = 'a State.file
 
-module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
+module type Typer_Full = Typer_intf.Typer_Full
+
+module Typer(State : State.S) = struct
 
   (* Type aliases *)
   (* ************************************************************************ *)
 
-  type state = S.t
+  type state = State.t
   type nonrec ty_state = ty_state
   type env = T.env
   type 'a fragment = 'a T.fragment
@@ -904,11 +906,11 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   type warning = T.warning
   type builtin_symbols = T.builtin_symbols
 
+  let ty_state : ty_state State.key = State.create_key "ty_state"
+
 
   (* Input elpers *)
   (* ************************************************************************ *)
-
-  type 'a file = 'a State_intf.file
 
   type input = [
     | `Logic of Logic.language file
@@ -923,13 +925,13 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let warn ~input ~loc st warn payload =
     match (input : input) with
-    | `Logic file -> S.warn ~file ~loc st warn payload
-    | `Response file -> S.warn ~file ~loc st warn payload
+    | `Logic file -> State.warn ~file ~loc st warn payload
+    | `Response file -> State.warn ~file ~loc st warn payload
 
   let error ~input ~loc st err payload =
     match (input : input) with
-    | `Logic file -> S.error ~file ~loc st err payload
-    | `Response file -> S.error ~file ~loc st err payload
+    | `Logic file -> State.error ~file ~loc st err payload
+    | `Response file -> State.error ~file ~loc st err payload
 
   let file_loc_of_input (input : input) =
     match input with
@@ -1156,7 +1158,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let pop_inferred_model_constants st =
     let key = Smtlib2_Core.inferred_model_constants in
-    let state = (S.ty_state st).typer in
+    let state = (State.get ty_state st).typer in
     let res =
       match T.get_global_custom_state state key with
       | None -> []
@@ -1203,7 +1205,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
 
-  let typing_env ?(attrs=[]) ~loc warnings (st : S.t) (input : input) =
+  let typing_env ?(attrs=[]) ~loc warnings (st : State.t) (input : input) =
     let additional_builtins env args = !additional_builtins env args in
     let file = file_loc_of_input input in
 
@@ -1234,7 +1236,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
         } in
       let builtins = Dimacs.parse in
       T.empty_env ~order:First_order
-        ~st:(S.ty_state st).typer
+        ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
@@ -1263,7 +1265,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           Ae_Bitv.parse;
         ] in
       T.empty_env ~order:First_order
-        ~st:(S.ty_state st).typer
+        ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
         ~free_wildcards ~warnings ~file
         builtins
@@ -1293,7 +1295,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           Zf_arith.parse
         ] in
       T.empty_env ~order:Higher_order
-        ~st:(S.ty_state st).typer
+        ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
         ~warnings ~file builtins
 
@@ -1325,7 +1327,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
               Tptp_Arith.parse v;
             ] in
           T.empty_env ~order:Higher_order
-            ~st:(S.ty_state st).typer
+            ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly
             ~warnings ~file:file builtins
         | Some ("tff" | "tpi" | "fof" | "cnf") ->
@@ -1364,14 +1366,14 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
               Tptp_Arith.parse v;
             ] in
           T.empty_env ~order:First_order
-            ~st:(S.ty_state st).typer
+            ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly
             ~warnings ~file builtins
         | bad_kind ->
           let builtins = Dolmen_type.Base.noop in
           let env =
             T.empty_env
-              ~st:(S.ty_state st).typer
+              ~st:(State.get ty_state st).typer
               ~poly ~warnings ~file builtins
           in
           T._error env (Located loc) (Bad_tptp_kind bad_kind)
@@ -1396,12 +1398,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      begin match (S.ty_state st).logic with
+      begin match (State.get ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env =
             T.empty_env ~order:First_order
-              ~st:(S.ty_state st).typer
+              ~st:(State.get ty_state st).typer
               ~var_infer ~sym_infer ~poly
               ~warnings ~file builtins
           in
@@ -1413,7 +1415,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
-            ~st:(S.ty_state st).typer
+            ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly ~quants
             ~warnings ~file builtins
       end
@@ -1430,12 +1432,12 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      begin match (S.ty_state st).logic with
+      begin match (State.get ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env =
             T.empty_env ~order:First_order
-              ~st:(S.ty_state st).typer
+              ~st:(State.get ty_state st).typer
               ~var_infer ~sym_infer ~poly
               ~warnings ~file builtins
           in
@@ -1447,7 +1449,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
-            ~st:(S.ty_state st).typer
+            ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly ~quants
             ~warnings ~file builtins
       end
@@ -1459,23 +1461,23 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
     | res -> !st, res
     | exception T.Typing_error err ->
       let st = report_error ~input !st err in
-      raise (S.Error st)
+      raise (State.Error st)
 
 
   (* Push&Pop *)
   (* ************************************************************************ *)
 
   let reset st ?loc:_ () =
-    S.set_ty_state st (new_state ())
+    State.set ty_state (new_state ()) st
 
   let reset_assertions st ?loc:_ () =
-    let state = S.ty_state st in
-    S.set_ty_state st {
+    let state = State.get ty_state st in
+    State.set ty_state {
       logic = state.logic;
       logic_loc = state.logic_loc;
       typer = T.new_state ();
       stack = [];
-    }
+    } st
 
 
   let rec push st ~input ?(loc=Dolmen.Std.Loc.no_loc) = function
@@ -1486,10 +1488,10 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             T._error env (Located loc) Invalid_push_n
           )
       else begin
-        let t = S.ty_state st in
+        let t = State.get ty_state st in
         let st' = T.copy_state t.typer in
         let t' = { t with stack = st' :: t.stack; } in
-        let st' = S.set_ty_state st t' in
+        let st' = State.set ty_state t' st in
         push st' ~input ~loc (i - 1)
       end
 
@@ -1501,7 +1503,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             T._error env (Located loc) Invalid_pop_n
           )
       else begin
-        let t = S.ty_state st in
+        let t = State.get ty_state st in
         match t.stack with
         | [] ->
           fst @@ typing_wrap ~input ~loc st ~f:(fun env ->
@@ -1509,7 +1511,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
             )
         | ty :: r ->
           let t' = { t with typer = ty; stack = r; } in
-          let st' = S.set_ty_state st t' in
+          let st' = State.set ty_state t' st in
           pop st' ~input ~loc (i - 1)
       end
 
@@ -1518,19 +1520,19 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* ************************************************************************ *)
 
   let set_logic_aux ~input ~loc st new_logic =
-    let ty_st = S.ty_state st in
+    let ty_st = State.get ty_state st in
     let st =
       match ty_st.logic with
       | Auto -> st
       | Smtlib2 _ -> warn ~input ~loc st logic_reset ty_st.logic_loc
     in
-    S.set_ty_state st {
+    State.set ty_state {
       ty_st with
       logic = new_logic;
       logic_loc = Dolmen.Std.Loc.full_loc loc;
-    }
+    } st
 
-  let set_logic (st : S.t) ~input ?(loc=Dolmen.Std.Loc.no_loc) s =
+  let set_logic (st : State.t) ~input ?(loc=Dolmen.Std.Loc.no_loc) s =
     let file_loc = file_loc_of_input input in
     let loc : Dolmen.Std.Loc.full = { file = file_loc; loc; } in
     match lang_of_input input with
@@ -1552,18 +1554,18 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Declarations *)
   (* ************************************************************************ *)
 
-  let allow_function_decl (st : S.t) =
-    match (S.ty_state st).logic with
+  let allow_function_decl (st : State.t) =
+    match (State.get ty_state st).logic with
     | Smtlib2 logic -> logic.features.free_functions
     | Auto -> true
 
-  let allow_data_type_decl (st : S.t) =
-    match (S.ty_state st).logic with
+  let allow_data_type_decl (st : State.t) =
+    match (State.get ty_state st).logic with
     | Smtlib2 logic -> logic.features.datatypes
     | Auto -> true
 
-  let allow_abstract_type_decl (st : S.t) =
-    match (S.ty_state st).logic with
+  let allow_abstract_type_decl (st : State.t) =
+    match (State.get ty_state st).logic with
     | Smtlib2 logic -> logic.features.free_sorts
     | Auto -> true
 
@@ -1588,7 +1590,7 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   let check_decls st env l decls =
     List.iter2 (check_decl st env) l decls
 
-  let decls (st : S.t) ~input ?loc ?attrs d =
+  let decls (st : State.t) ~input ?loc ?attrs d =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
         let decls = T.decls env ?attrs d in
         let () = check_decls st env d.contents decls in
@@ -1621,8 +1623,6 @@ module Make(S : State_intf.Typer with type ty_state := ty_state) = struct
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
-  let typecheck = S.typecheck
-
   let terms st ~input ?loc ?attrs = function
     | [] -> st, []
     | l ->
@@ -1645,10 +1645,11 @@ end
 (* Pipes functor *)
 (* ************************************************************************ *)
 
-module type Pipe_arg = Typer_intf.Pipe_arg
-module type Pipe_res = Typer_intf.Pipe_res
+module type Typer = Typer_intf.Typer
 
-module Pipe
+module type S = Typer_intf.S
+
+module Make
     (Expr : Expr_intf.S)
     (Print : Expr_intf.Print
      with type ty := Expr.ty
@@ -1658,8 +1659,8 @@ module Pipe
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
-    (State : State_intf.Typer_pipe)
-    (Typer : Typer_intf.Pipe_arg
+    (State : State.S)
+    (Typer : Typer
      with type state := State.t
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
@@ -1671,6 +1672,8 @@ module Pipe
 = struct
 
   module S = Dolmen.Std.Statement
+
+  let type_check : bool State.key = State.create_key "type_check"
 
   (* Types used in Pipes *)
   (* ************************************************************************ *)
@@ -1850,10 +1853,10 @@ module Pipe
 
   let typecheck st c =
     let res =
-      if not (Typer.typecheck st) then
+      if not (State.get type_check st) then
         st, `Done ()
       else
-        let input = `Logic (State.logic_file st) in
+        let input = `Logic (State.get State.logic_file st) in
         match normalize st c with
 
         (* Pack and includes.

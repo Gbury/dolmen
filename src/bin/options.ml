@@ -328,26 +328,25 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
-  let st : Loop.State.t = {
-    debug; loc_style; reports;
-
-    max_warn; cur_warn = 0;
-
-    time_limit; size_limit;
-
-    logic_file; response_file;
-
-    header_check; header_licenses; header_lang_version;
-    header_state = Dolmen_loop.Headers.empty;
-
-    type_check; type_state = Dolmen_loop.Typer.new_state ();
-
-    solve_state = ();
-
-    check_model; check_state = Dolmen_loop.Check.empty ();
-
-  } in
-  st
+  let set = Loop.State.set in
+  Loop.State.empty
+  |> set Loop.State.debug debug
+  |> set Loop.State.loc_style loc_style
+  |> set Loop.State.reports reports
+  |> set Loop.State.max_warn max_warn
+  |> set Loop.State.cur_warn 0
+  |> set Loop.State.time_limit time_limit
+  |> set Loop.State.size_limit size_limit
+  |> set Loop.State.logic_file logic_file
+  |> set Loop.State.response_file response_file
+  |> set Loop.Header.header_check header_check
+  |> set Loop.Header.header_state Dolmen_loop.Headers.empty
+  |> set Loop.Header.header_licenses header_licenses
+  |> set Loop.Header.header_lang_version header_lang_version
+  |> set Loop.Typer_Pipe.type_check type_check
+  |> set Loop.Typer.ty_state (Dolmen_loop.Typer.new_state ())
+  |> set Loop.Check.check_model check_model
+  |> set Loop.Check.check_state (Dolmen_model.Loop.empty ())
 
 
 (* Profiling *)
@@ -584,9 +583,11 @@ let cli =
     | false, None ->
       `Ok (Run { state; })
     | false, Some report ->
-      `Ok (Doc { report; conf = state.reports; })
+      let conf = Loop.State.get Loop.State.reports state in
+      `Ok (Doc { report; conf; })
     | true, None ->
-      `Ok (List_reports { conf = state.reports; })
+      let conf = Loop.State.get Loop.State.reports state in
+      `Ok (List_reports { conf; })
     | true, Some _ ->
       `Error (false,
               "at most one of --list and --doc might be \

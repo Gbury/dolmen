@@ -14,7 +14,7 @@ exception Sigint
 exception Out_of_time
 exception Out_of_space
 
-module Make(State : State_intf.Pipeline) : sig
+module Make(State : State.S) : sig
   (** Concrete pipelines. *)
 
   (** {2 Type definitions } *)

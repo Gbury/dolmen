@@ -5,7 +5,7 @@ exception Sigint
 exception Out_of_time
 exception Out_of_space
 
-module Make(State : State_intf.Pipeline) = struct
+module Make(State : State.S) = struct
 
   (* GC alarm for time/space limits *)
   (* ************************************************************************ *)
@@ -180,8 +180,8 @@ module Make(State : State_intf.Pipeline) = struct
     (State.t -> State.t * a option) -> State.t -> (State.t, a, unit) t -> State.t
     = fun ~finally g st pipe ->
       let exception Exn of State.t * Printexc.raw_backtrace * exn in
-      let time = State.time_limit st in
-      let size = State.size_limit st in
+      let time = State.get State.time_limit st in
+      let size = State.get State.size_limit st in
       let al = setup_alarm time size in
       let exn = { k = fun st bt e ->
           (* delete alarm as soon as possible *)

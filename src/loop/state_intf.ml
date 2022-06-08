@@ -7,49 +7,8 @@
 
 (** {1 Useful type aliases} *)
 
-type source = [
-  | `Stdin
-  | `File of string
-  | `Raw of string * string
-]
 
-type mode = [
-  | `Full
-  | `Incremental
-]
-
-type 'lang file = {
-  lang    : 'lang option;
-  mode    : mode option;
-  loc     : Dolmen.Std.Loc.file;
-  dir     : string;
-  source  : source;
-}
-
-(** {1 Signatures} *)
-
-module type Common = sig
-
-  type t
-  (** The type of state *)
-
-  exception Error of t
-  (** Convenient exception. *)
-
-  val warn :
-    ?file:_ file ->
-    ?loc:Dolmen.Std.Loc.full ->
-    t -> 'a Report.Warning.t -> 'a -> t
-  (** Emit a warning *)
-
-  val error :
-    ?file:_ file ->
-    ?loc:Dolmen.Std.Loc.full ->
-    t -> 'a Report.Error.t -> 'a -> t
-  (** Emit an error. *)
-
-end
-
+(*
 (** This modules defines the smallest signatures for a solver state that allow
     to instantiate the {Pipeline.Make} functor. *)
 module type Pipeline = sig
@@ -200,3 +159,4 @@ module type Check_pipe = sig
   (** Flag for eager model checking. *)
 
 end
+*)

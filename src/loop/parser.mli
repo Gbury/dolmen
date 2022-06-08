@@ -20,12 +20,8 @@ val parsing_error :
   ] Report.error
 (** Parsing errors *)
 
-module type Pipe_res = Parser_intf.Pipe_res
+module type S = Parser_intf.S
 
 (** This module provides convenient pipes for parsing and dealing with includes. *)
-module Pipe
-    (Expr : Expr_intf.S)
-    (State : State_intf.Parser_pipe
-     with type term := Expr.term)
-  : Pipe_res with type state := State.t
+module Make(State : State.S) : S with type state := State.t
 

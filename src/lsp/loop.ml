@@ -3,13 +3,10 @@
 
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
 
-module Parser = Dolmen_loop.Parser.Pipe(Dolmen.Std.Expr)(State)
-module Header = Dolmen_loop.Headers.Pipe(State)
-module Typer = struct
-  module T = Dolmen_loop.Typer.Make(State)
-  include T
-  include Dolmen_loop.Typer.Pipe(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(T)
-end
+module Parser = Dolmen_loop.Parser.Make(State)
+module Header = Dolmen_loop.Headers.Make(State)
+module Typer = Dolmen_loop.Typer.Typer(State)
+module Typer_Pipe = Dolmen_loop.Typer.Make(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Typer)
 
 exception Finished of (State.t, string) result
 
@@ -54,34 +51,32 @@ let process path opt_contents =
     source = `Raw ("", "");
   } in
   let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
-  let st = State.{
-      debug = false;
-      reports; loc_style = `Short;
-      max_warn = max_int;
-      cur_warn = 0;
-      time_limit = 0.; (* disable the timer *)
-      size_limit = max_float;
-
-      logic_file = l_file;
-      response_file = r_file;
-
-      header_check = false;
-      header_licenses = [];
-      header_lang_version = None;
-      header_state = Dolmen_loop.Headers.empty;
-      type_state = Dolmen_loop.Typer.new_state ();
-      type_check = true;
-      solve_state = [];
-      check_model = false;
-      check_state = Dolmen_loop.Check.empty ();
-    } in
+  let set = State.set in
+  let st =
+    State.empty
+    |> set State.debug false
+    |> set State.loc_style `Short
+    |> set State.reports reports
+    |> set State.max_warn max_int
+    |> set State.cur_warn 0
+    |> set State.time_limit 0. (* disables the timer *)
+    |> set State.size_limit max_float
+    |> set State.logic_file l_file
+    |> set State.response_file r_file
+    |> set Header.header_check false
+    |> set Header.header_state Dolmen_loop.Headers.empty
+    |> set Header.header_licenses []
+    |> set Header.header_lang_version None
+    |> set Typer_Pipe.type_check true
+    |> set Typer.ty_state (Dolmen_loop.Typer.new_state ())
+  in
   try
     let st, g = Parser.parse_logic [] st l_file in
     let open Pipeline in
     let st = run ~finally g st (
         (fix (op ~name:"expand" Parser.expand) (
             (op ~name:"headers" Header.inspect)
-            @>>> (op ~name:"typecheck" Typer.typecheck)
+            @>>> (op ~name:"typecheck" Typer_Pipe.typecheck)
             @>|> (op (fun st _ -> st, ())) @>>> _end
           )
         )
