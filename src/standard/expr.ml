@@ -378,6 +378,14 @@ let list_concat_map f l =
   in
   aux [] f l
 
+(* List.find_map *)
+let rec list_find_map f = function
+  | [] -> None
+  | x :: r ->
+    begin match f x with
+      | (Some _) as res -> res
+      | None -> list_find_map f r
+    end
 
 (* automatic cache *)
 let with_cache ~cache f x =
@@ -1607,7 +1615,7 @@ module Term = struct
       | _, _ ->
         begin match all_constructors_appear_in_first_col p with
           | `All_present cstrs ->
-            List.find_map (fun cstr ->
+            list_find_map (fun cstr ->
                 let vars, params, _ = Ty.poly_sig cstr.id_ty in
                 let arity = List.length params in
                 let p' = specialise_matrix arity cstr p in
