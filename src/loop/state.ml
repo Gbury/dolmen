@@ -88,7 +88,8 @@ let pp_loc st fmt o =
         Format.fprintf fmt "%a:@ "
           Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
       | Some input ->
-        let locs = Dolmen.Std.Loc.lexing_positions loc in
+        let loc_start, loc_end = Dolmen.Std.Loc.lexing_positions loc in
+        let locs = Pp_loc.Position.of_lexing loc_start, Pp_loc.Position.of_lexing loc_end in
         Format.fprintf fmt "%a:@ %a"
           Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
           (Pp_loc.pp ~max_lines:3 ~input) [locs]
