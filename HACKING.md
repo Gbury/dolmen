@@ -171,6 +171,7 @@ and if not, will print a diff to update the `syntax.messages` file. Running
 Release checklist/workflow:
 
 - update version number in `VERSION`
+- update version number in src/bin/main.ml
 - update `CHANGES.md` with the new version number
 - run `dune-release lint`
 - run `dune-release tag`

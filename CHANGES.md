@@ -1,11 +1,13 @@
 
-next
+v0.7
 ----
 
 ### UI
 
 - Added source input snippet printing for errors and warnings
-
+- Fix a bug affecting warning options (e.g.
+  `dolmen --warn=+all` triggered an uncaught exception that is
+  now fixed)
 
 ### Parsing
 
@@ -13,9 +15,14 @@ next
   define-funs-rec syntax construction expected an open
   paren at the end instead of a closing paren
 
-
 ### Typing
 
+- Complete the typing of alt-ergo's builtins
+  PR#89
+- Added exhaustivity and redundant pattern matching analysis
+  (redundant patterns trigger a warning, whereas inexhaustive
+  pattern matching trigger a typing error)
+  part of PR#89
 - Removed the typing of real and extended bitvector literals
   from the Float theory. These are not part of the FP
   specification, so it's better for Dolmen to be strict.
@@ -34,6 +41,7 @@ next
 - Added a hint to suggest a missing theory when a literal
   is unbound.
   PR#81
+
 
 ### API
 
@@ -54,6 +62,7 @@ next
   function
 - the `Dolmen_loop` library now has an added dependency on
   `pp_loc` (used for the source input printing)
+- updated version bounds on `cmdliner` and `pp_locs`
 
 
 v0.6
