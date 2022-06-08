@@ -12,7 +12,6 @@ depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen" {= version }
   "dolmen_type" {= version }
-  "dolmen_model" {= version }
   "dune" { >= "2.7" }
   "gen"
   "odoc" { with-doc }

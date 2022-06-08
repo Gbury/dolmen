@@ -13,6 +13,7 @@ depends: [
   "dolmen" {= version }
   "dolmen_type" {= version }
   "dolmen_loop" {= version }
+  "dolmen_model" {= version }
   "dune" { >= "2.7" }
   "fmt"
   "cmdliner" { >= "1.1.0" }

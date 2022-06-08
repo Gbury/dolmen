@@ -25,7 +25,7 @@ class dolmen_lsp_server =
       (* TODO: unescape uri/translate it to a correct path ? *)
       match Loop.process uri (Some contents) with
       | Ok state ->
-        let diags = state.solve_state in
+        let diags = State.get State.diagnostics state in
         Hashtbl.replace buffers uri state;
         notify_back#send_diagnostic diags
       | Error msg ->

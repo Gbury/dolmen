@@ -1,19 +1,19 @@
 
 (* This file is free software, part of Dolmen. See file "LICENSE" for more details. *)
 
-module type Pipe_res = sig
+module type S = sig
 
   type state
 
   val parse_logic :
-    Dolmen.Std.Statement.t list -> state -> Logic.language State_intf.file ->
+    Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->
     state * (state -> state * Dolmen.Std.Statement.t option)
   (** Parsing function. Reads a list of prelude statements, and the state and
       returns a tuple of the new state (including the detected input language),
       together with a statement generator. *)
 
   val parse_response :
-    Dolmen.Std.Answer.t list -> state -> Response.language State_intf.file ->
+    Dolmen.Std.Answer.t list -> state -> Response.language State.file ->
     state * (state -> state * Dolmen.Std.Answer.t option)
   (** Parsing function. Reads a list of prelude statements, and the state and
       returns a tuple of the new state (including the detected input language),

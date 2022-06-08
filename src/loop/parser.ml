@@ -63,24 +63,33 @@ let parsing_error =
 (* Pipe functor *)
 (* ************************************************************************ *)
 
-module type Pipe_res = Parser_intf.Pipe_res
+type 'a file = 'a State.file
 
-module Pipe
-    (Expr : Expr_intf.S)
-    (State : State_intf.Parser_pipe
-     with type term := Expr.term)
-= struct
+module type S = Parser_intf.S
+
+module Make(State : State.S) = struct
 
   (* Module & type aliases *)
   (* ************************************************************************ *)
 
-  type 'a file = 'a State_intf.file
+  type nonrec 'a file = 'a file
 
   module S = Dolmen.Std.Statement
 
 
   (* Helper functions *)
   (* ************************************************************************ *)
+
+  let is_interactive st =
+    match State.get State.logic_file st with
+    | { source = `Stdin; _ } -> true
+    | _ -> false
+
+  let prelude_string st =
+    match (State.get State.logic_file st).lang with
+    | None -> "prompt> @?"
+    | Some l ->
+      Format.asprintf "(%s)# @?" (Logic.string_of_language l)
 
   let gen_of_llist l =
     let l = ref l in
@@ -96,20 +105,20 @@ module Pipe
       | Some `Incremental -> State.warn ?loc st full_mode_switch lang
       | _ -> st
     in
-    State.set_logic_file st { file with mode = Some `Full; }
+    State.set State.logic_file { file with mode = Some `Full; } st
 
   let set_logic_file ?loc st old (file : _ file) =
     match file.lang with
     | Some Logic.Alt_ergo -> switch_to_full_mode ?loc "Alt-Ergo" st old file
-    | _ -> State.set_logic_file st file
+    | _ -> State.set State.logic_file file st
 
   let set_logic_file ?loc st (new_file : _ file) =
-    let old_file = State.logic_file st in
+    let old_file = State.get State.logic_file st in
     match old_file.lang with
-    | None -> State.set_logic_file st new_file
+    | None -> State.set State.logic_file new_file st
     | Some l ->
       begin match new_file.lang with
-        | None -> State.set_logic_file st new_file
+        | None -> State.set State.logic_file new_file st
         | Some l' ->
           if l = l'
           then set_logic_file ?loc st old_file new_file
@@ -138,8 +147,8 @@ module Pipe
     aux
 
   let wrap_parser ~file g = fun st ->
-    if State.is_interactive st then
-      Format.printf "%s @?" (State.prelude st);
+    if is_interactive st then
+      Format.printf "%s @?" (prelude_string st);
     match g () with
     | ret -> st, ret
     | exception Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
@@ -259,7 +268,7 @@ module Pipe
       | Logic.Extension_not_found ext ->
         State.error st extension_not_found ext, file, Gen.empty
     in
-    let st = State.set_response_file st file in
+    let st = State.set State.response_file file st in
     (* Wrap the resulting parser *)
     st, wrap_parser ~file (Gen.append (Gen.of_list prelude) g)
 
@@ -271,11 +280,11 @@ module Pipe
   let expand st c =
     let ret = match c with
       | { S.descr = S.Pack l; _ } ->
-        let file = State.logic_file st in
+        let file = State.get State.logic_file st in
         st, `Gen (merge, wrap_parser ~file (Gen.of_list l))
       (* TODO: filter the statements by passing some options *)
       | { S.descr = S.Include file; _ } ->
-        let logic_file = State.logic_file st in
+        let logic_file = State.get State.logic_file st in
         let loc = { Dolmen.Std.Loc.file = logic_file.loc; loc = c.loc; } in
         let language = logic_file.lang in
         let dir = logic_file.dir in

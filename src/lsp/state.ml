@@ -6,24 +6,23 @@ include Dolmen_loop.State
 (* Type definition *)
 (* ************************************************************************* *)
 
-type solve_state = Diagnostic.t list
-type t = solve_state state
-exception Error of t
+let diagnostics : Diagnostic.t list key = create_key "diagnostics"
 
 (* Warnings *)
 (* ************************************************************************* *)
 
 let add_diag d (st : t) =
-  { st with solve_state = d :: st.solve_state; }
+  let l = get diagnostics st in
+  set diagnostics (d :: l) st
 
 let full_loc t = function
   | Some full ->
     Dolmen.Std.Loc.full_loc full
   | None ->
-    let file = (logic_file t).loc in
+    let file = (get logic_file t).loc in
     Dolmen.Std.Loc.loc file Dolmen.Std.Loc.no_loc
 
-(* TODO: currently, errors from included file will be incorrectly reported *)
+(* TODO: currently, errors from included files will be incorrectly reported *)
 let warn ?file:_ ?loc t warn payload =
   let loc = full_loc t loc in
   (* Flush the str formatter to clear any unflushed leftover *)

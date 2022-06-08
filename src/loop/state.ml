@@ -4,50 +4,135 @@
 (* Type definition *)
 (* ************************************************************************* *)
 
-type ty_state = Typer.ty_state
-type solve_state = unit
+module M = Dolmen.Std.Hmap.Make(struct
+    type t = int
+    let compare (a: int) (b: int) = compare a b
+  end)
 
-type 'lang file = 'lang State_intf.file
+type t = M.t
 
-type 'solve state = {
-
-  (* Debug, warnings, and error options *)
-  debug             : bool;
-  reports           : Report.Conf.t;
-  loc_style         : [ `Short | `Contextual ];
-  max_warn          : int;
-  cur_warn          : int;
-
-  (* Limits for time and size *)
-  time_limit        : float;
-  size_limit        : float;
-
-  (* Input files *)
-  logic_file        : Logic.language file;
-  response_file     : Response.language file;
-
-  (* Header check *)
-  header_check      : bool;
-  header_state      : Headers.t;
-  header_licenses   : string list;
-  header_lang_version : string option;
-
-  (* Typechecking state *)
-  type_state        : ty_state;
-  type_check        : bool;
-
-  (* Solving state *)
-  solve_state       : 'solve;
-
-  (* Model checking *)
-  check_model       : bool;
-  check_state       : 'solve state Check.t;
+type 'a key = {
+  id : int;
+  name : string;
+  inj : 'a Dolmen.Std.Hmap.injection;
 }
 
-type t = solve_state state
+type source = [
+  | `Stdin
+  | `File of string
+  | `Raw of string * string
+]
+
+type mode = [
+  | `Full
+  | `Incremental
+]
+
+type 'lang file = {
+  lang    : 'lang option;
+  mode    : mode option;
+  loc     : Dolmen.Std.Loc.file;
+  dir     : string;
+  source  : source;
+}
 
 exception Error of t
+exception Key_not_found of t * string
 
+(* Signatures *)
+(* ************************************************************************* *)
+
+module type S = sig
+
+  type t
+  (** The type of state *)
+
+  type 'a key
+  (** The type of keys into the state. *)
+
+  exception Error of t
+  (** Convenient exception. *)
+
+  val create_key : string -> _ key
+  (** create a new key *)
+
+  val get : 'a key -> t -> 'a
+  (** get the value associated to a key. *)
+
+  val set : 'a key -> 'a -> t -> t
+  (** Set the value associated to a key. *)
+
+  val warn :
+    ?file:_ file ->
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> 'a Report.Warning.t -> 'a -> t
+  (** Emit a warning *)
+
+  val error :
+    ?file:_ file ->
+    ?loc:Dolmen.Std.Loc.full ->
+    t -> 'a Report.Error.t -> 'a -> t
+  (** Emit an error. *)
+
+  val debug : bool key
+  val reports : Report.Conf.t key
+  val loc_style : [ `Short | `Contextual ] key
+  val max_warn : int key
+  val cur_warn : int key
+  val time_limit : float key
+  val size_limit : float key
+  val logic_file : Logic.language file key
+  val response_file : Response.language file key
+  (* common keys *)
+
+end
+
+(* Key functions *)
+(* ************************************************************************* *)
+
+let empty : t = M.empty
+
+let key_counter = ref 0
+let create_key name =
+  incr key_counter;
+  { id = !key_counter; name;
+    inj = Dolmen.Std.Hmap.create_inj ();}
+
+let get k t =
+  match M.get ~inj:k.inj k.id t with
+  | Some v -> v
+  | None -> raise (Key_not_found (t, k.name))
+
+let set k v t =
+  M.add ~inj:k.inj k.id v t
+
+let update k f t =
+  set k (f (get k t)) t
+
+(* Usual keys *)
+(* ************************************************************************* *)
+
+let debug : bool key = create_key "debug"
+let reports : Report.Conf.t key = create_key "reports"
+let loc_style : [ `Short | `Contextual ] key = create_key "loc_style"
+let max_warn : int key = create_key "max_warn"
+let cur_warn : int key = create_key "cur_warn"
+
+let time_limit : float key = create_key "time_limit"
+let size_limit : float key = create_key "size_limit"
+
+let logic_file : Logic.language file key = create_key "logic_file"
+let response_file : Response.language file key = create_key "response_file"
+
+(*
+let type_check : bool key = create_key "type_check"
+let type_state : Typer.ty_state key = create_key "type_state"
+*)
+
+(*
+let check_model : bool key = create_key "check_model"
+(* let check_state (* : _ state Check.t key *) = create_key "check_state" *)
+*)
 
 (* State and locations *)
 (* ************************************************************************* *)
@@ -59,7 +144,7 @@ let loc_input ?file st (loc : Dolmen.Std.Loc.loc) =
      loc.stop_line - loc.start_line >= 100 then
     None
   else begin
-    match st.loc_style, (file : _ file option) with
+    match get loc_style st, (file : _ file option) with
     | _, None -> None
     | _, Some { source = `Stdin; _ } -> None
     | `Short, _ -> None
@@ -102,11 +187,11 @@ let error ?file ?loc st error payload =
 
 let warn ?file ?loc st warn payload =
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
-  match Report.Conf.status st.reports warn with
+  match Report.Conf.status (get reports st) warn with
   | Disabled -> st
   | Enabled ->
-    let aux _ = { st with cur_warn = st.cur_warn + 1; } in
-    if st.cur_warn >= st.max_warn then
+    let aux _ = update cur_warn ((+) 1) st in
+    if get cur_warn st >= get max_warn st then
       aux st
     else
       Format.kfprintf aux Format.err_formatter
@@ -126,20 +211,20 @@ let warn ?file ?loc st warn payload =
       Report.Warning.print_hints (warn, payload)
 
 let flush st () =
-  let aux _ = { st with cur_warn = 0; } in
-  if st.cur_warn <= st.max_warn then
+  let aux _ = set cur_warn 0 st in
+  if get cur_warn st <= get max_warn st then
     aux ()
   else
     Format.kfprintf aux Format.err_formatter
       ("@[<v>%a @[<hov>%s@ %d@ %swarnings@]@]@.")
       Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
-      (if st.max_warn = 0 then "Counted" else "Plus")
-      (st.cur_warn - st.max_warn)
-      (if st.max_warn = 0 then "" else "additional ")
+      (if get max_warn st = 0 then "Counted" else "Plus")
+      (get cur_warn st - get max_warn st)
+      (if get max_warn st = 0 then "" else "additional ")
 
 (* Getting/Setting options *)
 (* ************************************************************************* *)
-
+(*
 let debug t = t.debug
 
 let time_limit t = t.time_limit
@@ -167,14 +252,5 @@ let ty_state { type_state; _ } = type_state
 let set_ty_state st type_state = { st with type_state; }
 
 let typecheck st = st.type_check
-
-let is_interactive = function
-  | { logic_file = { source = `Stdin; _ }; _ } -> true
-  | _ -> false
-
-let prelude st =
-  match st.logic_file.lang with
-  | None -> "prompt> @?"
-  | Some l ->
-    Format.asprintf "(%s)# @?" (Logic.string_of_language l)
+*)
 

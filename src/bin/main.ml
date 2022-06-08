@@ -6,17 +6,17 @@
 (* ************** *)
 
 let debug_parsed_pipe st c =
-  if st.Loop.State.debug then
+  if Loop.State.get Loop.State.debug st then
     Format.eprintf "[logic][parsed][%a] @[<hov>%a@]@."
       Dolmen.Std.Loc.print_compact c.Dolmen.Std.Statement.loc
       Dolmen.Std.Statement.print c;
   st, c
 
 let debug_typed_pipe st stmt =
-  if st.Loop.State.debug then
+  if Loop.State.get Loop.State.debug st then
     Format.eprintf "[logic][typed][%a] @[<hov>%a@]@\n@."
-      Dolmen.Std.Loc.print_compact stmt.Loop.Typer.loc
-      Loop.Typer.print stmt;
+      Dolmen.Std.Loc.print_compact stmt.Loop.Typer_Pipe.loc
+      Loop.Typer_Pipe.print stmt;
   st, stmt
 
 
@@ -37,12 +37,14 @@ let finally st e =
     handle_exn st exn
 
 let run st =
-  if st.Loop.State.debug then begin
+  if Loop.State.get Loop.State.debug st then begin
     Dolmen.Std.Expr.Print.print_index := true;
     ()
   end;
   let st, g =
-    try Loop.Parser.parse_logic [] st (Loop.State.logic_file st)
+    try
+      Loop.Parser.parse_logic [] st
+        (Loop.State.get Loop.State.logic_file st)
     with exn -> handle_exn st exn
   in
   let st =
@@ -51,7 +53,7 @@ let run st =
       (fix (op ~name:"expand" Loop.Parser.expand) (
           (op ~name:"debug-parsed" debug_parsed_pipe)
           @>>> (op ~name:"headers" Loop.Header.inspect)
-          @>>> (op ~name:"typecheck" Loop.Typer.typecheck)
+          @>>> (op ~name:"typecheck" Loop.Typer_Pipe.typecheck)
           @>|> (op ~name:"debug-typed" debug_typed_pipe)
           @>>> (op ~name:"check" Loop.Check.check)
           @>>> (op (fun st _ -> st, ())) @>>> _end

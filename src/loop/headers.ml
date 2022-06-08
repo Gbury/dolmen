@@ -255,14 +255,26 @@ let smtlib2_wanted : Field.t list = [
 (* Required headers for languages *)
 (* ************************************************************************ *)
 
-module Pipe(State : State_intf.Header_pipe
-            with type header_state := t)
-= struct
+module type S = Headers_intf.S
+
+module Make(State : State.S) = struct
+
+  let header_check : bool State.key =
+    State.create_key "header_check"
+
+  let header_state : t State.key =
+    State.create_key "header_state"
+
+  let header_licenses : string list State.key =
+    State.create_key "header_licenses"
+
+  let header_lang_version : string option State.key =
+    State.create_key "header_lang_version"
 
   (* Final check for headers *)
 
   let check_wanted st h =
-    let lang = (State.logic_file st).lang in
+    let lang = (State.get State.logic_file st).lang in
     let wanted =
       match lang with
       | Some Logic.Smtlib2 _ -> smtlib2_wanted
@@ -274,7 +286,7 @@ module Pipe(State : State_intf.Header_pipe
       State.warn st empty_header_field (lang, missing)
 
   let check_required st h =
-    let lang = (State.logic_file st).lang in
+    let lang = (State.get State.logic_file st).lang in
     let required =
       match lang with
       | Some Logic.Smtlib2 _ -> smtlib2_required
@@ -285,9 +297,9 @@ module Pipe(State : State_intf.Header_pipe
     | missing -> State.error st missing_header_error (lang, missing)
 
   let check st =
-    if not (State.check_headers st) then st
+    if not (State.get header_check st) then st
     else begin
-      let h = State.header_state st in
+      let h = State.get header_state st in
       let st = check_wanted st h in
       let st = check_required st h in
       st
@@ -297,18 +309,18 @@ module Pipe(State : State_intf.Header_pipe
   (* Incremental checks and construction of the header set *)
 
   let error st loc err param =
-    let file = (State.logic_file st).loc in
+    let file = (State.get State.logic_file st).loc in
     let loc : Dolmen.Std.Loc.full = { file; loc; } in
     State.error ~loc st err param
 
   let invalid_header_value st loc field msg =
-    let lang = (State.logic_file st).lang in
+    let lang = (State.get State.logic_file st).lang in
     error st loc invalid_header_value_error (field, lang, msg)
 
   let check_header st loc field value =
     match (field : Field.t) with
     | Lang_version ->
-      begin match State.allowed_lang_version st with
+      begin match State.get header_lang_version st with
         | None -> st
         | Some v ->
           if v = value then st
@@ -316,7 +328,7 @@ module Pipe(State : State_intf.Header_pipe
               (Format.sprintf "language version must be: %s" v)
       end
     | Problem_license ->
-      begin match State.allowed_licenses st with
+      begin match State.get header_licenses st with
         | [] -> st
         | allowed ->
           if List.mem value allowed then st
@@ -326,10 +338,10 @@ module Pipe(State : State_intf.Header_pipe
     | _ -> st
 
   let inspect st c =
-    if not (State.check_headers st) then (st, c)
+    if not (State.get header_check st) then (st, c)
     else begin
-      let lang = (State.logic_file st).lang in
-      let h = State.header_state st in
+      let lang = (State.get State.logic_file st).lang in
+      let h = State.get header_state st in
       let st =
         match (c : Dolmen.Std.Statement.t) with
         | { descr = Set_info t; loc; _ } ->
@@ -339,12 +351,12 @@ module Pipe(State : State_intf.Header_pipe
               error st loc bad_header_payload msg
             | Ok (field, value) ->
               let st = check_header st loc field value in
-              let st = State.set_header_state st (set h field value) in
+              let st = State.set header_state (set h field value) st in
               st
           end
         | { descr = Prove _; loc; _ } ->
           if mem h Problem_status then
-            State.set_header_state st (remove h Problem_status)
+            State.set header_state (remove h Problem_status) st
           else
             error st loc missing_header_error (lang, [Problem_status])
         | _ -> st

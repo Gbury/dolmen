@@ -1,11 +1,9 @@
 (* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
 
-(** Typer *)
-
-module type Pipe_types = sig
+(* Small signature to define a number of types. *)
+module type Types = sig
 
   type state
-
   type ty
   type ty_var
   type ty_cst
@@ -18,19 +16,17 @@ module type Pipe_types = sig
 
 end
 
-(** This modules defines the smallest signatures for a typechecker that allow
-    to instantiate the {Typer.Pipe} functor. *)
-module type Pipe_arg = sig
+(** This modules defines a wrapper around the bare-bones typechecker
+    provided by Dolmen_type. It provides convenience function to match
+    on Dolmen untyped statements and type-check them. *)
+module type Typer = sig
 
-  include Pipe_types
+  include Types
 
   type input = [
-    | `Logic of Logic.language State_intf.file
-    | `Response of Response.language State_intf.file
+    | `Logic of Logic.language State.file
+    | `Response of Response.language State.file
   ]
-
-  val typecheck :
-    state -> bool
 
   val reset :
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
@@ -81,11 +77,14 @@ module type Pipe_arg = sig
 
 end
 
-(** This modules defines the result signature of the {Typer.Make} functor *)
-module type S = sig
+(** Extended signature for typer. *)
+module type Typer_Full = sig
 
   type state
-  (** The type of state for a whole pipeline. *)
+  (** Global state for the while pipeline. *)
+
+  type 'a key
+  (** Type of keys for the state. *)
 
   type ty_state
   (** The type for the state of the typer. *)
@@ -105,7 +104,10 @@ module type S = sig
   type builtin_symbols
   (** The type of builin symbols for the type-checker. *)
 
-  include Pipe_arg
+  val ty_state : ty_state key
+  (** Key to store the local typechecking state in the global pipeline state. *)
+
+  include Typer
     with type state := state
      and type ty := Dolmen.Std.Expr.ty
      and type ty_var := Dolmen.Std.Expr.ty_var
@@ -134,9 +136,13 @@ module type S = sig
 end
 
 (** This modules defines the result signature of the {Typer.Pipe} functor *)
-module type Pipe_res = sig
+module type S = sig
 
-  include Pipe_types
+  include Types
+
+  type 'a key
+
+  val type_check : bool key
 
   (** {2 Types} *)
 

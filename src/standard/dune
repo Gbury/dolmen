@@ -5,8 +5,8 @@
   (instrumentation (backend bisect_ppx))
   (flags :standard -warn-error -3)
   (modules
-    ; Maps &Utils % TODO: split this into a dedicated sub-library ?
-    Timer Stats Maps Maps_string
+    ; Maps & Utils % TODO: split this into a dedicated sub-library ?
+    Timer Stats Hmap Maps Maps_string
     ; Parsing structures
     Loc Name Namespace Id Term Statement Answer Normalize
     ; Typing & Loop stuff

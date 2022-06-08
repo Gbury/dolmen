@@ -49,8 +49,10 @@ val remove : t -> Field.t -> t
 
 (** {2 Pipe functor} *)
 
-module Pipe(State : State_intf.Header_pipe
-            with type header_state := t) :
-  Headers_intf.S with type state := State.t
+module type S = Headers_intf.S
+
+module Make(S : State.S) : S with type state := S.t
+                              and type 'a key := 'a S.key
+                              and type header_state := t
 
 
