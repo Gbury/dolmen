@@ -15,7 +15,7 @@ depends: [
   "dolmen_loop" {= version }
   "dune" { >= "2.7" }
   "fmt"
-  "cmdliner" { !dev | < "1.1.0" }
+  "cmdliner" { >= "1.1.0" }
   "odoc" { with-doc }
 ]
 depopts: [
