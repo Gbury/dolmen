@@ -29,6 +29,13 @@ module Ae = struct
         | `Real -> mk_real a b
         | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
 
+      let promote_to_real t =
+        let ty = T.ty t in
+        match Ty.view ty with
+        | `Int -> T.Int.to_real t
+        | `Real -> t
+        (* this will result in a more precise typing error later, so it's okay *)
+        | _ -> t
 
       let parse env s =
         match s with
@@ -68,17 +75,9 @@ module Ae = struct
           `Term (fun ast args ->
             Base.term_app2 (module Type) env s
               (fun a b ->
-                let tya = T.ty a in
-                let a', b' =
-                  match Ty.view tya, Ty.view (T.ty b) with
-                  | `Real, `Real -> a, b
-                  | `Real, `Int -> a, T.Int.to_real b
-                  | `Int, `Real -> T.Int.to_real a, b
-                  | `Int, `Int -> T.Int.to_real a, T.Int.to_real b
-                  | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
-                in
-                T.Real.pow a' b') ast args
-          )
+                 let a' = promote_to_real a in
+                 let b' = promote_to_real b in
+                 T.Real.pow a' b') ast args)
 
       | Type.Builtin Term.Lt ->
         `Term (fun ast args ->

@@ -158,6 +158,7 @@ module Make
   (* Constants that can be bound to a dolmen identifier. *)
   type cst = [
     | `Cstr of T.Cstr.t
+    | `Dstr of T.Const.t
     | `Field of T.Field.t
     | `Ty_cst of Ty.Const.t
     | `Term_cst of T.Const.t
@@ -199,6 +200,7 @@ module Make
     | `Constant of [
         | `Ty of Ty.Const.t * reason option
         | `Cstr of T.Cstr.t * reason option
+        | `Dstr of T.Const.t * reason option
         | `Term of T.Const.t * reason option
         | `Field of T.Field.t * reason option
       ]
@@ -339,7 +341,9 @@ module Make
     mutable const_locs : reason S.t;
     (* stores reasons for typing of constants *)
     mutable cstrs_locs : reason U.t;
-    (* stores reasons for typing constructors *)
+    (* stores reasons for typing adt constructors *)
+    mutable dstrs_locs : reason S.t;
+    (* stores reasons for typing adt destrcutros/projectors *)
     mutable field_locs : reason V.t;
     (* stores reasons for typing record fields *)
 
@@ -468,6 +472,7 @@ module Make
         | `Ty_cst c -> R.find c env.st.ttype_locs
         | `Term_cst c -> S.find c env.st.const_locs
         | `Cstr c -> U.find c env.st.cstrs_locs
+        | `Dstr c -> S.find c env.st.dstrs_locs
         | `Field f -> V.find f env.st.field_locs
       in
       Some r
@@ -486,6 +491,7 @@ module Make
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
+    | `Dstr c -> `Constant (`Dstr (c, reason))
     | `Field f -> `Constant (`Field (f, reason))
 
   let binding_reason binding : reason option =
@@ -497,6 +503,7 @@ module Make
     | `Constant `Ty (_, reason)
     | `Constant `Term (_, reason)
     | `Constant `Cstr (_, reason)
+    | `Constant `Dstr (_, reason)
     | `Constant `Field (_, reason)
       -> reason
 
@@ -665,6 +672,7 @@ module Make
     ttype_locs = R.empty;
     const_locs = S.empty;
     cstrs_locs = U.empty;
+    dstrs_locs = S.empty;
     field_locs = V.empty;
     custom = Hmap.empty;
   }
@@ -675,6 +683,7 @@ module Make
     ttype_locs = st.ttype_locs;
     const_locs = st.const_locs;
     cstrs_locs = st.cstrs_locs;
+    dstrs_locs = st.dstrs_locs;
     field_locs = st.field_locs;
   }
 
@@ -726,6 +735,10 @@ module Make
   let decl_term_cstr env fg id c reason =
     add_global env fg id reason (`Cstr c);
     env.st.cstrs_locs <- U.add c reason env.st.cstrs_locs
+
+  let decl_term_dstr env fg id d reason =
+    add_global env fg id reason (`Dstr d);
+    env.st.dstrs_locs <- S.add d reason env.st.dstrs_locs
 
   let decl_term_field env fg id f reason =
     add_global env fg id reason (`Field f);
@@ -1298,6 +1311,13 @@ module Make
     | { Ast.term = Ast.Match (scrutinee, branches); _ } as ast ->
       parse_match env ast scrutinee branches
 
+    (* ADT operations *)
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Adt_check; _ }, l); _ } as ast ->
+      parse_adt_check env ast l
+
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Adt_project; _ }, l); _ } as ast ->
+      parse_adt_project env ast l
+
     (* Record creation *)
     | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Ast.Record; _ }, l); _ } as ast ->
       parse_record env ast l
@@ -1538,6 +1558,48 @@ module Make
         | t -> _expected env "variable binding" t None
       end
 
+  and parse_adt_cstr env ast =
+    match ast with
+    | { Ast.term = Ast.Symbol s; _ }
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
+      begin match find_bound env s with
+        | `Cstr c -> c
+        | `Not_found -> _cannot_find env ast s
+        | _ -> _expected env "adt constructor" ast None
+      end
+    | _ -> _expected env "adt constructor name" ast None
+
+  and parse_adt_check env ast = function
+    | [ adt_ast; cstr_ast ] ->
+      let adt = parse_term env adt_ast in
+      let c = parse_adt_cstr env cstr_ast in
+      Term (_wrap2 env ast T.cstr_tester c adt)
+    | l ->
+      _bad_op_arity env (Builtin Ast.Adt_check) 2 (List.length l) ast
+
+  and parse_adt_project env ast = function
+    | [ adt_ast; dstr_ast ] ->
+      begin match dstr_ast with
+        | { Ast.term = Ast.Symbol s; _ }
+        | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
+          begin match find_bound env s with
+            | `Dstr d ->
+              parse_app_term_cst env ast d [adt_ast]
+            (* field access for records can be seen as a special case of adt
+               projection (the same way record type definition are a special
+               case of adt type definition with a single case). *)
+            | `Field field ->
+              let t = parse_term env adt_ast in
+              Term (create_record_access env ast t field)
+            (* error cases *)
+            | `Not_found -> _cannot_find env ast s
+            | _ -> _expected env "adt destructor/field" ast None
+          end
+        | _ -> _expected env "adt destructor/field name" ast None
+      end
+    | l ->
+      _bad_op_arity env (Builtin Ast.Adt_project) 2 (List.length l) ast
+
   and parse_record_field env ast =
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
@@ -1631,6 +1693,7 @@ module Make
     | `Letin (_, _, v, t) -> parse_app_letin_var env ast v s_ast t args
     | `Ty_cst f -> parse_app_ty_cst env ast f args
     | `Term_cst f -> parse_app_term_cst env ast f args
+    | `Dstr c -> parse_app_term_cst env ast c args
     | `Cstr c ->
       parse_app_cstr env ast c args
     | `Field _f ->
@@ -1993,7 +2056,7 @@ module Make
             | None, Some c ->
               _warn env (Ast t) (Superfluous_destructor (id, cid, c))
             | Some id, Some const ->
-              decl_term_const env (Decl d) id const (Declared (env.file, d))
+              decl_term_dstr env (Decl d) id const (Declared (env.file, d))
             | Some id, None ->
               _error env (Ast t) (Missing_destructor id)
           ) pargs targs

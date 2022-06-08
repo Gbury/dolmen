@@ -113,52 +113,6 @@ module Ae = struct
             [Type.Set (Tag.filters, l)]
           )
 
-      (* Algebraic data types *)
-      | Type.Builtin Ast.Adt_project ->
-        `Term (
-          fun ast args ->
-            begin match args with
-              | [dt; field] ->
-                let t = Type.parse_term env dt in
-                begin match field with
-                  | { Ast.term = Ast.Symbol sym; _ }
-                  | { Ast.term =
-                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
-                    } ->
-                    begin
-                      match Type.find_bound env sym with
-                      | `Field f -> T.record_access t f
-                      | `Term_cst c -> T.adt_project t c
-                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
-                    end
-                  | _ -> Type._error env (Ast ast) (Type.Expected ("ADT constructor/Record field name", None))
-                end
-              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
-            end
-        )
-
-      | Type.Builtin Ast.Adt_check ->
-        `Term (
-          fun ast args ->
-            begin match args with
-              | [adt; cstr] ->
-                let t = Type.parse_term env adt in
-                begin match cstr with
-                  | { Ast.term = Ast.Symbol sym; _ }
-                  | { Ast.term =
-                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
-                    } ->
-                    begin
-                      match Type.find_bound env sym with
-                      | `Cstr c -> T.cstr_tester c t
-                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
-                    end
-                  | _ -> Type._error env (Ast ast) (Type.Expected ("ADT constructor name", None))
-                end
-              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
-            end
-        )
-
       (* Semantic triggers *)
       | Type.Builtin (Ast.In_interval (b1, b2)) ->
         `Term (Base.term_app3_ast (module Type) env s
@@ -481,7 +435,7 @@ module Smtlib2 = struct
                   let id = Id.mk Term s in
                   begin match Type.find_bound env id with
                     | `Cstr c ->
-                      `Term (Base.term_app1 (module Type) env symbol (T.cstr_tester c))
+                      `Term (Base.term_app1 (module Type) env symbol (Type.T.cstr_tester c))
                     | _ -> `Not_found
                   end)
               | _ -> `Not_indexed

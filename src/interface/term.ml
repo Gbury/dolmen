@@ -553,6 +553,10 @@ module type Tff = sig
   val record_with : t -> (Field.t * t) list -> t
   (** Create an updated record *)
 
+  val cstr_tester : Cstr.t -> t -> t
+  (** Given a constructor [c] and a term [t], returns a terms that evaluates
+      to [true] iff [t] has [c] as head constructor. *)
+
   val _and : t list -> t
   (** Conjunction of formulas *)
 
@@ -669,9 +673,6 @@ module type Ae_Base = sig
 
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
-
-  val cstr_tester : term_cstr -> t -> t
-  (** Test expression for a constructor. *)
 
   val adt_project : t -> term_cst -> t
   (** Access a field in an ADT. *)
@@ -1055,10 +1056,6 @@ module type Smtlib_Base = sig
 
   type cstr
   (** The type of ADT constructor *)
-
-  val cstr_tester : cstr -> t -> t
-  (** Given a constructor [c] and a term [t], returns a terms that evaluates
-      to [true] iff [t] has [c] as head constructor. *)
 
   val _true : t
   (** The smybol for [true] *)
