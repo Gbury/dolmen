@@ -15,7 +15,7 @@
     ; Model checking
     Value Env Eval
     ; Builtins
-    Array Bool Core Fun Int Rat Real Bitv
+    Adt Array Bool Core Fun Int Rat Real Bitv
     ; Loop Pipe
     Loop
   )

@@ -33,6 +33,7 @@ type 'st t = {
 
 let empty_model () =
   let builtins = Eval.builtins [
+      Adt.builtins;
       Bool.builtins;
       Core.builtins;
       Array.builtins;
@@ -53,6 +54,9 @@ let empty () = {
 
 (* Warnings and errors *)
 (* ************************************************************************ *)
+
+let pp_wrap pp fmt x =
+  Format.fprintf fmt "`%a`" pp x
 
 let code = Dolmen_loop.Code.create
     ~category:"Model"
@@ -105,6 +109,34 @@ let fo_model =
           "Models cannot be checked for formulas that contain quantifiers")
     ~name:"First-Order Model" ()
 
+let undefined_variable =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"undefined-variable"
+    ~message:(fun fmt v ->
+        Format.fprintf fmt
+          "The following variable is not defined/let-bound, and thus
+          has no value: %a"
+          (pp_wrap Dolmen.Std.Expr.Term.Var.print) v)
+      ~name:"Undefined variable in Model verification" ()
+
+let undefined_constant =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"undefined-constant"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The following constant is not defined, and thus
+          has no value: %a"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
+      ~name:"Undefined variable in Model verification" ()
+
+let unhandled_builtin =
+  Dolmen_loop.Report.Error.mk ~code:Dolmen_loop.Code.bug
+    ~mnemonic:"unhandled-builtin-model"
+    ~message:(fun fmt c ->
+        Format.fprintf fmt
+          "The following constant is currently not handled during \
+           model verification@ %a.@ Please report upstream"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
+      ~name:"Unhandled builtin in Model verification" ()
+
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -144,6 +176,13 @@ module Make
     with
     | Eval.Quantifier ->
       raise (State.Error (State.error st ~file ~loc fo_model ()))
+    | Eval.Unhandled_builtin b ->
+      raise (State.Error (State.error st ~file ~loc unhandled_builtin b))
+    | Eval.Undefined_variable v ->
+      raise (State.Error (State.error st ~file ~loc undefined_variable v))
+    | Eval.Undefined_constant c ->
+      raise (State.Error (State.error st ~file ~loc undefined_constant c))
+
 
   (* Typing models *)
   (* ************************************************************************ *)
