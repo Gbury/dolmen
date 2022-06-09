@@ -560,10 +560,11 @@ let var_in_binding_pos_underspecified =
     ~name:"Inference of a variable in binding position's type" ()
 
 let unhandled_builtin =
-  Report.Error.mk ~code:Code.bug ~mnemonic:"unhandled-builtin"
+  Report.Error.mk ~code:Code.bug ~mnemonic:"typer-unhandled-builtin"
     ~message:(fun fmt b ->
         Format.fprintf fmt
-          "The following Dolmen builtin is currently not handled@ %a.@ Please report upstream"
+          "The following Dolmen builtin is currently not handled during typing@ %a.@ \
+           Please report upstream"
           (pp_wrap Dolmen.Std.Term.print_builtin) b)
     ~name:"Unhandled builtin in typechecking" ()
 

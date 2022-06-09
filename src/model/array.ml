@@ -1,6 +1,10 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(* Useful shorthand for chaining comparisons *)
+let (<?>) = Dolmen.Std.Misc.(<?>)
+
+
 (* Type definition *)
 (* ************************************************************************* *)
 
@@ -47,9 +51,8 @@ let compare_map map map' =
   Value.Map.compare Value.compare map map'
 
 let compare t t' =
-  match compare_base t.base t'.base with
-  | 0 -> compare_map t.map t'.map
-  | x -> x
+  compare_base t.base t'.base
+  <?> (compare_map, t.map, t'.map)
 
 (* value ops *)
 let ops = Value.ops ~abstract ~print ~compare ()

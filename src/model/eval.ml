@@ -16,6 +16,7 @@ module Cst = Dolmen.Std.Expr.Term.Const
 
 exception Quantifier
 exception Partial_model
+exception Incomplete_match
 exception Unhandled_builtin of Cst.t
 exception Undefined_variable of Var.t
 exception Undefined_constant of Cst.t
@@ -93,5 +94,16 @@ and eval_binder env b body =
   | Forall (_tys, _terms) ->
     raise Quantifier
 
-and eval_match _env _scrutinee _arms = assert false
+and eval_match_aux env scrutinee = function
+  | [] -> raise Incomplete_match
+  | (pat, arm) :: r ->
+    begin match Adt.pattern_match env pat scrutinee with
+      | None -> eval_match_aux env scrutinee r
+      | Some env -> eval env arm
+    end
+
+and eval_match env scrutinee arms =
+  let scrutinee = eval env scrutinee in
+  eval_match_aux env scrutinee arms
+
 

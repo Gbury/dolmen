@@ -38,9 +38,9 @@ let print fmt { func; args; } =
   in
   match args with
   | [] ->
-    Format.fprintf fmt "%a" E.Term.print f
+    Format.fprintf fmt "< %a >" E.Term.print f
   | _ ->
-    Format.fprintf fmt "@[<hov 2>%a(%a)@]"
+    Format.fprintf fmt "< @[<hov 2>%a(%a)@] >"
       E.Term.print f
       (Format.pp_print_list ~pp_sep:(return ",@ ") Value.print) args
 
@@ -63,8 +63,11 @@ let mk ~env ~eval ty_params term_params body =
     Value.mk ~ops { args = []; func; }
 
 let builtin ~arity ~cst eval_f =
-  let func = Builtin { arity; cst; eval_f; } in
-  Value.mk ~ops { args = []; func; }
+  if arity = 0 then eval_f []
+  else begin
+    let func = Builtin { arity; cst; eval_f; } in
+    Value.mk ~ops { args = []; func; }
+  end
 
 let fun_1 ~cst f =
   builtin ~arity:1 ~cst (function
