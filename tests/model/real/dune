@@ -33,4 +33,68 @@
   (action (diff add.expected add.full)))
 
 
+; Test for div.smt2
+; Incremental test
+
+(rule
+   (target  div.incremental)
+   (deps    (:response div.rsmt2) (:input div.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div.expected div.incremental)))
+
+; Full mode test
+
+(rule
+   (target  div.full)
+   (deps    (:response div.rsmt2) (:input div.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div.expected div.full)))
+
+
+; Test for div_zero_1.smt2
+; Incremental test
+
+(rule
+   (target  div_zero_1.incremental)
+   (deps    (:response div_zero_1.rsmt2) (:input div_zero_1.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_1.expected div_zero_1.incremental)))
+
+; Full mode test
+
+(rule
+   (target  div_zero_1.full)
+   (deps    (:response div_zero_1.rsmt2) (:input div_zero_1.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_1.expected div_zero_1.full)))
+
+
 ; Auto-generated part end

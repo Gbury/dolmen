@@ -12,10 +12,25 @@
    values. *)
 type t = Q.t
 
-let print = Q.pp_print
 let compare = Q.compare
+let print fmt r =
+  Format.fprintf fmt "R:%a" Q.pp_print r
 
 let ops = Value.ops ~compare ~print ()
+
+(* Configuration for corner cases *)
+(* ************************************************************************* *)
+
+exception Division_by_zero
+
+type conf = {
+  div_by_zero : Env.t -> Value.t -> Value.t -> Value.t;
+}
+
+let conf
+    ?(div_by_zero=(fun _ _ _ -> raise Division_by_zero))
+    () =
+  { div_by_zero; }
 
 
 (* Value helpers *)
@@ -62,7 +77,14 @@ let op1 ~cst f = Some (fun1 ~cst (fun x -> mk @@ f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let op2_zero ~env ~cst ~zero f =
+  Some (Fun.fun_2 ~cst (fun x y ->
+      let v_x = Value.extract_exn ~ops x in
+      let v_y = Value.extract_exn ~ops y in
+      if Q.equal Q.zero v_y then zero env x y else mk @@ f v_x v_y
+    ))
+
+let builtins ~conf env (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Decimal i -> Some (mk (Q.of_string i))
   | B.Lt `Real -> cmp ~cst Q.lt
@@ -73,7 +95,7 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Add `Real -> op2 ~cst Q.add
   | B.Sub `Real -> op2 ~cst Q.sub
   | B.Mul `Real -> op2 ~cst Q.mul
-  | B.Div `Real -> op2 ~cst Q.div
+  | B.Div `Real -> op2_zero ~cst Q.div ~env ~zero:conf.div_by_zero
   | B.Div_e `Real -> op2 ~cst div_e
   | B.Div_t `Real -> op2 ~cst div_t
   | B.Div_f `Real -> op2 ~cst div_f

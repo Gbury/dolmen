@@ -1,6 +1,6 @@
 sat
 (
 (define-fun a () Real 0.0)
-(define-fun b () Real 0.0)
+(define-fun b () Real (- 1.0))
 (define-fun c () Real 0.0)
 )

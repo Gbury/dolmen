@@ -7,8 +7,9 @@
 (* Rationals, represented using zarith. *)
 type t = Q.t
 
-let print = Q.pp_print
 let compare = Q.compare
+let print fmt q =
+  Format.fprintf fmt "Q:%a "Q.pp_print q
 
 let ops = Value.ops ~compare ~print ()
 
@@ -59,7 +60,7 @@ let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
 let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
-  | B.Decimal i -> Some (mk (Q.of_string i))
+  | B.Rational i -> Some (mk (Q.of_string i))
   | B.Lt `Rat -> cmp ~cst Q.lt
   | B.Gt `Rat -> cmp ~cst Q.gt
   | B.Geq `Rat -> cmp ~cst Q.geq

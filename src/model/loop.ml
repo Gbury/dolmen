@@ -23,9 +23,11 @@ type 't assertion = {
   file : Dolmen_loop.Logic.language Dolmen_loop.State.file;
 }
 
+type corner_2 = Env.t -> Value.t -> Value.t -> Value.t
 type corner = {
-  div_by_zero : (Env.t -> Value.t -> Value.t -> Value.t) option;
-  mod_by_zero : (Env.t -> Value.t -> Value.t -> Value.t) option;
+  div_by_zero_int : corner_2 option;
+  mod_by_zero_int : corner_2 option;
+  div_by_zero_real : corner_2 option;
 }
 
 type 'st t = {
@@ -38,8 +40,9 @@ type 'st t = {
 }
 
 let empty_corner = {
-  div_by_zero = None;
-  mod_by_zero = None;
+  div_by_zero_int = None;
+  mod_by_zero_int = None;
+  div_by_zero_real = None;
 }
 
 let empty () = {
@@ -170,21 +173,22 @@ module Make
 
   let eval st ~file ~loc term =
     let { model; corner; _ } = State.get check_state st in
-    let int_conf =
-      Int.conf
-        ?div_by_zero:corner.div_by_zero
-        ?mod_by_zero:corner.mod_by_zero
-        ()
-    in
     let builtins c =
       Eval.builtins [
         Adt.builtins;
         Bool.builtins;
         Core.builtins;
         Array.builtins;
-        Int.builtins ~conf:int_conf;
+        Int.builtins ~conf:(
+          Int.conf ()
+            ?div_by_zero:corner.div_by_zero_int
+            ?mod_by_zero:corner.mod_by_zero_int
+        );
         Rat.builtins;
-        Real.builtins;
+        Real.builtins ~conf:(
+          Real.conf ()
+            ?div_by_zero:corner.div_by_zero_real
+        );
         Bitv.builtins;
       ] c
     in
@@ -210,40 +214,32 @@ module Make
     let model = Model.Cst.add cst value t.model in
     State.set check_state { t with model; } st
 
+  let corner_2 = function
+    | [ `Term_def (_id, _cst, [], [x; y], body) ] ->
+      Some (fun env a b ->
+          let env = Env.update_model env (Model.Var.add x a) in
+          let env = Env.update_model env (Model.Var.add y b) in
+          Eval.eval env body
+        )
+    | _ -> assert false (* TODO: raise proper error *)
+
   let record_defs st ~loc ~(file : _ file) ~case typed_defs =
     match case with
-    | `Div_by_zero ->
-      begin match typed_defs with
-        | [ `Term_def (_id, _cst, [], [x; y], body) ] ->
-          let div_by_zero = Some (fun env a b ->
-              let env = Env.update_model env (Model.Var.add x a) in
-              let env = Env.update_model env (Model.Var.add y b) in
-              Eval.eval env body
-            )
-          in
-          let t = State.get check_state st in
-          let corner = { t.corner with div_by_zero; } in
-          State.set check_state { t with corner; } st
-        | _ ->
-          (* incorrect definition for div0 *)
-          assert false
-      end
-    | `Mod_by_zero ->
-      begin match typed_defs with
-        | [ `Term_def (_id, _cst, [], [x; y], body) ] ->
-          let mod_by_zero = Some (fun env a b ->
-              let env = Env.update_model env (Model.Var.add x a) in
-              let env = Env.update_model env (Model.Var.add y b) in
-              Eval.eval env body
-            )
-          in
-          let t = State.get check_state st in
-          let corner = { t.corner with mod_by_zero; } in
-          State.set check_state { t with corner; } st
-        | _ ->
-          (* incorrect definition for div0 *)
-          assert false
-      end
+    | `Div_by_zero_int ->
+      let div_by_zero_int = corner_2 typed_defs in
+      let t = State.get check_state st in
+      let corner = { t.corner with div_by_zero_int; } in
+      State.set check_state { t with corner; } st
+    | `Mod_by_zero_int ->
+      let mod_by_zero_int = corner_2 typed_defs in
+      let t = State.get check_state st in
+      let corner = { t.corner with mod_by_zero_int; } in
+      State.set check_state { t with corner; } st
+    | `Div_by_zero_real ->
+      let div_by_zero_real = corner_2 typed_defs in
+      let t = State.get check_state st in
+      let corner = { t.corner with div_by_zero_real; } in
+      State.set check_state { t with corner; } st
     | `General ->
       List.fold_left (fun st def ->
           match def with
@@ -277,13 +273,13 @@ module Make
           let mode, case =
             match parsed_defs with
             | { recursive = false; contents = [
-                { id = { ns = Term; name = Simple "div0" }; _ }
-              ]; } ->
-              `Create_id, `Div_by_zero
-            | { recursive = false; contents = [
-                { id = { ns = Term; name = Simple "mod0" }; _ }
-              ]; } ->
-              `Create_id, `Mod_by_zero
+                { id = { ns = Term; name = Simple name }; _ } ]; } ->
+              begin match name with
+                | "div0" -> `Create_id, `Div_by_zero_int
+                | "mod0" -> `Create_id, `Mod_by_zero_int
+                | "/0" -> `Create_id, `Div_by_zero_real
+                | _ -> `Use_declared_id, `General
+              end
             | _ ->
               `Use_declared_id, `General
           in
