@@ -3,12 +3,6 @@
 
 (** {2 Typechecker state} *)
 
-type ty_state
-(** The type of state used by the {!Make} functor. *)
-
-val new_state : unit -> ty_state
-(** Generate a fresh typing state. *)
-
 module T : Dolmen_type.Tff.S
   with type 'a Tag.t = 'a Dolmen.Std.Tag.t
    and type Ty.t = Dolmen.Std.Expr.ty
@@ -19,6 +13,16 @@ module T : Dolmen_type.Tff.S
    and type T.Const.t = Dolmen.Std.Expr.term_cst
    and type T.Cstr.t = Dolmen.Std.Expr.term_cst
 (** The raw type-checker module. *)
+
+
+type ty_state
+(** The type of state used by the {!Make} functor. *)
+
+val new_state : unit -> ty_state
+(** Generate a fresh typing state. *)
+
+val typer_state : ty_state -> T.state
+(** Return the underlying typer state. *)
 
 
 (* {2 Warnings} *)

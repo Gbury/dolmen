@@ -17,7 +17,10 @@ type t = {
 }
 (* invariant : none of the keys in the map binds to the [base] value *)
 
-(* abstract arrays *)
+(* abstract arrays, as defined in the smtlib standard
+   NOTE: to make cvc5 output models using abstract values, use the
+         `--abstract-values` option
+*)
 let abstract = {
   base = None;
   map = Value.Map.empty;
@@ -92,7 +95,7 @@ let store array key value =
 (* Builtin values *)
 (* ************************************************************************* *)
 
-let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Const -> Some (Fun.fun_1 ~cst const)
   | B.Select -> Some (Fun.fun_2 ~cst select)

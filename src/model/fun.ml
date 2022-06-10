@@ -108,7 +108,7 @@ let reduce ~eval env func args =
     assert (List.length term_params = List.length args);
     let env =
       List.fold_left2 (fun env var value ->
-          Env.Var.add var value env
+          Env.update_model env (Model.Var.add var value)
         ) env term_params args
     in
     eval env body

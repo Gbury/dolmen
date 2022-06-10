@@ -34,7 +34,7 @@ let fun_n f ~cst =
   in
   Fun.fun_n ~cst func
 
-let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.True -> Some true_v
   | B.False -> Some false_v

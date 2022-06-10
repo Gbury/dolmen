@@ -25,13 +25,13 @@ exception Undefined_constant of Cst.t
 (* Builtins *)
 (* ************************************************************************* *)
 
-let rec builtins l c =
+let rec builtins l env c =
   match l with
   | [] -> raise (Unhandled_builtin c)
   | b :: r ->
-    begin match b c with
+    begin match b env c with
       | Some value -> value
-      | None -> builtins r c
+      | None -> builtins r env c
     end
 
 
@@ -47,14 +47,14 @@ let rec eval env (e : Term.t) : Value.t =
   | Match (t, arms) -> eval_match env t arms
 
 and eval_var env v =
-  match Env.Var.find_opt v env with
+  match Model.Var.find_opt v (Env.model env) with
   | Some value -> value
   | None -> raise (Undefined_variable v)
 
 and eval_cst env (c : Cst.t) =
   match c.builtin with
   | B.Base ->
-    begin match Env.Cst.find_opt c env with
+    begin match Model.Cst.find_opt c (Env.model env) with
       | Some value -> value
       | None -> raise (Undefined_constant c)
     end
@@ -71,7 +71,7 @@ and eval_binder env b body =
     let env =
       List.fold_left (fun env (v, expr) ->
           let value = eval env expr in
-          Env.Var.add v value env
+          Env.update_model env (Model.Var.add v value)
         ) env l
     in
     eval env body
@@ -84,7 +84,7 @@ and eval_binder env b body =
     let l' = List.map (fun (v, expr) -> v, eval env expr) l in
     let env =
       List.fold_left (fun env (v, value) ->
-          Env.Var.add v value env
+          Env.update_model env (Model.Var.add v value)
         ) env l'
     in
     eval env body

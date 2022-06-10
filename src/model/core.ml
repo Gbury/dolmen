@@ -18,7 +18,7 @@ let rec distinct = function
     if List.for_all (fun y -> Value.compare x y <> 0) r
     then distinct r else Bool.mk false
 
-let builtins (cst : E.Term.Const.t) =
+let builtins _ (cst : E.Term.Const.t) =
   match cst.builtin with
   | B.Equal -> Some (Fun.fun_n ~cst all_equals)
   | B.Distinct -> Some (Fun.fun_n ~cst distinct)

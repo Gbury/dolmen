@@ -13,7 +13,7 @@
   )
   (modules
     ; Model checking
-    Value Env Eval
+    Value Model Env Eval
     ; Builtins
     Adt Array Bool Core Fun Int Rat Real Bitv
     ; Loop Pipe

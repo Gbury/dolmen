@@ -44,7 +44,7 @@ let ops = Value.ops ~print ~compare ()
 let mk head args =
   Value.mk ~ops { head; args; }
 
-let builtins (cst : C.t) =
+let builtins _ (cst : C.t) =
   match cst.builtin with
   | B.Constructor _ -> Some (Fun.fun_n ~cst (mk cst))
   | _ -> None
@@ -70,7 +70,8 @@ let view_pat (t : T.t) =
 
 let rec pattern_match env pat value =
   match view_pat pat with
-  | Var pat_var -> Some (Env.Var.add pat_var value env)
+  | Var pat_var ->
+    Some (Env.update_model env (Model.Var.add pat_var value))
   | Cstr (pat_cstr, pat_args) ->
     let v = Value.extract_exn ~ops value in
     if C.equal pat_cstr v.head then
