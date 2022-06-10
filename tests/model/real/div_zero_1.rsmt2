@@ -1,0 +1,11 @@
+sat
+(
+  (define-fun a () Real
+    0.0)
+  (define-fun c () Real
+    0.0)
+  (define-fun z () Real
+    0.0)
+  (define-fun /0 ((x!0 Real) (x!1 Real)) Real
+    0.0)
+)

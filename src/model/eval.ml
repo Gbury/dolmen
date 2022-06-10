@@ -39,12 +39,16 @@ let rec builtins l env c =
 (* ************************************************************************* *)
 
 let rec eval env (e : Term.t) : Value.t =
-  match e.term_descr with
-  | Var v -> eval_var env v
-  | Cst c -> eval_cst env c
-  | App (f, _, t_args) -> eval_apply env f t_args
-  | Binder (b, body) -> eval_binder env b body
-  | Match (t, arms) -> eval_match env t arms
+  let r =
+    match e.term_descr with
+    | Var v -> eval_var env v
+    | Cst c -> eval_cst env c
+    | App (f, _, t_args) -> eval_apply env f t_args
+    | Binder (b, body) -> eval_binder env b body
+    | Match (t, arms) -> eval_match env t arms
+  in
+  (* Format.eprintf "[eval] %a -> %a@." Term.print e Value.print r; *)
+  r
 
 and eval_var env v =
   match Model.Var.find_opt v (Env.model env) with

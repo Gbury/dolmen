@@ -6,8 +6,9 @@
 
 type t = Z.t
 
-let print = Z.pp_print
 let compare = Z.compare
+let print fmt z =
+  Format.fprintf fmt "Z:%a" Z.pp_print z
 
 let ops : t Value.ops = Value.ops ~compare ~print ()
 
