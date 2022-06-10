@@ -238,8 +238,6 @@ let rec print_wildcard_origin_loc env fmt = function
       Dolmen.Std.Loc.fmt_pos loc
 
 
-
-
 (* Hint printers *)
 (* ************************************************************************ *)
 
@@ -609,9 +607,41 @@ let missing_destructor =
   Report.Error.mk ~code:Code.bug ~mnemonic:"missing-destructor"
     ~message:(fun fmt id ->
         Format.fprintf fmt
-          "The destructor %a@ was not provided by the user implementation.@ Please report upstream."
+          "The destructor %a@ was not provided by the user implementation.@ \
+           Please report upstream."
           (pp_wrap Dolmen.Std.Id.print) id)
     ~name:"Missing destructor in implementation" ()
+
+let type_def_rec =
+  Report.Error.mk ~code ~mnemonic:"type-def-rec"
+    ~message:(fun fmt _ ->
+        Format.fprintf fmt
+          "Only value definition are allowed in recursive definitions,@ \
+           but this recursive definition contains a type definition")
+    ~name:"Type definition in recursive value definition" ()
+
+let id_definition_conflict =
+  Report.Error.mk ~code ~mnemonic:"id-def-conflict"
+    ~message:(fun fmt (id, binding) ->
+        match (binding : T.binding) with
+        | `Not_found ->
+          Format.fprintf fmt
+            "Trying to define a model value for a symbol \
+             non-declared in the original problem: %a"
+            (pp_wrap Dolmen.Std.Id.print) id
+        | `Builtin _ ->
+          Format.fprintf fmt
+            "Trying to define a model value for a symbol \
+             with a builtin interpretation: %a"
+            (pp_wrap Dolmen.Std.Id.print) id
+        | _ ->
+          Format.fprintf fmt
+            "Trying to define a model value for symbol %a,@ \
+             but the symbol was declared at %a with an incompatible \
+             status (e.g. the symbol was declared as a type but defined \
+             as a value)" (pp_wrap Dolmen.Std.Id.print) id
+            print_reason_opt (T.binding_reason binding))
+    ~name:"Conflicting id definition" ()
 
 let higher_order_app =
   Report.Error.mk ~code ~mnemonic:"ho-app"
@@ -886,6 +916,8 @@ let new_state () = {
   stack = [];
 }
 
+let typer_state { typer; _ } = typer
+
 
 (* Make functor *)
 (* ************************************************************************ *)
@@ -1064,6 +1096,10 @@ module Typer(State : State.S) = struct
       error ~input ~loc st forbidden_quant ()
     | T.Missing_destructor id ->
       error ~input ~loc st missing_destructor id
+    | T.Type_def_rec def ->
+      error ~input ~loc st type_def_rec def
+    | T.Id_definition_conflict (id, binding) ->
+      error ~input ~loc st id_definition_conflict (id, binding)
     | T.Higher_order_application ->
       error ~input ~loc st higher_order_app ()
     | T.Higher_order_type ->

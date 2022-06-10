@@ -415,6 +415,25 @@ module type Formulas = sig
   (** Get the mutable state for an env. *)
 
 
+  (** {2 Errors & Warnings} *)
+
+  val _warn : env -> 'a fragment -> 'a warn -> unit
+  (** Emit a warning *)
+
+  val _error : env -> 'a fragment -> 'a err -> _
+  (** Raise an error *)
+
+  val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
+  (** From a dolmen identifier, return a list of existing bound identifiers
+      in the env that are up to [~limit] in terms of distance of edition. *)
+
+  val _wrap : env -> Dolmen.Std.Term.t -> ('a -> 'b) -> 'a -> 'b
+  val _wrap2 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+  val _wrap3 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd
+  (* Convenient wrapping function to catch exceptions and raise the appropriate
+     typing error. *)
+
+
   (** {2 Location helpers} *)
 
   val loc : env -> Dolmen.Std.Loc.t -> Dolmen.Std.Loc.full
@@ -477,6 +496,20 @@ module type Formulas = sig
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 
+  val decl_ty_const :
+    env -> _ fragment -> Dolmen.Std.Id.t -> ty_cst -> reason -> unit
+  (** Declare a new type constant in the global environment used by the
+      given environment *)
+
+  val decl_term_const :
+    env -> _ fragment -> Dolmen.Std.Id.t -> term_cst -> reason -> unit
+  (** Declare a new term constant in the global environment used by the
+      given environment *)
+
+
+
+  (** {2 Custom global state} *)
+
   val get_global_custom : env -> 'a Dolmen.Std.Tag.t -> 'a option
   val get_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a option
   (** Get a custom value from the global environment or state. *)
@@ -485,24 +518,6 @@ module type Formulas = sig
   val set_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a -> unit
   (** Set a custom value in the global environment or state. *)
 
-
-  (** {2 Errors & Warnings} *)
-
-  val _warn : env -> 'a fragment -> 'a warn -> unit
-  (** Emit a warning *)
-
-  val _error : env -> 'a fragment -> 'a err -> _
-  (** Raise an error *)
-
-  val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
-  (** From a dolmen identifier, return a list of existing bound identifiers
-      in the env that are up to [~limit] in terms of distance of edition. *)
-
-  val _wrap : env -> Dolmen.Std.Term.t -> ('a -> 'b) -> 'a -> 'b
-  val _wrap2 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-  val _wrap3 : env -> Dolmen.Std.Term.t -> ('a -> 'b -> 'c -> 'd) -> 'a -> 'b -> 'c -> 'd
-  (* Convenient wrapping function to catch exceptions and raise the appropriate
-     typing error. *)
 
 
   (** {2 Parsing functions} *)

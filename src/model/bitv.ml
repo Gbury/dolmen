@@ -82,7 +82,7 @@ let op2 ~cst ~size f =
 let cmp ~cst p =
   Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Bitvec s ->
     Some (mk (String.length s) (Z.of_string_base 2 s))

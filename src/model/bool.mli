@@ -10,6 +10,6 @@ val ops : bool Value.ops
 val mk : bool -> Value.t
 (** Boolean value creation. *)
 
-val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for booleans *)
 

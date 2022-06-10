@@ -62,7 +62,7 @@ let op1 ~cst f = Some (fun1 ~cst (fun x -> mk @@ f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let builtins (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Decimal i -> Some (mk (Q.of_string i))
   | B.Lt `Real -> cmp ~cst Q.lt

@@ -220,8 +220,17 @@ let print_decl fmt = function
   | Record r -> print_record fmt r
   | Inductive i -> print_inductive fmt i
 
-let print_def fmt (d : def) =
-  Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]" Id.print d.id Term.print d.body
+let print_def fmt ({ id; loc = _; vars; params; body; ret_ty = _; } : def) =
+  match vars @ params with
+  | [] ->
+    Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]"
+      Id.print id
+      Term.print body
+  | l ->
+    Format.fprintf fmt "@[<hov 2>def:@ %a(%a) =@ %a@]"
+      Id.print id
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) l
+      Term.print body
 
 let print_group print fmt (d: _ group) =
   let aux = Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print in

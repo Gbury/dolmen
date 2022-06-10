@@ -12,6 +12,6 @@ val ops : t Value.ops
 val mk : int -> Z.t -> Value.t
 (** [mk n z] Bitvector of size [n], and bits [z] creation. *)
 
-val builtins : Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for bitvectors *)
 

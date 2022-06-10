@@ -85,6 +85,7 @@ just run `make coverage` and it should open the coverage report in a browser
 window for you (via xdg-open).
 
 
+
 ## Hand-written syntax error messages
 
 Dolmen now has support for customizing syntax error messages, using menhir's
