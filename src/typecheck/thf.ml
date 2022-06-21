@@ -225,6 +225,13 @@ module Make
   ]
   (** The bindings that can occur. *)
 
+  type var_kind = [
+    | `Let_bound
+    | `Quantified
+    | `Function_param
+    | `Type_alias_param
+  ]
+  (** The type of kinds of variables *)
 
   (* Maps & Hashtbls *)
   (* ************************************************************************ *)
@@ -264,11 +271,9 @@ module Make
   type _ warn = ..
 
   type _ warn +=
-    | Unused_type_variable :
-        [ `Quantified | `Letbound ]  * Ty.Var.t -> Ast.t warn
+    | Unused_type_variable : var_kind * Ty.Var.t -> Ast.t warn
     (* Unused bound type variable *)
-    | Unused_term_variable :
-        [ `Quantified | `Letbound ] * T.Var.t -> Ast.t warn
+    | Unused_term_variable : var_kind * T.Var.t -> Ast.t warn
     (* Unused bound term variable *)
     | Error_in_attribute : exn -> Ast.t warn
     (* An error occurred wile parsing an attribute *)
@@ -399,7 +404,7 @@ module Make
     (* warnings *)
     warnings : warning -> unit;
 
-    (* Typechecke configuration *)
+    (* Typechecker configuration *)
     order     : order;
     poly      : poly;
     quants    : bool;
@@ -1210,18 +1215,25 @@ module Make
   (* Wrappers for creating binders *)
   let mk_let env ast mk l body =
     List.iter (fun (v, _) ->
-        check_used_term_var ~kind:`Letbound env v
+        check_used_term_var ~kind:`Let_bound env v
       ) l;
     _wrap2 env ast mk l body
 
-  let mk_quant env ast mk (ty_vars, t_vars) body =
-    if not env.quants then
-      _error env (Ast ast) Forbidden_quantifier
-    else begin
-      List.iter (check_used_ty_var ~kind:`Quantified env) ty_vars;
-      List.iter (check_used_term_var ~kind:`Quantified env) t_vars;
-      _wrap2 env ast mk (ty_vars, t_vars) body
-    end
+  let mk_binder env b ast mk (ty_vars, t_vars) body =
+    begin match (b : Ast.binder) with
+    | Ex | All ->
+      if not env.quants then
+        _error env (Ast ast) Forbidden_quantifier
+    | Fun ->
+      begin match env.order with
+        | Higher_order -> ()
+        | First_order -> _error env (Ast ast) Higher_order_type
+      end
+    | Pi | Arrow | Let_seq | Let_par | Choice | Description -> ()
+    end;
+    List.iter (check_used_ty_var ~kind:`Quantified env) ty_vars;
+    List.iter (check_used_term_var ~kind:`Quantified env) t_vars;
+    _wrap2 env ast mk (ty_vars, t_vars) body
 
 
   let free_wildcards_to_quant_vars =
@@ -1333,13 +1345,13 @@ module Make
 
     (* Binders *)
     | { Ast.term = Ast.Binder (Ast.Fun, _, _); _ } as ast ->
-      parse_quant parse_term T.lam Ast.Fun env ast [] [] ast
+      parse_binder parse_term T.lam Ast.Fun env ast [] [] ast
 
     | { Ast.term = Ast.Binder (Ast.All, _, _); _ } as ast ->
-      parse_quant parse_prop T.all Ast.All env ast [] [] ast
+      parse_binder parse_prop T.all Ast.All env ast [] [] ast
 
     | { Ast.term = Ast.Binder (Ast.Ex, _, _); _ } as ast ->
-      parse_quant parse_prop T.ex Ast.Ex env ast [] [] ast
+      parse_binder parse_prop T.ex Ast.Ex env ast [] [] ast
 
     | ({ Ast.term = Ast.Binder (Ast.Let_seq, vars, f); _ } as ast)
     | ({ Ast.term = Ast.Binder (Ast.Let_par, ([_] as vars), f); _ } as ast) ->
@@ -1436,7 +1448,7 @@ module Make
       let ret = parse_ty env ret in
       Ty (_wrap2 env ast Ty.arrow args ret)
 
-  and parse_quant_vars env l =
+  and parse_binder_vars env l =
     let ttype_vars, typed_vars, env' = List.fold_left (
         fun (l1, l2, acc) v ->
           match parse_var_in_binding_pos acc v with
@@ -1449,19 +1461,19 @@ module Make
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
-  and parse_quant parse_inner mk b env ast ttype_acc ty_acc body_ast =
+  and parse_binder parse_inner mk b env ast ttype_acc ty_acc body_ast =
     let [@inline] aux t =
-      parse_quant_aux parse_inner mk b env ast ttype_acc ty_acc t
+      parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc t
     in
     (wrap_attr[@inlined]) apply_attr env body_ast aux
 
-  and parse_quant_aux parse_inner mk b env ast ttype_acc ty_acc = function
+  and parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
-      let ttype_vars, ty_vars, env' = parse_quant_vars env vars in
-      parse_quant parse_inner mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
+      let ttype_vars, ty_vars, env' = parse_binder_vars env vars in
+      parse_binder parse_inner mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
     | body_ast ->
       let body = parse_inner env body_ast in
-      let f = mk_quant env ast mk (ttype_acc, ty_acc) body in
+      let f = mk_binder env b ast mk (ttype_acc, ty_acc) body in
       Term f
 
   and parse_match env ast scrutinee branches =
@@ -2303,11 +2315,17 @@ module Make
   let finalize_def id (env, vars, params, _ssig) (ast, ret) =
     check_no_free_wildcards env ast;
     match id, ret with
+    (* type alias *)
     | `Ty (id, c), `Ty body ->
       assert (params = []);
+      List.iter (check_used_ty_var ~kind:`Type_alias_param env) vars;
       `Type_def (id, c, vars, body)
+    (* function definition *)
     | `Term (id, f), `Term body ->
+      List.iter (check_used_ty_var ~kind:`Function_param env) vars;
+      List.iter (check_used_term_var ~kind:`Function_param env) params;
       `Term_def (id, f, vars, params, body)
+    (* error cases *)
     | `Ty _, `Term _
     | `Term _, `Ty _ -> assert false
 

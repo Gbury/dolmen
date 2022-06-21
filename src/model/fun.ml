@@ -20,10 +20,15 @@ type value_function =
       term_params : E.Term.Var.t list;
       body : E.Term.t;
     }
+  | Lazy of {
+      arity : int;
+      cst : E.Term.Const.t;
+      eval_lazy : Env.t -> (Env.t -> E.term -> Value.t) -> E.term list -> Value.t;
+    }
 
 and t = {
   func : value_function;
-  args : Value.t list; (* partial applications arguments *)
+  args : E.term list; (* partial applications arguments *)
 }
 
 
@@ -35,6 +40,8 @@ let print fmt { func; args; } =
       E.Term.of_cst cst
     | Lambda { ty_params; term_params; body; } ->
       E.Term.lam (ty_params, term_params) body
+    | Lazy { cst; _ } ->
+      E.Term.of_cst cst
   in
   match args with
   | [] ->
@@ -42,7 +49,7 @@ let print fmt { func; args; } =
   | _ ->
     Format.fprintf fmt "< @[<hov 2>%a(%a)@] >"
       E.Term.print f
-      (Format.pp_print_list ~pp_sep:(return ",@ ") Value.print) args
+      (Format.pp_print_list ~pp_sep:(return ",@ ") E.Term.print) args
 
 
 let compare _ _ =
@@ -91,23 +98,34 @@ let fun_n ~cst eval_f =
   let _, arity = E.Term.Const.arity cst in
   builtin ~arity ~cst eval_f
 
+let fun_lazy ~cst eval_lazy =
+  let _, arity = E.Term.Const.arity cst in
+  let func = Lazy { arity; cst; eval_lazy; } in
+  Value.mk ~ops { args = []; func; }
+
 
 (* Application&Reduction *)
 (* ************************************************************************* *)
 
 let arity = function
+  | Lazy { arity; _ } -> arity
   | Builtin { arity; _ } -> arity
   | Lambda { term_params; _ } -> List.length term_params
 
 let reduce ~eval env func args =
   match func with
+  | Lazy { arity; eval_lazy; cst = _; } ->
+    assert (List.length args = arity);
+    eval_lazy env eval args
   | Builtin { arity; cst = _; eval_f; } ->
     assert (List.length args = arity);
+    let args = List.map (eval env) args in
     eval_f args
   | Lambda { ty_params = _; term_params; body; } ->
     assert (List.length term_params = List.length args);
     let env =
-      List.fold_left2 (fun env var value ->
+      List.fold_left2 (fun env var term ->
+          let value = eval env term in
           Env.update_model env (Model.Var.add var value)
         ) env term_params args
     in
@@ -124,7 +142,7 @@ let take_drop n l =
 let[@specialise] rec apply ~eval env v = function
   | [] -> v
   | new_args ->
-    let {func; args = partial_args; } = Value.extract_exn ~ops v in
+    let { func; args = partial_args; } = Value.extract_exn ~ops v in
     let f_arity = arity func in
     let n = List.length partial_args in
     let m = List.length new_args in

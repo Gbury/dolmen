@@ -138,6 +138,15 @@ let unhandled_builtin =
           (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
       ~name:"Unhandled builtin in Model verification" ()
 
+let partial_destructor =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"partial-dstr"
+    ~message:(fun fmt (cstr, value) ->
+        Format.fprintf fmt
+          "Partial destructr: the destructor for constructor %a \
+           was applied to the following value: %a"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cstr
+          (pp_wrap Value.print) value)
+    ~name:"Partial Destructor" ()
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -172,6 +181,9 @@ module Make
   (* ************************************************************************ *)
 
   let eval st ~file ~loc term =
+    let _err err args =
+      raise (State.Error (State.error st ~file ~loc err args))
+    in
     let { model; corner; _ } = State.get check_state st in
     let builtins c =
       Eval.builtins [
@@ -196,15 +208,11 @@ module Make
     try
       Eval.eval env term
     with
-    | Eval.Quantifier ->
-      raise (State.Error (State.error st ~file ~loc fo_model ()))
-    | Eval.Unhandled_builtin b ->
-      raise (State.Error (State.error st ~file ~loc unhandled_builtin b))
-    | Eval.Undefined_variable v ->
-      raise (State.Error (State.error st ~file ~loc undefined_variable v))
-    | Eval.Undefined_constant c ->
-      raise (State.Error (State.error st ~file ~loc undefined_constant c))
-
+    | Eval.Quantifier -> _err fo_model ()
+    | Eval.Unhandled_builtin b -> _err unhandled_builtin b
+    | Eval.Undefined_variable v -> _err undefined_variable v
+    | Eval.Undefined_constant c -> _err undefined_constant c
+    | Adt.Partial_destructor (cstr, value) -> _err partial_destructor (cstr, value)
 
   (* Typing models *)
   (* ************************************************************************ *)

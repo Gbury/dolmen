@@ -178,6 +178,14 @@ module type Formulas = sig
   ]
   (** The bindings that can occur. *)
 
+  type var_kind = [
+    | `Let_bound
+    | `Quantified
+    | `Function_param
+    | `Type_alias_param
+  ]
+  (** The type of kinds of variables *)
+
   type nonrec symbol = symbol =
     | Id of Dolmen.Std.Id.t
     | Builtin of Dolmen.Std.Term.builtin (**)
@@ -200,11 +208,9 @@ module type Formulas = sig
       trigger on *)
 
   type _ warn +=
-    | Unused_type_variable :
-        [ `Quantified | `Letbound ] * ty_var -> Dolmen.Std.Term.t warn
+    | Unused_type_variable : var_kind * ty_var -> Dolmen.Std.Term.t warn
     (** Unused quantified type variable *)
-    | Unused_term_variable :
-        [ `Quantified | `Letbound ] * term_var -> Dolmen.Std.Term.t warn
+    | Unused_term_variable : var_kind * term_var -> Dolmen.Std.Term.t warn
     (** Unused quantified term variable *)
     | Error_in_attribute : exn -> Dolmen.Std.Term.t warn
     (** An error occurred wile parsing an attribute *)

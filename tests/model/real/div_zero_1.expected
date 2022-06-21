@@ -1,0 +1,8 @@
+File "tests/model/real/div_zero_1.rsmt2", line 9, character 18-28:
+9 |   (define-fun /0 ((x!0 Real) (x!1 Real)) Real
+                      ^^^^^^^^^^
+Warning The following function parameter is unused: `x!0`
+File "tests/model/real/div_zero_1.rsmt2", line 9, character 29-39:
+9 |   (define-fun /0 ((x!0 Real) (x!1 Real)) Real
+                                 ^^^^^^^^^^
+Warning The following function parameter is unused: `x!1`

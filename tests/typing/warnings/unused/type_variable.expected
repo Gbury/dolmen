@@ -1,4 +1,4 @@
 File "tests/typing/warnings/unused/type_variable.p", line 3, character 22-32:
 3 | tff(error, axiom, ! [ A : $tType ] : ( $true ) ).
                           ^^^^^^^^^^
-Warning The following quantified type variable is unused: 'A'
+Warning The following quantified variable is unused: 'A'

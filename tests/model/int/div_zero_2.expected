@@ -1,0 +1,16 @@
+File "tests/model/int/div_zero_2.rsmt2", line 13, character 20-29:
+13 |   (define-fun div0 ((x!0 Int) (x!1 Int)) Int
+                         ^^^^^^^^^
+Warning The following function parameter is unused: `x!0`
+File "tests/model/int/div_zero_2.rsmt2", line 13, character 30-39:
+13 |   (define-fun div0 ((x!0 Int) (x!1 Int)) Int
+                                   ^^^^^^^^^
+Warning The following function parameter is unused: `x!1`
+File "tests/model/int/div_zero_2.rsmt2", line 15, character 20-29:
+15 |   (define-fun mod0 ((x!0 Int) (x!1 Int)) Int
+                         ^^^^^^^^^
+Warning The following function parameter is unused: `x!0`
+File "tests/model/int/div_zero_2.rsmt2", line 15, character 30-39:
+15 |   (define-fun mod0 ((x!0 Int) (x!1 Int)) Int
+                                   ^^^^^^^^^
+Warning The following function parameter is unused: `x!1`

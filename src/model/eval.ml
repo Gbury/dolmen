@@ -47,7 +47,7 @@ let rec eval env (e : Term.t) : Value.t =
     | Binder (b, body) -> eval_binder env b body
     | Match (t, arms) -> eval_match env t arms
   in
-  (* Format.eprintf "[eval] %a -> %a@." Term.print e Value.print r; *)
+  (* Format.eprintf "[eval] @[<hov>%a -> %a@]@." Term.print e Value.print r; *)
   r
 
 and eval_var env v =
@@ -64,10 +64,8 @@ and eval_cst env (c : Cst.t) =
     end
   | _ -> Env.builtins env c
 
-and eval_apply env f t_args =
-  let f_v = eval env f in
-  let args_v = List.map (eval env) t_args in
-  Fun.apply ~eval env f_v args_v
+and eval_apply env f args =
+  Fun.apply ~eval env (eval env f) args
 
 and eval_binder env b body =
   match (b : E.binder) with

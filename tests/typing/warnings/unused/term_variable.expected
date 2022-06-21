@@ -1,4 +1,4 @@
 File "tests/typing/warnings/unused/term_variable.p", line 3, character 22-28:
 3 | tff(error, axiom, ! [ A : $i ] : ( $true ) ).
                           ^^^^^^
-Warning The following quantified term variable is unused: `A`
+Warning The following quantified variable is unused: `A`
