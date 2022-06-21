@@ -1,0 +1,4 @@
+File "tests/typing/pass/ae/poly/implicit_def.ae", line 2, character 12-17:
+2 | function f (x: 'a): bool = true
+                ^^^^^
+Warning The following function parameter is unused: `x`

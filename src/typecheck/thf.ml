@@ -920,34 +920,6 @@ module Make
     M.fold aux env.st.csts (M.fold aux env.vars [])
 
 
-  (* Typing explanation *)
-  (* ************************************************************************ *)
-
-  let find_ty_var_reason env v =
-    try E.find v env.type_locs
-    with Not_found -> E.find v !(env.inferred_ty_locs)
-
-  let _unused_type env kind v =
-    match find_ty_var_reason env v with
-    (* Variable bound or inferred *)
-    | Bound (_, t) | Inferred (_, t) ->
-      _warn env (Ast t) (Unused_type_variable (kind, v))
-    (* variables should not be declare-able nor builtin *)
-    | Builtin | Declared _ | Defined _ ->
-      assert false
-
-  let find_term_var_reason env v =
-    F.find v env.term_locs
-
-  let _unused_term env kind v =
-    match find_term_var_reason env v with
-    (* Variable bound or inferred *)
-    | Bound (_, t) | Inferred (_, t) ->
-      _warn env (Ast t) (Unused_term_variable (kind, v))
-    (* variables should not be declare-able nor builtin *)
-    | Builtin | Declared _ | Defined _ ->
-      assert false
-
 
   (* Type inference and wildcards *)
   (* ************************************************************************ *)
@@ -1065,6 +1037,40 @@ module Make
         end
       in
       set_wildcards_and_return_free_wildcards state acc
+
+
+  (* Typing explanation *)
+  (* ************************************************************************ *)
+
+  let find_ty_var_reason env v =
+    try E.find v env.type_locs
+    with Not_found -> E.find v !(env.inferred_ty_locs)
+
+  let _unused_type env kind v =
+    if Ty.Var.is_wildcard v then ()
+    (* whether a wildcard is used or not is complex, and not really useful.
+       instead, we produce errors when wildcards are not used correctly, or
+       escape their scope, which is more informative. *)
+    else match find_ty_var_reason env v with
+    (* Variable bound or inferred *)
+    | Bound (_, t) | Inferred (_, t) ->
+      _warn env (Ast t) (Unused_type_variable (kind, v))
+    (* variables should not be declare-able nor builtin *)
+    | Builtin | Declared _ | Defined _ ->
+      assert false
+
+  let find_term_var_reason env v =
+    F.find v env.term_locs
+
+  let _unused_term env kind v =
+    match find_term_var_reason env v with
+    (* Variable bound or inferred *)
+    | Bound (_, t) | Inferred (_, t) ->
+      _warn env (Ast t) (Unused_term_variable (kind, v))
+    (* variables should not be declare-able nor builtin,
+       and we do not use any term wildcards. *)
+    | Builtin | Declared _ | Defined _ ->
+      assert false
 
 
   (* Wrappers for expression building *)
@@ -1201,6 +1207,12 @@ module Make
 
   let used_var_tag = Tag.create ()
 
+  let mark_ty_var_as_used v =
+    Ty.Var.set_tag v used_var_tag ()
+
+  let mark_term_var_as_used v =
+    T.Var.set_tag v used_var_tag ()
+
   (* Emit warnings for quantified variables that are unused *)
   let check_used_ty_var ~kind env v =
     match Ty.Var.get_tag v used_var_tag with
@@ -1245,6 +1257,9 @@ module Make
              Ty.Var.mk (Format.asprintf "w%d" !wildcard_univ_counter)
            in
            Ty.set_wildcard w (Ty.of_var v);
+           (* the wildcard wes generated from the term being typechecked,
+              so it is at least used where it was generated. *)
+           mark_ty_var_as_used v;
            v
          ) wildcards
     )
@@ -1763,12 +1778,12 @@ module Make
     | #builtin_common as b -> builtin_apply_common env b ast args
 
   and parse_app_ty_var env ast v _v_ast args =
-    Ty.Var.set_tag v used_var_tag ();
+    mark_ty_var_as_used v;
     if args = [] then Ty (Ty.of_var v)
     else _ty_var_app env v ast
 
   and parse_app_term_var env ast v v_ast args =
-    T.Var.set_tag v used_var_tag ();
+    mark_term_var_as_used v;
     match env.order with
     | First_order ->
       if args = [] then Term (T.of_var v)
@@ -1777,7 +1792,7 @@ module Make
       parse_app_ho_generic env ast (Term (T.of_var v)) v_ast args
 
   and parse_app_letin_var env ast v v_ast t args =
-    T.Var.set_tag v used_var_tag ();
+    mark_term_var_as_used v;
     match env.order with
     | First_order ->
       if args = [] then Term t

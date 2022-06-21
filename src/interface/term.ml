@@ -381,11 +381,17 @@ module type Tff = sig
   val ty : t -> ty
   (** Returns the type of a term. *)
 
+  val print : Format.formatter -> t -> unit
+  (** Printing function for terms. *)
+
   (** A module for variables that occur in terms. *)
   module Var : sig
 
     type t
     (** The type of variables the can occur in terms *)
+
+    val print : Format.formatter -> t -> unit
+    (** Printing function for term variables. *)
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)

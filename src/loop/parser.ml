@@ -115,10 +115,10 @@ module Make(State : State.S) = struct
   let set_logic_file ?loc st (new_file : _ file) =
     let old_file = State.get State.logic_file st in
     match old_file.lang with
-    | None -> State.set State.logic_file new_file st
+    | None -> set_logic_file ?loc st old_file new_file
     | Some l ->
       begin match new_file.lang with
-        | None -> State.set State.logic_file new_file st
+        | None -> set_logic_file ?loc st old_file new_file
         | Some l' ->
           if l = l'
           then set_logic_file ?loc st old_file new_file
