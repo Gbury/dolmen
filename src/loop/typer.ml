@@ -131,9 +131,12 @@ let decl_loc d =
   | Abstract { loc; _ }
   | Inductive { loc; _ } -> loc
 
-let print_bound_kind fmt = function
-  | `Quantified -> Format.fprintf fmt "quantified"
-  | `Letbound -> Format.fprintf fmt "let-bound"
+let print_var_kind fmt k =
+  match (k : T.var_kind) with
+  | `Let_bound -> Format.fprintf fmt "let-bound variable"
+  | `Quantified -> Format.fprintf fmt "quantified variable"
+  | `Function_param -> Format.fprintf fmt "function parameter"
+  | `Type_alias_param -> Format.fprintf fmt "type alias parameter"
 
 let print_reason fmt r =
   match (r : T.reason) with
@@ -320,16 +323,16 @@ let unused_type_variable =
   Report.Warning.mk ~code ~mnemonic:"unused-type-var"
     ~message:(fun fmt (kind, v) ->
         Format.fprintf fmt
-          "The following %a type variable is unused: '%a'"
-          print_bound_kind kind Dolmen.Std.Expr.Print.id v)
+          "The following %a is unused: '%a'"
+          print_var_kind kind Dolmen.Std.Expr.Print.id v)
     ~name:"Unused bound type variable" ()
 
 let unused_term_variable =
   Report.Warning.mk ~code ~mnemonic:"unused-term-var"
     ~message:(fun fmt (kind, v) ->
         Format.fprintf fmt
-          "The following %a term variable is unused: `%a`"
-          print_bound_kind kind Dolmen.Std.Expr.Print.id v)
+          "The following %a is unused: `%a`"
+          print_var_kind kind Dolmen.Std.Expr.Print.id v)
     ~name:"Unused bound term variable" ()
 
 let error_in_attribute =
@@ -998,6 +1001,11 @@ module Typer(State : State.S) = struct
   (* Report type warnings *)
   (* ************************************************************************ *)
 
+  let var_can_be_unused (v : _ Dolmen.Std.Expr.id) =
+    match v.path with
+    | Local { name; } when String.length name >= 1 && name.[0] = '_' -> true
+    | _ -> false
+
   let smtlib2_6_shadow_rules (input : input) =
     match input with
     | `Logic { lang = Some Smtlib2 (`Latest | `V2_6 | `Poly); _ }
@@ -1014,11 +1022,15 @@ module Typer(State : State.S) = struct
       when smtlib2_6_shadow_rules input ->
       error ~input ~loc st multiple_declarations (id, old)
 
-    (* warnings *)
+    (* unused variables *)
     | T.Unused_type_variable (kind, v) ->
-      warn ~input ~loc st unused_type_variable (kind, v)
+      if var_can_be_unused v then st
+      else warn ~input ~loc st unused_type_variable (kind, v)
     | T.Unused_term_variable (kind, v) ->
-      warn ~input ~loc st unused_term_variable (kind, v)
+      if var_can_be_unused v then st
+      else warn ~input ~loc st unused_term_variable (kind, v)
+
+    (* *)
     | T.Error_in_attribute exn ->
       warn ~input ~loc st error_in_attribute exn
     | T.Superfluous_destructor _ ->

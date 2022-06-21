@@ -5,4 +5,4 @@ Warning Shadowing: `x` was already bound at line 2, character 15-16
 File "tests/typing/warnings/shadow/variables.smt2", line 2, character 15-16:
 2 | (assert (let ((x 0) (x 1)) (= x x)))
                    ^
-Warning The following let-bound term variable is unused: `x`
+Warning The following let-bound variable is unused: `x`

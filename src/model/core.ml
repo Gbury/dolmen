@@ -23,9 +23,13 @@ let builtins _ (cst : E.Term.Const.t) =
   | B.Equal -> Some (Fun.fun_n ~cst all_equals)
   | B.Distinct -> Some (Fun.fun_n ~cst distinct)
   | B.Ite ->
-    Some (Fun.fun_3 ~cst (fun cond then_ else_ ->
-        if Value.extract_exn ~ops:Bool.ops cond
-        then then_ else else_
+    Some (Fun.fun_lazy ~cst (fun env eval args ->
+        match args with
+        | [cond; then_; else_] ->
+          if Value.extract_exn ~ops:Bool.ops (eval env cond)
+          then eval env then_
+          else eval env else_
+        | _ -> assert false
       ))
   | _ -> None
 
