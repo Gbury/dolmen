@@ -123,4 +123,10 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
     test ~cst F.is_normal
   | B.Fp_isSubnormal (_ew, _prec) ->
     test ~cst F.is_subnormal
+  | B.Fp_rem _ -> (* todo *) None
+  | B.Fp_roundToIntegral _ -> (* todo *) None
+  | B.Fp_min _ -> (* todo *) None
+  | B.Fp_max _ -> (* todo *) None
+  | B.To_ubv _ -> (* todo *) None
+  | B.To_sbv _ -> (* todo *) None
   | _ -> None
