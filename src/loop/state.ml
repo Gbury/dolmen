@@ -172,7 +172,7 @@ let pp_loc ?file st fmt o =
         let locs = Pp_loc.Position.of_lexing loc_start, Pp_loc.Position.of_lexing loc_end in
         Format.fprintf fmt "%a:@ %a"
           Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
-          (Pp_loc.pp ~max_lines:3 ~input) [locs]
+          (Pp_loc.pp ~max_lines:5 ~input) [locs]
     end
 
 let error ?file ?loc st error payload =
@@ -200,7 +200,6 @@ let warn ?file ?loc st warn payload =
         Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
         Report.Warning.print (warn, payload)
         Report.Warning.print_hints (warn, payload)
-
   | Fatal ->
     let aux _ = Code.exit (Report.Warning.code warn) in
     Format.kfprintf aux Format.err_formatter
@@ -221,36 +220,4 @@ let flush st () =
       (if get max_warn st = 0 then "Counted" else "Plus")
       (get cur_warn st - get max_warn st)
       (if get max_warn st = 0 then "" else "additional ")
-
-(* Getting/Setting options *)
-(* ************************************************************************* *)
-(*
-let debug t = t.debug
-
-let time_limit t = t.time_limit
-let size_limit t = t.size_limit
-
-let logic_file t = t.logic_file
-let set_logic_file t logic_file = { t with logic_file; }
-
-let response_file t = t.response_file
-let set_response_file t response_file = { t with response_file; }
-
-let header_state { header_state; _ } = header_state
-let set_header_state st header_state = { st with header_state; }
-
-let check_headers { header_check; _ } = header_check
-let allowed_licenses { header_licenses; _ } = header_licenses
-let allowed_lang_version { header_lang_version; _ } = header_lang_version
-
-let check_model t = t.check_model
-let check_model_eager _ = false
-let check_state t = t.check_state
-let set_check_state t check_state = { t with check_state; }
-
-let ty_state { type_state; _ } = type_state
-let set_ty_state st type_state = { st with type_state; }
-
-let typecheck st = st.type_check
-*)
 
