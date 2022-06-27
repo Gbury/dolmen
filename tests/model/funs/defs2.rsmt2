@@ -1,0 +1,6 @@
+sat
+(
+; cardinality of t is 1
+; rep: (as @a0 t)
+(define-fun a () t (as @a0 t))
+)

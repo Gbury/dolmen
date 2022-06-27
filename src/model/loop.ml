@@ -34,6 +34,7 @@ type 'st t = {
   model : model;
   corner : corner;
   answers : 'st answers;
+  defs : ('st -> 'st) list;
   hyps : term assertion list;
   goals : term assertion list;
   clauses : term list assertion list;
@@ -49,6 +50,7 @@ let empty () = {
   answers = Init;
   model = Model.empty;
   corner = empty_corner;
+  defs = [];
   hyps = []; goals = []; clauses = [];
 }
 
@@ -174,7 +176,7 @@ module Make
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
-  let check_model = State.create_key "check_state"
+  let check_model = State.create_key "check_model"
   let check_state = State.create_key "check_state"
 
   (* Evaluation and errors *)
@@ -232,6 +234,22 @@ module Make
         )
     | _ -> assert false (* TODO: raise proper error *)
 
+  let define_def ~file ~loc cst ty_params term_params body st =
+    let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
+    if State.get State.debug st then
+      Format.eprintf "[model][typed][%a] @[<hov>%a := %a@]@."
+        Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+        Dolmen.Std.Expr.Term.Const.print cst
+        Dolmen.Std.Expr.Term.print func;
+    let value = eval st ~file ~loc func in
+    if State.get State.debug st then
+      Format.eprintf "[model][value][%a] @[<hov>%a -> %a@]@\n@."
+        Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+        Dolmen.Std.Expr.Term.Const.print cst
+        Value.print value;
+    define_value st cst value
+
+
   let record_defs st ~loc ~(file : _ file) ~case typed_defs =
     match case with
     | `Div_by_zero_int ->
@@ -255,19 +273,7 @@ module Make
           | `Type_def _ ->
             State.error ~file ~loc st type_def_in_model ()
           | `Term_def (_id, cst, ty_params, term_params, body) ->
-            let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
-            if State.get State.debug st then
-              Format.eprintf "[model][typed][%a] @[<hov>%a := %a@]@."
-                Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
-                Dolmen.Std.Expr.Term.Const.print cst
-                Dolmen.Std.Expr.Term.print func;
-            let value = eval st ~file ~loc func in
-            if State.get State.debug st then
-              Format.eprintf "[model][value][%a] @[<hov>%a -> %a@]@\n@."
-                Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
-                Dolmen.Std.Expr.Term.Const.print cst
-                Value.print value;
-            define_value st cst value
+            define_def ~file ~loc cst ty_params term_params body st
         ) st typed_defs
 
   let type_model st ~file ~(loc : Dolmen.Std.Loc.full) ?attrs l =
@@ -348,6 +354,9 @@ module Make
         Dolmen.Std.Expr.Term.print term Value.print value;
     Value.extract_exn ~ops:Bool.ops value
 
+  let add_def st def =
+    def st
+
   let eval_hyp st { file; loc; contents = hyp; } =
     let res = eval_term st ~file ~loc hyp in
     if res then st else
@@ -368,6 +377,7 @@ module Make
       let file = State.get State.response_file st in
       State.warn ~file ~loc st cannot_check_proofs ()
     | Sat ->
+      let st = List.fold_left add_def st t.defs in
       let st = List.fold_left eval_hyp st t.hyps in
       let st = List.fold_left eval_goal st t.goals in
       let st = List.fold_left eval_clause st t.clauses in
@@ -387,7 +397,16 @@ module Make
         | #Typer_Pipe.stack_control ->
           State.error ~file ~loc st assertion_stack_not_supported ()
         | `Defs defs ->
-          record_defs ~case:`General st ~file ~loc defs
+          let defs = List.fold_left (fun defs def ->
+              match def with
+              | `Type_def _ ->
+                defs
+              | `Term_def (_id, cst, ty_params, term_params, body) ->
+                let def : State.t -> State.t = define_def ~file ~loc cst ty_params term_params body in
+                def::defs
+            ) t.defs defs
+          in
+          State.set check_state { t with defs; } st
         | `Hyp contents ->
           let assertion = { file; loc; contents; } in
           State.set check_state { t with hyps = assertion :: t.hyps; } st
