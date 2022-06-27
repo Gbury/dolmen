@@ -15,6 +15,9 @@ let hash t = t.code
 let equal t t' = t.code = t'.code
 let compare t t' = compare t.code t'.code
 
+let descr t = t.code, t.descr
+let category t = t.category
+
 
 (* Exit with a code and code status *)
 (* ************************************************************************* *)
@@ -52,9 +55,6 @@ let create ~category ~descr =
 
 (*  *)
 let errors () = List.rev !errors
-
-let descr t = t.code, t.descr
-let category t = t.category
 
 (* Special values *)
 (* ************************************************************************* *)

@@ -1,4 +1,4 @@
-(set-logic ALL)
+(set-logic QF_UF)
 
 (declare-sort t 0)
 
