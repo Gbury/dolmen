@@ -44,7 +44,7 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t -> string -> state
 
   val defs :
-    ?mode:[`Create_id | `Use_declared_id] ->
+    mode:[`Create_id | `Use_declared_id] ->
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.defs ->
     state * [

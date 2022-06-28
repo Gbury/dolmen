@@ -7,6 +7,7 @@
 (* ************************************************************************ *)
 
 type model = Model.t
+type cst = Dolmen.Std.Expr.term_cst
 type term = Dolmen.Std.Expr.Term.t
 
 type answer =
@@ -17,7 +18,7 @@ type 'st answers =
   | Init
   | Response_loaded of ('st -> 'st * answer option)
 
-type 't assertion = {
+type 't located = {
   contents : 't;
   loc : Dolmen.Std.Loc.full;
   file : Dolmen_loop.Logic.language Dolmen_loop.State.file;
@@ -34,9 +35,10 @@ type 'st t = {
   model : model;
   corner : corner;
   answers : 'st answers;
-  hyps : term assertion list;
-  goals : term assertion list;
-  clauses : term list assertion list;
+  defs : (cst * term) list located list;
+  hyps : term located list;
+  goals : term located list;
+  clauses : term list located list;
 }
 
 let empty_corner = {
@@ -49,7 +51,7 @@ let empty () = {
   answers = Init;
   model = Model.empty;
   corner = empty_corner;
-  hyps = []; goals = []; clauses = [];
+  defs = []; hyps = []; goals = []; clauses = [];
 }
 
 
@@ -232,6 +234,17 @@ module Make
         )
     | _ -> assert false (* TODO: raise proper error *)
 
+  let pack_abstract_defs ~loc ~(file:  _ file) typed_defs =
+    let contents =
+      List.filter_map (function
+          | `Type_def _ -> None
+          | `Term_def (_id, cst, ty_params, term_params, body) ->
+            let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
+            Some (cst, func)
+        ) typed_defs
+    in
+    { contents; loc; file; }
+
   let record_defs st ~loc ~(file : _ file) ~case typed_defs =
     match case with
     | `Div_by_zero_int ->
@@ -348,6 +361,12 @@ module Make
         Dolmen.Std.Expr.Term.print term Value.print value;
     Value.extract_exn ~ops:Bool.ops value
 
+  let eval_def { file; loc; contents = defs; } st =
+    List.fold_left (fun st (cst, func) ->
+        let value = eval st ~file ~loc func in
+        define_value st cst value
+      ) st defs
+
   let eval_hyp st { file; loc; contents = hyp; } =
     let res = eval_term st ~file ~loc hyp in
     if res then st else
@@ -368,6 +387,7 @@ module Make
       let file = State.get State.response_file st in
       State.warn ~file ~loc st cannot_check_proofs ()
     | Sat ->
+      let st = List.fold_right eval_def t.defs st in
       let st = List.fold_left eval_hyp st t.hyps in
       let st = List.fold_left eval_goal st t.goals in
       let st = List.fold_left eval_clause st t.clauses in
@@ -387,7 +407,8 @@ module Make
         | #Typer_Pipe.stack_control ->
           State.error ~file ~loc st assertion_stack_not_supported ()
         | `Defs defs ->
-          record_defs ~case:`General st ~file ~loc defs
+          let new_defs = pack_abstract_defs ~file ~loc defs in
+          State.set check_state { t with defs = new_defs :: t.defs; } st
         | `Hyp contents ->
           let assertion = { file; loc; contents; } in
           State.set check_state { t with hyps = assertion :: t.hyps; } st

@@ -1,10 +1,10 @@
 (set-logic ALL)
 
-(declare-sort t 0)
+(define-sort t () Int)
 
 (declare-fun a () t)
-(define-fun f () t a)
+(define-fun b () t a)
 
-(assert (= a f))
+(assert (= a b))
 
 (check-sat)

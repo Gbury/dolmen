@@ -2278,7 +2278,7 @@ module Make
     let l = finalize_wildcards_def env d.ret_ty in
     env, l @ vars, params, ssig
 
-  let create_id_for_def tags (env, vars, params, ssig) (d: Stmt.def) =
+  let create_id_for_def ~defs tags (env, vars, params, ssig) (d: Stmt.def) =
     match ssig with
     | `Ty_def ->
       assert (params = []);
@@ -2287,6 +2287,9 @@ module Make
           | Set (tag, v) -> Ty.Const.set_tag c tag v
           | Add (tag, v) -> Ty.Const.add_tag c tag v
         ) tags;
+      if defs.Stmt.recursive
+      then _error env (Defs defs) (Type_def_rec d)
+      else decl_ty_const env (Def d) d.id c (Defined (env.file, d));
       `Ty (d.id, c)
     | `Term_def ret_ty ->
       let params_tys = List.map (fun p -> T.Var.ty p) params in
@@ -2296,27 +2299,30 @@ module Make
           | Set (tag, v) -> T.Const.set_tag f tag v
           | Add (tag, v) -> T.Const.add_tag f tag v
         ) tags;
+      decl_term_const env (Def d) d.id f (Defined (env.file, d));
       `Term (d.id, f)
 
   let lookup_id_for_def _ (env, _, _, ssig) (d: Stmt.def) =
     match ssig, find_global env d.id with
-    | `Ty_def, `Ty_cst c -> `Ty (d.id, c)
-    | `Term_def _, `Term_cst c -> `Term (d.id, c)
+    | `Ty_def, ((`Ty_cst cst) as c) ->
+      begin match find_reason env c with
+        | Some Declared _ -> `Ty (d.id, cst)
+        | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
+      end
+    | `Term_def _, ((`Term_cst cst) as c) ->
+      begin match find_reason env c with
+        | Some Declared _ -> `Term (d.id, cst)
+        | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
+      end
     | _, `Not_found ->
       _id_def_conflict env d.loc d.id `Not_found
     | _, (#cst as c)->
       _id_def_conflict env d.loc d.id (with_reason (find_reason env c) c)
 
-  let id_for_def ~mode tags ssig d =
+  let id_for_def ~mode ~defs tags ssig d =
     match mode with
-    | `Create_id -> create_id_for_def tags ssig d
+    | `Create_id -> create_id_for_def ~defs tags ssig d
     | `Use_declared_id -> lookup_id_for_def tags ssig d
-
-  let record_def group id (env, _, _, _) (d : Stmt.def) =
-    match id with
-    | `Ty _ -> _error env (Defs group) (Type_def_rec d)
-    | `Term (_, f) ->
-      decl_term_const env (Def d) d.id f (Defined (env.file, d))
 
   let parse_def (env, _vars, _params, ssig) (d : Stmt.def) =
     match ssig, parse_expr env d.body with
@@ -2350,8 +2356,7 @@ module Make
       let envs = List.map (fun _ -> split_env_for_def env) d.contents in
       let sigs = List.map2 parse_def_sig envs d.contents in
       let sigs = List.map2 close_wildcards_in_sig sigs d.contents in
-      let ids = List.map2 (id_for_def ~mode tags) sigs d.contents in
-      let () = Misc.Lists.iter3 (record_def d) ids sigs d.contents in
+      let ids = List.map2 (id_for_def ~defs:d ~mode tags) sigs d.contents in
       let defs = List.map2 parse_def sigs d.contents in
       Misc.Lists.map3 finalize_def ids sigs defs
     end else begin
@@ -2360,7 +2365,7 @@ module Make
           let ssig = parse_def_sig env t in
           let def = parse_def ssig t in
           let ssig = close_wildcards_in_sig ssig t in
-          let id = id_for_def ~mode tags ssig t in
+          let id = id_for_def ~defs:d ~mode tags ssig t in
           finalize_def id ssig def
         ) d.contents
     end
