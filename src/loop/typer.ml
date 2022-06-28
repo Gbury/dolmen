@@ -7,18 +7,6 @@
 module T = Dolmen_type.Thf.Make
     (Dolmen.Std.Tag)(Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
-(* Definitions builtin *)
-module Decl = Dolmen_type.Def.Declare(T)
-module Subst = Dolmen_type.Def.Subst(T)(struct
-    let of_list l =
-      let aux acc (k, v) = Dolmen.Std.Expr.Subst.Var.bind acc k v in
-      List.fold_left aux Dolmen.Std.Expr.Subst.empty l
-    let ty_subst l ty =
-      Dolmen.Std.Expr.Ty.subst (of_list l) ty
-    let term_subst tys terms t =
-      Dolmen.Std.Expr.Term.subst (of_list tys) (of_list terms) t
-  end)
-
 (* AE builtins *)
 module Ae_Core =
   Dolmen_type.Core.Ae.Tff(T)(Dolmen.Std.Expr.Tags)
@@ -157,7 +145,7 @@ let print_reason fmt r =
 
 let print_reason_opt fmt = function
   | Some r -> print_reason fmt r
-  | None -> Format.fprintf fmt "<location missing>"
+  | None -> Format.fprintf fmt "bound at <location missing>"
 
 let rec print_wildcard_origin fmt = function
   | T.Arg_of src
@@ -640,9 +628,8 @@ let id_definition_conflict =
         | _ ->
           Format.fprintf fmt
             "Trying to define a model value for symbol %a,@ \
-             but the symbol was declared at %a with an incompatible \
-             status (e.g. the symbol was declared as a type but defined \
-             as a value)" (pp_wrap Dolmen.Std.Id.print) id
+             but the symbol was already %a"
+            (pp_wrap Dolmen.Std.Id.print) id
             print_reason_opt (T.binding_reason binding))
     ~name:"Conflicting id definition" ()
 
@@ -1305,8 +1292,6 @@ module Typer(State : State.S) = struct
           infer_term_csts = No_inference;
         } in
       let builtins = Dolmen_type.Base.merge [
-          Decl.parse;
-          Subst.parse;
           additional_builtins;
           Ae_Core.parse;
           Ae_Arith.parse;
@@ -1337,8 +1322,6 @@ module Typer(State : State.S) = struct
           infer_term_csts = No_inference;
         } in
       let builtins = Dolmen_type.Base.merge [
-          Decl.parse;
-          Subst.parse;
           additional_builtins;
           Zf_Core.parse;
           Zf_arith.parse
@@ -1350,8 +1333,7 @@ module Typer(State : State.S) = struct
 
     (* TPTP
        - tptp has inference of constants
-       - 2 base theories (Core and Arith) + the builtin Decl and Subst
-         for explicit declaration and definitions
+       - 2 base theories (Core and Arith)
     *)
     | `Logic Tptp v ->
       let poly = T.Explicit in
@@ -1369,8 +1351,6 @@ module Typer(State : State.S) = struct
               infer_term_csts = No_inference;
             } in
           let builtins = Dolmen_type.Base.merge [
-              Decl.parse;
-              Subst.parse;
               additional_builtins;
               Tptp_Core_Ho.parse v;
               Tptp_Arith.parse v;
@@ -1408,8 +1388,6 @@ module Typer(State : State.S) = struct
                 });
             } in
           let builtins = Dolmen_type.Base.merge [
-              Decl.parse;
-              Subst.parse;
               additional_builtins;
               Tptp_Core.parse v;
               Tptp_Arith.parse v;
@@ -1459,7 +1437,7 @@ module Typer(State : State.S) = struct
           T._error env (Located loc) Missing_smtlib_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
-              Decl.parse :: Subst.parse :: additional_builtins ::
+              additional_builtins ::
               builtins_of_smtlib2_logic (`Script v) logic
             ) in
           let quants = logic.features.quantifiers in
@@ -1493,7 +1471,7 @@ module Typer(State : State.S) = struct
           T._error env (Located loc) Missing_smtlib_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
-              Decl.parse :: Subst.parse :: additional_builtins ::
+              additional_builtins ::
               builtins_of_smtlib2_logic (`Check v) logic
             ) in
           let quants = logic.features.quantifiers in
@@ -1650,23 +1628,17 @@ module Typer(State : State.S) = struct
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs ?mode st ~input ?loc ?attrs d =
+  let defs ~mode st ~input ?loc ?attrs d =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
-        let l = T.defs ?mode env ?attrs d in
-        let l = List.map (function
+        let l = T.defs ~mode env ?attrs d in
+        List.map (fun typed ->
+            match typed with
             | `Type_def (id, c, vars, body) ->
-              (* are recursive defs interesting to expand ? *)
-              let () =
-                if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body
-              in
-              let () = Decl.add_definition env id (`Ty c) in
+              if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body;
               `Type_def (id, c, vars, body)
             | `Term_def (id, f, vars, args, body) ->
-              let () = Decl.add_definition env id (`Term f) in
               `Term_def (id, f, vars, args, body)
           ) l
-        in
-        l
       )
 
   (* Wrappers around the Type-checking module *)
