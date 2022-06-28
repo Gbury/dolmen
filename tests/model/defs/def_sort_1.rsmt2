@@ -1,4 +1,5 @@
 sat
 (
 (define-fun a () t 0)
+(define-fun b () t 0)
 )

@@ -3,7 +3,7 @@
 (define-sort t () Int)
 
 (declare-fun a () t)
-(define-fun b () t a)
+(declare-fun b () Int)
 
 (assert (= a b))
 
