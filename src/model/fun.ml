@@ -118,6 +118,21 @@ let arity = function
   | Builtin { arity; _ } -> arity
   | Lambda { term_params; _ } -> List.length term_params
 
+let reduce_val ~eval env func args =
+  match func with
+  | Lazy _ -> assert false
+  | Builtin { cst = _; arity; eval_f; } ->
+    assert (List.length args = arity);
+    eval_f args
+  | Lambda { ty_params = _; term_params; body; } ->
+    assert (List.length term_params = List.length args);
+    let env =
+      List.fold_left2 (fun env var value ->
+          Env.update_model env (Model.Var.add var value)
+        ) env term_params args
+    in
+    eval env body
+
 let reduce ~eval env func args =
   match func with
   | Lazy { arity; eval_lazy; cst = _; } ->
@@ -145,6 +160,16 @@ let take_drop n l =
   in
   aux [] n l
 
+let apply_val ~eval env f new_args =
+  let { func; args = partial_args; } = Value.extract_exn ~ops f in
+  let f_arity = arity func in
+  let n = List.length partial_args in
+  let m = List.length new_args in
+  assert (n + m = f_arity);
+  let partial_args = List.map (eval env) partial_args in
+  let all_args = List.rev_append partial_args new_args in
+  reduce_val ~eval env func all_args
+
 let[@specialise] rec apply ~eval env v = function
   | [] -> v
   | new_args ->
@@ -162,4 +187,3 @@ let[@specialise] rec apply ~eval env v = function
       let v' = reduce ~eval env func full_args in
       apply ~eval env v' over_args
     end
-

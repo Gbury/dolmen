@@ -24,16 +24,8 @@ type 't located = {
   file : Dolmen_loop.Logic.language Dolmen_loop.State.file;
 }
 
-type corner_2 = Env.t -> Value.t -> Value.t -> Value.t
-type corner = {
-  div_by_zero_int : corner_2 option;
-  mod_by_zero_int : corner_2 option;
-  div_by_zero_real : corner_2 option;
-}
-
 type 'st t = {
   model : model;
-  corner : corner;
   answers : 'st answers;
   defs : (cst * term) list located list;
   hyps : term located list;
@@ -41,16 +33,9 @@ type 'st t = {
   clauses : term list located list;
 }
 
-let empty_corner = {
-  div_by_zero_int = None;
-  mod_by_zero_int = None;
-  div_by_zero_real = None;
-}
-
 let empty () = {
   answers = Init;
   model = Model.empty;
-  corner = empty_corner;
   defs = []; hyps = []; goals = []; clauses = [];
 }
 
@@ -176,37 +161,30 @@ module Make
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
-  let check_model = State.create_key "check_state"
+  let check_model = Typer.check_model
   let check_state = State.create_key "check_state"
 
   (* Evaluation and errors *)
   (* ************************************************************************ *)
 
-  let eval st ~file ~loc term =
-    let _err err args =
-      raise (State.Error (State.error st ~file ~loc err args))
-    in
-    let { model; corner; _ } = State.get check_state st in
-    let builtins c =
+    let builtins =
       Eval.builtins [
         Adt.builtins;
         Bool.builtins;
         Core.builtins;
         Array.builtins;
-        Int.builtins ~conf:(
-          Int.conf ()
-            ?div_by_zero:corner.div_by_zero_int
-            ?mod_by_zero:corner.mod_by_zero_int
-        );
+        Int.builtins;
         Rat.builtins;
-        Real.builtins ~conf:(
-          Real.conf ()
-            ?div_by_zero:corner.div_by_zero_real
-        );
+        Real.builtins;
         Bitv.builtins;
         Fp.builtins;
-      ] c
+      ]
+
+  let eval st ~file ~loc term =
+    let _err err args =
+      raise (State.Error (State.error st ~file ~loc err args))
     in
+    let { model; _ } = State.get check_state st in
     let env = Env.mk model ~builtins in
     try
       Eval.eval env term
@@ -245,43 +223,26 @@ module Make
     in
     { contents; loc; file; }
 
-  let record_defs st ~loc ~(file : _ file) ~case typed_defs =
-    match case with
-    | `Div_by_zero_int ->
-      let div_by_zero_int = corner_2 typed_defs in
-      let t = State.get check_state st in
-      let corner = { t.corner with div_by_zero_int; } in
-      State.set check_state { t with corner; } st
-    | `Mod_by_zero_int ->
-      let mod_by_zero_int = corner_2 typed_defs in
-      let t = State.get check_state st in
-      let corner = { t.corner with mod_by_zero_int; } in
-      State.set check_state { t with corner; } st
-    | `Div_by_zero_real ->
-      let div_by_zero_real = corner_2 typed_defs in
-      let t = State.get check_state st in
-      let corner = { t.corner with div_by_zero_real; } in
-      State.set check_state { t with corner; } st
-    | `General ->
-      List.fold_left (fun st def ->
-          match def with
-          | `Type_def _ ->
-            State.error ~file ~loc st type_def_in_model ()
-          | `Term_def (_id, cst, ty_params, term_params, body) ->
-            let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
-            if State.get State.debug st then
-              Format.eprintf "[model][typed][%a] @[<hov>%a := %a@]@."
-                Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
-                Dolmen.Std.Expr.Term.Const.print cst
-                Dolmen.Std.Expr.Term.print func;
-            let value = eval st ~file ~loc func in
-            if State.get State.debug st then
-              Format.eprintf "[model][value][%a] @[<hov>%a -> %a@]@\n@."
-                Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
-                Dolmen.Std.Expr.Term.Const.print cst
-                Value.print value;
-            define_value st cst value
-        ) st typed_defs
+  let record_defs st ~loc ~(file : _ file) typed_defs =
+    List.fold_left (fun st def ->
+        match def with
+        | `Type_def _ ->
+          State.error ~file ~loc st type_def_in_model ()
+        | `Term_def (_id, cst, ty_params, term_params, body) ->
+          let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
+          if State.get State.debug st then
+            Format.eprintf "[model][typed][%a] @[<hov>%a := %a@]@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              Dolmen.Std.Expr.Term.print func;
+          let value = eval st ~file ~loc func in
+          if State.get State.debug st then
+            Format.eprintf "[model][value][%a] @[<hov>%a -> %a@]@\n@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              Value.print value;
+          define_value st cst value
+      ) st typed_defs
 
   let type_model st ~file ~(loc : Dolmen.Std.Loc.full) ?attrs l =
     let input = `Response file in
@@ -292,21 +253,8 @@ module Make
             Format.eprintf "[model][parsed][%a] @[<hov>%a@]@."
               Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
               Dolmen.Std.Statement.(print_group print_def) parsed_defs;
-          let mode, case =
-            match parsed_defs with
-            | { recursive = false; contents = [
-                { id = { ns = Term; name = Simple name }; _ } ]; } ->
-              begin match name with
-                | "div0" -> `Create_id, `Div_by_zero_int
-                | "mod0" -> `Create_id, `Mod_by_zero_int
-                | "/0" -> `Create_id, `Div_by_zero_real
-                | _ -> `Use_declared_id, `General
-              end
-            | _ ->
-              `Use_declared_id, `General
-          in
           let st, defs =
-            Typer.defs ~mode st ~input ~loc:loc.loc ?attrs parsed_defs
+            Typer.defs ~mode:`Use_declared_id st ~input ~loc:loc.loc ?attrs parsed_defs
           in
           (* Record inferred abstract values *)
           let st =
@@ -316,7 +264,7 @@ module Make
               ) st (Typer.pop_inferred_model_constants st)
           in
           (* Record the explicit definitions *)
-          record_defs st ~file ~loc ~case defs
+          record_defs st ~file ~loc defs
         ) st l
     in
     let st = Typer.pop st ~input 1 in

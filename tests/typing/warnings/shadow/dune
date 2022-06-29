@@ -65,6 +65,38 @@
   (action (diff const_var.expected const_var.full)))
 
 
+; Test for reserved_const.smt2
+; Incremental test
+
+(rule
+   (target  reserved_const.incremental)
+   (deps    (:input reserved_const.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff reserved_const.expected reserved_const.incremental)))
+
+; Full mode test
+
+(rule
+   (target  reserved_const.full)
+   (deps    (:input reserved_const.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff reserved_const.expected reserved_const.full)))
+
+
 ; Test for variables.smt2
 ; Incremental test
 

@@ -35,7 +35,8 @@ module Smtlib2 : sig
     module Tff
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t) : sig
+        (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t
+                                          and type cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
         | Restriction : string -> Dolmen.Std.Term.t Type.warn
@@ -60,7 +61,8 @@ module Smtlib2 : sig
     module Tff
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Real with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t) : sig
+        (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t
+                                           and type cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
         | Restriction : string -> Dolmen.Std.Term.t Type.warn
@@ -86,7 +88,9 @@ module Smtlib2 : sig
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Real_Int with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
-                                               and type ty := Type.Ty.t) : sig
+                                               and type ty := Type.Ty.t
+                                               and type Int.cst := Type.T.Const.t
+                                               and type Real.cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
         | Restriction : string -> Dolmen.Std.Term.t Type.warn

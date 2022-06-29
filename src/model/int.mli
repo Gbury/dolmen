@@ -13,17 +13,10 @@ val ops : Z.t Value.ops
 val mk : Z.t -> Value.t
 (** integer value creation. *)
 
-(** {2 Corner cases & builtins} *)
+(** {2 Builtins} *)
 (** ************************************************************************ *)
 
-type conf
-
-val conf :
-  ?div_by_zero:(Env.t -> Value.t -> Value.t -> Value.t) ->
-  ?mod_by_zero:(Env.t -> Value.t -> Value.t -> Value.t) ->
-  unit -> conf
-
-val builtins : conf:conf -> Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for integers *)
 
 

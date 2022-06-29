@@ -126,26 +126,31 @@ let print_var_kind fmt k =
   | `Function_param -> Format.fprintf fmt "function parameter"
   | `Type_alias_param -> Format.fprintf fmt "type alias parameter"
 
-let print_reason fmt r =
+let print_reason ?(already=false) fmt r =
+  let pp_already fmt () =
+    if already then Format.fprintf fmt " already"
+  in
   match (r : T.reason) with
   | Builtin ->
-    Format.fprintf fmt "defined by a builtin theory"
+    Format.fprintf fmt "is%a defined by a builtin theory" pp_already ()
+  | Reserved ->
+    Format.fprintf fmt "is reserved for model definitions"
   | Bound (file, ast) ->
-    Format.fprintf fmt "bound at %a"
-      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+    Format.fprintf fmt "was%a bound at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
   | Inferred (file, ast) ->
-    Format.fprintf fmt "inferred at %a"
-      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
+    Format.fprintf fmt "was%a inferred at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
   | Defined (file, d) ->
-    Format.fprintf fmt "defined at %a"
-      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
+    Format.fprintf fmt "was%a defined at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
   | Declared (file, d) ->
-    Format.fprintf fmt "declared at %a"
-      Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
+    Format.fprintf fmt "was%a declared at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
 
-let print_reason_opt fmt = function
-  | Some r -> print_reason fmt r
-  | None -> Format.fprintf fmt "bound at <location missing>"
+let print_reason_opt ?already fmt = function
+  | Some r -> print_reason ?already fmt r
+  | None -> Format.fprintf fmt "was bound at <location missing>"
 
 let rec print_wildcard_origin fmt = function
   | T.Arg_of src
@@ -191,13 +196,13 @@ let rec print_wildcard_loc env fmt = function
   | T.Symbol_inference { symbol; symbol_loc; inferred_ty = _; } ->
     let loc = Dolmen.Std.Loc.full_loc (T.loc env symbol_loc) in
     Format.fprintf fmt
-      "Symbol@ %a@ is@ located@ be@ %a"
+      "Symbol@ %a@ is@ located@ at@ %a"
       (pp_wrap Dolmen.Std.Id.print) symbol
       Dolmen.Std.Loc.fmt_pos loc
   | T.Variable_inference { variable; variable_loc; inferred_ty = _; } ->
     let loc = Dolmen.Std.Loc.full_loc (T.loc env variable_loc) in
     Format.fprintf fmt
-      "Variable@ %a@ is@ bound@ at@ %a"
+      "Variable@ %a@ was@ bound@ at@ %a"
       (pp_wrap Dolmen.Std.Id.print) variable
       Dolmen.Std.Loc.fmt_pos loc
 
@@ -342,9 +347,9 @@ let shadowing =
   Report.Warning.mk ~code ~mnemonic:"shadowing"
     ~message:(fun fmt (id, old) ->
         Format.fprintf fmt
-          "Shadowing: %a was already %a"
+          "Shadowing: %a %a"
           (pp_wrap Dolmen.Std.Id.print) id
-          print_reason_opt (T.binding_reason old))
+          (print_reason_opt ~already:true) (T.binding_reason old))
     ~name:"Shadowing of identifier" ()
 
 let redundant_pattern =
@@ -583,9 +588,9 @@ let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
     ~message:(fun fmt (id, old) ->
         Format.fprintf fmt
-          "Duplicate declaration of %a, which was already %a"
+          "Duplicate declaration of %a, which %a"
           (pp_wrap Dolmen.Std.Id.print) id
-          print_reason_opt (T.binding_reason old))
+          (print_reason_opt ~already:true) (T.binding_reason old))
     ~name:"Multiple declarations of the same symbol" ()
 
 let forbidden_quant =
@@ -628,9 +633,9 @@ let id_definition_conflict =
         | _ ->
           Format.fprintf fmt
             "Trying to define a model value for symbol %a,@ \
-             but the symbol was already %a"
+             but the symbol %a"
             (pp_wrap Dolmen.Std.Id.print) id
-            print_reason_opt (T.binding_reason binding))
+            (print_reason_opt ~already:true) (T.binding_reason binding))
     ~name:"Conflicting id definition" ()
 
 let higher_order_app =
@@ -714,14 +719,14 @@ let inference_scope_escape =
            the@ variable@ %a@ which@ is@ not@ in@ the@ scope@ \
            of@ the@ inferred@ type.@]@ \
            @[<hov>%a@]@ \
-           @[<hov>Variable %a is@ %a.@]\
+           @[<hov>Variable %a@ %a.@]\
            @]"
           print_wildcard_origin w_src
           (print_wildcard_path env) w_src
           (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
           (print_wildcard_loc env) w_src
           (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
-          print_reason_opt var_reason)
+          (print_reason_opt ~already:false) var_reason)
     ~name:"Scope escape from a type due to inference" ()
 
 let unbound_type_wildcards =
@@ -874,6 +879,16 @@ let empty_pop =
            result of a missing push or excessive pop)")
     ~name:"Excessive use of pop leading to an empty stack" ()
 
+let reserved =
+  Report.Error.mk ~code ~mnemonic:"reserved"
+    ~message:(fun fmt id ->
+        Format.fprintf fmt
+          "@[<hov>Reserved: %a is reserved to define corner cases for models.@ @[<hov>%a@]"
+          (pp_wrap Dolmen.Std.Id.print) id Format.pp_print_text
+          "Therefore, the definition of the model corner case would take \
+           priority and prevent defining a value for this constant.")
+    ~name:"Shadowing of reserved identifier" ()
+
 let unknown_error =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
     ~message:(fun fmt cstr_name ->
@@ -917,6 +932,8 @@ type 'a file = 'a State.file
 module type Typer_Full = Typer_intf.Typer_Full
 
 module Typer(State : State.S) = struct
+
+  let check_model : bool State.key = State.create_key "check_model"
 
   (* Type aliases *)
   (* ************************************************************************ *)
@@ -1000,9 +1017,17 @@ module Typer(State : State.S) = struct
       -> true
     | _ -> false
 
+  let checking_model st =
+    match State.get check_model st with
+    | v -> v
+    | exception State.Key_not_found _ -> false
+
   let report_warning ~input st (T.Warning (env, fragment, w)) =
     let loc = T.fragment_loc env fragment in
     match w with
+    | T.Shadowing (id, `Reserved `Term, _) when checking_model st ->
+      error ~input ~loc st reserved id
+
     (* typer warnings that are actually errors given some languages spec *)
     | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)
     | T.Shadowing (id, ((`Constant _ | `Builtin _ | `Not_found) as old), `Constant _)

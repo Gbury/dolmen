@@ -6,4 +6,4 @@ Error The typechecker inferred the type for the symbol `p` to be `int -> _`.
       be `int`.
       However, the language specified that only the following types should be
       allowed there: `$i`
-      Symbol `p` is located be line 4, character 18-19
+      Symbol `p` is located at line 4, character 18-19

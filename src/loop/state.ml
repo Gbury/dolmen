@@ -53,6 +53,9 @@ module type S = sig
   exception Error of t
   (** Convenient exception. *)
 
+  exception Key_not_found of t * string
+  (** Exception raised by `get` when the key is not bound. *)
+
   val create_key : string -> _ key
   (** create a new key *)
 
@@ -109,7 +112,8 @@ let set k v t =
 let update k f t =
   set k (f (get k t)) t
 
-(* Usual keys *)
+
+(* Some common keys *)
 (* ************************************************************************* *)
 
 let debug : bool key = create_key "debug"
@@ -124,15 +128,6 @@ let size_limit : float key = create_key "size_limit"
 let logic_file : Logic.language file key = create_key "logic_file"
 let response_file : Response.language file key = create_key "response_file"
 
-(*
-let type_check : bool key = create_key "type_check"
-let type_state : Typer.ty_state key = create_key "type_state"
-*)
-
-(*
-let check_model : bool key = create_key "check_model"
-(* let check_state (* : _ state Check.t key *) = create_key "check_state" *)
-*)
 
 (* State and locations *)
 (* ************************************************************************* *)

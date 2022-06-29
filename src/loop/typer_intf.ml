@@ -107,6 +107,9 @@ module type Typer_Full = sig
   val ty_state : ty_state key
   (** Key to store the local typechecking state in the global pipeline state. *)
 
+  val check_model : bool key
+  (** The typechecker needs to know whether we are checking models or not. *)
+
   include Typer
     with type state := state
      and type ty := Dolmen.Std.Expr.ty

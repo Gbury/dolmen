@@ -5,5 +5,5 @@ Error The typechecker inferred the type for the quantified variable `f` to be
       `int -> a`.
       That inference lead to infer that type to contain the variable `a`
       which is not in the scope of the inferred type.
-      Variable `f` is bound at line 2, character 12-13
-      Variable `a` is bound at line 3, character 7-16.
+      Variable `f` was bound at line 2, character 12-13
+      Variable `a` was bound at line 3, character 7-16.
