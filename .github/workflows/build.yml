@@ -42,7 +42,6 @@ jobs:
         # of the switch
         ocaml-version:
           - ocaml-variants.4.14.0+options,ocaml-option-flambda
-          - ocaml-variants.4.14.0+options,ocaml-option-32bit
           - ocaml-base-compiler.4.14.0
           - ocaml-base-compiler.4.13.1
           - ocaml-base-compiler.4.12.1
