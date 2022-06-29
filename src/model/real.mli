@@ -22,13 +22,7 @@ val get : Value.t -> Q.t
 (** {2 Corner cases & builtins} *)
 (** ************************************************************************ *)
 
-type conf
-
-val conf :
-  ?div_by_zero:(Env.t -> Value.t -> Value.t -> Value.t) ->
-  unit -> conf
-
-val builtins : conf:conf -> Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 (** builtins for reals *)
 
 

@@ -247,6 +247,11 @@ type _ t +=
       (whether integers, rationals, or reals).
       [Div_t (N,D)] is the floor of the real
       division [N/D]. *)
+  | Div_zero of [ `Int | `Rat | `Real ]
+  (** [Div_zero:{a=(Int|Rational|Real)} a -> a -> a]:
+      The symbol used to denote the interpretation of
+      division by zero in a particular model. Should only
+      be used to bind an interpretation in a model. *)
   | Modulo_e of [ `Int | `Rat | `Real ]
   (** [Modulo_e:{a=(Int|Rational|Real)} a -> a -> a]:
       arithmetic integer euclidian remainder
@@ -265,6 +270,11 @@ type _ t +=
       (whether integers, rationals, or reals).
       It is defined by the following equation:
       [Div_f (N, D) * D + Modulo_f(N, D) = N]. *)
+  | Modulo_zero of [ `Int | `Rat | `Real ]
+  (** [Modulo_zero:{a=(Int|Rational|Real)} a -> a -> a]:
+      The symbol used to denote the interpretation of
+      modulo by zero in a particular model. Should only
+      be used to bind an interpretation in a model. *)
   | Abs
   (** [Abs: Int -> Int]:
       absolute value on integers. *)

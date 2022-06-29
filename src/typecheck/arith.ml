@@ -4,6 +4,7 @@ module Term = Dolmen.Std.Term
 
 (* Ae arithmetic *)
 (* ************************************************************************ *)
+
 module Ae = struct
 
   module Tff
@@ -670,7 +671,8 @@ module Smtlib2 = struct
     module Tff
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Int with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t) = struct
+        (T : Dolmen.Intf.Term.Smtlib_Int with type t := Type.T.t
+                                          and type cst := Type.T.Const.t) = struct
 
       module F = Filter(Type)
 
@@ -736,6 +738,10 @@ module Smtlib2 = struct
             | ">" ->
               `Term (Base.term_app_chain (module Type) env s T.gt
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
+
+            | "div0" -> `Reserved (`Term_cst T.div_zero)
+            | "mod0" -> `Reserved (`Term_cst T.rem_zero)
+
             | _ -> `Not_found
           end
         | Type.Id { Id.ns = Term; name = Indexed { basename; indexes; }; } ->
@@ -759,7 +765,8 @@ module Smtlib2 = struct
     module Tff
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Real with type t := Type.Ty.t)
-        (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t) = struct
+        (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t
+                                           and type cst := Type.T.Const.t) = struct
 
       module F = Filter(Type)
 
@@ -816,6 +823,9 @@ module Smtlib2 = struct
             | ">" ->
               `Term (Base.term_app_chain (module Type) env s T.gt
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
+
+            | "/0" -> `Reserved (`Term_cst T.div_zero)
+
             | _ -> `Not_found
           end
         | _ -> `Not_found
@@ -829,7 +839,9 @@ module Smtlib2 = struct
         (Type : Tff_intf.S)
         (Ty : Dolmen.Intf.Ty.Smtlib_Real_Int with type t := Type.Ty.t)
         (T : Dolmen.Intf.Term.Smtlib_Real_Int with type t := Type.T.t
-                                               and type ty := Type.Ty.t) = struct
+                                               and type ty := Type.Ty.t
+                                               and type Int.cst := Type.T.Const.t
+                                               and type Real.cst := Type.T.Const.t) = struct
 
       module F = Filter(Type)
 
@@ -942,6 +954,11 @@ module Smtlib2 = struct
               `Term (Base.term_app1 (module Type) env s T.Real.floor_to_int)
             | "is_int" ->
               `Term (Base.term_app1 (module Type) env s T.Real.is_int)
+
+
+            | "/0" -> `Reserved (`Term_cst T.Real.div_zero)
+            | "div0" -> `Reserved (`Term_cst T.Int.div_zero)
+            | "mod0" -> `Reserved (`Term_cst T.Int.rem_zero)
 
             | _ -> `Not_found
           end

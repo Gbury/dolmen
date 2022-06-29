@@ -1100,6 +1100,9 @@ module type Smtlib_Arith_Common = sig
   type t
   (** The type of terms *)
 
+  type cst
+  (** The type of term constants. *)
+
   val mk : string -> t
   (** Build a constant. The literal is passed
       as a string to avoid overflow caused
@@ -1141,8 +1144,18 @@ module type Smtlib_Int = sig
   val div : t -> t -> t
   (** Euclidian division. See Smtlib theory for a full description. *)
 
+  val div_zero : cst
+  (** A symbol used to denote the interpretation of division by zero
+      in a particular model. Has no semantics by itself, and instead is
+      used as index in the environment of model verification. *)
+
   val rem : t -> t -> t
   (** Euclidian integer remainder See Smtlib theory for a full description. *)
+
+  val rem_zero : cst
+  (** A symbol used to denote the interpretation of modulo by zero
+      in a particular model. Has no semantics by itself, and instead is
+      used as index in the environment of model verification. *)
 
   val abs : t -> t
   (** Arithmetic absolute value. *)
@@ -1160,6 +1173,11 @@ module type Smtlib_Real = sig
 
   val div : t -> t -> t
   (** Real division. See Smtlib theory for a full description. *)
+
+  val div_zero : cst
+  (** A symbol used to denote the interpretation of division by zero
+      in a particular model. Has no semantics by itself, and instead is
+      used as index in the environment of model verification. *)
 
 end
 

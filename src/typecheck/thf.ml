@@ -185,10 +185,15 @@ module Make
     | `Tags  of (Ast.t -> Ast.t list -> tag list)
   ]
 
-  type builtin_res = [
-    | builtin_common
+  type builtin_infer = [
     | `Infer of var_infer * sym_infer
   ]
+
+  type builtin_reserved = [
+    | `Reserved of term_cst
+  ]
+
+  type builtin_res = [ builtin_common | builtin_infer | builtin_reserved ]
 
   (* Names that are bound to a dolmen identifier by the builtins *)
   type builtin = [
@@ -197,6 +202,7 @@ module Make
 
   type reason =
     | Builtin
+    | Reserved
     | Bound of Loc.file * Ast.t
     | Inferred of Loc.file * Ast.t
     | Defined of Loc.file * Stmt.def
@@ -205,6 +211,9 @@ module Make
 
   type binding = [
     | `Not_found
+    | `Reserved of [
+        | `Term
+      ]
     | `Builtin of [
         | `Ttype
         | `Ty
@@ -499,6 +508,7 @@ module Make
     try
       let r =
         match v with
+        | `Builtin `Reserved _ -> Reserved
         | `Builtin _ -> Builtin
         | `Ty_var v -> E.find v env.type_locs
         | `Term_var v -> F.find v env.term_locs
@@ -523,6 +533,7 @@ module Make
     | `Builtin `Ty _ -> `Builtin `Ty
     | `Builtin `Term _ -> `Builtin `Term
     | `Builtin `Tags _ -> `Builtin `Tag
+    | `Builtin `Reserved `Term_cst _ -> `Reserved `Term
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
     | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
@@ -536,6 +547,7 @@ module Make
     match (binding : binding) with
     | `Not_found -> assert false
     | `Builtin _ -> Some Builtin
+    | `Reserved _ -> Some Reserved
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -1056,7 +1068,7 @@ module Make
     | Bound (_, t) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
-    | Builtin | Declared _ | Defined _ ->
+    | Builtin | Reserved | Declared _ | Defined _ ->
       assert false
 
   let find_term_var_reason env v =
@@ -1069,7 +1081,7 @@ module Make
       _warn env (Ast t) (Unused_term_variable (kind, v))
     (* variables should not be declare-able nor builtin,
        and we do not use any term wildcards. *)
-    | Builtin | Declared _ | Defined _ ->
+    | Builtin | Reserved | Declared _ | Defined _ ->
       assert false
 
 
@@ -1773,9 +1785,14 @@ module Make
 
   and builtin_apply_id env b ast s s_ast args : res =
     match (b : builtin_res) with
+    | #builtin_common as b -> builtin_apply_common env b ast args
     | `Infer (var_infer, sym_infer) ->
       infer_sym_aux env var_infer sym_infer ast s args s_ast
-    | #builtin_common as b -> builtin_apply_common env b ast args
+    | `Reserved `Term_cst _ ->
+      (* reserved builtins are there to provide shadow warnings
+         and provide symbols for model definitions, but they don't
+         have a semantic outsid eof that. *)
+      _cannot_find env ast s
 
   and parse_app_ty_var env ast v _v_ast args =
     mark_ty_var_as_used v;
@@ -1844,13 +1861,15 @@ module Make
   and parse_app_builtin env ast b args =
     match env.builtins env (Builtin b) with
     | `Not_found -> _unknown_builtin env ast b
-    | #builtin_res as b -> builtin_apply_builtin env b ast args
+    | #builtin_res as b_res -> builtin_apply_builtin env ast b b_res args
 
-  and builtin_apply_builtin env b ast args : res =
-    match (b : builtin_res) with
+  and builtin_apply_builtin env ast b b_res args : res =
+    match (b_res : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
+    | `Reserved `Term_cst _ -> _unknown_builtin env ast b
     | `Infer _ ->
-      (* TODO: proper error *)
+      (* TODO: proper erorr.
+         We do not have a map from builtins symbols to typed expressions. *)
       assert false
 
   and parse_builtin env ast b =
@@ -2303,21 +2322,29 @@ module Make
       `Term (d.id, f)
 
   let lookup_id_for_def _ (env, _, _, ssig) (d: Stmt.def) =
-    match ssig, find_global env d.id with
+    match ssig, find_bound env d.id with
+    (* Type definitions *)
     | `Ty_def, ((`Ty_cst cst) as c) ->
       begin match find_reason env c with
         | Some Declared _ -> `Ty (d.id, cst)
         | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
       end
+
+    (* Term definitions *)
+    | `Term_def _, `Builtin `Reserved `Term_cst cst ->
+      `Term (d.id, cst)
     | `Term_def _, ((`Term_cst cst) as c) ->
       begin match find_reason env c with
         | Some Declared _ -> `Term (d.id, cst)
         | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
       end
+
+    (* Error cases *)
     | _, `Not_found ->
       _id_def_conflict env d.loc d.id `Not_found
-    | _, (#cst as c)->
-      _id_def_conflict env d.loc d.id (with_reason (find_reason env c) c)
+    | _, (#bound as bound) ->
+      _id_def_conflict env d.loc d.id (with_reason (find_reason env bound) bound)
+
 
   let id_for_def ~mode ~defs tags ssig d =
     match mode with

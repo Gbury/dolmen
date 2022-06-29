@@ -1212,6 +1212,7 @@ module Term : sig
   module Int : sig
 
     include Dolmen_intf.Term.Smtlib_Int with type t := t
+                                         and type cst := term_cst
     (** Satisfy the required interface for the typing of smtlib integers. *)
 
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
@@ -1246,14 +1247,24 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
     (** Satisfy the common interface for TPTP's arithmetic over Rationals *)
 
+    val mk : string -> t
+    (** Create a rational constant. *)
+
     val div : t -> t -> t
     (** Exact division on rationals. *)
+
+    val div_zero : term_cst
+    (** Symbol for interpretation of division by zero. *)
+
+    val rem_zero : term_cst
+    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** Real operations *)
   module Real : sig
 
     include Dolmen_intf.Term.Smtlib_Real with type t := t
+                                          and type cst := term_cst
     (** Satisfy the required interface for the typing of smtlib's reals *)
 
     include Dolmen_intf.Term.Tptp_Tff_Arith_Common with type t := t
@@ -1268,6 +1279,8 @@ module Term : sig
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)
 
+    val rem_zero : term_cst
+    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** String operations *)

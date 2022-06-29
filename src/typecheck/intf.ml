@@ -141,6 +141,7 @@ module type Formulas = sig
     | `Ty    of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty)
     | `Term  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term)
     | `Tags  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list)
+    | `Reserved of [ `Term_cst of term_cst ]
     | `Infer of var_infer * sym_infer
   ]
   (** The result of parsing a symbol by the theory *)
@@ -149,7 +150,7 @@ module type Formulas = sig
   (** Not bound bindings *)
 
   type reason =
-    | Builtin
+    | Builtin | Reserved
     | Bound of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
@@ -158,6 +159,9 @@ module type Formulas = sig
 
   type binding = [
     | `Not_found
+    | `Reserved of [
+        | `Term
+      ]
     | `Builtin of [
         | `Ttype
         | `Ty
