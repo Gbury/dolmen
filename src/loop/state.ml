@@ -175,18 +175,6 @@ let pp_loc ?file st fmt o =
           (Pp_loc.pp ~max_lines:5 ~input) [locs]
     end
 
-let pp_loc_minimal fmt o =
-  match o with
-  | None -> ()
-  | Some (Dolmen.Std.Loc.{
-      start_line; start_column;
-      stop_line; stop_column; _ }  as loc) ->
-    if Dolmen.Std.Loc.is_dummy loc then ()
-    else begin
-      Format.fprintf fmt "%d:%d:%d:%d" start_line start_column stop_line stop_column
-    end
-
-
 let flush st () =
   let aux _ = set cur_warn 0 st in
   let cur = get cur_warn st in
@@ -197,7 +185,7 @@ let flush st () =
     match get report_style st with
     | Minimal ->
       Format.kfprintf aux Format.err_formatter
-        "W:%d %s" (cur - max) (if max = 0 then "total" else "additional")
+        "W:%d@." (cur - max)
     | Regular | Contextual ->
       Format.kfprintf aux Format.err_formatter
         ("@[<v>%a @[<hov>%s@ %d@ %swarnings@]@]@.")
@@ -212,7 +200,7 @@ let error ?file ?loc st error payload =
   match get report_style st with
   | Minimal ->
     Format.kfprintf aux Format.err_formatter
-      "E:%s:%a@." (Report.Error.mnemonic error) pp_loc_minimal loc
+      "E:%s@." (Report.Error.mnemonic error)
   | Regular | Contextual ->
     Format.kfprintf aux Format.err_formatter
       ("@[<v>%a%a @[<hov>%a@]%a@]@.")
@@ -233,7 +221,7 @@ let warn ?file ?loc st warn payload =
       begin match get report_style st with
         | Minimal ->
           Format.kfprintf aux Format.err_formatter
-            "W:%s:%a@." (Report.Warning.mnemonic warn) pp_loc_minimal loc
+            "W:%s@." (Report.Warning.mnemonic warn)
         | Regular | Contextual ->
           Format.kfprintf aux Format.err_formatter
             ("@[<v>%a%a @[<hov>%a@]%a@]@.")
@@ -247,7 +235,7 @@ let warn ?file ?loc st warn payload =
     begin match get report_style st with
       | Minimal ->
         Format.kfprintf aux Format.err_formatter
-          "F:%s:%a@." (Report.Warning.mnemonic warn) pp_loc_minimal loc
+          "F:%s@." (Report.Warning.mnemonic warn)
       | Regular | Contextual ->
         Format.kfprintf aux Format.err_formatter
           ("@[<v>%a%a @[<hov>%a@]%a@]@.")
