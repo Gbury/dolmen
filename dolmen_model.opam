@@ -12,7 +12,7 @@ depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen" {= version }
   "dolmen_loop" {= version }
-  "dune" { >= "2.7" }
+  "dune" { >= "3.0" }
   "odoc" { with-doc }
   "zarith"
   "farith"

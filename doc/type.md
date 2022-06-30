@@ -1,7 +1,7 @@
 
 # The Dolmen typing library
 
-This is highly experiemntla for the moment, so no doc is written yet.
-For more information don't hesistate to contact @Gbury directly.
-
+TODO: write some more documentation.
+For more information don't hesistate to open an issue requesting some more doc,
+or contact the author (i.e. @Gbury ) directly.
 

@@ -1,4 +1,5 @@
-(lang dune 2.7)
+(lang dune 3.0)
 (name dolmen)
+(using mdx 0.2)
 (using menhir 2.0)
 (implicit_transitive_deps false)

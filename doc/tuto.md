@@ -16,20 +16,20 @@ the following code will give you a quick start:
 open Dolmen
 
 (* Instantiate a module for parsing logic languages *)
-module M = Logic.Make(ParseLocation)(Id)(Term)(Statement)
+module M = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)
 
 (* An arbitrary file *)
-let file = "/home/foo/bar.smt2"
+let file = "example.smt2"
 
 (* Parse the file, and we get a tuple:
   - format: the guessed format (according to the file extension)
   - statements: the list of top-level firectives found in the file *)
-let format, statements = M.parse_file file
+let format, _, statements = M.parse_file file
 
 (* You can match on the detected format of the input *)
 let () = match format with
 | M.Dimacs | M.ICNF -> Format.printf "Hurray for CNF !@."
-| M.Smtlib | M.Tptp | M.Zf ->
+| M.Alt_ergo | M.Smtlib2 _ | M.Tptp _ | M.Zf ->
   Format.printf "First (or higher) order formulas ! Yay !@."
 
 (* Now you can analyse the statements, and prove the needed theorems *)
@@ -52,29 +52,35 @@ The `Tptp` module provides the functor to generate tptp parsers.
 It provides a functor of the following type:
 
 ```ocaml
-(** file: src/languages/tptp/tptp.mli *)
-module Make
-    (L : ParseLocation.S)
-    (I : Ast_tptp.Id)
-    (T : Ast_tptp.Term with type location := L.t and type id := I.t)
-    (S : Ast_tptp.Statement with type location := L.t and type id := I.t and type term := T.t) :
-  Language_intf.S with type statement = S.t
+module type S = sig
+  module Make
+    (L : Dolmen_intf.Location.S)
+    (I : Dolmen.Tptp.Latest.Id)
+    (T : Dolmen.Tptp.Latest.Term with type location := L.t
+                                  and type id := I.t)
+    (S : Dolmen.Tptp.Latest.Statement with type location := L.t
+                                       and type id := I.t
+                                       and type term := T.t) :
+  Dolmen.Intf.Language.S with type statement = S.t
+end
 ```
 
-The functor takes four arguments:
-- `ParseLocation.s`: An implementation of locations in files,
-  the locations are used for two things:
+The functor takes four modules, of signatures:
+- `Dolmen_intf.Location.s`:
+  An implementation of locations in files, the locations are used
+  for two things:
   - attaching locations to terms and formulas
   - reporting errors during parsing
-- `Ast_tptp.Id`: An implementation of identifiers. Identifiers are
-  used to distinguish lexical scopes, for instance the scope of terms
-  constants and the scope of declaration names in tptp.
-- `Ast_tptp.Term`: An implementation of terms (and formulas).
-  It provides an abstract type `t` for expressions as well as functions
-  to build these expressions (conjunction of formulas, universal quantification,
-  etc...)
-- `Ast_tptp.Statement`: An implementation of top-level directives
-  found in tptp files.
+- `Dolmen.Tptp.Latest.Id`:
+  An implementation of identifiers. Identifiers are used to distinguish lexical
+  scopes, for instance the scope of terms constants and the scope of
+  declaration names in tptp.
+- `Dolmen.Tptp.Latest.Term`:
+  An implementation of terms (and formulas). It provides an abstract type `t`
+  for expressions as well as functions to build these expressions (conjunction
+  of formulas, universal quantification, etc...)
+- `Dolmen.Tptp.Latest.Statement`:
+  An implementation of top-level directives found in tptp files.
 
 Once provided with the required modules, the functor will return a module
 with the following interface:
@@ -89,11 +95,11 @@ module type S = sig
   type statement
   (** The type of top-level directives recognised by the parser. *)
 
-  module Lexer : Lex_intf.S
+  module Lexer : Dolmen.Intf.Lex.S
     with type token := token
   (** The Lexer module for the language. *)
 
-  module Parser : Parse_intf.S
+  module Parser : Dolmen.Intf.Parse.S
     with type token := token
      and type statement := statement
   (** The Parser module for the language. *)
@@ -123,13 +129,13 @@ THF, which describes higher-order terms, and comes with quite a lot of builtin
 quantifiers such as definite and indefinite description.
 
 While great care is taken to document the interface requirements of each language
-(usually found in the Ast_foobar module for language foobar), it can be bothersome
-for users to have to implement all the required functions, so Dolmen provides
-default implementation of functor arguments.
+(usually found in the `Ast` module of the sub-library `dolmen_foobar` for language foobar),
+it can be bothersome for users to have to implement all the required functions,
+so Dolmen provides default implementation of functor arguments.
 
-The modules `ParseLocation`, `Id`, `Term`, `Statement` implement all
-interfaces required by the functors in the library, and can be used to
-instantiate any functor.
+The modules `Dolmen.Std.Loc`, `Dolmen.Std.Id`, `Dolmen.Std.Term`,
+`Dolmen.Std.Statement` implement all interfaces required by the functors in the
+library, and can be used to instantiate any functor.
 
 ## The Logic class
 
@@ -145,11 +151,15 @@ interfaces:
 
 ```ocaml
 (** file: src/classes/logic.mli *)
-module Make
-    (L : ParseLocation.S)
-    (I : Id_intf.Logic)
-    (T : Term_intf.Logic with type location := L.t and type id := I.t)
-    (S : Stmt_intf.Logic with type location := L.t and type id := I.t and type term := T.t): sig
+module type S = sig
+  module Make
+    (L : Dolmen.Intf.Location.S)
+    (I : Dolmen.Intf.Id.Logic)
+    (T : Dolmen.Intf.Term.Logic with type location := L.t
+                                 and type id := I.t)
+    (S : Dolmen.Intf.Stmt.Logic with type location := L.t
+                                 and type id := I.t
+                                 and type term := T.t): sig
 
   (** {2 Supported languages} *)
 
@@ -179,7 +189,7 @@ module Make
 
   (** {2 Mid-level parsing} *)
 
-  module type S = Language_intf.S with type statement := S.t
+  module type S = Dolmen.Intf.Language.S with type statement := S.t
   (** The type of language modules. *)
 
   val of_language : language -> language * string * (module S)
@@ -190,7 +200,7 @@ module Make
       - language file extension (starting with a dot)
       - appropriate parsing module
   *)
-
+  end
 end
 ```
 

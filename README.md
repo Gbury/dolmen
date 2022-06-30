@@ -62,18 +62,18 @@ More precisely, the Dolmen project provides:
 Supported languages
 -------------------
 
-Currently the following parsers are working:
-
-- ae (alt-ergo format)
-- dimacs
-- iCNF
-- smtlib
-- tptp
-- zf (zipperposition format)
-
-The following parsers are either work in progress, or soon to be
-work in progress:
-
-- coq
-- dedukti
+| Language              | Parsing             | Typing              | Model verification  |
+|-----------------------|---------------------|---------------------|---------------------|
+| ae (alt-ergo)         | :heavy_check_mark:  | :heavy_check_mark:  |                     |
+|-----------------------|---------------------|---------------------|---------------------|
+| dimacs                | :heavy_check_mark:  | :heavy_check_mark:  |                     |
+|-----------------------|---------------------|---------------------|---------------------|
+| iCNF                  | :heavy_check_mark:  | :heavy_check_mark:  |                     |
+|-----------------------|---------------------|---------------------|---------------------|
+| smtlib                | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark   |
+|-----------------------|---------------------|---------------------|---------------------|
+| tptp                  | :heavy_check_mark:  | :heavy_check_mark:  |                     |
+|-----------------------|---------------------|---------------------|---------------------|
+| zf (zipperposition)   | :heavy_check_mark:  | :heavy_check_mark:  |                     |
+|-----------------------|---------------------|---------------------|---------------------|
 

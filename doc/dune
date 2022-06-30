@@ -1,0 +1,19 @@
+
+; Check that the doc still builds
+(mdx
+  (deps example.smt2)
+  (libraries
+    dolmen
+    ; a lot of dolmen
+    dolmen_intf dolmen_std dolmen_line
+    ; Dolmen languages
+    dolmen_ae dolmen_dimacs dolmen_icnf dolmen_zf
+    ; tptp
+    dolmen_tptp dolmen_tptp_v6_3_0
+    ; smtlib2
+    dolmen_smtlib2 dolmen_smtlib2_poly
+    dolmen_smtlib2_v6 dolmen_smtlib2_v6_script dolmen_smtlib2_v6_check
+    ; Dolmen classes
+    dolmen_class
+   )
+)

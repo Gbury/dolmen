@@ -44,12 +44,11 @@ For instance, the following code instantiates a parser for the smtlib language
 and try to parse a file named "example.smt2" in the home of the current user:
 
 ```ocaml
+module P =
+  Dolmen.Smtlib2.Script.Latest.Make
+    (Dolmen.Std.Loc)(Dolmen.Std.Id)(Dolmen.Std.Term)(Dolmen.Std.Statement)
 
-open Dolmen
-module P = Smtlib.Make(ParseLocation)(Id)(Term)(Statement)
-
-let _ = P.parse_file "~/example.smt2"
-
+let _ = P.parse_file "example.smt2"
 ```
 
 For more examples, see the [tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).
