@@ -67,7 +67,7 @@ Supported languages
 | ae (alt-ergo)         | :heavy_check_mark:  | :heavy_check_mark:  |                     |
 | dimacs                | :heavy_check_mark:  | :heavy_check_mark:  |                     |
 | iCNF                  | :heavy_check_mark:  | :heavy_check_mark:  |                     |
-| smtlib                | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark   |
+| smtlib                | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |
 | tptp                  | :heavy_check_mark:  | :heavy_check_mark:  |                     |
 | zf (zipperposition)   | :heavy_check_mark:  | :heavy_check_mark:  |                     |
 
