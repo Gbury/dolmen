@@ -242,10 +242,11 @@ let c_size = parse_size, print_size
 (* Location styles *)
 (* ************************************************************************* *)
 
-let loc_style =
+let report_style =
   Arg.enum [
-    "short", `Short;
-    "contextual", `Contextual;
+    "minimal", Loop.State.Minimal;
+    "regular", Loop.State.Regular;
+    "contextual", Loop.State.Contextual;
   ]
 
 
@@ -318,7 +319,7 @@ let mk_run_state
     header_check header_licenses
     header_lang_version
     type_check check_model
-    debug loc_style max_warn reports
+    debug report_style max_warn reports
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -331,7 +332,7 @@ let mk_run_state
   let set = Loop.State.set in
   Loop.State.empty
   |> set Loop.State.debug debug
-  |> set Loop.State.loc_style loc_style
+  |> set Loop.State.report_style report_style
   |> set Loop.State.reports reports
   |> set Loop.State.max_warn max_warn
   |> set Loop.State.cur_warn 0
@@ -548,14 +549,15 @@ let state =
         "Whether to check models (require providing a response file)." in
     Arg.(value & opt bool false & info ["check-model"] ~doc ~docs)
   in
-  let loc_style =
+  let report_style =
     let doc = Format.asprintf
         "Control the way locations are printed for error and warnings messages.
-         $(b,short) only prints the location for the message, while
+         $(b,regular) only prints the location for the message, while
          $(b,contextual) also displays the source code snippet corresponding
          to the location of the message (except in some cases where the snippet
-         would be too long)." in
-    Arg.(value & opt loc_style `Contextual & info ["loc-style"] ~doc ~docs:error_section)
+         would be too long), and lastly $(b,minimal) prints each report on one line"
+    in
+    Arg.(value & opt report_style Contextual & info ["report-style"] ~doc ~docs:error_section)
     in
   let max_warn =
     let doc = Format.asprintf
@@ -571,7 +573,7 @@ let state =
         header_check $ header_licenses $
         header_lang_version $
         typing $ check_model $
-        debug $ loc_style $ max_warn $ reports)
+        debug $ report_style $ max_warn $ reports)
 
 
 (* List command term *)

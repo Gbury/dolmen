@@ -55,7 +55,7 @@ let process path opt_contents =
   let st =
     State.empty
     |> set State.debug false
-    |> set State.loc_style `Short
+    |> set State.report_style Regular
     |> set State.reports reports
     |> set State.max_warn max_int
     |> set State.cur_warn 0
