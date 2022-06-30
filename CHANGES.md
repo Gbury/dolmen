@@ -2,6 +2,26 @@
 next
 ----
 
+### Model verification
+
+- Added model verification. This currently supports for all
+  builtins (except for the String builtins).
+
+### Parsing
+
+- Added a parser for the smtlib model specification language
+
+### Typing
+
+- Cleaned up handling of definitions: instead of using
+  the functors in `Def`, definitions are now simply declared
+  using the functions exposed by the typechecker
+
+### Loop
+
+- Changed the state type from a record to an heterogeneous
+  map. This simplifies interfaces for all Loop modules,
+  and makes it much more extensible.
 
 
 v0.7
