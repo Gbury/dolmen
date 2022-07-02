@@ -118,6 +118,8 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
     op1 ~cst ~size:n (fun a -> Z.sub (Z.shift_left Z.one n) (ubitv n a))
   | B.Bitv_add n ->
     op2 ~cst ~size:n (fun a b -> extract n (Z.add (ubitv n a) (ubitv n b)))
+  | B.Bitv_sub n ->
+    op2 ~cst ~size:n (fun a b -> extract n (Z.sub (ubitv n a) (ubitv n b)))
   | B.Bitv_mul n ->
     op2 ~cst ~size:n (fun a b -> extract n (Z.mul (ubitv n a) (ubitv n b)))
   | B.Bitv_udiv n ->
