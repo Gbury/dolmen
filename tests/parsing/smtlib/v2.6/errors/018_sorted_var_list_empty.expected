@@ -1,5 +1,5 @@
 File "tests/parsing/smtlib/v2.6/errors/018_sorted_var_list_empty.smt2", line 2, character 17-18:
 2 | (assert (forall () true))
                      ^
-Error while parsing a term, read a closing parenthesise,
+Error while parsing a term, read a closing parenthesis,
       but expected a sorted variable of the form "(var sort)".
