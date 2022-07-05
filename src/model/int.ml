@@ -24,7 +24,7 @@ exception Division_by_zero
 
 let ceil x = Z.cdiv x.Q.num x.Q.den
 let floor x = Z.fdiv x.Q.num x.Q.den
-let truncate d = if Q.sign d > 0 then floor d else ceil d
+let truncate x = Z.div x.Q.num x.Q.den (* it is truncated toward zero *)
 
 let div_e a b =
   let s = Z.sign b in
