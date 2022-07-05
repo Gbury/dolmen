@@ -16,6 +16,13 @@ let ops =
     ~print:(fun fmt b -> Format.fprintf fmt "%a" F.pp b)
     ()
 
+
+(* Configuration for corner cases *)
+(* ************************************************************************* *)
+
+exception Min_Max_with_different_zeros
+exception FP_to_BV_undefined
+
 (* Builtins *)
 (* ************************************************************************* *)
 
@@ -34,6 +41,48 @@ let op2_mode ~cst f =
 let op1_mode ~cst f =
   Some (Fun.fun_2 ~cst (fun m x -> mk @@ f (mode m) (fp x)))
 let op1 ~cst f = Some (Fun.fun_1 ~cst(fun x -> mk @@ f (fp x)))
+
+let min_max ~cmp ~cst =
+      Some (Fun.fun_2 ~cst (fun x y ->
+        let x = fp x in
+        let y = fp y in
+        match F.classify x, F.classify y with
+        | NaN, _ -> mk y
+        | _, NaN -> mk x
+        | PZero, NZero | NZero, PZero -> raise Min_Max_with_different_zeros
+        | _ -> if cmp x y then mk x else mk y
+      ))
+
+let round_q ~neg ~mw ~ew mode r =
+  if Q.equal Q.zero r then F.zero ~mw ~ew neg else F.of_q ~mw ~ew mode r
+
+let nearest_no_tie x =
+  (* the tie break should be handled before *)
+  assert (not (Z.equal x.Q.den (Z.of_int 2)));
+  Int.ceil (Q.sub x (Q.make Z.one (Z.of_int 2)))
+
+
+let toIntegral mode q =
+  match mode with
+  | Mode.NE ->
+    if Z.equal (Z.of_int 2) q.Q.den then
+      (* denominator is 2 so in the middle *)
+      let r = Int.floor q in
+      (if Z.is_even r then r else Z.succ r)
+    else
+      (nearest_no_tie q)
+  | Mode.NA ->
+    if Z.equal (Z.of_int 2) q.Q.den then
+      (* denominator is 2 so in the middle *)
+      let r = if Z.sign q.Q.num < 0 then Int.floor q else Int.ceil q in
+      r
+    else
+      (nearest_no_tie q)
+  | Mode.ZR -> (Int.truncate q)
+  | Mode.DN -> (Int.floor q)
+  | Mode.UP -> (Int.ceil q)
+
+
 
 let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
@@ -123,14 +172,62 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
     test ~cst F.is_normal
   | B.Fp_isSubnormal (_ew, _prec) ->
     test ~cst F.is_subnormal
-
-  (* TODO: implement these *)
-  | B.Fp_rem _ -> None
-  | B.Fp_roundToIntegral _ -> None
-  | B.Fp_min _ -> None
-  | B.Fp_max _ -> None
-  | B.To_ubv _ -> None
-  | B.To_sbv _ -> None
-
-  (* *)
+  | B.Fp_rem (ew,prec) ->
+      Some (Fun.fun_2 ~cst (fun f g ->
+        let f = fp f in
+        let g = fp g in
+        let mode = Farith.Mode.NE in
+        let mw = prec - 1 in
+        match F.classify f, F.classify g with
+        | (NaN | PInf | NInf), _ -> mk (F.nan ~ew ~mw)
+        | _, (NaN | PZero | NZero) -> mk (F.nan ~ew ~mw)
+        | _, (PInf | NInf) -> mk f
+        | (PZero | NZero | PNormal | NNormal | PSubn | NSubn) ,
+          (PNormal | NNormal | PSubn | NSubn) ->
+          let qf = F.to_q f and qg = F.to_q g in
+          let y = toIntegral mode (Q.div qf qg) in
+          let x = Q.sub qf (Q.mul qg (Q.of_bigint y)) in
+          mk (round_q ~neg:(F.is_negative f) mode ~ew ~mw x)
+      ))
+  | B.Fp_roundToIntegral (ew,prec) ->
+          Some (Fun.fun_2 ~cst (fun m f ->
+        let f = fp f in
+        let mode = mode m in
+        let mw = prec - 1 in
+        match F.classify f with
+        | (NaN | PInf | NInf | PZero | NZero) -> mk f
+        | (PNormal | NNormal | PSubn | NSubn) ->
+          let q = F.to_q f in
+          let n = toIntegral mode q in
+          mk (round_q ~neg:(F.is_negative f) ~mw ~ew mode (Q.of_bigint n))
+      ))
+  | B.Fp_min (_ew,_prec) -> min_max ~cmp:F.lt ~cst
+  | B.Fp_max (_ew,_prec) -> min_max ~cmp:F.gt ~cst
+  | B.To_ubv (_ew,_prec,size) ->
+    Some (Fun.fun_2 ~cst (fun m f ->
+        let f = fp f in
+        let mode = mode m in
+        match F.classify f with
+        | (NaN | PInf | NInf) -> raise FP_to_BV_undefined
+        | (PNormal | NNormal | PSubn | NSubn | PZero | NZero) ->
+          let q = F.to_q f in
+          let n = toIntegral mode q in
+          if Z.sign n >= 0 && Z.numbits n <= size then
+            Bitv.mk size n
+          else raise FP_to_BV_undefined
+      ))
+  | B.To_sbv (_ew,_prec,size) ->
+    Some (Fun.fun_2 ~cst (fun m f ->
+        let f = fp f in
+        let mode = mode m in
+        match F.classify f with
+        | (NaN | PInf | NInf) -> raise FP_to_BV_undefined
+        | (PNormal | NNormal | PSubn | NSubn | PZero | NZero) ->
+          let q = F.to_q f in
+          let n = toIntegral mode q in
+          let n' = Z.extract n 0 size in
+          if Z.equal n (Z.signed_extract n' 0 size) then
+            Bitv.mk size n'
+          else raise FP_to_BV_undefined
+      ))
   | _ -> None

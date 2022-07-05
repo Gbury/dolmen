@@ -11,5 +11,8 @@ val ops : F.t Value.ops
 val mk : F.t -> Value.t
 (** [mk f] floating point value creation. *)
 
+(** {2 Corner cases & builtins} *)
+(** ************************************************************************ *)
+
 val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
-(** builtins for bitvectors *)
+(** builtins for floating-points *)
