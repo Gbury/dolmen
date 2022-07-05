@@ -22,8 +22,8 @@
   let descr token : T.descr =
     match (token : token) with
     | EOF -> T.descr ~kind:"end of file token" ""
-    | OPEN -> T.descr ~article:"an" ~kind:"opening partenthesis" ""
-    | CLOSE -> T.descr ~article:"a" ~kind:"closing parenthesise" ""
+    | OPEN -> T.descr ~article:"an" ~kind:"opening parenthesis" ""
+    | CLOSE -> T.descr ~article:"a" ~kind:"closing parenthesis" ""
     | NUM s -> T.descr ~kind:"integer" s
     | DEC s -> T.descr ~kind:"decimal" s
     | HEX s -> T.descr ~kind:"hexadecimal" s
