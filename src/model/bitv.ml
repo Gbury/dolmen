@@ -115,7 +115,8 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
         then extract 1 Z.minus_one
         else from_bitv 1 Z.zero)
   | B.Bitv_neg n ->
-    op1 ~cst ~size:n (fun a -> Z.sub (Z.shift_left Z.one n) (ubitv n a))
+    op1 ~cst ~size:n (fun a ->
+        extract n (Z.sub (Z.shift_left Z.one n) (ubitv n a)))
   | B.Bitv_add n ->
     op2 ~cst ~size:n (fun a b -> extract n (Z.add (ubitv n a) (ubitv n b)))
   | B.Bitv_sub n ->
