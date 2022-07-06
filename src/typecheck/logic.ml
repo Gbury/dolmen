@@ -140,8 +140,11 @@ module Smtlib2 = struct
     (* End of list *)
     and parse_end c = function
       | [] -> Some c
-      | l ->
-        Format.eprintf "%a" (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt "; ") Format.pp_print_char) l;
+      | _l ->
+        (*
+        let pp_sep fmt () = Format.fprintf fmt "; " in
+        Format.eprintf "%a" (Format.pp_print_list ~pp_sep Format.pp_print_char) l;
+        *)
         None
     in
     (* Parse the logic name *)

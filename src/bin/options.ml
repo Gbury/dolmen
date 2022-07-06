@@ -250,6 +250,21 @@ let report_style =
   ]
 
 
+(* Smtlib2 logic *)
+(* ************************************************************************ *)
+
+let smtlib2_logic =
+  let parse s =
+    match Dolmen_type.Logic.Smtlib2.parse s with
+    | Some _ -> Result.Ok s
+    | None -> Result.Error (`Msg (
+        Format.asprintf "'%s' is not a valid smtlib2 logic" s))
+  in
+  let print fmt _s = Format.fprintf fmt "" in
+  Arg.conv (parse, print)
+
+
+
 (* State creation *)
 (* ************************************************************************* *)
 
@@ -318,7 +333,7 @@ let mk_run_state
     logic_file response_file
     header_check header_licenses
     header_lang_version
-    type_check check_model
+    smtlib2_forced_logic type_check check_model
     debug report_style max_warn reports
   =
   (* Side-effects *)
@@ -346,6 +361,7 @@ let mk_run_state
   |> set Loop.Header.header_lang_version header_lang_version
   |> set Loop.Typer_Pipe.type_check type_check
   |> set Loop.Typer.ty_state (Dolmen_loop.Typer.new_state ())
+  |> set Loop.Typer.smtlib2_forced_logic smtlib2_forced_logic
   |> set Loop.Check.check_model check_model
   |> set Loop.Check.check_state (Dolmen_model.Loop.empty ())
 
@@ -537,6 +553,10 @@ let state =
                is done. " in
     Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
+  let force_smtlib2_logic =
+    let doc = "Force the smtlib2 logic to the given logic" in
+    Arg.(value & opt (some smtlib2_logic) None & info ["force-smtlib2-logic"] ~doc ~docs)
+  in
   let debug =
     let doc = Format.asprintf
         "Activate debug mode. Among other things, this will make dolmen \
@@ -572,7 +592,7 @@ let state =
         logic_file $ response_file $
         header_check $ header_licenses $
         header_lang_version $
-        typing $ check_model $
+        force_smtlib2_logic $ typing $ check_model $
         debug $ report_style $ max_warn $ reports)
 
 
