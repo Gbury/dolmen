@@ -75,7 +75,6 @@ type _ t +=
   | Div_e of int_rat_real | Modulo_e of int_rat_real
   | Div_t of int_rat_real | Modulo_t of int_rat_real
   | Div_f of int_rat_real | Modulo_f of int_rat_real
-  | Div_zero of int_rat_real | Modulo_zero of int_rat_real
   | Abs | Divisible
   | Is_int of int_rat_real | Is_rat of int_rat_real
   | Floor of int_rat_real | Floor_to_int of rat_real

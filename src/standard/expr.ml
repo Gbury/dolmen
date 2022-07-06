@@ -1890,7 +1890,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Int)
            "Div_f" [] [Ty.int; Ty.int] Ty.int
       let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/0" ~builtin:(Builtin.Div_zero `Int)
+          ~pos:Pretty.Infix ~name:"/0"
            "Div_zero" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = mk'
@@ -1903,7 +1903,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Int)
            "Modulo_f" [] [Ty.int; Ty.int] Ty.int
       let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero" ~builtin:(Builtin.Modulo_zero `Int)
+          ~pos:Pretty.Infix ~name:"%zero"
            "Modulo_zero" [] [Ty.int; Ty.int] Ty.int
 
       let abs = mk'
@@ -1992,7 +1992,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Rat)
            "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
       let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero" ~builtin:(Builtin.Div_zero `Rat)
+          ~pos:Pretty.Infix ~name:"/zero"
            "Div_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = mk'
@@ -2005,7 +2005,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Rat)
            "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero" ~builtin:(Builtin.Modulo_zero `Rat)
+          ~pos:Pretty.Infix ~name:"%zero"
            "Modulo_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = mk'
@@ -2090,7 +2090,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Real)
            "Div_f" [] [Ty.real; Ty.real] Ty.real
       let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero" ~builtin:(Builtin.Div_zero `Real)
+          ~pos:Pretty.Infix ~name:"/zero"
            "Div_zero" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = mk'
@@ -2103,7 +2103,7 @@ module Term = struct
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Real)
            "Modulo_f" [] [Ty.real; Ty.real] Ty.real
       let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero" ~builtin:(Builtin.Modulo_zero `Real)
+          ~pos:Pretty.Infix ~name:"%zero"
            "Modulo_zero" [] [Ty.real; Ty.real] Ty.real
 
       let lt = mk'
