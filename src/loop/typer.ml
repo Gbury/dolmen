@@ -933,7 +933,10 @@ module type Typer_Full = Typer_intf.Typer_Full
 
 module Typer(State : State.S) = struct
 
-  let check_model : bool State.key = State.create_key "check_model"
+  let check_model : bool State.key =
+    State.create_key "check_model"
+  let smtlib2_forced_logic : string option State.key =
+    State.create_key "smtlib2_forced_logic"
 
   (* Type aliases *)
   (* ************************************************************************ *)
@@ -1591,8 +1594,13 @@ module Typer(State : State.S) = struct
     | `Logic ICNF -> st
     | `Logic Dimacs -> st
     | `Logic Smtlib2 _ ->
+      let logic =
+        match State.get smtlib2_forced_logic st with
+        | None -> s
+        | Some forced_logic -> forced_logic
+      in
       let st, l =
-        match Dolmen_type.Logic.Smtlib2.parse s with
+        match Dolmen_type.Logic.Smtlib2.parse logic with
         | Some l -> st, l
         | None ->
           let st = warn ~input ~loc st unknown_logic s in
@@ -1601,7 +1609,6 @@ module Typer(State : State.S) = struct
       set_logic_aux ~input ~loc st (Smtlib2 l)
     | _ ->
       warn ~input ~loc st set_logic_not_supported ()
-
 
   (* Declarations *)
   (* ************************************************************************ *)
