@@ -554,7 +554,9 @@ let state =
     Arg.(value & opt bool true & info ["type"] ~doc ~docs)
   in
   let force_smtlib2_logic =
-    let doc = "Force the smtlib2 logic to the given logic" in
+    let doc = "Force the smtlib2 logic to the given logic. In effect this
+               replaces the string in the set-logic command by instead using
+               the one given on the command line." in
     Arg.(value & opt (some smtlib2_logic) None & info ["force-smtlib2-logic"] ~doc ~docs)
   in
   let debug =
