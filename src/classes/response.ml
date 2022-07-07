@@ -8,7 +8,7 @@ module type S = sig
   exception Extension_not_found of string
 
   type language =
-    | Smtlib2 of Dolmen_smtlib2.Check.version
+    | Smtlib2 of Dolmen_smtlib2.Response.version
 
   val enum : (string * language) list
   val string_of_language : language -> string
@@ -57,7 +57,7 @@ module Make
      and type file := L.file
 
   type language =
-    | Smtlib2 of Dolmen_smtlib2.Check.version
+    | Smtlib2 of Dolmen_smtlib2.Response.version
 
   let enum = [
     "smt2",       Smtlib2 `Latest;
@@ -71,9 +71,9 @@ module Make
 
     (* Smtlib2 *)
     Smtlib2 `Latest, ".rsmt2",
-    (module Dolmen_smtlib2.Check.Latest.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Response.Latest.Make(L)(I)(T)(S) : S);
     Smtlib2 `V2_6, ".rsmt2",
-    (module Dolmen_smtlib2.Check.V2_6.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Response.V2_6.Make(L)(I)(T)(S) : S);
 
   ]
 

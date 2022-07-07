@@ -1500,7 +1500,7 @@ module Typer(State : State.S) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               additional_builtins ::
-              builtins_of_smtlib2_logic (`Check v) logic
+              builtins_of_smtlib2_logic (`Response v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order

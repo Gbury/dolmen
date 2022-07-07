@@ -114,7 +114,7 @@ module Smtlib2 = struct
       | Type.Id ({ name = Simple "const"; ns = Term; } as c) ->
         begin match version with
           | `Script _ -> `Not_found
-          | `Check _ ->
+          | `Response _ ->
             `Term (fun ast args ->
                 Type._warn env (Ast ast) (Extension c);
                 let index_ty =
