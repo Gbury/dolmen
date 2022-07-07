@@ -454,7 +454,7 @@ module Smtlib2 = struct
         if String.length name <= 1 then `Not_found
         else if name.[0] = '@' then begin
           match version with
-          | `Check _ ->
+          | `Response _ ->
             (* the var infer does not matter *)
             let var_infer = Type.var_infer env in
             let sym_infer = Type.sym_infer env in

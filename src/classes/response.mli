@@ -17,7 +17,7 @@ module type S = sig
   (** {2 Supported languages} *)
 
   type language =
-    | Smtlib2 of Dolmen_smtlib2.Check.version
+    | Smtlib2 of Dolmen_smtlib2.Response.version
     (** Smtlib v2 latest version *)
   (** The languages supported by the Response class. *)
 

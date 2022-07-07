@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
-module Check = struct
+module Response = struct
 
   type version = [
     | `Latest
@@ -9,7 +9,7 @@ module Check = struct
   ]
 
   (* Alias to the sub-libraries *)
-  module V2_6 = Dolmen_smtlib2_v6.Check
+  module V2_6 = Dolmen_smtlib2_v6.Response
 
   (* Alias for the latest module *)
   module Latest = V2_6
@@ -34,6 +34,6 @@ module Script = struct
 end
 
 type version = [
-  | `Check of Check.version
   | `Script of Script.version
+  | `Response of Response.version
 ]

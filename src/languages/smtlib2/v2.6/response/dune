@@ -1,11 +1,11 @@
 
 ; Language library definition
 (library
-  (name           dolmen_smtlib2_v6_check)
-  (public_name    dolmen.smtlib2.v6_check)
+  (name           dolmen_smtlib2_v6_response)
+  (public_name    dolmen.smtlib2.v6_response)
   (instrumentation (backend bisect_ppx))
   (libraries      dolmen_std dolmen_intf menhirLib)
-  (modules        Dolmen_smtlib2_v6_check Tokens Lexer Parser Ast Syntax_messages)
+  (modules        Dolmen_smtlib2_v6_response Tokens Lexer Parser Ast Syntax_messages)
 )
 
 ; Common include
