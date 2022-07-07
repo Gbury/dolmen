@@ -41,6 +41,7 @@
     (* | PAR -> reserved_descr "par" *)
     | SAT -> reserved_descr "sat"
     | UNSAT -> reserved_descr "unsat"
+    | ERROR -> reserved_descr "error"
     | DEFINE_FUN -> reserved_descr "define-fun"
     | DEFINE_FUN_REC -> reserved_descr "define-fun-rec"
     | DEFINE_FUNS_REC -> reserved_descr "define-funs-rec"
@@ -73,6 +74,7 @@
     (* results *)
     "sat", SAT;
     "unsat", UNSAT;
+    "error", ERROR;
     (* command names *)
     "define-fun", DEFINE_FUN;
     "define-fun-rec", DEFINE_FUN_REC;

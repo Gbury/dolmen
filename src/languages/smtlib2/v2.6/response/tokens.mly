@@ -15,6 +15,7 @@
 
 %token SAT
        UNSAT
+       ERROR
        DEFINE_FUN
        DEFINE_FUN_REC
        DEFINE_FUNS_REC

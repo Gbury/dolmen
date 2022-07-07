@@ -14,6 +14,7 @@ type defs = Statement.defs
 type descr =
   | Unsat
   | Sat of Statement.defs list option
+  | Error of string
 
 and t = {
   id : Id.t option;

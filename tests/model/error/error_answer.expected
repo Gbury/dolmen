@@ -1,0 +1,4 @@
+File "tests/model/error/error_answer.rsmt2", line 1, character 0-16:
+1 | (error "foobar")
+    ^^^^^^^^^^^^^^^^
+Error The response contains an error, whereas a sat/unsat answer was expected
