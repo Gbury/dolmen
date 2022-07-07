@@ -217,6 +217,9 @@ answer:
   | SAT OPEN MODEL? model=definition* CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       S.sat ~loc (Some model) }
+  | OPEN ERROR message=STR CLOSE
+    { let loc = L.mk_pos $startpos $endpos in
+      S.error ~loc message }
 
 file:
   | l=answer* EOF

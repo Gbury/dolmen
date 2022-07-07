@@ -9,6 +9,7 @@ type defs = Statement.defs
 type descr =
   | Unsat
   | Sat of defs list option
+  | Error of string
 
 type t = {
   id : Id.t option;
@@ -31,6 +32,9 @@ let print_descr fmt = function
   | Unsat -> Format.fprintf fmt "unsat"
   | Sat model_opt ->
     Format.fprintf fmt "@[<hv 2>sat:@ %a@]" print_model_opt model_opt
+  | Error message ->
+    Format.fprintf fmt "@[<hv 2>error:@ @[<hov>%a@]@]"
+      Format.pp_print_text message
 
 let print_attrs fmt = function
   | [] -> ()
@@ -61,3 +65,7 @@ let sat ?loc model =
 
 let unsat ?loc () =
   mk ?loc Unsat
+
+let error ?loc message =
+  mk ?loc (Error message)
+

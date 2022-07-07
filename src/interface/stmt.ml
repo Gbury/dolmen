@@ -23,6 +23,12 @@ module type Response = sig
   (** The type of locations. *)
 
 
+  (** {2 Errors} *)
+
+  val error : ?loc:location -> string -> t
+  (** Create an `ERROR` answer. *)
+
+
   (** {2 Unsat part} *)
 
   val unsat : ?loc:location -> unit -> t

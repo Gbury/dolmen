@@ -120,6 +120,9 @@ module type Statement = sig
   val unsat : ?loc:location -> unit -> t
   (** Create an `UNSAT` answer. *)
 
+  val error : ?loc:location -> string -> t
+  (** Create an `ERROR` answer. *)
+
 end
 (** implementation requirement for smtlib statements. *)
 

@@ -13,6 +13,7 @@ type term = Dolmen.Std.Expr.Term.t
 type answer =
   | Sat
   | Unsat of Dolmen.Std.Loc.full
+  | Error of Dolmen.Std.Loc.full
 
 type 'st answers =
   | Init
@@ -74,6 +75,14 @@ let cannot_check_proofs =
     ~message:(fun fmt () ->
         Format.fprintf fmt "Unsat/proofs are not checked")
     ~name:"Cannot check Proofs" ()
+
+let error_in_response =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"response-error"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "@[<hov>%a@]" Format.pp_print_text
+          "The response contains an error, whereas a \
+           sat/unsat answer was expected")
+    ~name:"Error in Response" ()
 
 let missing_answer =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"missing-answer"
@@ -289,6 +298,7 @@ module Make
           let loc = Dolmen.Std.Loc.{ file = file.loc; loc = answer.loc; } in
           begin match answer.Dolmen.Std.Answer.descr with
             | Unsat -> st, Some (Unsat loc)
+            | Error _ -> st, Some (Error loc)
             | Sat None -> st, Some Sat
             | Sat Some model ->
               let st = type_model ~loc ~file st model in
@@ -334,6 +344,9 @@ module Make
     | Unsat loc ->
       let file = State.get State.response_file st in
       State.warn ~file ~loc st cannot_check_proofs ()
+    | Error loc ->
+      let file = State.get State.response_file st in
+      State.error ~file ~loc st error_in_response ()
     | Sat ->
       let st = List.fold_right eval_def t.defs st in
       let st = List.fold_left eval_hyp st t.hyps in
