@@ -498,6 +498,12 @@ let fun_def ?loc id vars params ret_ty body =
     def ?loc id ~vars ~params ret_ty body
   ]
 
+let pred_def ?loc id vars params ret_ty body =
+  let attrs = [Term.const ?loc Id.predicate_decl] in
+  mk_defs ?loc ~attrs ~recursive:false [
+    def ?loc id ~vars ~params ret_ty body
+  ]
+
 let funs_def_rec ?loc l =
   let contents = List.map (fun (id, vars, params, ret_ty, body) ->
       def ?loc id ~vars ~params ret_ty body
