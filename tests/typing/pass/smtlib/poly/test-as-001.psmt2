@@ -1,0 +1,38 @@
+(set-logic QF_UF)
+(declare-fun a () Bool)
+(declare-fun b () Bool)
+
+(declare-sort list 1)
+
+;; nil
+(declare-fun nil (par (a)
+  () (list a)))
+
+;; cons
+(declare-fun cons (par (a)
+  (a
+  (list a)) (list a)))
+
+;; elt1
+(define-fun elt1 (par (a)
+  ((x a)) (list a)
+  (cons x nil)))
+
+;; elt2
+(define-fun elt2 (par (a)
+  ((x a)) (list a)
+  (cons x (as nil (list a)))))
+
+;; concat
+(declare-fun concat (par (a)
+  ((list a)
+  (list a)) (list a)))
+
+;; rw_nil_concat_left
+(assert (par (a)
+  (forall ((w (list a)))
+    (! (= (concat (as nil (list a)) w) w) :pattern ((concat
+                                                       (as nil (list a))
+                                                       w)) ))))
+
+(check-sat)
