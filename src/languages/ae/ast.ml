@@ -200,7 +200,7 @@ module type Statement = sig
   val fun_def : ?loc:location -> id -> term list -> term list -> term -> term -> t
   (** Function definition. *)
 
-  val pred_def : ?loc:location -> id -> term list -> term list -> term -> term -> t
+  val pred_def : ?loc:location -> id -> term list -> term list -> term -> t
   (** Predicate definition. *)
 
   val abstract_type : ?loc:location -> id -> term list -> t

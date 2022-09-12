@@ -498,8 +498,9 @@ let fun_def ?loc id vars params ret_ty body =
     def ?loc id ~vars ~params ret_ty body
   ]
 
-let pred_def ?loc id vars params ret_ty body =
+let pred_def ?loc id vars params body =
   let attrs = [Term.const ?loc Id.predicate_decl] in
+  let ret_ty = Term.prop ?loc () in
   mk_defs ?loc ~attrs ~recursive:false [
     def ?loc id ~vars ~params ret_ty body
   ]
