@@ -51,7 +51,7 @@ val ac_symbol : t
 (** Used to denote associative-commutative symbols. *)
 
 val predicate_decl: t
-(** Used to differentiate between functions and predicates. *)
+(** Used to differentiate between functions and predicates in alt-ergo. *)
 
 val case_split : t
 (** Used to annote axioms/antecedants which are case split in alt-ergo. *)
