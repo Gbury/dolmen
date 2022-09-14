@@ -50,6 +50,9 @@ val name : t -> Name.t
 val ac_symbol : t
 (** Used to denote associative-commutative symbols. *)
 
+val predicate_def: t
+(** Used to differentiate between functions and predicates in alt-ergo. *)
+
 val case_split : t
 (** Used to annote axioms/antecedants which are case split in alt-ergo. *)
 

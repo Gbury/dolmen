@@ -92,6 +92,10 @@ module Ae = struct
       | Type.Id { name = Simple "ac"; ns = Attr; }->
         `Tags (fun _ _ -> [Type.Set (Tag.ac, ())])
 
+      (* Predicate definition *)
+      | Type.Id { name = Simple "predicate"; ns = Attr; }->
+        `Tags (fun _ _ -> [Type.Set (Tag.predicate, ())])
+
       (* Named terms *)
       | Type.Id { name = Simple n; ns = Track; }->
         `Tags (fun _ _ -> [Type.Set (Tag.named, n)])

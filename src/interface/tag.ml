@@ -24,6 +24,9 @@ module type Ae_Base = sig
   type 'a t
   (** Polymorphic tags *)
 
+  val predicate : unit t
+  (** A flag (i.e. unit tag), indicating that the declaration is a predicate *)
+
   val ac : unit t
   (** A flag (i.e. unit tag), indicating that the tagged term/formula
       is to be considered as a associative and commutative term. *)

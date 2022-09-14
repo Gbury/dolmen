@@ -195,6 +195,13 @@ module type Logic = sig
       i.e f is a function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
 
+  val pred_def    : ?loc:location -> id -> term list -> term list -> term -> t
+  (** Symbol definition. [pred_def p vars args body] means that "p(args) = (body : bool)",
+      i.e [p] is a predicate symbol with arguments [args], and which returns the value
+      [body] which is of type [bool]. The predicate can also be a top-level predicate in
+      which case it doesn't have arguments and it just returns the value of the body which
+      means "p = (body : bool)". *)
+
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
   (** Define a list of mutually recursive functions. Each functions has the same
       definition as in [fun_def] *)

@@ -117,6 +117,7 @@ module Tags = struct
   let name = Tag.create ()
   let rwrt = Tag.create ()
   let ac = Tag.create ()
+  let predicate = Tag.create ()
 
   let exact s = Pretty.Exact s
   let infix = Pretty.Infix
