@@ -676,3 +676,118 @@ let unit_mapper = {
       List.iter (map m) attr; map m e;
       List.iter (fun (pat, body) -> map m pat; map m body) l);
 }
+
+exception SEXPR_AS_TERM_ERROR of t * string
+
+let string_of_index : t -> string = function
+  | {term = Symbol { ns = (Value (Integer|Hexadecimal|Binary)); name = Simple s }; _ } -> s
+  | index -> raise (SEXPR_AS_TERM_ERROR(index,"an index is expected after an underscore"))
+
+
+let unhandled_keyword = function
+  | "!"
+  | "let"
+  | "exists"
+  | "forall"
+  | "match"
+  | "par"
+  | "assert"
+  | "check-sat"
+  | "check-sat-assuming"
+  | "declare-const"
+  | "declare-datatype"
+  | "declare-datatypes"
+  | "declare-fun"
+  | "declare-sort"
+  | "define-fun"
+  | "define-fun-rec"
+  | "define-funs-rec"
+  | "define-sort"
+  | "echo"
+  | "exit"
+  | "get-assertions"
+  | "get-assignment"
+  | "get-info"
+  | "get-model"
+  | "get-option"
+  | "get-proof"
+  | "get-unsat-assumptions"
+  | "get-unsat-core"
+  | "get-value"
+  | "pop"
+  | "push"
+  | "reset"
+  | "reset-assertions"
+  | "set-info"
+  | "set-logic"
+  | "set-option" -> true
+  | _ -> false
+
+
+let rec sexpr_as_term (sexpr:t) =
+  match sexpr with
+  | { term = App (
+      { term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+      { term = App ({ term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+                    [{ term = Symbol { name = Simple "as"; _ }; _};f; ty])
+                    ; loc=loc_as; attr=attr_as }::args );
+      loc=loc_out; attr=attr_out} ->
+    let f = sexpr_as_term f in
+    let args = List.map sexpr_as_term args in
+    let ty = sexpr_as_term ty in
+    { term = Colon ({ term = App (f, args); loc=loc_out; attr=attr_out}, ty);
+      loc=loc_as; attr=attr_as}
+  | { term = App ({ term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+                    [{ term = Symbol { name = Simple "as"; _ }; _};f; ty])
+                    ; loc=loc_as; attr=attr_as } ->
+    let f = sexpr_as_term f in
+    let ty = sexpr_as_sort ty in
+    { term = Colon (f, ty);
+      loc=loc_as; attr=attr_as}
+  | { term = App ({ term = Symbol { name = Simple "$data"; ns = Attr }; _ }
+                 ,{term = Symbol { ns; name = Simple "_"} ; _}::
+                  {term = Symbol {name = Simple s; _}; _ }::args);
+      loc; attr } ->
+    { term = Symbol (Id.indexed ns s (List.map string_of_index args)); loc; attr }
+  | { term = Symbol { name = Simple (""); _}; _ } as t ->
+    raise (SEXPR_AS_TERM_ERROR(t,"Unhandled keyword in s-expr seen as term"))
+  | { term = App (
+      { term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+      []); _ } as t->
+    raise (SEXPR_AS_TERM_ERROR(t,"Empty parenthesis"))
+  | { term = App (
+      { term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+      f::args); loc; attr} ->
+    let f = sexpr_as_term f in
+    let args = List.map sexpr_as_term args in
+    { term = App ( f, args); loc; attr}
+  | { term = Symbol { name = Simple s; _ }; _ } as t when unhandled_keyword s ->
+    raise (SEXPR_AS_TERM_ERROR(t,"unhandled keyword"))
+  | { term = Symbol _; _ } as t -> t
+  | t -> raise (SEXPR_AS_TERM_ERROR(t,"not an sexpr"))
+
+and sexpr_as_sort (sexpr:t) =
+  match sexpr with
+    | {term = Symbol { ns = Term; name = s} ; loc; attr} ->
+      {term = Symbol { ns = Sort; name = s } ; loc; attr}
+    | { term = App ({ term = Symbol { name = Simple "$data"; ns = Attr }; _ }
+                   ,{term = Symbol { ns; name = Simple "_"} ; _}::
+                    {term = Symbol {name = Simple s; _}; _ }::args);
+        loc; attr } ->
+      { term = Symbol (Id.indexed ns s (List.map string_of_index args)); loc; attr }
+    | { term = Symbol { name = Simple (""); _}; _ } as t ->
+      raise (SEXPR_AS_TERM_ERROR(t,"Unhandled keyword in s-expr seen as term"))
+    | { term = App (
+        { term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+      []); _ } as t->
+    raise (SEXPR_AS_TERM_ERROR(t,"Empty parenthesis"))
+  | { term = App (
+      { term = Symbol { name = Simple "$data"; ns = Attr }; _ },
+      f::args); loc; attr} ->
+    let f = sexpr_as_sort f in
+    let args = List.map sexpr_as_sort args in
+    { term = App ( f, args); loc; attr}
+  | { term = Symbol { name = Simple s; _ }; _ } as t when unhandled_keyword s ->
+    raise (SEXPR_AS_TERM_ERROR(t,"unhandled keyword"))
+  | { term = Symbol _; _ } as t -> t
+  | t -> raise (SEXPR_AS_TERM_ERROR(t,"not an sexpr"))

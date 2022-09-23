@@ -356,7 +356,10 @@ module Smtlib2 = struct
       | { Ast.term = Ast.App (
           { Ast.term = Ast.Symbol { name = Simple "$data"; ns = Attr }; _ },
           l); _} ->
-        l
+        (try
+           List.map Ast.sexpr_as_term l
+         with Ast.SEXPR_AS_TERM_ERROR(t,s) ->
+           Type._error env (Ast t) (Type.Expected (s, None)))
       | ast ->
         Type._error env (Ast ast)
           (Type.Expected ("a list of terms in a sexpr", None))
