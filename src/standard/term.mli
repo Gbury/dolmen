@@ -294,3 +294,7 @@ val map : 'a mapper -> t -> 'a
 (** Apply a mapper to a term. *)
 
 
+exception SEXPR_AS_TERM_ERROR of t * string
+
+val sexpr_as_term : t -> t
+val sexpr_as_sort : t -> t

@@ -6305,12 +6305,12 @@
   (action (diff 154_symbol_list_1.expected 154_symbol_list_1.full)))
 
 
-; Test for 155_bad_s_expr_1.psmt2
+; Test for 155_closing_parenthesis.psmt2
 ; Incremental test
 
 (rule
-   (target  155_bad_s_expr_1.incremental)
-   (deps    (:input 155_bad_s_expr_1.psmt2))
+   (target  155_closing_parenthesis.incremental)
+   (deps    (:input 155_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6319,13 +6319,13 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 155_bad_s_expr_1.expected 155_bad_s_expr_1.incremental)))
+  (action (diff 155_closing_parenthesis.expected 155_closing_parenthesis.incremental)))
 
 ; Full mode test
 
 (rule
-   (target  155_bad_s_expr_1.full)
-   (deps    (:input 155_bad_s_expr_1.psmt2))
+   (target  155_closing_parenthesis.full)
+   (deps    (:input 155_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6334,15 +6334,15 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 155_bad_s_expr_1.expected 155_bad_s_expr_1.full)))
+  (action (diff 155_closing_parenthesis.expected 155_closing_parenthesis.full)))
 
 
-; Test for 156_s_expr_list_bad_s_expr_1.psmt2
+; Test for 156_closing_parenthesis.psmt2
 ; Incremental test
 
 (rule
-   (target  156_s_expr_list_bad_s_expr_1.incremental)
-   (deps    (:input 156_s_expr_list_bad_s_expr_1.psmt2))
+   (target  156_closing_parenthesis.incremental)
+   (deps    (:input 156_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6351,13 +6351,13 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 156_s_expr_list_bad_s_expr_1.expected 156_s_expr_list_bad_s_expr_1.incremental)))
+  (action (diff 156_closing_parenthesis.expected 156_closing_parenthesis.incremental)))
 
 ; Full mode test
 
 (rule
-   (target  156_s_expr_list_bad_s_expr_1.full)
-   (deps    (:input 156_s_expr_list_bad_s_expr_1.psmt2))
+   (target  156_closing_parenthesis.full)
+   (deps    (:input 156_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6366,15 +6366,15 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 156_s_expr_list_bad_s_expr_1.expected 156_s_expr_list_bad_s_expr_1.full)))
+  (action (diff 156_closing_parenthesis.expected 156_closing_parenthesis.full)))
 
 
-; Test for 157_attribute_value_bad_s_expr_1.psmt2
+; Test for 157_closing_parenthesis.psmt2
 ; Incremental test
 
 (rule
-   (target  157_attribute_value_bad_s_expr_1.incremental)
-   (deps    (:input 157_attribute_value_bad_s_expr_1.psmt2))
+   (target  157_closing_parenthesis.incremental)
+   (deps    (:input 157_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6383,13 +6383,13 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 157_attribute_value_bad_s_expr_1.expected 157_attribute_value_bad_s_expr_1.incremental)))
+  (action (diff 157_closing_parenthesis.expected 157_closing_parenthesis.incremental)))
 
 ; Full mode test
 
 (rule
-   (target  157_attribute_value_bad_s_expr_1.full)
-   (deps    (:input 157_attribute_value_bad_s_expr_1.psmt2))
+   (target  157_closing_parenthesis.full)
+   (deps    (:input 157_closing_parenthesis.psmt2))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -6398,7 +6398,7 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 157_attribute_value_bad_s_expr_1.expected 157_attribute_value_bad_s_expr_1.full)))
+  (action (diff 157_closing_parenthesis.expected 157_closing_parenthesis.full)))
 
 
 ; Test for 158_attribute_bad_value_1.psmt2

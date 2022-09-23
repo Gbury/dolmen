@@ -41,17 +41,59 @@ spec_constant:
     { let loc = L.mk_pos $startpos $endpos in T.str ~loc s }
 ;
 
+s_expr_symbol:
+  | s=SYMBOL {s}
+  | s=KEYWORD {s}
+/* Currently unused, see lexer.
+  | BINARY { "BINARY" }
+  | DECIMAL { "DECIMAL" }
+  | HEXADECIMAL { "HEXADECIMAL" }
+  | NUMERAL { "NUMERAL" }
+  | STRING { "STRING" } */
+  | UNDERSCORE { "_" }
+  | ATTRIBUTE { "!" }
+  | AS { "as" }
+  | LET { "let" }
+  | EXISTS { "exists" }
+  | FORALL { "forall" }
+  | MATCH { "match" }
+  | PAR { "par" }
+  | ASSERT { "assert" }
+  | CHECK_SAT { "check-sat" }
+  | CHECK_SAT_ASSUMING { "check-sat-assuming" }
+  | DECLARE_CONST { "declare-const" }
+  | DECLARE_DATATYPE { "declare-datatype" }
+  | DECLARE_DATATYPES { "declare-datatypes" }
+  | DECLARE_FUN { "declare-fun" }
+  | DECLARE_SORT { "declare-sort" }
+  | DEFINE_FUN { "define-fun" }
+  | DEFINE_FUN_REC { "define-fun-rec" }
+  | DEFINE_FUNS_REC { "define-funs-rec" }
+  | DEFINE_SORT { "define-sort" }
+  | ECHO { "echo" }
+  | EXIT { "exit" }
+  | GET_ASSERTIONS { "get-assertions" }
+  | GET_ASSIGNMENT { "get-assignment" }
+  | GET_INFO { "get-info" }
+  | GET_MODEL { "get-model" }
+  | GET_OPTION { "get-option" }
+  | GET_PROOF { "get-proof" }
+  | GET_UNSAT_ASSUMPTIONS { "get-unsat-assumptions" }
+  | GET_UNSAT_CORE { "get-unsat-core" }
+  | GET_VALUE { "get-value" }
+  | POP { "pop" }
+  | PUSH { "push" }
+  | RESET { "reset" }
+  | RESET_ASSERTIONS { "reset-assertions" }
+  | SET_INFO { "set-info" }
+  | SET_LOGIC { "set-logic" }
+  | SET_OPTION { "set-option" }
+
 s_expr:
   | c=spec_constant
     { c }
-  | s=SYMBOL
+  | s=s_expr_symbol
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
-  | s=KEYWORD
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
-  | PAR
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term "par") }
-  | AS
-    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term "as") }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }
 ;
