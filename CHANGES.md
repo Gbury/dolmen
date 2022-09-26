@@ -10,6 +10,7 @@ next
 ### Parsing
 
 - Added a parser for the smtlib model specification language
+- Fix doc comments mentionning removed parameters (PR #XXX)
 
 ### Typing
 

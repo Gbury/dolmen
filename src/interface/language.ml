@@ -29,12 +29,10 @@ module type S = sig
       are relative to the directory of the original file being processed. *)
 
   val parse_file : string -> file * statement list
-  (** Parse the given file.
-      @param dir: optional directory to use if the file path is relative. *)
+  (** Parse the whole given file into a list. *)
 
   val parse_file_lazy : string -> file * statement list Lazy.t
-  (** Parse the given file.
-      @param dir: optional directory to use if the file path is relative. *)
+  (** Parse the whole given file into a list. *)
 
   val parse_input :
     [ `Stdin | `File of string | `Contents of string * string ] ->
