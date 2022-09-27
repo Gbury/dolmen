@@ -67,6 +67,10 @@ module type S = sig
   val get : 'a key -> t -> 'a
   (** get the value associated to a key. *)
 
+  val get_or : default:'a -> 'a key -> t -> 'a
+  (** get the value associated to a key,
+      or the default if the key is not bound. *)
+
   val set : 'a key -> 'a -> t -> t
   (** Set the value associated to a key. *)
 
@@ -110,6 +114,11 @@ let get k t =
   match M.get ~inj:k.inj k.id t with
   | Some v -> v
   | None -> raise (Key_not_found (t, k.name))
+
+let get_or ~default k t =
+  match M.get ~inj:k.inj k.id t with
+  | Some v -> v
+  | None -> default
 
 let set k v t =
   M.add ~inj:k.inj k.id v t

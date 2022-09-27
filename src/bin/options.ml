@@ -334,7 +334,7 @@ let mk_run_state
     header_check header_licenses
     header_lang_version
     smtlib2_forced_logic type_check check_model
-    debug report_style max_warn reports
+    debug report_style max_warn reports syntax_error_ref
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -351,6 +351,7 @@ let mk_run_state
   |> set Loop.State.reports reports
   |> set Loop.State.max_warn max_warn
   |> set Loop.State.cur_warn 0
+  |> set Loop.Parser.syntax_error_ref syntax_error_ref
   |> set Loop.State.time_limit time_limit
   |> set Loop.State.size_limit size_limit
   |> set Loop.State.logic_file logic_file
@@ -586,7 +587,13 @@ let state =
         "Maximum number of warnings to display (excess warnings will be
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
-  in
+    in
+    let syntax_error_ref =
+      let doc = Format.asprintf
+         "Print the syntax error reference number when a syntax error is raised."
+      in
+      Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
+    in
   Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
@@ -595,7 +602,7 @@ let state =
         header_check $ header_licenses $
         header_lang_version $
         force_smtlib2_logic $ typing $ check_model $
-        debug $ report_style $ max_warn $ reports)
+        debug $ report_style $ max_warn $ reports $ syntax_error_ref)
 
 
 (* List command term *)

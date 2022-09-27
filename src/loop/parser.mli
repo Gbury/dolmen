@@ -12,16 +12,17 @@ val file_not_found : (string * string) Report.error
 val lexing_error : string Report.error
 (** Lexing errors *)
 
-val parsing_error :
+val parsing_error : (bool *
   [ `Regular of Dolmen.Intf.Msg.t
-  | `Advanced of Dolmen.Intf.Msg.t *
+  | `Advanced of string *
+                 Dolmen.Intf.Msg.t *
                  Dolmen.Intf.Msg.t *
                  Dolmen.Intf.Msg.t
-  ] Report.error
+  ]) Report.error
 (** Parsing errors *)
 
 module type S = Parser_intf.S
 
 (** This module provides convenient pipes for parsing and dealing with includes. *)
-module Make(State : State.S) : S with type state := State.t
+module Make(State : State.S) : S with type state := State.t and type 'a key := 'a State.key
 

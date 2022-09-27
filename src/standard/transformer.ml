@@ -72,13 +72,13 @@ module Make
                                     while reading %a." s Tok.print tok_descr)
         | msg ->
           begin match Misc.split_on_char '\n' msg with
-            | _error_no :: production :: l ->
+            | error_ref :: production :: l ->
               let prod = Format.dprintf "%s" production in
               let lexed = Format.dprintf "%a" Tok.print tok_descr in
               let expected =
                 Format.dprintf "%a" Format.pp_print_text (String.concat " " l)
               in
-              `Advanced (prod, lexed, expected)
+              `Advanced (error_ref, prod, lexed, expected)
             | _ ->
               `Regular (Format.dprintf "Syntax error (state %d)." s)
           end

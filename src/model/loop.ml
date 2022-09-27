@@ -152,7 +152,8 @@ type 'a file = 'a Dolmen_loop.State.file
 module Make
     (State : Dolmen_loop.State.S)
     (Parse : Dolmen_loop.Parser.S
-     with type state := State.t)
+     with type state := State.t
+      and type 'a key := 'a State.key)
     (Typer : Dolmen_loop.Typer.Typer_Full
      with type state := State.t
       and type 'a key := 'a State.key

@@ -26,10 +26,11 @@ module type S = sig
 
   exception Syntax_error of t * [
       | `Regular of Msg.t
-      | `Advanced of Msg.t * Msg.t * Msg.t
+      | `Advanced of string * Msg.t * Msg.t * Msg.t
     ]
   (** [Syntax_error (loc, msg)] denotes a syntax error at the given location.
-      In the [`Advanced (prod, parsed, expected)] case,
+      In the [`Advanced (error_ref, prod, parsed, expected)] case,
+      - error_ref is an identifier for the error state
       - prod is a delayed message to print in order to identify which
         production/syntax construction the parser was trying to reduce,
       - parsed is a description of the token which raised the error,

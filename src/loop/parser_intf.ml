@@ -5,6 +5,10 @@ module type S = sig
 
   type state
 
+  type 'a key
+
+  val syntax_error_ref : bool key
+
   val parse_logic :
     Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->
     state * (state -> state * Dolmen.Std.Statement.t option)

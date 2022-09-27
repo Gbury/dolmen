@@ -60,7 +60,7 @@ exception Uncaught of t * exn * Printexc.raw_backtrace
 exception Lexing_error of t * string
 exception Syntax_error of t * [
     | `Regular of Msg.t
-    | `Advanced of Msg.t * Msg.t * Msg.t
+    | `Advanced of string * Msg.t * Msg.t * Msg.t
   ]
 (** Exceptions that may occur during parsing *)
 

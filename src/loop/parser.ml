@@ -49,14 +49,15 @@ let lexing_error =
 
 let parsing_error =
   Report.Error.mk ~code:Code.parsing ~mnemonic:"parsing-error"
-    ~message:(fun fmt perr ->
+    ~message:(fun fmt (p_error_ref, perr) ->
         match perr with
         | `Regular msg ->
           Format.fprintf fmt "%t" msg
-        | `Advanced (prod, lexed, expected) ->
+        | `Advanced (error_ref, prod, lexed, expected) ->
+          let p_ref fmt = if p_error_ref then Format.fprintf fmt "(%s)@ " error_ref in
           Format.fprintf fmt
-            "@[<v>@[<hv>while parsing %t,@ read %t,@]@ @[<hov>but expected %t.@]@]"
-            prod lexed expected)
+            "@[<v>@[<hv>%twhile parsing %t,@ read %t,@]@ @[<hov>but expected %t.@]@]"
+            p_ref prod lexed expected)
     ~name:"Parsing error" ()
 
 
@@ -69,13 +70,14 @@ module type S = Parser_intf.S
 
 module Make(State : State.S) = struct
 
-  (* Module & type aliases *)
+  (* Prologue *)
   (* ************************************************************************ *)
 
   type nonrec 'a file = 'a file
 
   module S = Dolmen.Std.Statement
 
+  let syntax_error_ref = State.create_key "syntax_error_ref"
 
   (* Helper functions *)
   (* ************************************************************************ *)
@@ -161,7 +163,8 @@ module Make(State : State.S) = struct
       let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error lex in
       st, None
     | exception Dolmen.Std.Loc.Syntax_error (loc, perr) ->
-      let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error perr in
+      let syntax_error_ref = State.get_or ~default:false syntax_error_ref st in
+      let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
       st, None
 
   let parse_logic prelude st (file : Logic.language file) =

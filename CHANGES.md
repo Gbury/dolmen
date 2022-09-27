@@ -12,6 +12,8 @@ next
 - Added a parser for the smtlib model specification language
 - Fix doc comments mentionning removed parameters
   (PR #107, issue #106)
+- Add an option to print syntax error identifiers (mainly to be
+  used for debug)
 
 ### Typing
 
