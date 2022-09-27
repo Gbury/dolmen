@@ -9,6 +9,8 @@ next
 
 ### Parsing
 
+- Accept all reserved words in s-exprs in smtlib (mainly affects
+  parsing of attributes)
 - Added a parser for the smtlib model specification language
 - Fix doc comments mentionning removed parameters
   (PR #107, issue #106)

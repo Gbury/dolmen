@@ -41,15 +41,14 @@ spec_constant:
     { let loc = L.mk_pos $startpos $endpos in T.str ~loc s }
 ;
 
-s_expr_symbol:
-  | s=SYMBOL {s}
-  | s=KEYWORD {s}
-/* Currently unused, see lexer.
-  | BINARY { "BINARY" }
-  | DECIMAL { "DECIMAL" }
-  | HEXADECIMAL { "HEXADECIMAL" }
-  | NUMERAL { "NUMERAL" }
-  | STRING { "STRING" } */
+reserved:
+  /* these are currently unused, see lexer.
+   * | BINARY { "BINARY" }
+   * | DECIMAL { "DECIMAL" }
+   * | HEXADECIMAL { "HEXADECIMAL" }
+   * | NUMERAL { "NUMERAL" }
+   * | STRING { "STRING" }
+   */
   | UNDERSCORE { "_" }
   | ATTRIBUTE { "!" }
   | AS { "as" }
@@ -88,11 +87,16 @@ s_expr_symbol:
   | SET_INFO { "set-info" }
   | SET_LOGIC { "set-logic" }
   | SET_OPTION { "set-option" }
+;
 
 s_expr:
   | c=spec_constant
     { c }
-  | s=s_expr_symbol
+  | s=SYMBOL
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | s=reserved
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | s=KEYWORD
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
   | OPEN l=s_expr* CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.sexpr ~loc l }

@@ -4723,7 +4723,7 @@ a closing parentheis
 
 file: OPEN SET_INFO KEYWORD OPEN AS EOF
 ##
-## Ends in an error in state: 54.
+## Ends in an error in state: 53.
 ##
 ## list(s_expr) -> s_expr . list(s_expr) [ CLOSE ]
 ##

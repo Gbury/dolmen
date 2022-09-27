@@ -41,10 +41,36 @@ spec_constant:
     { let loc = L.mk_pos $startpos $endpos in T.str ~loc s }
 ;
 
+reserved:
+  /* these are currently unused, see lexer.
+   * | BINARY { "BINARY" }
+   * | DECIMAL { "DECIMAL" }
+   * | HEXADECIMAL { "HEXADECIMAL" }
+   * | NUMERAL { "NUMERAL" }
+   * | STRING { "STRING" }
+   */
+  | UNDERSCORE { "_" }
+  | ATTRIBUTE { "!" }
+  | AS { "as" }
+  | LET { "let" }
+  | EXISTS { "exists" }
+  | FORALL { "forall" }
+  | MATCH { "match" }
+  | SAT { "sat" }
+  | UNSAT { "unsat" }
+  | ERROR { "error" }
+  | MODEL { "model" }
+  | DEFINE_FUN { "define-fun" }
+  | DEFINE_FUN_REC { "define-fun-rec" }
+  | DEFINE_FUNS_REC { "define-funs-rec" }
+;
+
 s_expr:
   | c=spec_constant
     { c }
   | s=SYMBOL
+    { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | s=reserved
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
   | s=KEYWORD
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
