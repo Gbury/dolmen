@@ -4,7 +4,7 @@ next
 
 ### Model verification
 
-- Added model verification. This currently supports for all
+- Added model verification. This currently supports all
   builtins (except for the String builtins).
 
 ### Parsing
