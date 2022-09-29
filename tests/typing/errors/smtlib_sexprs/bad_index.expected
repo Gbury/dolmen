@@ -1,0 +1,4 @@
+File "tests/typing/errors/smtlib_sexprs/bad_index.smt2", line 3, character 56-57:
+3 | (assert (forall ((x Int)) (! (= x x) :pattern ((_ foo 1 a 3)))))
+                                                            ^
+Error Incorrect s-expression: indexes of indexed identifiers must be integers

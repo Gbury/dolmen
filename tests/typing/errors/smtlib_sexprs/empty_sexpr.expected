@@ -1,0 +1,4 @@
+File "tests/typing/errors/smtlib_sexprs/empty_sexpr.smt2", line 3, character 47-49:
+3 | (assert (forall ((x Int)) (! (= x x) :pattern (()))))
+                                                   ^^
+Error Incorrect s-expression: empty s-expression

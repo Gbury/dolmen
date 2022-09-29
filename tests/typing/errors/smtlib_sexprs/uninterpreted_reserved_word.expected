@@ -1,0 +1,5 @@
+File "tests/typing/errors/smtlib_sexprs/uninterpreted_reserved_word.smt2", line 3, character 56-59:
+3 | (assert (forall ((x Int)) (! (= x x) :pattern ((foo a b let)))))
+                                                            ^^^
+Error Incorrect s-expression: the reserved word 'let' is currently not interpreted in s-expressions,
+      please report upstream if you think it should be interpreted

@@ -323,6 +323,151 @@ end
 
 module Smtlib2 = struct
 
+  (* Conversion of sexpr to terms/types *)
+
+  exception Empty_sexpr of Ast.t
+  exception Bad_index_in_sexpr of Ast.t
+  exception Unexpected_structure_in_sexpr of Ast.t
+  exception Uninterpreted_reserved_word_in_sexpr of Id.t * Ast.t
+
+  let uninterpreted_reserved_word = function
+    | "!"
+    | "let"
+    | "exists"
+    | "forall"
+    | "match"
+    | "par"
+    | "assert"
+    | "check-sat"
+    | "check-sat-assuming"
+    | "declare-const"
+    | "declare-datatype"
+    | "declare-datatypes"
+    | "declare-fun"
+    | "declare-sort"
+    | "define-fun"
+    | "define-fun-rec"
+    | "define-funs-rec"
+    | "define-sort"
+    | "echo"
+    | "exit"
+    | "get-assertions"
+    | "get-assignment"
+    | "get-info"
+    | "get-model"
+    | "get-option"
+    | "get-proof"
+    | "get-unsat-assumptions"
+    | "get-unsat-core"
+    | "get-value"
+    | "pop"
+    | "push"
+    | "reset"
+    | "reset-assertions"
+    | "set-info"
+    | "set-logic"
+    | "set-option" -> true
+    | _ -> false
+
+  let index_of_sexpr ast =
+    match (ast : Ast.t) with
+    | { term = Symbol {
+        name = Simple index;
+        ns = (Value (Integer|Hexadecimal|Binary));
+      }; _ } ->
+      index
+    | _ -> raise (Bad_index_in_sexpr ast)
+
+  let rec sexpr_as_term sexpr =
+    match (sexpr : Ast.t) with
+
+    (* "as" type annotation *)
+    | { term = App ({ term = Builtin Sexpr; _ }, {
+        term = App ({ term = Builtin Sexpr; _ }, [
+            { term = Symbol { name = Simple "as"; _ }; _}; f; ty]);
+        loc = loc_as; attr = attr_as
+      } :: args); loc = loc_out; attr = attr_out} ->
+      let ty = sexpr_as_sort ty in
+      let f = sexpr_as_term f in
+      let args = List.map sexpr_as_term args in
+      let function_app =
+        Ast.apply ~loc:loc_out f args
+        |> Ast.add_attrs attr_out
+      in
+      Ast.colon ~loc:loc_as function_app ty
+      |> Ast.add_attrs attr_as
+
+    | { term = App ({ term = Builtin Sexpr; _ }, [
+        { term = Symbol { name = Simple "as"; _ }; _}; f; ty])
+      ; loc=loc_as; attr=attr_as } ->
+      let f = sexpr_as_term f in
+      let ty = sexpr_as_sort ty in
+      Ast.colon ~loc:loc_as f ty
+      |> Ast.add_attrs attr_as
+
+    (* indexed identifiers *)
+    | { term = App ({ term = Builtin Sexpr; _ }, {
+        term = Symbol { ns; name = Simple "_"} ; _} ::
+        { term = Symbol {name = Simple s; _}; _ } :: args); loc; attr } ->
+      Ast.const ~loc (Id.indexed ns s (List.map index_of_sexpr args))
+      |> Ast.add_attrs attr
+
+    (* regular function application *)
+    | { term = App ({ term = Builtin Sexpr; _ }, []); _ }  ->
+      raise (Empty_sexpr sexpr)
+    | { term = App ({ term = Builtin Sexpr; _ }, f :: args); loc; attr } ->
+      let f = sexpr_as_term f in
+      let args = List.map sexpr_as_term args in
+      Ast.apply ~loc f args
+      |> Ast.add_attrs attr
+
+    (* check that we handle all Sexpr cases *)
+    | { term = App({ term = Builtin Sexpr; _ }, _); _ } -> .
+
+    (* direct symbols *)
+    | { term = Symbol ({ name = Simple s; _ } as id); _ } ->
+      if uninterpreted_reserved_word s
+      then raise (Uninterpreted_reserved_word_in_sexpr (id, sexpr))
+      else sexpr
+
+    (* fallback *)
+    | _ -> raise (Unexpected_structure_in_sexpr sexpr)
+
+  and sexpr_as_sort sexpr =
+    match (sexpr : Ast.t) with
+
+    (* Symbol must have their namespace changed to correctly be interpreted
+       as sorts/types *)
+    | { term = Symbol ({ ns = Term; name = (Simple s as name); } as id) ; loc; attr} ->
+      if uninterpreted_reserved_word s
+      then raise (Uninterpreted_reserved_word_in_sexpr (id, sexpr))
+      else
+        Ast.const ~loc (Id.create Sort name)
+        |> Ast.add_attrs attr
+
+    (* indexed identifiers *)
+    | { term = App ({ term = Builtin Sexpr; _ }, {
+        term = Symbol { ns = Term; name = Simple "_"} ; _} ::
+        { term = Symbol {name = Simple s; _}; _ } :: args); loc; attr } ->
+      Ast.const ~loc (Id.indexed Sort s (List.map index_of_sexpr args))
+      |> Ast.add_attrs attr
+
+    (* type constructor application *)
+    | { term = App ({ term = Builtin Sexpr; _ }, []); _ }  ->
+      raise (Empty_sexpr sexpr)
+    | { term = App ({ term = Builtin Sexpr; _ }, f :: args); loc; attr } ->
+      let f = sexpr_as_sort f in
+      let args = List.map sexpr_as_sort args in
+      Ast.apply ~loc f args
+      |> Ast.add_attrs attr
+
+    (* check that we handle all Sexpr cases *)
+    | { term = App({ term = Builtin Sexpr; _ }, _); _ } -> .
+
+    (* fallback *)
+    | _ -> raise (Unexpected_structure_in_sexpr sexpr)
+
+
   module Tff
       (Type : Tff_intf.S)
       (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
@@ -330,6 +475,9 @@ module Smtlib2 = struct
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) = struct
+
+    type _ Type.err +=
+      | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
 
     let inferred_model_constants = Dolmen.Std.Tag.create ()
 
@@ -352,25 +500,37 @@ module Smtlib2 = struct
       | ast ->
         Type._error env (Ast ast) (Type.Expected ("symbol", None))
 
-    let parse_sexpr_list env = function
-      | { Ast.term = Ast.App (
-          { Ast.term = Ast.Symbol { name = Simple "$data"; ns = Attr }; _ },
-          l); _} ->
-        (try
-           List.map Ast.sexpr_as_term l
-         with Ast.SEXPR_AS_TERM_ERROR(t,s) ->
-           Type._error env (Ast t) (Type.Expected (s, None)))
+    let extract_sexpr_list_from_sexpr env = function
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Sexpr; _ }, l); _} -> l
       | ast ->
         Type._error env (Ast ast)
           (Type.Expected ("a list of terms in a sexpr", None))
 
+    let parse_sexpr env sexpr =
+      match sexpr_as_term sexpr with
+      | term -> Type.parse_term env term
+      | exception Empty_sexpr ast ->
+        let msg = Format.dprintf "empty s-expression" in
+        Type._error env (Ast ast) (Incorrect_sexpression msg)
+      | exception Bad_index_in_sexpr ast ->
+        let msg = Format.dprintf "indexes of indexed identifiers must be integers" in
+        Type._error env (Ast ast) (Incorrect_sexpression msg)
+      | exception Uninterpreted_reserved_word_in_sexpr (id, ast) ->
+        let msg =
+          Format.dprintf
+            "the reserved word '%a' is currently not interpreted in s-expressions,@ \
+             please report upstream if you think it should be interpreted" Id.print id
+        in
+        Type._error env (Ast ast) (Incorrect_sexpression msg)
+      | exception Unexpected_structure_in_sexpr ast ->
+        let msg = Format.dprintf
+            "unexpected structure in a s-expression,@ \
+             please report upstream"
+        in
+        Type._error env (Ast ast) (Incorrect_sexpression msg)
+
     let mk_or a b = T._or [a; b]
     let mk_and a b = T._and [a; b]
-
-    let parse_f env ast cstr args =
-      let loc = Ast.(ast.loc) in
-      let t = Ast.apply ~loc cstr args in
-      Type.parse_term env t
 
     let parse (version : Dolmen.Smtlib2.version) env s =
       match s with
@@ -423,19 +583,10 @@ module Smtlib2 = struct
       (* Trigger annotations *)
       | Type.Id { name = Simple ":pattern"; ns = Attr } ->
         `Tags (Base.make_op1 (module Type) env s (fun _ t ->
-            let l = parse_sexpr_list env t in
-            let l = List.map (Type.parse_term env) l in
+            let l = extract_sexpr_list_from_sexpr env t in
+            let l = List.map (parse_sexpr env) l in
             [Type.Add (Tag.triggers, l)]
           ))
-
-      (* N-ary s-expressions in attributes *)
-      | Type.Id { name = Simple "$data"; ns = Attr } ->
-        `Term (fun ast args ->
-            begin match args with
-              | f :: r -> parse_f env ast f r
-              | [] -> Type._error env (Ast ast)
-                        (Type.Expected ("a non-empty s-expr", None))
-            end)
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->

@@ -131,6 +131,8 @@ type builtin =
   (** Similar to cut, but does not introduce the proved term into the axioms. *)
   | Cut
   (** Insert a cut of the given term. *)
+  | Sexpr
+  (** Head symbol for s-exprs in smtlib. *)
 (** The type of builtins symbols for terms.
     Some languages have specific syntax for logical connectives
     (tptp's'&&' or '||' for isntance) whereas some (smtlib for instance)
@@ -270,7 +272,7 @@ val set_attrs : t list -> t -> t
 
     The main use of terms mapper is to map fuctions over some terms.
     Traditionally, a mapping will usually only care about a few syntax cases
-    and leav all other untouched. In these cases, it is useful to override
+    and leave all other untouched. In these cases, it is useful to override
     the identity mapper, redefining only the fields needed.
 *)
 
@@ -293,8 +295,3 @@ val unit_mapper : unit mapper
 val map : 'a mapper -> t -> 'a
 (** Apply a mapper to a term. *)
 
-
-exception SEXPR_AS_TERM_ERROR of t * string
-
-val sexpr_as_term : t -> t
-val sexpr_as_sort : t -> t

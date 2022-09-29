@@ -60,6 +60,14 @@ end
 (** Smtlib builtin *)
 module Smtlib2 : sig
 
+  exception Empty_sexpr of Dolmen.Std.Term.t
+  exception Bad_index_in_sexpr of Dolmen.Std.Term.t
+  exception Unexpected_structure_in_sexpr of Dolmen.Std.Term.t
+  exception Uninterpreted_reserved_word_in_sexpr of Dolmen.Std.Id.t * Dolmen.Std.Term.t
+
+  val sexpr_as_term : Dolmen.Std.Term.t -> Dolmen.Std.Term.t
+  val sexpr_as_sort : Dolmen.Std.Term.t -> Dolmen.Std.Term.t
+
   (** Builtins for smtlib's core theory *)
   module Tff
       (Type : Tff_intf.S)
@@ -68,6 +76,9 @@ module Smtlib2 : sig
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) : sig
+
+    type _ Type.err +=
+      | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
 
     val inferred_model_constants : Type.T.Const.t list Dolmen.Std.Tag.t
 

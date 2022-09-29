@@ -889,6 +889,13 @@ let reserved =
            priority and prevent defining a value for this constant.")
     ~name:"Shadowing of reserved identifier" ()
 
+let incorrect_sexpression =
+  Report.Error.mk ~code ~mnemonic:"incorrect-sexpression"
+    ~message:(fun fmt msg ->
+        Format.fprintf fmt "Incorrect s-expression: %t" msg
+      )
+    ~name:"Incorrect S-expression" ()
+
 let unknown_error =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
     ~message:(fun fmt cstr_name ->
@@ -1189,6 +1196,9 @@ module Typer(State : State.S) = struct
       error ~input ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
       error ~input ~loc st invalid_string_escape_sequence (s, i)
+    (* Bad sexpr *)
+    | Smtlib2_Core.Incorrect_sexpression msg ->
+      error ~input ~loc st incorrect_sexpression msg
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn ((Pipeline.Out_of_time |
                        Pipeline.Out_of_space |
