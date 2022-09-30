@@ -142,6 +142,27 @@ let size_limit : float key = create_key "size_limit"
 let logic_file : Logic.language file key = create_key "logic_file"
 let response_file : Response.language file key = create_key "response_file"
 
+let init
+    ~debug:debug_value
+    ~report_style:report_style_value
+    ~reports:reports_value
+    ~max_warn:max_warn_value
+    ?cur_warn:(cur_warn_value=0)
+    ~time_limit:time_limit_value
+    ~size_limit:size_limit_value
+    ~logic_file:logic_file_value
+    ~response_file:response_file_value
+    st =
+  st
+  |> set debug debug_value
+  |> set report_style report_style_value
+  |> set reports reports_value
+  |> set max_warn max_warn_value
+  |> set cur_warn cur_warn_value
+  |> set time_limit time_limit_value
+  |> set size_limit size_limit_value
+  |> set logic_file logic_file_value
+  |> set response_file response_file_value
 
 (* State and locations *)
 (* ************************************************************************* *)

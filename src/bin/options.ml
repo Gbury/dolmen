@@ -344,28 +344,19 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
-  let set = Loop.State.set in
   Loop.State.empty
-  |> set Loop.State.debug debug
-  |> set Loop.State.report_style report_style
-  |> set Loop.State.reports reports
-  |> set Loop.State.max_warn max_warn
-  |> set Loop.State.cur_warn 0
-  |> set Loop.Parser.syntax_error_ref syntax_error_ref
-  |> set Loop.State.time_limit time_limit
-  |> set Loop.State.size_limit size_limit
-  |> set Loop.State.logic_file logic_file
-  |> set Loop.State.response_file response_file
-  |> set Loop.Header.header_check header_check
-  |> set Loop.Header.header_state Dolmen_loop.Headers.empty
-  |> set Loop.Header.header_licenses header_licenses
-  |> set Loop.Header.header_lang_version header_lang_version
-  |> set Loop.Typer_Pipe.type_check type_check
-  |> set Loop.Typer.ty_state (Dolmen_loop.Typer.new_state ())
-  |> set Loop.Typer.smtlib2_forced_logic smtlib2_forced_logic
-  |> set Loop.Check.check_model check_model
-  |> set Loop.Check.check_state (Dolmen_model.Loop.empty ())
-
+  |> Loop.State.init
+    ~debug ~report_style ~reports
+    ~max_warn ~time_limit ~size_limit
+    ~logic_file ~response_file
+  |> Loop.Parser.init ~syntax_error_ref
+  |> Loop.Typer.init ~smtlib2_forced_logic
+  |> Loop.Typer_Pipe.init ~type_check
+  |> Loop.Check.init ~check_model
+  |> Loop.Header.init
+    ~header_check
+    ~header_licenses
+    ~header_lang_version
 
 (* Profiling *)
 (* ************************************************************************* *)

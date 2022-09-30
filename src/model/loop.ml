@@ -174,6 +174,14 @@ module Make
   let check_model = Typer.check_model
   let check_state = State.create_key "check_state"
 
+  let init
+      ~check_model:check_model_value
+      ?check_state:(check_state_value=empty ())
+      st =
+    st
+    |> State.set check_model check_model_value
+    |> State.set check_state check_state_value
+
   (* Evaluation and errors *)
   (* ************************************************************************ *)
 

@@ -940,11 +940,6 @@ module type Typer_Full = Typer_intf.Typer_Full
 
 module Typer(State : State.S) = struct
 
-  let check_model : bool State.key =
-    State.create_key "check_model"
-  let smtlib2_forced_logic : string option State.key =
-    State.create_key "smtlib2_forced_logic"
-
   (* Type aliases *)
   (* ************************************************************************ *)
 
@@ -956,8 +951,20 @@ module Typer(State : State.S) = struct
   type warning = T.warning
   type builtin_symbols = T.builtin_symbols
 
-  let ty_state : ty_state State.key = State.create_key "ty_state"
+  let ty_state : ty_state State.key =
+    State.create_key "ty_state"
+  let check_model : bool State.key =
+    State.create_key "check_model"
+  let smtlib2_forced_logic : string option State.key =
+    State.create_key "smtlib2_forced_logic"
 
+  let init
+      ?ty_state:(ty_state_value=new_state ())
+      ?smtlib2_forced_logic:(smtlib2_forced_logic_value=None)
+      st =
+    st
+    |> State.set ty_state ty_state_value
+    |> State.set smtlib2_forced_logic smtlib2_forced_logic_value
 
   (* Input elpers *)
   (* ************************************************************************ *)
@@ -1027,15 +1034,11 @@ module Typer(State : State.S) = struct
       -> true
     | _ -> false
 
-  let checking_model st =
-    match State.get check_model st with
-    | v -> v
-    | exception State.Key_not_found _ -> false
-
   let report_warning ~input st (T.Warning (env, fragment, w)) =
     let loc = T.fragment_loc env fragment in
     match w with
-    | T.Shadowing (id, `Reserved `Term, _) when checking_model st ->
+    | T.Shadowing (id, `Reserved `Term, _)
+      when State.get_or ~default:false check_model st ->
       error ~input ~loc st reserved id
 
     (* typer warnings that are actually errors given some languages spec *)
@@ -1737,6 +1740,12 @@ module Make
   module S = Dolmen.Std.Statement
 
   let type_check : bool State.key = State.create_key "type_check"
+
+  let init
+      ~type_check:type_check_value
+      st =
+    st
+    |> State.set type_check type_check_value
 
   (* Types used in Pipes *)
   (* ************************************************************************ *)

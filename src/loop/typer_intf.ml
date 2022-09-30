@@ -113,6 +113,11 @@ module type Typer_Full = sig
   val smtlib2_forced_logic : string option key
   (** The typechecker needs to know whether we are checking models or not. *)
 
+  val init :
+    ?ty_state:ty_state ->
+    ?smtlib2_forced_logic:string option ->
+    state -> state
+
   include Typer
     with type state := state
      and type ty := Dolmen.Std.Expr.ty
@@ -149,6 +154,9 @@ module type S = sig
   type 'a key
 
   val type_check : bool key
+
+  val init :
+    type_check:bool -> state -> state
 
   (** {2 Types} *)
 

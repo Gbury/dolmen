@@ -51,24 +51,19 @@ let process path opt_contents =
     source = `Raw ("", "");
   } in
   let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
-  let set = State.set in
   let st =
     State.empty
-    |> set State.debug false
-    |> set State.report_style Regular
-    |> set State.reports reports
-    |> set State.max_warn max_int
-    |> set State.cur_warn 0
-    |> set State.time_limit 0. (* disables the timer *)
-    |> set State.size_limit max_float
-    |> set State.logic_file l_file
-    |> set State.response_file r_file
-    |> set Header.header_check false
-    |> set Header.header_state Dolmen_loop.Headers.empty
-    |> set Header.header_licenses []
-    |> set Header.header_lang_version None
-    |> set Typer_Pipe.type_check true
-    |> set Typer.ty_state (Dolmen_loop.Typer.new_state ())
+    |> State.init
+      ~debug:false ~report_style:Regular ~reports
+      ~max_warn:max_int ~time_limit:0. ~size_limit:max_float
+      ~logic_file:l_file ~response_file:r_file
+    |> Parser.init ~syntax_error_ref:false
+    |> Typer.init
+    |> Typer_Pipe.init ~type_check:true
+    |> Header.init
+      ~header_check:false
+      ~header_licenses:[]
+      ~header_lang_version:None
   in
   try
     let st, g = Parser.parse_logic [] st l_file in
