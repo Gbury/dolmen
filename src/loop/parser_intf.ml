@@ -4,10 +4,17 @@
 module type S = sig
 
   type state
+  (** The type of state for a whole pipeline *)
 
   type 'a key
+  (** Keys into the state. *)
 
   val syntax_error_ref : bool key
+  (** A key to determine whether to print a syntax error identifier/reference
+      in Syntax error messages. Mainly useful when debugging syntax error messages. *)
+
+  val init : ?syntax_error_ref:bool -> state -> state
+  (** Init a state with all the relevant keys for this pipeline. *)
 
   val parse_logic :
     Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->

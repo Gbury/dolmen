@@ -271,6 +271,18 @@ module Make(State : State.S) = struct
   let header_lang_version : string option State.key =
     State.create_key "header_lang_version"
 
+  let init
+      ~header_check:header_check_value
+      ?header_state:(header_state_value=empty)
+      ~header_licenses:header_licenses_value
+      ~header_lang_version:header_lang_version_value
+      st =
+    st
+    |> State.set header_check header_check_value
+    |> State.set header_state header_state_value
+    |> State.set header_licenses header_licenses_value
+    |> State.set header_lang_version header_lang_version_value
+
   (* Final check for headers *)
 
   let check_wanted st h =

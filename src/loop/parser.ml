@@ -79,6 +79,11 @@ module Make(State : State.S) = struct
 
   let syntax_error_ref = State.create_key "syntax_error_ref"
 
+  let init
+      ?syntax_error_ref:(syntax_error_ref_value=false)
+    = fun st -> st
+    |> State.set syntax_error_ref syntax_error_ref_value
+
   (* Helper functions *)
   (* ************************************************************************ *)
 
