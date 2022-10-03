@@ -43,7 +43,7 @@ let rec eval env (e : Term.t) : Value.t =
     match e.term_descr with
     | Var v -> eval_var env v
     | Cst c -> eval_cst env c
-    | App (f, _, t_args) -> eval_apply env f t_args
+    | App (f, ty_args, t_args) -> eval_apply env f ty_args t_args
     | Binder (b, body) -> eval_binder env b body
     | Match (t, arms) -> eval_match env t arms
   in
@@ -64,8 +64,8 @@ and eval_cst env (c : Cst.t) =
     end
   | _ -> Env.builtins env c
 
-and eval_apply env f args =
-  Fun.apply ~eval env (eval env f) args
+and eval_apply env f ty_args args =
+  Fun.apply ~eval env (eval env f) ty_args args
 
 and eval_binder env b body =
   match (b : E.binder) with

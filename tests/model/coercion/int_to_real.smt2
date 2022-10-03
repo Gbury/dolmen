@@ -1,0 +1,6 @@
+(set-logic QF_LIRA)
+(declare-fun a () Real)
+(assert (= a (/ 1 3)))
+(check-sat)
+(get-model)
+(exit)
