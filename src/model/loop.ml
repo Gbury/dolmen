@@ -188,6 +188,7 @@ module Make
         Real.builtins;
         Bitv.builtins;
         Fp.builtins;
+        Coercion.builtins;
       ]
 
   let eval st ~file ~loc term =
