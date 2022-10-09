@@ -951,12 +951,13 @@ module Typer(State : State.S) = struct
   type warning = T.warning
   type builtin_symbols = T.builtin_symbols
 
+  let pipe = "Typer"
   let ty_state : ty_state State.key =
-    State.create_key "ty_state"
+    State.create_key ~pipe "ty_state"
   let check_model : bool State.key =
-    State.create_key "check_model"
+    State.create_key ~pipe:"Model" "check_model"
   let smtlib2_forced_logic : string option State.key =
-    State.create_key "smtlib2_forced_logic"
+    State.create_key ~pipe "smtlib2_forced_logic"
 
   let init
       ?ty_state:(ty_state_value=new_state ())
@@ -1739,7 +1740,8 @@ module Make
 
   module S = Dolmen.Std.Statement
 
-  let type_check : bool State.key = State.create_key "type_check"
+  let pipe = "Typer_pipe"
+  let type_check : bool State.key = State.create_key ~pipe "type_check"
 
   let init
       ~type_check:type_check_value

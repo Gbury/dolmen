@@ -77,7 +77,8 @@ module Make(State : State.S) = struct
 
   module S = Dolmen.Std.Statement
 
-  let syntax_error_ref = State.create_key "syntax_error_ref"
+  let pipe = "Parser"
+  let syntax_error_ref = State.create_key ~pipe "syntax_error_ref"
 
   let init
       ?syntax_error_ref:(syntax_error_ref_value=false)

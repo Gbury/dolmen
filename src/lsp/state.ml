@@ -3,10 +3,15 @@
 
 include Dolmen_loop.State
 
-(* Type definition *)
+(* Initialisation *)
 (* ************************************************************************* *)
 
-let diagnostics : Diagnostic.t list key = create_key "diagnostics"
+let diagnostics : Diagnostic.t list key =
+  create_key ~pipe:"Lsp_State" "diagnostics"
+
+let init st =
+  let st = set diagnostics [] st in
+  init st
 
 (* Warnings *)
 (* ************************************************************************* *)
