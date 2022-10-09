@@ -16,6 +16,8 @@ next
   (PR #107, issue #106)
 - Add an option to print syntax error identifiers (mainly to be
   used for debug)
+- Register a printer for the `Uncaught_exn` exception (mainly useful
+  for library users)
 
 ### Typing
 
