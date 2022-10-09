@@ -55,6 +55,8 @@ type loc = {
   max_line_length : int;
 }
 
+(* Exceptions *)
+(* ************************************************************************* *)
 
 exception Uncaught of t * exn * Printexc.raw_backtrace
 exception Lexing_error of t * string
@@ -63,6 +65,18 @@ exception Syntax_error of t * [
     | `Advanced of string * Msg.t * Msg.t * Msg.t
   ]
 (** Exceptions that may occur during parsing *)
+
+let () =
+  Printexc.register_printer (function
+      | Uncaught (_loc, exn, bt) ->
+        let msg =
+          Format.asprintf "Uncaught exception:@\n%s@\nwith backtrace:@\n%s"
+            (Printexc.to_string exn) (Printexc.raw_backtrace_to_string bt)
+        in
+        Some msg
+      | _ -> None
+    )
+
 
 (* Compact locations *)
 (* ************************************************************************* *)
