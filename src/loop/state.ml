@@ -45,6 +45,18 @@ type 'lang file = {
 exception Error of t
 exception Key_not_found of t * string * string
 
+let () =
+  Printexc.register_printer (function
+      | Key_not_found (_st, key_name, key_pipe) ->
+        let msg = Format.asprintf
+            "Key %s not bound in state. \
+             Have you called the init function for the %s pipe/module ?"
+            key_name key_pipe
+        in
+        Some msg
+      | _ -> None
+    )
+
 (* Signatures *)
 (* ************************************************************************* *)
 
