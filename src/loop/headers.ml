@@ -259,17 +259,19 @@ module type S = Headers_intf.S
 
 module Make(State : State.S) = struct
 
+  let pipe = "Headers"
+
   let header_check : bool State.key =
-    State.create_key "header_check"
+    State.create_key ~pipe "header_check"
 
   let header_state : t State.key =
-    State.create_key "header_state"
+    State.create_key ~pipe "header_state"
 
   let header_licenses : string list State.key =
-    State.create_key "header_licenses"
+    State.create_key ~pipe "header_licenses"
 
   let header_lang_version : string option State.key =
-    State.create_key "header_lang_version"
+    State.create_key ~pipe "header_lang_version"
 
   let init
       ~header_check:header_check_value

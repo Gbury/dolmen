@@ -171,8 +171,9 @@ module Make
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
+  let pipe = "Model"
   let check_model = Typer.check_model
-  let check_state = State.create_key "check_state"
+  let check_state = State.create_key ~pipe "check_state"
 
   let init
       ~check_model:check_model_value

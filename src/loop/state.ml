@@ -14,6 +14,7 @@ type t = M.t
 type 'a key = {
   id : int;
   name : string;
+  pipe : string;
   inj : 'a Dolmen.Std.Hmap.injection;
 }
 
@@ -42,7 +43,7 @@ type 'lang file = {
 }
 
 exception Error of t
-exception Key_not_found of t * string
+exception Key_not_found of t * string * string
 
 (* Signatures *)
 (* ************************************************************************* *)
@@ -58,10 +59,10 @@ module type S = sig
   exception Error of t
   (** Convenient exception. *)
 
-  exception Key_not_found of t * string
+  exception Key_not_found of t * string * string
   (** Exception raised by `get` when the key is not bound. *)
 
-  val create_key : string -> _ key
+  val create_key : pipe:string -> string -> _ key
   (** create a new key *)
 
   val get : 'a key -> t -> 'a
@@ -105,15 +106,15 @@ end
 let empty : t = M.empty
 
 let key_counter = ref 0
-let create_key name =
+let create_key ~pipe name =
   incr key_counter;
-  { id = !key_counter; name;
+  { id = !key_counter; pipe; name;
     inj = Dolmen.Std.Hmap.create_inj ();}
 
 let get k t =
   match M.get ~inj:k.inj k.id t with
   | Some v -> v
-  | None -> raise (Key_not_found (t, k.name))
+  | None -> raise (Key_not_found (t, k.name, k.pipe))
 
 let get_or ~default k t =
   match M.get ~inj:k.inj k.id t with
@@ -130,17 +131,18 @@ let update k f t =
 (* Some common keys *)
 (* ************************************************************************* *)
 
-let debug : bool key = create_key "debug"
-let reports : Report.Conf.t key = create_key "reports"
-let report_style : report_style key = create_key "report_style"
-let max_warn : int key = create_key "max_warn"
-let cur_warn : int key = create_key "cur_warn"
+let pipe = "state"
+let debug : bool key = create_key ~pipe "debug"
+let reports : Report.Conf.t key = create_key ~pipe "reports"
+let report_style : report_style key = create_key ~pipe "report_style"
+let max_warn : int key = create_key ~pipe "max_warn"
+let cur_warn : int key = create_key ~pipe "cur_warn"
 
-let time_limit : float key = create_key "time_limit"
-let size_limit : float key = create_key "size_limit"
+let time_limit : float key = create_key ~pipe "time_limit"
+let size_limit : float key = create_key ~pipe "size_limit"
 
-let logic_file : Logic.language file key = create_key "logic_file"
-let response_file : Response.language file key = create_key "response_file"
+let logic_file : Logic.language file key = create_key ~pipe "logic_file"
+let response_file : Response.language file key = create_key ~pipe "response_file"
 
 let init
     ~debug:debug_value
