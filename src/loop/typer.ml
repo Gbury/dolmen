@@ -16,7 +16,7 @@ module Ae_Arith =
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Ae_Arrays =
   Dolmen_type.Arrays.Ae.Tff(T)
-    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Array)
 module Ae_Bitv =
   Dolmen_type.Bitv.Ae.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
@@ -51,7 +51,7 @@ module Smtlib2_Reals_Ints =
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Smtlib2_Arrays =
   Dolmen_type.Arrays.Smtlib2.Tff(T)
-    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Array)
 module Smtlib2_Bitv =
   Dolmen_type.Bitv.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
