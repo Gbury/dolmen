@@ -854,644 +854,644 @@ module Term : sig
     include Dolmen_intf.Term.Tptp_Thf_Core_Const with type t := t
     (** Satisfy the required interface for the typing of tptp's Thf. *)
 
-    val eqs : int -> ty id
+    val eqs : int -> t
     (** n-ary equality. *)
 
-    val distinct : int -> ty id
+    val distinct : int -> t
     (** n-ary disequality. *)
 
-    val _and : int -> ty id
+    val _and : int -> t
     (** n-ary conjonction. *)
 
-    val _or : int -> ty id
+    val _or : int -> t
     (** n-ary disjunction. *)
 
-    val coerce : ty id
+    val coerce : t
     (** Type coercion. *)
 
-    val in_interval : bool * bool -> ty id
+    val in_interval : bool * bool -> t
     (** Interger interval inclusion. *)
 
-    val maps_to : ty id
+    val maps_to : t
     (** Mapping (used in triggers).  *)
 
     (** A module for integer constant symbols that occur in terms. *)
     module Int : sig
 
-      val int : string -> ty id
+      val int : string -> t
       (** Integer literals. *)
 
-      val minus : ty id
+      val minus : t
       (** Integer unary minus/negation. *)
 
-      val add : ty id
+      val add : t
       (** Integer addition. *)
 
-      val sub : ty id
+      val sub : t
       (** Integer subtraction. *)
 
-      val mul : ty id
+      val mul : t
       (** Integer multiplication. *)
 
-      val pow : ty id
+      val pow : t
       (** Integer exponentiation. *)
 
-      val div_e : ty id
+      val div_e : t
       (** Integer euclidian division quotient. *)
 
-      val div_t : ty id
+      val div_t : t
       (** Truncation of the integer division. *)
 
-      val div_f : ty id
+      val div_f : t
       (** Floor of the integer divison. *)
 
-      val div_zero : ty id
+      val div_zero : t
       (** Integer division by zero. *)
 
-      val rem_e : ty id
+      val rem_e : t
       (** Integer euclidian division remainder. *)
 
-      val rem_t : ty id
+      val rem_t : t
       (** Remainder of the integer division. *)
 
-      val rem_f : ty id
+      val rem_f : t
       (** Floor of the integer division. *)
 
-      val rem_zero : ty id
+      val rem_zero : t
       (** Integer modulo zero. *)
 
-      val abs : ty id
+      val abs : t
       (** Integer absolute value. *)
 
-      val lt : ty id
+      val lt : t
       (** Integer "less than" comparison. *)
 
-      val le : ty id
+      val le : t
       (** Integer "less or equal" comparison. *)
 
-      val gt : ty id
+      val gt : t
       (** Integer "greater than" comparison. *)
 
-      val ge : ty id
+      val ge : t
       (** Integer "greater or equal" comparison. *)
 
-      val floor : ty id
+      val floor : t
       (** Integer floor function. *)
 
-      val ceiling : ty id
+      val ceiling : t
       (** Integer ceiling function. *)
 
-      val truncate : ty id
+      val truncate : t
       (** Integer truncation function. *)
 
-      val round : ty id
+      val round : t
       (** Integer rounding function. *)
 
-      val is_int : ty id
+      val is_int : t
       (** Integer testing. *)
 
-      val is_rat : ty id
+      val is_rat : t
       (** Rationality testing. *)
 
-      val divisible : ty id
+      val divisible : t
       (** Arithmetic divisibility testing. *)
     end
 
     (** A module for rational constant symbols that occur in terms. *)
     module Rat : sig
 
-      val rat : string -> ty id
+      val rat : string -> t
       (** Rational literals *)
 
-      val minus : ty id
+      val minus : t
       (** Rational unary minus/negation. *)
 
-      val add : ty id
+      val add : t
       (** Rational addition. *)
 
-      val sub : ty id
+      val sub : t
       (** Rational subtraction. *)
 
-      val mul : ty id
+      val mul : t
       (** Rational multiplication. *)
 
-      val div_e : ty id
+      val div_e : t
       (** Rational euclidian division quotient. *)
 
-      val div_t : ty id
+      val div_t : t
       (** Truncation of the rational division. *)
 
-      val div_f : ty id
+      val div_f : t
       (** Floor of the rational divison. *)
 
-      val div_zero : ty id
+      val div_zero : t
       (** Rational division by zero. *)
 
-      val rem_e : ty id
+      val rem_e : t
       (** Euclidian division remainder. *)
 
-      val rem_t : ty id
+      val rem_t : t
       (** Remainder of the rational division. *)
 
-      val rem_f : ty id
+      val rem_f : t
       (** Floor of the rational division. *)
 
-      val rem_zero : ty id
+      val rem_zero : t
       (** Rational modulo zero. *)
 
-      val lt : ty id
+      val lt : t
       (** Rational "less than" comparison. *)
 
-      val le : ty id
+      val le : t
       (** Rational "less or equal" comparison. *)
 
-      val gt : ty id
+      val gt : t
       (** Rational "greater than" comparison. *)
 
-      val ge : ty id
+      val ge : t
       (** Rational "greater or equal" comparison. *)
 
-      val floor : ty id
+      val floor : t
       (** Rational floor function. *)
 
-      val ceiling : ty id
+      val ceiling : t
       (** Rational ceiling function. *)
 
-      val truncate : ty id
+      val truncate : t
       (** Rational truncation function. *)
 
-      val round : ty id
+      val round : t
       (** Rational rounding function. *)
 
-      val is_int : ty id
+      val is_int : t
       (** Integer testing. *)
 
-      val is_rat : ty id
+      val is_rat : t
       (** Rationality testing. *)
     end
 
     (** A module for real constant symbols that occur in terms. *)
     module Real : sig
-      val real : string -> ty id
+      val real : string -> t
       (** Real literals. *)
 
-      val minus : ty id
+      val minus : t
       (** Real unary minus/negation. *)
 
-      val add : ty id
+      val add : t
       (** Real addition. *)
 
-      val sub : ty id
+      val sub : t
       (** Real subtraction. *)
 
-      val mul : ty id
+      val mul : t
       (** Real multiplication. *)
 
-      val pow : ty id
+      val pow : t
       (** Real exponentiation. *)
 
-      val div : ty id
+      val div : t
       (** Real division. *)
 
-      val div_e : ty id
+      val div_e : t
       (** Real euclidian division quotient. *)
 
-      val div_t : ty id
+      val div_t : t
       (** Truncation of the real division. *)
 
-      val div_f : ty id
+      val div_f : t
       (** Floor of the real divison. *)
 
-      val div_zero : ty id
+      val div_zero : t
       (** Real division by zero. *)
 
-      val rem_e : ty id
+      val rem_e : t
       (** Real euclidian division remainder. *)
 
-      val rem_t : ty id
+      val rem_t : t
       (** Remainder of the real division. *)
 
-      val rem_f : ty id
+      val rem_f : t
       (** Floor of the real division. *)
 
-      val rem_zero : ty id
+      val rem_zero : t
       (** Real modulo zero. *)
 
-      val lt : ty id
+      val lt : t
       (** Real "less than" comparison. *)
 
-      val le : ty id
+      val le : t
       (** Real "less or equal" comparison. *)
 
-      val gt : ty id
+      val gt : t
       (** Real "greater than" comparison. *)
 
-      val ge : ty id
+      val ge : t
       (** Real "greater or equal" comparison. *)
 
-      val floor : ty id
+      val floor : t
       (** Real floor function. *)
 
-      val floor_to_int : ty id
+      val floor_to_int : t
       (** Real floor to integer function. *)
 
-      val ceiling : ty id
+      val ceiling : t
       (** Real ceiling function. *)
 
-      val truncate : ty id
+      val truncate : t
       (** Real truncation function. *)
 
-      val round : ty id
+      val round : t
       (** Real rounding function. *)
 
-      val is_int : ty id
+      val is_int : t
       (** Integer testing. *)
 
-      val is_rat : ty id
+      val is_rat : t
       (** Rationality testing. *)
     end
 
     (** A module for array constant symbols that occur in terms. *)
     module Array: sig
 
-      val const : ty id
+      val const : t
       (** Array selection. *)
 
-      val select : ty id
+      val select : t
       (** Array selection. *)
 
-      val store : ty id
+      val store : t
       (** Array store. *)
 
     end
 
     (** A module for bit vector constant symbols that occur in terms. *)
     module Bitv : sig
-      val bitv : string -> ty id
+      val bitv : string -> t
       (** Bitvetor literals. *)
 
-      val concat : int * int -> ty id
+      val concat : int * int -> t
       (** Bitvector concatenation. *)
 
-      val extract : int * int * int -> ty id
+      val extract : int * int * int -> t
       (** Bitvector extraction. *)
 
-      val repeat : int * int -> ty id
+      val repeat : int * int -> t
       (** Bitvector repetition. *)
 
-      val zero_extend : int * int -> ty id
+      val zero_extend : int * int -> t
       (** Bitvector extension with zeros. *)
 
-      val sign_extend : int * int -> ty id
+      val sign_extend : int * int -> t
       (** Bitvector extension with its most significant. *)
 
-      val rotate_right : int * int -> ty id
+      val rotate_right : int * int -> t
       (** Bitvector rotation to the right. *)
 
-      val rotate_left : int * int -> ty id
+      val rotate_left : int * int -> t
       (** Bitvector rotation to the left. *)
 
-      val not : int -> ty id
+      val not : int -> t
       (** Bitwise negation. *)
 
-      val and_ : int -> ty id
+      val and_ : int -> t
       (** Bitwise conjunction. *)
 
-      val or_ : int -> ty id
+      val or_ : int -> t
       (** Bitwise disjunction. *)
 
-      val nand : int -> ty id
+      val nand : int -> t
       (** Bitwise nand. *)
 
-      val nor : int -> ty id
+      val nor : int -> t
       (** Bitwise nor. *)
 
-      val xor : int -> ty id
+      val xor : int -> t
       (** Bitwise xor. *)
 
-      val xnor : int -> ty id
+      val xnor : int -> t
       (** Bitwise xnor. *)
 
-      val comp : int -> ty id
+      val comp : int -> t
       (** Bitwise comparison. *)
 
-      val neg : int -> ty id
+      val neg : int -> t
       (** Arithmetic complement on bitvectors. *)
 
-      val add : int -> ty id
+      val add : int -> t
       (** Arithmetic addition on bitvectors. *)
 
-      val sub : int -> ty id
+      val sub : int -> t
       (** Arithmetic substraction on bitvectors. *)
 
-      val mul : int -> ty id
+      val mul : int -> t
       (** Arithmetic multiplication on bitvectors. *)
 
-      val udiv : int -> ty id
+      val udiv : int -> t
       (** Arithmetic euclidian integer division on bitvectors. *)
 
-      val urem : int -> ty id
+      val urem : int -> t
       (** Arithmetic euclidian integer remainder on bitvectors. *)
 
-      val sdiv : int -> ty id
+      val sdiv : int -> t
       (** Arithmetic 2's complement signed division.
           (see smtlib's specification for more information).*)
 
-      val srem : int -> ty id
+      val srem : int -> t
       (** Arithmetic 2's coplement signed remainder (sign follows dividend).
           (see smtlib's specification for more information).*)
 
-      val smod : int -> ty id
+      val smod : int -> t
       (** Arithmetic 2's coplement signed remainder (sign follows divisor).
           (see smtlib's specification for more information). *)
 
-      val shl : int -> ty id
+      val shl : int -> t
       (** Logical shift left. *)
 
-      val lshr : int -> ty id
+      val lshr : int -> t
       (** Logical shift right. *)
 
-      val ashr : int -> ty id
+      val ashr : int -> t
       (** Arithmetic shift right. *)
 
-      val ult : int -> ty id
+      val ult : int -> t
       (** Boolean arithmetic comparison (less than). *)
 
-      val ule : int -> ty id
+      val ule : int -> t
       (** Boolean arithmetic comparison (less or equal than). *)
 
-      val ugt : int -> ty id
+      val ugt : int -> t
       (** Boolean arithmetic comparison (greater than). *)
 
-      val uge : int -> ty id
+      val uge : int -> t
       (** Boolean arithmetic comparison (greater or equal than). *)
 
-      val slt : int -> ty id
+      val slt : int -> t
       (** Boolean signed arithmetic comparison (less than).
           (See smtlib's specification for more information). *)
 
-      val sle : int -> ty id
+      val sle : int -> t
       (** Boolean signed arithmetic comparison (less or equal than). *)
 
-      val sgt : int -> ty id
+      val sgt : int -> t
       (** Boolean signed arithmetic comparison (greater than). *)
 
-      val sge : int -> ty id
+      val sge : int -> t
       (** Boolean signed arithmetic comparison (greater or equal than). *)
 
     end
 
     (** A module for floating point constant symbols that occur in terms. *)
     module Float : sig
-      val fp : int * int -> ty id
+      val fp : int * int -> t
       (** Floating point literal. *)
 
-      val roundNearestTiesToEven: ty id
+      val roundNearestTiesToEven: t
       (** Constant for rounding mode RNE. *)
 
-      val roundNearestTiesToAway: ty id
+      val roundNearestTiesToAway: t
       (** Constant for rounding mode RNA. *)
 
-      val roundTowardPositive: ty id
+      val roundTowardPositive: t
       (** Constant for rounding mode RTP. *)
 
-      val roundTowardNegative: ty id
+      val roundTowardNegative: t
       (** Constant for rounding mode RTN. *)
 
-      val roundTowardZero: ty id
+      val roundTowardZero: t
       (** Constant for rounding mode RTZ. *)
 
-      val plus_infinity : int * int -> ty id
+      val plus_infinity : int * int -> t
       (** The constant plus infinity, it is also equivalent to a literal. *)
 
-      val minus_infinity : int * int -> ty id
+      val minus_infinity : int * int -> t
       (** The constant minus infinity, it is also equivalent to a literal. *)
 
-      val plus_zero : int * int -> ty id
+      val plus_zero : int * int -> t
       (** The constant plus zero, it is also equivalent to a literal. *)
 
-      val minus_zero : int * int -> ty id
+      val minus_zero : int * int -> t
       (** The constant minus zero, it is also equivalent to a literal. *)
 
-      val nan : int * int -> ty id
+      val nan : int * int -> t
       (** The constant Non-numbers, it is also equivalent to many literals which are
           equivalent together. *)
 
-      val abs : int * int -> ty id
+      val abs : int * int -> t
       (** Absolute value. *)
 
-      val neg : int * int -> ty id
+      val neg : int * int -> t
       (** Floating point negation. *)
 
-      val add : int * int -> ty id
+      val add : int * int -> t
       (** Floating point addition. *)
 
-      val sub : int * int -> ty id
+      val sub : int * int -> t
       (** Floating point subtraction. *)
 
-      val mul : int * int -> ty id
+      val mul : int * int -> t
       (** Floating point multiplication. *)
 
-      val div : int * int -> ty id
+      val div : int * int -> t
       (** Floating point division. *)
 
-      val fma : int * int -> ty id
+      val fma : int * int -> t
       (** Floating point fused multiplication and addition. *)
 
-      val sqrt : int * int -> ty id
+      val sqrt : int * int -> t
       (** Floating point square root. *)
 
-      val rem : int * int -> ty id
+      val rem : int * int -> t
       (** Floating point division remainder. *)
 
-      val roundToIntegral : int * int -> ty id
+      val roundToIntegral : int * int -> t
       (** Floating point rounding to integral. *)
 
-      val min : int * int -> ty id
+      val min : int * int -> t
       (** Floating point minimum. *)
 
-      val max : int * int -> ty id
+      val max : int * int -> t
       (** Floating point maximum. *)
 
-      val lt : int * int -> ty id
+      val lt : int * int -> t
       (** Floating point "less than" comparison. *)
 
-      val leq : int * int -> ty id
+      val leq : int * int -> t
       (** Floating point "less or equal" comparison. *)
 
-      val gt : int * int -> ty id
+      val gt : int * int -> t
       (** Floating point "greater than" comparison. *)
 
-      val geq : int * int -> ty id
+      val geq : int * int -> t
       (** Floating point "greater or equal" comparison. *)
 
-      val eq : int * int -> ty id
+      val eq : int * int -> t
       (** Floating point equality. *)
 
-      val isNormal : int * int -> ty id
+      val isNormal : int * int -> t
       (** Test if a value is a normal floating point. *)
 
-      val isSubnormal : int * int -> ty id
+      val isSubnormal : int * int -> t
       (** Test if a value is a subnormal floating point. *)
 
-      val isZero : int * int -> ty id
+      val isZero : int * int -> t
       (** Test if a value is a zero. *)
 
-      val isInfinite : int * int -> ty id
+      val isInfinite : int * int -> t
       (** Test if a value is an infinite. *)
 
-      val isNaN : int * int -> ty id
+      val isNaN : int * int -> t
       (** Test if a value is NaN. *)
 
-      val isNegative : int * int -> ty id
+      val isNegative : int * int -> t
       (** Test if a value is a negative floating point. *)
 
-      val isPositive : int * int -> ty id
+      val isPositive : int * int -> t
       (** Test if a value is a positive floating point. *)
 
-      val to_real : int * int -> ty id
+      val to_real : int * int -> t
       (** Convert a floating point to a real. *)
 
-      val ieee_format_to_fp : int * int -> ty id
+      val ieee_format_to_fp : int * int -> t
       (** Convert a bitvector into a floating point using IEEE 754-2008 interchange format. *)
 
-      val to_fp : int * int * int * int -> ty id
+      val to_fp : int * int * int * int -> t
       (** Convert from one floating point format to another. *)
 
-      val real_to_fp : int * int -> ty id
+      val real_to_fp : int * int -> t
       (** Convert a real to a floating point. *)
 
-      val sbv_to_fp : int * int * int -> ty id
+      val sbv_to_fp : int * int * int -> t
       (** Convert a signed bitvector to a floating point. *)
 
-      val ubv_to_fp : int * int * int -> ty id
+      val ubv_to_fp : int * int * int -> t
       (** Convert an unsigned bitvector to a floating point. *)
 
-      val to_ubv : int * int * int -> ty id
+      val to_ubv : int * int * int -> t
       (** Convert an floating point to an unsigned bitvector. *)
 
-      val to_sbv : int * int * int -> ty id
+      val to_sbv : int * int * int -> t
       (** Convert an floating point to an signed bitvector. *)
 
     end
 
     (** A module for string constant symbols that occur in terms. *)
     module String : sig
-      val string : string -> ty id
+      val string : string -> t
       (** String literal. *)
 
-      val length : ty id
+      val length : t
       (** String length. *)
 
-      val at : ty id
+      val at : t
       (** Get a char in a string. *)
 
-      val to_code : ty id
+      val to_code : t
       (** Returns the code point of a the single character of the string
           or [(-1)] if the string is not a singleton. *)
 
-      val of_code : ty id
+      val of_code : t
       (** Returns the singleton string whose only character is the given
           code point. *)
 
-      val is_digit : ty id
+      val is_digit : t
       (** Check if the string a singleton string with a single digit character. *)
 
-      val to_int : ty id
+      val to_int : t
       (** Evaluates the string as a decimal natural number, or [(-1)] if
           it's not possible. *)
 
-      val of_int : ty id
+      val of_int : t
       (** Convert an int expression to a string in decimal representation. *)
 
-      val concat : ty id
+      val concat : t
       (** String concatenation. *)
 
-      val sub : ty id
+      val sub : t
       (** Substring extraction. *)
 
-      val index_of : ty id
+      val index_of : t
       (** Index of the first occurrence of the second string in
           first one, starting at the position of the third argument. *)
 
-      val replace : ty id
+      val replace : t
       (** Replace the first occurrence. *)
 
-      val replace_all : ty id
+      val replace_all : t
       (** Replace all occurrences. *)
 
-      val replace_re : ty id
+      val replace_re : t
       (** Replace the leftmost, shortest re ocurrence. *)
 
-      val replace_re_all : ty id
+      val replace_re_all : t
       (** Replace left-to-right, each shortest non empty re occurrence. *)
 
-      val is_prefix : ty id
+      val is_prefix : t
       (** Check if the first string is a prefix of the second one. *)
 
-      val is_suffix : ty id
+      val is_suffix : t
       (** Check if the first string is a suffix of the second one. *)
 
-      val contains : ty id
+      val contains : t
       (** Check if the first string contains the second one. *)
 
-      val lt : ty id
+      val lt : t
       (** Check for lexicographic strict ordering. *)
 
-      val leq : ty id
+      val leq : t
       (** Check for lexicographic large ordering. *)
 
-      val in_re : ty id
+      val in_re : t
       (** Check if the string is in regular language. *)
 
       (** A module for regular language constant symbols that occur in terms. *)
       module Reg_Lang : sig
-        val empty : ty id
+        val empty : t
         (** The empty regular language. *)
 
-        val all : ty id
+        val all : t
         (** The language that contains all strings. *)
 
-        val allchar : ty id
+        val allchar : t
         (** The language that contains all strings of length 1. *)
 
-        val of_string : ty id
+        val of_string : t
         (** Singleton language containing a single string. *)
 
-        val range : ty id
+        val range : t
         (** [range s1 s2] is the language containing all singleton strings
             (i.e. string of length 1) that are lexicographically beetween
             [s1] and [s2], **assuming [s1] and [s2] are singleton strings**.
             Else it is the empty language. *)
 
-        val concat : ty id
+        val concat : t
         (** Language concatenation. *)
 
-        val union : ty id
+        val union : t
         (** Language union. *)
 
-        val inter : ty id
+        val inter : t
         (** Language intersection. *)
 
-        val diff : ty id
+        val diff : t
         (** Language difference. *)
 
-        val star : ty id
+        val star : t
         (** Kleene closure. *)
 
-        val cross : ty id
+        val cross : t
         (** Kleene cross. [cross e] abbreviates [concat e (star e)]. *)
 
-        val complement : ty id
+        val complement : t
         (** Language complement. *)
 
-        val option : ty id
+        val option : t
         (** Option. [option e] abbreviates [union e (of_string "")]. *)
 
-        val power : int -> ty id
+        val power : int -> t
         (** [power n e] is [n]-th power of [e]. *)
 
-        val loop : int * int -> ty id
+        val loop : int * int -> t
         (** Loop. See SMTLIb documentation. *)
 
       end
