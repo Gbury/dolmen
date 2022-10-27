@@ -23,9 +23,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    # Ensure that installation does not take too long
-    # (particularly with regards to flambda)
-    timeout-minutes: 20
 
     # Build Matrix
     # --------------
@@ -76,5 +73,8 @@ jobs:
     # Install the package
     - name: Install package
       run: opam install --with-test ${{ matrix.dolmen-pkg }}
+      timeout-minutes: 20
+      # Ensure that installation does not take too long
+      # (particularly with regards to flambda)
 
 
