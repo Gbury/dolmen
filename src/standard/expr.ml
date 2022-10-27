@@ -1809,34 +1809,6 @@ module Term = struct
       mk' ~name:"Σ" ~builtin:Builtin.Sigma
         "Sigma" [a] [Ty.(arrow [a_ty] prop)] Ty.prop
 
-    let const =
-      let a = Ty.Var.mk "alpha" in
-      let a_ty = Ty.of_var a in
-      let b = Ty.Var.mk "beta" in
-      let b_ty = Ty.of_var b in
-      mk'
-        ~name:"const" ~builtin:Builtin.Const
-        "Const" [a; b] [b_ty] (Ty.array a_ty b_ty)
-
-    let select =
-      let a = Ty.Var.mk "alpha" in
-      let a_ty = Ty.of_var a in
-      let b = Ty.Var.mk "beta" in
-      let b_ty = Ty.of_var b in
-      mk'
-        ~name:"select" ~builtin:Builtin.Select
-        "Select" [a; b] [Ty.array a_ty b_ty; a_ty] b_ty
-
-    let store =
-      let a = Ty.Var.mk "alpha" in
-      let a_ty = Ty.of_var a in
-      let b = Ty.Var.mk "beta" in
-      let b_ty = Ty.of_var b in
-      let arr = Ty.array a_ty b_ty in
-      mk'
-        ~name:"store" ~builtin:Builtin.Store
-        "Store" [a; b] [arr; a_ty; b_ty] arr
-
     let coerce =
       let a = Ty.Var.mk "alpha" in
       let b = Ty.Var.mk "beta" in
@@ -2150,6 +2122,38 @@ module Term = struct
       let is_rat = mk'
           ~name:"is_rat" ~builtin:(Builtin.Is_rat `Real)
            "Is_rat" [] [Ty.real] Ty.prop
+    end
+
+    module Array = struct
+
+      let const =
+        let a = Ty.Var.mk "alpha" in
+        let a_ty = Ty.of_var a in
+        let b = Ty.Var.mk "beta" in
+        let b_ty = Ty.of_var b in
+        mk'
+          ~name:"const" ~builtin:Builtin.Const
+          "Const" [a; b] [b_ty] (Ty.array a_ty b_ty)
+
+      let select =
+        let a = Ty.Var.mk "alpha" in
+        let a_ty = Ty.of_var a in
+        let b = Ty.Var.mk "beta" in
+        let b_ty = Ty.of_var b in
+        mk'
+          ~name:"select" ~builtin:Builtin.Select
+          "Select" [a; b] [Ty.array a_ty b_ty; a_ty] b_ty
+
+      let store =
+        let a = Ty.Var.mk "alpha" in
+        let a_ty = Ty.of_var a in
+        let b = Ty.Var.mk "beta" in
+        let b_ty = Ty.of_var b in
+        let arr = Ty.array a_ty b_ty in
+        mk'
+          ~name:"store" ~builtin:Builtin.Store
+          "Store" [a; b] [arr; a_ty; b_ty] arr
+
     end
 
     module Bitv = struct
@@ -3248,16 +3252,21 @@ module Term = struct
          end
     )
 
-  let const index_ty base =
-    apply_cst Const.const [index_ty; ty base] [base]
+  (* Arrays *)
+  module Array = struct
 
-  let select t idx =
-    let src, dst = match_array_type t in
-    apply_cst Const.select [src; dst] [t; idx]
+    let const index_ty base =
+      apply_cst Const.Array.const [index_ty; ty base] [base]
 
-  let store t idx value =
-    let src, dst = match_array_type t in
-    apply_cst Const.store [src; dst] [t; idx; value]
+    let select t idx =
+      let src, dst = match_array_type t in
+      apply_cst Const.Array.select [src; dst] [t; idx]
+
+    let store t idx value =
+      let src, dst = match_array_type t in
+      apply_cst Const.Array.store [src; dst] [t; idx; value]
+
+  end
 
   (* Bitvectors *)
   module Bitv = struct

@@ -139,7 +139,7 @@ module type Logic = sig
       type-checker. *)
 
   val bitv     : ?loc:location -> string -> t
-  (** Bitvetor litteral, defined as a specific token in Alt-ergo;
+  (** Bitvetor literal, defined as a specific token in Alt-ergo;
       Expects a decimal integer in the string to be extended as a bitvector. *)
 
   (** {3 Term constructors} *)
@@ -1615,7 +1615,7 @@ module type Smtlib_String_RegLan = sig
   (** Kleene closure. *)
 
   val cross : t -> t
-  (** Kleene cross. [cross e] abreviates [concat e (star e)] *)
+  (** Kleene cross. [cross e] abbreviates [concat e (star e)] *)
 
   val complement : t -> t
   (** Complement. *)
