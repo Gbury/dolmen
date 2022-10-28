@@ -1,6 +1,6 @@
 # copyright (c) 2014, guillaume bury
 
-FLAGS=
+FLAGS?=
 BINDIR=_build/install/default/bin
 
 all: build
