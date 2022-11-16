@@ -266,17 +266,17 @@ module Make(State : State.S) = struct
 
   let finalise st =
     let config = config st in
-    if config.typing then begin
-      let typing = State.get typing_key st in
-      let () = Unix.sleepf (1. /. 60.) in
-      Progress.Reporter.report typing.reporter typing.stats
-    end;
-    if config.model then begin
-      let model = State.get model_key st in
-      let () = Unix.sleepf (1. /. 60.) in
-      Progress.Reporter.report model.reporter model.stats
-    end;
     if config.enabled then begin
+      if config.typing then begin
+        let typing = State.get typing_key st in
+        let () = Unix.sleepf (1. /. 60.) in
+        Progress.Reporter.report typing.reporter typing.stats
+      end;
+      if config.model then begin
+        let model = State.get model_key st in
+        let () = Unix.sleepf (1. /. 60.) in
+        Progress.Reporter.report model.reporter model.stats
+      end;
       let parsing = State.get parsing_key st in
       Array.iter2 (fun stats reporter ->
           let () = Unix.sleepf (1. /. 60.) in

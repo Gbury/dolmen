@@ -156,6 +156,25 @@ module Make
     in
     aux
 
+  let wrap_exn st file input counter = function
+    | Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.uncaught_exn (exn, bt)
+      in
+      st, None
+    | Dolmen.Std.Loc.Lexing_error (loc, lex) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error lex in
+      st, None
+    | Dolmen.Std.Loc.Syntax_error (loc, perr) ->
+      let st = Stats.record_parsed st input counter loc in
+      let syntax_error_ref = State.get_or ~default:false syntax_error_ref st in
+      let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
+      st, None
+    | exn -> raise exn
+
   let wrap_parser ?input ~loc_of_res ~file g = fun st ->
     begin match (State.get interactive_prompt st) st with
       | None -> ()
@@ -169,22 +188,8 @@ module Make
     | Some res as ret ->
       let st = Stats.record_parsed st input counter (loc_of_res res) in
       st, ret
-    | exception Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
-      let st = Stats.record_parsed st input counter loc in
-      let st =
-        State.error st ~file ~loc:{ file = file.loc; loc; }
-          Report.Error.uncaught_exn (exn, bt)
-      in
-      st, None
-    | exception Dolmen.Std.Loc.Lexing_error (loc, lex) ->
-      let st = Stats.record_parsed st input counter loc in
-      let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error lex in
-      st, None
-    | exception Dolmen.Std.Loc.Syntax_error (loc, perr) ->
-      let st = Stats.record_parsed st input counter loc in
-      let syntax_error_ref = State.get_or ~default:false syntax_error_ref st in
-      let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
-      st, None
+    | exception exn ->
+      wrap_exn st file input counter exn
 
   let wrap_lazy_list ?input ~loc_of_res ~file llist =
     let first = ref true in
@@ -193,17 +198,20 @@ module Make
       if !first then begin
         first := false;
         let counter = Stats.start_counter st in
-        let list = Lazy.force llist in
-        l := list;
-        (* record the sizes of statements parsed *)
-        let st =
-          List.fold_left (fun st res ->
-              Stats.record_parsed st input None (loc_of_res res)
-            ) st list
-        in
-        (* record the time spent parsing *)
-        let st = Stats.record_parsed st input counter Dolmen.Std.Loc.no_loc in
-        aux st
+        try
+          let list = Lazy.force llist in
+          l := list;
+          (* record the sizes of statements parsed *)
+          let st =
+            List.fold_left (fun st res ->
+                Stats.record_parsed st input None (loc_of_res res)
+              ) st list
+          in
+          (* record the time spent parsing *)
+          let st = Stats.record_parsed st input counter Dolmen.Std.Loc.no_loc in
+          aux st
+        with exn ->
+          wrap_exn st file input None exn
       end else begin
         let elt =
           match !l with
