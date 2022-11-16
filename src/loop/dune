@@ -4,7 +4,7 @@
   (instrumentation (backend bisect_ppx))
   (libraries
     ; External deps
-    gen unix fmt pp_loc
+    gen unix fmt pp_loc progress
     ; main dolmen deps , with versioned languages deps
     dolmen
     dolmen.intf dolmen.std dolmen.class
@@ -16,9 +16,9 @@
     ; Useful utilities
     Alarm Report
     ; Interfaces
-    Expr_intf Parser_intf Typer_intf Headers_intf
+    Expr_intf Parser_intf Typer_intf Headers_intf Stats_intf
     ; Implementations
     Logic Response Code State
     ; Pipeline & Pipes
-    Pipeline Parser Typer Headers)
+    Pipeline Parser Typer Headers Stats)
 )

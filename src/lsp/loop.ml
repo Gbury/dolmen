@@ -3,10 +3,13 @@
 
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
 
-module Parser = Dolmen_loop.Parser.Make(State)
+module Stats = Dolmen_loop.Stats.Make(State)
+module Parser = Dolmen_loop.Parser.Make(State)(Stats)
 module Header = Dolmen_loop.Headers.Make(State)
 module Typer = Dolmen_loop.Typer.Typer(State)
-module Typer_Pipe = Dolmen_loop.Typer.Make(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Typer)
+module Typer_Pipe =
+  Dolmen_loop.Typer.Make
+    (Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Stats)(Typer)
 
 exception Finished of (State.t, string) result
 
@@ -64,6 +67,10 @@ let process prelude path opt_contents =
       ~header_check:false
       ~header_licenses:[]
       ~header_lang_version:None
+    |> Stats.init
+      ~enabled:false
+      ~typing:false
+      ~model:false
   in
   try
     let st, g = Parser.parse_logic prelude st l_file in

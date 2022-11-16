@@ -105,6 +105,19 @@ let mk_compact offset length =
     (Obj.magic e : t)
   end
 
+let first_byte c =
+  let start, _ = split_compact c in
+  start
+
+let last_byte c =
+  let start, offset = split_compact c in
+  start + offset (* +1 ? *)
+
+let length_in_bytes c =
+  let _, offset = split_compact c in
+  offset + 1
+
+
 (* File table *)
 (* ************************************************************************* *)
 

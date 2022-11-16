@@ -1,0 +1,37 @@
+
+(* This file is free software, part of Dolmen. See file "LICENSE" for more details. *)
+
+module type S = sig
+
+  type state
+  (** The type of state for a whole pipeline *)
+
+  type input
+  (** A type to track input files *)
+
+  type counter
+  (** Time counter *)
+
+  val init :
+    enabled:bool ->
+    typing:bool ->
+    model:bool ->
+    state -> state
+  (** Initialisation for the state. *)
+
+  val start_counter : state -> counter option
+  (** Start a counter. *)
+
+  val new_input : state -> string -> int -> input * state
+  (** Record a new input source, with the given name and size (in bytes). *)
+
+  val record_parsed : state -> input option -> counter option -> Dolmen.Std.Loc.t -> state
+  (** *)
+
+  val record_typed : state -> counter option -> Dolmen.Std.Loc.t -> state
+  (** *)
+
+  val finalise : state -> unit
+  (** Finalise the stats. *)
+
+end

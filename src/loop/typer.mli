@@ -63,6 +63,8 @@ module Make
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
     (State : State.S)
+    (Stats : Stats.S
+     with type state := State.t)
     (Typer : Typer
      with type state := State.t
       and type ty := Expr.ty

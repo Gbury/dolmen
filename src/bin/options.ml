@@ -324,6 +324,7 @@ let mk_run_state
     header_lang_version
     smtlib2_forced_logic type_check check_model
     debug report_style max_warn reports syntax_error_ref
+    progress_enabled
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -352,6 +353,10 @@ let mk_run_state
     ~header_check
     ~header_licenses
     ~header_lang_version
+  |> Loop.Stats.init
+    ~enabled:progress_enabled
+    ~typing:type_check
+    ~model:check_model
 
 (* Profiling *)
 (* ************************************************************************* *)
@@ -571,19 +576,23 @@ let state =
          would be too long), and lastly $(b,minimal) prints each report on one line"
     in
     Arg.(value & opt report_style Contextual & info ["report-style"] ~doc ~docs:error_section)
-    in
+  in
   let max_warn =
     let doc = Format.asprintf
         "Maximum number of warnings to display (excess warnings will be
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
+  in
+  let syntax_error_ref =
+    let doc = Format.asprintf
+        "Print the syntax error reference number when a syntax error is raised."
     in
-    let syntax_error_ref =
-      let doc = Format.asprintf
-         "Print the syntax error reference number when a syntax error is raised."
-      in
-      Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
-    in
+    Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
+  in
+  let progress_enabled =
+    let doc = Format.asprintf "Print progress information." in
+    Arg.(value & opt bool false & info ["progress"] ~doc ~docs:profiling_section)
+  in
   Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
@@ -592,7 +601,8 @@ let state =
         header_check $ header_licenses $
         header_lang_version $
         force_smtlib2_logic $ typing $ check_model $
-        debug $ report_style $ max_warn $ reports $ syntax_error_ref)
+        debug $ report_style $ max_warn $ reports $ syntax_error_ref $
+        progress_enabled)
 
 
 (* List command term *)

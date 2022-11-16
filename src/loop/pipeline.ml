@@ -64,6 +64,8 @@ module Make(State : State.S) = struct
 
   let iter_ ?name f = op ?name (fun st x -> f x; st, x)
 
+  let peek ?name f = op ?name (fun st x -> let st' = f st x in st', x)
+
   let f_map ?name ?(test=(fun _ _ -> true)) f =
     op ?name (fun st x ->
         if test st x then begin

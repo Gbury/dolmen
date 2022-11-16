@@ -24,6 +24,7 @@ let debug_typed_pipe st stmt =
 (* ************************ *)
 
 let handle_exn st exn =
+  Loop.Stats.finalise st;
   let _st = Errors.exn st exn in
   exit 125
 
@@ -62,6 +63,7 @@ let run st =
       )
     )
   in
+  let () = Loop.Stats.finalise st in
   let st = Loop.Header.check st in
   let _st = Dolmen_loop.State.flush st () in
   ()

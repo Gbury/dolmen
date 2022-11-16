@@ -120,6 +120,7 @@ module type S = sig
   val size_limit : float key
   val logic_file : Logic.language file key
   val response_file : Response.language file key
+  val progress_display : (unit, unit) Progress.Display.t key
   (* common keys *)
 
 end
@@ -168,6 +169,9 @@ let size_limit : float key = create_key ~pipe "size_limit"
 
 let logic_file : Logic.language file key = create_key ~pipe "logic_file"
 let response_file : Response.language file key = create_key ~pipe "response_file"
+
+let progress_display : (unit, unit) Progress.Display.t key =
+  create_key ~pipe "progress_display"
 
 let init
     ?bt:(bt_value=(Printexc.backtrace_status ()))
@@ -253,6 +257,11 @@ let flush st () =
         (cur - max) (if max = 0 then "" else "additional ")
 
 let error ?file ?loc st error payload =
+  let () =
+    match get progress_display st with
+    | d -> Progress.Display.finalise d
+    | exception Key_not_found _ -> ()
+  in
   let st = flush st () in
   let loc = Dolmen.Std.Misc.opt_map loc Dolmen.Std.Loc.full_loc in
   let aux _ = Code.exit (Report.Error.code error) in
@@ -277,19 +286,26 @@ let warn ?file ?loc st warn payload =
     if get cur_warn st >= get max_warn st then
       aux st
     else
-      begin match get report_style st with
-        | Minimal ->
-          Format.kfprintf aux Format.err_formatter
-            "W:%s@." (Report.Warning.mnemonic warn)
-        | Regular | Contextual ->
-          Format.kfprintf aux Format.err_formatter
-            ("@[<v>%a%a @[<hov>%a@]%a@]@.")
-            (pp_loc ?file st) loc
-            Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
-            Report.Warning.print (warn, payload)
-            Report.Warning.print_hints (warn, payload)
-      end
+      Progress.interject_with (fun () ->
+          match get report_style st with
+          | Minimal ->
+            Format.kfprintf aux Format.err_formatter
+              "W:%s@." (Report.Warning.mnemonic warn)
+          | Regular | Contextual ->
+            Format.kfprintf aux Format.err_formatter
+              ("@[<v>%a%a @[<hov>%a@]%a@]@.")
+              (pp_loc ?file st) loc
+              Fmt.(styled `Bold @@ styled (`Fg (`Hi `Magenta)) string) "Warning"
+              Report.Warning.print (warn, payload)
+              Report.Warning.print_hints (warn, payload)
+        )
   | Fatal ->
+    let () =
+      match get progress_display st with
+      | d -> Progress.Display.finalise d
+      | exception Key_not_found _ -> ()
+    in
+    let st = flush st () in
     let aux _ = Code.exit (Report.Warning.code warn) in
     begin match get report_style st with
       | Minimal ->

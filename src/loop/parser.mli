@@ -21,8 +21,12 @@ val parsing_error : (bool *
   ]) Report.error
 (** Parsing errors *)
 
+(** Interface *)
 module type S = Parser_intf.S
 
 (** This module provides convenient pipes for parsing and dealing with includes. *)
-module Make(State : State.S) : S with type state := State.t and type 'a key := 'a State.key
+module Make
+    (State : State.S)
+    (Stats : Stats.S with type state := State.t)
+  : S with type state := State.t and type 'a key := 'a State.key
 
