@@ -58,7 +58,7 @@ module Aux = struct
     let process_width, mem_width =
       match Terminal.Size.get_columns () with
       | None -> `Expand, `Fixed 20
-      | Some w -> `Expand, `Fixed (w - 170)
+      | Some w -> `Expand, `Fixed ((w - 100) / 2)
     in
     let open Progress.Line in
     list [
@@ -68,11 +68,11 @@ module Aux = struct
       const "/";
       using total_bytes (of_printer ~init:0 Progress.Units.Bytes.of_int);
       (* TODO: add bytes/seconds *)
-      using perthousand (bar ~width:process_width ~data:`Latest 1000);
-      using percentage (of_printer ~init:0 percentage_printer);
       if mem then const "|" else noop ();
       if mem then using cur_mem (of_printer ~init:0 Progress.Units.Bytes.of_int) else noop ();
       if mem then using ratio_mem (bar ~width:mem_width ~data:`Latest 1000) else noop ();
+      using perthousand (bar ~width:process_width ~data:`Latest 1000);
+      using percentage (of_printer ~init:0 percentage_printer);
     ]
 
 end
@@ -266,14 +266,16 @@ module Make(State : State.S) = struct
           let typing = State.get typing_key st in
           let processed = Dolmen.Std.Loc.length_in_bytes loc in
           let elapsed_time = Mtime.Span.add span typing.stats.elapsed_time in
-          let cur_mem =
-            if config.mem && Mtime.Span.to_s
-                (Mtime.Span.abs_diff elapsed_time typing.stats.last_mem) >= 0.5
-            then obj_size persistent_data
-            else typing.stats.cur_mem
+          let cur_mem, last_mem =
+            if config.mem && (
+                Mtime.Span.equal Mtime.Span.zero typing.stats.elapsed_time
+                || (Mtime.Span.to_s
+                      (Mtime.Span.abs_diff elapsed_time typing.stats.last_mem) >= 0.3))
+            then obj_size persistent_data, elapsed_time
+            else typing.stats.cur_mem, typing.stats.last_mem
           in
           let processed_bytes = typing.stats.processed_bytes + processed in
-          let stats = { typing.stats with elapsed_time; processed_bytes; cur_mem; } in
+          let stats = { typing.stats with elapsed_time; processed_bytes; cur_mem; last_mem; } in
           let typing = { typing with stats } in
           let () = Progress.Reporter.report typing.reporter stats in
           State.set typing_key typing st
