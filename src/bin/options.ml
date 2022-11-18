@@ -349,7 +349,9 @@ let mk_run_state
     ~debug ~report_style ~reports
     ~max_warn ~time_limit ~size_limit
     ~logic_file ~response_file
-  |> Loop.Parser.init ~syntax_error_ref
+  |> Loop.Parser.init
+    ~syntax_error_ref
+    ~interactive_prompt:Loop.Parser.interactive_prompt_lang
   |> Loop.Typer.init ~smtlib2_forced_logic
   |> Loop.Typer_Pipe.init ~type_check
   |> Loop.Check.init ~check_model

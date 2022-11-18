@@ -13,8 +13,24 @@ module type S = sig
   (** A key to determine whether to print a syntax error identifier/reference
       in Syntax error messages. Mainly useful when debugging syntax error messages. *)
 
-  val init : ?syntax_error_ref:bool -> state -> state
-  (** Init a state with all the relevant keys for this pipeline. *)
+  val interactive_prompt : (state -> string option) key
+  (** The interactive prompt key. This is used to determine whether we are parsing
+      in interactive mode, and if so, what prelude to print before parsing each
+      toplevel phrase. *)
+
+  val interactive_prompt_lang : state -> string option
+  (** A standard implementation for the interactive prompt key/function. When the
+      logic input is set to `Stdin, it will return a prompt string prelude that
+      contains the currently set input language. *)
+
+  val init :
+    ?syntax_error_ref:bool ->
+    ?interactive_prompt:(state -> string option) ->
+    state -> state
+  (** Init a state with all the relevant keys for this pipeline.
+      @param syntax_error_ref : false by default.
+      @param interactive_prompt : does nothing by default.
+  *)
 
   val parse_logic :
     Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->

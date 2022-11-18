@@ -79,25 +79,31 @@ module Make(State : State.S) = struct
 
   let pipe = "Parser"
   let syntax_error_ref = State.create_key ~pipe "syntax_error_ref"
+  let interactive_prompt = State.create_key ~pipe "interactive_prompt"
+
+  let interactive_prompt_default _ = None
+
+  let interactive_prompt_lang st =
+    match State.get State.logic_file st with
+    | { source = `Stdin; _ } ->
+      begin match (State.get State.logic_file st).lang with
+        | None -> Some "prompt> @?"
+        | Some l ->
+          Some (Format.asprintf "(%s)# @?" (Logic.string_of_language l))
+      end
+    | _ -> None
 
   let init
       ?syntax_error_ref:(syntax_error_ref_value=false)
-    = fun st -> st
-    |> State.set syntax_error_ref syntax_error_ref_value
+      ?interactive_prompt:(interactive_prompt_value=interactive_prompt_default)
+    = fun st ->
+      st
+      |> State.set syntax_error_ref syntax_error_ref_value
+      |> State.set interactive_prompt interactive_prompt_value
 
   (* Helper functions *)
   (* ************************************************************************ *)
 
-  let is_interactive st =
-    match State.get State.logic_file st with
-    | { source = `Stdin; _ } -> true
-    | _ -> false
-
-  let prelude_string st =
-    match (State.get State.logic_file st).lang with
-    | None -> "prompt> @?"
-    | Some l ->
-      Format.asprintf "(%s)# @?" (Logic.string_of_language l)
 
   let gen_of_llist l =
     let l = ref l in
@@ -155,8 +161,10 @@ module Make(State : State.S) = struct
     aux
 
   let wrap_parser ~file g = fun st ->
-    if is_interactive st then
-      Format.printf "%s @?" (prelude_string st);
+    begin match (State.get interactive_prompt st) st with
+      | None -> ()
+      | Some prelude -> Format.printf "%s @?" prelude
+    end;
     match g () with
     | ret -> st, ret
     | exception Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
