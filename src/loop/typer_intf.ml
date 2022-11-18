@@ -4,6 +4,9 @@
 module type Types = sig
 
   type state
+  type 'a key
+  type ty_state
+
   type ty
   type ty_var
   type ty_cst
@@ -22,6 +25,9 @@ end
 module type Typer = sig
 
   include Types
+
+  val ty_state : ty_state key
+  (** Key to store the local typechecking state in the global pipeline state. *)
 
   type input = [
     | `Logic of Logic.language State.file
@@ -80,14 +86,16 @@ end
 (** Extended signature for typer. *)
 module type Typer_Full = sig
 
-  type state
-  (** Global state for the while pipeline. *)
-
-  type 'a key
-  (** Type of keys for the state. *)
-
-  type ty_state
-  (** The type for the state of the typer. *)
+  include Typer
+    with type ty := Dolmen.Std.Expr.ty
+     and type ty_var := Dolmen.Std.Expr.ty_var
+     and type ty_cst := Dolmen.Std.Expr.ty_cst
+     and type term := Dolmen.Std.Expr.term
+     and type term_var := Dolmen.Std.Expr.term_var
+     and type term_cst := Dolmen.Std.Expr.term_cst
+     and type formula := Dolmen.Std.Expr.formula
+  (** This signature includes the requirements to instantiate the {Pipes.Make:
+      functor*)
 
   type env
   (** The type of the typechecker environment. *)
@@ -104,9 +112,6 @@ module type Typer_Full = sig
   type builtin_symbols
   (** The type of builin symbols for the type-checker. *)
 
-  val ty_state : ty_state key
-  (** Key to store the local typechecking state in the global pipeline state. *)
-
   val check_model : bool key
   (** The typechecker needs to know whether we are checking models or not. *)
 
@@ -117,18 +122,6 @@ module type Typer_Full = sig
     ?ty_state:ty_state ->
     ?smtlib2_forced_logic:string option ->
     state -> state
-
-  include Typer
-    with type state := state
-     and type ty := Dolmen.Std.Expr.ty
-     and type ty_var := Dolmen.Std.Expr.ty_var
-     and type ty_cst := Dolmen.Std.Expr.ty_cst
-     and type term := Dolmen.Std.Expr.term
-     and type term_var := Dolmen.Std.Expr.term_var
-     and type term_cst := Dolmen.Std.Expr.term_cst
-     and type formula := Dolmen.Std.Expr.formula
-  (** This signature includes the requirements to instantiate the {Pipes.Make:
-      functor*)
 
   val report_error : input:input -> state -> error -> state
   (** Report a typing error by calling the appropriate state function. *)
@@ -150,8 +143,6 @@ end
 module type S = sig
 
   include Types
-
-  type 'a key
 
   val type_check : bool key
 

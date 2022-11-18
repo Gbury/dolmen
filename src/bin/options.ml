@@ -324,7 +324,7 @@ let mk_run_state
     header_lang_version
     smtlib2_forced_logic type_check check_model
     debug report_style max_warn reports syntax_error_ref
-    progress_enabled
+    progress_enabled progress_mem
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -354,6 +354,8 @@ let mk_run_state
     ~header_licenses
     ~header_lang_version
   |> Loop.Stats.init
+    ~mem:progress_mem
+    ~max_mem:(int_of_float size_limit)
     ~enabled:progress_enabled
     ~typing:type_check
     ~model:check_model
@@ -522,7 +524,7 @@ let state =
   let size =
     let doc = "Stop the program if it tries and use more the $(docv) memory space. " ^
               "Accepts usual suffixes for sizes : k,M,G,T. " ^
-              "Without suffix, default to a size in octet." in
+              "Without suffix, default to a size in bytes/octet." in
     Arg.(value & opt c_size 1_000_000_000. &
          info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
@@ -593,6 +595,12 @@ let state =
     let doc = Format.asprintf "Print progress information." in
     Arg.(value & opt bool false & info ["progress"] ~doc ~docs:profiling_section)
   in
+  let progress_mem =
+    let doc = Format.asprintf
+        "Compute memory usage in progress info. Note that this may slow \
+         down dolmen significantly (experiments suggest around 3x)." in
+    Arg.(value & opt bool false & info ["progress-mem"] ~doc ~docs:profiling_section)
+  in
   Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
@@ -602,7 +610,7 @@ let state =
         header_lang_version $
         force_smtlib2_logic $ typing $ check_model $
         debug $ report_style $ max_warn $ reports $ syntax_error_ref $
-        progress_enabled)
+        progress_enabled $ progress_mem)
 
 
 (* List command term *)

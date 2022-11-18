@@ -13,6 +13,8 @@ module type S = sig
   (** Time counter *)
 
   val init :
+    mem: bool ->
+    max_mem:int ->
     enabled:bool ->
     typing:bool ->
     model:bool ->
@@ -28,7 +30,10 @@ module type S = sig
   val record_parsed : state -> input option -> counter option -> Dolmen.Std.Loc.t -> state
   (** *)
 
-  val record_typed : state -> counter option -> Dolmen.Std.Loc.t -> state
+  val record_typed : state -> counter option -> Dolmen.Std.Loc.t -> 'a -> state
+  (** *)
+
+  val record_checked : state -> counter option -> Dolmen.Std.Loc.t -> [ `Add of 'a | `Set of 'a] -> state
   (** *)
 
   val finalise : state -> unit

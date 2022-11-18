@@ -24,7 +24,6 @@ let debug_typed_pipe st stmt =
 (* ************************ *)
 
 let handle_exn st exn =
-  Loop.Stats.finalise st;
   let _st = Errors.exn st exn in
   exit 125
 

@@ -151,6 +151,8 @@ type 'a file = 'a Dolmen_loop.State.file
 
 module Make
     (State : Dolmen_loop.State.S)
+    (Stats : Dolmen_loop.Stats.S
+     with type state := State.t)
     (Parse : Dolmen_loop.Parser.S
      with type state := State.t
       and type 'a key := 'a State.key)
@@ -331,23 +333,34 @@ module Make
     Value.extract_exn ~ops:Bool.ops value
 
   let eval_def { file; loc; contents = defs; } st =
-    List.fold_left (fun st (cst, func) ->
+    let counter = Stats.start_counter st in
+    let st =
+      List.fold_left (fun st (cst, func) ->
         let value = eval st ~file ~loc func in
         define_value st cst value
-      ) st defs
+        ) st defs
+    in
+    let st = Stats.record_checked st counter loc.loc (`Add 0) in
+    st
 
   let eval_hyp st { file; loc; contents = hyp; } =
+    let counter = Stats.start_counter st in
     let res = eval_term st ~file ~loc hyp in
+    let st = Stats.record_checked st counter loc.loc (`Add 0) in
     if res then st else
       State.error ~file ~loc st bad_model `Hyp
 
   let eval_goal st { file; loc; contents = goal; } =
+    let counter = Stats.start_counter st in
     let res = eval_term st ~file ~loc goal in
+    let st = Stats.record_checked st counter loc.loc (`Add 0) in
     if not res then st else
       State.error ~file ~loc st bad_model `Goal
 
   let eval_clause st { file; loc; contents = clause; } =
+    let counter = Stats.start_counter st in
     let l = List.map (eval_term st ~file ~loc) clause in
+    let st = Stats.record_checked st counter loc.loc (`Add 0) in
     if List.exists (fun x -> x) l then st else
       State.error ~file ~loc st bad_model `Clause
 
@@ -368,38 +381,48 @@ module Make
   let check st (c : Typer_Pipe.typechecked Typer_Pipe.stmt) =
     let st =
       if State.get check_model st then
+        let counter = Stats.start_counter st in
         let t = State.get check_state st in
         let file = State.get State.logic_file st in
         let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
         match c.contents with
         | #Typer_Pipe.exit
-        | #Typer_Pipe.decls
-        | #Typer_Pipe.get_info
-        | #Typer_Pipe.set_info -> st
-        | #Typer_Pipe.stack_control ->
-          State.error ~file ~loc st assertion_stack_not_supported ()
-        | `Defs defs ->
-          let new_defs = pack_abstract_defs ~file ~loc defs in
-          State.set check_state { t with defs = new_defs :: t.defs; } st
-        | `Hyp contents ->
-          let assertion = { file; loc; contents; } in
-          State.set check_state { t with hyps = assertion :: t.hyps; } st
-        | `Goal contents ->
-          let assertion = { file; loc; contents; } in
-          State.set check_state { t with goals = assertion :: t.goals; } st
-        | `Clause contents ->
-          let assertion = { file; loc; contents; } in
-          State.set check_state { t with clauses = assertion :: t.clauses; } st
-        | `Solve l ->
-          begin match get_answer st with
-            | _, None ->
-              State.error ~file ~loc st missing_answer ()
-            | st, Some answer ->
-              let local_hyps = List.map (fun contents -> { file; loc; contents; }) l in
-              let t = { t with hyps = local_hyps @ t.hyps; } in
-              let st = check_aux st t answer in
-              State.set check_state { t with hyps = []; goals = []; clauses = []; } st
-          end
+          | #Typer_Pipe.decls
+          | #Typer_Pipe.get_info
+          | #Typer_Pipe.set_info ->
+            let st = Stats.record_checked st counter c.loc (`Add 0) in
+            st
+          | #Typer_Pipe.stack_control ->
+            State.error ~file ~loc st assertion_stack_not_supported ()
+          | `Defs defs ->
+            let new_defs = pack_abstract_defs ~file ~loc defs in
+            let st = Stats.record_checked st counter Dolmen.Std.Loc.no_loc (`Add new_defs) in
+            State.set check_state { t with defs = new_defs :: t.defs; } st
+          | `Hyp contents ->
+            let assertion = { file; loc; contents; } in
+            let st = Stats.record_checked st counter Dolmen.Std.Loc.no_loc (`Add assertion) in
+            State.set check_state { t with hyps = assertion :: t.hyps; } st
+          | `Goal contents ->
+            let assertion = { file; loc; contents; } in
+            let st = Stats.record_checked st counter Dolmen.Std.Loc.no_loc (`Add assertion) in
+            State.set check_state { t with goals = assertion :: t.goals; } st
+          | `Clause contents ->
+            let assertion = { file; loc; contents; } in
+            let st = Stats.record_checked st counter Dolmen.Std.Loc.no_loc (`Add assertion) in
+            State.set check_state { t with clauses = assertion :: t.clauses; } st
+          | `Solve l ->
+            begin match get_answer st with
+              | _, None ->
+                State.error ~file ~loc st missing_answer ()
+              | st, Some answer ->
+                let local_hyps = List.map (fun contents -> { file; loc; contents; }) l in
+                let t = { t with hyps = local_hyps @ t.hyps; } in
+                let st = Stats.record_checked st counter Dolmen.Std.Loc.no_loc (`Add local_hyps) in
+                let st = check_aux st t answer in
+                let t = { t with defs = []; hyps = []; goals = []; clauses = []; } in
+                let st = Stats.record_checked st None c.loc (`Set t) in
+                State.set check_state t st
+            end
       else
         st
     in

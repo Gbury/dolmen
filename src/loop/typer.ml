@@ -1740,6 +1740,7 @@ module Make
      with type state := State.t)
     (Typer : Typer
      with type state := State.t
+      and type 'a key := 'a State.key
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
@@ -1762,6 +1763,8 @@ module Make
 
   (* Types used in Pipes *)
   (* ************************************************************************ *)
+
+  type ty_state = Typer.ty_state
 
   (* Used for representing typed statements *)
   type +'a stmt = {
@@ -2040,7 +2043,7 @@ module Make
           | { S.descr = S.Exit; _ } ->
             st, `Continue (simple (other_id c) c.S.loc `Exit)
         in
-        let st = Stats.record_typed st counter c.S.loc in
+        let st = Stats.record_typed st counter c.S.loc (State.get Typer.ty_state st) in
         st, res
     in
     res

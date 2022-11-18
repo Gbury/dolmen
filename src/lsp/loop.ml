@@ -68,9 +68,12 @@ let process prelude path opt_contents =
       ~header_licenses:[]
       ~header_lang_version:None
     |> Stats.init
+      ~mem:false
+      ~max_mem:0
       ~enabled:false
       ~typing:false
       ~model:false
+    |> (fun (st : State.t) -> st)
   in
   try
     let st, g = Parser.parse_logic prelude st l_file in
