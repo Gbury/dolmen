@@ -97,8 +97,8 @@ au BufEnter *.smt2 setf smt2
 au BufEnter *.zf setf zf
 ```
 
-If you prefer lua configuraton to vimscript, you can proceed as follow.
-First, turn on the filetype configuration feature in lua:
+If you prefer lua to vimscript, you can proceed as follow.
+First, turn on the filetype configuration feature in your `init.lua`:
 
 ```lua
 vim.g.do_filetype_lua = 1
