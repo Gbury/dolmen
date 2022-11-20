@@ -75,6 +75,15 @@ if executable('dolmenls')
 endif
 ```
 
+### nvim-lspconfig
+Add `dolmenls` to your list of language servers. For instance, you can add
+
+```lua 
+require'lspconfig'.dolmenls.setup{}
+```
+
+to your `init.lua`.
+
 #### Generic configuration for supported languages
 
 Since some of the languages supported by dolmen are not very mainstream,
@@ -86,6 +95,27 @@ au BufEnter *.icnf setf icnf
 au BufEnter *.p setf tptp
 au BufEnter *.smt2 setf smt2
 au BufEnter *.zf setf zf
+```
+
+If you prefer lua configuraton to vimscript, you can proceed as follow.
+First, turn on the filetype configuration feature in lua:
+
+```lua
+vim.g.do_filetype_lua = 1
+```
+Then add the filetypes in the file `$HOME/.config/nvim/lua/filetype.lua`
+
+```lua
+vim.filetype.add({
+  extension = {
+    cnf = "dimacs",
+    icnf = "icnf",
+    p = "tptp",
+    smt2 = "smt2",
+    zf = "zf",
+    qmd = "markdown"
+  },
+})
 ```
 
 ### Emacs
