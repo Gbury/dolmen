@@ -157,6 +157,27 @@ module Make
     aux
 
   let wrap_exn st file input counter = function
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Sigint, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.user_interrupt ()
+      in
+      st, None
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Out_of_time, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.timeout ()
+      in
+      st, None
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Out_of_space, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.spaceout ()
+      in
+      st, None
     | Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
       let st = Stats.record_parsed st input counter loc in
       let st =

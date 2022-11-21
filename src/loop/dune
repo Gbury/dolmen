@@ -14,7 +14,7 @@
     )
   (modules
     ; Useful utilities
-    Alarm Report
+    Alarm Tui Report
     ; Interfaces
     Expr_intf Parser_intf Typer_intf Headers_intf Stats_intf
     ; Implementations

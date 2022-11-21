@@ -36,7 +36,4 @@ module type S = sig
   val record_checked : state -> counter option -> Dolmen.Std.Loc.t -> [ `Add of 'a | `Set of 'a] -> state
   (** *)
 
-  val finalise : state -> unit
-  (** Finalise the stats. *)
-
 end

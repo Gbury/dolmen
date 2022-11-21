@@ -8,75 +8,6 @@ let file_size file_path =
   let st = Unix.stat file_path in
   st.st_size
 
-let obj_size obj =
-  let in_words = Obj.reachable_words (Obj.repr obj) in
-  let in_bytes = in_words * (Sys.word_size / 8) in
-  in_bytes
-
-(* Custom progress bar *)
-(* ************************************************************************* *)
-
-let percentage_printer =
-  Progress.Printer.create ()
-    ~string_len:4
-    ~to_string:(fun p -> Format.asprintf "%3d%%" p)
-
-module Aux = struct
-
-  type t = {
-    total_bytes : int;          (* total bytes to process *)
-    processed_bytes : int;      (* processed bytes *)
-    elapsed_time : Mtime.span;  (* time spent processing *)
-    max_mem : int;              (* memory limit *)
-    cur_mem : int;              (* memory currently used *)
-    last_mem : Mtime.span;      (* last span that cur memory was computed *)
-  }
-
-  let zero max_mem = {
-    total_bytes = 0;
-    processed_bytes = 0;
-    elapsed_time = Mtime.Span.zero;
-    max_mem;
-    cur_mem = 0;
-    last_mem = Mtime.Span.zero;
-  }
-
-  let input max_mem total_bytes = { (zero max_mem) with total_bytes }
-
-  let total_bytes { total_bytes; _ } = total_bytes
-  let elapsed_time { elapsed_time; _ } = elapsed_time
-  let processed_bytes { processed_bytes; _ } = processed_bytes
-  let percentage { processed_bytes; total_bytes; _ } =
-    int_of_float (100. *. (float processed_bytes) /. (float total_bytes))
-  let perthousand { processed_bytes; total_bytes; _ } =
-    int_of_float (1000. *. (float processed_bytes) /. (float total_bytes))
-  let cur_mem { cur_mem; _ } = cur_mem
-  let ratio_mem { cur_mem; max_mem; _ } =
-    int_of_float (1000. *. (float cur_mem) /. (float max_mem))
-
-  let line ~mem phase : t Progress.Line.t =
-    let process_width, mem_width =
-      match Terminal.Size.get_columns () with
-      | None -> `Expand, `Fixed 20
-      | Some w -> `Expand, `Fixed ((w - 100) / 2)
-    in
-    let open Progress.Line in
-    list [
-      using (fun _ -> phase) (of_printer ~init:phase (Progress.Printer.string ~width:20));
-      using elapsed_time (of_printer ~init:Mtime.Span.zero Progress.Units.Duration.mm_ss);
-      using processed_bytes (of_printer ~init:0 Progress.Units.Bytes.of_int);
-      const "/";
-      using total_bytes (of_printer ~init:0 Progress.Units.Bytes.of_int);
-      (* TODO: add bytes/seconds *)
-      if mem then const "|" else noop ();
-      if mem then using cur_mem (of_printer ~init:0 Progress.Units.Bytes.of_int) else noop ();
-      if mem then using ratio_mem (bar ~width:mem_width ~data:`Latest 1000) else noop ();
-      using perthousand (bar ~width:process_width ~data:`Latest 1000);
-      using percentage (of_printer ~init:0 percentage_printer);
-    ]
-
-end
-
 (* Stats & progress bars *)
 (* ************************************************************************* *)
 
@@ -94,23 +25,8 @@ module Make(State : State.S) = struct
     model : bool;
   }
 
-  type input = int
+  type input = Tui.Bar.t State.key
   type counter = Mtime_clock.counter
-  type parsing = {
-    stats : Aux.t array;
-    reporters : Aux.t Progress.Reporter.t array;
-  }
-
-  type typing = {
-    stats : Aux.t;
-    reporter : Aux.t Progress.Reporter.t;
-  }
-
-  type model = {
-    stats : Aux.t;
-    reporter : Aux.t Progress.Reporter.t;
-  }
-
 
   (* state keys *)
 
@@ -119,15 +35,14 @@ module Make(State : State.S) = struct
   let config_key : config State.key =
     State.create_key ~pipe "stats_config"
 
-  let parsing_key : parsing State.key =
-    State.create_key ~pipe "stats_parsing"
+  let parsing_lines : int State.key =
+    State.create_key ~pipe "parsing_lines"
 
-  let typing_key : typing State.key =
+  let typing_key : Tui.Bar.t State.key =
     State.create_key ~pipe "stats_typing"
 
-  let model_key : model State.key =
+  let model_key : Tui.Bar.t State.key =
     State.create_key ~pipe "stats_model"
-
 
   (* state init *)
 
@@ -137,41 +52,29 @@ module Make(State : State.S) = struct
     if not enabled then st
     else begin
       (* create progress display *)
-      let display =
-        let config = Progress.Config.v () in
-        let multi = Progress.Multi.blank in
-        Progress.Display.start ~config multi
-      in
-      let st = State.set State.progress_display display st in
-      (* create bars *)
-      let st =
-        let parsing : parsing =
-          let stats = [| |] in
-          let reporters = [| |] in
-          { stats; reporters; }
-        in
-        State.set parsing_key parsing st
-      in
+      let () = Tui.init_display () in
+      (* init the number of parsing lines *)
+      let st = State.set parsing_lines 0 st in
+      (* create typing bar *)
       let st =
         if not typing then st
         else begin
-          let typing : typing =
-            let stats = Aux.zero max_mem in
-            let line = Aux.line ~mem:config.mem "typing" in
-            let reporter = Progress.Display.add_line display line in
-            { stats; reporter; }
+          let typing =
+            Tui.Bar.create ()
+              ~config:{ mem_bar = config.mem }
+              ~name:"typing" ~max_mem ~total_bytes:0
           in
           State.set typing_key typing st
         end
       in
+      (* create parsing bar *)
       let st =
         if not model then st
         else begin
-          let model : model =
-            let stats = Aux.zero max_mem in
-            let line = Aux.line ~mem:config.mem "model" in
-            let reporter = Progress.Display.add_line display line in
-            { stats; reporter; }
+          let model =
+            Tui.Bar.create ()
+              ~config:{ mem_bar = config.mem }
+              ~name:"model" ~max_mem ~total_bytes:0
           in
           State.set model_key model st
         end
@@ -190,27 +93,28 @@ module Make(State : State.S) = struct
 
   let new_input st input_name input_size =
     let config = config st in
-    if config.enabled then begin
-      let parsing = State.get parsing_key st in
-      let display = State.get State.progress_display st in
-      let n = Array.length parsing.stats in
-      assert (n = Array.length parsing.reporters);
-      let z = Aux.input config.max_mem input_size in
-      let line_name = Format.asprintf "%s" input_name in
-      let line = Aux.line ~mem:false line_name in
-      let above =
-        (if config.model then 1 else 0 (* model *)) +
-        (if config.typing then 1 else 0 (* typing *)) +
-        n (* already existing parsing lines *)
-      in
-      let reporter = Progress.Display.add_line ~above display line in
-      let stats = Array.append parsing.stats [| z |] in
-      let reporters = Array.append parsing.reporters [| reporter |] in
-      let parsing : parsing = { stats; reporters; } in
-      let st' = State.set parsing_key parsing st in
-      n, st'
-    end else
-      0, st
+    let key =
+      State.create_key ~pipe
+        (Format.asprintf "parsing:%s" input_name)
+    in
+    let st =
+      if config.enabled then begin
+        let n = State.get parsing_lines st in
+        let above =
+          (if config.model then 1 else 0 (* model *)) +
+          (if config.typing then 1 else 0 (* typing *)) +
+          n (* already existing parsing lines *)
+        in
+        let name = Format.asprintf "%s" input_name in
+        let parsing =
+          Tui.Bar.create ~config:{ mem_bar = false } ()
+            ~name ~above ~max_mem:config.max_mem ~total_bytes:input_size
+        in
+        State.set key parsing st
+      end else
+        st
+    in
+    key, st
 
   let record_parsed st input counter loc =
     match input with
@@ -223,32 +127,14 @@ module Make(State : State.S) = struct
           let config = config st in
           assert config.enabled;
           (* record the loc as parsed *)
-          let st =
-            let parsing = State.get parsing_key st in
-            let input_stats = parsing.stats.(input) in
-            let input_reporter = parsing.reporters.(input) in
-            let elapsed_time = Mtime.Span.add span input_stats.elapsed_time in
-            let processed_bytes = max input_stats.processed_bytes (Dolmen.Std.Loc.last_byte loc) in
-            let input_stats = { input_stats with elapsed_time; processed_bytes; } in
-            let () = Progress.Reporter.report input_reporter input_stats in
-            let stats = Array.copy parsing.stats in
-            let () = Array.set stats input input_stats in
-            let parsing = { parsing with stats } in
-            State.set parsing_key parsing st
-          in
+          let parsing = State.get input st in
+          Tui.Bar.add_processed parsing ~span
+            ~processed:(`Last loc) ~mem:`None;
           (* add the loc to be typed *)
-          let st =
-            if not config.typing then st
-            else begin
-              let bytes_to_type = Dolmen.Std.Loc.length_in_bytes loc in
-              let typing = State.get typing_key st in
-              let total_bytes = typing.stats.total_bytes + bytes_to_type in
-              let stats = { typing.stats with total_bytes } in
-              let typing = { typing with stats } in
-              let () = Progress.Reporter.report typing.reporter stats in
-              State.set typing_key typing st
-            end
-          in
+          if config.typing then begin
+            let typing = State.get typing_key st in
+            Tui.Bar.add_to_process typing ~loc
+          end;
           st
       end
 
@@ -260,40 +146,16 @@ module Make(State : State.S) = struct
       let config = config st in
       assert (config.enabled);
       (* record the loc as typed *)
-      let st =
-        if not config.typing then st
-        else begin
-          let typing = State.get typing_key st in
-          let processed = Dolmen.Std.Loc.length_in_bytes loc in
-          let elapsed_time = Mtime.Span.add span typing.stats.elapsed_time in
-          let cur_mem, last_mem =
-            if config.mem && (
-                Mtime.Span.equal Mtime.Span.zero typing.stats.elapsed_time
-                || (Mtime.Span.to_s
-                      (Mtime.Span.abs_diff elapsed_time typing.stats.last_mem) >= 0.3))
-            then obj_size persistent_data, elapsed_time
-            else typing.stats.cur_mem, typing.stats.last_mem
-          in
-          let processed_bytes = typing.stats.processed_bytes + processed in
-          let stats = { typing.stats with elapsed_time; processed_bytes; cur_mem; last_mem; } in
-          let typing = { typing with stats } in
-          let () = Progress.Reporter.report typing.reporter stats in
-          State.set typing_key typing st
-        end
-      in
+      if config.typing then begin
+        let typing = State.get typing_key st in
+        Tui.Bar.add_processed typing ~span
+          ~processed:(`Sum loc) ~mem:(`Set persistent_data);
+      end;
       (* add the loc to be checked for model *)
-      let st =
-        if not config.model then st
-        else begin
-          let bytes_to_type = Dolmen.Std.Loc.length_in_bytes loc in
-          let model = State.get model_key st in
-          let total_bytes = model.stats.total_bytes + bytes_to_type in
-          let stats = { model.stats with total_bytes } in
-          let model = { model with stats } in
-          let () = Progress.Reporter.report model.reporter stats in
-          State.set model_key model st
-        end
-      in
+      if config.model then begin
+        let model = State.get model_key st in
+        Tui.Bar.add_to_process model ~loc
+      end;
       st
 
   let record_checked st counter loc persistent_data =
@@ -304,52 +166,11 @@ module Make(State : State.S) = struct
       let config = config st in
       assert (config.enabled);
       (* record the loc as typed *)
-      let st =
-        if not config.model then st
-        else begin
-          let model = State.get model_key st in
-          let cur_mem =
-            if not config.mem then model.stats.cur_mem
-            else match persistent_data with
-              | `Set obj -> obj_size obj
-              | `Add obj -> model.stats.cur_mem + obj_size obj
-          in
-          let processed = Dolmen.Std.Loc.length_in_bytes loc in
-          let elapsed_time = Mtime.Span.add span model.stats.elapsed_time in
-          let processed_bytes = model.stats.processed_bytes + processed in
-          let stats = { model.stats with elapsed_time; processed_bytes; cur_mem; } in
-          let model = { model with stats } in
-          let () = Progress.Reporter.report model.reporter stats in
-          State.set model_key model st
-        end
-      in
-      st
-
-  (* finalisation *)
-
-  let finalise st =
-    let config = config st in
-    if config.enabled then begin
-      if config.typing then begin
-        let typing = State.get typing_key st in
-        let () = Unix.sleepf (1. /. 60.) in
-        Progress.Reporter.report typing.reporter typing.stats
-      end;
       if config.model then begin
         let model = State.get model_key st in
-        let () = Unix.sleepf (1. /. 60.) in
-        Progress.Reporter.report model.reporter model.stats
+        Tui.Bar.add_processed model ~span ~processed:(`Sum loc) ~mem:persistent_data;
       end;
-      let parsing = State.get parsing_key st in
-      Array.iter2 (fun stats reporter ->
-          let () = Unix.sleepf (1. /. 60.) in
-          Progress.Reporter.report reporter stats
-        ) parsing.stats parsing.reporters;
-      let display = State.get State.progress_display st in
-      let () = Unix.sleepf (1. /. 60.) in
-      Progress.Display.finalise display
-    end;
-    ()
+      st
 
 end
 

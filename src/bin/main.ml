@@ -24,6 +24,7 @@ let debug_typed_pipe st stmt =
 (* ************************ *)
 
 let handle_exn st exn =
+  let () = Dolmen_loop.Tui.finalise_display () in
   let _st = Errors.exn st exn in
   exit 125
 
@@ -33,7 +34,7 @@ let finally st e =
   | Some (bt,exn) ->
     (* Print the backtrace if requested *)
     if Loop.State.(get bt) st then (
-      Format.eprintf "foo ?!@.";
+      (* TODO: use Tui *)
       Printexc.print_raw_backtrace stdout bt);
     handle_exn st exn
 
@@ -62,7 +63,7 @@ let run st =
       )
     )
   in
-  let () = Loop.Stats.finalise st in
+  let () = Dolmen_loop.Tui.finalise_display () in
   let st = Loop.Header.check st in
   let _st = Dolmen_loop.State.flush st () in
   ()
