@@ -78,7 +78,7 @@ endif
 ### nvim-lspconfig
 Add `dolmenls` to your list of language servers. For instance, you can add
 
-```lua 
+```lua
 require'lspconfig'.dolmenls.setup{}
 ```
 
