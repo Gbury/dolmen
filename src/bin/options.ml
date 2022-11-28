@@ -592,14 +592,22 @@ let state =
     Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
   in
   let progress_enabled =
-    let doc = Format.asprintf "Print progress information." in
-    Arg.(value & opt bool false & info ["progress"] ~doc ~docs:profiling_section)
+    let default = false in
+    let pos_flag =
+      let doc = Format.asprintf "Enable printing of progress bars." in
+      Arg.info ["p"; "progress"] ~doc ~docs:profiling_section
+    in
+    let neg_flag =
+      let doc = Format.asprintf "Disable printing of progress bars." in
+      Arg.info ["no-progress"] ~doc ~docs:profiling_section
+    in
+    Arg.(value & vflag default [true, pos_flag; false, neg_flag])
   in
   let progress_mem =
     let doc = Format.asprintf
         "Compute memory usage in progress info. Note that this may slow \
          down dolmen significantly (experiments suggest around 3x)." in
-    Arg.(value & opt bool false & info ["progress-mem"] ~doc ~docs:profiling_section)
+    Arg.(value & opt bool true & info ["progress-mem"] ~doc ~docs:profiling_section)
   in
   Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
