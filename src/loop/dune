@@ -5,7 +5,7 @@
   (libraries
     ; External deps
     gen unix fmt pp_loc terminal progress
-    ; main dolmen deps , with versioned languages deps
+    ; main dolmen deps, with versioned languages deps
     dolmen
     dolmen.intf dolmen.std dolmen.class
     dolmen.smtlib2 dolmen.tptp
@@ -14,7 +14,7 @@
     )
   (modules
     ; Useful utilities
-    Alarm Tui Report
+    Alarm Report
     ; Interfaces
     Expr_intf Parser_intf Typer_intf Headers_intf Stats_intf
     ; Implementations

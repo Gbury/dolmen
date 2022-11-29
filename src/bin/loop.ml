@@ -1,10 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-module State = Dolmen_loop.State
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
-
-module Stats = Dolmen_loop.Stats.Make(State)
 module Parser = Dolmen_loop.Parser.Make(State)(Stats)
 module Header = Dolmen_loop.Headers.Make(State)
 module Typer = Dolmen_loop.Typer.Typer(State)

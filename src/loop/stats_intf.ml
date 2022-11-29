@@ -12,15 +12,6 @@ module type S = sig
   type counter
   (** Time counter *)
 
-  val init :
-    mem: bool ->
-    max_mem:int ->
-    enabled:bool ->
-    typing:bool ->
-    model:bool ->
-    state -> state
-  (** Initialisation for the state. *)
-
   val start_counter : state -> counter option
   (** Start a counter. *)
 

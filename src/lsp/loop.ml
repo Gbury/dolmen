@@ -3,7 +3,7 @@
 
 module Pipeline = Dolmen_loop.Pipeline.Make(State)
 
-module Stats = Dolmen_loop.Stats.Make(State)
+module Stats = Dolmen_loop.Stats.Noop(State)
 module Parser = Dolmen_loop.Parser.Make(State)(Stats)
 module Header = Dolmen_loop.Headers.Make(State)
 module Typer = Dolmen_loop.Typer.Typer(State)
@@ -67,12 +67,6 @@ let process prelude path opt_contents =
       ~header_check:false
       ~header_licenses:[]
       ~header_lang_version:None
-    |> Stats.init
-      ~mem:false
-      ~max_mem:0
-      ~enabled:false
-      ~typing:false
-      ~model:false
     |> (fun (st : State.t) -> st)
   in
   try

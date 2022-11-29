@@ -18,6 +18,11 @@ depends: [
   "fmt"
   "cmdliner" { >= "1.1.0" }
   "odoc" { with-doc }
+  "progress"
+  "terminal"
+]
+pin-depends: [
+  [ "progress" "git+https://github.com/Gbury/progress.git#custom" ]
 ]
 depopts: [
   "memtrace"

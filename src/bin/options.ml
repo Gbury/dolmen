@@ -18,7 +18,7 @@ let profiling_section = "PROFILING"
 
 type cmd =
   | Run of {
-      state : Loop.State.t;
+      state : State.t;
     }
   | List_reports of {
       conf : Dolmen_loop.Report.Conf.t;
@@ -244,9 +244,9 @@ let c_size = parse_size, print_size
 
 let report_style =
   Arg.enum [
-    "minimal", Loop.State.Minimal;
-    "regular", Loop.State.Regular;
-    "contextual", Loop.State.Contextual;
+    "minimal", State.Minimal;
+    "regular", State.Regular;
+    "contextual", State.Contextual;
   ]
 
 
@@ -338,11 +338,17 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
-  Loop.State.empty
-  |> Loop.State.init
+  State.empty
+  |> State.init
     ~bt ~debug ~report_style ~reports
     ~max_warn ~time_limit ~size_limit
     ~logic_file ~response_file
+  |> Stats.init
+    ~mem:progress_mem
+    ~max_mem:(int_of_float size_limit)
+    ~enabled:progress_enabled
+    ~typing:type_check
+    ~model:check_model
   |> Loop.Parser.init
     ~syntax_error_ref
     ~interactive_prompt:Loop.Parser.interactive_prompt_lang
@@ -353,12 +359,6 @@ let mk_run_state
     ~header_check
     ~header_licenses
     ~header_lang_version
-  |> Loop.Stats.init
-    ~mem:progress_mem
-    ~max_mem:(int_of_float size_limit)
-    ~enabled:progress_enabled
-    ~typing:type_check
-    ~model:check_model
 
 (* Profiling *)
 (* ************************************************************************* *)
@@ -630,10 +630,10 @@ let cli =
     | false, None ->
       `Ok (Run { state; })
     | false, Some report ->
-      let conf = Loop.State.get Loop.State.reports state in
+      let conf = State.get State.reports state in
       `Ok (Doc { report; conf; })
     | true, None ->
-      let conf = Loop.State.get Loop.State.reports state in
+      let conf = State.get State.reports state in
       `Ok (List_reports { conf; })
     | true, Some _ ->
       `Error (false,

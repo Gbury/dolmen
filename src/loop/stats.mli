@@ -8,5 +8,5 @@ val file_size : string -> int
 module type S = Stats_intf.S
 
 (** This module provides convenient pipes for parsing and dealing with includes. *)
-module Make(State : State.S) : S with type state := State.t
+module Noop(State : State.S) : S with type state := State.t
 
