@@ -315,17 +315,6 @@ let reports_opts strict warn_modifiers =
   in
   `Ok res
 
-let split_input = function
-  | `Stdin ->
-    Sys.getcwd (), `Stdin
-  | `File f ->
-    Filename.dirname f, `File (Filename.basename f)
-
-let mk_file lang mode input : _ Dolmen_loop.State.file =
-  let dir, source = split_input input in
-  { lang; mode; dir; source ;
-    loc = Dolmen.Std.Loc.mk_file ""; }
-
 let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
@@ -437,6 +426,10 @@ let reports =
 
 (* File inputs *)
 (* ************************************************************************* *)
+
+let mk_file lang mode input =
+  let dir,source = Loop.State.split_input input in
+  Loop.State.mk_file ?lang ?mode dir source
 
 let logic_file =
   let docs = common_section in

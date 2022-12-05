@@ -3,7 +3,7 @@
 (* Lsp server class *)
 (* ************************************************************************ *)
 
-class dolmen_lsp_server =
+class dolmen_lsp_server prelude =
   object(self)
     inherit Linol_lwt.Jsonrpc2.server
 
@@ -13,7 +13,7 @@ class dolmen_lsp_server =
     method! config_sync_opts =
       (* configure how sync happens *)
       let change = Lsp.Types.TextDocumentSyncKind.Incremental in
-        (* Lsp.Types.TextDocumentSyncKind.Full *)
+      (* Lsp.Types.TextDocumentSyncKind.Full *)
       Lsp.Types.TextDocumentSyncOptions.create ~openClose:true ~change
         ~save:(Lsp.Types.SaveOptions.create ~includeText:false ())
         ()
@@ -23,7 +23,7 @@ class dolmen_lsp_server =
         ~(notify_back:Linol_lwt.Jsonrpc2.notify_back)
         (uri:Lsp.Types.DocumentUri.t) (contents:string) =
       (* TODO: unescape uri/translate it to a correct path ? *)
-      match Loop.process uri (Some contents) with
+      match Loop.process prelude uri (Some contents) with
       | Ok state ->
         let diags = State.get State.diagnostics state in
         Hashtbl.replace buffers uri state;

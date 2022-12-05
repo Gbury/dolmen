@@ -8,7 +8,7 @@
     ; lwp deps
     lsp linol linol-lwt
     ; other external deps
-    gen logs logs.fmt
+    gen logs logs.fmt cmdliner
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop

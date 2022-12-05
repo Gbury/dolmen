@@ -181,57 +181,57 @@ module Make(State : State.S) = struct
       let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
       st, None
 
+  let parse_file st (file: Logic.language file) =
+    try
+      match file.source with
+      | `Stdin ->
+        let lang, file_loc, gen, _ = Logic.parse_input
+            ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
+        in
+        let file = { file with loc = file_loc; lang = Some lang; } in
+        st, file, gen
+      | `Raw (filename, contents) ->
+        let lang =
+          match file.lang with
+          | Some l -> l
+          | None ->
+            let res, _, _ = Logic.of_filename filename in
+            res
+        in
+        let lang, file_loc, gen, cl = Logic.parse_input
+            ~language:lang (`Raw (filename, lang, contents)) in
+        let file = { file with loc = file_loc; lang = Some lang; } in
+        st, file, gen_finally gen cl
+      | `File f ->
+        let s = Dolmen.Std.Statement.include_ f [] in
+        (* Auto-detect input format *)
+        let lang =
+          match file.lang with
+          | Some l -> l
+          | None ->
+            let res, _, _ = Logic.of_filename f in
+            res
+        in
+        (* Formats Dimacs and Tptp are descriptive and lack the emission
+            of formal solve/prove instructions, so we need to add them. *)
+        let s' =
+          match lang with
+          | Logic.Zf
+          | Logic.ICNF
+          | Logic.Smtlib2 _
+          | Logic.Alt_ergo -> s
+          | Logic.Dimacs
+          | Logic.Tptp _ ->
+            Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
+        in
+        let file = { file with lang = Some lang; } in
+        st, file, (Gen.singleton s')
+    with
+    | Logic.Extension_not_found ext ->
+      State.error st extension_not_found ext, file, Gen.empty
+
   let parse_logic prelude st (file : Logic.language file) =
-    (* Parse the input *)
-    let st, file, g =
-      try
-        match file.source with
-        | `Stdin ->
-          let lang, file_loc, gen, _ = Logic.parse_input
-              ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
-          in
-          let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen
-        | `Raw (filename, contents) ->
-          let lang =
-            match file.lang with
-            | Some l -> l
-            | None ->
-              let res, _, _ = Logic.of_filename filename in
-              res
-          in
-          let lang, file_loc, gen, cl = Logic.parse_input
-              ~language:lang (`Raw (filename, lang, contents)) in
-          let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen_finally gen cl
-        | `File f ->
-          let s = Dolmen.Std.Statement.include_ f [] in
-          (* Auto-detect input format *)
-          let lang =
-            match file.lang with
-            | Some l -> l
-            | None ->
-              let res, _, _ = Logic.of_filename f in
-              res
-          in
-          (* Formats Dimacs and Tptp are descriptive and lack the emission
-              of formal solve/prove instructions, so we need to add them. *)
-          let s' =
-            match lang with
-            | Logic.Zf
-            | Logic.ICNF
-            | Logic.Smtlib2 _
-            | Logic.Alt_ergo -> s
-            | Logic.Dimacs
-            | Logic.Tptp _ ->
-              Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
-          in
-          let file = { file with lang = Some lang; } in
-          st, file, (Gen.singleton s')
-      with
-      | Logic.Extension_not_found ext ->
-        State.error st extension_not_found ext, file, Gen.empty
-    in
+    let st, file, g = parse_file st file in
     let st = set_logic_file st file in
     (* Wrap the resulting parser *)
     st, wrap_parser ~file (Gen.append (Gen.of_list prelude) g)
@@ -261,9 +261,9 @@ module Make(State : State.S) = struct
           st, file, gen_finally gen cl
         | `File f ->
           begin match Response.find ?language:file.lang ~dir:file.dir f with
-          | None ->
-            let st = State.error st file_not_found (file.dir, f) in
-            st, file, Gen.empty
+            | None ->
+              let st = State.error st file_not_found (file.dir, f) in
+              st, file, Gen.empty
             | Some filename ->
               begin match file.mode with
                 | None

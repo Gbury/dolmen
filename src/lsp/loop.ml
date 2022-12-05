@@ -35,38 +35,47 @@ let finally st e =
     let res = handle_exn st exn in
     raise (Finished res)
 
-let process path opt_contents =
+let mk_state logic_file =
+  let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
+  let response_file = State.mk_file "" (`Raw ("", "")) in
+  State.empty
+  |> State.init
+    ~debug:false ~report_style:Regular ~reports
+    ~max_warn:max_int ~time_limit:0. ~size_limit:max_float
+    ~logic_file ~response_file
+  |> Parser.init ~syntax_error_ref:false
+  |> Typer.init
+  |> Typer_Pipe.init ~type_check:true
+  |> Header.init
+    ~header_check:false
+    ~header_licenses:[]
+    ~header_lang_version:None
+
+let mk_prelude prelude_files =
+  let state = mk_state (State.mk_file "" (`Raw ("", ""))) in
+  let _, gen =
+    List.fold_left (fun (st, gen) path ->
+        let dir = Filename.dirname path in
+        let file = Filename.basename path in
+        let l_file = State.mk_file dir (`File file) in
+        let st = State.set State.logic_file l_file st in
+        let st, _, ngen = Parser.parse_file st l_file in
+        st, Gen.append gen ngen
+      ) (state, Gen.empty) prelude_files
+  in
+  Gen.to_list gen
+
+let process prelude path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
-  let l_file : _ State.file = {
-    lang = None; mode = None; dir;
-    loc = Dolmen.Std.Loc.mk_file "";
-    source =match opt_contents with
-      | None -> `File file
-      | Some contents -> `Raw (file, contents);
-  } in
-  let r_file : _ State.file = {
-    lang = None; mode = None; dir;
-    loc = Dolmen.Std.Loc.mk_file "";
-    source = `Raw ("", "");
-  } in
-  let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
-  let st =
-    State.empty
-    |> State.init
-      ~debug:false ~report_style:Regular ~reports
-      ~max_warn:max_int ~time_limit:0. ~size_limit:max_float
-      ~logic_file:l_file ~response_file:r_file
-    |> Parser.init ~syntax_error_ref:false
-    |> Typer.init
-    |> Typer_Pipe.init ~type_check:true
-    |> Header.init
-      ~header_check:false
-      ~header_licenses:[]
-      ~header_lang_version:None
+  let l_file =
+    State.mk_file dir (match opt_contents with
+        | None -> `File file
+        | Some contents -> `Raw (file, contents);)
   in
+  let st = mk_state l_file in
   try
-    let st, g = Parser.parse_logic [] st l_file in
+    let st, g = Parser.parse_logic prelude st l_file in
     let open Pipeline in
     let st = run ~finally g st (
         (fix (op ~name:"expand" Parser.expand) (
