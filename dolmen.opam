@@ -24,7 +24,7 @@ homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"
 
-doc: "http://gbury.github.io/dolmen"
+doc: "https://gbury.github.io/dolmen"
 synopsis: "A parser library for automated deduction"
 description:
 "Dolmen is a parser library. It currently targets languages used in automated theorem provers,
