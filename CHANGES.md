@@ -2,13 +2,27 @@
 next
 ----
 
+### UI
+
+- Add a minimal reporting style accessible via the `--report-style`
+  option. When used, the `dolmen` binary will use at most one line
+  to output the result of processing the input file
+- Add an option to the `dolmen` binary to force a specific smtlib2
+  logic, overriding the one given in the file. This is accessible
+  via the `--force-smtlib2-logic` option
+- Add some documentation for setting up the lsp with neovim (PR#114)
+
 ### Model verification
 
 - Added model verification. This currently supports all
-  builtins (except for the String builtins).
+  builtins, except for String/Regular expressions.
 
 ### Parsing
 
+- Fix long compilation time of tptp parser due to flambda (PR#111)
+- Replace some `assert false` by proper error messages when
+  there is not the same number of function signatures as function
+  definitions in a `define-funs-rec` command in smtlib2
 - Accept all reserved words in s-exprs in smtlib (mainly affects
   parsing of attributes)
 - Added a parser for the smtlib model specification language
@@ -18,18 +32,29 @@ next
   used for debug)
 - Register a printer for the `Uncaught_exn` exception (mainly useful
   for library users)
+- Add a tag to differentiate predicates from functions in alt-ergo
+  (PR#104)
+
 
 ### Typing
 
+- Properly typecheck s-expressions in attributes for smtlib2
+  (most notably in :patterns attributes for psmt2)
 - Cleaned up handling of definitions: instead of using
   the functors in `Def`, definitions are now simply declared
   using the functions exposed by the typechecker
+- Stop emitting unused warnings for type wildcards
+- Expose term constants in the `Std.Expr` module (PR#112)
 
 ### Loop
 
 - Changed the state type from a record to an heterogeneous
   map. This simplifies interfaces for all Loop modules,
   and makes it much more extensible.
+- Added initialization functions for each pipe in order to
+  correctly init the expecteds keys in the state
+- Allow users to better control the interactive prompt when
+  parsing from stdin (PR#113)
 
 
 v0.7
