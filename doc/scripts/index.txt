@@ -10,4 +10,5 @@ Guillaume Bury <guillaume.bury@gmail.com>
 * link:0.5[]
 * link:0.6[]
 * link:0.7[]
+* link:0.8[]
 
