@@ -2,6 +2,11 @@
 next
 ----
 
+
+
+v0.8
+----
+
 ### UI
 
 - Add a minimal reporting style accessible via the `--report-style`
