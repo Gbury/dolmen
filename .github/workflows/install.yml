@@ -1,6 +1,7 @@
 # Installability tests
 # ====================
-# Check the binary package install correctly
+# Check the binary package install correctly on all supported
+# platforms (and run the tests)
 name: install
 
 # Configure when to run the workflows. Currently only when
@@ -35,7 +36,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          #- windows-latest
+          - windows-latest
 
         # Ocaml versions to use
         # Also test flambda to make sure the installation time is reasonable
@@ -63,7 +64,7 @@ jobs:
     - name: Checkout the repo
       uses: actions/checkout@v2
     # Setup ocaml/opam
-    - name: Setup ocaml/opam on Unix
+    - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}

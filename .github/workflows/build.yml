@@ -1,6 +1,6 @@
 # Buildability check
 # ==================
-# Build dolmen with the makefile
+# Build dolmen using various version of the OCaml compiler
 name: build
 
 # Configure when to run the workflows. Currently only when
@@ -31,11 +31,8 @@ jobs:
 
       matrix:
         # Operating system to run tests on.
-        # TODO: add macos-latest and windows-latest
         os:
           - ubuntu-latest
-          #- macos-latest
-          #- windows-latest
 
         # Ocaml versions to test. This is a bit of a misnomer, considering
         # that it is actually just a list of package to install as the base
