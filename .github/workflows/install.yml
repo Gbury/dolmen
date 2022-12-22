@@ -38,16 +38,23 @@ jobs:
           - macos-latest
           - windows-latest
 
-        # Ocaml versions to use
-        # Also test flambda to make sure the installation time is reasonable
-        ocaml-version:
-          - 4.14.0
-          - ocaml-variants.4.14.0+options,ocaml-option-flambda
-
         # Dolmen package to test installation of
         dolmen-pkg:
           - dolmen_bin
           - dolmen_lsp
+
+        # Ocaml versions to use
+        # Also test flambda to make sure the installation time is reasonable
+        # Note that because on windows, switches have different names, we
+        # must do a bit of work manually to get a correct ocaml-version
+        include:
+          - ocaml-version: 4.14.0
+          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            os: ubuntu-latest
+          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            os: macos-latest
+          - ocaml-version: ocaml-variants.4.14.0+flambda+mingw64c
+            os: windows-latest
 
 
     # Build ENV
