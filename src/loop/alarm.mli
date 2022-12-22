@@ -30,7 +30,6 @@ type t = (module S)
 val dummy : t
 (** Dummy implementation. Does nothing. *)
 
-
 val linux : t
 (** Linux alarms. Uses Gc alarm for size limits, and
     Unix timers for time limits. Fairly accurate and

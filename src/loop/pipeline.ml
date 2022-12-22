@@ -2,6 +2,8 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
 exception Sigint
+exception Out_of_time = Alarm.Out_of_time
+exception Out_of_space = Alarm.Out_of_space
 
 module Make(State : State.S) = struct
 

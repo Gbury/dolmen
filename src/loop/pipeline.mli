@@ -11,6 +11,13 @@
 *)
 
 exception Sigint
+(** Exception raised when a [Sigint] signal is received. *)
+
+exception Out_of_time
+(** Alias to {Alarm.Out_of_time}. *)
+
+exception Out_of_space
+(** Alias to {Alarm.Out_of_space}. *)
 
 module Make(State : State.S) : sig
   (** Concrete pipelines. *)
