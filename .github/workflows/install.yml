@@ -68,12 +68,13 @@ jobs:
       uses: avsm/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}
-    # Run opam udpate to get an up-to-date repo
-    - name: Update opam repo
-      run: opam update
     # Debug
     - name: Debugging
       run: opam switch list-available
+      if: always ()
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
     # Install the package
     - name: Install package
       run: opam install --with-test ${{ matrix.dolmen-pkg }}
