@@ -40,9 +40,9 @@ jobs:
 
         # Ocaml versions to use
         # Also test flambda to make sure the installation time is reasonable
-        ocaml-version:
+        ocaml-compiler:
+          - 4.14.0
           - ocaml-variants.4.14.0+options,ocaml-option-flambda
-          - ocaml-base-compiler.4.14.0
 
         # Dolmen package to test installation of
         dolmen-pkg:
@@ -71,6 +71,9 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
+    # Debug
+    - name: Debugging
+      run: opam switch list-available
     # Install the package
     - name: Install package
       run: opam install --with-test ${{ matrix.dolmen-pkg }}
