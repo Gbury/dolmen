@@ -14,7 +14,7 @@ depends: [
   "dolmen_loop" {= version }
   "dune" { >= "3.0" }
   "odoc" { with-doc }
-  "zarith"
+  "zarith" { >= "1.10" }
   "farith"
 ]
 tags: [ "logic" "type" "model" "modelchecking" "first order" ]
@@ -22,5 +22,5 @@ homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"
 
-doc: "http://gbury.github.io/dolmen"
+doc: "https://gbury.github.io/dolmen"
 synopsis: "A model checker for automated deduction languages"

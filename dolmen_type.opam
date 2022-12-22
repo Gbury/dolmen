@@ -12,7 +12,7 @@ depends: [
   "ocaml" {>= "4.02.3"}
   "dolmen" {= version }
   "dune" { >= "3.0" }
-  "spelll"
+  "spelll" { >= "0.4" }
   "uutf"
   "odoc" { with-doc }
 ]
@@ -21,5 +21,5 @@ homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"
 
-doc: "http://gbury.github.io/dolmen"
+doc: "https://gbury.github.io/dolmen"
 synopsis: "A typechecker for automated deduction languages"
