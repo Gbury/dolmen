@@ -11,8 +11,6 @@
 *)
 
 exception Sigint
-exception Out_of_time
-exception Out_of_space
 
 module Make(State : State.S) : sig
   (** Concrete pipelines. *)
@@ -87,7 +85,7 @@ module Make(State : State.S) : sig
 
   val run :
     finally:(State.t -> (Printexc.raw_backtrace * exn) option -> State.t) ->
-    (State.t -> State.t * 'a option) -> State.t ->
+    ?alarm:Alarm.t -> (State.t -> State.t * 'a option) -> State.t ->
     (State.t, 'a, unit) t -> State.t
     (** Loop the evaluation of a pipeline over a generator, and starting options.
         @param finally a function called at the end of every iteration (even if

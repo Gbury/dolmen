@@ -17,11 +17,11 @@ let exn st = function
     Loop.State.error st Dolmen_loop.Report.Error.user_interrupt ()
 
   (* Timeout, potentially wrapped by the typechecker *)
-  | Dolmen_loop.Pipeline.Out_of_time ->
+  | Dolmen_loop.Alarm.Out_of_time ->
     Format.pp_print_flush Format.std_formatter ();
     Loop.State.error st Dolmen_loop.Report.Error.timeout ()
 
-  | Dolmen_loop.Pipeline.Out_of_space ->
+  | Dolmen_loop.Alarm.Out_of_space ->
     Format.pp_print_flush Format.std_formatter ();
     Format.pp_print_flush Format.err_formatter ();
     Loop.State.error st Dolmen_loop.Report.Error.spaceout ()
