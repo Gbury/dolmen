@@ -11,7 +11,8 @@
 *)
 
 exception Sigint
-(** Exception raised when a [Sigint] signal is received. *)
+(** Alias to {Sys.Break}. Raised upon user interrupt / when a
+    {Sys.sigint} signal is received. *)
 
 exception Out_of_time
 (** Alias to {Alarm.Out_of_time}. *)

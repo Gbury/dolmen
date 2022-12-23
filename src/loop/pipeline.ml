@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-exception Sigint
+exception Sigint = Sys.Break
 exception Out_of_time = Alarm.Out_of_time
 exception Out_of_space = Alarm.Out_of_space
 
@@ -12,10 +12,15 @@ module Make(State : State.S) = struct
 
   (* We want to catch user interruptions *)
   let () =
-    Sys.set_signal Sys.sigint (
-      Sys.Signal_handle (fun _ ->
-          raise Sigint)
-    )
+    match Sys.os_type with
+    | "Win32" | "Cygwin" ->
+      Sys.catch_break true
+    | "Unix" ->
+      Sys.set_signal Sys.sigint (
+        Sys.Signal_handle (fun _ ->
+            raise Sigint)
+      )
+    | _ -> ()
 
   (* Pipeline and execution *)
   (* ************************************************************************ *)
