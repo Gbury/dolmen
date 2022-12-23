@@ -127,8 +127,9 @@ let windows : t = (module Windows)
 
 let default =
   match Sys.os_type with
-  | "linux" -> linux
-  | "windows" -> windows
+  | "Unix" -> linux
+  | "Win32" -> windows
+  | "Cygwin" -> windows (* maybe linux would work, but better safe than sorry *)
   | _ -> dummy
 
 
