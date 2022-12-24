@@ -32,8 +32,9 @@ let finally st e =
   | None -> st
   | Some (bt,exn) ->
     (* Print the backtrace if requested *)
-    if Printexc.backtrace_status () then
-      Printexc.print_raw_backtrace stdout bt;
+    if Loop.State.(get bt) st then (
+      Format.eprintf "foo ?!@.";
+      Printexc.print_raw_backtrace stdout bt);
     handle_exn st exn
 
 let run st =

@@ -4,14 +4,16 @@ next
 
 ### UI
 
-- Fix handling of limits on windows (PR#117)
+- Fix handling of size/time limits on windows (PR#117)
+- Fix spurious printing of backtraces (PR#118)
 
 ### Loop
 
 - New module to implement Alarms (size/time limits) (PR#117)
 - Add optional argument to `Pipeline.run` to specify
   an alarm implementation (PR#117)
-
+- Add a `bt` key to the state to record whether we should print
+  backtraces (PR#118)
 
 
 v0.8

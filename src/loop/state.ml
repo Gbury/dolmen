@@ -144,6 +144,7 @@ let update k f t =
 (* ************************************************************************* *)
 
 let pipe = "state"
+let bt : bool key = create_key ~pipe "bt"
 let debug : bool key = create_key ~pipe "debug"
 let reports : Report.Conf.t key = create_key ~pipe "reports"
 let report_style : report_style key = create_key ~pipe "report_style"
@@ -157,6 +158,7 @@ let logic_file : Logic.language file key = create_key ~pipe "logic_file"
 let response_file : Response.language file key = create_key ~pipe "response_file"
 
 let init
+    ?bt:(bt_value=(Printexc.backtrace_status ()))
     ~debug:debug_value
     ~report_style:report_style_value
     ~reports:reports_value
@@ -168,6 +170,7 @@ let init
     ~response_file:response_file_value
     st =
   st
+  |> set bt bt_value
   |> set debug debug_value
   |> set report_style report_style_value
   |> set reports reports_value
