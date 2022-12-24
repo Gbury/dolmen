@@ -1,6 +1,7 @@
 # Installability tests
 # ====================
-# Check the binary package install correctly
+# Check the binary package install correctly on all supported
+# platforms (and run the tests)
 name: install
 
 # Configure when to run the workflows. Currently only when
@@ -35,18 +36,25 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          #- windows-latest
-
-        # Ocaml versions to use
-        # Also test flambda to make sure the installation time is reasonable
-        ocaml-version:
-          - ocaml-variants.4.14.0+options,ocaml-option-flambda
-          - ocaml-base-compiler.4.14.0
+          - windows-latest
 
         # Dolmen package to test installation of
         dolmen-pkg:
           - dolmen_bin
           - dolmen_lsp
+
+        # Ocaml versions to use
+        # Also test flambda to make sure the installation time is reasonable
+        # Note that because on windows, switches have different names, we
+        # must do a bit of work manually to get a correct ocaml-version
+        include:
+          - ocaml-version: 4.14.0
+          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            os: ubuntu-latest
+          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            os: macos-latest
+          - ocaml-version: ocaml-variants.4.14.0+flambda+mingw64c
+            os: windows-latest
 
 
     # Build ENV
@@ -63,10 +71,14 @@ jobs:
     - name: Checkout the repo
       uses: actions/checkout@v2
     # Setup ocaml/opam
-    - name: Setup ocaml/opam on Unix
+    - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}
+    # Debug
+    - name: Debugging
+      run: opam switch list-available
+      if: always ()
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update

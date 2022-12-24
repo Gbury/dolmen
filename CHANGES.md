@@ -1,4 +1,19 @@
 
+next
+----
+
+### UI
+
+- Fix handling of limits on windows (PR#117)
+
+### Loop
+
+- New module to implement Alarms (size/time limits) (PR#117)
+- Add optional argument to `Pipeline.run` to specify
+  an alarm implementation (PR#117)
+
+
+
 v0.8
 ----
 
