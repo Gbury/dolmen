@@ -4,7 +4,7 @@
   (instrumentation (backend bisect_ppx))
   (libraries
     ; External deps
-    gen unix fmt pp_loc terminal progress
+    gen unix fmt
     ; main dolmen deps, with versioned languages deps
     dolmen
     dolmen.intf dolmen.std dolmen.class

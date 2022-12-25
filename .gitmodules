@@ -1,0 +1,3 @@
+[submodule "vendor/progress"]
+	path = vendor/progress
+	url = https://github.com/Gbury/progress.git

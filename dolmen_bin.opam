@@ -14,15 +14,14 @@ depends: [
   "dolmen_type" {= version }
   "dolmen_loop" {= version }
   "dolmen_model" {= version }
+  "odoc" { with-doc }
   "dune" { >= "3.0" }
   "fmt"
   "cmdliner" { >= "1.1.0" }
-  "odoc" { with-doc }
-  "progress"
-  "terminal"
-]
-pin-depends: [
-  [ "progress" "git+https://github.com/Gbury/progress.git#custom" ]
+  "pp_loc" { >= "2.0.0" }
+# These two are currently vendored
+#  "progress"
+#  "terminal"
 ]
 depopts: [
   "memtrace"

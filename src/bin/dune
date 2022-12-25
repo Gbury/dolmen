@@ -6,6 +6,8 @@
   (libraries
     ; external deps
     cmdliner fmt gen
+    pp_loc progress terminal
+    mtime mtime.clock.os
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop dolmen_model

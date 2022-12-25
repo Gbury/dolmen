@@ -32,9 +32,10 @@ let finally st e =
   | None -> st
   | Some (bt,exn) ->
     (* Print the backtrace if requested *)
-    if State.(get bt) st then (
-      (* TODO: use Tui *)
-      Printexc.print_raw_backtrace stdout bt);
+    if State.(get bt) st then begin
+      Tui.eprintf "%s@."
+        (Printexc.raw_backtrace_to_string bt)
+    end;
     handle_exn st exn
 
 let run st =
