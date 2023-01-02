@@ -17,8 +17,8 @@ let handle_exn st = function
 
   (* Simple error cases *)
   | Dolmen_loop.Pipeline.Sigint -> Error "user interrupt"
-  | Dolmen_loop.Pipeline.Out_of_time -> Error "timeout"
-  | Dolmen_loop.Pipeline.Out_of_space -> Error "memoryout"
+  | Dolmen_loop.Alarm.Out_of_time -> Error "timeout"
+  | Dolmen_loop.Alarm.Out_of_space -> Error "memoryout"
   (* Fallback *)
   | exn ->
     let bt = Printexc.get_raw_backtrace () in

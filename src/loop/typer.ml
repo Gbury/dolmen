@@ -1204,8 +1204,8 @@ module Typer(State : State.S) = struct
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg
     (* Uncaught exception during type-checking *)
-    | T.Uncaught_exn ((Pipeline.Out_of_time |
-                       Pipeline.Out_of_space |
+    | T.Uncaught_exn ((Alarm.Out_of_time |
+                       Alarm.Out_of_space |
                        Pipeline.Sigint) as exn, bt) ->
       Printexc.raise_with_backtrace exn bt
     | T.Uncaught_exn (exn, bt) ->

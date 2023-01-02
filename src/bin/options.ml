@@ -329,13 +329,17 @@ let mk_run_state
   let () = Option.iter Gc.set gc_opt in
   let () = set_color Unix.stdout Format.std_formatter colors in
   let () = set_color Unix.stderr Format.err_formatter colors in
+  (* base (which is a transitive dependency, due to farith),
+     unconditionally enables backtraces, which is fine. But that means that
+     for our purpose, we need to store whether to print the backtraces somewhere
+     else, since we cannot reuse the [backtrace_status ()]. *)
   let () = if bt then Printexc.record_backtrace true in
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
   Loop.State.empty
   |> Loop.State.init
-    ~debug ~report_style ~reports
+    ~bt ~debug ~report_style ~reports
     ~max_warn ~time_limit ~size_limit
     ~logic_file ~response_file
   |> Loop.Parser.init
