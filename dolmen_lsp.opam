@@ -20,7 +20,6 @@ depends: [
   "lsp"
   "linol" { >= "0.4" & < "0.5" }
   "linol-lwt" { >= "0.4" & < "0.5" }
-  "cmdliner" { >= "1.1.0" }
 ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"

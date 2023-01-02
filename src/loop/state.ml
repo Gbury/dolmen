@@ -60,15 +60,14 @@ let () =
 (* Helper functions *)
 (* ************************************************************************* *)
 
-  let split_input = function
-    | `Stdin ->
-      Sys.getcwd (), `Stdin
-    | `File f ->
-      Filename.dirname f, `File (Filename.basename f)
+let split_input = function
+  | `Stdin ->
+    Sys.getcwd (), `Stdin
+  | `File f ->
+    Filename.dirname f, `File (Filename.basename f)
 
-  let mk_file ?lang ?mode ?(loc = Dolmen.Std.Loc.mk_file "") dir source : _ file =
-    { lang; mode; dir; source ;
-      loc; }
+let mk_file ?lang ?mode ?(loc = Dolmen.Std.Loc.mk_file "") dir source =
+  { lang; mode; dir; source ; loc; }
 
 (* Signatures *)
 (* ************************************************************************* *)
