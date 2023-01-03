@@ -49,9 +49,11 @@ jobs:
     # Build/test steps
     # ----------------
     steps:
-    # checkout the repo (full clone, necessary for push later)
+    # checkout the repo
     - name: Checkout the repo
       uses: actions/checkout@v3
+      with:
+        submodules: recursive
     # Setup ocaml/opam
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
