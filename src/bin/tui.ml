@@ -155,9 +155,8 @@ module Bar = struct
         | `None -> data.cur_mem, data.last_mem
         | `Add obj -> obj_size obj + data.cur_mem, data.last_mem
         | `Set obj ->
-          if Mtime.Span.(
-              equal zero data.elapsed_time
-              || (compare (abs_diff elapsed_time data.last_mem) (300 * ms) >= 0))
+          if Mtime.Span.equal Mtime.Span.zero data.elapsed_time
+          || (Mtime.Span.to_s (Mtime.Span.abs_diff elapsed_time data.last_mem) >= 0.3)
           then obj_size obj, elapsed_time
           else data.cur_mem, data.last_mem
       end
