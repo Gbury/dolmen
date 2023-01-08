@@ -37,7 +37,7 @@ let finally st e =
 
 let mk_state logic_file =
   let reports = Dolmen_loop.Report.Conf.mk ~default:Enabled in
-  let response_file = State.mk_file "" (`Raw ("", "")) in
+  let response_file = State.mk_file logic_file.State.dir (`Raw ("", "")) in
   State.empty
   |> State.init
     ~debug:false ~report_style:Regular ~reports

@@ -3,6 +3,36 @@
 (* Lsp server class *)
 (* ************************************************************************ *)
 
+exception ServerError of string
+
+let parse_settings settings =
+  match settings with
+  | `Assoc [ "preludes", `List l ] ->
+    List.fold_left (
+      fun acc s ->
+        match s with
+        | `String f -> f :: acc
+        | _ ->
+          raise (ServerError (
+              Format.asprintf
+                "Expected a path to a prelude file as a string, \
+                 instead got %a@."
+                Yojson.Safe.pp s))
+    ) [] l
+  | _ ->
+    raise (ServerError (
+        Format.asprintf
+          "ChangeConfiguration: received unexpected settings: \n%a@."
+          Yojson.Safe.pp settings))
+
+let preprocess_uri uri =
+  let prefix = "file://" in
+  if String.starts_with ~prefix uri
+  then
+    let prefix_len = String.length prefix in
+    String.sub uri prefix_len (String.length uri - prefix_len)
+  else uri
+
 class dolmen_lsp_server =
   object(self)
     inherit Linol_lwt.Jsonrpc2.server
@@ -20,12 +50,11 @@ class dolmen_lsp_server =
         ~save:(Lsp.Types.SaveOptions.create ~includeText:false ())
         ()
 
-
     method private _on_doc
         ~(notify_back:Linol_lwt.Jsonrpc2.notify_back)
         (uri:Lsp.Types.DocumentUri.t) (contents:string) =
       (* TODO: unescape uri/translate it to a correct path ? *)
-      match Loop.process prelude uri (Some contents) with
+      match Loop.process prelude (preprocess_uri uri) (Some contents) with
       | Ok state ->
         let diags = State.get State.diagnostics state in
         Hashtbl.replace buffers uri state;
@@ -42,46 +71,21 @@ class dolmen_lsp_server =
       self#_on_doc ~notify_back d.uri new_content
 
     method! on_notification_unhandled
-        ~notify_back (n:Lsp.Client_notification.t) =
+        ~notify_back:_ (n:Lsp.Client_notification.t) =
       match n with
       | Lsp.Client_notification.ChangeConfiguration { settings; } ->
         begin try
-            let prelude_files =
-              begin match settings with
-                | `Assoc [ "preludes", `List l ] ->
-                  List.fold_left (
-                    fun acc s ->
-                      match s with
-                      | `String f -> f :: acc
-                      | _ ->
-                        failwith (
-                          Format.asprintf
-                            "Expected a path to a prelude file as a string, \
-                             instead got %a@."
-                            Yojson.Safe.pp s)
-                  ) [] l
-                | _ ->
-                  failwith (
-                    Format.asprintf "ChangeConfiguration: received unexpected \
-                                     settings: \n%a@." Yojson.Safe.pp settings
-                  )
-              end
-            in
-            prelude <- Loop.mk_prelude prelude_files;
-            notify_back#send_log_msg
-              ~type_:Linol_lwt.MessageType.Log
-              (Format.asprintf
-                 "Updated prelude files (%a)"
-                 Yojson.Safe.pp settings)
-          with Failure s ->
+            prelude <- Loop.mk_prelude (parse_settings settings);
+            Linol_lwt.Jsonrpc2.IO.return ()
+          with ServerError s ->
             Linol_lwt.Jsonrpc2.IO.failwith s
         end
       | _ ->
         Lwt.return ()
 
-    method on_notif_doc_did_close ~notify_back:_ d =
+    method on_notif_doc_did_close ~notify_back d =
       Hashtbl.remove buffers d.uri;
-      Linol_lwt.Jsonrpc2.IO.return ()
+      notify_back#send_diagnostic []
 
   end
 

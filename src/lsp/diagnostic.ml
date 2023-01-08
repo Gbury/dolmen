@@ -15,9 +15,11 @@ let start_range = lsp_range start_pos start_pos
 let range_of_loc = function
   | None -> start_range
   | Some (l : Dolmen.Std.Loc.loc) ->
+    let start_pos = if l.start_line = 0 then 0 else l.start_line - 1 in
+    let end_pos = if l.stop_line = 0 then 0 else l.stop_line - 1 in
     lsp_range
-      (lsp_pos (l.start_line - 1) l.start_column)
-      (lsp_pos (l.stop_line - 1) l.stop_column)
+      (lsp_pos start_pos l.start_column)
+      (lsp_pos end_pos l.stop_column)
 
 let warn ?loc message =
   Lsp.Types.Diagnostic.create ()
