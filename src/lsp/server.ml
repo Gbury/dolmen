@@ -27,10 +27,10 @@ let parse_settings settings =
 
 let preprocess_uri uri =
   let prefix = "file://" in
-  if String.starts_with ~prefix uri
-  then
-    let prefix_len = String.length prefix in
-    String.sub uri prefix_len (String.length uri - prefix_len)
+  let prefix_len = String.length prefix in
+  let uri_len = String.length uri in
+  if prefix_len < uri_len && (String.sub uri 0 prefix_len) = prefix
+  then String.sub uri prefix_len (uri_len - prefix_len)
   else uri
 
 class dolmen_lsp_server =
