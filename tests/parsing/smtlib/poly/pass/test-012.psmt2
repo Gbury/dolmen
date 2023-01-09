@@ -1,6 +1,12 @@
-(set-logic QF_AX)
-(declare-sort I 0)
-(declare-sort E 0)
-(declare-const select_ (-> (Array I E) I E))
-(declare-const store_ (-> (Array I E) I E (Array I E)))
+(set-logic ALL)
+
+(declare-sort a 0)
+(declare-sort seq 1)
+(declare-fun seq_set ((seq a) Int a) (seq a))
+(declare-fun seq_content ((seq a)) (-> Int a))
+
+(assert (forall
+    ((v a) (s (seq a)))
+    (= v (let ((ns (seq_content (seq_set s 0 v)))) (ns 0)))
+))
 (check-sat)
