@@ -85,4 +85,5 @@ val mk_lexbuf :
     stream (to report errors), and then a string with the actual
     contents to be parsed. *)
 
-
+val split_last: 'a list -> 'a list * 'a
+(** given a non-empty list, splits the last element from the other ones *)

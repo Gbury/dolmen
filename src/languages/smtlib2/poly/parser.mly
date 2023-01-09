@@ -129,10 +129,8 @@ sort:
       in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc c args }
   | OPEN ARROW h=sort t=sort+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in
-      let rev_t = List.rev t in
-      let ret = List.hd rev_t in
-      let args = h :: List.rev rev_t in
+    { let args, ret = Dolmen_std.Misc.split_last (h :: t) in
+      let loc = L.mk_pos $startpos $endpos in
       List.fold_right (T.arrow ~loc) args ret }
 ;
 

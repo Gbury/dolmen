@@ -208,3 +208,9 @@ let mk_lexbuf i =
     set_file buf filename;
     buf, cl
 
+let rec split_last = function
+  | [] -> failwith "split_last: empty list!"
+  | [x] -> ([], x)
+  | h :: t ->
+    let (tl, last) = split_last t in
+    (h :: tl, last)
