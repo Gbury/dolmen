@@ -76,6 +76,9 @@ module type Term = sig
   val exists  : ?loc:location -> t list -> t -> t
   (** Existencial quantification. *)
 
+  val arrow : ?loc:location -> t -> t -> t
+  (** Arrow type. *)
+
   val match_ : ?loc:location -> t -> (t * t) list -> t
   (** Pattern matching. The first term is the term to match,
       and each tuple in the list is a match case, which is a pair

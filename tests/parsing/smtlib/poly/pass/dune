@@ -321,6 +321,38 @@
   (action (diff test-011.expected test-011.full)))
 
 
+; Test for test-012.psmt2
+; Incremental test
+
+(rule
+   (target  test-012.incremental)
+   (deps    (:input test-012.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff test-012.expected test-012.incremental)))
+
+; Full mode test
+
+(rule
+   (target  test-012.full)
+   (deps    (:input test-012.psmt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes 0
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff test-012.expected test-012.full)))
+
+
 ; Test for test-fun_def_1.psmt2
 ; Incremental test
 

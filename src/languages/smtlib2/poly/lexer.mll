@@ -69,6 +69,7 @@
     | SET_INFO -> reserved_descr "set-info"
     | SET_LOGIC -> reserved_descr "set-logic"
     | SET_OPTION -> reserved_descr "set-option"
+    | ARROW -> reserved_descr "->"
 
   (* Token parsing *)
 
@@ -125,6 +126,7 @@
     "set-info", SET_INFO;
     "set-logic", SET_LOGIC;
     "set-option", SET_OPTION;
+    "->", ARROW;
   ]
 
   let symbol newline lexbuf s =

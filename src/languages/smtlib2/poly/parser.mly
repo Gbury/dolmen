@@ -87,6 +87,7 @@ reserved:
   | SET_INFO { "set-info" }
   | SET_LOGIC { "set-logic" }
   | SET_OPTION { "set-option" }
+  | ARROW { "->" }
 ;
 
 s_expr:
@@ -127,6 +128,12 @@ sort:
         T.const ~loc (f I.sort)
       in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc c args }
+  | OPEN ARROW h=sort t=sort+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in
+      let rev_t = List.rev t in
+      let ret = List.hd rev_t in
+      let args = h :: List.rev rev_t in
+      List.fold_right (T.arrow ~loc) args ret }
 ;
 
 attribute_value:

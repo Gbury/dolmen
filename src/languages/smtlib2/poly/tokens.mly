@@ -42,6 +42,7 @@
        SET_INFO
        SET_LOGIC
        SET_OPTION
+       ARROW
 
 %%
 
