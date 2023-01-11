@@ -63,7 +63,7 @@ Individual language parsers are available through the following modules:
 {!modules:
 Dolmen_dimacs
 Dolmen_icnf
-Dolmen_smtlib
+Dolmen_smtlib2
 Dolmen_tptp
 Dolmen_zf
 }
