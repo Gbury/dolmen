@@ -6,6 +6,7 @@ next
 
 - Fix handling of size/time limits on windows (PR#117)
 - Fix spurious printing of backtraces (PR#118)
+- Add release binaries for windows
 
 ### Loop
 

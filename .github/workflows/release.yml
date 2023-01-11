@@ -25,29 +25,29 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
+          - windows-latest
 
-        # Ocaml versions to use
-        ocaml-version:
-          - 4.14.0+options
-        ocaml-options:
-          - ocaml-option-flambda
-
+        # Specify bin/artefact names and ocaml versions for each OS
         include:
           - os: ubuntu-latest
             dolmen_artifact: dolmen
             dolmen_asset: dolmen-linux-amd64
             dolmenls_artifact: dolmenls
             dolmenls_asset: dolmenls-linux-amd64
-          #- os: windows-latest
-          #dolmen_artifact: dolmen.exe
-          #dolmen_asset: dolmen-windows-amd64
-          #dolmenls_artifact: dolmenls.exe
-          #dolmenls_asset: dolmenls-windows-amd64
+            ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
           - os: macos-latest
             dolmen_artifact: dolmen
             dolmen_asset: dolmen-macos-amd64
             dolmenls_artifact: dolmenls
             dolmenls_asset: dolmenls-macos-amd64
+            ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+          - os: windows-latest
+            dolmen_artifact: dolmen.exe
+            dolmen_asset: dolmen-windows-amd64.exe
+            dolmenls_artifact: dolmenls.exe
+            dolmenls_asset: dolmenls-windows-amd64.exe
+            ocaml-version:
+            ocaml-version: ocaml-variants.4.14.0+flambda+mingw64c
 
     # Build ENV
     # ---------
@@ -62,16 +62,10 @@ jobs:
     - name: Checkout the repo
       uses: actions/checkout@v2
     # Setup ocaml/opam
-    - name: Setup ocaml/opam on Windows
+    - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
-      if: runner.os == 'Windows'
       with:
-        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }}+mingw64c,${{ matrix.ocaml-options }}
-    - name: Setup ocaml/opam on Unix
-      uses: avsm/setup-ocaml@v2
-      if: runner.os != 'Windows'
-      with:
-        ocaml-compiler: ocaml-variants.${{ matrix.ocaml-version }},${{ matrix.ocaml-options }}
+        ocaml-compiler: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
@@ -81,7 +75,7 @@ jobs:
     # Build the package
     - name: Build the package
       run: opam exec -- dune build --profile=release @install
-    # Upload the binaries
+    # Upload the dolmen binary
     - name: Upload Dolmen binary to release
       uses: svenstaro/upload-release-action@v2
       with:
@@ -89,7 +83,7 @@ jobs:
         file: _build/install/default/bin/${{ matrix.dolmen_artifact }}
         asset_name: ${{ matrix.dolmen_asset }}
         tag: ${{ github.ref }}
-    # Upload the binaries
+    # Upload the dolmenls binary
     - name: Upload Dolmenls binary to release
       uses: svenstaro/upload-release-action@v2
       with:
