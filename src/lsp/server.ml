@@ -33,6 +33,12 @@ let preprocess_uri uri =
   then String.sub uri prefix_len (uri_len - prefix_len)
   else uri
 
+let mk_prelude files =
+  List.map (
+    fun f ->
+      Dolmen_std.Statement.include_ f []
+  ) files
+
 class dolmen_lsp_server =
   object(self)
     inherit Linol_lwt.Jsonrpc2.server
@@ -40,6 +46,7 @@ class dolmen_lsp_server =
     (* one env per document *)
     val buffers: (Lsp.Types.DocumentUri.t, State.t) Hashtbl.t = Hashtbl.create 32
 
+    (* A list of include statements of the prelude files *)
     val mutable prelude = []
 
     method! config_sync_opts =
@@ -75,7 +82,7 @@ class dolmen_lsp_server =
       match n with
       | Lsp.Client_notification.ChangeConfiguration { settings; } ->
         begin try
-            prelude <- Loop.mk_prelude (parse_settings settings);
+            prelude <- mk_prelude (parse_settings settings);
             Linol_lwt.Jsonrpc2.IO.return ()
           with ServerError s ->
             Linol_lwt.Jsonrpc2.IO.failwith s

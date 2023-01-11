@@ -32,12 +32,6 @@ module type S = sig
       @param interactive_prompt : does nothing by default.
   *)
 
-  val parse_file :
-    state -> Logic.language State.file ->
-    state * Logic.language State.file * Dolmen.Std.Statement.t Gen.t
-  (** Parsing function. Parses a file and returns the new state, with the file
-      and the statement generator. *)
-
   val parse_logic :
     Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->
     state * (state -> state * Dolmen.Std.Statement.t option)
