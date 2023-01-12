@@ -197,8 +197,8 @@ module type Statement = sig
   val record_type : ?loc:location -> id -> term list -> (id * term) list -> t
   (** Record type definition. *)
 
-  val fun_def : ?loc:location -> id -> term list -> term list -> term -> term -> t
-  (** Function definition. *)
+  val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
+  (** Declare a list of mutually recursive functions. *)
 
   val pred_def : ?loc:location -> id -> term list -> term list -> term -> t
   (** Predicate definition. *)
