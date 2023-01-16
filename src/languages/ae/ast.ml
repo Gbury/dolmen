@@ -197,7 +197,7 @@ module type Statement = sig
   val record_type : ?loc:location -> id -> term list -> (id * term) list -> t
   (** Record type definition. *)
 
-  val fun_def : ?loc:location -> id -> term list -> term list -> term -> term -> t
+  val fun_def_rec : ?loc:location -> id -> term list -> term list -> term -> term -> t
   (** Function definition. *)
 
   val pred_def : ?loc:location -> id -> term list -> term list -> term -> t

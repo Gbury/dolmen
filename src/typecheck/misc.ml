@@ -48,6 +48,14 @@ module Lists = struct
     | a :: r1, b :: r2, c :: r3 -> (f a b c) :: (map3 f r1 r2 r3)
     | _ -> raise (Invalid_argument "Misc.Lists.map3")
 
+  let fold_left_map f accu l =
+    let rec aux f accu l_accu = function
+      | [] -> accu, List.rev l_accu
+      | x :: l ->
+        let accu, x = f accu x in
+        aux f accu (x :: l_accu) l in
+    aux f accu [] l
+
 end
 
 (* String manipulation *)

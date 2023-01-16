@@ -155,6 +155,8 @@ module type Formulas = sig
     | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
     | Declared of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
+    | Implicit_in_def of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
+    | Implicit_in_decl of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
   (** The type of reasons for constant typing *)
 
   type binding = [

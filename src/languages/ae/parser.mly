@@ -541,7 +541,7 @@ decl:
     LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR
     COLON ret_ty=primitive_type EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      S.fun_def ~loc f [] args ret_ty body }
+      S.fun_def_rec ~loc f [] args ret_ty body }
 
   | PRED p=raw_named_ident EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in

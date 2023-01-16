@@ -136,6 +136,10 @@ module type Tff = sig
   val view : t -> view
   (** Partial view of a type. *)
 
+  val freshen : t -> t
+  (** Replaces all bound variables in a type, ensuring that the returned type
+      contains only fresh bound type variables. *)
+
 end
 
 module type Thf = sig

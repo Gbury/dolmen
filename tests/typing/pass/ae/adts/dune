@@ -18,4 +18,21 @@
   (action (diff adts_1.expected adts_1.full)))
 
 
+; Test for length.ae
+; Full mode test
+
+(rule
+   (target  length.full)
+   (deps    (:input length.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff length.expected length.full)))
+
+
 ; Auto-generated part end
