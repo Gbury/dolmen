@@ -15,6 +15,20 @@ next
 - The LSP now sends an empty list of diagnostics upon closing
   a file (PR#116)
 
+### Parsing
+
+- Fix a bug related to alt-ergos function definition, which
+  were previously alwyas non-recursive. Now, alt-ergo's function
+  definitions are always recursive (PR#123)
+
+### Typing
+
+- Properly add binding locations for implicit type variables
+  (PR#123)
+- Ensure that type of recursively defined symbols are freshened
+  to avoid type variables sharing between declaration and
+  definition (PR#123)
+
 ### Loop
 
 - New module to implement Alarms (size/time limits) (PR#117)

@@ -1123,6 +1123,36 @@ module Ty = struct
     let l, _ = FV.to_list s in
     l
 
+  (* Freshening of bound type variables *)
+  let freshen_var v = Id.mk v.path Type
+
+  let rec freshen_aux subst (t: t) =
+    match t.ty_descr with
+    | TyVar v ->
+      begin match Subst.Var.get v subst with
+        | v' -> of_var v'
+        | exception Not_found -> t
+      end
+    | TyApp (c, args) ->
+      let args = List.map (freshen_aux subst) args in
+      apply c args
+    | Arrow (params, ret) ->
+      let params = List.map (freshen_aux subst) params in
+      let ret = freshen_aux subst ret in
+      arrow params ret
+    | Pi (vars, body) ->
+      let subst, rev_vars =
+        List.fold_left (fun (subst, rev_vars) var ->
+            let new_var = freshen_var var in
+            let subst = Subst.Var.bind subst var new_var in
+            subst, (new_var :: rev_vars)
+          ) (subst, []) vars
+      in
+      let body = freshen_aux subst body in
+      pi (List.rev rev_vars) body
+
+  let freshen t = freshen_aux Subst.empty t
+
   (* Access to type descr *)
   let descr (t: t) = (expand_head t).ty_descr
 
@@ -2916,7 +2946,7 @@ module Term = struct
       | [], _ :: _ ->
         raise Bad_arity
       (* regular application
-         we prevent type schemas (i.e. Pi _) from beign instantiated
+         we prevent type schemas (i.e. Pi _) from being instantiated
          with polymorphic types to preserve prenex polymorphism.
          The Ty.subst_bind function performs this check. *)
       | ty_var :: fun_ty_vars, ty :: tys ->
@@ -2948,7 +2978,6 @@ module Term = struct
     match tys, args with
     | [], [] -> f
     | _, _ ->
-      (* Format.eprintf "apply: %a@." Print.term f; *)
       let ret_ty = instantiate (ty f) tys args in
       mk (App (f, tys, args)) ret_ty
 
@@ -3004,6 +3033,10 @@ module Term = struct
     apply (of_cst c) tys args
 
   let apply_cstr (c : Cstr.t) tys args =
+    (* Format.printf "apply_cstr: %a (%a)(%a)@."
+      Cstr.print c
+      (Format.pp_print_list ~pp_sep:(Print.return ", ") Ty.print) tys
+      (Format.pp_print_list ~pp_sep:(Print.return ", ") print) args; *)
     apply (of_cst c) tys args
 
   let apply_field (f : Field.t) t =

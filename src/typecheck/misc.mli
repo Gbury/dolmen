@@ -41,6 +41,9 @@ module Lists : sig
   val map3 : ('a -> 'b -> 'c -> 'd) -> 'a list -> 'b list -> 'c list -> 'd list
   (** Same as {!List.map2} but for 3 lists. *)
 
+  val fold_left_map : ('a -> 'b -> 'a * 'c) -> 'a -> 'b list -> 'a * 'c list
+  (** Same as {!List.fold_left_map} (which is onlt available for ocaml >= 4.11). *)
+
 end
 
 (** String helper *)

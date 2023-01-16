@@ -419,6 +419,9 @@ module type Tff = sig
     type t
     (** The type of constant symbols that can occur in terms *)
 
+    val print : Format.formatter -> t -> unit
+    (** Printing function for term constants. *)
+
     val compare : t -> t -> int
     (** Comparison function on constant symbols. *)
 

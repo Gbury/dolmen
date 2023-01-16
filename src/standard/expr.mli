@@ -653,6 +653,10 @@ module Ty : sig
   val fv : t -> Var.t list
   (** Returns the list of free variables in the type. *)
 
+  val freshen : t -> t
+  (** Freshen a type, replacing all its bound variables by new/fresh
+      type variables. *)
+
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
