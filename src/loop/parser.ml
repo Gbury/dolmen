@@ -261,9 +261,9 @@ module Make(State : State.S) = struct
           st, file, gen_finally gen cl
         | `File f ->
           begin match Response.find ?language:file.lang ~dir:file.dir f with
-          | None ->
-            let st = State.error st file_not_found (file.dir, f) in
-            st, file, Gen.empty
+            | None ->
+              let st = State.error st file_not_found (file.dir, f) in
+              st, file, Gen.empty
             | Some filename ->
               begin match file.mode with
                 | None

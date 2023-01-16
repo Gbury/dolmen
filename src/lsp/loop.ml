@@ -35,7 +35,7 @@ let finally st e =
     let res = handle_exn st exn in
     raise (Finished res)
 
-let process path opt_contents =
+let process prelude path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
   let l_file : _ State.file = {
@@ -66,7 +66,7 @@ let process path opt_contents =
       ~header_lang_version:None
   in
   try
-    let st, g = Parser.parse_logic [] st l_file in
+    let st, g = Parser.parse_logic prelude st l_file in
     let open Pipeline in
     let st = run ~finally g st (
         (fix (op ~name:"expand" Parser.expand) (
