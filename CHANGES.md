@@ -8,6 +8,13 @@ next
 - Fix spurious printing of backtraces (PR#118)
 - Add release binaries for windows
 
+### LSP
+
+- Add option for the lsp to read preludes before checking
+  each file (PR#116)
+- The LSP now sends an empty list of diagnostics upon closing
+  a file (PR#116)
+
 ### Loop
 
 - New module to implement Alarms (size/time limits) (PR#117)
