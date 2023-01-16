@@ -209,6 +209,7 @@ module Make
     | Declared of Loc.file * Stmt.decl
     | Implicit_in_def of Loc.file * Stmt.def
     | Implicit_in_decl of Loc.file * Stmt.decl
+    | Implicit_in_term of Loc.file * Ast.t
   (** The type of reasons for constant typing *)
 
   type binding = [
@@ -1071,7 +1072,7 @@ module Make
       _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
     | Builtin | Reserved | Declared _ | Defined _
-    | Implicit_in_def _ | Implicit_in_decl _ ->
+    | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
   let find_term_var_reason env v =
@@ -1085,7 +1086,7 @@ module Make
     (* variables should not be declare-able nor builtin,
        and we do not use any term wildcards. *)
     | Builtin | Reserved | Declared _ | Defined _
-    | Implicit_in_def _ | Implicit_in_decl _ ->
+    | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
 
@@ -1274,16 +1275,18 @@ module Make
            in
            let env =
              match ctx with
-             | `Check -> env
-             | `Def def ->
-               let reason = Implicit_in_def (env.file, def) in
-               { env with type_locs = E.add v reason env.type_locs; }
-             | `Decl decl ->
-               let reason = Implicit_in_decl (env.file, decl) in
+             | None -> env
+             | Some ctx ->
+               let reason =
+                 match ctx with
+                 | `Def def -> Implicit_in_def (env.file, def)
+                 | `Decl decl -> Implicit_in_decl (env.file, decl)
+                 | `Term ast -> Implicit_in_term (env.file, ast)
+               in
                { env with type_locs = E.add v reason env.type_locs; }
            in
            Ty.set_wildcard w (Ty.of_var v);
-           (* the wildcard wes generated from the term being typechecked,
+           (* the wildcard was generated from the term being typechecked,
               so it is at least used where it was generated. *)
            mark_ty_var_as_used v;
            env, v
@@ -1307,24 +1310,24 @@ module Make
     end
 
   let finalize_wildcards_prop ctx env ast prop =
-    match finalize_wildcards ctx env ast with
+    match finalize_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, prop
     | `Univ (env, _, vars) ->
       let res = _wrap2 env ast T.all (vars, []) prop in
       env, res
 
   let finalize_wildcards_ty ctx env ast ty =
-    match finalize_wildcards ctx env ast with
+    match finalize_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, ty
     | `Univ (env, _, vars) -> env, Ty.pi vars ty
 
   let finalize_wildcards_def ctx env ast =
-    match finalize_wildcards ctx env ast with
+    match finalize_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, []
     | `Univ (env, _, vars) -> env, vars
 
-  let check_no_free_wildcards ctx env ast =
-    match finalize_wildcards ctx env ast with
+  let check_no_free_wildcards env ast =
+    match finalize_wildcards None env ast with
     | `No_free_wildcards -> ()
     | `Univ (env, free_wildcards, _) ->
       _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
@@ -2146,7 +2149,7 @@ module Make
     let ty_vars, env = add_type_vars env ttype_vars in
     let l = List.map (fun (id, t) ->
         let ty = parse_ty env t in
-        check_no_free_wildcards `Check env t;
+        check_no_free_wildcards env t;
         cst_path env (Id.name id), ty
       ) fields in
     let field_list = T.define_record ty_cst ty_vars l in
@@ -2162,7 +2165,7 @@ module Make
     let cstrs_with_ids = List.map (fun (id, args) ->
         id, List.map (fun t ->
             let ty, dstr = parse_inductive_arg env t in
-            check_no_free_wildcards `Check env t;
+            check_no_free_wildcards env t;
             t, ty, dstr
           ) args
       ) cstrs in
@@ -2203,7 +2206,7 @@ module Make
     | Abstract { id; ty = ast; _ } ->
       begin match parse_sig env ast with
         | `Ty_cstr n ->
-          check_no_free_wildcards `Check env ast;
+          check_no_free_wildcards env ast;
           let c = mk_ty_cst env (Id.name id) n in
           List.iter (function
               | Set (tag, v) -> Ty.Const.set_tag c tag v
@@ -2239,7 +2242,7 @@ module Make
     let tags =
       List.flatten @@ List.map (fun ast ->
         let l = parse_attr env ast in
-        check_no_free_wildcards `Check env ast;
+        check_no_free_wildcards env ast;
         l
         ) attrs
     in
@@ -2379,7 +2382,7 @@ module Make
     | _ -> assert false
 
   let finalize_def id (env, vars, params, _ssig) (ast, ret) =
-    check_no_free_wildcards `Check env ast;
+    check_no_free_wildcards env ast;
     match id, ret with
     (* type alias *)
     | `Ty (id, c), `Ty body ->
@@ -2420,7 +2423,7 @@ module Make
 
   let parse env ast =
     let res = parse_prop env ast in
-    let _env, res = finalize_wildcards_prop `Check env ast res in
+    let _env, res = finalize_wildcards_prop (`Term ast) env ast res in
     res
 
 end

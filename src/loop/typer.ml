@@ -153,6 +153,9 @@ let print_reason ?(already=false) fmt r =
   | Implicit_in_decl (file, d) ->
     Format.fprintf fmt "was%a implicitly introduced in the declaration at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
+  | Implicit_in_term (file, ast) ->
+    Format.fprintf fmt "was%a implicitly introduced in the term at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
 
 let print_reason_opt ?already fmt = function
   | Some r -> print_reason ?already fmt r
