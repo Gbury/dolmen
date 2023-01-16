@@ -439,8 +439,8 @@ let reports =
 (* ************************************************************************* *)
 
 let mk_file lang mode input =
-  let dir,source = Loop.State.split_input input in
-  Loop.State.mk_file ?lang ?mode dir source
+  let dir,source = State.split_input input in
+  State.mk_file ?lang ?mode dir source
 
 let logic_file =
   let docs = common_section in
