@@ -40,7 +40,6 @@ jobs:
             dolmen_asset: dolmen-windows-amd64.exe
             dolmenls_artifact: dolmenls.exe
             dolmenls_asset: dolmenls-windows-amd64.exe
-            ocaml-version:
             ocaml-version: ocaml-variants.4.14.0+flambda+mingw64c
 
     # Build ENV
