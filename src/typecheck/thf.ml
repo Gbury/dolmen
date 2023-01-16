@@ -1268,7 +1268,7 @@ module Make
   let free_wildcards_to_quant_vars =
     let wildcard_univ_counter = ref 0 in
     (fun ctx env wildcards ->
-       List.fold_left_map (fun env (w, _) ->
+       Misc.Lists.fold_left_map (fun env (w, _) ->
            incr wildcard_univ_counter;
            let v =
              Ty.Var.mk (Format.asprintf "w%d" !wildcard_univ_counter)
