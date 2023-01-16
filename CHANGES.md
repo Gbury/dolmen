@@ -19,15 +19,15 @@ next
 
 - Fix a bug related to alt-ergos function definition, which
   were previously alwyas non-recursive. Now, alt-ergo's function
-  definitions are always recursive (PR#XXX)
+  definitions are always recursive (PR#123)
 
 ### Typing
 
 - Properly add binding locations for implicit type variables
-  (PR#XXX)
+  (PR#123)
 - Ensure that type of recursively defined symbols are freshened
   to avoid type variables sharing between declaration and
-  definition (PR#XXX)
+  definition (PR#123)
 
 ### Loop
 
