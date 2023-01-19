@@ -32,6 +32,10 @@ module type S = sig
     [< `File of string | `Stdin of language
     | `Raw of string * language * string ] ->
     language * file * (unit -> statement option) * (unit -> unit)
+  val parse_full_input :
+    ?language:language ->
+    [< `File of string | `Raw of string * language * string ] ->
+    language * file * statement list
 
   module type S = Dolmen_intf.Language.S
     with type statement := statement
@@ -179,5 +183,19 @@ module Make
       let locfile, gen, cl = P.parse_input (`Contents (filename, s)) in
       l, locfile, gen, cl
 
-end
+  let parse_full_input ?language = function
+    | `File file ->
+      let l, _, (module P : S) =
+        match language with
+        | Some l -> of_language l
+        | None -> of_extension (Dolmen_std.Misc.get_extension file)
+      in
+      let locfile, res = P.parse_full_input (`File file) in
+      l, locfile, res
+    | `Raw (filename, l, s) ->
+      let _, _, (module P : S) = of_language
+          (match language with | Some l' -> l' | None -> l) in
+      let locfile, res = P.parse_full_input (`Contents (filename, s)) in
+      l, locfile, res
 
+end

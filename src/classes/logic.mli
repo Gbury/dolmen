@@ -75,6 +75,11 @@ module type S = sig
       @param language specify a language for parsing, overrides auto-detection
       and stdin specification. *)
 
+  val parse_full_input :
+    ?language:language ->
+    [< `File of string | `Raw of string * language * string ] ->
+    language * file * statement list
+
   (** {2 Mid-level parsing} *)
 
   module type S = Dolmen_intf.Language.S

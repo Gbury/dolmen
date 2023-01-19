@@ -46,5 +46,9 @@ module type S = sig
       Useful to process input from [stdin], or even large files where it would
       be impractical to parse the entire file before processing it. *)
 
-end
+  val parse_full_input :
+    [ `File of string | `Contents of string * string ] ->
+    file * statement list
+  (** Parse the whole given file or string into a list. *)
 
+end
