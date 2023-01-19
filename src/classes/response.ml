@@ -22,6 +22,9 @@ module type S = sig
   val parse_file_lazy :
     ?language:language ->
     string -> language * file * statement list Lazy.t
+  val parse_raw_lazy :
+    ?language:language ->
+    filename:string -> string -> language * file * statement list Lazy.t
   val parse_input :
     ?language:language ->
     [< `File of string | `Stdin of language
@@ -117,6 +120,15 @@ module Make
       | Some l -> of_language l
     in
     let locfile, res = P.parse_file_lazy file in
+    l, locfile, res
+
+  let parse_raw_lazy ?language ~filename contents =
+    let l, _, (module P : S) =
+      match language with
+      | None -> of_filename filename
+      | Some l -> of_language l
+    in
+    let locfile, res = P.parse_raw_lazy ~filename contents in
     l, locfile, res
 
   let parse_input ?language = function

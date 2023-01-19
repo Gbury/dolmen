@@ -60,6 +60,13 @@ module type S = sig
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
 
+  val parse_raw_lazy :
+    ?language:language ->
+    filename:string -> string -> language * file * statement list Lazy.t
+  (** Given a filename and a string, parse the string, and return the detected
+      language together with the list of statements parsed.
+      @param language specify a language; overrides auto-detection. *)
+
   val parse_input :
     ?language:language ->
     [< `File of string
@@ -74,11 +81,6 @@ module type S = sig
       and a cleanup function [cl] to call in order to cleanup the file descriptors.
       @param language specify a language for parsing, overrides auto-detection
       and stdin specification. *)
-
-  val parse_full_input :
-    ?language:language ->
-    [< `File of string | `Raw of string * language * string ] ->
-    language * file * statement list
 
   (** {2 Mid-level parsing} *)
 

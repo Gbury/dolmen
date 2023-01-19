@@ -255,10 +255,20 @@ module Make(State : State.S) = struct
               let res, _, _ = Response.of_filename filename in
               res
           in
-          let lang, file_loc, gen, cl = Response.parse_input
+          begin match file.mode with
+          | None
+          | Some `Incremental ->
+            let lang, file_loc, gen, cl = Response.parse_input
               ~language:lang (`Raw (filename, lang, contents)) in
-          let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen_finally gen cl
+            let file = { file with loc = file_loc; lang = Some lang; } in
+            st, file, gen_finally gen cl
+          | Some `Full ->
+            let lang, file_loc, l = Response.parse_raw_lazy ?language:file.lang
+              ~filename contents
+            in
+            let file = { file with loc = file_loc; lang = Some lang; } in
+            st, file, gen_of_llist l
+          end
         | `File f ->
           begin match Response.find ?language:file.lang ~dir:file.dir f with
             | None ->
