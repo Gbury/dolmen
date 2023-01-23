@@ -35,6 +35,7 @@ module type S = sig
   (** Parse the whole given file into a list. *)
 
   val parse_raw_lazy : filename:string -> string -> file * statement list Lazy.t
+  (** Parse the whole given string into a list. *)
 
   val parse_input :
     [ `Stdin | `File of string | `Contents of string * string ] ->
