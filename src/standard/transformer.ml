@@ -191,15 +191,4 @@ module Make
     let aux = parse_aux ~k_exn newline sync lexbuf Parser.input in
     locfile, aux, cleanup
 
-  let parse_full_input (i : [`File of string | `Contents of string * string]) =
-    let i = (i :> [`Stdin | `File of string | `Contents of string * string]) in
-    let lexbuf, cleanup = Misc.mk_lexbuf i in
-    let locfile = Loc.mk_file (Misc.filename_of_input i) in
-    let newline = Loc.newline locfile in
-    let sync = Loc.update_size locfile in
-    let k_exn () = cleanup () in
-    let res = parse_aux ~k_exn newline sync lexbuf Parser.file () in
-    let () = cleanup () in
-    locfile, res
-
 end
