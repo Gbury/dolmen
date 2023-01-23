@@ -21,7 +21,7 @@ module type S = sig
       and return the list of parsed statements. *)
 
   val input : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> statement option
-  (** A function to parse a single statement. Reutnrs [None] if it encounters
+  (** A function to parse a single statement. Returns [None] if it encounters
       the end-of-file token. Used for incremental parsing. *)
 
 end

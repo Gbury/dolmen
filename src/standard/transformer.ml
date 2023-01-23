@@ -1,4 +1,3 @@
-
 (* This file is free software, part of dolmen. See file "LICENSE" formore information *)
 
 module Make
@@ -158,6 +157,23 @@ module Make
     in
     locfile, res
 
+  let parse_raw_lazy ~filename contents =
+    let lexbuf, cleanup = Misc.mk_lexbuf (`Contents (filename, contents)) in
+    let locfile = Loc.mk_file filename in
+    let newline = Loc.newline locfile in
+    let sync = Loc.update_size locfile in
+    let k_exn () = cleanup () in
+    let res =
+      lazy (
+        let res =
+          parse_aux ~k_exn newline sync lexbuf Parser.file ()
+        in
+        let () = cleanup () in
+        res
+      )
+    in
+    locfile, res
+
   let parse_input i =
     let lexbuf, cleanup = Misc.mk_lexbuf i in
     let locfile = Loc.mk_file (Misc.filename_of_input i) in
@@ -176,4 +192,3 @@ module Make
     locfile, aux, cleanup
 
 end
-

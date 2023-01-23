@@ -103,6 +103,7 @@ type descr =
 
   | Include of string
   (** File include, qualified include paths, if any, are stored in the attribute. *)
+
   | Set_logic of string
   (** Set the logic to use for proving. *)
 

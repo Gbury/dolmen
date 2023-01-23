@@ -50,6 +50,13 @@ module type S = sig
       together with the list of statements parsed.
       @param language specify a language; overrides auto-detection. *)
 
+  val parse_raw_lazy :
+    ?language:language ->
+    filename:string -> string -> language * file * statement list Lazy.t
+  (** Given a filename and a string, parse the string, and return the detected
+      language together with the list of statements parsed.
+      @param language specify a language; overrides auto-detection. *)
+
   val parse_input :
     ?language:language ->
     [< `File of string
