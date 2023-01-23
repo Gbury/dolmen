@@ -1942,7 +1942,7 @@ module Make
         let input = `Logic (State.get State.logic_file st) in
         match normalize st c with
 
-        (* Pack, includes and raw.
+        (* Pack and includes.
            These should have been filtered out before this point.
            TODO: emit some kind of warning ? *)
         | { S.descr = S.Pack _; _ } -> st, `Done ()
