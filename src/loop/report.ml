@@ -19,7 +19,7 @@ type ('kind, 'param) aux = {
 
     (* short message printing *)
     message : Format.formatter -> 'param -> unit;
-    hints : ('param -> (Format.formatter -> unit) option) list;
+    mutable hints : ('param -> (Format.formatter -> unit) option) list;
 
     (* long documentation *)
     name : string;
@@ -88,6 +88,10 @@ let mk_warning
   let id = !warning_count in
   incr warning_count;
   mk_aux ~kind:(Warning { id; }) ~code ~mnemonic ~message ?hints ~name ?doc ()
+
+let add_hint t hint =
+  let new_hint _ = Some (hint) in
+  t.hints <- new_hint :: t.hints
 
 
 (* Warnings interface *)

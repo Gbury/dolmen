@@ -95,12 +95,24 @@ let output_conv =
 (* Input modes *)
 (* ************************************************************************* *)
 
-let mode_list = [
+let input_mode_list = [
     "full", `Full;
     "incremental", `Incremental;
   ]
 
-let mode_conv = Arg.enum mode_list
+let input_mode_conv = Arg.enum input_mode_list
+
+(* Check model modes *)
+(* ************************************************************************* *)
+
+type model_mode = Dolmen_model.Loop.mode
+
+let model_mode_list = [
+    "full", Dolmen_model.Loop.Full;
+    "interleave", Dolmen_model.Loop.Interleave;
+  ]
+
+let model_mode_conv = Arg.enum model_mode_list
 
 
 (* Mnemonic converter *)
@@ -322,7 +334,7 @@ let mk_run_state
     logic_file response_file
     header_check header_licenses
     header_lang_version
-    smtlib2_forced_logic type_check check_model
+    smtlib2_forced_logic type_check check_model check_model_mode
     debug report_style max_warn reports syntax_error_ref
   =
   (* Side-effects *)
@@ -336,6 +348,7 @@ let mk_run_state
   let () = if bt then Printexc.record_backtrace true in
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
+  let () = Hints.model ~check_model ~check_model_mode in
   (* State creation *)
   Loop.State.empty
   |> Loop.State.init
@@ -347,7 +360,9 @@ let mk_run_state
     ~interactive_prompt:Loop.Parser.interactive_prompt_lang
   |> Loop.Typer.init ~smtlib2_forced_logic
   |> Loop.Typer_Pipe.init ~type_check
-  |> Loop.Check.init ~check_model
+  |> Loop.Check.init
+    ~check_model
+    ~check_model_mode
   |> Loop.Header.init
     ~header_check
     ~header_licenses
@@ -450,8 +465,8 @@ let logic_file =
          The full mode parses the entire file before iterating over its
          contents whereas the incremental mode processes each declaration
          before parsing the next one. Default is incremental mode."
-        (Arg.doc_alts_enum ~quoted:true mode_list) in
-    Arg.(value & opt (some mode_conv) None & info ["m"; "mode"] ~doc ~docs)
+        (Arg.doc_alts_enum ~quoted:true input_mode_list) in
+    Arg.(value & opt (some input_mode_conv) None & info ["m"; "mode"] ~doc ~docs)
   in
   let input =
     let doc = "Input problem file. If no file is specified,
@@ -475,8 +490,8 @@ let response_file =
          The full mode parses the entire file before iterating over its
          contents whereas the incremental mode processes each declaration
          before parsing the next one. Default is incremental mode."
-        (Arg.doc_alts_enum ~quoted:true mode_list) in
-    Arg.(value & opt (some mode_conv) None & info ["response-mode"] ~doc ~docs)
+        (Arg.doc_alts_enum ~quoted:true input_mode_list) in
+    Arg.(value & opt (some input_mode_conv) None & info ["response-mode"] ~doc ~docs)
   in
   let response =
     let doc = "Response file." in
@@ -562,6 +577,24 @@ let state =
         "Whether to check models (require providing a response file)." in
     Arg.(value & opt bool false & info ["check-model"] ~doc ~docs)
   in
+  let check_model_mode =
+    let doc = Format.asprintf
+        "Choose the mode for model verification. Must be %s.
+
+         The $(b,full) mode Will parse and type
+         the problem file, and then the model file, and lastly check all assertions
+         from the problem file, bu this requires storing in memory the type
+         representation of all assertions from the problem file, which may require
+         large amounts of memory.
+
+         The $(b,interleaved) mode will interleave the parsing
+         and typing of the problem file and of the model file, so as to not need to
+         store anything from the problem file in memory, but it requires that the
+         statements of the problem file and the model file are ordered in the correct
+         way."
+        (Arg.doc_alts_enum ~quoted:true model_mode_list) in
+    Arg.(value & opt model_mode_conv Full & info ["check-model-mode"] ~doc ~docs)
+  in
   let report_style =
     let doc = Format.asprintf
         "Control the way locations are printed for error and warnings messages.
@@ -591,7 +624,7 @@ let state =
         logic_file $ response_file $
         header_check $ header_licenses $
         header_lang_version $
-        force_smtlib2_logic $ typing $ check_model $
+        force_smtlib2_logic $ typing $ check_model $ check_model_mode $
         debug $ report_style $ max_warn $ reports $ syntax_error_ref)
 
 

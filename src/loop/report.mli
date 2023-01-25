@@ -3,12 +3,15 @@
 
 (** {2 Some types} *)
 
-type 'a error
-type 'a warning
+type ('kind, 'param) aux
+type 'a error = ([`Error], 'a) aux
+type 'a warning = ([`Warning], 'a) aux
 
 type any_error = Any_err : _ error -> any_error
 type any_warning = Any_warn : _ warning -> any_warning
 
+val add_hint : _ aux -> (Format.formatter -> unit) -> unit
+(** Dynamically add a hint to a warning/error. *)
 
 (** {2 Reports} *)
 

@@ -577,10 +577,13 @@ module Make
         | None -> `Not_found
       end
 
-  let find_global env id : [cst | not_found] =
-    match M.find_opt id env.st.csts with
+  let find_global_st st id : [ cst | not_found ] =
+    match M.find_opt id st.csts with
     | Some res -> (res :> [cst | not_found])
     | None -> `Not_found
+
+  let find_global env id : [cst | not_found] =
+    find_global_st env.st id
 
   let find_builtin env id : [builtin | not_found] =
     match env.builtins env (Id id) with

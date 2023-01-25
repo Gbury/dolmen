@@ -151,6 +151,7 @@ let set k v t =
 let update k f t =
   set k (f (get k t)) t
 
+let key_name { name; _ } = name
 
 (* Some common keys *)
 (* ************************************************************************* *)
