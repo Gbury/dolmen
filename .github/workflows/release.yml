@@ -20,6 +20,10 @@ jobs:
     # Build Matrix
     # --------------
     strategy:
+
+      # Do not cancel other jobs when one fails
+      fail-fast: false
+
       matrix:
         # Specify bin/artefact names and ocaml versions for each OS
         include:
@@ -64,7 +68,7 @@ jobs:
       run: opam update
     # Install deps
     - name: Install deps
-      run: opam install . --deps-only
+      run: opam install . --deps-only --with-test --with-doc
     # Build the package
     - name: Build the package
       run: opam exec -- dune build --profile=release @install
