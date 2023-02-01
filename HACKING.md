@@ -174,6 +174,7 @@ Release checklist/workflow:
 - update version number in `VERSION`
 - update version number in src/bin/main.ml
 - update `CHANGES.md` with the new version number
+- commit the changes
 - run `dune-release lint`
 - run `dune-release tag`
 - run `dune-release distrib`
