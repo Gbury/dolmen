@@ -38,6 +38,7 @@ jobs:
         # that it is actually just a list of package to install as the base
         # of the switch
         ocaml-version:
+          - ocaml-base-compiler.5.0.0
           - ocaml-variants.4.14.0+options,ocaml-option-flambda
           - ocaml-base-compiler.4.14.0
           - ocaml-base-compiler.4.13.1
