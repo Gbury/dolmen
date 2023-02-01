@@ -20,6 +20,8 @@ next
 - Fix a bug related to alt-ergos function definition, which
   were previously alwyas non-recursive. Now, alt-ergo's function
   definitions are always recursive (PR#123)
+- Add `parse_raw_lazy` to parse a string into a lazy list of
+  statements (PR#125)
 
 ### Typing
 
@@ -36,6 +38,8 @@ next
   an alarm implementation (PR#117)
 - Add a `bt` key to the state to record whether we should print
   backtraces (PR#118)
+- Use `parse_raw_lazy` to parse raw contents in full mode if/when
+  necessary (PR#125)
 
 
 v0.8
