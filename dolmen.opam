@@ -6,7 +6,7 @@ authors: "Guillaume Bury <guillaume.bury@gmail.com>"
 license: "BSD-2-Clause"
 build: [
   ["dune" "subst"] {dev}
-  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs "@install" "@runtest" {with-test} "@doc" {with-doc}]
 ]
 depends: [
   "ocaml" {>= "4.08"}
