@@ -38,6 +38,7 @@ jobs:
         # that it is actually just a list of package to install as the base
         # of the switch
         ocaml-version:
+          - ocaml-base-compiler.5.0.0
           - ocaml-variants.4.14.0+options,ocaml-option-flambda
           - ocaml-base-compiler.4.14.0
           - ocaml-base-compiler.4.13.1
@@ -57,7 +58,7 @@ jobs:
     steps:
     # checkout the repo (full clone, necessary for push later)
     - name: Checkout the repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     # Setup ocaml/opam
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
