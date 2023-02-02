@@ -251,6 +251,25 @@ let compact (t : loc) =
   let length = stop_offset - start_offset in
   file, mk_compact start_offset length
 
+(* File path normalization *)
+(* ************************************************************************* *)
+
+(** It turns out that in most cases, using forward slashes in patsh actually
+    work on Windows, see
+    https://learn.microsoft.com/en-us/archive/blogs/larryosterman/why-is-the-dos-path-character
+
+    Therfore, before printing any file path, we normalize everything to use
+    forward slashes. *)
+
+let rec explode_path path =
+  match Filename.dirname path with
+  | "." -> [path]
+  | dirname -> Filename.basename path :: (explode_path dirname)
+
+let normalize_path path =
+  let l = List.rev (explode_path path) in
+  String.concat "/" l
+
 
 (* Printing and lexbuf handling *)
 (* ************************************************************************* *)
@@ -265,13 +284,15 @@ let pp buf pos =
       if pos.file = "" then
         Printf.bprintf buf "<location missing>"
       else
-        Printf.bprintf buf "File \"%s\", <location missing>" pos.file
+        Printf.bprintf buf "File \"%s\", <location missing>"
+          (normalize_path pos.file)
     else
       Printf.bprintf buf "File \"%s\", line %d, character %d-%d"
-        pos.file pos.start_line pos.start_column pos.stop_column
+        (normalize_path pos.file)
+        pos.start_line pos.start_column pos.stop_column
   else
     Printf.bprintf buf "File \"%s\", line %d, character %d to line %d, character %d"
-      pos.file
+      (normalize_path pos.file)
       pos.start_line pos.start_column
       pos.stop_line pos.stop_column
 
@@ -281,13 +302,15 @@ let fmt fmt pos =
       if pos.file = "" then
         Format.fprintf fmt "<location missing>"
       else
-        Format.fprintf fmt "File \"%s\", <location missing>" pos.file
+        Format.fprintf fmt "File \"%s\", <location missing>"
+          (normalize_path pos.file)
     else
       Format.fprintf fmt "File \"%s\", line %d, character %d-%d"
-        pos.file pos.start_line pos.start_column pos.stop_column
+        (normalize_path pos.file)
+        pos.start_line pos.start_column pos.stop_column
   else
     Format.fprintf fmt "File \"%s\", line %d, character %d to line %d, character %d"
-      pos.file
+      (normalize_path pos.file)
       pos.start_line pos.start_column
       pos.stop_line pos.stop_column
 
