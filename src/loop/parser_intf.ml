@@ -46,7 +46,8 @@ module type S = sig
       returns a tuple of the new state (including the detected input language),
       together with a statement generator. *)
 
-  val expand : state -> Dolmen.Std.Statement.t ->
+  val expand :
+    state -> Dolmen.Std.Statement.t ->
     state * [ `Ok | `Gen of (state -> state -> state) *
                               (state -> state * Dolmen.Std.Statement.t option) ]
   (** Expand statements (such as includes). Returns the new state, and either:

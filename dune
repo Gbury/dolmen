@@ -1,3 +1,6 @@
+; directory for vendored libs
+(vendored_dirs vendor)
+
 (env
   ; Ensure no inlinging takes place in dev mode to have more accurate backtraces
   (dev (ocamlopt_flags :standard -inline 0))

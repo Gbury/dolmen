@@ -58,6 +58,9 @@ module Make(State : State.S) : sig
   val iter_ : ?name:string -> ('a -> unit) -> (_, 'a, 'a) op
   (** Perform the function's side-effect and return the same input. *)
 
+  val peek : ?name:string -> ('st -> 'a -> 'st) -> ('st, 'a, 'a) op
+  (** Peek at the current payload of the pipeline, and modify the state. *)
+
   val f_map :
     ?name:string ->
     ?test:('st -> 'a -> bool) ->

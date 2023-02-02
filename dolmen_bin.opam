@@ -14,10 +14,23 @@ depends: [
   "dolmen_type" {= version }
   "dolmen_loop" {= version }
   "dolmen_model" {= version }
+  "odoc" { with-doc }
   "dune" { >= "3.0" }
   "fmt"
   "cmdliner" { >= "1.1.0" }
-  "odoc" { with-doc }
+  "pp_loc" { >= "2.0.0" }
+  "mtime" {>= "1.1.0" & < "2.0.0" }
+# These two are currently vendored
+#  "progress"
+#  "terminal"
+# thus we need their deps
+  "stdlib-shims"
+  "fmt" {>= "0.8.5"}
+  "logs" {>= "0.7.0"}
+  "uucp" {>= "2.0.0"}
+  "uutf" {>= "1.0.0"}
+  "vector"
+  "optint" {>= "0.1.0"}
 ]
 depopts: [
   "memtrace"

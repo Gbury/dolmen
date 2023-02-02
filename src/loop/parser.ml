@@ -65,10 +65,14 @@ let parsing_error =
 (* ************************************************************************ *)
 
 type 'a file = 'a State.file
+let file_size = Stats.file_size
 
 module type S = Parser_intf.S
 
-module Make(State : State.S) = struct
+module Make
+    (State : State.S)
+    (Stats : Stats.S with type state := State.t)
+= struct
 
   (* Prologue *)
   (* ************************************************************************ *)
@@ -104,14 +108,6 @@ module Make(State : State.S) = struct
   (* Helper functions *)
   (* ************************************************************************ *)
 
-
-  let gen_of_llist l =
-    let l = ref l in
-    (fun () -> match Lazy.force !l with
-       | [] -> None
-       | x :: r ->
-         l := (lazy r); Some x
-    )
 
   let switch_to_full_mode ?loc lang st (old : _ file) (file: _ file) =
     let st =
@@ -160,38 +156,107 @@ module Make(State : State.S) = struct
     in
     aux
 
-  let wrap_parser ~file g = fun st ->
-    begin match (State.get interactive_prompt st) st with
-      | None -> ()
-      | Some prelude -> Format.printf "%s @?" prelude
-    end;
-    match g () with
-    | ret -> st, ret
-    | exception Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
+  let wrap_exn st file input counter = function
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Sigint, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.user_interrupt ()
+      in
+      st, None
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Out_of_time, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.timeout ()
+      in
+      st, None
+    | Dolmen.Std.Loc.Uncaught (loc, Pipeline.Out_of_space, _) ->
+      let st = Stats.record_parsed st input counter loc in
+      let st =
+        State.error st ~file ~loc:{ file = file.loc; loc; }
+          Report.Error.spaceout ()
+      in
+      st, None
+    | Dolmen.Std.Loc.Uncaught (loc, exn, bt) ->
+      let st = Stats.record_parsed st input counter loc in
       let st =
         State.error st ~file ~loc:{ file = file.loc; loc; }
           Report.Error.uncaught_exn (exn, bt)
       in
       st, None
-    | exception Dolmen.Std.Loc.Lexing_error (loc, lex) ->
+    | Dolmen.Std.Loc.Lexing_error (loc, lex) ->
+      let st = Stats.record_parsed st input counter loc in
       let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error lex in
       st, None
-    | exception Dolmen.Std.Loc.Syntax_error (loc, perr) ->
+    | Dolmen.Std.Loc.Syntax_error (loc, perr) ->
+      let st = Stats.record_parsed st input counter loc in
       let syntax_error_ref = State.get_or ~default:false syntax_error_ref st in
       let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
       st, None
+    | exn -> raise exn
+
+  let wrap_parser ?(cleanup=(fun () -> ())) ?input ~loc_of_res ~file g = fun st ->
+    begin match (State.get interactive_prompt st) st with
+      | None -> ()
+      | Some prelude -> Format.printf "%s @?" prelude
+    end;
+    let counter = Stats.start_counter st in
+    match g () with
+    | None ->
+      let () = cleanup () in
+      let st = Stats.record_parsed st input counter Dolmen.Std.Loc.no_loc in
+      st, None
+    | Some res as ret ->
+      let st = Stats.record_parsed st input counter (loc_of_res res) in
+      st, ret
+    | exception exn ->
+      let () = cleanup () in
+      wrap_exn st file input counter exn
+
+  let wrap_lazy_list ?input ~loc_of_res ~file llist =
+    let first = ref true in
+    let l = ref [] in
+    let rec aux st =
+      if !first then begin
+        first := false;
+        let counter = Stats.start_counter st in
+        try
+          let list = Lazy.force llist in
+          l := list;
+          (* record the sizes of statements parsed *)
+          let st =
+            List.fold_left (fun st res ->
+                Stats.record_parsed st input None (loc_of_res res)
+              ) st list
+          in
+          (* record the time spent parsing *)
+          let st = Stats.record_parsed st input counter Dolmen.Std.Loc.no_loc in
+          aux st
+        with exn ->
+          wrap_exn st file input None exn
+      end else begin
+        let elt =
+          match !l with
+          | [] -> None
+          | x :: r -> l := r; Some x
+        in
+        wrap_parser ~loc_of_res ~file (fun () -> elt) st
+      end
+    in
+    aux
 
   let parse_logic prelude st (file : Logic.language file) =
     (* Parse the input *)
-    let st, file, g =
+    let st, file, input, g =
       try
         match file.source with
         | `Stdin ->
-          let lang, file_loc, gen, _ = Logic.parse_input
+          let lang, file_loc, gen, cl = Logic.parse_input
               ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
           in
           let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen
+          st, file, None, `Gen (gen, Some cl)
         | `Raw (filename, contents) ->
           let lang =
             match file.lang with
@@ -206,13 +271,15 @@ module Make(State : State.S) = struct
             let lang, file_loc, gen, cl = Logic.parse_input
                 ~language:lang (`Raw (filename, lang, contents)) in
             let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_finally gen cl
+            let input, st = Stats.new_input st filename (String.length contents) in
+            st, file, Some input,  `Gen (gen, Some cl)
           | Some `Full ->
             let lang, file_loc, l = Logic.parse_raw_lazy ~language:lang
               ~filename contents
             in
             let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_of_llist l
+            let input, st = Stats.new_input st filename (String.length contents) in
+            st, file, Some input, `Llist l
           end
         | `File f ->
           let s = Dolmen.Std.Statement.include_ f [] in
@@ -237,26 +304,35 @@ module Make(State : State.S) = struct
               Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
           in
           let file = { file with lang = Some lang; } in
-          st, file, (Gen.singleton s')
+          st, file, None, `Gen (Gen.singleton s', None)
       with
       | Logic.Extension_not_found ext ->
-        State.error st extension_not_found ext, file, Gen.empty
+        State.error st extension_not_found ext, file, None, `Gen (Gen.empty, None)
     in
     let st = set_logic_file st file in
     (* Wrap the resulting parser *)
-    st, wrap_parser ~file (Gen.append (Gen.of_list prelude) g)
+    let loc_of_res (c : Dolmen.Std.Statement.t) = c.loc in
+    match g with
+    | `Gen (gen, cleanup) ->
+      st, wrap_parser
+        ?cleanup ?input ~file ~loc_of_res
+        (Gen.append (Gen.of_list prelude) gen)
+    | `Llist l ->
+      st, wrap_lazy_list
+        ?input ~file ~loc_of_res
+        (lazy (prelude @ (Lazy.force l)))
 
   let parse_response prelude st (file : Response.language file) =
     (* Parse the input *)
-    let st, file, g =
+    let st, file, input, g =
       try
         match file.source with
         | `Stdin ->
-          let lang, file_loc, gen, _ = Response.parse_input
+          let lang, file_loc, gen, cl = Response.parse_input
               ?language:file.lang (`Stdin (Response.Smtlib2 `Latest))
           in
           let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen
+          st, file, None, `Gen (gen, Some cl)
         | `Raw (filename, contents) ->
           let lang =
             match file.lang with
@@ -271,20 +347,24 @@ module Make(State : State.S) = struct
             let lang, file_loc, gen, cl = Response.parse_input
               ~language:lang (`Raw (filename, lang, contents)) in
             let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_finally gen cl
+            let input, st = Stats.new_input st filename (String.length contents) in
+            st, file, Some input, `Gen (gen, Some cl)
           | Some `Full ->
             let lang, file_loc, l = Response.parse_raw_lazy ?language:file.lang
               ~filename contents
             in
             let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_of_llist l
+            let input, st = Stats.new_input st filename (String.length contents) in
+            st, file, Some input, `Llist l
           end
         | `File f ->
           begin match Response.find ?language:file.lang ~dir:file.dir f with
             | None ->
               let st = State.error st file_not_found (file.dir, f) in
-              st, file, Gen.empty
+              st, file, None, `Gen (Gen.empty, None)
             | Some filename ->
+              let file_size = file_size filename in
+              let input, st = Stats.new_input st f file_size in
               begin match file.mode with
                 | None
                 | Some `Incremental ->
@@ -292,22 +372,31 @@ module Make(State : State.S) = struct
                     Response.parse_input ?language:file.lang (`File filename)
                   in
                   let file = { file with loc = file_loc; lang = Some lang; } in
-                  st, file, gen_finally gen cl
+                  st, file, Some input, `Gen (gen, Some cl)
                 | Some `Full ->
                   let lang, file_loc, l =
                     Response.parse_file_lazy ?language:file.lang filename
                   in
                   let file = { file with loc = file_loc; lang = Some lang; } in
-                  st, file, gen_of_llist l
+                  st, file, Some input, `Llist l
               end
           end
       with
       | Logic.Extension_not_found ext ->
-        State.error st extension_not_found ext, file, Gen.empty
+        State.error st extension_not_found ext, file, None, `Gen (Gen.empty, None)
     in
     let st = State.set State.response_file file st in
     (* Wrap the resulting parser *)
-    st, wrap_parser ~file (Gen.append (Gen.of_list prelude) g)
+    let loc_of_res (a : Dolmen.Std.Answer.t) = a.loc in
+    match g with
+    | `Gen (g, cleanup) ->
+      st, wrap_parser
+        ?cleanup ?input ~file ~loc_of_res
+        (Gen.append (Gen.of_list prelude) g)
+    | `Llist l ->
+      st, wrap_lazy_list
+        ?input ~file ~loc_of_res
+        (lazy (prelude @ (Lazy.force l)))
 
   (* Expand dolmen statements *)
   (* ************************************************************************ *)
@@ -315,10 +404,12 @@ module Make(State : State.S) = struct
   let merge _ st = st
 
   let expand st c =
+    let loc_of_res (c : Dolmen.Std.Statement.t) = c.loc in
     let ret = match c with
       | { S.descr = S.Pack l; _ } ->
         let file = State.get State.logic_file st in
-        st, `Gen (merge, wrap_parser ~file (Gen.of_list l))
+        (* we do not try and record stats for the wrapping list -> parser done here *)
+        st, `Gen (merge, wrap_parser ~loc_of_res ~file (Gen.of_list l))
       (* TODO: filter the statements by passing some options *)
       | { S.descr = S.Include file; _ } ->
         let logic_file = State.get State.logic_file st in
@@ -329,19 +420,21 @@ module Make(State : State.S) = struct
           match Logic.find ?language ~dir file with
           | None ->
             State.error ~loc st file_not_found (dir, file), `Ok
-          | Some file ->
+          | Some filename ->
+            let file_size = file_size filename in
+            let input, st = Stats.new_input st (Filename.basename filename) file_size in
             begin match logic_file.mode with
               | None
               | Some `Incremental ->
-                let lang, file_loc, gen, cl = Logic.parse_input ?language (`File file) in
+                let lang, file_loc, gen, cl = Logic.parse_input ?language (`File filename) in
                 let new_logic_file = { logic_file with loc = file_loc; lang = Some lang; } in
                 let st = set_logic_file st new_logic_file in
-                st, `Gen (merge, wrap_parser ~file:new_logic_file (gen_finally gen cl))
+                st, `Gen (merge, wrap_parser ~input ~loc_of_res ~file:new_logic_file (gen_finally gen cl))
               | Some `Full ->
-                let lang, file_loc, l = Logic.parse_file_lazy ?language file in
+                let lang, file_loc, l = Logic.parse_file_lazy ?language filename in
                 let new_logic_file = { logic_file with loc = file_loc; lang = Some lang; } in
                 let st = set_logic_file st new_logic_file in
-                st, `Gen (merge, wrap_parser ~file:new_logic_file (gen_of_llist l))
+                st, `Gen (merge, wrap_lazy_list ~input ~loc_of_res ~file:new_logic_file l)
             end
         end
       | _ -> (st, `Ok)

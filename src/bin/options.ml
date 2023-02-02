@@ -18,7 +18,7 @@ let profiling_section = "PROFILING"
 
 type cmd =
   | Run of {
-      state : Loop.State.t;
+      state : State.t;
     }
   | List_reports of {
       conf : Dolmen_loop.Report.Conf.t;
@@ -244,9 +244,9 @@ let c_size = parse_size, print_size
 
 let report_style =
   Arg.enum [
-    "minimal", Loop.State.Minimal;
-    "regular", Loop.State.Regular;
-    "contextual", Loop.State.Contextual;
+    "minimal", State.Minimal;
+    "regular", State.Regular;
+    "contextual", State.Contextual;
   ]
 
 
@@ -324,6 +324,7 @@ let mk_run_state
     header_lang_version
     smtlib2_forced_logic type_check check_model
     debug report_style max_warn reports syntax_error_ref
+    progress_enabled progress_mem
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
@@ -337,11 +338,17 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   (* State creation *)
-  Loop.State.empty
-  |> Loop.State.init
+  State.empty
+  |> State.init
     ~bt ~debug ~report_style ~reports
     ~max_warn ~time_limit ~size_limit
     ~logic_file ~response_file
+  |> Stats.init
+    ~mem:progress_mem
+    ~max_mem:(int_of_float size_limit)
+    ~enabled:progress_enabled
+    ~typing:type_check
+    ~model:check_model
   |> Loop.Parser.init
     ~syntax_error_ref
     ~interactive_prompt:Loop.Parser.interactive_prompt_lang
@@ -432,8 +439,8 @@ let reports =
 (* ************************************************************************* *)
 
 let mk_file lang mode input =
-  let dir,source = Loop.State.split_input input in
-  Loop.State.mk_file ?lang ?mode dir source
+  let dir,source = State.split_input input in
+  State.mk_file ?lang ?mode dir source
 
 let logic_file =
   let docs = common_section in
@@ -517,7 +524,7 @@ let state =
   let size =
     let doc = "Stop the program if it tries and use more the $(docv) memory space. " ^
               "Accepts usual suffixes for sizes : k,M,G,T. " ^
-              "Without suffix, default to a size in octet." in
+              "Without suffix, default to a size in bytes/octet." in
     Arg.(value & opt c_size 1_000_000_000. &
          info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
@@ -571,19 +578,37 @@ let state =
          would be too long), and lastly $(b,minimal) prints each report on one line"
     in
     Arg.(value & opt report_style Contextual & info ["report-style"] ~doc ~docs:error_section)
-    in
+  in
   let max_warn =
     let doc = Format.asprintf
         "Maximum number of warnings to display (excess warnings will be
          counted and a count of silenced warnings reported at the end)." in
     Arg.(value & opt int max_int & info ["max-warn"] ~doc ~docs:error_section)
+  in
+  let syntax_error_ref =
+    let doc = Format.asprintf
+        "Print the syntax error reference number when a syntax error is raised."
     in
-    let syntax_error_ref =
-      let doc = Format.asprintf
-         "Print the syntax error reference number when a syntax error is raised."
-      in
-      Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
+    Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
+  in
+  let progress_enabled =
+    let default = false in
+    let pos_flag =
+      let doc = Format.asprintf "Enable printing of progress bars." in
+      Arg.info ["p"; "progress"] ~doc ~docs:profiling_section
     in
+    let neg_flag =
+      let doc = Format.asprintf "Disable printing of progress bars." in
+      Arg.info ["no-progress"] ~doc ~docs:profiling_section
+    in
+    Arg.(value & vflag default [true, pos_flag; false, neg_flag])
+  in
+  let progress_mem =
+    let doc = Format.asprintf
+        "Compute memory usage in progress info. Note that this may slow \
+         down dolmen significantly (experiments suggest around 3x)." in
+    Arg.(value & opt bool true & info ["progress-mem"] ~doc ~docs:profiling_section)
+  in
   Term.(const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
@@ -592,7 +617,8 @@ let state =
         header_check $ header_licenses $
         header_lang_version $
         force_smtlib2_logic $ typing $ check_model $
-        debug $ report_style $ max_warn $ reports $ syntax_error_ref)
+        debug $ report_style $ max_warn $ reports $ syntax_error_ref $
+        progress_enabled $ progress_mem)
 
 
 (* List command term *)
@@ -604,10 +630,10 @@ let cli =
     | false, None ->
       `Ok (Run { state; })
     | false, Some report ->
-      let conf = Loop.State.get Loop.State.reports state in
+      let conf = State.get State.reports state in
       `Ok (Doc { report; conf; })
     | true, None ->
-      let conf = Loop.State.get Loop.State.reports state in
+      let conf = State.get State.reports state in
       `Ok (List_reports { conf; })
     | true, Some _ ->
       `Error (false,

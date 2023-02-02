@@ -58,6 +58,18 @@ val is_dummy : loc -> bool
 (** Is the location an actual location, or a dummy one ? *)
 
 
+(** {2 Compact location info} *)
+
+val first_byte : t -> int
+(** The offset of the first byte that makes up the location. *)
+
+val last_byte : t -> int
+(** The offset of the last byte that makes up the location. *)
+
+val length_in_bytes : t -> int
+(** The number of bytes covered by a location. *)
+
+
 (** {2 Compact location handling} *)
 
 val mk_file : string -> file
@@ -77,7 +89,7 @@ val compact : loc -> file * t
 (** Compactify a full location into a compact representation. *)
 
 val lexing_positions : loc -> Lexing.position * Lexing.position
-(** Reutnr the pari of lexing positions corresponding to a location. *)
+(** Return the pair of lexing positions corresponding to a location. *)
 
 (** {2 Printing locations} *)
 

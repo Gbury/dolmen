@@ -1,19 +1,18 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-
 (* Debug printing *)
 (* ************** *)
 
 let debug_parsed_pipe st c =
-  if Loop.State.get Loop.State.debug st then
+  if State.get State.debug st then
     Format.eprintf "[logic][parsed][%a] @[<hov>%a@]@."
       Dolmen.Std.Loc.print_compact c.Dolmen.Std.Statement.loc
       Dolmen.Std.Statement.print c;
   st, c
 
 let debug_typed_pipe st stmt =
-  if Loop.State.get Loop.State.debug st then
+  if State.get State.debug st then
     Format.eprintf "[logic][typed][%a] @[<hov>%a@]@\n@."
       Dolmen.Std.Loc.print_compact stmt.Loop.Typer_Pipe.loc
       Loop.Typer_Pipe.print stmt;
@@ -24,6 +23,7 @@ let debug_typed_pipe st stmt =
 (* ************************ *)
 
 let handle_exn st exn =
+  let () = Tui.finalise_display () in
   let _st = Errors.exn st exn in
   exit 125
 
@@ -32,20 +32,21 @@ let finally st e =
   | None -> st
   | Some (bt,exn) ->
     (* Print the backtrace if requested *)
-    if Loop.State.(get bt) st then (
-      Format.eprintf "foo ?!@.";
-      Printexc.print_raw_backtrace stdout bt);
+    if State.(get bt) st then begin
+      Tui.eprintf "%s@."
+        (Printexc.raw_backtrace_to_string bt)
+    end;
     handle_exn st exn
 
 let run st =
-  if Loop.State.get Loop.State.debug st then begin
+  if State.get State.debug st then begin
     Dolmen.Std.Expr.Print.print_index := true;
     ()
   end;
   let st, g =
     try
       Loop.Parser.parse_logic [] st
-        (Loop.State.get Loop.State.logic_file st)
+        (State.get State.logic_file st)
     with exn -> handle_exn st exn
   in
   let st =
@@ -62,8 +63,9 @@ let run st =
       )
     )
   in
+  let () = Tui.finalise_display () in
   let st = Loop.Header.check st in
-  let _st = Dolmen_loop.State.flush st () in
+  let _st = State.flush st () in
   ()
 
 (* Warning/Error list *)

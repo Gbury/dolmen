@@ -1736,8 +1736,11 @@ module Make
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
     (State : State.S)
+    (Stats : Stats.S
+     with type state := State.t)
     (Typer : Typer
      with type state := State.t
+      and type 'a key := 'a State.key
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
@@ -1760,6 +1763,8 @@ module Make
 
   (* Types used in Pipes *)
   (* ************************************************************************ *)
+
+  type ty_state = Typer.ty_state
 
   (* Used for representing typed statements *)
   type +'a stmt = {
@@ -1939,103 +1944,107 @@ module Make
       if not (State.get type_check st) then
         st, `Done ()
       else
+        let counter = Stats.start_counter st in
         let input = `Logic (State.get State.logic_file st) in
-        match normalize st c with
+        let st, res =
+          match normalize st c with
 
-        (* Pack and includes.
-           These should have been filtered out before this point.
-           TODO: emit some kind of warning ? *)
-        | { S.descr = S.Pack _; _ } -> st, `Done ()
-        | { S.descr = S.Include _; _ } -> st, `Done ()
+          (* Pack and includes.
+             These should have been filtered out before this point.
+             TODO: emit some kind of warning ? *)
+          | { S.descr = S.Pack _; _ } -> st, `Done ()
+          | { S.descr = S.Include _; _ } -> st, `Done ()
 
-        (* State&Assertion stack management *)
-        | { S.descr = S.Reset; _ } ->
-          let st = Typer.reset st ~loc:c.S.loc () in
-          st, `Continue (simple (other_id c) c.S.loc `Reset)
-        | { S.descr = S.Pop i; _ } ->
-          let st = Typer.pop st ~input ~loc:c.S.loc i in
-          st, `Continue (simple (other_id c) c.S.loc (`Pop i))
-        | { S.descr = S.Push i; _ } ->
-          let st = Typer.push st ~input ~loc:c.S.loc i in
-          st, `Continue (simple (other_id c) c.S.loc (`Push i))
-        | { S.descr = S.Reset_assertions; _ } ->
-          let st = Typer.reset_assertions st ~loc:c.S.loc () in
-          st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
+          (* State&Assertion stack management *)
+          | { S.descr = S.Reset; _ } ->
+            let st = Typer.reset st ~loc:c.S.loc () in
+            st, `Continue (simple (other_id c) c.S.loc `Reset)
+          | { S.descr = S.Pop i; _ } ->
+            let st = Typer.pop st ~input ~loc:c.S.loc i in
+            st, `Continue (simple (other_id c) c.S.loc (`Pop i))
+          | { S.descr = S.Push i; _ } ->
+            let st = Typer.push st ~input ~loc:c.S.loc i in
+            st, `Continue (simple (other_id c) c.S.loc (`Push i))
+          | { S.descr = S.Reset_assertions; _ } ->
+            let st = Typer.reset_assertions st ~loc:c.S.loc () in
+            st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
 
-        (* Plain statements
-           TODO: allow the `plain` function to return a meaningful value *)
-        | { S.descr = S.Plain t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Plain t))
+          (* Plain statements
+             TODO: allow the `plain` function to return a meaningful value *)
+          | { S.descr = S.Plain t; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Plain t))
 
-        (* Hypotheses and goal statements *)
-        | { S.descr = S.Prove l; _ } ->
-          let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
+          (* Hypotheses and goal statements *)
+          | { S.descr = S.Prove l; _ } ->
+            let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+            st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
 
-        (* Hypotheses & Goals *)
-        | { S.descr = S.Clause l; _ } ->
-          let st, res = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
-          st, `Continue stmt
-        | { S.descr = S.Antecedent t; _ } ->
-          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
-          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
-          st, `Continue stmt
-        | { S.descr = S.Consequent t; _ } ->
-          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
-          let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
-          st, `Continue stmt
+          (* Hypotheses & Goals *)
+          | { S.descr = S.Clause l; _ } ->
+            let st, res = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+            let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
+            st, `Continue stmt
+          | { S.descr = S.Antecedent t; _ } ->
+            let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
+            let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
+            st, `Continue stmt
+          | { S.descr = S.Consequent t; _ } ->
+            let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
+            let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
+            st, `Continue stmt
 
-        (* Other set_logics should check whether corresponding plugins are activated ? *)
-        | { S.descr = S.Set_logic s; _ } ->
-          let st = Typer.set_logic st ~input ~loc:c.S.loc s in
-          st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
+          (* Other set_logics should check whether corresponding plugins are activated ? *)
+          | { S.descr = S.Set_logic s; _ } ->
+            let st = Typer.set_logic st ~input ~loc:c.S.loc s in
+            st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
 
-        (* Set/Get info *)
-        | { S.descr = S.Get_info s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Get_info s))
-        | { S.descr = S.Set_info t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Set_info t))
+          (* Set/Get info *)
+          | { S.descr = S.Get_info s; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Get_info s))
+          | { S.descr = S.Set_info t; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Set_info t))
 
-        (* Set/Get options *)
-        | { S.descr = S.Get_option s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Get_option s))
-        | { S.descr = S.Set_option t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Set_option t))
+          (* Set/Get options *)
+          | { S.descr = S.Get_option s; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Get_option s))
+          | { S.descr = S.Set_option t; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Set_option t))
 
-        (* Declarations and definitions *)
-        | { S.descr = S.Defs d; _ } ->
-          let st, l = Typer.defs ~mode:`Create_id st ~input ~loc:c.S.loc ~attrs:c.S.attrs d in
-          let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
-          st, `Continue (res)
-        | { S.descr = S.Decls l; _ } ->
-          let st, l = Typer.decls st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
-          st, `Continue (res)
+          (* Declarations and definitions *)
+          | { S.descr = S.Defs d; _ } ->
+            let st, l = Typer.defs ~mode:`Create_id st ~input ~loc:c.S.loc ~attrs:c.S.attrs d in
+            let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
+            st, `Continue (res)
+          | { S.descr = S.Decls l; _ } ->
+            let st, l = Typer.decls st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+            let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
+            st, `Continue (res)
 
-        (* Smtlib's proof/model instructions *)
-        | { S.descr = S.Get_proof; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_proof)
-        | { S.descr = S.Get_unsat_core; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_core)
-        | { S.descr = S.Get_unsat_assumptions; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_assumptions)
-        | { S.descr = S.Get_model; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_model)
-        | { S.descr = S.Get_value l; _ } ->
-          let st, l = Typer.terms st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
-        | { S.descr = S.Get_assignment; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
-        (* Assertions *)
-        | { S.descr = S.Get_assertions; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_assertions)
-        (* Misc *)
-        | { S.descr = S.Echo s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Echo s))
-        | { S.descr = S.Exit; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Exit)
-
+          (* Smtlib's proof/model instructions *)
+          | { S.descr = S.Get_proof; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_proof)
+          | { S.descr = S.Get_unsat_core; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_unsat_core)
+          | { S.descr = S.Get_unsat_assumptions; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_unsat_assumptions)
+          | { S.descr = S.Get_model; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_model)
+          | { S.descr = S.Get_value l; _ } ->
+            let st, l = Typer.terms st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+            st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
+          | { S.descr = S.Get_assignment; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
+          (* Assertions *)
+          | { S.descr = S.Get_assertions; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Get_assertions)
+          (* Misc *)
+          | { S.descr = S.Echo s; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc (`Echo s))
+          | { S.descr = S.Exit; _ } ->
+            st, `Continue (simple (other_id c) c.S.loc `Exit)
+        in
+        let st = Stats.record_typed st counter c.S.loc (State.get Typer.ty_state st) in
+        st, res
     in
     res
 

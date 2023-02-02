@@ -63,8 +63,11 @@ module Make
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
     (State : State.S)
+    (Stats : Stats.S
+     with type state := State.t)
     (Typer : Typer
      with type state := State.t
+      and type 'a key := 'a State.key
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
@@ -74,6 +77,7 @@ module Make
       and type formula := Expr.formula)
   : S with type state := State.t
        and type 'a key := 'a State.key
+       and type ty_state = Typer.ty_state
        and type ty := Expr.ty
        and type ty_var := Expr.ty_var
        and type ty_cst := Expr.ty_cst
