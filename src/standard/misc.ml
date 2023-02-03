@@ -203,7 +203,7 @@ let mk_lexbuf i =
     buf, cl
   | `File s ->
     let ch = open_in s in
-    let cl = (fun () -> close_in ch) in
+    let cl = (fun () -> Format.eprintf "closing...@."; close_in ch) in
     let buf = Lexing.from_channel ch in
     set_file buf filename;
     buf, cl

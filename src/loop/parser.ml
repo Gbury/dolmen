@@ -146,15 +146,21 @@ module Make(State : State.S) = struct
     (* Register a finaliser for the original generator in case an exception is
        raised at some point in one of the pipes, which would prevent gen from
        reaching its end and thus prevent closing of the underlying file. *)
-    let () = Gc.finalise_last cl gen in
+    let () = Gc.finalise_last (fun () -> Format.eprintf "@.!! finalizer@.";cl ()) gen in
     (* Return a new generator which wraps gen and calls the closing function
        once gen is finished. *)
     let aux () =
+      Format.eprintf "calling gen !@.";
       match gen () with
-      | Some _ as res -> res
-      | None -> cl (); None
+      | Some _ as res ->
+        Format.eprintf "some !@.";
+        res
+      | None ->
+        Format.eprintf "none !@.";
+        cl (); None
       | exception exn ->
         let bt = Printexc.get_raw_backtrace () in
+        Format.eprintf "exn: %s!@." (Printexc.to_string exn);
         cl ();
         Printexc.raise_with_backtrace exn bt
     in

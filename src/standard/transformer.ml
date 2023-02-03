@@ -41,10 +41,11 @@ module Make
   let find ?(dir="") file =
     if Filename.is_relative file then begin
       let f = Filename.concat dir file in
+      Format.eprintf "dir: '%s' / file: '%s'@." dir file;
       if Sys.file_exists f then
         Some f
       else
-          find_env file Ty.env
+        find_env file Ty.env
     end else if Sys.file_exists file then
       Some file
     else

@@ -28,14 +28,16 @@ type file = {
    - if the ints to hold do not fit into half a caml int, then we fallback
      to a caml block holding the ints separately. In this case, some care
      is taken to be able to hold big enough ints even on a 32-bit platform *)
-type t = Obj.t (* = int [@unboxed] | Extended of extended *)
+type t = int (* Obj.t (* = int [@unboxed] | Extended of extended *) *)
 
 (* The block types used when parts of a compact location
    cannot fit in one caml int. *)
+(*
 type extended = {
   offset : int;
   length : int;
 }
+   *)
 
 (* Convenient alias to store a compact location and file info *)
 type full = {
@@ -85,24 +87,30 @@ let compact_part_size = Sys.int_size / 2
 let compact_part_mask = -1 lsr (Sys.int_size - compact_part_size)
 
 let split_compact (c : t) =
-  if Obj.is_int c then begin
-    let i : int = Obj.magic c in
+  (* if Obj.is_int c then begin *)
+    let i : int = (* Obj.magic *) c in
     let offset = i land compact_part_mask in
     let length = (i lsr compact_part_size) land compact_part_mask in
     offset, length
+  (*
   end else begin
     let e : extended = Obj.magic c in
     e.offset, e.length
   end
+  *)
 
 let mk_compact offset length =
   if 0 <= offset && offset <= compact_part_mask &&
      0 <= length && length <= compact_part_mask then begin
     let i = offset + length lsl compact_part_size in
-    (Obj.magic i : t)
+    i
+    (* (Obj.magic i : t) *)
   end else begin
+    assert false
+      (*
     let e = { offset; length; } in
     (Obj.magic e : t)
+         *)
   end
 
 (* File table *)
