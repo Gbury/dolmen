@@ -84,7 +84,7 @@ jobs:
     # --------------
     - name: Deploy the dev documentation
       uses: JamesIves/github-pages-deploy-action@4.1.1
-      if: github.ref == 'refs/heads/master' && matrix.ocaml-version == ocaml-base-compiler.4.14.0
+      if: github.ref == 'refs/heads/master' && matrix.ocaml-version == 'ocaml-base-compiler.4.14.0'
       with:
         branch: gh-pages
         folder: _build/default/_doc/_html
