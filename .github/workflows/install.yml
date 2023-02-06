@@ -44,8 +44,8 @@ jobs:
           - dolmen_lsp
 
         ocaml-version:
-          - 5.0.0
-          - 4.14.0
+          - ocaml-base-compiler.5.0.0
+          - ocaml-base-compiler.4.14.0
 
         # Ocaml versions to use
         # Also test flambda to make sure the installation time is reasonable
