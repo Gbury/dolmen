@@ -146,7 +146,7 @@ module Make(State : State.S) = struct
     (* Register a finaliser for the original generator in case an exception is
        raised at some point in one of the pipes, which would prevent gen from
        reaching its end and thus prevent closing of the underlying file. *)
-    let () = Gc.finalise_last (fun () -> Format.eprintf "@.!! finalizer@.";cl ()) gen in
+    let () = Gc.finalise_last (fun () -> Format.eprintf "@.!!!! finalizer for gen !!!!!@.";cl ()) gen in
     (* Return a new generator which wraps gen and calls the closing function
        once gen is finished. *)
     let aux () =
