@@ -1,7 +1,7 @@
 # Buildability check
 # ==================
 # Build dolmen using various version of the OCaml compiler
-name: build
+name: test
 
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
@@ -19,7 +19,7 @@ jobs:
   # ==============
   # Goal: Ensure the packages builds across all supported
   # versions of the ocaml compiler.
-  build:
+  test:
 
     runs-on: ${{ matrix.os }}
 
@@ -69,7 +69,24 @@ jobs:
       run: opam update
     # Install ocaml deps
     - name: Install Ocaml deps
-      run: opam install . --deps-only
+      run: opam install . --deps-only --with-test --with-doc
     # Build the package
     - name: Build the package
       run: opam exec -- make
+    # Check the tests
+    - name: Build the examples
+      run: opam exec -- make test
+    # Check the doc builds
+    - name: Build the doc
+      run: opam exec -- make doc
+
+    # Update the doc
+    # --------------
+    - name: Deploy the dev documentation
+      uses: JamesIves/github-pages-deploy-action@4.1.1
+      if: github.ref == 'refs/heads/master' && matrix.ocaml-version == ocaml-base-compiler.4.14.0
+      with:
+        branch: gh-pages
+        folder: _build/default/_doc/_html
+        target-folder: dev
+

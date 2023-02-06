@@ -43,12 +43,16 @@ jobs:
           - dolmen_bin
           - dolmen_lsp
 
+        ocaml-version:
+          - 5.0.0
+          - 4.14.0
+
         # Ocaml versions to use
         # Also test flambda to make sure the installation time is reasonable
         # Note that because on windows, switches have different names, we
         # must do a bit of work manually to get a correct ocaml-version
         include:
-          - ocaml-version: 4.14.0
+          # Also test flambda variants (to check compilation speed)
           - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
             os: ubuntu-latest
           - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
