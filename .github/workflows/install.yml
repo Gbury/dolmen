@@ -52,6 +52,20 @@ jobs:
         # Note that because on windows, switches have different names, we
         # must do a bit of work manually to get a correct ocaml-version
         include:
+          # 4.14.0
+          - ocaml-version: ocaml-base-compiler.4.14.0
+            os: ubuntu-latest
+          - ocaml-version: ocaml-base-compiler.4.14.0
+            os: macos-latest
+          - ocaml-version: ocaml-base-compiler.4.14.0+mingw64c
+            os: windows-latest
+          # 5.0
+          - ocaml-version: ocaml-base-compiler.5.0.0
+            os: ubuntu-latest
+          - ocaml-version: ocaml-base-compiler.5.0.0
+            os: macos-latest
+          - ocaml-version: ocaml-base-compiler.5.0.0+mingw64c
+            os: windows-latest
           # Also test flambda variants (to check compilation speed)
           - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
             os: ubuntu-latest
