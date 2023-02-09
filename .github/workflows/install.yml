@@ -112,7 +112,7 @@ jobs:
       run: opam install . --deps-only --with-test --with-doc
     # Install each package
     - name: Install dolmen
-      run: opam install --with-test dolmen dolmen_type dolmen_loop dolmen_bin dolmen_lsp
+      run: opam install . --with-test --with-doc
       timeout-minutes: 20
       # Ensure that installation does not take too long
       # (particularly with regards to flambda)
