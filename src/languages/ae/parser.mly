@@ -546,7 +546,7 @@ decl:
 
   | l=separated_nonempty_list(AND, function_def)
     { let loc = L.mk_pos $startpos $endpos in
-      S.mut_fun_def_rec ~loc l }
+      S.defs ~loc l }
 
   | PRED p=raw_named_ident EQUAL body=lexpr
     { let loc = L.mk_pos $startpos $endpos in

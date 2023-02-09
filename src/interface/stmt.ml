@@ -113,9 +113,6 @@ module type Logic = sig
   val rec_types : ?loc:location -> t list -> t
   (** Pack together a list of mutually recursive type definitions. *)
 
-  val mut_fun_def_rec : ?loc:location -> t list -> t
-  (** Pack together a list of mutually recursive function definitions. *)
-
   val axiom : ?loc:location -> id -> term -> t
   (** Create a axiom. *)
 
