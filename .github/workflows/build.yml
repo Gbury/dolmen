@@ -1,7 +1,7 @@
 # Buildability check
 # ==================
 # Build dolmen using various version of the OCaml compiler
-name: test
+name: build
 
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
@@ -19,7 +19,7 @@ jobs:
   # ==============
   # Goal: Ensure the packages builds across all supported
   # versions of the ocaml compiler.
-  test:
+  build:
 
     runs-on: ${{ matrix.os }}
 
