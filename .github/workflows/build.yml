@@ -34,17 +34,9 @@ jobs:
         os:
           - ubuntu-latest
 
-        # Ocaml versions to test. This is a bit of a misnomer, considering
-        # that it is actually just a list of package to install as the base
-        # of the switch
+        # Ocaml versions to use
         ocaml-version:
-          - ocaml-base-compiler.5.0.0
-          - ocaml-variants.4.14.0+options,ocaml-option-flambda
           - ocaml-base-compiler.4.14.0
-          - ocaml-base-compiler.4.13.1
-          - ocaml-base-compiler.4.12.1
-          - ocaml-base-compiler.4.11.2
-          - ocaml-base-compiler.4.10.1
 
     # Build ENV
     # ---------
@@ -84,7 +76,7 @@ jobs:
     # --------------
     - name: Deploy the dev documentation
       uses: JamesIves/github-pages-deploy-action@4.1.1
-      if: github.ref == 'refs/heads/master' && matrix.ocaml-version == 'ocaml-base-compiler.4.14.0'
+      if: github.ref == 'refs/heads/master'
       with:
         branch: gh-pages
         folder: _build/default/_doc/_html
