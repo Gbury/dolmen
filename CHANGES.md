@@ -38,6 +38,9 @@ v0.8.1
 
 ### Loop
 
+- Use `GC.finalise` instead of `Gc.finalise_last` in `loop/parser.ml`
+  in order to avoid a bug in the ocaml 5.0 runtime, see ocaml/ocaml#12001
+  (PR#128)
 - New module to implement Alarms (size/time limits) (PR#117)
 - Add optional argument to `Pipeline.run` to specify
   an alarm implementation (PR#117)

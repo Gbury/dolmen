@@ -146,7 +146,16 @@ module Make(State : State.S) = struct
     (* Register a finaliser for the original generator in case an exception is
        raised at some point in one of the pipes, which would prevent gen from
        reaching its end and thus prevent closing of the underlying file. *)
-    let () = Gc.finalise_last cl gen in
+    (* For now, we use `Gc.finalise, to avoid a bug in the implementation of
+       `Gc.finalise_last` in the ocaml 5.0 runtime (see
+       https://github.com/ocaml/ocaml/pull/12001). There should not be any
+       difference between `finalise` and `finalise_last` as long as:
+       1- the finaliser funciton does not keep the finalised value alive
+       2- we do not use ephemerons
+
+       Unfortunately, that means that finalisers will be called later than
+       with `finalise_last`, but that should not be too much of a problem. *)
+    let () = Gc.finalise (fun _ -> cl ()) gen in
     (* Return a new generator which wraps gen and calls the closing function
        once gen is finished. *)
     let aux () =
