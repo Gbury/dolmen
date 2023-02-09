@@ -147,7 +147,8 @@ module Make(State : State.S) = struct
        raised at some point in one of the pipes, which would prevent gen from
        reaching its end and thus prevent closing of the underlying file. *)
     (* For now, we use `Gc.finalise, to avoid a bug in the implementation of
-       `Gc.finalise_last` in the ocaml 5.0 runtime. There should not be any
+       `Gc.finalise_last` in the ocaml 5.0 runtime (see
+       https://github.com/ocaml/ocaml/pull/12001). There should not be any
        difference between `finalise` and `finalise_last` as long as:
        1- the finaliser funciton does not keep the finalised value alive
        2- we do not use ephemerons
