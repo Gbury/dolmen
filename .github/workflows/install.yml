@@ -32,6 +32,11 @@ jobs:
       fail-fast: false
 
       matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
         # Dolmen package to test installation of
         dolmen-pkg:
           - dolmen_bin
