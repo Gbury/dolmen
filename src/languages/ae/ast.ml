@@ -200,6 +200,9 @@ module type Statement = sig
   val fun_def_rec : ?loc:location -> id -> term list -> term list -> term -> term -> t
   (** Function definition. *)
 
+  val mut_fun_def_rec : ?loc:location -> t list -> t
+  (** Pack a list of mutually function definitions together. *)
+
   val pred_def : ?loc:location -> id -> term list -> term list -> term -> t
   (** Predicate definition. *)
 

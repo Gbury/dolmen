@@ -427,6 +427,9 @@ let algebraic_type ?loc id vars cstrs =
 let rec_types ?loc l =
   group_decls ?loc ~recursive:true l
 
+let mut_fun_def_rec ?loc l =
+  group_defs ?loc ~recursive:true l
+
 let axiom ?loc id t =
   mk ~id ?loc (Antecedent t)
 
