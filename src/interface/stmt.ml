@@ -116,9 +116,12 @@ module type Logic = sig
   val rec_types : ?loc:location -> t list -> t
   (** Pack together a list of mutually recursive type definitions. *)
 
-  val preds_def_rec : ?loc:location -> (id * term list * term list * term) list -> t
-  (** Define a list of mutually recursive predicates. Each predicate has the same
-      definition as in [pred_def] *)
+  val pred_def    : ?loc:location -> id -> term list -> term list -> term -> t
+  (** Symbol definition. [pred_def p vars args body] means that "p(args) = (body : bool)",
+      i.e [p] is a predicate symbol with arguments [args], and which returns the value
+      [body] which is of type [bool]. The predicate can also be a top-level predicate in
+      which case it doesn't have arguments and it just returns the value of the body which
+      means "p = (body : bool)". *)
 
   val axiom : ?loc:location -> id -> term -> t
   (** Create a axiom. *)
@@ -206,13 +209,6 @@ module type Logic = sig
   (** Symbol definition. [fun_def_rec f vars args ret body] means that "f(args) = (body : ret)",
       i.e f is a recursive function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
-
-  val pred_def    : ?loc:location -> id -> term list -> term list -> term -> t
-  (** Symbol definition. [pred_def p vars args body] means that "p(args) = (body : bool)",
-      i.e [p] is a predicate symbol with arguments [args], and which returns the value
-      [body] which is of type [bool]. The predicate can also be a top-level predicate in
-      which case it doesn't have arguments and it just returns the value of the body which
-      means "p = (body : bool)". *)
 
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
   (** Define a list of mutually recursive functions. Each function has the same

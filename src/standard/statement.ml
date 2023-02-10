@@ -427,14 +427,6 @@ let algebraic_type ?loc id vars cstrs =
 let rec_types ?loc l =
   group_decls ?loc ~recursive:true l
 
-let preds_def_rec ?loc l =
-  let attrs = [Term.const ?loc Id.predicate_def] in
-  let ret_ty = Term.prop ?loc () in
-  let contents = List.map (fun (id, vars, params, body) ->
-      def ?loc id ~vars ~params ret_ty body
-    ) l in
-  mk_defs ?loc ~attrs ~recursive:true contents
-
 let axiom ?loc id t =
   mk ~id ?loc (Antecedent t)
 
