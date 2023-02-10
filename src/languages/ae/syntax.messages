@@ -3369,8 +3369,8 @@ file: PRED XOR
 ##
 ## Ends in an error in state: 308.
 ##
-## decl -> PRED . raw_named_ident EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
-## decl -> PRED . raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED . raw_named_ident EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
+## predicate_def -> PRED . raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED
@@ -3382,8 +3382,8 @@ file: PRED ID COMMA
 ##
 ## Ends in an error in state: 309.
 ##
-## decl -> PRED raw_named_ident . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
-## decl -> PRED raw_named_ident . LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED raw_named_ident . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
+## predicate_def -> PRED raw_named_ident . LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident
@@ -3401,7 +3401,7 @@ file: PRED ID LEFTPAR XOR
 ##
 ## Ends in an error in state: 310.
 ##
-## decl -> PRED raw_named_ident LEFTPAR . loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED raw_named_ident LEFTPAR . loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident LEFTPAR
@@ -3413,7 +3413,7 @@ file: PRED ID LEFTPAR RIGHTPAR XOR
 ##
 ## Ends in an error in state: 313.
 ##
-## decl -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR
@@ -3425,7 +3425,7 @@ file: PRED ID LEFTPAR RIGHTPAR EQUAL XOR
 ##
 ## Ends in an error in state: 314.
 ##
-## decl -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL
@@ -3437,7 +3437,6 @@ file: PRED ID LEFTPAR RIGHTPAR EQUAL ID RIGHTSQ
 ##
 ## Ends in an error in state: 315.
 ##
-## decl -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
 ## lexpr -> lexpr . PLUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . MINUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . TIMES lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
@@ -3458,6 +3457,7 @@ file: PRED ID LEFTPAR RIGHTPAR EQUAL ID RIGHTSQ
 ## lexpr -> lexpr . NOTEQ lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . HAT LEFTBR INTEGER COMMA INTEGER RIGHTBR [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . AT lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
+## predicate_def -> PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR EQUAL lexpr
@@ -3525,7 +3525,7 @@ file: PRED ID EQUAL XOR
 ##
 ## Ends in an error in state: 322.
 ##
-## decl -> PRED raw_named_ident EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## predicate_def -> PRED raw_named_ident EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident EQUAL
@@ -3537,7 +3537,6 @@ file: PRED ID EQUAL ID RIGHTSQ
 ##
 ## Ends in an error in state: 323.
 ##
-## decl -> PRED raw_named_ident EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
 ## lexpr -> lexpr . PLUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . MINUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . TIMES lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
@@ -3558,6 +3557,7 @@ file: PRED ID EQUAL ID RIGHTSQ
 ## lexpr -> lexpr . NOTEQ lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . HAT LEFTBR INTEGER COMMA INTEGER RIGHTBR [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . AT lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
+## predicate_def -> PRED raw_named_ident EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PRED raw_named_ident EQUAL lexpr
@@ -3778,7 +3778,7 @@ file: FUNC XOR
 ##
 ## Ends in an error in state: 345.
 ##
-## decl -> FUNC . raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC . raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC
@@ -3790,7 +3790,7 @@ file: FUNC ID EQUAL
 ##
 ## Ends in an error in state: 346.
 ##
-## decl -> FUNC raw_named_ident . LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident . LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC raw_named_ident
@@ -3808,7 +3808,7 @@ file: FUNC ID LEFTPAR XOR
 ##
 ## Ends in an error in state: 347.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR . loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR . loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC raw_named_ident LEFTPAR
@@ -3820,7 +3820,7 @@ file: FUNC ID LEFTPAR RIGHTPAR XOR
 ##
 ## Ends in an error in state: 349.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR . COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR . COLON primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR
@@ -3832,7 +3832,7 @@ file: FUNC ID LEFTPAR RIGHTPAR COLON XOR
 ##
 ## Ends in an error in state: 350.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON . primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON . primitive_type EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON
@@ -3844,7 +3844,7 @@ file: FUNC ID LEFTPAR RIGHTPAR COLON ID XOR
 ##
 ## Ends in an error in state: 351.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type . EQUAL lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ## primitive_type -> primitive_type . ty_ident [ ID EQUAL ]
 ##
 ## The known suffix of the stack is as follows:
@@ -3857,7 +3857,7 @@ file: FUNC ID LEFTPAR RIGHTPAR COLON ID EQUAL XOR
 ##
 ## Ends in an error in state: 352.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL . lexpr [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL
@@ -3869,7 +3869,7 @@ file: FUNC ID LEFTPAR RIGHTPAR COLON ID EQUAL ID RIGHTSQ
 ##
 ## Ends in an error in state: 353.
 ##
-## decl -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## function_def -> FUNC raw_named_ident LEFTPAR loption(separated_nonempty_list(COMMA,logic_binder)) RIGHTPAR COLON primitive_type EQUAL lexpr . [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM AND ]
 ## lexpr -> lexpr . PLUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . MINUS lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
 ## lexpr -> lexpr . TIMES lexpr [ XOR TYPE TIMES THEORY SLASH RIGHTARROW REWRITING PRED POWDOT POW PLUS PERCENT OR NOTEQ MINUS LT LRARROW LOGIC LE HAT GT GOAL GE FUNC EQUAL EOF AXIOM AT AND ]
@@ -3979,9 +3979,21 @@ file: AXIOM ID COLON ID RIGHTSQ
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
+file: PRED ID EQUAL ID AND XOR
+##
+## Ends in an error in state: 363.
+##
+## separated_nonempty_list(AND,function_or_predicate_def) -> function_or_predicate_def AND . separated_nonempty_list(AND,function_or_predicate_def) [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+##
+## The known suffix of the stack is as follows:
+## function_or_predicate_def AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
 file: LOGIC ID COLON PROP XOR
 ##
-## Ends in an error in state: 361.
+## Ends in an error in state: 367.
 ##
 ## list(decl) -> decl . list(decl) [ EOF ]
 ##
@@ -3993,7 +4005,7 @@ file: LOGIC ID COLON PROP XOR
 
 input: XOR
 ##
-## Ends in an error in state: 363.
+## Ends in an error in state: 369.
 ##
 ## input' -> . input [ # ]
 ##

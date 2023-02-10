@@ -516,6 +516,28 @@ rewriting_list:
   | e=lexpr PV l=rewriting_list
     { e :: l }
 
+function_def:
+  | FUNC f=raw_named_ident
+    LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR
+    COLON ret_ty=primitive_type EQUAL body=lexpr
+    { let loc = L.mk_pos $startpos $endpos in
+      S.fun_def ~loc f [] args ret_ty body }
+
+predicate_def:
+  | PRED p=raw_named_ident EQUAL body=lexpr
+    { let loc = L.mk_pos $startpos $endpos in
+      S.pred_def ~loc p [] [] body }
+
+  | PRED p=raw_named_ident
+    LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR EQUAL body=lexpr
+    { let loc = L.mk_pos $startpos $endpos in
+      S.pred_def ~loc p [] args body }
+
+function_or_predicate_def:
+  | s=function_def
+  | s=predicate_def
+    { s }
+
 decl:
   | THEORY id=decl_ident EXTENDS ext=decl_ident EQUAL l=theory_elt* END
     { let loc = L.mk_pos $startpos $endpos in
@@ -537,20 +559,9 @@ decl:
     { let loc = L.mk_pos $startpos $endpos in
       S.logic ~loc ~ac args ty }
 
-  | FUNC f=raw_named_ident
-    LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR
-    COLON ret_ty=primitive_type EQUAL body=lexpr
+  | l=separated_nonempty_list(AND, function_or_predicate_def)
     { let loc = L.mk_pos $startpos $endpos in
-      S.fun_def_rec ~loc f [] args ret_ty body }
-
-  | PRED p=raw_named_ident EQUAL body=lexpr
-    { let loc = L.mk_pos $startpos $endpos in
-      S.pred_def ~loc p [] [] body }
-
-  | PRED p=raw_named_ident
-    LEFTPAR args=separated_list(COMMA, logic_binder) RIGHTPAR EQUAL body=lexpr
-    { let loc = L.mk_pos $startpos $endpos in
-      S.pred_def ~loc p [] args body }
+      S.defs ~loc l }
 
   | AXIOM name=decl_ident COLON body=lexpr
     { let loc = L.mk_pos $startpos $endpos in

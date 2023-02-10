@@ -197,11 +197,14 @@ module type Statement = sig
   val record_type : ?loc:location -> id -> term list -> (id * term) list -> t
   (** Record type definition. *)
 
-  val fun_def_rec : ?loc:location -> id -> term list -> term list -> term -> term -> t
+  val fun_def : ?loc:location -> id -> term list -> term list -> term -> term -> t
   (** Function definition. *)
 
   val pred_def : ?loc:location -> id -> term list -> term list -> term -> t
   (** Predicate definition. *)
+
+  val defs : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Pack a list of mutually recursive definitions into a single statement. *)
 
   val abstract_type : ?loc:location -> id -> term list -> t
   (** Create a new abstract type, quantified over the given type variables. *)

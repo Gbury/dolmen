@@ -27,6 +27,8 @@ v0.8.1
   definitions are always recursive (PR#123)
 - Add `parse_raw_lazy` to parse a string into a lazy list of
   statements (PR#125)
+- Add support for mutually recursive functions and predicates
+  in Alt-ergo's native language (PR#129)
 
 ### Typing
 
