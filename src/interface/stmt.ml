@@ -88,9 +88,12 @@ module type Logic = sig
       statements to import. *)
 
   val include_ : ?loc:location -> string -> id list -> t
-  (** Inlcude directive. [include file l] means to include in the current scope
+  (** Include directive. [include file l] means to include in the current scope
       the directives from file [file] that appear in [l]. If [l] is the empty list,
       all directives should be imported. *)
+
+  val defs        : ?loc:location -> ?attrs:term list -> t list -> t
+  (** Pack a list of mutually recursive definitions into a single statement. *)
 
   (** {2 Alt-ergo Statements} *)
 
@@ -284,9 +287,6 @@ module type Logic = sig
   val data        : ?loc:location -> ?attrs:term list -> t list -> t
   (** Packs a list of mutually recursive inductive type declarations into a
       single statement. *)
-
-  val defs        : ?loc:location -> ?attrs:term list -> t list -> t
-  (** Packs a list of mutually recursive definitions into a single statement. *)
 
   val rewrite     : ?loc:location -> ?attrs:term list -> term -> t
   (** Declare a rewrite rule, i.e a universally quantified equality or equivalence that

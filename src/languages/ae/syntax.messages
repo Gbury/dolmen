@@ -3981,31 +3981,19 @@ file: AXIOM ID COLON ID RIGHTSQ
 
 file: PRED ID EQUAL ID AND XOR
 ##
-## Ends in an error in state: 361.
+## Ends in an error in state: 363.
 ##
-## separated_nonempty_list(AND,predicate_def) -> predicate_def AND . separated_nonempty_list(AND,predicate_def) [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
-##
-## The known suffix of the stack is as follows:
-## predicate_def AND
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: FUNC ID LEFTPAR RIGHTPAR COLON ID EQUAL ID AND XOR
-##
-## Ends in an error in state: 366.
-##
-## separated_nonempty_list(AND,function_def) -> function_def AND . separated_nonempty_list(AND,function_def) [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
+## separated_nonempty_list(AND,function_or_predicate_def) -> function_or_predicate_def AND . separated_nonempty_list(AND,function_or_predicate_def) [ TYPE THEORY REWRITING PRED LOGIC GOAL FUNC EOF AXIOM ]
 ##
 ## The known suffix of the stack is as follows:
-## function_def AND
+## function_or_predicate_def AND
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
 file: LOGIC ID COLON PROP XOR
 ##
-## Ends in an error in state: 369.
+## Ends in an error in state: 367.
 ##
 ## list(decl) -> decl . list(decl) [ EOF ]
 ##
@@ -4017,7 +4005,7 @@ file: LOGIC ID COLON PROP XOR
 
 input: XOR
 ##
-## Ends in an error in state: 371.
+## Ends in an error in state: 369.
 ##
 ## input' -> . input [ # ]
 ##
