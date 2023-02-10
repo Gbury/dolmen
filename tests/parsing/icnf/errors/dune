@@ -10,7 +10,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -25,7 +25,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -42,7 +42,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -57,7 +57,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -74,7 +74,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -89,7 +89,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -106,7 +106,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -121,7 +121,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -138,7 +138,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -153,7 +153,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -170,7 +170,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -185,7 +185,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -202,7 +202,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -217,7 +217,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -234,7 +234,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -249,7 +249,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -266,7 +266,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -281,7 +281,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -298,7 +298,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -313,7 +313,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -330,7 +330,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -345,7 +345,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -362,7 +362,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -377,7 +377,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -394,7 +394,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
@@ -409,7 +409,7 @@
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
-             (with-accepted-exit-codes (not 0)
+             (with-accepted-exit-codes (or 0 (not 0))
               (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
 (rule
   (alias runtest)
