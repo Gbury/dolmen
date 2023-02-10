@@ -113,6 +113,10 @@ module type Logic = sig
   val rec_types : ?loc:location -> t list -> t
   (** Pack together a list of mutually recursive type definitions. *)
 
+  val preds_def_rec : ?loc:location -> (id * term list * term list * term) list -> t
+  (** Define a list of mutually recursive predicates. Each predicate has the same
+      definition as in [pred_def] *)
+
   val axiom : ?loc:location -> id -> term -> t
   (** Create a axiom. *)
 
@@ -208,7 +212,7 @@ module type Logic = sig
       means "p = (body : bool)". *)
 
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
-  (** Define a list of mutually recursive functions. Each functions has the same
+  (** Define a list of mutually recursive functions. Each function has the same
       definition as in [fun_def] *)
 
   val get_proof       : ?loc:location -> unit -> t
