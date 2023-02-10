@@ -205,11 +205,6 @@ module type Logic = sig
       i.e f is a function symbol with arguments [args], and which returns the value
       [body] which is of type [ret]. *)
 
-  val fun_def_rec : ?loc:location -> id -> term list -> term list -> term -> term -> t
-  (** Symbol definition. [fun_def_rec f vars args ret body] means that "f(args) = (body : ret)",
-      i.e f is a recursive function symbol with arguments [args], and which returns the value
-      [body] which is of type [ret]. *)
-
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
   (** Define a list of mutually recursive functions. Each function has the same
       definition as in [fun_def] *)
