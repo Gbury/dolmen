@@ -19,8 +19,7 @@ module type Id = sig
   (** Usual namespace, used for types. *)
 
   val decl : namespace
-  (** Names used to refer to tptp phrases. These are used
-      in declarations and include statement. *)
+  (** Names used to refer to top-level declarations. *)
 
   val track : namespace
   (** Namespace used to tag and identify sub-terms occuring in files. *)
