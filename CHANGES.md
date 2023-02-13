@@ -1,4 +1,14 @@
 
+next
+----
+
+### Parsing
+
+- Add `attrs` fields for all declarations and definition types,
+  and correctly attach predicate attribute to individual definitions
+  (PR#130)
+
+
 v0.8.1
 ------
 
