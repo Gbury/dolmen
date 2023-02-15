@@ -21,6 +21,7 @@ type abstract = {
   id : Id.t;
   ty : term;
   loc : location;
+  attrs : term list;
 }
 (** The type for abstract type definitions. *)
 
@@ -58,11 +59,12 @@ type decl =
 
 type def = {
   id : Id.t;
+  vars : term list;
+  params : term list;
+  ret_ty : term;
+  body : term;
   loc : location;
-  vars    : term list;
-  params  : term list;
-  ret_ty  : term;
-  body    : term;
+  attrs : term list;
 }
 (** Term definition. *)
 

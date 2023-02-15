@@ -2203,7 +2203,8 @@ module Make
 
   let parse_decl tags env (t : Stmt.decl) =
     match t with
-    | Abstract { id; ty = ast; _ } ->
+    | Abstract { id; ty = ast; loc = _; attrs; } ->
+      let tags = tags @ parse_attrs env [] attrs in
       begin match parse_sig env ast with
         | `Ty_cstr n ->
           check_no_free_wildcards env ast;
@@ -2223,8 +2224,9 @@ module Make
             ) tags;
           env, (id, `Term_decl f)
       end
-    | Record { id; vars; _ }
-    | Inductive { id; vars; _ } ->
+    | Record { id; vars; fields = _; loc = _; attrs }
+    | Inductive { id; vars; cstrs = _; loc = _; attrs } ->
+      let tags = tags @ parse_attrs env [] attrs in
       let n = List.length vars in
       let c = mk_ty_cst env (Id.name id) n in
       List.iter (function
@@ -2318,6 +2320,7 @@ module Make
     env, l @ vars, params, ssig
 
   let create_id_for_def ~freshen ~defs tags (env, vars, params, ssig) (d: Stmt.def) =
+    let tags = tags @ parse_attrs env [] d.attrs in
     match ssig with
     | `Ty_def ->
       assert (params = []);

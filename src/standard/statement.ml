@@ -9,6 +9,7 @@ type abstract = {
   id : Id.t;
   ty : term;
   loc : location;
+  attrs : term list;
 }
 
 type inductive = {
@@ -34,11 +35,12 @@ type decl =
 
 type def = {
   id : Id.t;
-  loc : location;
   vars   : term list;
   params : term list;
   ret_ty : term;
   body   : term;
+  loc : location;
+  attrs : term list;
 }
 
 type 'a group = {
@@ -194,50 +196,59 @@ and pp b = function { descr; _ } ->
 
 (* Pretty printing *)
 
-let print_abstract fmt (a : abstract) =
-  Format.fprintf fmt "@[<hov 2>abstract:@ %a :@ %a@]" Id.print a.id Term.print a.ty
+let print_attrs fmt = function
+  | [] -> ()
+  | l ->
+    Format.fprintf fmt "@[<hov>{ %a }@]@ "
+      (Format.pp_print_list Term.print) l
 
-let print_inductive fmt (i : inductive) =
-  Format.fprintf fmt "@[<hv 2>Inductive(%d) %a(@[<hov>%a@]) =@ %a@]"
-    (List.length i.cstrs) Id.print i.id
-    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) i.vars
+let print_abstract fmt ({ id; loc = _; attrs; ty; } : abstract) =
+  Format.fprintf fmt "@[<hov 2>abstract%a:@ %a :@ %a@]"
+    print_attrs attrs Id.print id Term.print ty
+
+let print_inductive fmt ({ id; loc = _; attrs; vars; cstrs; } : inductive) =
+  Format.fprintf fmt "@[<hv 2>Inductive(%d)%a@ %a(@[<hov>%a@]) =@ %a@]"
+    (List.length cstrs) print_attrs attrs Id.print id
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) vars
     (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ "
        ~print:(fun fmt (cstr, l) ->
            Format.fprintf fmt "| %a : @[<hov>%a@]" Id.print cstr (
              Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print
-           ) l)) i.cstrs
+           ) l)) cstrs
 
-let print_record fmt (r : record) =
-  Format.fprintf fmt "@[<hv 2>Record %a(%a) = {@ %a}@]"
-    Id.print r.id
-    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) r.vars
+let print_record fmt ({ id; loc = _; attrs; vars; fields; } : record) =
+  Format.fprintf fmt "@[<hv 2>Record%a@ %a(%a) = {@ %a}@]"
+    print_attrs attrs Id.print id
+    (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) vars
     (Misc.print_list ~print_sep:Format.fprintf ~sep:";@ " ~print:(fun fmt (f, ty) ->
          Format.fprintf fmt "%a : %a" Id.print f Term.print ty
-       )) r.fields
+       )) fields
 
 let print_decl fmt = function
   | Abstract a -> print_abstract fmt a
   | Record r -> print_record fmt r
   | Inductive i -> print_inductive fmt i
 
-let print_def fmt ({ id; loc = _; vars; params; body; ret_ty = _; } : def) =
+let print_def fmt ({ id; loc = _; attrs; vars; params; body; ret_ty = _; } : def) =
   match vars @ params with
   | [] ->
-    Format.fprintf fmt "@[<hov 2>def:@ %a =@ %a@]"
+    Format.fprintf fmt "@[<hov 2>def:@ %a@ %a =@ %a@]"
+      print_attrs attrs
       Id.print id
       Term.print body
   | l ->
-    Format.fprintf fmt "@[<hov 2>def:@ %a(%a) =@ %a@]"
+    Format.fprintf fmt "@[<hov 2>def:@ %a@ %a(%a) =@ %a@]"
+      print_attrs attrs
       Id.print id
       (Misc.print_list ~print_sep:Format.fprintf ~sep:",@ " ~print:Term.print) l
       Term.print body
 
-let print_group print fmt (d: _ group) =
+let print_group print fmt ({ contents; recursive; } : _ group) =
   let aux = Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print in
-  if d.recursive then
-    Format.fprintf fmt "@[<v 2>rec@ %a@]" aux d.contents
+  if recursive then
+    Format.fprintf fmt "@[<v 2>rec@ %a@]" aux contents
   else
-    aux fmt d.contents
+    aux fmt contents
 
 let rec print_descr fmt = function
   | Pack l ->
@@ -295,12 +306,6 @@ let rec print_descr fmt = function
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print_attrs fmt = function
-  | [] -> ()
-  | l ->
-    Format.fprintf fmt "@[<hov>{ %a }@]@ "
-      (Format.pp_print_list Term.print) l
-
 and print fmt = function { descr; attrs; _ } ->
   Format.fprintf fmt "%a%a" print_attrs attrs print_descr descr
 
@@ -353,14 +358,14 @@ let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
 
 (* decl/def *)
-let def ?(loc=no_loc) id ~vars ~params ret_ty body =
-  { id; vars; params; ret_ty; body; loc; }
-
 let group ~recursive contents =
   { recursive; contents; }
 
-let abstract ?(loc=no_loc) id ty =
-  Abstract { id; ty; loc; }
+let def ?(loc=no_loc) id ~vars ~params ret_ty body =
+  { id; loc; attrs = []; vars; params; ret_ty; body; }
+
+let abstract ?(loc=no_loc) ?(attrs=[]) id ty =
+  Abstract { loc; attrs; id; ty; }
 
 let record ?(attrs=[]) ?(loc=no_loc) id vars fields =
   Record { id; vars; fields; loc; attrs; }
@@ -498,11 +503,11 @@ let fun_def ?loc id vars params ret_ty body =
     def ?loc id ~vars ~params ret_ty body
   ]
 
-let pred_def ?loc id vars params body =
-  let attrs = [Term.const ?loc Id.predicate_def] in
-  let ret_ty = Term.prop ?loc () in
-  mk_defs ?loc ~attrs ~recursive:false [
-    def ?loc id ~vars ~params ret_ty body
+let pred_def ?(loc=no_loc) id vars params body =
+  let attrs = [Term.const ~loc Id.predicate_def] in
+  let ret_ty = Term.prop ~loc () in
+  mk_defs ~loc ~recursive:false [
+    { loc; attrs; id; vars; params; ret_ty; body; }
   ]
 
 let funs_def_rec ?loc l =
