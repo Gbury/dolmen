@@ -581,17 +581,17 @@ let state =
     let doc = Format.asprintf
         "Choose the mode for model verification. Must be %s.
 
-         The $(b,full) mode Will parse and type
+         The $(b,full) mode will parse and type
          the problem file, and then the model file, and lastly check all assertions
-         from the problem file, bu this requires storing in memory the type
+         from the problem file. This requires storing in memory the type
          representation of all assertions from the problem file, which may require
          large amounts of memory.
 
-         The $(b,interleaved) mode will interleave the parsing
+         The $(b,interleave) mode will interleave the parsing
          and typing of the problem file and of the model file, so as to not need to
-         store anything from the problem file in memory, but it requires that the
-         statements of the problem file and the model file are ordered in the correct
-         way."
+         store anything from the problem file in memory, but it requires that all
+         symbols/constants are defined in the model file in the same order as they
+         are declared in the input problem file."
         (Arg.doc_alts_enum ~quoted:true model_mode_list) in
     Arg.(value & opt model_mode_conv Full & info ["check-model-mode"] ~doc ~docs)
   in
