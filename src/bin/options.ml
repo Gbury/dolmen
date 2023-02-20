@@ -210,9 +210,9 @@ let size_string f =
   let n_mega, n = aux n 1_000_000 in
   let n_kilo, n = aux n 1_000 in
   let print_aux s n = if n <> 0 then (string_of_int n) ^ s else "" in
-  (print_aux "Go" n_giga) ^
-  (print_aux "Mo" n_mega) ^
-  (print_aux "ko" n_kilo) ^
+  (print_aux "G" n_giga) ^
+  (print_aux "M" n_mega) ^
+  (print_aux "k" n_kilo) ^
   (print_aux "" n)
 
 let print_size fmt f =
@@ -517,7 +517,7 @@ let state =
   let size =
     let doc = "Stop the program if it tries and use more the $(docv) memory space. " ^
               "Accepts usual suffixes for sizes : k,M,G,T. " ^
-              "Without suffix, default to a size in octet." in
+              "Without suffix, default to a size in bytes." in
     Arg.(value & opt c_size 1_000_000_000. &
          info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
