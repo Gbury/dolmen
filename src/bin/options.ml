@@ -9,6 +9,7 @@ open Cmdliner
 let gc_section = "GC OPTIONS"
 let model_section = "MODEL CHECKING"
 let error_section = "ERROR HANDLING"
+let flow_section = "FLOW CHECKING"
 let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
 let profiling_section = "PROFILING"
@@ -24,6 +25,7 @@ let () =
     Dolmen_loop.Code.typing, 4;
     Dolmen_loop.Headers.code, 5;
     Dolmen_model.Loop.code, 6;
+    Dolmen_loop.Flow.code, 7;
   ]
 
 (* Main commands *)
@@ -345,6 +347,7 @@ let mk_run_state
     abort_on_bug
     time_limit size_limit
     logic_file response_file
+    flow_check
     header_check header_licenses
     header_lang_version
     smtlib2_forced_logic type_check check_model check_model_mode
@@ -376,6 +379,7 @@ let mk_run_state
   |> Loop.Check.init
     ~check_model
     ~check_model_mode
+  |> Loop.Flow.init ~flow_check
   |> Loop.Header.init
     ~header_check
     ~header_licenses
@@ -549,6 +553,11 @@ let state =
     Arg.(value & opt c_size 1_000_000_000. &
          info ["s"; "size"] ~docv:"SIZE" ~doc ~docs)
   in
+  let flow_check =
+    let doc = "If true, then check the coherence of top-level statements.
+               This is mainly useful for the smtlib language." in
+    Arg.(value & opt bool false & info ["check-flow"] ~doc ~docs:flow_section)
+  in
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
                input file (and errors raised if they are not present)." in
@@ -635,6 +644,7 @@ let state =
         abort_on_bug $
         time $ size $
         logic_file $ response_file $
+        flow_check $
         header_check $ header_licenses $
         header_lang_version $
         force_smtlib2_logic $ typing $ check_model $ check_model_mode $

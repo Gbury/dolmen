@@ -1,0 +1,4 @@
+File "tests/flow/missing_check_sat.smt2", line 3, character 0-11:
+3 | (get-model)
+    ^^^^^^^^^^^
+Error Forbidden statement: missing check-sat prior to this statement

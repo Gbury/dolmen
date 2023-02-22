@@ -63,6 +63,12 @@ val print_list :
 (** Print a list with separator into a buffer *)
 
 
+(** {2 Iteration helpers} *)
+
+val foldn : int -> ('a -> 'a) -> 'a -> 'a
+(** Applies the given function [n] times. *)
+
+
 (** {2 Lexbuf helpers} *)
 
 val filename_of_input :

@@ -1,0 +1,4 @@
+File "tests/flow/stmt_after_exit.smt2", line 3, character 0-15:
+3 | (echo "foobar")
+    ^^^^^^^^^^^^^^^
+Error Statement after an exit

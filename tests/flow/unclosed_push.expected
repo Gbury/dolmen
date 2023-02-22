@@ -1,0 +1,6 @@
+File "tests/flow/unclosed_push.smt2", line 2, character 0-8:
+2 | (push 1)
+    ^^^^^^^^
+Warning This push statement was not closed
+Hint: You can close a push statement with one of the following statements:
+  pop, reset, reset-assertions.

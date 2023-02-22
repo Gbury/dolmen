@@ -219,7 +219,14 @@ let loc_input ?file st (loc : Dolmen.Std.Loc.loc) =
 
 let pp_loc ?file st fmt o =
   match o with
-  | None -> ()
+  | None ->
+    begin match file with
+      | None -> ()
+      | Some file ->
+        let loc = Dolmen.Std.Loc.loc file.loc Dolmen.Std.Loc.no_loc in
+        Format.fprintf fmt "%a:@ "
+          Fmt.(styled `Bold @@ styled (`Fg (`Hi `White)) Dolmen.Std.Loc.fmt) loc
+    end
   | Some loc ->
     if Dolmen.Std.Loc.is_dummy loc then ()
     else begin

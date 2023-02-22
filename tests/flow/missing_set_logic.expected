@@ -1,0 +1,4 @@
+File "tests/flow/missing_set_logic.smt2", line 1, character 0-13:
+1 | (assert true)
+    ^^^^^^^^^^^^^
+Error Forbidden statement: missing set-logic statement prior to this one

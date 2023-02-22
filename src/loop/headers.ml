@@ -1,7 +1,7 @@
 
 (* Header check
 
-   This module defines a some pipes to check the presence of headers in
+   This module defines a pipe to check the presence of headers in
    an input file. Headerts are there to provide meta-data about problems,
    such as version, source, classification, and even satisifability status
    in some cases.

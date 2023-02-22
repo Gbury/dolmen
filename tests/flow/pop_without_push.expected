@@ -1,0 +1,4 @@
+File "tests/flow/pop_without_push.smt2", line 3, character 0-7:
+3 | (pop 2)
+    ^^^^^^^
+Error This pop statement is missing a corresponding 'push' statement.

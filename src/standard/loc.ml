@@ -263,7 +263,7 @@ let compact (t : loc) =
 
 let rec explode_path path =
   match Filename.dirname path with
-  | "." -> [path]
+  | "." -> [Filename.basename path]
   | dirname -> Filename.basename path :: (explode_path dirname)
 
 let normalize_path path =

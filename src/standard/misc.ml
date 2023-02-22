@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(* Extensions *)
+(* File extensions *)
 (* ************************************************************************* *)
 
 let get_extension s =
@@ -170,6 +170,13 @@ let rec print_list ~print_sep ~sep ~print fmt = function
       print h print_sep sep
       (print_list ~print_sep ~sep ~print) r
 
+
+(* Iteration *)
+(* ************************************************************************* *)
+
+let rec foldn n f acc =
+  if n <= 0 then acc
+  else foldn (n - 1) f (f acc)
 
 (* Lexbufs *)
 (* ************************************************************************* *)
