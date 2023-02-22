@@ -1,0 +1,5 @@
+sat
+(model
+  (define-fun g ((x Int)) Int 1)
+  (define-fun f ((x Int)) Int 0)
+)

@@ -501,11 +501,14 @@ module type Formulas = sig
   val find_global : env -> Dolmen.Std.Id.t -> [ cst | not_found ]
   (** Try and find the given id in the set of globally bound constants. *)
 
+  val find_global_st : state -> Dolmen.Std.Id.t -> [ cst | not_found ]
+  (** Try and find the given id in the set of globally bound constants. *)
+
   val find_builtin : env -> Dolmen.Std.Id.t -> [ builtin | not_found ]
   (** Try and find the given id in the set of bound builtin symbols. *)
 
   val find_bound : env -> Dolmen.Std.Id.t -> [ bound | not_found ]
-  (** Try and find a bound identifier in the env, whetehr it be locally bound
+  (** Try and find a bound identifier in the env, whether it be locally bound
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 

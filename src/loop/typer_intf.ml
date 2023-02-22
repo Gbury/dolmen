@@ -111,7 +111,8 @@ module type Typer_Full = sig
   (** The typechecker needs to know whether we are checking models or not. *)
 
   val smtlib2_forced_logic : string option key
-  (** The typechecker needs to know whether we are checking models or not. *)
+  (** Force the typechecker to use the given logic (instead of using the one declared
+      in the `set-logic` statement). *)
 
   val init :
     ?ty_state:ty_state ->
