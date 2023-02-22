@@ -173,7 +173,8 @@ end
 (* ************************************************************************ *)
 
 let code =
-  Code.create
+  Code.create ()
+    ~code:5
     ~category:"Header"
     ~descr:"on header errors"
 

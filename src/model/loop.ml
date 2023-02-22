@@ -64,7 +64,9 @@ let empty ~mode () = {
 let pp_wrap pp fmt x =
   Format.fprintf fmt "`%a`" pp x
 
-let code = Dolmen_loop.Code.create
+let code =
+  Dolmen_loop.Code.create ()
+    ~code:6
     ~category:"Model"
     ~descr:"on model verification errors"
 

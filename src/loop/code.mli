@@ -4,7 +4,7 @@
 (** {2 Exit codes} *)
 
 type t
-(** An exit code, i.e. an integer between 0 and 126. *)
+(** An exit code, i.e. an integer between 0 and 126, along with some additional info. *)
 
 val hash : t -> int
 val equal : t -> t -> bool
@@ -13,7 +13,7 @@ val compare : t -> t -> int
 
 (** {2 Manipulating error codes} *)
 
-val create : category:string -> descr:string -> t
+val create : ?code:int -> category:string -> descr:string -> unit -> t
 (** Create a new exit code. The string given is used as a description
     for the exit code. The create code is active by default. *)
 
