@@ -43,7 +43,7 @@ let ignored_statement =
     ~message:(fun fmt () ->
         Format.fprintf fmt "%a" Format.pp_print_text
           "This statement is effectively ignored: there is no check-sat/prove \
-           statement between it and a following pop/exit statement.")
+           statement between it and a following pop/exit/reset statement.")
     ~name:"Ignored Statement" ()
 
 let unclosed_push =
