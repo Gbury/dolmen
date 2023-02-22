@@ -13,7 +13,11 @@ val compare : t -> t -> int
 
 (** {2 Manipulating error codes} *)
 
-val create : ?code:int -> category:string -> descr:string -> unit -> t
+val init : ?full:bool -> (t * int) list -> unit
+(** Initialise all retcodes, automatically choosing one for those not
+    in the provided list. *)
+
+val create : category:string -> descr:string -> t
 (** Create a new exit code. The string given is used as a description
     for the exit code. The create code is active by default. *)
 

@@ -65,8 +65,7 @@ let pp_wrap pp fmt x =
   Format.fprintf fmt "`%a`" pp x
 
 let code =
-  Dolmen_loop.Code.create ()
-    ~code:6
+  Dolmen_loop.Code.create
     ~category:"Model"
     ~descr:"on model verification errors"
 
