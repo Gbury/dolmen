@@ -16,7 +16,7 @@
     ; Useful utilities
     Alarm Report
     ; Interfaces
-    Expr_intf Parser_intf Typer_intf Headers_intf
+    Expr_intf Parser_intf Typer_intf Flow_intf Headers_intf
     ; Implementations
     Logic Response Code State
     ; Pipeline & Pipes

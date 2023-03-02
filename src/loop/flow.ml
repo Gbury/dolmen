@@ -393,6 +393,8 @@ end
 (* Pipe *)
 (* ************************************************************************ *)
 
+module type S = Flow_intf.S
+
 module Make(State : State.S) = struct
 
   module type S = Automaton

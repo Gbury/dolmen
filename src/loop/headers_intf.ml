@@ -1,4 +1,6 @@
 
+(* This file is free software, part of Dolmen. See file "LICENSE" for more details. *)
+
 module type S = sig
 
   type state
