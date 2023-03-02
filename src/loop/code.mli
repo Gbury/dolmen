@@ -4,14 +4,29 @@
 (** {2 Exit codes} *)
 
 type t
-(** An exit code, i.e. an integer between 0 and 126. *)
+(** An abstraction over exit status.
+
+    Concretely this corresponds to an exit/return code for the binary (in the case of
+    the dolmen binary or solver-like binaries).
+
+    In practice, the exact error code corresponding to a value of this type can be set
+    later. This is useful so that users of the library can decide the codes, and among
+    other things, ensure that error codes are stable. *)
 
 val hash : t -> int
 val equal : t -> t -> bool
 val compare : t -> t -> int
+(** Usual functions *)
 
 
 (** {2 Manipulating error codes} *)
+
+val init : ?full:bool -> (t * int) list -> unit
+(** Initialise all retcodes with the given association list.
+    All codes that are not present in the list are assigned a arbitrary
+    free return code.
+    If [~full] is [true], and not all retcodes are present in the association
+    list, then this function with raise a [Failure _] exception. *)
 
 val create : category:string -> descr:string -> t
 (** Create a new exit code. The string given is used as a description
@@ -58,9 +73,8 @@ val typing : t
 (** {2 Exit code status} *)
 
 val exit : t -> _
-(** Exit with the given code.
-    Note: exit codes can be silenced, in which case the process
-    will exit with an exit code of [0]. *)
+(** Exit with the given code (or abort if the exit code is marked as
+    an abort code). *)
 
 val is_abort : t -> bool
 (** Whether an exit code is active. *)

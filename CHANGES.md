@@ -2,11 +2,20 @@
 next
 ----
 
+### UI
+
+- Ensure stability of error codes for the `dolmen` binary
+
 ### Parsing
 
 - Add `attrs` fields for all declarations and definition types,
   and correctly attach predicate attribute to individual definitions
   (PR#130)
+
+### Loop
+
+- Add possibility for users of the loop library to choose the
+  exit/return code for a `Code.t` (PR#134)
 
 
 v0.8.1

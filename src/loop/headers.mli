@@ -49,6 +49,9 @@ val remove : t -> Field.t -> t
 
 (** {2 Pipe functor} *)
 
+val code : Code.t
+(** Code for header errors. *)
+
 module type S = Headers_intf.S
 
 module Make(S : State.S) : S with type state := S.t

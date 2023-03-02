@@ -13,6 +13,19 @@ let header_section = "HEADER CHECKING"
 let common_section = Manpage.s_options
 let profiling_section = "PROFILING"
 
+(* Initialise error codes *)
+(* ************************************************************************* *)
+
+let () =
+  Dolmen_loop.Code.init ~full:true [
+    Dolmen_loop.Code.generic, 1;
+    Dolmen_loop.Code.limit, 2;
+    Dolmen_loop.Code.parsing, 3;
+    Dolmen_loop.Code.typing, 4;
+    Dolmen_loop.Headers.code, 5;
+    Dolmen_model.Loop.code, 6;
+  ]
+
 (* Main commands *)
 (* ************************************************************************* *)
 
