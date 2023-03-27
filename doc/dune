@@ -17,4 +17,8 @@
     ; Dolmen classes
     dolmen_class
    )
+  ; mdw support for windows is not yet perfect,
+  ; see e.g. https://github.com/realworldocaml/mdx/issues/295
+  ; thus we disable mdw inder windows for now
+  (enabled_if (= %{os_type} Unix))
 )
