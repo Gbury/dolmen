@@ -110,9 +110,20 @@ jobs:
     # Install dependencies
     - name: Install dependencies
       run: opam install . --deps-only --with-test --with-doc
-    # Install each package
+
+    # Install each package (non-windows)
     - name: Install dolmen
+      if: matrix.os != 'windows-latest'
       run: opam install . --with-test --with-doc
+      timeout-minutes: 20
+      # Ensure that installation does not take too long
+      # (particularly with regards to flambda)
+    # Install each package
+    # windows: mdx does not very well with windows yet
+    # see https://github.com/realworldocaml/mdx/issues/295
+    - name: Install dolmen
+      if: matrix.os == 'windows-latest'
+      run: opam install . --with-test
       timeout-minutes: 20
       # Ensure that installation does not take too long
       # (particularly with regards to flambda)
