@@ -209,7 +209,7 @@ let mk_lexbuf i =
     set_file buf filename;
     buf, cl
   | `File s ->
-    let ch = open_in s in
+    let ch = open_in_bin s in
     let cl = (fun () -> close_in ch) in
     let buf = Lexing.from_channel ch in
     set_file buf filename;
