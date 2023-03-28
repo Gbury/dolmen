@@ -97,38 +97,6 @@
   (action (diff int.expected int.full)))
 
 
-; Test for newline.cnf
-; Incremental test
-
-(rule
-   (target  newline.incremental)
-   (deps    (:input newline.cnf))
-   (package dolmen_bin)
-   (action (chdir %{workspace_root}
-            (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
-(rule
-  (alias runtest)
-  (package dolmen_bin)
-  (action (diff newline.expected newline.incremental)))
-
-; Full mode test
-
-(rule
-   (target  newline.full)
-   (deps    (:input newline.cnf))
-   (package dolmen_bin)
-   (action (chdir %{workspace_root}
-            (with-outputs-to %{target}
-             (with-accepted-exit-codes (or 0 (not 0))
-              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
-(rule
-  (alias runtest)
-  (package dolmen_bin)
-  (action (diff newline.expected newline.full)))
-
-
 ; Test for p.cnf
 ; Incremental test
 
