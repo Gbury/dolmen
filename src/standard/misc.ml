@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(* Extensions *)
+(* File extensions *)
 (* ************************************************************************* *)
 
 let get_extension s =
@@ -171,6 +171,13 @@ let rec print_list ~print_sep ~sep ~print fmt = function
       (print_list ~print_sep ~sep ~print) r
 
 
+(* Iteration *)
+(* ************************************************************************* *)
+
+let rec foldn n f acc =
+  if n <= 0 then acc
+  else foldn (n - 1) f (f acc)
+
 (* Lexbufs *)
 (* ************************************************************************* *)
 
@@ -202,7 +209,7 @@ let mk_lexbuf i =
     set_file buf filename;
     buf, cl
   | `File s ->
-    let ch = open_in s in
+    let ch = open_in_bin s in
     let cl = (fun () -> close_in ch) in
     let buf = Lexing.from_channel ch in
     set_file buf filename;

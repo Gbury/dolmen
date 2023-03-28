@@ -1,0 +1,5 @@
+File "tests/flow/ignored_statement_1.smt2", line 4, character 0-14:
+4 | (assert false)
+    ^^^^^^^^^^^^^^
+Warning This statement is effectively ignored: there is no check-sat/prove
+        statement between it and a following pop/exit/reset statement.

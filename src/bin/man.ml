@@ -12,6 +12,16 @@ let cli = [
   `P "Common options for the dolmen binary";
   `S Options.model_section;
   `P "Options to use dolmen to verify models output by provers";
+  `S Options.flow_section;
+  `P "Options to control checking of flow constraints in input files.";
+  `P "Some languages are descriptive (e.g. tptp), and thus are correct by \
+      construction, whereas some languages are imperative (in the sense that \
+      instead of describing a problem, they consist of a list of instructions \
+      or statements). Such imperative languages often have constraints on \
+      what statements can appear in which contexts. For instance, smtlib \
+      requires that any assertion be preceded by a set-logic statement, and \
+      similarly any get-model statement must be preceded by a check-sat \
+      statement (with no assertion in beetween)";
   `S Options.header_section;
   `P "Options to control the checking of headers in the input file";
   `S Options.error_section;

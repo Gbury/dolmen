@@ -53,6 +53,7 @@ let run st =
     run ~finally g st (
       (fix (op ~name:"expand" Loop.Parser.expand) (
           (op ~name:"debug-parsed" debug_parsed_pipe)
+          @>>> (op ~name:"flow" Loop.Flow.inspect)
           @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer_Pipe.typecheck)
           @>|> (op ~name:"debug-typed" debug_typed_pipe)
@@ -62,6 +63,7 @@ let run st =
       )
     )
   in
+  let st = Loop.Flow.finalise st in
   let st = Loop.Header.check st in
   let _st = Dolmen_loop.State.flush st () in
   ()

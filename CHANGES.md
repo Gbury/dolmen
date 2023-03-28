@@ -4,6 +4,8 @@ next
 
 ### UI
 
+- Add the `--check-flow` option to checks coherence of sequences
+  of statements (PR#135)
 - Ensure stability of error codes for the `dolmen` binary
 
 ### Parsing
@@ -16,6 +18,7 @@ next
 
 - Add possibility for users of the loop library to choose the
   exit/return code for a `Code.t` (PR#134)
+- Add the `Flow` module for flow checking (PR#135)
 
 
 v0.8.1
