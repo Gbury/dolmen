@@ -128,7 +128,7 @@ let undefined_variable =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"undefined-variable"
     ~message:(fun fmt v ->
         Format.fprintf fmt
-          "The following variable is not defined/let-bound, and thus
+          "The following variable is not defined/let-bound, and thus \
           has no value: %a"
           (pp_wrap Dolmen.Std.Expr.Term.Var.print) v)
       ~name:"Undefined variable in Model verification" ()
@@ -137,7 +137,7 @@ let undefined_constant =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"undefined-constant"
     ~message:(fun fmt c ->
         Format.fprintf fmt
-          "The following constant is not defined, and thus
+          "The following constant is not defined, and thus \
           has no value: %a"
           (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
       ~name:"Undefined variable in Model verification" ()
