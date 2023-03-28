@@ -1,4 +1,4 @@
-# Dolmen ![build](https://github.com/Gbury/dolmen/workflows/build/badge.svg) ![test&doc](https://github.com/Gbury/dolmen/workflows/test/badge.svg) ![install](https://github.com/Gbury/dolmen/workflows/install/badge.svg)
+# Dolmen ![build](https://github.com/Gbury/dolmen/workflows/build/badge.svg) ![install](https://github.com/Gbury/dolmen/workflows/install/badge.svg)
 
 A library providing flexible parsers and typecheckers for languages used in automated deduction.
 
