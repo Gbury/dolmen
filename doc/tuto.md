@@ -66,6 +66,9 @@ let final_state, typed_stmts =
   List.fold_left_map Typer.check state parsed_statements
 ```
 
+Once we have that list of typed statements, we can then print it to look at what
+we typed:
+
 <!-- $MDX env=e1 -->
 ```ocaml
 # List.iter (fun typed_stmt -> Format.printf "%a@\n@." Typer.print typed_stmt) typed_stmts;;
