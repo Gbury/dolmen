@@ -66,9 +66,13 @@ let test file =
   in
 
   (* We can loop over the parsed statements to generated the typed statements *)
-  let final_state, typed_stmts =
-    List.fold_left_map Typer.check state parsed_statements
+  let final_state, rev_typed_stmts =
+    List.fold_left (fun (state, acc) parsed_stmt ->
+      let state, typed_stmt = Typer.check state parsed_stmt in
+      (state, typed_stmt :: acc)
+    ) (state, []) parsed_statements
   in
+  let typed_stmts = List.rev rev_typed_stmts in
 
   (* let's print the typed statements *)
   List.iter (fun typed_stmt ->

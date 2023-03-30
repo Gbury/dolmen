@@ -39,9 +39,13 @@ let () =
 
 (* Now we can iter on all the parsed statements *)
 let () =
-  let _final_state, typed_stmts =
-    List.fold_left_map Typer.check state parsed
+  let final_state, rev_typed_stmts =
+    List.fold_left (fun (state, acc) parsed_stmt ->
+      let state, typed_stmt = Typer.check state parsed_stmt in
+      (state, typed_stmt :: acc)
+    ) (state, []) parsed
   in
+  let typed_stmts = List.rev rev_typed_stmts in
   List.iter (fun typed_stmt ->
     Format.printf "%a@." Typer.print typed_stmt
   ) typed_stmts
