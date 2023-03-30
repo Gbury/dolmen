@@ -77,7 +77,7 @@ val compact : loc -> file * t
 (** Compactify a full location into a compact representation. *)
 
 val lexing_positions : loc -> Lexing.position * Lexing.position
-(** Reutnr the pari of lexing positions corresponding to a location. *)
+(** Return the pair of lexing positions corresponding to a location. *)
 
 (** {2 Printing locations} *)
 

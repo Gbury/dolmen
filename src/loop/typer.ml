@@ -1872,12 +1872,54 @@ module Make
     | `Solve l ->
       Format.fprintf fmt "@[<hov 2>solve-assuming: %a@]"
         (Format.pp_print_list Print.formula) l
-    | _ ->
-      Format.fprintf fmt "TODO"
+    | `Get_info s ->
+      Format.fprintf fmt "@[<hov 2>get-info: %s@]" s
+    | `Get_option s ->
+      Format.fprintf fmt "@[<hov 2>get-option: %s@]" s
+    | `Get_proof ->
+      Format.fprintf fmt "@[<hov 2>get-proof@]"
+    | `Get_unsat_core ->
+      Format.fprintf fmt "@[<hov 2>get-unsat-core@]"
+    | `Get_unsat_assumptions ->
+      Format.fprintf fmt "@[<hov 2>get-unsat-assumptions@]"
+    | `Get_model ->
+      Format.fprintf fmt "@[<hov 2>get-model@]"
+    | `Get_value l ->
+      Format.fprintf fmt "@[<v 2>get-value:@ %a@]"
+        (Format.pp_print_list Print.term) l
+    | `Get_assignment ->
+      Format.fprintf fmt "@[<hov 2>get-assignment@]"
+    | `Get_assertions ->
+      Format.fprintf fmt "@[<hov 2>get-assertions@]"
+    | `Echo s ->
+      Format.fprintf fmt "@[<hov 2>echo: %s@]" s
+    | `Plain t ->
+      Format.fprintf fmt "@[<hov 2>plain: %a@]"
+        Dolmen.Std.Term.print t
+    | `Set_logic s ->
+      Format.fprintf fmt "@[<hov 2>set-logic: %s@]" s
+    | `Set_info t ->
+      Format.fprintf fmt "@[<hov 2>set-info: %a@]"
+        Dolmen.Std.Term.print t
+    | `Set_option t ->
+      Format.fprintf fmt "@[<hov 2>set-option: %a@]"
+        Dolmen.Std.Term.print t
+    | `Pop n ->
+      Format.fprintf fmt "@[<hov 2>pop: %d@]" n
+    | `Push n ->
+      Format.fprintf fmt "@[<hov 2>push: %d@]" n
+    | `Reset_assertions ->
+      Format.fprintf fmt "@[<hov 2>reset-assertions@]"
+    | `Reset ->
+      Format.fprintf fmt "@[<hov 2>reset@]"
+    | `Exit ->
+      Format.fprintf fmt "@[<hov 2>exit@]"
 
-  let print fmt ({ id; loc = _; contents; } : typechecked stmt) =
-    Format.fprintf fmt "%a:@ %a"
-      Dolmen.Std.Id.print id print_typechecked contents
+  let print fmt ({ id; loc; contents; } : typechecked stmt) =
+    Format.fprintf fmt "@[<v 2>%a[%a]:@,%a@]"
+      Dolmen.Std.Id.print id
+      Dolmen.Std.Loc.print_compact loc
+      print_typechecked contents
 
   (* Typechecking *)
   (* ************************************************************************ *)
@@ -1934,108 +1976,117 @@ module Make
     (* catch all *)
     | _ -> c
 
+  let check st c =
+    let input = `Logic (State.get State.logic_file st) in
+    match normalize st c with
+    (* State&Assertion stack management *)
+    | { S.descr = S.Reset; _ } ->
+      let st = Typer.reset st ~loc:c.S.loc () in
+      st, simple (other_id c) c.S.loc `Reset
+    | { S.descr = S.Pop i; _ } ->
+      let st = Typer.pop st ~input ~loc:c.S.loc i in
+      st, (simple (other_id c) c.S.loc (`Pop i))
+    | { S.descr = S.Push i; _ } ->
+      let st = Typer.push st ~input ~loc:c.S.loc i in
+      st, (simple (other_id c) c.S.loc (`Push i))
+    | { S.descr = S.Reset_assertions; _ } ->
+      let st = Typer.reset_assertions st ~loc:c.S.loc () in
+      st, (simple (other_id c) c.S.loc `Reset_assertions)
+
+    (* Plain statements
+       TODO: allow the `plain` function to return a meaningful value *)
+    | { S.descr = S.Plain t; _ } ->
+      st, (simple (other_id c) c.S.loc (`Plain t))
+
+    (* Hypotheses and goal statements *)
+    | { S.descr = S.Prove l; _ } ->
+      let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+      st, (simple (prove_id c) c.S.loc (`Solve l))
+
+    (* Hypotheses & Goals *)
+    | { S.descr = S.Clause l; _ } ->
+      let st, res = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+      let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
+      st, stmt
+    | { S.descr = S.Antecedent t; _ } ->
+      let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
+      let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
+      st, stmt
+    | { S.descr = S.Consequent t; _ } ->
+      let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
+      let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
+      st, stmt
+
+    (* Other set_logics should check whether corresponding plugins are activated ? *)
+    | { S.descr = S.Set_logic s; _ } ->
+      let st = Typer.set_logic st ~input ~loc:c.S.loc s in
+      st, (simple (other_id c) c.S.loc (`Set_logic s))
+
+    (* Set/Get info *)
+    | { S.descr = S.Get_info s; _ } ->
+      st, (simple (other_id c) c.S.loc (`Get_info s))
+    | { S.descr = S.Set_info t; _ } ->
+      st, (simple (other_id c) c.S.loc (`Set_info t))
+
+    (* Set/Get options *)
+    | { S.descr = S.Get_option s; _ } ->
+      st, (simple (other_id c) c.S.loc (`Get_option s))
+    | { S.descr = S.Set_option t; _ } ->
+      st, (simple (other_id c) c.S.loc (`Set_option t))
+
+    (* Declarations and definitions *)
+    | { S.descr = S.Defs d; _ } ->
+      let st, l = Typer.defs ~mode:`Create_id st ~input ~loc:c.S.loc ~attrs:c.S.attrs d in
+      let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
+      st, (res)
+    | { S.descr = S.Decls l; _ } ->
+      let st, l = Typer.decls st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+      let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
+      st, (res)
+
+    (* Smtlib's proof/model instructions *)
+    | { S.descr = S.Get_proof; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_proof)
+    | { S.descr = S.Get_unsat_core; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_unsat_core)
+    | { S.descr = S.Get_unsat_assumptions; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_unsat_assumptions)
+    | { S.descr = S.Get_model; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_model)
+    | { S.descr = S.Get_value l; _ } ->
+      let st, l = Typer.terms st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
+      st, (simple (other_id c) c.S.loc (`Get_value l))
+    | { S.descr = S.Get_assignment; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_assignment)
+    (* Assertions *)
+    | { S.descr = S.Get_assertions; _ } ->
+      st, (simple (other_id c) c.S.loc `Get_assertions)
+    (* Misc *)
+    | { S.descr = S.Echo s; _ } ->
+      st, (simple (other_id c) c.S.loc (`Echo s))
+    | { S.descr = S.Exit; _ } ->
+      st, (simple (other_id c) c.S.loc `Exit)
+
+    (* packs and includes *)
+    | { S.descr = S.Include _; _ } -> assert false
+    | { S.descr = S.Pack _; _ } -> assert false
+
   let typecheck st c =
     let res =
       if not (State.get type_check st) then
         st, `Done ()
       else
-        let input = `Logic (State.get State.logic_file st) in
-        match normalize st c with
-
+        match c with
         (* Pack and includes.
            These should have been filtered out before this point.
            TODO: emit some kind of warning ? *)
         | { S.descr = S.Pack _; _ } -> st, `Done ()
         | { S.descr = S.Include _; _ } -> st, `Done ()
 
-        (* State&Assertion stack management *)
-        | { S.descr = S.Reset; _ } ->
-          let st = Typer.reset st ~loc:c.S.loc () in
-          st, `Continue (simple (other_id c) c.S.loc `Reset)
-        | { S.descr = S.Pop i; _ } ->
-          let st = Typer.pop st ~input ~loc:c.S.loc i in
-          st, `Continue (simple (other_id c) c.S.loc (`Pop i))
-        | { S.descr = S.Push i; _ } ->
-          let st = Typer.push st ~input ~loc:c.S.loc i in
-          st, `Continue (simple (other_id c) c.S.loc (`Push i))
-        | { S.descr = S.Reset_assertions; _ } ->
-          let st = Typer.reset_assertions st ~loc:c.S.loc () in
-          st, `Continue (simple (other_id c) c.S.loc `Reset_assertions)
-
-        (* Plain statements
-           TODO: allow the `plain` function to return a meaningful value *)
-        | { S.descr = S.Plain t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Plain t))
-
-        (* Hypotheses and goal statements *)
-        | { S.descr = S.Prove l; _ } ->
-          let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          st, `Continue (simple (prove_id c) c.S.loc (`Solve l))
-
-        (* Hypotheses & Goals *)
-        | { S.descr = S.Clause l; _ } ->
-          let st, res = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Clause res) in
-          st, `Continue stmt
-        | { S.descr = S.Antecedent t; _ } ->
-          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:false t in
-          let stmt : typechecked stmt = simple (hyp_id c) c.S.loc (`Hyp ret) in
-          st, `Continue stmt
-        | { S.descr = S.Consequent t; _ } ->
-          let st, ret = Typer.formula st ~input ~loc:c.S.loc ~attrs:c.S.attrs ~goal:true t in
-          let stmt : typechecked stmt = simple (goal_id c) c.S.loc (`Goal ret) in
-          st, `Continue stmt
-
-        (* Other set_logics should check whether corresponding plugins are activated ? *)
-        | { S.descr = S.Set_logic s; _ } ->
-          let st = Typer.set_logic st ~input ~loc:c.S.loc s in
-          st, `Continue (simple (other_id c) c.S.loc (`Set_logic s))
-
-        (* Set/Get info *)
-        | { S.descr = S.Get_info s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Get_info s))
-        | { S.descr = S.Set_info t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Set_info t))
-
-        (* Set/Get options *)
-        | { S.descr = S.Get_option s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Get_option s))
-        | { S.descr = S.Set_option t; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Set_option t))
-
-        (* Declarations and definitions *)
-        | { S.descr = S.Defs d; _ } ->
-          let st, l = Typer.defs ~mode:`Create_id st ~input ~loc:c.S.loc ~attrs:c.S.attrs d in
-          let res : typechecked stmt = simple (def_id c) c.S.loc (`Defs l) in
-          st, `Continue (res)
-        | { S.descr = S.Decls l; _ } ->
-          let st, l = Typer.decls st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          let res : typechecked stmt = simple (decl_id c) c.S.loc (`Decls l) in
-          st, `Continue (res)
-
-        (* Smtlib's proof/model instructions *)
-        | { S.descr = S.Get_proof; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_proof)
-        | { S.descr = S.Get_unsat_core; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_core)
-        | { S.descr = S.Get_unsat_assumptions; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_unsat_assumptions)
-        | { S.descr = S.Get_model; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_model)
-        | { S.descr = S.Get_value l; _ } ->
-          let st, l = Typer.terms st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-          st, `Continue (simple (other_id c) c.S.loc (`Get_value l))
-        | { S.descr = S.Get_assignment; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_assignment)
-        (* Assertions *)
-        | { S.descr = S.Get_assertions; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Get_assertions)
-        (* Misc *)
-        | { S.descr = S.Echo s; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc (`Echo s))
-        | { S.descr = S.Exit; _ } ->
-          st, `Continue (simple (other_id c) c.S.loc `Exit)
-
+        (* all other statements *)
+        | _ ->
+          let st, res = check st c in
+          st, `Continue res
     in
     res
 

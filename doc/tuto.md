@@ -11,9 +11,12 @@ and smtlib.
 If you're looking for a quick way to parse languages for automated theorem provers
 the following code will give you a quick start:
 
+<!-- $MDX env=e1 -->
 ```ocaml
 
 open Dolmen
+
+(* *** Parsing ************************************************************ *)
 
 (* Instantiate a module for parsing logic languages *)
 module M = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)
@@ -23,8 +26,9 @@ let file = "example.smt2"
 
 (* Parse the file, and we get a tuple:
   - format: the guessed format (according to the file extension)
-  - statements: the list of top-level firectives found in the file *)
-let format, _, statements = M.parse_file file
+  - loc: some meta-data used for source file locations
+  - statements: the list of top-level directives found in the file *)
+let format, loc, parsed_statements = M.parse_file file
 
 (* You can match on the detected format of the input *)
 let () = match format with
@@ -32,8 +36,53 @@ let () = match format with
 | M.Alt_ergo | M.Smtlib2 _ | M.Tptp _ | M.Zf ->
   Format.printf "First (or higher) order formulas ! Yay !@."
 
-(* Now you can analyse the statements, and prove the needed theorems *)
-let () = List.iter ignore statements
+(* *** Typing ************************************************************* *)
+
+(* instantiate the modules for typechecking *)
+module State = Dolmen_loop.State
+module Typer_aux = Dolmen_loop.Typer.Typer(State)
+module Typer = Dolmen_loop.Typer.Make(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Typer_aux)
+
+(* create the logic file corresponding to our input *)
+let lang : Dolmen_loop.Logic.language = Smtlib2 `Latest
+let logic_file = State.mk_file ~lang ~loc "./" (`File file)
+let response_file = State.mk_file "" (`File "this is unused")
+
+(* let's create the initial state *)
+let state =
+  State.empty
+  |> State.init
+     ~debug:false ~report_style:Regular ~max_warn:max_int
+     ~reports:(Dolmen_loop.Report.Conf.mk ~default:Enabled)
+     ~logic_file ~response_file
+     (* these limits are ignored in this example; to actually enforce
+        the limits, one has to use the `run` function from `Dolmen_loop.Pipeline` *)
+     ~time_limit:0. ~size_limit:0.
+  |> Typer_aux.init
+  |> Typer.init ~type_check:true
+
+(* We can loop over the parsed statements to generated the typed statements *)
+let final_state, typed_stmts =
+  List.fold_left_map Typer.check state parsed_statements
+```
+
+<!-- $MDX env=e1 -->
+```ocaml
+# List.iter (fun typed_stmt -> Format.printf "%a@\n@." Typer.print typed_stmt) typed_stmts;;
+other_1[0-15]:
+  set-logic: LIA
+
+decl_1[16-37]:
+  decls:
+    term-decl: x : int
+
+hyp_1[38-60]:
+  hyp: 2 = (1 + x)
+
+prove_1[61-72]:
+  solve-assuming:
+
+- : unit = ()
 ```
 
 ## Global architecture

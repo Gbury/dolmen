@@ -243,6 +243,9 @@ module type S = sig
   val print : Format.formatter -> typechecked stmt -> unit
   (** Printing funciton for typechecked statements. *)
 
+  val check : state -> Dolmen.Std.Statement.t -> state * typechecked stmt
+  (** Typechecks a statement. *)
+
   val typecheck : state -> Dolmen.Std.Statement.t ->
     state * [ `Continue of typechecked stmt | `Done of unit ]
   (** Typechecks a statement. *)

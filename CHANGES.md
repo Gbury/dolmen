@@ -2,6 +2,11 @@
 next
 ----
 
+### Doc
+
+- Add examples in the doc and tuto for type-checking (including
+  a minimal working example in the tutorial).
+
 ### UI
 
 - Add the `--check-flow` option to checks coherence of sequences
@@ -19,6 +24,7 @@ next
 - Add possibility for users of the loop library to choose the
   exit/return code for a `Code.t` (PR#134)
 - Add the `Flow` module for flow checking (PR#135)
+- Add the `check` function in `typer.ml`/`typer_intf.ml`
 
 
 v0.8.1

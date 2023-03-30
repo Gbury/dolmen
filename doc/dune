@@ -7,6 +7,8 @@
     dolmen
     ; a lot of dolmen
     dolmen_intf dolmen_std dolmen_line
+    ; typing & loop
+    dolmen_type dolmen_loop
     ; Dolmen languages
     dolmen_ae dolmen_dimacs dolmen_icnf dolmen_zf
     ; tptp
