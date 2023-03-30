@@ -13,65 +13,74 @@ the following code will give you a quick start:
 
 <!-- $MDX env=e1 -->
 ```ocaml
-
 open Dolmen
 
-(* *** Parsing ************************************************************ *)
-
 (* Instantiate a module for parsing logic languages *)
-module M = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)
-
-(* An arbitrary file *)
-let file = "example.smt2"
-
-(* Parse the file, and we get a tuple:
-  - format: the guessed format (according to the file extension)
-  - loc: some meta-data used for source file locations
-  - statements: the list of top-level directives found in the file *)
-let format, loc, parsed_statements = M.parse_file file
-
-(* You can match on the detected format of the input *)
-let () = match format with
-| M.Dimacs | M.ICNF -> Format.printf "Hurray for CNF !@."
-| M.Alt_ergo | M.Smtlib2 _ | M.Tptp _ | M.Zf ->
-  Format.printf "First (or higher) order formulas ! Yay !@."
-
-(* *** Typing ************************************************************* *)
+module Logic = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)
 
 (* instantiate the modules for typechecking *)
 module State = Dolmen_loop.State
 module Typer_aux = Dolmen_loop.Typer.Typer(State)
-module Typer = Dolmen_loop.Typer.Make(Dolmen.Std.Expr)(Dolmen.Std.Expr.Print)(State)(Typer_aux)
+module Typer = Dolmen_loop.Typer.Make(Std.Expr)(Std.Expr.Print)(State)(Typer_aux)
 
-(* create the logic file corresponding to our input *)
-let lang : Dolmen_loop.Logic.language = Smtlib2 `Latest
-let logic_file = State.mk_file ~lang ~loc "./" (`File file)
-let response_file = State.mk_file "" (`File "this is unused")
+let test file =
 
-(* let's create the initial state *)
-let state =
-  State.empty
-  |> State.init
-     ~debug:false ~report_style:Regular ~max_warn:max_int
-     ~reports:(Dolmen_loop.Report.Conf.mk ~default:Enabled)
-     ~logic_file ~response_file
-     (* these limits are ignored in this example; to actually enforce
-        the limits, one has to use the `run` function from `Dolmen_loop.Pipeline` *)
-     ~time_limit:0. ~size_limit:0.
-  |> Typer_aux.init
-  |> Typer.init ~type_check:true
+  (* *** Parsing ********************************************************** *)
 
-(* We can loop over the parsed statements to generated the typed statements *)
-let final_state, typed_stmts =
-  List.fold_left_map Typer.check state parsed_statements
+
+  (* Parse the file, and we get a tuple:
+    - format: the guessed format (according to the file extension)
+    - loc: some meta-data used for source file locations
+    - statements: the list of top-level directives found in the file *)
+  let format, loc, parsed_statements = Logic.parse_file file in
+
+  (* You can match on the detected format of the input *)
+  let () =
+    match format with
+    | Logic.Dimacs | Logic.ICNF -> ()
+    | Logic.Alt_ergo | Logic.Smtlib2 _ | Logic.Tptp _ | Logic.Zf -> ()
+  in
+
+  (* *** Typing *********************************************************** *)
+
+  (* Typing errors have a retcode associated to them, so that any typing
+     error results in *)
+
+  (* create the logic file corresponding to our input *)
+  let lang : Dolmen_loop.Logic.language = Smtlib2 `Latest in
+  let logic_file = State.mk_file ~lang ~loc "./" (`File file) in
+  let response_file = State.mk_file "" (`File "this is unused") in
+
+  (* let's create the initial state *)
+  let state =
+    State.empty
+    |> State.init
+       ~debug:false ~report_style:Contextual ~max_warn:max_int
+       ~reports:(Dolmen_loop.Report.Conf.mk ~default:Enabled)
+       ~logic_file ~response_file
+       (* these limits are ignored in this example; to actually enforce
+          the limits, one has to use the `run` function from `Dolmen_loop.Pipeline` *)
+       ~time_limit:0. ~size_limit:0.
+    |> Typer_aux.init
+    |> Typer.init ~type_check:true
+  in
+
+  (* We can loop over the parsed statements to generated the typed statements *)
+  let final_state, typed_stmts =
+    List.fold_left_map Typer.check state parsed_statements
+  in
+
+  (* let's print the typed statements *)
+  List.iter (fun typed_stmt ->
+    Format.printf "%a@\n@." Typer.print typed_stmt
+  ) typed_stmts
 ```
 
-Once we have that list of typed statements, we can then print it to look at what
-we typed:
+We can now use our function to see what happens on various files:
 
 <!-- $MDX env=e1 -->
 ```ocaml
-# List.iter (fun typed_stmt -> Format.printf "%a@\n@." Typer.print typed_stmt) typed_stmts;;
+# test "example.smt2";;
 other_1[0-15]:
   set-logic: LIA
 
@@ -86,6 +95,21 @@ prove_1[61-72]:
   solve-assuming:
 
 - : unit = ()
+# (* on errors, the default behaviour of Dolmen_loop.State is to print the error
+     message, and then exit with the retcode of the error. You can customize this
+     behaviour by defining your own [State] module, and particularly the [erorr]
+     function. Additionally, since we didn't set a retcode for typing errors,
+     we get a [Failure _] exception here. *)
+  test "typing_error.smt2";;
+File "typing_error.smt2", line 3, character 13-20:
+3 | (assert (= 2 (* x x)))
+                 ^^^^^^^
+Error Non-linear expressions are forbidden by the logic.
+Hint: multiplication in strict linear arithmetic expects an integer or
+  rational literal and a symbol (variable or constant) but was given:
+  - a symbol (or quantified variable)
+  - a symbol (or quantified variable)
+Exception: Failure "missing retcode".
 ```
 
 ## Global architecture

@@ -2,7 +2,7 @@
 ; Check that the doc still builds
 (mdx
   (package dolmen)
-  (deps example.smt2)
+  (deps example.smt2 typing_error.smt2)
   (libraries
     dolmen
     ; a lot of dolmen
