@@ -261,14 +261,13 @@ let compact (t : loc) =
     Therfore, before printing any file path, we normalize everything to use
     forward slashes. *)
 
-let rec explode_path path =
+let rec explode_path acc path =
   match Filename.dirname path with
-  | "." -> [Filename.basename path]
-  | dirname -> Filename.basename path :: (explode_path dirname)
+  | "." | "/" -> Filename.basename path :: acc
+  | dirname -> explode_path (Filename.basename path :: acc) dirname
 
 let normalize_path path =
-  let l = List.rev (explode_path path) in
-  String.concat "/" l
+  String.concat "/" (explode_path [] path)
 
 
 (* Printing and lexbuf handling *)
