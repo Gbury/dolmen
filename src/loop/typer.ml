@@ -803,6 +803,13 @@ let non_linear_expression =
     ~hints:[text_hint]
     ~name:"Non linear expression in linear arithmetic logic" ()
 
+let bitvector_app_expected_nat =
+  Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat"
+    ~message:(fun fmt t ->
+        Format.fprintf fmt "Expected a antural number as an argument, \
+                            instead got %a" Dolmen_std.Term.print t)
+    ~name:"Bad bitvector application argument type." ()
+
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
     ~message:(fun fmt c ->
@@ -1096,7 +1103,7 @@ module Typer(State : State.S) = struct
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
       error ~input ~loc st expect_error (expect, got)
-      (* Arity errors *)
+    (* Arity errors *)
     | T.Bad_index_arity (s, expected, actual) ->
       error ~input ~loc st bad_index_arity (s, expected, actual)
     | T.Bad_ty_arity (c, actual) ->
@@ -1170,6 +1177,11 @@ module Typer(State : State.S) = struct
     (* Alt-Ergo Functional Array errors *)
     | Ae_Arrays.Bad_farray_arity ->
       error ~input ~loc st bad_farray_arity ()
+    (* Alt-Ergo Bit-Vector errors *)
+    | Ae_Bitv.Invalid_bin_char c ->
+      error ~input ~loc st invalid_bin_bitvector_char c
+    | Ae_Bitv.Expected_Nat t ->
+      error ~input ~loc st bitvector_app_expected_nat t
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
       error ~input ~loc st expected_arith_type (ty, "")

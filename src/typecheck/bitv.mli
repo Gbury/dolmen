@@ -13,6 +13,9 @@ module Ae : sig
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       (** Error raised when a character that isn't '0' or '1' is
           used inside a bitvector string *)
+      | Expected_Nat : Dolmen.Std.Term.t -> Dolmen.Std.Term.t Type.err
+      (** Error raised when a function that expects an natural
+          number as an argument receives something else. *)
     (** Additional errors specific to Alt-Ergo's bitvectors' typing. *)
 
     val parse : Type.builtin_symbols

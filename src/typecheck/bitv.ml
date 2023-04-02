@@ -12,12 +12,27 @@ module Ae = struct
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
+      | Expected_Nat : Dolmen.Std.Term.t -> Dolmen.Std.Term.t Type.err
 
     let parse_binary env s ast =
       match String.iter Misc.Bitv.check_bin s with
       | () -> T.mk s
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
+
+    let int_of_term env ast a =
+      match a.Dolmen_std.Term.term with
+      | Symbol { ns = Value Integer; name = Simple name; } ->
+        let i = int_of_string name in
+        if i >= 0 then i else
+          Type._error env (Ast ast) (Expected_Nat a)
+      | _ ->
+        Type._error env (Ast ast) (Expected_Nat a)
+
+    let app_int_term env symbol mk =
+      Base.make_op2 (module Type) env symbol
+        (fun ast (a, b) ->
+           mk (int_of_term env ast a) (Type.parse_term env b))
 
     let parse env s =
       match s with
@@ -35,6 +50,82 @@ module Ae = struct
         `Term (Base.term_app2 (module Type) env s T.concat)
       | Type.Builtin (Bitv_extract (l, r)) ->
         `Term (Base.term_app1 (module Type) env s (T.extract r l))
+
+      (* terms *)
+      | Type.Id { ns = Term; name = Simple "repeat"; } ->
+        `Term (app_int_term env s T.repeat)
+      | Type.Id { ns = Term; name = Simple "zero_extend"; } ->
+        `Term (app_int_term env s T.zero_extend)
+      | Type.Id { ns = Term; name = Simple "sign_extend"; } ->
+        `Term (app_int_term env s T.sign_extend)
+      | Type.Id { ns = Term; name = Simple "rotate_right"; } ->
+        `Term (app_int_term env s T.rotate_right)
+      | Type.Id { ns = Term; name = Simple "rotate_left"; } ->
+        `Term (app_int_term env s T.rotate_left)
+
+      | Type.Id { ns = Term; name = Simple "bvnot"; } ->
+        `Term (Base.term_app1 (module Type) env s T.not)
+      | Type.Id { ns = Term; name = Simple "bvand"; } ->
+        `Term (Base.term_app_left (module Type) env s T.and_)
+      | Type.Id { ns = Term; name = Simple "bvor"; } ->
+        `Term (Base.term_app_left (module Type) env s T.or_)
+      | Type.Id { ns = Term; name = Simple "bvnand"; } ->
+        `Term (Base.term_app2 (module Type) env s T.nand)
+      | Type.Id { ns = Term; name = Simple "bvnor"; } ->
+        `Term (Base.term_app2 (module Type) env s T.nor)
+      | Type.Id { ns = Term; name = Simple "bvxor"; } ->
+        `Term (Base.term_app_left (module Type) env s T.xor)
+      | Type.Id { ns = Term; name = Simple "bvxnor"; } ->
+        `Term (Base.term_app_left (module Type) env s T.xnor)
+
+      | Type.Id { ns = Term; name = Simple "bvcomp"; } ->
+        `Term (Base.term_app2 (module Type) env s T.comp)
+
+      | Type.Id { ns = Term; name = Simple "bvneg"; } ->
+        `Term (Base.term_app1 (module Type) env s T.neg)
+      | Type.Id { ns = Term; name = Simple "bvadd"; } ->
+        `Term (Base.term_app_left (module Type) env s T.add)
+      | Type.Id { ns = Term; name = Simple "bvsub"; } ->
+        `Term (Base.term_app2 (module Type) env s T.sub)
+      | Type.Id { ns = Term; name = Simple "bvmul"; } ->
+        `Term (Base.term_app_left (module Type) env s T.mul)
+
+      | Type.Id { ns = Term; name = Simple "bvudiv"; } ->
+        `Term (Base.term_app2 (module Type) env s T.udiv)
+      | Type.Id { ns = Term; name = Simple "bvurem"; } ->
+        `Term (Base.term_app2 (module Type) env s T.urem)
+
+      | Type.Id { ns = Term; name = Simple "bvsdiv"; } ->
+        `Term (Base.term_app2 (module Type) env s T.sdiv)
+      | Type.Id { ns = Term; name = Simple "bvsrem"; } ->
+        `Term (Base.term_app2 (module Type) env s T.srem)
+      | Type.Id { ns = Term; name = Simple "bvsmod"; } ->
+        `Term (Base.term_app2 (module Type) env s T.smod)
+
+      | Type.Id { ns = Term; name = Simple "bvshl"; } ->
+        `Term (Base.term_app2 (module Type) env s T.shl)
+      | Type.Id { ns = Term; name = Simple "bvlshr"; } ->
+        `Term (Base.term_app2 (module Type) env s T.lshr)
+      | Type.Id { ns = Term; name = Simple "bvashr"; } ->
+        `Term (Base.term_app2 (module Type) env s T.ashr)
+
+      | Type.Id { ns = Term; name = Simple "bvult"; } ->
+        `Term (Base.term_app2 (module Type) env s T.ult)
+      | Type.Id { ns = Term; name = Simple "bvule"; } ->
+        `Term (Base.term_app2 (module Type) env s T.ule)
+      | Type.Id { ns = Term; name = Simple "bvugt"; } ->
+        `Term (Base.term_app2 (module Type) env s T.ugt)
+      | Type.Id { ns = Term; name = Simple "bvuge"; } ->
+        `Term (Base.term_app2 (module Type) env s T.uge)
+
+      | Type.Id { ns = Term; name = Simple "bvslt"; } ->
+        `Term (Base.term_app2 (module Type) env s T.slt)
+      | Type.Id { ns = Term; name = Simple "bvsle"; } ->
+        `Term (Base.term_app2 (module Type) env s T.sle)
+      | Type.Id { ns = Term; name = Simple "bvsgt"; } ->
+        `Term (Base.term_app2 (module Type) env s T.sgt)
+      | Type.Id { ns = Term; name = Simple "bvsge"; } ->
+        `Term (Base.term_app2 (module Type) env s T.sge)
 
       | _ -> `Not_found
 
