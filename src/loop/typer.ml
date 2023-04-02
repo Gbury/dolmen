@@ -280,25 +280,25 @@ let poly_hint (c, expected, actual) =
 
 let literal_hint b id =
   if not b then None else
-  match (id : Dolmen.Std.Id.t) with
-  | { ns = Value Integer; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include integer arithmtic")
-  | { ns = Value Rational; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include rational arithmtic")
-  | { ns = Value Real; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include real arithmtic")
-  | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
-    when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include extended bitvector literals")
-  | _ -> None
+    match (id : Dolmen.Std.Id.t) with
+    | { ns = Value Integer; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include integer arithmtic")
+    | { ns = Value Rational; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include rational arithmtic")
+    | { ns = Value Real; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include real arithmtic")
+    | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
+      when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include extended bitvector literals")
+    | _ -> None
 
 let poly_arg_hint _ =
   Some (
@@ -771,7 +771,7 @@ let bad_farray_arity =
   Report.Error.mk ~code ~mnemonic:"bad-farray-arity"
     ~message:(fun fmt () ->
         Format.fprintf fmt "Functional array types in Alt-Ergo expect either one or two type \
-        parameters.")
+                            parameters.")
     ~name:"Bad functional array arity" ()
 
 let expected_arith_type =
@@ -806,7 +806,7 @@ let non_linear_expression =
 let bitvector_app_expected_nat =
   Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat"
     ~message:(fun fmt t ->
-        Format.fprintf fmt "Expected a antural number as an argument, \
+        Format.fprintf fmt "Expected a natural number as an argument, \
                             instead got %a" Dolmen_std.Term.print t)
     ~name:"Bad bitvector application argument type." ()
 
@@ -915,9 +915,9 @@ let incorrect_sexpression =
 let unknown_error =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
     ~message:(fun fmt cstr_name ->
-      Format.fprintf fmt
-        "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
-        cstr_name)
+        Format.fprintf fmt
+          "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
+          cstr_name)
     ~name:"Unknown typing error" ()
 
 
@@ -1089,7 +1089,7 @@ module Typer(State : State.S) = struct
       warn ~input ~loc st almost_linear msg
     | _ ->
       warn ~input ~loc st unknown_warning
-          (Obj.Extension_constructor.(name (of_val w)))
+        (Obj.Extension_constructor.(name (of_val w)))
 
   (* Report type errors *)
   (* ************************************************************************ *)
