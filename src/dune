@@ -14,7 +14,7 @@
 (executable
   (name            main)
   (public_name     dolmen)
-  (libraries       dolmen)
+  (libraries       dolmen memtrace)
   (modules         Main)
 )
 

@@ -78,6 +78,7 @@ let map f g () =
   | Some x -> Some (f x)
 
 let () =
+  Memtrace.trace_if_requested ~context:"dolmen" ();;
   let input, print, norm, mode = parse_opts () in
   let lang, stmts =
     match mode with
