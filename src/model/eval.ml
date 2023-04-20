@@ -39,6 +39,7 @@ let rec builtins l env c =
 (* ************************************************************************* *)
 
 let rec eval env (e : Term.t) : Value.t =
+  (* Format.eprintf "[eval] @[<hov>%a -> ?@]@." Term.print e; *)
   let r =
     match e.term_descr with
     | Var v -> eval_var env v

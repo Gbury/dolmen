@@ -421,11 +421,15 @@ module Make
     State.set check_state { t with internal } st
 
   let eval_term ~file ~loc st model term =
+    if State.get State.debug st then
+      Format.eprintf "[model][eval][%a] @[<hov>%a@]@."
+        Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+        Dolmen.Std.Expr.Term.print term;
     let value = eval ~file ~loc st model term in
     if State.get State.debug st then
-      Format.eprintf "[model][eval][%a] @[<hov>%a -> %a@]@\n@."
+      Format.eprintf "[model][eval][%a] @[<hov>result -> %a@]@\n@."
         Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
-        Dolmen.Std.Expr.Term.print term Value.print value;
+        Value.print value;
     Value.extract_exn ~ops:Bool.ops value
 
   let eval_def { file; loc; contents = defs; } (st, model) =
