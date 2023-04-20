@@ -1457,42 +1457,6 @@ file: SAT OPEN OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL CLOSE UNSAT
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: OPEN UNSAT
-##
-## Ends in an error in state: 166.
-##
-## answer -> OPEN . ERROR STR CLOSE [ UNSAT SAT OPEN EOF ]
-##
-## The known suffix of the stack is as follows:
-## OPEN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: OPEN ERROR UNSAT
-##
-## Ends in an error in state: 167.
-##
-## answer -> OPEN ERROR . STR CLOSE [ UNSAT SAT OPEN EOF ]
-##
-## The known suffix of the stack is as follows:
-## OPEN ERROR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: OPEN ERROR STR UNSAT
-##
-## Ends in an error in state: 168.
-##
-## answer -> OPEN ERROR STR . CLOSE [ UNSAT SAT OPEN EOF ]
-##
-## The known suffix of the stack is as follows:
-## OPEN ERROR STR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
 file: UNSAT UNDERSCORE
 ##
 ## Ends in an error in state: 173.
@@ -1541,38 +1505,3 @@ input: SAT OPEN MODEL UNSAT
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-input: OPEN UNSAT
-##
-## Ends in an error in state: 182.
-##
-## answer -> OPEN . ERROR STR CLOSE [ # ]
-##
-## The known suffix of the stack is as follows:
-## OPEN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: OPEN ERROR UNSAT
-##
-## Ends in an error in state: 183.
-##
-## answer -> OPEN ERROR . STR CLOSE [ # ]
-##
-## The known suffix of the stack is as follows:
-## OPEN ERROR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: OPEN ERROR STR UNSAT
-##
-## Ends in an error in state: 184.
-##
-## answer -> OPEN ERROR STR . CLOSE [ # ]
-##
-## The known suffix of the stack is as follows:
-## OPEN ERROR STR
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
