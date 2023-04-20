@@ -874,7 +874,7 @@ module Term : sig
     (** Type coercion. *)
 
     val in_interval : bool * bool -> t
-    (** Interger interval inclusion. *)
+    (** Interval inclusion. *)
 
     val maps_to : t
     (** Mapping (used in triggers).  *)
@@ -1818,7 +1818,7 @@ module Term : sig
   (* Alt-Ergo's semantic triggers *)
 
   val in_interval : t -> bool * bool -> t -> t -> t
-  (** Interger interval inclusion. *)
+  (** Interval inclusion. *)
 
   val maps_to : Var.t -> t -> t
   (** Variable mapping to term. *)

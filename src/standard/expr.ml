@@ -1845,9 +1845,11 @@ module Term = struct
       mk' ~builtin:Builtin.Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
-    let in_interval (b1, b2) = mk'
-        ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
-        "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
+    let in_interval (b1, b2) =
+      let av = Ty.Var.mk "alpha" in
+      let a = Ty.of_var av in
+      mk' ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
+        "InInterval" [av] [a; a; a] Ty.prop
 
     let maps_to =
       let a = Ty.Var.mk "alpha" in
@@ -3112,7 +3114,7 @@ module Term = struct
 
   (* Alt-Ergo's semantic triggers *)
   let in_interval t (b1, b2) t1 t2 =
-    apply_cst (Const.in_interval (b1, b2)) [] [t; t1; t2]
+    apply_cst (Const.in_interval (b1, b2)) [ty t] [t; t1; t2]
 
   let maps_to tv t =
     let ntv = of_var tv in

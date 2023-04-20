@@ -96,7 +96,7 @@ type _ t +=
 type _ t +=
   | In_interval of bool * bool
   (** [In_interval (b1, b2): Int -> Int -> Int -> Prop]:
-      Tests whether or not an interger is in an interval, [b1] (resp. [b2])
+      Tests whether or not a term is in an interval, [b1] (resp. [b2])
       determines if the interval is open on the lower bound
       (resp. upper bound).
 
