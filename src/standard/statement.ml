@@ -445,9 +445,6 @@ let prove_goal ?loc id t =
     mk (Prove []);
   ]
 
-let check_sat_ ?loc id t =
-  mk ~id ?loc (Prove [t])
-
 let rewriting ?loc id l =
   mk ~id ?loc @@ Pack (List.map (fun t ->
       antecedent ?loc (Term.add_attr (Term.const Id.rwrt_rule) t)
@@ -476,7 +473,7 @@ let assumption ?loc l =
   mk ?loc (Prove l)
 
 (* Smtlib wrappers *)
-let check_sat ?loc l = mk ?loc (Prove l)
+let check_sat ?loc ?name l = mk ?loc ?id:name (Prove l)
 let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =

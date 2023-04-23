@@ -581,4 +581,4 @@ decl:
 
   | CHECK_SAT name=decl_ident COLON body=lexpr
     { let loc = L.mk_pos $startpos $endpos in
-      S.check_sat_ ~loc name body }
+      S.check_sat ~loc ~name [body] }

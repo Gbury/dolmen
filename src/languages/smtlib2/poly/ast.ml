@@ -172,7 +172,7 @@ module type Statement = sig
 
   (** Checking for satisfiablity *)
 
-  val check_sat : ?loc:location -> term list -> t
+  val check_sat : ?loc:location -> ?name:id -> term list -> t
   (** Solve the current set of assertions for satisfiability,
       under the local assumptions specified. *)
 
