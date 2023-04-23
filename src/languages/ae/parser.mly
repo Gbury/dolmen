@@ -575,4 +575,10 @@ decl:
     { let loc = L.mk_pos $startpos $endpos in
       S.prove_goal ~loc name body }
 
+  | CHECK_VALID name=decl_ident COLON body=lexpr
+    { let loc = L.mk_pos $startpos $endpos in
+      S.prove_goal ~loc name body }
 
+  | CHECK_SAT name=decl_ident COLON body=lexpr
+    { let loc = L.mk_pos $startpos $endpos in
+      S.check_sat_ ~loc name body }

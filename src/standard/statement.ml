@@ -445,6 +445,9 @@ let prove_goal ?loc id t =
     mk (Prove []);
   ]
 
+let check_sat_ ?loc id t =
+  mk ~id ?loc (Prove [t])
+
 let rewriting ?loc id l =
   mk ~id ?loc @@ Pack (List.map (fun t ->
       antecedent ?loc (Term.add_attr (Term.const Id.rwrt_rule) t)

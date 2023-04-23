@@ -138,6 +138,8 @@ module type Logic = sig
   val prove_goal : ?loc:location -> id -> term -> t
   (** Goal declaration. *)
 
+  val check_sat_ : ?loc:location -> id -> term -> t
+  (** Check sat declaration. *)
 
   (** {2 Dimacs&iCNF Statements} *)
 
