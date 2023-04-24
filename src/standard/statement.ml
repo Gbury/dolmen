@@ -442,7 +442,6 @@ let case_split ?loc id t =
 let prove_goal ?loc id t =
   mk ~id ?loc @@ Pack [
     mk ~id ?loc (Consequent t);
-    mk (Prove []);
   ]
 
 let rewriting ?loc id l =
