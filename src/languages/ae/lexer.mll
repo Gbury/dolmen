@@ -59,7 +59,6 @@
     | FUNC -> reserved "function"
     | GE -> reserved ">="
     | GOAL -> reserved "goal"
-    | CHECK_VALID -> reserved "check_valid"
     | CHECK_SAT -> reserved "check_sat"
     | GT -> reserved ">"
     | CHECK -> reserved "check"
@@ -148,7 +147,6 @@ rule token newline = parse
         | "forall"      -> FORALL
         | "function"    -> FUNC
         | "goal"        -> GOAL
-        | "check_valid" -> CHECK_VALID
         | "check_sat"   -> CHECK_SAT
         | "if"          -> IF
         | "in"          -> IN
