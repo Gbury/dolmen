@@ -39,7 +39,7 @@ indexed identifiers, of the form "(_ symbol index+)"
 
 term: OPEN AS SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 227.
+## Ends in an error in state: 218.
 ##
 ## qual_identifier -> OPEN AS identifier sort . CLOSE [ # ]
 ##
@@ -53,7 +53,7 @@ a closing parenthesis
 
 term: OPEN AS SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 226.
+## Ends in an error in state: 217.
 ##
 ## qual_identifier -> OPEN AS identifier . sort CLOSE [ # ]
 ##
@@ -69,7 +69,7 @@ identifiers, and thus are not allowed here
 
 term: OPEN AS UNDERSCORE
 ##
-## Ends in an error in state: 225.
+## Ends in an error in state: 216.
 ##
 ## qual_identifier -> OPEN AS . identifier sort CLOSE [ # ]
 ##
@@ -85,7 +85,7 @@ identifiers, and thus are not allowed here
 
 term: OPEN ATTRIBUTE SYMBOL KEYWORD BIN UNDERSCORE
 ##
-## Ends in an error in state: 132.
+## Ends in an error in state: 131.
 ##
 ## nonempty_list(attribute) -> attribute . [ CLOSE ]
 ## nonempty_list(attribute) -> attribute . nonempty_list(attribute) [ CLOSE ]
@@ -101,7 +101,7 @@ either a closing parenthesis, or another attribute of the form
 
 term: OPEN ATTRIBUTE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 222.
+## Ends in an error in state: 213.
 ##
 ## term -> OPEN ATTRIBUTE term . nonempty_list(attribute) CLOSE [ # ]
 ##
@@ -115,7 +115,7 @@ an attribute of the form "keyword value"
 
 term: OPEN ATTRIBUTE UNDERSCORE
 ##
-## Ends in an error in state: 221.
+## Ends in an error in state: 212.
 ##
 ## term -> OPEN ATTRIBUTE . term nonempty_list(attribute) CLOSE [ # ]
 ##
@@ -129,7 +129,7 @@ a term
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 219.
+## Ends in an error in state: 210.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
 ##
@@ -143,7 +143,7 @@ a closing parenthesis to end the existencially quantified formula
 
 term: OPEN EXISTS OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 218.
+## Ends in an error in state: 209.
 ##
 ## term -> OPEN EXISTS OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
 ##
@@ -157,7 +157,7 @@ a term (body for the existencial quantification)
 
 term: OPEN EXISTS OPEN UNDERSCORE
 ##
-## Ends in an error in state: 216.
+## Ends in an error in state: 207.
 ##
 ## term -> OPEN EXISTS OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -171,7 +171,7 @@ a sorted variable of the form "(var sort)"
 
 term: OPEN EXISTS UNDERSCORE
 ##
-## Ends in an error in state: 215.
+## Ends in an error in state: 206.
 ##
 ## term -> OPEN EXISTS . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -185,7 +185,7 @@ a list of sorted variables, starting with an opening parenthesis
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 213.
+## Ends in an error in state: 204.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE term . CLOSE [ # ]
 ##
@@ -199,7 +199,7 @@ a closing parenthesis to end the universally quantified formula
 
 term: OPEN FORALL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 212.
+## Ends in an error in state: 203.
 ##
 ## term -> OPEN FORALL OPEN nonempty_list(sorted_var) CLOSE . term CLOSE [ # ]
 ##
@@ -272,7 +272,7 @@ a symbol, i.e. a variable name
 
 term: OPEN FORALL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 210.
+## Ends in an error in state: 201.
 ##
 ## term -> OPEN FORALL OPEN . nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -286,7 +286,7 @@ a sorted variable of the form "(var sort)"
 
 term: OPEN FORALL UNDERSCORE
 ##
-## Ends in an error in state: 209.
+## Ends in an error in state: 200.
 ##
 ## term -> OPEN FORALL . OPEN nonempty_list(sorted_var) CLOSE term CLOSE [ # ]
 ##
@@ -300,7 +300,7 @@ a list of sorted variables, starting with an opening parenthesis
 
 term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 207.
+## Ends in an error in state: 198.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE term . CLOSE [ # ]
 ##
@@ -314,7 +314,7 @@ a closing parenthesis to end the let binding
 
 term: OPEN LET OPEN OPEN SYMBOL BIN CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 206.
+## Ends in an error in state: 197.
 ##
 ## term -> OPEN LET OPEN nonempty_list(var_binding) CLOSE . term CLOSE [ # ]
 ##
@@ -385,7 +385,7 @@ a symbol (i.e. variable name)
 
 term: OPEN LET OPEN UNDERSCORE
 ##
-## Ends in an error in state: 204.
+## Ends in an error in state: 195.
 ##
 ## term -> OPEN LET OPEN . nonempty_list(var_binding) CLOSE term CLOSE [ # ]
 ##
@@ -399,7 +399,7 @@ a variable binding of the form "(var term)"
 
 term: OPEN LET UNDERSCORE
 ##
-## Ends in an error in state: 203.
+## Ends in an error in state: 194.
 ##
 ## term -> OPEN LET . OPEN nonempty_list(var_binding) CLOSE term CLOSE [ # ]
 ##
@@ -462,7 +462,7 @@ symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN SYMBOL SYMBOL CLOSE CLOSE UNDERSCORE
 ##
-## Ends in an error in state: 201.
+## Ends in an error in state: 192.
 ##
 ## term -> OPEN MATCH term OPEN nonempty_list(match_case) CLOSE . CLOSE [ # ]
 ##
@@ -536,7 +536,7 @@ symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN UNDERSCORE
 ##
-## Ends in an error in state: 199.
+## Ends in an error in state: 190.
 ##
 ## term -> OPEN MATCH term OPEN . nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -550,7 +550,7 @@ a match case of the form "(pattern term)"
 
 term: OPEN MATCH SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 198.
+## Ends in an error in state: 189.
 ##
 ## term -> OPEN MATCH term . OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -564,7 +564,7 @@ a match case list, starting with an opening parenthesis
 
 term: OPEN MATCH UNDERSCORE
 ##
-## Ends in an error in state: 197.
+## Ends in an error in state: 188.
 ##
 ## term -> OPEN MATCH . term OPEN nonempty_list(match_case) CLOSE CLOSE [ # ]
 ##
@@ -673,7 +673,7 @@ symbols, and thus are not allowed here
 
 term: OPEN STR
 ##
-## Ends in an error in state: 192.
+## Ends in an error in state: 183.
 ##
 ## identifier -> OPEN . UNDERSCORE SYMBOL nonempty_list(index) CLOSE [ # ]
 ## qual_identifier -> OPEN . AS identifier sort CLOSE [ # ]
@@ -696,7 +696,7 @@ note that this expectation if caused by the preceding opening parenthesis
 
 term: OPEN SYMBOL SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 135.
+## Ends in an error in state: 134.
 ##
 ## nonempty_list(term) -> term . [ CLOSE ]
 ## nonempty_list(term) -> term . nonempty_list(term) [ CLOSE ]
@@ -713,7 +713,7 @@ not terms, and thus are not allowed here
 
 term: OPEN SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 229.
+## Ends in an error in state: 220.
 ##
 ## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ # ]
 ##
@@ -747,7 +747,7 @@ not symbols, and thus are not allowed here
 
 term: OPEN UNDERSCORE SYMBOL UNDERSCORE
 ##
-## Ends in an error in state: 194.
+## Ends in an error in state: 185.
 ##
 ## identifier -> OPEN UNDERSCORE SYMBOL . nonempty_list(index) CLOSE [ # ]
 ##
@@ -763,7 +763,7 @@ symbols, and thus are not allowed here
 
 term: OPEN UNDERSCORE UNDERSCORE
 ##
-## Ends in an error in state: 193.
+## Ends in an error in state: 184.
 ##
 ## identifier -> OPEN UNDERSCORE . SYMBOL nonempty_list(index) CLOSE [ # ]
 ##
@@ -779,7 +779,7 @@ symbols, and thus are not allowed here
 
 term: UNDERSCORE
 ##
-## Ends in an error in state: 189.
+## Ends in an error in state: 180.
 ##
 ## term' -> . term [ # ]
 ##
@@ -795,7 +795,7 @@ not symbols, and thus are not allowed here
 
 input: UNDERSCORE
 ##
-## Ends in an error in state: 175.
+## Ends in an error in state: 170.
 ##
 ## input' -> . input [ # ]
 ##
@@ -825,7 +825,7 @@ file: SAT UNSAT
 ##
 ## Ends in an error in state: 2.
 ##
-## answer -> SAT . OPEN option(MODEL) list(definition) CLOSE [ UNSAT SAT OPEN EOF ]
+## answer -> SAT . OPEN option(MODEL) list(definition) CLOSE [ UNSAT SAT EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## SAT
@@ -837,7 +837,7 @@ file: SAT OPEN UNSAT
 ##
 ## Ends in an error in state: 3.
 ##
-## answer -> SAT OPEN . option(MODEL) list(definition) CLOSE [ UNSAT SAT OPEN EOF ]
+## answer -> SAT OPEN . option(MODEL) list(definition) CLOSE [ UNSAT SAT EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## SAT OPEN
@@ -849,7 +849,7 @@ file: SAT OPEN MODEL UNSAT
 ##
 ## Ends in an error in state: 5.
 ##
-## answer -> SAT OPEN option(MODEL) . list(definition) CLOSE [ UNSAT SAT OPEN EOF ]
+## answer -> SAT OPEN option(MODEL) . list(definition) CLOSE [ UNSAT SAT EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## SAT OPEN option(MODEL)
@@ -1244,7 +1244,7 @@ term: OPEN ATTRIBUTE SYMBOL KEYWORD OPEN OPEN EOF
 ##
 ## Ends in an error in state: 106.
 ##
-## s_expr -> OPEN . list(s_expr) CLOSE [ UNSAT UNDERSCORE SYMBOL STR SAT OPEN NUM MODEL MATCH LET KEYWORD HEX FORALL EXISTS ERROR DEFINE_FUN_REC DEFINE_FUNS_REC DEFINE_FUN DEC CLOSE BIN ATTRIBUTE AS ]
+## s_expr -> OPEN . list(s_expr) CLOSE [ UNSAT UNDERSCORE SYMBOL STR SAT OPEN NUM MODEL MATCH LET KEYWORD HEX FORALL EXISTS DEFINE_FUN_REC DEFINE_FUNS_REC DEFINE_FUN DEC CLOSE BIN ATTRIBUTE AS ]
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN
@@ -1254,7 +1254,7 @@ term: OPEN ATTRIBUTE SYMBOL KEYWORD OPEN OPEN EOF
 
 term: OPEN ATTRIBUTE SYMBOL KEYWORD OPEN AS EOF
 ##
-## Ends in an error in state: 120.
+## Ends in an error in state: 119.
 ##
 ## list(s_expr) -> s_expr . list(s_expr) [ CLOSE ]
 ##
@@ -1266,7 +1266,7 @@ term: OPEN ATTRIBUTE SYMBOL KEYWORD OPEN AS EOF
 
 term: OPEN SYMBOL OPEN SYMBOL UNSAT
 ##
-## Ends in an error in state: 134.
+## Ends in an error in state: 133.
 ##
 ## term -> OPEN qual_identifier . nonempty_list(term) CLOSE [ SYMBOL STR OPEN NUM KEYWORD HEX DEC CLOSE BIN ]
 ##
@@ -1278,7 +1278,7 @@ term: OPEN SYMBOL OPEN SYMBOL UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNSAT
 ##
-## Ends in an error in state: 140.
+## Ends in an error in state: 139.
 ##
 ## definition -> OPEN DEFINE_FUN_REC function_def . CLOSE [ OPEN CLOSE ]
 ##
@@ -1290,7 +1290,7 @@ file: SAT OPEN OPEN DEFINE_FUN_REC SYMBOL OPEN CLOSE SYMBOL SYMBOL UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC UNSAT
 ##
-## Ends in an error in state: 142.
+## Ends in an error in state: 141.
 ##
 ## definition -> OPEN DEFINE_FUNS_REC . OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -1302,7 +1302,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN UNSAT
 ##
-## Ends in an error in state: 143.
+## Ends in an error in state: 142.
 ##
 ## definition -> OPEN DEFINE_FUNS_REC OPEN . nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -1314,7 +1314,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN UNSAT
 ##
-## Ends in an error in state: 144.
+## Ends in an error in state: 143.
 ##
 ## function_dec -> OPEN . SYMBOL OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -1326,7 +1326,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNSAT
 ##
-## Ends in an error in state: 145.
+## Ends in an error in state: 144.
 ##
 ## function_dec -> OPEN SYMBOL . OPEN list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -1338,7 +1338,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNSAT
 ##
-## Ends in an error in state: 146.
+## Ends in an error in state: 145.
 ##
 ## function_dec -> OPEN SYMBOL OPEN . list(sorted_var) CLOSE sort CLOSE [ OPEN CLOSE ]
 ##
@@ -1350,7 +1350,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNSAT
 ##
-## Ends in an error in state: 148.
+## Ends in an error in state: 147.
 ##
 ## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE . sort CLOSE [ OPEN CLOSE ]
 ##
@@ -1362,7 +1362,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNSAT
 ##
-## Ends in an error in state: 149.
+## Ends in an error in state: 148.
 ##
 ## function_dec -> OPEN SYMBOL OPEN list(sorted_var) CLOSE sort . CLOSE [ OPEN CLOSE ]
 ##
@@ -1374,7 +1374,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE UNSAT
 ##
-## Ends in an error in state: 152.
+## Ends in an error in state: 151.
 ##
 ## definition -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE . OPEN nonempty_list(term) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -1386,7 +1386,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLO
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN UNSAT
 ##
-## Ends in an error in state: 153.
+## Ends in an error in state: 152.
 ##
 ## definition -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN . nonempty_list(term) CLOSE CLOSE [ OPEN CLOSE ]
 ##
@@ -1398,7 +1398,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLO
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLOSE OPEN SYMBOL CLOSE UNSAT
 ##
-## Ends in an error in state: 155.
+## Ends in an error in state: 154.
 ##
 ## definition -> OPEN DEFINE_FUNS_REC OPEN nonempty_list(function_dec) CLOSE OPEN nonempty_list(term) CLOSE . CLOSE [ OPEN CLOSE ]
 ##
@@ -1410,7 +1410,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE CLO
 
 file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNSAT
 ##
-## Ends in an error in state: 157.
+## Ends in an error in state: 156.
 ##
 ## nonempty_list(function_dec) -> function_dec . [ CLOSE ]
 ## nonempty_list(function_dec) -> function_dec . nonempty_list(function_dec) [ CLOSE ]
@@ -1423,7 +1423,7 @@ file: SAT OPEN OPEN DEFINE_FUNS_REC OPEN OPEN SYMBOL OPEN CLOSE SYMBOL CLOSE UNS
 
 file: SAT OPEN OPEN DEFINE_FUN UNSAT
 ##
-## Ends in an error in state: 159.
+## Ends in an error in state: 158.
 ##
 ## definition -> OPEN DEFINE_FUN . function_def CLOSE [ OPEN CLOSE ]
 ##
@@ -1435,7 +1435,7 @@ file: SAT OPEN OPEN DEFINE_FUN UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNSAT
 ##
-## Ends in an error in state: 160.
+## Ends in an error in state: 159.
 ##
 ## definition -> OPEN DEFINE_FUN function_def . CLOSE [ OPEN CLOSE ]
 ##
@@ -1447,7 +1447,7 @@ file: SAT OPEN OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL UNSAT
 
 file: SAT OPEN OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL CLOSE UNSAT
 ##
-## Ends in an error in state: 164.
+## Ends in an error in state: 163.
 ##
 ## list(definition) -> definition . list(definition) [ CLOSE ]
 ##
@@ -1459,7 +1459,7 @@ file: SAT OPEN OPEN DEFINE_FUN SYMBOL OPEN CLOSE SYMBOL SYMBOL CLOSE UNSAT
 
 file: UNSAT UNDERSCORE
 ##
-## Ends in an error in state: 173.
+## Ends in an error in state: 168.
 ##
 ## list(answer) -> answer . list(answer) [ EOF ]
 ##
@@ -1471,7 +1471,7 @@ file: UNSAT UNDERSCORE
 
 input: SAT UNSAT
 ##
-## Ends in an error in state: 177.
+## Ends in an error in state: 172.
 ##
 ## answer -> SAT . OPEN option(MODEL) list(definition) CLOSE [ # ]
 ##
@@ -1483,7 +1483,7 @@ input: SAT UNSAT
 
 input: SAT OPEN UNSAT
 ##
-## Ends in an error in state: 178.
+## Ends in an error in state: 173.
 ##
 ## answer -> SAT OPEN . option(MODEL) list(definition) CLOSE [ # ]
 ##
@@ -1495,7 +1495,7 @@ input: SAT OPEN UNSAT
 
 input: SAT OPEN MODEL UNSAT
 ##
-## Ends in an error in state: 179.
+## Ends in an error in state: 174.
 ##
 ## answer -> SAT OPEN option(MODEL) . list(definition) CLOSE [ # ]
 ##
@@ -1504,4 +1504,3 @@ input: SAT OPEN MODEL UNSAT
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
-
