@@ -211,7 +211,7 @@ module type S = sig
   (** The type of top-level assertion statements *)
 
   type solve = [
-    | `Solve of formula list
+    | `Solve of formula list * formula list
   ]
   (** Top-level solve instruction *)
 

@@ -1865,7 +1865,7 @@ module Make
   ]
 
   type solve = [
-    | `Solve of Expr.formula list
+    | `Solve of Expr.formula list * Expr.formula list
   ]
 
   type get_info = [
@@ -1956,9 +1956,10 @@ module Make
     | `Clause l ->
       Format.fprintf fmt "@[<v 2>clause:@ %a@]"
         (Format.pp_print_list Print.formula) l
-    | `Solve l ->
-      Format.fprintf fmt "@[<hov 2>solve-assuming: %a@]"
-        (Format.pp_print_list Print.formula) l
+    | `Solve (hyps, goals) ->
+      Format.fprintf fmt "@[<hov 2>solve: %a assuming: %a@]"
+        (Format.pp_print_list Print.formula) goals
+        (Format.pp_print_list Print.formula) hyps
     | `Get_info s ->
       Format.fprintf fmt "@[<hov 2>get-info: %s@]" s
     | `Get_option s ->
@@ -2088,9 +2089,10 @@ module Make
       st, (simple (other_id c) c.S.loc (`Plain t))
 
     (* Hypotheses and goal statements *)
-    | { S.descr = S.Prove l; _ } ->
-      let st, l = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs l in
-      st, (simple (prove_id c) c.S.loc (`Solve l))
+    | { S.descr = S.Prove { hyps; goals }; _ } ->
+      let st, hyps = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs hyps in
+      let st, goals = Typer.formulas st ~input ~loc:c.S.loc ~attrs:c.S.attrs goals in
+      st, (simple (prove_id c) c.S.loc (`Solve (hyps, goals)))
 
     (* Hypotheses & Goals *)
     | { S.descr = S.Clause l; _ } ->
