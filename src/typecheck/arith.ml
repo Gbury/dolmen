@@ -184,10 +184,18 @@ module Smtlib2 = struct
      - real difference logic
      - difference logic in UFIDL
   *)
-  type arith =
+  type config =
     | Regular
     | Linear of [ `Large | `Strict ]
     | Difference of [ `IDL | `RDL | `UFIDL ]
+
+  let print_config fmt = function
+    | Regular -> Format.fprintf fmt "regular"
+    | Linear `Large -> Format.fprintf fmt "linear/large"
+    | Linear `Strict -> Format.fprintf fmt "linear/strict"
+    | Difference `IDL -> Format.fprintf fmt "idl"
+    | Difference `RDL -> Format.fprintf fmt "rdl"
+    | Difference `UFIDL -> Format.fprintf fmt "ufidl"
 
   (* In order to establish the needed classification and correctly raise warnings
      or errors, we first need a fine-grained view of terms according to an arithmetic
@@ -590,13 +598,13 @@ module Smtlib2 = struct
 
     (* Global filters *)
 
-    let minus arith parse version env args =
+    let minus config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> Ok
         | Difference (`IDL | `RDL) ->
@@ -604,39 +612,39 @@ module Smtlib2 = struct
         | Difference `UFIDL ->
           forbidden "unary subtraction" "difference logic (QF_UFIDL variant)"
 
-    let sub arith parse version env args =
+    let sub config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> sub_idl parse version env args
         | Difference `RDL -> sub_rdl parse version env args
         | Difference `UFIDL -> op_ufidl parse version env args
 
-    let add arith parse version env args =
+    let add config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> forbidden "addition" "integer difference logic"
         | Difference `RDL -> add_rdl parse version env args
         | Difference `UFIDL -> op_ufidl parse version env args
 
-    let mul arith parse version env args =
+    let mul config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear `Strict -> mul_linear ~strict:true parse version env args
         | Linear `Large -> mul_linear ~strict:false parse version env args
@@ -644,72 +652,72 @@ module Smtlib2 = struct
         | Difference `RDL -> forbidden "multiplication" "real difference logic"
         | Difference `UFIDL -> forbidden "multiplication" "difference logic (QF_UFIDL variant)"
 
-    let div arith parse version env args =
+    let div config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> div_linear parse version env args
         | Difference `IDL -> forbidden "division" "integer difference logic"
         | Difference `RDL -> div_linear parse version env args
         | Difference `UFIDL -> forbidden "division" "difference logic (QF_UFIDL variant)"
 
-    let ediv arith version _args =
+    let ediv config version _args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> forbidden "euclidean division" "linear arithmetic"
         | Difference _ -> forbidden "euclidean division" "difference logic"
 
-    let mod_ arith version _args =
+    let mod_ config version _args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> forbidden "mod" "linear arithmetic"
         | Difference _ -> forbidden "mod" "difference logic"
 
-    let abs arith version _args =
+    let abs config version _args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> forbidden "abs" "linear arithmetic"
         | Difference _ -> forbidden "abs" "difference logic"
 
-    let comp arith parse version env args =
+    let comp config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> comp_idl parse version env args
         | Difference `RDL -> comp_rdl parse version env args
         | Difference `UFIDL -> Ok
 
-    let divisible arith version _args =
+    let divisible config version _args =
       match (version : Dolmen.Smtlib2.version) with
       | `Response _ ->
         (* Allow all operations in responses, since we will evaluate them *)
         Ok
       | `Script _ ->
-        match arith with
+        match config with
         | Regular -> Ok
         | Linear _ -> forbidden "divisible" "linear arithmetic"
         | Difference _ -> forbidden "divisible" "difference logic"
@@ -743,7 +751,7 @@ module Smtlib2 = struct
       let check1 env filter ast a = check env filter ast [a]
       let check2 env filter ast a b = check env filter ast [a; b]
 
-      let rec parse ~arith version env s =
+      let rec parse ~config version env s =
         match s with
         (* type *)
         | Type.Id { Id.ns = Sort; name = Simple "Int"; } ->
@@ -757,42 +765,41 @@ module Smtlib2 = struct
             | "-" ->
               Type.builtin_term (fun ast args -> match args with
                   | [x] ->
-                    check env (F.minus arith (parse ~arith) version env) ast args;
+                    check env (F.minus config (parse ~config) version env) ast args;
                     T.minus (Type.parse_term env x)
                   | _ ->
                     Base.term_app_left (module Type) env s T.sub ast args
-                      ~check:(check env (F.sub arith (parse ~arith) version env))
+                      ~check:(check env (F.sub config (parse ~config) version env))
                 )
             | "+" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.add
-                    ~check:(check env (F.add arith (parse ~arith) version env)))
+                    ~check:(check env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.mul
-                       ~check:(check env (F.mul arith (parse ~arith) version env)))
+                       ~check:(check env (F.mul config (parse ~config) version env)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
-                                   ~check:(check env (F.ediv arith version)))
+                                   ~check:(check env (F.ediv config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.rem
-                                   ~check:(check2 env (F.mod_ arith version)))
+                                   ~check:(check2 env (F.mod_ config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.abs
-                    ~check:(check1 env (F.abs arith version)))
+                    ~check:(check1 env (F.abs config version)))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.le
-                    ~check:(check env (F.comp arith (parse ~arith) version env)))
+                    ~check:(check env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.lt
-                    ~check:(check env (F.comp arith (parse ~arith) version env)))
+                    ~check:(check env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.ge
-                    ~check:(check env (F.comp arith (parse ~arith) version env)))
+                    ~check:(check env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
-                    ~check:(check env (F.comp arith (parse ~arith) version env)))
-
+                    ~check:(check env (F.comp config (parse ~config) version env)))
             | "div0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
             | "mod0" -> `Reserved (`Term_cst (fun _ _ _ -> T.rem'))
 
@@ -805,7 +812,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       Type.builtin_term (Base.term_app1 (module Type) env s (T.divisible n)
-                               ~check:(check1 env (F.divisible arith version)))
+                               ~check:(check1 env (F.divisible config version)))
                     )
                 | _ -> `Not_indexed
               )
@@ -836,7 +843,7 @@ module Smtlib2 = struct
         | Warn msg -> Type._warn env (Ast ast) (Restriction msg)
         | Error msg -> Type._error env (Ast ast) (Forbidden msg)
 
-      let rec parse ~arith version env s =
+      let rec parse ~config version env s =
         match s with
         (* type *)
         | Type.Id { Id.ns = Sort; name = Simple "Real"; } ->
@@ -850,34 +857,34 @@ module Smtlib2 = struct
             | "-" -> Type.builtin_term (fun ast args ->
                 match args with
                 | [x] ->
-                  check env (F.minus arith (parse ~arith) version env) ast args;
+                  check env (F.minus config (parse ~config) version env) ast args;
                   T.minus (Type.parse_term env x)
                 | _ ->
                   Base.term_app_left (module Type) env s T.sub ast args
-                    ~check:(check env (F.sub arith (parse ~arith) version env))
+                    ~check:(check env (F.sub config (parse ~config) version env))
               )
             | "+" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.add
-                       ~check:(check env (F.add arith (parse ~arith) version env)))
+                       ~check:(check env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.mul
-                       ~check:(check env (F.mul arith (parse ~arith) version env)))
+                       ~check:(check env (F.mul config (parse ~config) version env)))
             | "/" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
-                       ~check:(check env (F.div arith (parse ~arith) version env)))
+                       ~check:(check env (F.div config (parse ~config) version env)))
                 ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.le
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.lt
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.ge
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
 
             | "/0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
 
@@ -937,7 +944,7 @@ module Smtlib2 = struct
         | `Int, `Int -> mk_real (T.Int.to_real a) (T.Int.to_real b)
         | _ -> mk_real a b
 
-      let rec parse ~arith version env s =
+      let rec parse ~config version env s =
         match s with
 
         (* type *)
@@ -960,52 +967,52 @@ module Smtlib2 = struct
                 | [_] ->
                   Base.term_app1_ast (module Type) env s
                     (dispatch1 env (T.Int.minus, T.Real.minus)) ast args
-                    ~check:(check1 env (F.minus arith (parse ~arith) version env))
+                    ~check:(check1 env (F.minus config (parse ~config) version env))
                 | _ ->
                   Base.term_app_left_ast (module Type) env s
                     (dispatch2 env (T.Int.sub, T.Real.sub)) ast args
-                    ~check:(check env (F.sub arith (parse ~arith) version env))
+                    ~check:(check env (F.sub config (parse ~config) version env))
               )
             | "+" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.add, T.Real.add))
-                       ~check:(check env (F.add arith (parse ~arith) version env)))
+                       ~check:(check env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.mul, T.Real.mul))
-                       ~check:(check env (F.mul arith (parse ~arith) version env)))
+                       ~check:(check env (F.mul config (parse ~config) version env)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.Int.div
-                                   ~check:(check env (F.ediv arith version)))
+                                   ~check:(check env (F.ediv config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.Int.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.Int.rem
-                                   ~check:(check2 env (F.mod_ arith version)))
+                                   ~check:(check2 env (F.mod_ config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.Int.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.Int.abs
-                       ~check:(check1 env (F.abs arith version)))
+                       ~check:(check1 env (F.abs config version)))
             | "/" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (promote_int_to_real env T.Real.div)
-                       ~check:(check env (F.div arith (parse ~arith) version env)))
+                       ~check:(check env (F.div config (parse ~config) version env)))
                 ~meta:(`Partial (fun _ _ _ -> T.Real.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.le, T.Real.le))
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.lt, T.Real.lt))
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.ge, T.Real.ge))
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.gt, T.Real.gt))
-                       ~check:(check env (F.comp arith (parse ~arith) version env)))
+                       ~check:(check env (F.comp config (parse ~config) version env)))
             | "to_real" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.Int.to_real)
             | "to_int" ->
@@ -1027,7 +1034,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       Type.builtin_term (Base.term_app1 (module Type) env s (T.Int.divisible n)
-                               ~check:(check1 env (F.divisible arith version))))
+                               ~check:(check1 env (F.divisible config version))))
                 | _ -> `Not_indexed
               )
 

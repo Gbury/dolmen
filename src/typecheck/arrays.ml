@@ -50,11 +50,17 @@ module Smtlib2 = struct
      - AUFLIRA : int -> real & int -> (int -> real)
      - QF_ABV, QF_AUFBV : bitvec _ -> bitvec _
   *)
-  type arrays =
+  type config =
     | All
     | Only_int_int
     | Only_ints_real
     | Only_bitvec
+
+  let print_config fmt = function
+    | All -> Format.fprintf fmt "all"
+    | Only_int_int -> Format.fprintf fmt "only_int_int"
+    | Only_ints_real -> Format.fprintf fmt "only_ints_real"
+    | Only_bitvec -> Format.fprintf fmt "only_bitvec"
 
   module Tff
       (Type : Tff_intf.S)
@@ -79,9 +85,9 @@ module Smtlib2 = struct
         "Only array types of the form (Array (_ BitVec i) (_ BitVec j)) for some i, j \
          are allowed by the logic"
 
-    let mk_array_ty env arrays ast src dst =
-      let error () = Type._error env (Ast ast) (Forbidden (msg arrays)) in
-      begin match arrays, Ty.view src, Ty.view dst with
+    let mk_array_ty env config ast src dst =
+      let error () = Type._error env (Ast ast) (Forbidden (msg config)) in
+      begin match config, Ty.view src, Ty.view dst with
         | All, _, _ -> ()
         (* AUFLIA, QF_AUFLIA restrictions *)
         | Only_int_int, `Int, `Int -> ()
@@ -100,11 +106,11 @@ module Smtlib2 = struct
       end;
       Ty.array src dst
 
-    let parse ~arrays version env s =
+    let parse ~config version env s =
       match s with
       (* Array theory according to the spec *)
       | Type.Id { name = Simple "Array"; ns = Sort } ->
-        Type.builtin_ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env arrays))
+        Type.builtin_ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env config))
       | Type.Id { name = Simple "select"; ns = Term } ->
         Type.builtin_term (Base.term_app2 (module Type) env s T.select)
       | Type.Id { name = Simple "store"; ns = Term } ->
