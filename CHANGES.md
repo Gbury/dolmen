@@ -19,6 +19,11 @@ next
   and correctly attach predicate attribute to individual definitions
   (PR#130)
 
+### Typing
+
+- Ignore arithmetic restrictions when typing model values. This
+  particularly affects difference logic (PR#141)
+
 ### Loop
 
 - Add possibility for users of the loop library to choose the
