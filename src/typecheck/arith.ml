@@ -589,78 +589,128 @@ module Smtlib2 = struct
     (* Global filters *)
 
     let minus arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> Ok
-      | Difference (`IDL | `RDL) ->
-        minus_dl parse version env args
-      | Difference `UFIDL ->
-        forbidden "unary subtraction" "difference logic (QF_UFIDL variant)"
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> Ok
+        | Difference (`IDL | `RDL) ->
+          minus_dl parse version env args
+        | Difference `UFIDL ->
+          forbidden "unary subtraction" "difference logic (QF_UFIDL variant)"
 
     let sub arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> Ok
-      | Difference `IDL -> sub_idl parse version env args
-      | Difference `RDL -> sub_rdl parse version env args
-      | Difference `UFIDL -> op_ufidl parse version env args
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> Ok
+        | Difference `IDL -> sub_idl parse version env args
+        | Difference `RDL -> sub_rdl parse version env args
+        | Difference `UFIDL -> op_ufidl parse version env args
 
     let add arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> Ok
-      | Difference `IDL -> forbidden "addition" "integer difference logic"
-      | Difference `RDL -> add_rdl parse version env args
-      | Difference `UFIDL -> op_ufidl parse version env args
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> Ok
+        | Difference `IDL -> forbidden "addition" "integer difference logic"
+        | Difference `RDL -> add_rdl parse version env args
+        | Difference `UFIDL -> op_ufidl parse version env args
 
     let mul arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear `Strict -> mul_linear ~strict:true parse version env args
-      | Linear `Large -> mul_linear ~strict:false parse version env args
-      | Difference `IDL -> forbidden "multiplication" "integer difference logic"
-      | Difference `RDL -> forbidden "multiplication" "real difference logic"
-      | Difference `UFIDL -> forbidden "multiplication" "difference logic (QF_UFIDL variant)"
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear `Strict -> mul_linear ~strict:true parse version env args
+        | Linear `Large -> mul_linear ~strict:false parse version env args
+        | Difference `IDL -> forbidden "multiplication" "integer difference logic"
+        | Difference `RDL -> forbidden "multiplication" "real difference logic"
+        | Difference `UFIDL -> forbidden "multiplication" "difference logic (QF_UFIDL variant)"
 
     let div arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> div_linear parse version env args
-      | Difference `IDL -> forbidden "division" "integer difference logic"
-      | Difference `RDL -> div_linear parse version env args
-      | Difference `UFIDL -> forbidden "division" "difference logic (QF_UFIDL variant)"
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> div_linear parse version env args
+        | Difference `IDL -> forbidden "division" "integer difference logic"
+        | Difference `RDL -> div_linear parse version env args
+        | Difference `UFIDL -> forbidden "division" "difference logic (QF_UFIDL variant)"
 
-    let ediv arith _args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> forbidden "euclidean division" "linear arithmetic"
-      | Difference _ -> forbidden "euclidean division" "difference logic"
+    let ediv arith version _args =
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> forbidden "euclidean division" "linear arithmetic"
+        | Difference _ -> forbidden "euclidean division" "difference logic"
 
-    let mod_ arith _args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> forbidden "mod" "linear arithmetic"
-      | Difference _ -> forbidden "mod" "difference logic"
+    let mod_ arith version _args =
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> forbidden "mod" "linear arithmetic"
+        | Difference _ -> forbidden "mod" "difference logic"
 
-    let abs arith _args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> forbidden "abs" "linear arithmetic"
-      | Difference _ -> forbidden "abs" "difference logic"
+    let abs arith version _args =
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> forbidden "abs" "linear arithmetic"
+        | Difference _ -> forbidden "abs" "difference logic"
 
     let comp arith parse version env args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> Ok
-      | Difference `IDL -> comp_idl parse version env args
-      | Difference `RDL -> comp_rdl parse version env args
-      | Difference `UFIDL -> Ok
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> Ok
+        | Difference `IDL -> comp_idl parse version env args
+        | Difference `RDL -> comp_rdl parse version env args
+        | Difference `UFIDL -> Ok
 
-    let divisible arith _args =
-      match arith with
-      | Regular -> Ok
-      | Linear _ -> forbidden "divisible" "linear arithmetic"
-      | Difference _ -> forbidden "divisible" "difference logic"
+    let divisible arith version _args =
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match arith with
+        | Regular -> Ok
+        | Linear _ -> forbidden "divisible" "linear arithmetic"
+        | Difference _ -> forbidden "divisible" "difference logic"
 
   end
 
@@ -719,13 +769,13 @@ module Smtlib2 = struct
                        ~check:(check env (F.mul arith (parse ~arith) version env)))
             | "div" ->
               `Term (Base.term_app_left (module Type) env s T.div
-                       ~check:(check env (F.ediv arith)))
+                       ~check:(check env (F.ediv arith version)))
             | "mod" ->
               `Term (Base.term_app2 (module Type) env s T.rem
-                    ~check:(check2 env (F.mod_ arith)))
+                    ~check:(check2 env (F.mod_ arith version)))
             | "abs" ->
               `Term (Base.term_app1 (module Type) env s T.abs
-                    ~check:(check1 env (F.abs arith)))
+                    ~check:(check1 env (F.abs arith version)))
             | "<=" ->
               `Term (Base.term_app_chain (module Type) env s T.le
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
@@ -751,7 +801,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       `Term (Base.term_app1 (module Type) env s (T.divisible n)
-                               ~check:(check1 env (F.divisible arith)))
+                               ~check:(check1 env (F.divisible arith version)))
                     )
                 | _ -> `Not_indexed
               )
@@ -921,13 +971,13 @@ module Smtlib2 = struct
                        ~check:(check env (F.mul arith (parse ~arith) version env)))
             | "div" ->
               `Term (Base.term_app_left (module Type) env s T.Int.div
-                       ~check:(check env (F.ediv arith)))
+                       ~check:(check env (F.ediv arith version)))
             | "mod" ->
               `Term (Base.term_app2 (module Type) env s T.Int.rem
-                       ~check:(check2 env (F.mod_ arith)))
+                       ~check:(check2 env (F.mod_ arith version)))
             | "abs" ->
               `Term (Base.term_app1 (module Type) env s T.Int.abs
-                       ~check:(check1 env (F.abs arith)))
+                       ~check:(check1 env (F.abs arith version)))
             | "/" ->
               `Term (Base.term_app_left_ast (module Type) env s
                        (promote_int_to_real env T.Real.div)
@@ -969,7 +1019,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       `Term (Base.term_app1 (module Type) env s (T.Int.divisible n)
-                               ~check:(check1 env (F.divisible arith))))
+                               ~check:(check1 env (F.divisible arith version))))
                 | _ -> `Not_indexed
               )
 
