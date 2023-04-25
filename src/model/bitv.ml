@@ -7,8 +7,21 @@
 (** Bitvectors are represented by an unsigned unbounded integer. *)
 type t = Z.t
 
-let print = Z.pp_print
 let compare = Z.compare
+
+let print_bitpattern fmt t =
+  let rec aux fmt t n =
+    if n < 0 then ()
+    else begin
+      Format.fprintf fmt "%d" (if Z.testbit t n then 1 else 0);
+      aux fmt t (n - 1)
+    end
+  in
+  aux fmt t (Z.numbits t - 1)
+
+let print fmt t =
+  Format.fprintf fmt "%a / #%a"
+    Z.pp_print t print_bitpattern t
 
 let ops = Value.ops ~print ~compare ()
 
