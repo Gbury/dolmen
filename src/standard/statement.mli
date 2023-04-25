@@ -79,6 +79,7 @@ type decls = decl group
 (** Convenient aliases *)
 
 type local = { hyps: term list; goals: term list }
+(** Local hypothesis and consequents used by [Prove]. *)
 
 type descr =
   | Pack of t list
@@ -96,7 +97,8 @@ type descr =
   (** A plain statement containing a term with no defined semantics. *)
 
   | Prove of local
-  (** Try and prove the current sequent, under some local assumptions. *)
+  (** Try and prove the current consequents or local consequents, under
+      some local assumptions. *)
 
   | Clause of term list
   (** Add the given clause on the left side of the current sequent. *)

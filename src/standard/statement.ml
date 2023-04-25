@@ -156,9 +156,10 @@ let rec pp_descr b = function
   | Plain t -> Printf.bprintf b "plain: %a" Term.pp t
 
   | Prove [] -> Printf.bprintf b "Prove"
-  | Prove l ->
-    Printf.bprintf b "Prove assuming: %a"
-      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" && " ~pp:Term.pp) l
+  | Prove { hyps; goals } ->
+    Printf.bprintf b "Prove: %a, assuming: %a"
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" || " ~pp:Term.pp) goals
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" && " ~pp:Term.pp) hyps
 
   | Clause l ->
     Printf.bprintf b "clause: %a"
