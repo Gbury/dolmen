@@ -26,6 +26,11 @@ next
 - Add the `Flow` module for flow checking (PR#135)
 - Add the `check` function in `typer.ml`/`typer_intf.ml`
 
+### Model
+
+- Fix bug in bitvector implementation: negative inputs to `bvsmod`
+  would raise an internal error (PR#138)
+
 
 v0.8.1
 ------

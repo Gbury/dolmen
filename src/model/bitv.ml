@@ -29,6 +29,8 @@ let ops = Value.ops ~print ~compare ()
 (* Value helpers *)
 (* ************************************************************************* *)
 
+
+
 let is_unsigned_integer size z =
   Z.sign z >= 0 && Z.numbits z <= size
 
@@ -41,9 +43,9 @@ let ubitv n t =
 let from_bitv n t =
   (* TODO: proper error *)
   if not (is_unsigned_integer n t) then (
-    Format.eprintf "@[[BV] %s(%a) is not of size %i@]@."
+    (* Format.eprintf "@[[BV] %s(%a) is not of size %i@]@."
       (Z.format (Printf.sprintf "%%0+#%ib" n) t)
-      Z.pp_print t n;
+      Z.pp_print t n; *)
     assert false (* Internal error *)
   );
   t
@@ -159,9 +161,11 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_smod n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
-        let a = sbitv n a in
-        if Z.equal b Z.zero then  from_bitv n a
-        else extract n (Z.sub a (Z.mul (Z.fdiv a b) b)))
+        if Z.equal b Z.zero then from_bitv n (ubitv n a)
+        else begin
+          let a = sbitv n a in
+          extract n (Z.sub a (Z.mul (Z.fdiv a b) b))
+        end)
   | B.Bitv_shl n ->
     op2 ~cst ~size:n (fun a b ->
         let b = ubitv n b in
