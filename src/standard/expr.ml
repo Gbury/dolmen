@@ -1884,7 +1884,7 @@ module Term = struct
            "Pow" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = mk'
-          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div_e `Int)
+          ~pos:Pretty.Prefix ~name:"div" ~builtin:(Builtin.Div_e `Int)
            "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = mk'
           ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Int)
@@ -1892,9 +1892,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Int)
            "Div_f" [] [Ty.int; Ty.int] Ty.int
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/0"
-           "Div_zero" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Int)
@@ -1905,9 +1902,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Int)
            "Modulo_f" [] [Ty.int; Ty.int] Ty.int
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.int; Ty.int] Ty.int
 
       let abs = mk'
           ~name:"abs" ~builtin:Builtin.Abs
@@ -1994,9 +1988,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Rat)
            "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Rat)
@@ -2007,9 +1998,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Rat)
            "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Rat)
@@ -2092,9 +2080,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Real)
            "Div_f" [] [Ty.real; Ty.real] Ty.real
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Real)
@@ -2105,9 +2090,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Real)
            "Modulo_f" [] [Ty.real; Ty.real] Ty.real
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.real; Ty.real] Ty.real
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Real)
@@ -3177,8 +3159,8 @@ module Term = struct
   (* arithmetic *)
   module Int = struct
     let mk = int
-    let div_zero = Const.Int.div_zero
-    let rem_zero = Const.Int.rem_zero
+    let div' = Const.Int.div_e
+    let rem' = Const.Int.rem_e
     let minus t = apply_cst Const.Int.minus [] [t]
     let add a b = apply_cst Const.Int.add [] [a; b]
     let sub a b = apply_cst Const.Int.sub [] [a; b]
@@ -3211,8 +3193,6 @@ module Term = struct
 
   module Rat = struct
     let mk = rat
-    let div_zero = Const.Rat.div_zero
-    let rem_zero = Const.Rat.rem_zero
     let minus t = apply_cst Const.Rat.minus [] [t]
     let add a b = apply_cst Const.Rat.add [] [a; b]
     let sub a b = apply_cst Const.Rat.sub [] [a; b]
@@ -3241,8 +3221,7 @@ module Term = struct
 
   module Real = struct
     let mk = real
-    let div_zero = Const.Real.div_zero
-    let rem_zero = Const.Real.rem_zero
+    let div' = Const.Real.div
     let minus t = apply_cst Const.Real.minus [] [t]
     let add a b = apply_cst Const.Real.add [] [a; b]
     let sub a b = apply_cst Const.Real.sub [] [a; b]

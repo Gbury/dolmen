@@ -136,6 +136,7 @@ module Tags : sig
   (** Satsify the Smtlib interface. *)
 
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
+                                   and type pos = Pretty.pos
   (** Satsify the Zf interface. *)
 
   include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
@@ -909,9 +910,6 @@ module Term : sig
       val div_f : t
       (** Floor of the integer divison. *)
 
-      val div_zero : t
-      (** Integer division by zero. *)
-
       val rem_e : t
       (** Integer euclidian division remainder. *)
 
@@ -920,9 +918,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the integer division. *)
-
-      val rem_zero : t
-      (** Integer modulo zero. *)
 
       val abs : t
       (** Integer absolute value. *)
@@ -988,9 +983,6 @@ module Term : sig
       val div_f : t
       (** Floor of the rational divison. *)
 
-      val div_zero : t
-      (** Rational division by zero. *)
-
       val rem_e : t
       (** Euclidian division remainder. *)
 
@@ -999,9 +991,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the rational division. *)
-
-      val rem_zero : t
-      (** Rational modulo zero. *)
 
       val lt : t
       (** Rational "less than" comparison. *)
@@ -1066,9 +1055,6 @@ module Term : sig
       val div_f : t
       (** Floor of the real divison. *)
 
-      val div_zero : t
-      (** Real division by zero. *)
-
       val rem_e : t
       (** Real euclidian division remainder. *)
 
@@ -1077,9 +1063,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the real division. *)
-
-      val rem_zero : t
-      (** Real modulo zero. *)
 
       val lt : t
       (** Real "less than" comparison. *)
@@ -1900,11 +1883,6 @@ module Term : sig
     val div : t -> t -> t
     (** Exact division on rationals. *)
 
-    val div_zero : term_cst
-    (** Symbol for interpretation of division by zero. *)
-
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** Real operations *)
@@ -1926,8 +1904,6 @@ module Term : sig
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)
 
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** String operations *)

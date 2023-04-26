@@ -96,15 +96,15 @@ module Smtlib2 = struct
       match s with
       (* Types *)
       | Type.Id { ns = Sort; name = Simple "Int"; } ->
-        `Ty (Base.app0 (module Type) env s Ty.int)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.int)
       | Type.Id { ns = Sort; name = Simple "String"; } ->
-        `Ty (Base.app0 (module Type) env s Ty.string)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.string)
       | Type.Id { ns = Sort; name = Simple "RegLan"; } ->
-        `Ty (Base.app0 (module Type) env s Ty.string_reg_lang)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.string_reg_lang)
 
       (* String literals *)
       | Type.Id { Id.ns = Value String; name = Simple name; } as symbol ->
-        `Term (fun ast args ->
+        Type.builtin_term (fun ast args ->
             let s = parse_ustring env ast name in
             Base.app0 (module Type) env symbol (T.String.of_ustring s) ast args
           )
@@ -115,80 +115,80 @@ module Smtlib2 = struct
 
           (* String Functions *)
           | "str.len" ->
-            `Term (Base.term_app1 (module Type) env s T.String.length)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.length)
           | "str.at" ->
-            `Term (Base.term_app2 (module Type) env s T.String.at)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.at)
 
           | "str.is_digit" ->
-            `Term (Base.term_app1 (module Type) env s T.String.is_digit)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.is_digit)
           | "str._to_code" ->
-            `Term (Base.term_app1 (module Type) env s T.String.to_code)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.to_code)
           | "str.from_code" ->
-            `Term (Base.term_app1 (module Type) env s T.String.of_code)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.of_code)
           | "str.to_int" ->
-            `Term (Base.term_app1 (module Type) env s T.String.to_int)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.to_int)
           | "str.from_int" ->
-            `Term (Base.term_app1 (module Type) env s T.String.of_int)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.of_int)
 
           | "str.++" ->
-            `Term (Base.term_app_left (module Type) env s T.String.concat)
+            Type.builtin_term (Base.term_app_left (module Type) env s T.String.concat)
           | "str.substr" ->
-            `Term (Base.term_app3 (module Type) env s T.String.sub)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.sub)
 
           | "str.indexof" ->
-            `Term (Base.term_app3 (module Type) env s T.String.index_of)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.index_of)
           | "str.replace" ->
-            `Term (Base.term_app3 (module Type) env s T.String.replace)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.replace)
           | "str.replace_all" ->
-            `Term (Base.term_app3 (module Type) env s T.String.replace_all)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.replace_all)
           | "str.replace_re" ->
-            `Term (Base.term_app3 (module Type) env s T.String.replace_re)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.replace_re)
           | "str.replace_re_all" ->
-            `Term (Base.term_app3 (module Type) env s T.String.replace_re_all)
+            Type.builtin_term (Base.term_app3 (module Type) env s T.String.replace_re_all)
 
           | "str.prefixof" ->
-            `Term (Base.term_app2 (module Type) env s T.String.is_prefix)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.is_prefix)
           | "str.suffixof" ->
-            `Term (Base.term_app2 (module Type) env s T.String.is_suffix)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.is_suffix)
           | "str.contains" ->
-            `Term (Base.term_app2 (module Type) env s T.String.contains)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.contains)
 
           | "str.<" ->
-            `Term (Base.term_app2 (module Type) env s T.String.lt)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.lt)
           | "str.<=" ->
-            `Term (Base.term_app2 (module Type) env s T.String.leq)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.leq)
 
           (* String/RegLan functions *)
           | "str.to_re" ->
-            `Term (Base.term_app1 (module Type) env s T.String.RegLan.of_string)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.RegLan.of_string)
           | "re.range" ->
-            `Term (Base.term_app2 (module Type) env s T.String.RegLan.range)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.RegLan.range)
           | "str.in_re" ->
-            `Term (Base.term_app2 (module Type) env s T.String.in_re)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.in_re)
 
           (* RegLan functions *)
           | "re.none" ->
-            `Term (Base.app0 (module Type) env s T.String.RegLan.empty)
+            Type.builtin_term (Base.app0 (module Type) env s T.String.RegLan.empty)
           | "re.all" ->
-            `Term (Base.app0 (module Type) env s T.String.RegLan.all)
+            Type.builtin_term (Base.app0 (module Type) env s T.String.RegLan.all)
           | "re.allchar" ->
-            `Term (Base.app0 (module Type) env s T.String.RegLan.allchar)
+            Type.builtin_term (Base.app0 (module Type) env s T.String.RegLan.allchar)
           | "re.++" ->
-            `Term (Base.term_app_left (module Type) env s T.String.RegLan.concat)
+            Type.builtin_term (Base.term_app_left (module Type) env s T.String.RegLan.concat)
           | "re.union" ->
-            `Term (Base.term_app_left (module Type) env s T.String.RegLan.union)
+            Type.builtin_term (Base.term_app_left (module Type) env s T.String.RegLan.union)
           | "re.inter" ->
-            `Term (Base.term_app_left (module Type) env s T.String.RegLan.inter)
+            Type.builtin_term (Base.term_app_left (module Type) env s T.String.RegLan.inter)
           | "re.*" ->
-            `Term (Base.term_app1 (module Type) env s T.String.RegLan.star)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.RegLan.star)
           | "re.comp" ->
-            `Term (Base.term_app1 (module Type) env s T.String.RegLan.complement)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.RegLan.complement)
           | "re.diff" ->
-            `Term (Base.term_app2 (module Type) env s T.String.RegLan.diff)
+            Type.builtin_term (Base.term_app2 (module Type) env s T.String.RegLan.diff)
           | "re.+" ->
-            `Term (Base.term_app1 (module Type) env s T.String.RegLan.cross)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.RegLan.cross)
           | "re.opt" ->
-            `Term (Base.term_app1 (module Type) env s T.String.RegLan.option)
+            Type.builtin_term (Base.term_app1 (module Type) env s T.String.RegLan.option)
 
           | _ -> `Not_found
         end
@@ -196,18 +196,18 @@ module Smtlib2 = struct
       (* Indexed identifiers *)
       | Type.Id { ns = Term; name = Indexed { basename; indexes; }; } as symbol ->
         Base.parse_indexed basename indexes (function
-            | "char" -> `Unary (fun s -> `Term (fun ast args ->
+            | "char" -> `Unary (fun s -> Type.builtin_term (fun ast args ->
                 let s' = parse_uchar_hexa env ast s in
                 Base.app0 (module Type) env symbol (T.String.of_ustring s') ast args
               ))
             | "re.^" -> `Unary (fun s ->
                 let n = int_of_string s in
-                `Term (Base.term_app1 (module Type) env symbol (T.String.RegLan.power n))
+                Type.builtin_term (Base.term_app1 (module Type) env symbol (T.String.RegLan.power n))
               )
             | "re.loop" -> `Binary (fun s s' ->
                 let n1 = int_of_string s in
                 let n2 = int_of_string s' in
-                `Term (Base.term_app1 (module Type) env symbol (T.String.RegLan.loop n1 n2))
+                Type.builtin_term (Base.term_app1 (module Type) env symbol (T.String.RegLan.loop n1 n2))
               )
             | _ -> `Not_indexed
           ) ~err:(Base.bad_term_index_arity (module Type) env)

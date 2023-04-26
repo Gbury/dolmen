@@ -177,12 +177,28 @@ module Make
     sym_hook : [ ty_cst | term_cst ] -> unit;
   }
 
+  (* Record for results  *)
+  type ('res, 'meta) builtin_common_res =
+    'meta * (Ast.t -> Ast.t list -> 'res)
+
+  (* term semantics *)
+  type term_semantics = [
+    | `Total
+    | `Extensible of T.Const.t
+  ]
+
+  (* builtin meta types *)
+  type builtin_meta_ttype = unit
+  type builtin_meta_ty = unit
+  type builtin_meta_tags = unit
+  type builtin_meta_term = term_semantics
+
   (* Result of parsing a symbol by the theory *)
   type builtin_common = [
-    | `Ttype of (Ast.t -> Ast.t list -> unit)
-    | `Ty    of (Ast.t -> Ast.t list -> Ty.t)
-    | `Term  of (Ast.t -> Ast.t list -> T.t)
-    | `Tags  of (Ast.t -> Ast.t list -> tag list)
+    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
+    | `Ty    of (Ty.t, builtin_meta_ty) builtin_common_res
+    | `Term  of (T.t, builtin_meta_term) builtin_common_res
+    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
   ]
 
   type builtin_infer = [
@@ -469,6 +485,20 @@ module Make
 
   let sym_infer env = env.sym_infer
 
+  (* Builtin helpers *)
+  (* ************************************************************************ *)
+
+  let builtin_ttype ?(meta=()) apply : [> builtin_common] =
+    `Ttype (meta, apply)
+
+  let builtin_ty ?(meta=()) apply : [> builtin_common] =
+    `Ty (meta, apply)
+
+  let builtin_tags ?(meta=()) apply : [> builtin_common] =
+    `Tags (meta, apply)
+
+  let builtin_term ?(meta=`Total) apply : [> builtin_common] =
+    `Term (meta, apply)
 
   (* Warnings/Error helpers *)
   (* ************************************************************************ *)
@@ -1207,13 +1237,6 @@ module Make
     in
     ty_l, t_l
 
-  (* helper for builtins *)
-  and builtin_apply_common env b ast args =
-    match (b : builtin_common) with
-    | `Ttype f -> _wrap2 env ast f ast args; Ttype
-    | `Ty f -> Ty (_wrap2 env ast f ast args)
-    | `Term f -> Term (_wrap2 env ast f ast args)
-    | `Tags f -> Tags (_wrap2 env ast f ast args)
 
   (* Wrapper around record creation *)
   let create_record env ast l =
@@ -1886,6 +1909,13 @@ module Make
     | `Not_found -> _unknown_builtin env ast b
     | #builtin_res as b_res -> builtin_apply_builtin env ast b b_res args
 
+  and builtin_apply_common env b ast args =
+    match (b : builtin_common) with
+    | `Ttype (_meta, f) -> _wrap2 env ast f ast args; Ttype
+    | `Ty (_meta, f) -> Ty (_wrap2 env ast f ast args)
+    | `Term (_meta, f) -> Term (_wrap2 env ast f ast args)
+    | `Tags (_meta, f) -> Tags (_wrap2 env ast f ast args)
+
   and builtin_apply_builtin env ast b b_res args : res =
     match (b_res : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
@@ -2358,7 +2388,8 @@ module Make
       end
 
     (* Term definitions *)
-    | `Term_def _, `Builtin `Reserved `Term_cst cst ->
+    | `Term_def _, `Builtin `Reserved `Term_cst cst
+    | `Term_def _, `Builtin `Term (`Extensible cst, _) ->
       `Term (d.id, cst)
     | `Term_def _, ((`Term_cst cst) as c) ->
       begin match find_reason env c with

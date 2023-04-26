@@ -1,6 +1,12 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(** {2 Exception} *)
+(** ************************************************************************ *)
+
+exception Partial_interpretation of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list
+
 (** {2 Type definitions} *)
 (** ************************************************************************ *)
 
@@ -20,6 +26,8 @@ module type S = sig
   val find_opt : key -> t -> Value.t option
 
   val add : key -> Value.t -> t -> t
+
+  val remove : key -> t -> t
 
 end
 

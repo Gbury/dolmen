@@ -16,7 +16,6 @@ module V = Dolmen.Std.Expr.Term.Var
 module C = Dolmen.Std.Expr.Term.Const
 
 exception Not_a_pattern of T.t
-exception Partial_destructor of C.t * Value.t
 
 type t = {
   head : C.t;
@@ -53,7 +52,7 @@ let destructor cstr field value =
   let { head; args; } = Value.extract_exn ~ops value in
   if C.equal cstr head
   then List.nth args field
-  else raise (Partial_destructor (cstr, value))
+  else raise (Model.Partial_interpretation (cstr, [value]))
 
 let builtins _ (cst : C.t) =
   match cst.builtin with

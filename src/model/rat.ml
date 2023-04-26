@@ -9,7 +9,7 @@ type t = Q.t
 
 let compare = Q.compare
 let print fmt q =
-  Format.fprintf fmt "Q:%a "Q.pp_print q
+  Format.fprintf fmt "%a "Q.pp_print q
 
 let ops = Value.ops ~compare ~print ()
 

@@ -56,14 +56,14 @@ module Subst
     | Id id ->
       begin match M.find id (get_defs env) with
         | `Ty (vars, body) ->
-          `Ty (Base.make_opn (List.length vars)
+          Type.builtin_ty (Base.make_opn (List.length vars)
                  (module Type) env symbol (fun _ args ->
                      let ty_args = List.map (Type.parse_ty env) args in
                      let l = List.map2 (fun x y -> x, y) vars ty_args in
                      T.ty_subst l body
                    ))
         | `Term (ty_vars, t_vars, body) ->
-          `Term (fun ast args ->
+          Type.builtin_term (fun ast args ->
               let n_args = List.length args in
               let n_ty = List.length ty_vars in
               let n_t = List.length t_vars in
@@ -124,9 +124,9 @@ module Declare(Type : Tff_intf.S) = struct
     match (symbol : Type.symbol) with
     | Id id ->
       begin match M.find id (get_defs env) with
-        | `Ty c -> `Ty (fun ast args ->
+        | `Ty c -> Type.builtin_ty (fun ast args ->
             Type.unwrap_ty env ast (Type.parse_app_ty_cst env ast c args))
-        | `Term c -> `Term (fun ast args ->
+        | `Term c -> Type.builtin_term (fun ast args ->
             Type.unwrap_term env ast (Type.parse_app_term_cst env ast c args))
         | exception Not_found -> `Not_found
       end

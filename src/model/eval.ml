@@ -21,7 +21,6 @@ exception Unhandled_builtin of Cst.t
 exception Undefined_variable of Var.t
 exception Undefined_constant of Cst.t
 
-
 (* Builtins *)
 (* ************************************************************************* *)
 

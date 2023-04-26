@@ -32,37 +32,37 @@ module Ae = struct
 
       (* Types *)
       | Type.Builtin Ast.Bool ->
-        `Ty (Base.app0 (module Type) env s Ty.bool)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.bool)
       | Type.Builtin Ast.Prop ->
-        `Ty (Base.app0 (module Type) env s Ty.bool)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.bool)
       | Type.Builtin Ast.Unit ->
-        `Ty (Base.app0 (module Type) env s Ty.unit)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.unit)
 
       (* Constants *)
       | Type.Builtin Ast.Void ->
-        `Term (Base.app0 (module Type) env s T.void)
+        Type.builtin_term (Base.app0 (module Type) env s T.void)
       | Type.Builtin Ast.True ->
-        `Term (Base.app0 (module Type) env s T._true)
+        Type.builtin_term (Base.app0 (module Type) env s T._true)
       | Type.Builtin Ast.False ->
-        `Term (Base.app0 (module Type) env s T._false)
+        Type.builtin_term (Base.app0 (module Type) env s T._false)
 
       (* Boolean operators *)
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env s T.neg)
+        Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app_left (module Type) env s mk_and)
+        Type.builtin_term (Base.term_app_left (module Type) env s mk_and)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app_left (module Type) env s mk_or)
+        Type.builtin_term (Base.term_app_left (module Type) env s mk_or)
       | Type.Builtin Ast.Xor ->
-        `Term (Base.term_app_left (module Type) env s T.xor)
+        Type.builtin_term (Base.term_app_left (module Type) env s T.xor)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app_right (module Type) env s T.imply)
+        Type.builtin_term (Base.term_app_right (module Type) env s T.imply)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app_right (module Type) env s T.equiv)
+        Type.builtin_term (Base.term_app_right (module Type) env s T.equiv)
 
       (* If-then-else *)
       | Type.Builtin Ast.Ite ->
-        `Term (
+        Type.builtin_term (
           Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
@@ -73,7 +73,7 @@ module Ae = struct
 
       (* Equality *)
       | Type.Builtin Ast.Eq ->
-        `Term (
+        Type.builtin_term (
           fun ast args ->
             match args with
             | [Ast.{
@@ -86,42 +86,42 @@ module Ae = struct
         )
 
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app_list (module Type) env s T.distinct)
+        Type.builtin_term (Base.term_app_list (module Type) env s T.distinct)
 
       (* AC (Associative Commutative) symbol *)
       | Type.Id { name = Simple "ac"; ns = Attr; }->
-        `Tags (fun _ _ -> [Type.Set (Tag.ac, ())])
+        Type.builtin_tags (fun _ _ -> [Type.Set (Tag.ac, ())])
 
       (* Predicate definition *)
       | Type.Id { name = Simple "predicate"; ns = Attr; }->
-        `Tags (fun _ _ -> [Type.Set (Tag.predicate, ())])
+        Type.builtin_tags (fun _ _ -> [Type.Set (Tag.predicate, ())])
 
       (* Named terms *)
       | Type.Id { name = Simple n; ns = Track; }->
-        `Tags (fun _ _ -> [Type.Set (Tag.named, n)])
+        Type.builtin_tags (fun _ _ -> [Type.Set (Tag.named, n)])
 
       (* Triggers *)
       | Type.Id { name = Simple "triggers"; ns = Attr; } ->
-        `Tags (fun ast l ->
+        Type.builtin_tags (fun ast l ->
             let l = List.map (parse_trigger env ast) l in
             [Type.Set (Tag.triggers, l)]
           )
 
       (* Filters *)
       | Type.Id { name = Simple "filters"; ns = Attr; } ->
-        `Tags (fun _ l ->
+        Type.builtin_tags (fun _ l ->
             let l = List.map (Type.parse_prop env) l in
             [Type.Set (Tag.filters, l)]
           )
 
       (* Semantic triggers *)
       | Type.Builtin (Ast.In_interval (b1, b2)) ->
-        `Term (Base.term_app3_ast (module Type) env s
+        Type.builtin_term (Base.term_app3_ast (module Type) env s
                  (fun _ast _a1 _a2 _a3 ->
                     T.in_interval _a1 (b1, b2) _a2 _a3))
 
       | Type.Builtin Ast.Maps_to ->
-        `Term (
+        Type.builtin_term (
           fun ast args ->
             begin match args with
               | [var; t] ->
@@ -160,7 +160,7 @@ module Dimacs = struct
     let parse env s =
       match s with
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env s T.neg)
+        Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | _ -> `Not_found
 
   end
@@ -186,46 +186,46 @@ module Tptp = struct
 
       (* Predefined symbols *)
       | Type.Id { name = Simple "$tType"; ns = Term } ->
-        `Ttype (Base.app0 (module Type) env s ())
+        Type.builtin_ttype (Base.app0 (module Type) env s ())
       | Type.Id { name = Simple "$o"; ns = Term } ->
-        `Ty (Base.app0 (module Type) env s Ty.prop)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.prop)
       | Type.Id { name = Simple "$i"; ns = Term } ->
-        `Ty (Base.app0 (module Type) env s Ty.base)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.base)
       | Type.Id { name = Simple "$true"; ns = Term } ->
-        `Term (Base.app0 (module Type) env s T._true)
+        Type.builtin_term (Base.app0 (module Type) env s T._true)
       | Type.Id { name = Simple "$false"; ns = Term } ->
-        `Term (Base.app0 (module Type) env s T._false)
+        Type.builtin_term (Base.app0 (module Type) env s T._false)
 
       (* Predefined connectives *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env s T.eq)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.eq)
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app_list (module Type) env s T.distinct)
+        Type.builtin_term (Base.term_app_list (module Type) env s T.distinct)
       | Type.Id { name = Simple "$distinct"; ns = Term; } ->
-        `Term (Base.term_app_list (module Type) env s T.distinct)
+        Type.builtin_term (Base.term_app_list (module Type) env s T.distinct)
 
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env s T.neg)
+        Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app2 (module Type) env s mk_or)
+        Type.builtin_term (Base.term_app2 (module Type) env s mk_or)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app2 (module Type) env s mk_and)
+        Type.builtin_term (Base.term_app2 (module Type) env s mk_and)
       | Type.Builtin Ast.Xor ->
-        `Term (Base.term_app2 (module Type) env s T.xor)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.xor)
       | Type.Builtin Ast.Nor ->
-        `Term (Base.term_app2 (module Type) env s T.nor)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.nor)
       | Type.Builtin Ast.Nand ->
-        `Term (Base.term_app2 (module Type) env s T.nand)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.nand)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app2 (module Type) env s T.equiv)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.equiv)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app2 (module Type) env s T.imply)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.imply)
       | Type.Builtin Ast.Implied ->
-        `Term (Base.term_app2 (module Type) env s T.implied)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.implied)
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
-        `Term (
+        Type.builtin_term (
           Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
@@ -236,9 +236,9 @@ module Tptp = struct
 
       (* Ignore the role and kind attributes *)
       | Type.Id id when Id.equal id Id.tptp_role ->
-        `Tags (fun _ast _args -> [])
+        Type.builtin_tags (fun _ast _args -> [])
       | Type.Id id when Id.equal id Id.tptp_kind ->
-        `Tags (fun _ast _args -> [])
+        Type.builtin_tags (fun _ast _args -> [])
       | _ -> `Not_found
 
   end
@@ -254,64 +254,64 @@ module Tptp = struct
 
       (* Ttype and types *)
       | Type.Id { name = Simple "$tType"; ns = Term } ->
-        `Ttype (Base.app0 (module Type) env s ())
+        Type.builtin_ttype (Base.app0 (module Type) env s ())
       | Type.Id { name = Simple "$o"; ns = Term } ->
-        `Ty (Base.app0 (module Type) env s Ty.prop)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.prop)
       | Type.Id { name = Simple "$i"; ns = Term } ->
-        `Ty (Base.app0 (module Type) env s Ty.base)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.base)
 
       (* Predefined symbols *)
       | Type.Id { name = Simple "$true"; ns = Term } ->
-        `Term (Base.term_app_cst (module Type) env T.Const._true)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const._true)
       | Type.Id { name = Simple "$false"; ns = Term } ->
-        `Term (Base.term_app_cst (module Type) env T.Const._false)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const._false)
 
       (* Predefined connectives *)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app_ho_ast (module Type) env
+        Type.builtin_term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.eq)))
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app_list (module Type) env s T.distinct)
+        Type.builtin_term (Base.term_app_list (module Type) env s T.distinct)
       | Type.Id { name = Simple "$distinct"; ns = Term; } ->
-        `Term (Base.term_app_list (module Type) env s T.distinct)
+        Type.builtin_term (Base.term_app_list (module Type) env s T.distinct)
 
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app_cst (module Type) env T.Const.neg)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.neg)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app_cst (module Type) env T.Const.or_)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.or_)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app_cst (module Type) env T.Const.and_)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.and_)
       | Type.Builtin Ast.Xor ->
-        `Term (Base.term_app_cst (module Type) env T.Const.xor)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.xor)
       | Type.Builtin Ast.Nor ->
-        `Term (Base.term_app_cst (module Type) env T.Const.nor)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.nor)
       | Type.Builtin Ast.Nand ->
-        `Term (Base.term_app_cst (module Type) env T.Const.nand)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.nand)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app_cst (module Type) env T.Const.equiv)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.equiv)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app_cst (module Type) env T.Const.imply)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.imply)
       | Type.Builtin Ast.Implied ->
-        `Term (Base.term_app_cst (module Type) env T.Const.implied)
+        Type.builtin_term (Base.term_app_cst (module Type) env T.Const.implied)
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
-        `Term (Base.term_app_ho_ast (module Type) env
+        Type.builtin_term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.ite)))
 
       (* Pi & Sigma *)
       | Type.Builtin Ast.Pi ->
-        `Term (Base.term_app_ho_ast (module Type) env
+        Type.builtin_term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.pi)))
       | Type.Builtin Ast.Sigma ->
-        `Term (Base.term_app_ho_ast (module Type) env
+        Type.builtin_term (Base.term_app_ho_ast (module Type) env
                  (fun ast -> Type.monomorphize env ast (T.of_cst T.Const.sigma)))
 
       (* Ignore the role and kind attributes *)
       | Type.Id id when Id.equal id Id.tptp_role ->
-        `Tags (fun _ast _args -> [])
+        Type.builtin_tags (fun _ast _args -> [])
       | Type.Id id when Id.equal id Id.tptp_kind ->
-        `Tags (fun _ast _args -> [])
+        Type.builtin_tags (fun _ast _args -> [])
       | _ -> `Not_found
 
   end
@@ -536,27 +536,27 @@ module Smtlib2 = struct
       match s with
       (* Bool sort and constants *)
       | Type.Id { name = Simple "Bool"; ns = Sort } ->
-        `Ty (Base.app0 (module Type) env s Ty.prop)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.prop)
       | Type.Id { name = Simple "true"; ns = Term } ->
-        `Term (Base.app0 (module Type) env s T._true)
+        Type.builtin_term (Base.app0 (module Type) env s T._true)
       | Type.Id { name = Simple "false"; ns = Term } ->
-        `Term (Base.app0 (module Type) env s T._false)
+        Type.builtin_term (Base.app0 (module Type) env s T._false)
 
       (* Boolean operators *)
       | Type.Id { name = Simple "not"; ns = Term } ->
-        `Term (Base.term_app1 (module Type) env s T.neg)
+        Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | Type.Id { name = Simple "and"; ns = Term } ->
-        `Term (Base.term_app_left (module Type) env s mk_and)
+        Type.builtin_term (Base.term_app_left (module Type) env s mk_and)
       | Type.Id { name = Simple "or"; ns = Term } ->
-        `Term (Base.term_app_left (module Type) env s mk_or)
+        Type.builtin_term (Base.term_app_left (module Type) env s mk_or)
       | Type.Id { name = Simple "xor"; ns = Term } ->
-        `Term (Base.term_app_left (module Type) env s T.xor)
+        Type.builtin_term (Base.term_app_left (module Type) env s T.xor)
       | Type.Id { name = Simple "=>"; ns = Term } ->
-        `Term (Base.term_app_right (module Type) env s T.imply)
+        Type.builtin_term (Base.term_app_right (module Type) env s T.imply)
 
       (* If-then-else *)
       | Type.Id { name = Simple "ite"; ns = Term } ->
-        `Term (
+        Type.builtin_term (
           Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
@@ -567,22 +567,22 @@ module Smtlib2 = struct
 
       (* Equality *)
       | Type.Id { name = Simple "distinct"; ns = Term } ->
-        `Term (fun _ast args ->
+        Type.builtin_term (fun _ast args ->
             let args = List.map (Type.parse_term env) args in
             T.distinct args)
       | Type.Id { name = Simple "="; ns = Term } ->
-        `Term (Base.term_app_chain (module Type) env s T.eq)
+        Type.builtin_term (Base.term_app_chain (module Type) env s T.eq)
 
       (* Named formulas *)
       | Type.Id { name = Simple ":named"; ns = Attr } ->
-        `Tags (Base.make_op1 (module Type) env s (fun _ t ->
+        Type.builtin_tags (Base.make_op1 (module Type) env s (fun _ t ->
             let name = parse_name env t in
             [Type.Set (Tag.named, name)]
           ))
 
       (* Trigger annotations *)
       | Type.Id { name = Simple ":pattern"; ns = Attr } ->
-        `Tags (Base.make_op1 (module Type) env s (fun _ t ->
+        Type.builtin_tags (Base.make_op1 (module Type) env s (fun _ t ->
             let l = extract_sexpr_list_from_sexpr env t in
             let l = List.map (parse_sexpr env) l in
             [Type.Add (Tag.triggers, l)]
@@ -590,7 +590,7 @@ module Smtlib2 = struct
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
-        `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
+        Type.builtin_tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
 
       (* ADT testers *)
       | Type.Id { Id.ns = Term; name = Indexed { basename; indexes; } } as symbol ->
@@ -601,7 +601,7 @@ module Smtlib2 = struct
                   let id = Id.mk Term s in
                   begin match Type.find_bound env id with
                     | `Cstr c ->
-                      `Term (Base.term_app1 (module Type) env symbol (Type.T.cstr_tester c))
+                      Type.builtin_term (Base.term_app1 (module Type) env symbol (Type.T.cstr_tester c))
                     | _ -> `Not_found
                   end)
               | _ -> `Not_indexed
@@ -657,31 +657,31 @@ module Zf = struct
       match s with
       (* Types *)
       | Type.Builtin Ast.Prop ->
-        `Ty (Base.app0 (module Type) env s Ty.prop)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.prop)
 
       (* Terms *)
       | Type.Builtin Ast.True ->
-        `Term (Base.app0 (module Type) env s T._true)
+        Type.builtin_term (Base.app0 (module Type) env s T._true)
       | Type.Builtin Ast.False ->
-        `Term (Base.app0 (module Type) env s T._false)
+        Type.builtin_term (Base.app0 (module Type) env s T._false)
       | Type.Builtin Ast.Not ->
-        `Term (Base.term_app1 (module Type) env s T.neg)
+        Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.Or ->
-        `Term (Base.term_app2 (module Type) env s mk_or)
+        Type.builtin_term (Base.term_app2 (module Type) env s mk_or)
       | Type.Builtin Ast.And ->
-        `Term (Base.term_app2 (module Type) env s mk_and)
+        Type.builtin_term (Base.term_app2 (module Type) env s mk_and)
       | Type.Builtin Ast.Imply ->
-        `Term (Base.term_app2 (module Type) env s T.imply)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.imply)
       | Type.Builtin Ast.Equiv ->
-        `Term (Base.term_app2 (module Type) env s T.equiv)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.equiv)
       | Type.Builtin Ast.Eq ->
-        `Term (Base.term_app2 (module Type) env s T.eq)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.eq)
       | Type.Builtin Ast.Distinct ->
-        `Term (Base.term_app2 (module Type) env s T.neq)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.neq)
 
       (* Ite *)
       | Type.Builtin Ast.Ite ->
-        `Term (
+        Type.builtin_term (
           Base.make_op3 (module Type) env s (fun _ (a, b, c) ->
               let cond = Type.parse_prop env a in
               let then_ = Type.parse_term env b in
@@ -692,9 +692,9 @@ module Zf = struct
 
       (* Tags *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->
-        `Tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
+        Type.builtin_tags (fun _ast _args -> [Type.Set (Tag.rwrt, ())])
       | Type.Id { name = Simple "infix"; ns = Term } ->
-        `Tags (fun ast args -> match args with
+        Type.builtin_tags (fun ast args -> match args with
             | [ { Ast.term = Ast.Symbol { name = Simple name; _ }; _ } ] -> [
                 Type.Set (Tag.name, Tag.exact name);
                 Type.Set (Tag.pos, Tag.infix);
@@ -704,7 +704,7 @@ module Zf = struct
                 (Type.Expected ("a symbol", None))
           )
       | Type.Id { name = Simple "prefix"; ns = Term } ->
-        `Tags (fun ast args -> match args with
+        Type.builtin_tags (fun ast args -> match args with
             | [ { Ast.term = Ast.Symbol { name = Simple name; _ }; _ } ] -> [
                 Type.Set (Tag.name, Tag.exact name);
                 Type.Set (Tag.pos, Tag.prefix);

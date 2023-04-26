@@ -61,8 +61,20 @@ let empty ~mode () = {
 (* Warnings and errors *)
 (* ************************************************************************ *)
 
+module E = Dolmen.Std.Expr
+
 let pp_wrap pp fmt x =
   Format.fprintf fmt "`%a`" pp x
+
+let pp_app fmt (cst, args) =
+  match (E.Term.Const.get_tag cst E.Tags.pos) with
+  | None | Some Dolmen.Std.Pretty.Prefix ->
+    Format.fprintf fmt "(%a@ %a)"
+      E.Term.Const.print cst
+      (Format.pp_print_list ~pp_sep:Format.pp_print_space Value.print) args
+  | Some Dolmen.Std.Pretty.Infix ->
+    let pp_sep fmt () = Format.fprintf fmt " %a@ " E.Term.Const.print cst in
+    Format.pp_print_list ~pp_sep Value.print fmt args
 
 let code =
   Dolmen_loop.Code.create
@@ -152,14 +164,15 @@ let unhandled_builtin =
           (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
       ~name:"Unhandled builtin in Model verification" ()
 
-let partial_destructor =
+let partial_interpretation =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"partial-dstr"
-    ~message:(fun fmt (cstr, value) ->
+    ~message:(fun fmt (cst, args) ->
         Format.fprintf fmt
-          "Partial destructr: the destructor for constructor %a \
-           was applied to the following value: %a"
-          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cstr
-          (pp_wrap Value.print) value)
+          "The symbol %a is only partially interpreted/defined,@ \
+           and the following application does not have an intepretation:@ \
+           @[<hov 2>%a@]"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cst
+          pp_app (cst, args))
     ~name:"Partial Destructor" ()
 
 (* Pipe *)
@@ -231,7 +244,8 @@ module Make
     | Eval.Unhandled_builtin b -> _err unhandled_builtin b
     | Eval.Undefined_variable v -> _err undefined_variable v
     | Eval.Undefined_constant c -> _err undefined_constant c
-    | Adt.Partial_destructor (cstr, value) -> _err partial_destructor (cstr, value)
+    | Model.Partial_interpretation (cst, args) ->
+      _err partial_interpretation (cst, args)
 
   (* Typing models *)
   (* ************************************************************************ *)

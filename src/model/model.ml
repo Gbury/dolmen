@@ -4,6 +4,9 @@
 (* Type definitions & modules *)
 (* ************************************************************************* *)
 
+exception Partial_interpretation of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list
+
 module V = Map.Make(Dolmen.Std.Expr.Term.Var)
 module C = Map.Make(Dolmen.Std.Expr.Term.Const)
 
@@ -31,6 +34,8 @@ module type S = sig
 
   val add : key -> Value.t -> t -> t
 
+  val remove : key -> t -> t
+
 end
 
 (* vars *)
@@ -47,6 +52,9 @@ module Var
   let add v value t =
     { t with vars = V.add v value t.vars; }
 
+  let remove v t =
+    { t with vars = V.remove v t.vars; }
+
 end
 
 (* csts *)
@@ -62,5 +70,8 @@ module Cst
 
   let add c value t =
     { t with csts = C.add c value t.csts; }
+
+  let remove c t =
+    { t with csts = C.remove c t.csts; }
 
 end

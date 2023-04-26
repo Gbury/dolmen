@@ -49,7 +49,7 @@ let parse_indexed h r f ~err ~k =
 let bad_ty_index_arity (type env ty)
     (module Type: Tff_intf.S with type env = env and type Ty.t = ty)
     env s n r_l =
-  `Ty (fun ast _args ->
+  `Ty ( (), fun ast _args ->
       Type._error env (Ast ast)
         (Type.Bad_index_arity (s, n, r_l))
     )
@@ -57,7 +57,7 @@ let bad_ty_index_arity (type env ty)
 let bad_term_index_arity (type env term)
     (module Type: Tff_intf.S with type env = env and type T.t = term)
     env s n r_l =
-  `Term (fun ast _args ->
+  `Term (`Total, fun ast _args ->
       Type._error env (Ast ast)
         (Type.Bad_index_arity (s, n, r_l))
     )

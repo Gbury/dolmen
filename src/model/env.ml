@@ -12,7 +12,6 @@ type t = {
   builtins : t -> Dolmen.Std.Expr.Term.Const.t -> Value.t;
 }
 
-
 (* Common functions *)
 (* ************************************************************************* *)
 

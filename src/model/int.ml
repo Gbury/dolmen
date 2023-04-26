@@ -8,16 +8,9 @@ type t = Z.t
 
 let compare = Z.compare
 let print fmt z =
-  Format.fprintf fmt "Z:%a" Z.pp_print z
+  Format.fprintf fmt "%a" Z.pp_print z
 
 let ops : t Value.ops = Value.ops ~compare ~print ()
-
-(* Configuration for corner cases *)
-(* ************************************************************************* *)
-
-exception Modulo_by_zero
-exception Division_by_zero
-
 
 (* Helper functions on unbounded integers *)
 (* ************************************************************************* *)
@@ -69,14 +62,17 @@ let op1 ~cst f = Some (fun1 ~cst (fun x -> f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let op2_zero ~env ~cst ~zero ~exn f =
+let op2_zero ~env ~cst f =
   Some (Fun.fun_2 ~cst (fun x y ->
       let v_x = Value.extract_exn ~ops x in
       let v_y = Value.extract_exn ~ops y in
       if Z.equal Z.zero v_y then begin
-        match Model.Cst.find_opt zero (Env.model env) with
-        | Some value -> Fun.apply_val ~eval:Eval.eval env value [x; y]
-        | None -> raise exn
+        match Model.Cst.find_opt cst (Env.model env) with
+        | Some value ->
+          (* Remove the "zero" value to aovid infinite recursive evaluation *)
+          let env = Env.update_model env (Model.Cst.remove cst) in
+          Fun.apply_val ~eval:Eval.eval env value [x; y]
+        | None -> raise (Model.Partial_interpretation (cst, [x; y]))
       end else
         mk @@ f v_x v_y
     ))
@@ -93,12 +89,10 @@ let builtins env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Sub `Int -> op2 ~cst Z.sub
   | B.Mul `Int -> op2 ~cst Z.mul
   | B.Pow `Int -> op2 ~cst pow
-  | B.Div_e `Int ->
-    op2_zero ~env ~exn:Division_by_zero ~zero:E.Term.Int.div_zero ~cst div_e
+  | B.Div_e `Int -> op2_zero ~env ~cst div_e
   | B.Div_t `Int -> op2 ~cst div_t
   | B.Div_f `Int -> op2 ~cst div_f
-  | B.Modulo_e `Int ->
-    op2_zero ~env ~exn:Modulo_by_zero ~zero:E.Term.Int.rem_zero ~cst mod_e
+  | B.Modulo_e `Int -> op2_zero ~env ~cst mod_e
   | B.Modulo_t `Int -> op2 ~cst mod_t
   | B.Modulo_f `Int -> op2 ~cst mod_f
   | B.Divisible ->

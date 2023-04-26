@@ -136,11 +136,32 @@ module type Formulas = sig
     | Tags  of tag list (**)
   (** The results of parsing an untyped term.  *)
 
+  type builtin_meta_ttype = unit
+  type builtin_meta_ty = unit
+  type builtin_meta_tags = unit
+  (** Some type aliases *)
+
+  type term_semantics = [
+    | `Total
+    | `Extensible of term_cst
+  ]
+  (** Semantics of term constants. Some term constants have only partially
+      defined semantics (for instance division by zero), and these constants
+      can have their semantics/interpretation extended/completed by later
+      definitions. *)
+
+  type builtin_meta_term = term_semantics
+  (** Meta data for term builtins. *)
+
+  type ('res, 'meta) builtin_common_res =
+    'meta * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'res)
+  (** Small record to hold the results of builtin parsing by theories. *)
+
   type builtin_res = [
-    | `Ttype of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit)
-    | `Ty    of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty)
-    | `Term  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term)
-    | `Tags  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list)
+    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
+    | `Ty    of (ty, builtin_meta_ty) builtin_common_res
+    | `Term  of (term, builtin_meta_term) builtin_common_res
+    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
     | `Reserved of [ `Term_cst of term_cst ]
     | `Infer of var_infer * sym_infer
   ]
@@ -534,6 +555,28 @@ module type Formulas = sig
   val set_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a -> unit
   (** Set a custom value in the global environment or state. *)
 
+
+  (** {2 Builtin helpers} *)
+
+  val builtin_ttype :
+    ?meta:builtin_meta_ttype ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->
+    [> builtin_res]
+
+  val builtin_ty :
+    ?meta:builtin_meta_ty ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty) ->
+    [> builtin_res]
+
+  val builtin_term :
+    ?meta:builtin_meta_term ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term) ->
+    [> builtin_res]
+
+  val builtin_tags :
+    ?meta:builtin_meta_tags ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list) ->
+    [> builtin_res]
 
 
   (** {2 Parsing functions} *)
