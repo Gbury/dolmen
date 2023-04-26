@@ -1,0 +1,9 @@
+sat
+(
+(define-fun a () (Array Int Int)
+  (store (as @arr0 (Array Int Int)) 0 0))
+(define-fun b () (Array Int Int)
+  (store (as @arr0 (Array Int Int)) 0 0))
+(define-fun c () (Array Int Int)
+  (store (as @arr1 (Array Int Int)) 0 0))
+)
