@@ -18,6 +18,23 @@
   (action (diff test-mut-fun_def_1.expected test-mut-fun_def_1.full)))
 
 
+; Test for test-mut-pred_dec_2.ae
+; Full mode test
+
+(rule
+   (target  test-mut-pred_dec_2.full)
+   (deps    (:input test-mut-pred_dec_2.ae))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff test-mut-pred_dec_2.expected test-mut-pred_dec_2.full)))
+
+
 ; Test for test-mut-pred_def_1.ae
 ; Full mode test
 
