@@ -370,6 +370,10 @@ module Make
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
     | Unbound_type_wildcards :
         (Ty.Var.t * wildcard_source list) list -> Ast.t err
+    | Incoherent_type_redefinition :
+        Id.t * Ty.Const.t * reason * int -> Stmt.def err
+    | Incoherent_term_redefinition :
+        Id.t * T.Const.t * reason * Ty.t -> Stmt.def err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
@@ -709,6 +713,14 @@ module Make
 
   let _inference_forbidden env ast w w_src inferred =
     _error env (Ast ast) (Inference_forbidden (w, w_src, inferred))
+
+  let _incoherent_type_redefinition env def cst reason n =
+    _error env (Def def)
+      (Incoherent_type_redefinition (def.id, cst, reason, n))
+
+  let _incoherent_term_redefinition env def cst reason ty =
+    _error env (Def def)
+      (Incoherent_term_redefinition (def.id, cst, reason, ty))
 
   let _wrap_exn env ast = function
     | Ty.Prenex_polymorphism ty ->
@@ -1134,6 +1146,20 @@ module Make
   let unwrap_term env ast = function
     | Term t -> t
     | res -> _expected env "term" ast (Some res)
+
+  (* Type exploration *)
+  let arity ty =
+    let n_ty, ty =
+      match Ty.view ty with
+      | `Pi (vars, ty) -> List.length vars, ty
+      | _ -> 0, ty
+    in
+    let n_term, _ty =
+      match Ty.view ty with
+      | `Arrow (params, ty) -> List.length params, ty
+      | _ -> 0, ty
+    in
+    n_ty, n_term
 
   (* Un-polymorphize a term, by applying it to the adequate
      number of type wildcards *)
@@ -1589,7 +1615,7 @@ module Make
 
   and parse_pattern_app_cstr ty env t c args =
     (* Inlined version of parse_app_cstr *)
-    let n_ty, n_t = T.Cstr.arity c in
+    let n_ty, n_t = arity (T.Cstr.ty c) in
     let ty_args, t_l =
       match split_fo_args env t n_ty n_t args with
       | `Ok (l, l') ->
@@ -1872,7 +1898,7 @@ module Make
   and parse_app_term_cst env ast f args =
     match env.order with
     | First_order ->
-      let n_ty, n_t = T.Const.arity f in
+      let n_ty, n_t = arity (T.Const.ty f) in
       let ty_args, t_l =
         match split_fo_args env ast n_ty n_t args with
         | `Ok (l, l') ->
@@ -1885,13 +1911,13 @@ module Make
       let t_args = List.map (parse_term env) t_l in
       Term (_wrap3 env ast T.apply_cst f ty_args t_args)
     | Higher_order ->
-      let n_ty, _ = T.Const.arity f in
+      let n_ty, _ = arity (T.Const.ty f) in
       let args = List.map (fun ast -> ast, parse_expr env ast) args in
       let ty_args, t_args = split_ho_args env ast n_ty args in
       Term (_wrap3 env ast T.apply_cst f ty_args t_args)
 
   and parse_app_cstr env ast c args =
-    let n_ty, n_t = T.Cstr.arity c in
+    let n_ty, n_t = arity (T.Cstr.ty c) in
     let ty_args, t_l =
       match split_fo_args env ast n_ty n_t args with
       | `Ok (l, l') ->
@@ -2378,22 +2404,44 @@ module Make
       decl_term_const env (Def d) d.id f (Defined (env.file, d));
       `Term (d.id, f)
 
-  let lookup_id_for_def _ (env, _, _, ssig) (d: Stmt.def) =
+  let lookup_id_for_def_ty env (d : Stmt.def) vars params cst reason =
+    assert (params = []);
+    let n_vars = List.length vars in
+    let n = Ty.Const.arity cst in
+    if n = n_vars then `Ty (d.id, cst)
+    else _incoherent_type_redefinition env d cst reason n_vars
+
+  let lookup_id_for_def_term env (d : Stmt.def) vars params ret_ty cst reason =
+    let params_ty = List.map T.Var.ty params in
+    let ty = Ty.pi vars (Ty.arrow params_ty ret_ty) in
+    if Ty.equal ty (T.Const.ty cst) then `Term (d.id, cst)
+    else _incoherent_term_redefinition env d cst reason ty
+
+  let lookup_id_for_def _ (env, vars, params, ssig) (d: Stmt.def) =
     match ssig, find_bound env d.id with
     (* Type definitions *)
     | `Ty_def, ((`Ty_cst cst) as c) ->
       begin match find_reason env c with
-        | Some Declared _ -> `Ty (d.id, cst)
+        | Some (Declared _ as reason) ->
+          lookup_id_for_def_ty env d vars params cst reason
         | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
       end
 
     (* Term definitions *)
-    | `Term_def _, `Builtin `Reserved `Term_cst cst
-    | `Term_def _, `Builtin `Term (`Extensible cst, _) ->
-      `Term (d.id, cst)
-    | `Term_def _, ((`Term_cst cst) as c) ->
+    | `Term_def ret_ty, (`Dstr cst as bound) ->
+      begin match find_reason env bound with
+        | Some reason ->
+          lookup_id_for_def_term env d vars params ret_ty cst reason
+        | None ->
+          assert false (* missing reason for destructor *)
+      end
+    | `Term_def ret_ty, `Builtin `Reserved `Term_cst cst
+    | `Term_def ret_ty, `Builtin `Term (`Extensible cst, _) ->
+      lookup_id_for_def_term env d vars params ret_ty cst Builtin
+    | `Term_def ret_ty, ((`Term_cst cst) as c) ->
       begin match find_reason env c with
-        | Some Declared _ -> `Term (d.id, cst)
+        | Some (Declared _ as reason) ->
+          lookup_id_for_def_term env d vars params ret_ty cst reason
         | reason -> _id_def_conflict env d.loc d.id (with_reason reason c)
       end
 

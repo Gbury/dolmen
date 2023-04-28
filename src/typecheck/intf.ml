@@ -377,6 +377,12 @@ module type Formulas = sig
     | Unbound_type_wildcards :
         (ty_var * wildcard_source list) list -> Dolmen.Std.Term.t err
     (** *)
+    | Incoherent_type_redefinition :
+        Dolmen.Std.Id.t * ty_cst * reason * int -> Dolmen.Std.Statement.def err
+    (** *)
+    | Incoherent_term_redefinition :
+        Dolmen.Std.Id.t * term_cst * reason * ty -> Dolmen.Std.Statement.def err
+    (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
     | Unhandled_ast : Dolmen.Std.Term.t err
@@ -532,6 +538,9 @@ module type Formulas = sig
   (** Try and find a bound identifier in the env, whether it be locally bound
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
+
+  val find_reason : env -> bound -> reason option
+  (** Return the reason (if any) for the given typed symbol. *)
 
   val decl_ty_const :
     env -> _ fragment -> Dolmen.Std.Id.t -> ty_cst -> reason -> unit

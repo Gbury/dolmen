@@ -425,8 +425,8 @@ module type Tff = sig
     val compare : t -> t -> int
     (** Comparison function on constant symbols. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a term constant. *)
+    val ty : t -> ty
+    (** Return the type of the constant. *)
 
     val mk : path -> ty -> t
     (** Create a constant symbol. *)
@@ -449,11 +449,11 @@ module type Tff = sig
         constructors, while [list] would be a type constant of arity 1 used to
         name the type. *)
 
+    val ty : t -> ty
+    (** Return the type of the constant. *)
+
     val compare : t -> t -> int
     (** Comparison function on constant symbols. *)
-
-    val arity : t -> int * int
-    (** Returns the arity of a constructor. *)
 
     val pattern_arity : t -> ty -> ty list -> ty list
     (** Used in the type-checking of pattern matching.

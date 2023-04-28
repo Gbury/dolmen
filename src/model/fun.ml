@@ -118,11 +118,13 @@ let fun_4 ~cst ?ty_args f =
     )
 
 let fun_n ~cst ?ty_args eval_f =
-  let _, arity = E.Term.Const.arity cst in
+  let _, params, _ = E.Ty.poly_sig (E.Term.Const.ty cst) in
+  let arity = List.length params in
   builtin ~arity ~cst ?ty_args eval_f
 
 let fun_lazy ~cst eval_lazy =
-  let _, arity = E.Term.Const.arity cst in
+  let _, params, _ = E.Ty.poly_sig (E.Term.Const.ty cst) in
+  let arity = List.length params in
   let func = Lazy { arity; cst; eval_lazy; } in
   Value.mk ~ops (Partial { args = []; func; })
 

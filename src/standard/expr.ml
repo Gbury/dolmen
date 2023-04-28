@@ -193,7 +193,7 @@ module Print = struct
     | TyVar v -> id fmt v
     | Arrow (args, ret) ->
       Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"
-        (Format.pp_print_list ~pp_sep:(return " ->@ ") subty) args subty ret
+        (Format.pp_print_list ~pp_sep:(return " ->@ ") ty) args subty ret
     | TyApp (f, []) -> id fmt f
     | TyApp (f, l) ->
       begin match Tag.get f.tags pos with
@@ -1738,6 +1738,8 @@ module Term = struct
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
 
+    let ty ({ id_ty; _ } : t) = id_ty
+
     let mk path ty =
       Id.mk path ty
 
@@ -1752,10 +1754,6 @@ module Term = struct
           let fun_args = replicate i fun_arg in
           mk' ?pos ?name ?builtin ?tags cname fun_vars fun_args fun_ret
         )
-
-    let arity (c : t) =
-      let vars, args, _ = Ty.poly_sig c.id_ty in
-      List.length vars, List.length args
 
     (* Some constants *)
     let _true =
@@ -2673,9 +2671,7 @@ module Term = struct
 
     exception Bad_pattern_arity of term_cst * ty list * term list
 
-    let arity (c : t) =
-      let vars, args, _ = Ty.poly_sig c.id_ty in
-      List.length vars, List.length args
+    let ty ({ id_ty; _ } : t) = id_ty
 
     let tester c =
       match c.builtin with

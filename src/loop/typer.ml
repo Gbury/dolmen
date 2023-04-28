@@ -256,7 +256,9 @@ let text_hint = function
   | msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
 
 let poly_hint (c, expected, actual) =
-  let n_ty, n_t = Dolmen.Std.Expr.Term.Const.arity c in
+  let vars, params, _ = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
+  let n_ty = List.length vars in
+  let n_t = List.length params in
   let total_arity = n_ty + n_t in
   match expected with
   | [x] when x = total_arity && actual = n_t ->
@@ -758,6 +760,37 @@ let unbound_type_wildcards =
       )
     ~name:"Under-specified type inference" ()
 
+let incoherent_type_redefinition =
+  Report.Error.mk ~code ~mnemonic:"incoherent-type-def"
+    ~message:(fun fmt (id, cst, reason, n) ->
+        Format.fprintf fmt
+          "Incoherent redefinition for type constructor %a.@ \
+           The new definition has arity %d,@ \
+           but the declaration had arity %d.@ \
+           %a %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          n (Dolmen.Std.Expr.Ty.Const.arity cst)
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason ~already:false) reason
+      )
+    ~name:"Incoherent arity for type definition" ()
+
+let incoherent_term_redefinition =
+  Report.Error.mk ~code ~mnemonic:"incoherent-term-def"
+    ~message:(fun fmt (id, cst, reason, ty) ->
+        Format.fprintf fmt
+          "@[<v>Incoherent redefinition for term constant %a.@ \
+           The new definition has type:@   @[<hov>%a@]@ \
+           but the declaration had type:@   @[<hov>%a@]@ \
+           %a %a@]"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Dolmen.Std.Expr.Ty.print ty
+          Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.Const.ty cst)
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason ~already:false) reason
+      )
+    ~name:"Incoherent type for term definition" ()
+
 let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
   Report.Error.mk ~code ~mnemonic:"unhandled-ast"
     ~message:(fun fmt (env, fragment) ->
@@ -1165,6 +1198,10 @@ module Typer(State : State.S) = struct
       error ~input ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
     | T.Unbound_type_wildcards tys ->
       error ~input ~loc st unbound_type_wildcards (env, tys)
+    | T.Incoherent_type_redefinition (id, cst, reason, n) ->
+      error ~input ~loc st incoherent_type_redefinition (id, cst, reason, n)
+    | T.Incoherent_term_redefinition (id, cst, reason, ty) ->
+      error ~input ~loc st incoherent_term_redefinition (id, cst, reason, ty)
     | T.Unhandled_ast ->
       error ~input ~loc st unhandled_ast (env, fragment)
     (* Alt-Ergo Functional Array errors *)

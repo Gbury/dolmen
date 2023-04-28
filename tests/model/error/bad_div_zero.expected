@@ -1,0 +1,9 @@
+File "tests/model/error/bad_div_zero.rsmt2", line 13, character 2 to line 14, character 30:
+13 | ..(define-fun div ((x Int) (y Int)) Bool
+14 |     (and (= x 21238) (= y 0)))
+Error Incoherent redefinition for term constant `div`.
+      The new definition has type:
+        int -> int -> Prop
+      but the declaration had type:
+        int -> int -> int
+      `div` is defined by a builtin theory

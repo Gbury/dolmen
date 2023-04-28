@@ -825,8 +825,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a term constant. *)
+    val ty : t -> ty
+    (** Returns the type of a term constant. *)
 
     val mk : Path.t -> ty -> t
     (** Create a constant symbol. *)
@@ -1507,8 +1507,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a constructor. *)
+    val ty : t -> ty
+    (** Returns the type of a constructor. *)
 
     val void : t
     (** Only constructor for the type unit. *)
