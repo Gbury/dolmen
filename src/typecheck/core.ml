@@ -27,6 +27,10 @@ module Ae = struct
         Type._error env (Ast ast)
           (Type.Expected ("A multi-trigger (i.e. a list of term patterns)", None))
 
+    let parse_bound env t = function
+      | { Ast.term = Ast.Symbol { name = Simple "?"; _ }; _} -> T.unbounded t ()
+      | a -> Type.parse_term env a
+
     let parse env s =
       match s with
 
@@ -116,30 +120,34 @@ module Ae = struct
 
       (* Semantic triggers *)
       | Type.Builtin (Ast.In_interval (b1, b2)) ->
-        `Term (Base.term_app3_ast (module Type) env s
-                 (fun _ast _a1 _a2 _a3 ->
-                    T.in_interval _a1 (b1, b2) _a2 _a3))
+        `Term (
+          fun ast args ->
+            match args with
+            | [ a1; a2; a3; ] ->
+              let t1 = Type.parse_term env a1 in
+              T.in_interval t1 (b1,b2)
+                (parse_bound env t1 a2) (parse_bound env t1 a3)
+            | _ ->
+              Type._error env (Ast ast)
+                (Type.Bad_op_arity (s, [2], List.length args))
+        )
 
       | Type.Builtin Ast.Maps_to ->
         `Term (
           fun ast args ->
-            begin match args with
-              | [var; t] ->
-                let t = Type.parse_term env t in
-                begin match var with
-                  | { Ast.term = Ast.Symbol sym; _ }
-                  | { Ast.term =
-                        Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
-                    } ->
-                    begin
-                      match Type.find_bound env sym with
-                      | `Term_var v -> T.maps_to v t
-                      | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
-                    end
-                  | _ -> Type._error env (Ast ast) (Type.Expected ("Variable name", None))
-                end
-              | l -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length l))
-            end
+            match args with
+            | [var; t] ->
+              let t = Type.parse_term env t in (
+                match var with
+                | { Ast.term = Ast.Symbol sym; _ }
+                | { Ast.term =
+                      Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
+                  } -> (
+                    match Type.find_bound env sym with
+                    | `Term_var v -> T.maps_to v t
+                    | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, "")))
+                | _ -> Type._error env (Ast ast) (Type.Expected ("Variable name", None)))
+            | _ -> Type._error env (Ast ast) (Type.Bad_op_arity (s, [2], List.length args))
         )
 
       | _ -> `Not_found

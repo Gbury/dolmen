@@ -1851,6 +1851,11 @@ module Term = struct
       mk' ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
         "InInterval" [av] [a; a; a] Ty.prop
 
+    let unbounded =
+      let av = Ty.Var.mk "alpha" in
+      mk' ~name:"unbounded" ~builtin:Builtin.Unbounded
+        "unbounded" [av] [] (Ty.of_var av)
+
     let maps_to =
       let a = Ty.Var.mk "alpha" in
       let b = Ty.Var.mk "beta" in
@@ -1875,41 +1880,41 @@ module Term = struct
 
       let sub = mk'
           ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Int)
-           "Sub" [] [Ty.int; Ty.int] Ty.int
+          "Sub" [] [Ty.int; Ty.int] Ty.int
 
       let mul = mk'
           ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Int)
-           "Mul" [] [Ty.int; Ty.int] Ty.int
+          "Mul" [] [Ty.int; Ty.int] Ty.int
 
       let pow = mk'
           ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Pow `Int)
-           "Pow" [] [Ty.int; Ty.int] Ty.int
+          "Pow" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div_e `Int)
-           "Div_e" [] [Ty.int; Ty.int] Ty.int
+          "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = mk'
           ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Int)
           "Div_t" [] [Ty.int; Ty.int] Ty.int
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Int)
-           "Div_f" [] [Ty.int; Ty.int] Ty.int
+          "Div_f" [] [Ty.int; Ty.int] Ty.int
       let div_zero = mk'
           ~pos:Pretty.Infix ~name:"/0"
-           "Div_zero" [] [Ty.int; Ty.int] Ty.int
+          "Div_zero" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Int)
-           "Modulo_e" [] [Ty.int; Ty.int] Ty.int
+          "Modulo_e" [] [Ty.int; Ty.int] Ty.int
       let rem_t = mk'
           ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Int)
-           "Modulo_t" [] [Ty.int; Ty.int] Ty.int
+          "Modulo_t" [] [Ty.int; Ty.int] Ty.int
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Int)
-           "Modulo_f" [] [Ty.int; Ty.int] Ty.int
+          "Modulo_f" [] [Ty.int; Ty.int] Ty.int
       let rem_zero = mk'
           ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.int; Ty.int] Ty.int
+          "Modulo_zero" [] [Ty.int; Ty.int] Ty.int
 
       let abs = mk'
           ~name:"abs" ~builtin:Builtin.Abs
@@ -1917,43 +1922,43 @@ module Term = struct
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:Builtin.(Lt `Int)
-           "LessThan" [] [Ty.int; Ty.int] Ty.prop
+          "LessThan" [] [Ty.int; Ty.int] Ty.prop
 
       let le = mk'
           ~pos:Pretty.Infix ~name:"<=" ~builtin:Builtin.(Leq `Int)
-           "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
+          "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let gt = mk'
           ~pos:Pretty.Infix ~name:">" ~builtin:Builtin.(Gt `Int)
-           "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
+          "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
 
       let ge = mk'
           ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.(Geq `Int)
-           "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
+          "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let floor = mk'
           ~name:"floor" ~builtin:Builtin.(Floor `Int)
-           "Floor" [] [Ty.int] Ty.int
+          "Floor" [] [Ty.int] Ty.int
 
       let ceiling = mk'
           ~name:"ceiling" ~builtin:Builtin.(Ceiling `Int)
-           "Ceiling" [] [Ty.int] Ty.int
+          "Ceiling" [] [Ty.int] Ty.int
 
       let truncate = mk'
           ~name:"truncate" ~builtin:Builtin.(Truncate `Int)
-           "Truncate" [] [Ty.int] Ty.int
+          "Truncate" [] [Ty.int] Ty.int
 
       let round = mk'
           ~name:"round" ~builtin:Builtin.(Round `Int)
-           "Round" [] [Ty.int] Ty.int
+          "Round" [] [Ty.int] Ty.int
 
       let is_int = mk'
           ~name:"is_int" ~builtin:Builtin.(Is_int `Int)
-           "Is_int" [] [Ty.int] Ty.prop
+          "Is_int" [] [Ty.int] Ty.prop
 
       let is_rat = mk'
           ~name:"is_rat" ~builtin:Builtin.(Is_rat `Int)
-           "Is_rat" [] [Ty.int] Ty.prop
+          "Is_rat" [] [Ty.int] Ty.prop
 
       let divisible = mk'
           ~builtin:Builtin.Divisible "Divisible"
@@ -1970,88 +1975,88 @@ module Term = struct
 
       let minus = mk'
           ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Rat)
-           "Minus" [] [Ty.rat] Ty.rat
+          "Minus" [] [Ty.rat] Ty.rat
 
       let add = mk'
           ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Add `Rat)
-           "Add" [] [Ty.rat; Ty.rat] Ty.rat
+          "Add" [] [Ty.rat; Ty.rat] Ty.rat
 
       let sub = mk'
           ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Rat)
-           "Sub" [] [Ty.rat; Ty.rat] Ty.rat
+          "Sub" [] [Ty.rat; Ty.rat] Ty.rat
 
       let mul = mk'
           ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Rat)
-           "Mul" [] [Ty.rat; Ty.rat] Ty.rat
+          "Mul" [] [Ty.rat; Ty.rat] Ty.rat
 
       let div = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div `Rat)
-           "Div" [] [Ty.rat; Ty.rat] Ty.rat
+          "Div" [] [Ty.rat; Ty.rat] Ty.rat
       let div_e = mk'
           ~pos:Pretty.Infix ~name:"/e" ~builtin:(Builtin.Div_e `Rat)
           "Div_e" [] [Ty.rat; Ty.rat] Ty.rat
       let div_t = mk'
           ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Rat)
-           "Div_t" [] [Ty.rat; Ty.rat] Ty.rat
+          "Div_t" [] [Ty.rat; Ty.rat] Ty.rat
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Rat)
-           "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
+          "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
       let div_zero = mk'
           ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.rat; Ty.rat] Ty.rat
+          "Div_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Rat)
-           "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
+          "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_t = mk'
           ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Rat)
-           "Modulo_t" [] [Ty.rat; Ty.rat] Ty.rat
+          "Modulo_t" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Rat)
-           "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
+          "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_zero = mk'
           ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.rat; Ty.rat] Ty.rat
+          "Modulo_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Rat)
-           "LessThan" [] [Ty.rat; Ty.rat] Ty.prop
+          "LessThan" [] [Ty.rat; Ty.rat] Ty.prop
 
       let le = mk'
           ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Leq `Rat)
-           "LessOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
+          "LessOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
       let gt = mk'
           ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Gt `Rat)
-           "GreaterThan" [] [Ty.rat; Ty.rat] Ty.prop
+          "GreaterThan" [] [Ty.rat; Ty.rat] Ty.prop
 
       let ge = mk'
           ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Geq `Rat)
-           "GreaterOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
+          "GreaterOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
       let floor = mk'
           ~name:"floor" ~builtin:(Builtin.Floor `Rat)
-           "Floor" [] [Ty.rat] Ty.rat
+          "Floor" [] [Ty.rat] Ty.rat
 
       let ceiling = mk'
           ~name:"ceiling" ~builtin:(Builtin.Ceiling `Rat)
-           "Ceiling" [] [Ty.rat] Ty.rat
+          "Ceiling" [] [Ty.rat] Ty.rat
 
       let truncate = mk'
           ~name:"truncate" ~builtin:(Builtin.Truncate `Rat)
-           "Truncate" [] [Ty.rat] Ty.rat
+          "Truncate" [] [Ty.rat] Ty.rat
 
       let round = mk'
           ~name:"round" ~builtin:(Builtin.Round `Rat)
-           "Round" [] [Ty.rat] Ty.rat
+          "Round" [] [Ty.rat] Ty.rat
 
       let is_int = mk'
           ~name:"is_int" ~builtin:(Builtin.Is_int `Rat)
-           "Is_int" [] [Ty.rat] Ty.prop
+          "Is_int" [] [Ty.rat] Ty.prop
 
       let is_rat = mk'
           ~name:"is_rat" ~builtin:(Builtin.Is_rat `Rat)
-           "Is_rat" [] [Ty.rat] Ty.prop
+          "Is_rat" [] [Ty.rat] Ty.prop
     end
 
     module Real = struct
@@ -2063,97 +2068,97 @@ module Term = struct
 
       let minus = mk'
           ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Real)
-           "Minus" [] [Ty.real] Ty.real
+          "Minus" [] [Ty.real] Ty.real
 
       let add = mk'
           ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Add `Real)
-           "Add" [] [Ty.real; Ty.real] Ty.real
+          "Add" [] [Ty.real; Ty.real] Ty.real
 
       let sub = mk'
           ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Real)
-           "Sub" [] [Ty.real; Ty.real] Ty.real
+          "Sub" [] [Ty.real; Ty.real] Ty.real
 
       let mul = mk'
           ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Real)
-           "Mul" [] [Ty.real; Ty.real] Ty.real
+          "Mul" [] [Ty.real; Ty.real] Ty.real
 
       let pow = mk'
           ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Pow `Real)
-           "Pow" [] [Ty.real; Ty.real] Ty.real
+          "Pow" [] [Ty.real; Ty.real] Ty.real
 
       let div = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div `Real)
-           "Div" [] [Ty.real; Ty.real] Ty.real
+          "Div" [] [Ty.real; Ty.real] Ty.real
 
       let div_e = mk'
           ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div_e `Real)
-           "Div_e" [] [Ty.real; Ty.real] Ty.real
+          "Div_e" [] [Ty.real; Ty.real] Ty.real
       let div_t = mk'
           ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Real)
           "Div_t" [] [Ty.real; Ty.real] Ty.real
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Real)
-           "Div_f" [] [Ty.real; Ty.real] Ty.real
+          "Div_f" [] [Ty.real; Ty.real] Ty.real
       let div_zero = mk'
           ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.real; Ty.real] Ty.real
+          "Div_zero" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Real)
-           "Modulo" [] [Ty.real; Ty.real] Ty.real
+          "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_t = mk'
           ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Real)
           "Modulo_t" [] [Ty.real; Ty.real] Ty.real
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Real)
-           "Modulo_f" [] [Ty.real; Ty.real] Ty.real
+          "Modulo_f" [] [Ty.real; Ty.real] Ty.real
       let rem_zero = mk'
           ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.real; Ty.real] Ty.real
+          "Modulo_zero" [] [Ty.real; Ty.real] Ty.real
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Real)
-           "LessThan" [] [Ty.real; Ty.real] Ty.prop
+          "LessThan" [] [Ty.real; Ty.real] Ty.prop
 
       let le = mk'
           ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Leq `Real)
-           "LessOrEqual" [] [Ty.real; Ty.real] Ty.prop
+          "LessOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let gt = mk'
           ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Gt `Real)
-           "GreaterThan" [] [Ty.real; Ty.real] Ty.prop
+          "GreaterThan" [] [Ty.real; Ty.real] Ty.prop
 
       let ge = mk'
           ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Geq `Real)
-           "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
+          "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let floor = mk'
           ~name:"floor" ~builtin:(Builtin.Floor `Real)
-           "Floor" [] [Ty.real] Ty.real
+          "Floor" [] [Ty.real] Ty.real
 
       let floor_to_int = mk'
           ~name:"floor_to_int" ~builtin:(Builtin.Floor_to_int `Real)
-           "Floor" [] [Ty.real] Ty.int
+          "Floor" [] [Ty.real] Ty.int
 
       let ceiling = mk'
           ~name:"ceiling" ~builtin:(Builtin.Ceiling `Real)
-           "Ceiling" [] [Ty.real] Ty.real
+          "Ceiling" [] [Ty.real] Ty.real
 
       let truncate = mk'
           ~name:"truncate" ~builtin:(Builtin.Truncate `Real)
-           "Truncate" [] [Ty.real] Ty.real
+          "Truncate" [] [Ty.real] Ty.real
 
       let round = mk'
           ~name:"round" ~builtin:(Builtin.Round `Real)
-           "Round" [] [Ty.real] Ty.real
+          "Round" [] [Ty.real] Ty.real
 
       let is_int = mk'
           ~name:"is_int" ~builtin:(Builtin.Is_int `Real)
-           "Is_int" [] [Ty.real] Ty.prop
+          "Is_int" [] [Ty.real] Ty.prop
 
       let is_rat = mk'
           ~name:"is_rat" ~builtin:(Builtin.Is_rat `Real)
-           "Is_rat" [] [Ty.real] Ty.prop
+          "Is_rat" [] [Ty.real] Ty.prop
     end
 
     module Array = struct
@@ -3036,9 +3041,9 @@ module Term = struct
 
   let apply_cstr (c : Cstr.t) tys args =
     (* Format.printf "apply_cstr: %a (%a)(%a)@."
-      Cstr.print c
-      (Format.pp_print_list ~pp_sep:(Print.return ", ") Ty.print) tys
-      (Format.pp_print_list ~pp_sep:(Print.return ", ") print) args; *)
+       Cstr.print c
+       (Format.pp_print_list ~pp_sep:(Print.return ", ") Ty.print) tys
+       (Format.pp_print_list ~pp_sep:(Print.return ", ") print) args; *)
     apply (of_cst c) tys args
 
   let apply_field (f : Field.t) t =
@@ -3115,6 +3120,9 @@ module Term = struct
   (* Alt-Ergo's semantic triggers *)
   let in_interval t (b1, b2) t1 t2 =
     apply_cst (Const.in_interval (b1, b2)) [ty t] [t; t1; t2]
+
+  let unbounded t () =
+    apply_cst Const.unbounded [ty t] []
 
   let maps_to tv t =
     let ntv = of_var tv in

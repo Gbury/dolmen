@@ -111,6 +111,14 @@ type _ t +=
       [warning:] It is an Alt-Ergo semantic trigger that should only be
       allowed inside theories. *)
 
+  | Unbounded
+  (** [Unbounded: 'a -> 'a]:
+      Used in the [In_interval] semantic trigger to represent to represent an
+      unbounded bound.
+
+      [warning:] It is an Alt-Ergo semantic trigger that should only be
+      allowed inside theories. *)
+
 (** {2 Boolean Builtins} *)
 (*  ************************************************************************* *)
 

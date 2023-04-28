@@ -50,6 +50,7 @@ type builtin =
 
   | Maps_to
   | In_interval of bool * bool
+  | Unbounded
   | Check | Cut         (* alt-ergo builtins *)
 
   | Sexpr               (* smtlib builtin for s-exprs *)
@@ -148,6 +149,7 @@ let builtin_to_string = function
   | In_interval (b, b') ->
     let bracket = function true -> "]" | false -> "[" in
     Printf.sprintf "in_interval%s%s" (bracket b) (bracket (not b'))
+  | Unbounded -> "?"
   | Check -> "check"
   | Cut -> "cut"
   | Sexpr -> "sexpr"
@@ -584,6 +586,8 @@ let maps_to ?loc id t =
 let in_interval ?loc t (lb, ls) (rb, rs) =
   tertiary (builtin (In_interval (ls, rs))) ?loc t lb rb
 
+let unbounded ?loc () =
+  builtin ?loc Unbounded ()
 
 (* {2 Wrappers for dimacs} *)
 

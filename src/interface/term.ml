@@ -310,6 +310,9 @@ module type Logic = sig
       (each bound is represented by a term which is tis value and a boolean
       which specifies whether it is strict or not). *)
 
+  val unbounded : ?loc:location -> unit -> t
+  (** Create and open bound in an interval, created by [in_interval] *)
+
   val maps_to : ?loc:location -> id -> t -> t
   (** Id mapping (see alt-ergo). *)
 
@@ -681,6 +684,9 @@ module type Ae_Base = sig
 
   val in_interval : t -> bool * bool -> t -> t -> t
   (** Semantic trigger: "in interval" check. *)
+
+  val unbounded : t -> unit -> t
+  (** Open interval bound in the [in_inteval] semantic trigger *)
 
   val maps_to : term_var -> t -> t
   (** Semantic trigger: maps to. *)

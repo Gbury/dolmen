@@ -139,8 +139,8 @@ module Tags : sig
   (** Satsify the Zf interface. *)
 
   include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
-                                        and type term := term
-  (** Satsify the Ae interface. *)
+                                   and type term := term
+                                   (** Satsify the Ae interface. *)
 
 end
 
@@ -875,6 +875,9 @@ module Term : sig
 
     val in_interval : bool * bool -> t
     (** Interval inclusion. *)
+
+    val unbounded : t
+    (** Open interval. *)
 
     val maps_to : t
     (** Mapping (used in triggers).  *)
@@ -1819,6 +1822,9 @@ module Term : sig
 
   val in_interval : t -> bool * bool -> t -> t -> t
   (** Interval inclusion. *)
+
+  val unbounded : t -> unit -> t
+  (** Open interval  *)
 
   val maps_to : Var.t -> t -> t
   (** Variable mapping to term. *)

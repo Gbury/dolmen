@@ -26,6 +26,7 @@ type _ t += Coercion
 type _ t +=
   | In_interval of bool * bool
   | Maps_to
+  | Unbounded
 
 (* Boolean builtins *)
 (* ************************************************************************* *)
