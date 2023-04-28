@@ -169,24 +169,30 @@ type _ t +=
   | Int
   (** [Int: ttype] the type for signed integers of arbitrary precision. *)
   | Integer of string
-  (** [Integer s: Int]: integer litteral. The string [s] should be the
+  (** [Integer s: Int]: integer literal. The string [s] should be the
       decimal representation of an integer with arbitrary precision (hence
       the use of strings rather than the limited precision [int]). *)
   | Rat
   (** [Rat: ttype] the type for signed rationals. *)
   | Rational of string
-  (** [Rational s: Rational]: rational litteral. The string [s] should be
+  (** [Rational s: Rational]: rational literal. The string [s] should be
       the decimal representation of a rational (see the various languages
       spec for more information). *)
   | Real
   (** [Real: ttype] the type for signed reals. *)
   | Decimal of string
-  (** [Decimal s: Real]: real litterals. The string [s] should be a
+  (** [Decimal s: Real]: real literals. The string [s] should be a
       floating point representation of a real. Not however that reals
       here means the mathematical abstract notion of real numbers, including
       irrational, non-algebric numbers, and is thus not restricted to
-      floating point numbers, although these are the only litterals
-      supported. *)
+      floating point numbers, although these are the only literals
+      supported.
+
+      Note that, in spite of the name, the literals may not be expressed in
+      decimal notation. For instance, [Decimal "0x1.0p1"] is a valid
+      representation for the real number [2].
+
+      Real literals can be parsed using ZArith's [Q.of_string]. *)
   | Lt of [ `Int | `Rat | `Real ]
   (** [Lt: {a=(Int|Rational|Real)} a -> a -> Prop]:
       strict comparison (less than) on numbers
