@@ -19,6 +19,9 @@ next
   and correctly attach predicate attribute to individual definitions
   (PR#130)
 
+- Restore support for toplevel "and" in non-recursive predicate/function
+  definitions (PR #147, fixes issue #144)
+
 ### Typing
 
 - Ignore arithmetic restrictions when typing model values. This
