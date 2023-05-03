@@ -20,7 +20,10 @@ next
   (PR#130)
 
 - Restore support for toplevel "and" in non-recursive predicate/function
-  definitions (PR #147, fixes issue #144)
+  definitions in Alt-Ergo syntax (PR #147, fixes issue #144)
+  
+- Add support for hexadecimal floats in Alt-Ergo syntax (PR #148, fixes
+  issue #145)
 
 ### Typing
 
