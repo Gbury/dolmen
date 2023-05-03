@@ -1,0 +1,3 @@
+predicate A = true and true and false and true
+
+goal g: A
