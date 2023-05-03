@@ -40,6 +40,7 @@ next
   would raise an internal error (PR#138)
 - Remove the "error" keyword and statement from smtlib2
   response (model) files (PR#139)
+- Correctly compare abstract array values (PR#143)
 
 v0.8.1
 ------

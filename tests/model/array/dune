@@ -65,4 +65,38 @@
   (action (diff array_const.expected array_const.full)))
 
 
+; Test for comparison_abstract.smt2
+; Incremental test
+
+(rule
+   (target  comparison_abstract.incremental)
+   (deps    (:response comparison_abstract.rsmt2)
+            (:input comparison_abstract.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff comparison_abstract.expected comparison_abstract.incremental)))
+
+; Full mode test
+
+(rule
+   (target  comparison_abstract.full)
+   (deps    (:response comparison_abstract.rsmt2)
+            (:input comparison_abstract.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff comparison_abstract.expected comparison_abstract.full)))
+
+
 ; Auto-generated part end

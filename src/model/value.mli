@@ -26,7 +26,7 @@ val abstract_cst : Dolmen.Std.Expr.Term.Const.t -> t
 (** ************************************************************************ *)
 
 val ops :
-  ?abstract:'a ->
+  ?abstract:(Dolmen.Std.Expr.Term.Const.t -> 'a) ->
   compare:('a -> 'a -> int) ->
   print:(Format.formatter -> 'a -> unit) ->
   unit -> 'a ops

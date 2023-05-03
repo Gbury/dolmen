@@ -19,7 +19,7 @@ module type S = sig
 
   val compare : t -> t -> int
 
-  val abstract : t option
+  val abstract : (E.Term.Const.t -> t) option
 
 end
 
@@ -35,7 +35,7 @@ exception Extraction_failed of t * any_ops
 (* ************************************************************************* *)
 
 let ops (type a)
-    ?(abstract : a option)
+    ?(abstract : (E.Term.Const.t -> a) option)
     ~(compare : a -> a -> int)
     ~(print : Format.formatter -> a -> unit)
     () : a ops =
@@ -111,7 +111,11 @@ let[@inline] extract (type a) ~(ops: a ops) (t : t) : a option =
   let (module A) = Abstract.ops in
   match t with
   | Value (V.Val, _, x) -> Some x
-  | Value (A.Val, _, _) -> V.abstract
+  | Value (A.Val, _, Cst { cst }) ->
+    begin match V.abstract with
+      | None -> None
+      | Some f -> Some (f cst)
+    end
   | _ -> None
 
 let[@inline] extract_exn (type a) ~(ops: a ops) (t : t) : a =
@@ -119,9 +123,9 @@ let[@inline] extract_exn (type a) ~(ops: a ops) (t : t) : a =
   let (module A) = Abstract.ops in
   match t with
   | Value (V.Val, _, x) -> x
-  | Value (A.Val, _, _) ->
+  | Value (A.Val, _, Cst { cst }) ->
    begin match V.abstract with
-     | Some res -> res
+     | Some f -> f cst
      | None -> raise (Extraction_failed (t, (Ops ops)))
    end
   | _ -> raise (Extraction_failed (t, (Ops ops)))
