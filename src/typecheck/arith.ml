@@ -51,6 +51,8 @@ module Ae = struct
           `Term (Base.app0 (module Type) env s (T.int name))
         | Type.Id { Id.ns = Value Real; name = Simple name; } ->
           `Term (Base.app0 (module Type) env s (T.real name))
+        | Type.Id { Id.ns = Value Hexadecimal; name = Simple name; } ->
+          `Term (Base.app0 (module Type) env s (T.real name))
 
         (* Arithmetic *)
         | Type.Builtin Term.Minus ->
