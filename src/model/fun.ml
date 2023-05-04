@@ -9,6 +9,7 @@ module E = Dolmen.Std.Expr
 exception Comparison_of_functional_values
 exception Function_value_expected of Value.t
 exception Bad_arity of E.Term.Const.t * int * Value.t list
+exception Incomplete_ad_hoc_function of E.Term.Const.t
 
 type value_function =
   | Lambda of {
@@ -34,18 +35,26 @@ and t =
       args : E.term list; (* partial applications arguments *)
     }
   | Ad_hoc of {
+      arity : int;
       cst : E.Term.Const.t;
-      ty_args : E.Ty.t list;
-      eval_a : E.Ty.t -> Value.t;
-    } (* ad-hoc parametric polymorphic functions, curried for simplicity *)
+      ty_args : E.Ty.t list; (* partial ty app arguments *)
+      eval_l : (E.Ty.t list * (E.Ty.subst -> Value.t)) list;
+      (* each element of the list is basically a case of a pattern match on
+         the type arguments. *)
+    } (* ad-hoc parametric polymorphic functions *)
 
 let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
 
+let print_ad_hoc_case fmt (patterns, _arm) =
+  Format.fprintf fmt "%a -> <fun>"
+    (Format.pp_print_list ~pp_sep:(return ",@ ") E.Ty.print) patterns
+
 let print fmt = function
-  | Ad_hoc { cst; ty_args; eval_a = _; } ->
-    Format.fprintf fmt "< @[<hov 2>%a(%a)@] >"
+  | Ad_hoc { cst; arity = _; ty_args; eval_l; } ->
+    Format.fprintf fmt "< @[<v 2>%a(%a):@ %a@] >"
       E.Term.Const.print cst
       (Format.pp_print_list ~pp_sep:(return ",@ ") E.Ty.print) ty_args
+      (Format.pp_print_list ~pp_sep:(return "@ ") print_ad_hoc_case) eval_l
   | Partial { func; args; } ->
     let f =
       match func with
@@ -76,8 +85,8 @@ let ops = Value.ops ~compare ~print ()
 (* Creation *)
 (* ************************************************************************* *)
 
-let ad_hoc ~cst ?(ty_args=[]) eval_a =
-  Value.mk ~ops (Ad_hoc { cst; ty_args; eval_a; })
+let ad_hoc ~cst ~arity eval_l =
+  Value.mk ~ops (Ad_hoc { cst; arity; ty_args= []; eval_l; })
 
 let mk ~env ~eval ty_params term_params body =
   match term_params with
@@ -194,6 +203,14 @@ let reduce ~eval env func args =
     in
     eval env body
 
+let rec apply_ty ~eval ~cst env ty_args = function
+  | [] -> raise (Incomplete_ad_hoc_function cst)
+  | (patterns, eval_a) :: r ->
+    begin match E.Ty.match_ patterns ty_args with
+      | None -> apply_ty ~eval ~cst env ty_args r
+      | Some subst -> eval_a subst
+    end
+
 let[@specialise] rec apply ~eval env v ty_args term_args =
   match ty_args, term_args with
   | [], [] -> v
@@ -210,12 +227,17 @@ let[@specialise] rec apply ~eval env v ty_args term_args =
           | [] -> v
           | _ :: _ -> raise (Function_value_expected v)
         end
-      | Some Ad_hoc { eval_a; _ } ->
-        begin match ty_args with
-          | [] -> assert false
-          | ty_arg :: other_ty_args ->
-            let v' = eval_a ty_arg in
-            apply ~eval env v' other_ty_args term_args
+      | Some Ad_hoc { eval_l; ty_args = prev_ty_args; arity; cst; } ->
+        let ty_args = prev_ty_args @ ty_args in
+        let n_ty_args = List.length ty_args in
+        if n_ty_args > arity then
+          assert false
+        else if n_ty_args < arity then
+          Value.mk ~ops (Ad_hoc { cst; arity; eval_l; ty_args; })
+        else begin
+          assert (n_ty_args = arity);
+          let f = apply_ty ~eval ~cst env ty_args eval_l in
+          apply ~eval env f [] term_args
         end
       | Some Partial { func; args = partial_args; } ->
         let f_arity = arity func in
@@ -234,3 +256,49 @@ let[@specialise] rec apply ~eval env v ty_args term_args =
           apply ~eval env v' [] over_args
         end
     end
+
+(* Ad-hoc polymorphism helpers *)
+(* ************************************************************************* *)
+
+  (*
+let ad_hoc_instance ~cst ~def_ty_args ~def_body ~value =
+  let rec aux cst apply_ty_args def_ty_args def_body value =
+    match def_ty_args with
+    | [] -> value
+    | def_ty_arg :: def_ty_args ->
+      begin match Value.extract_exn ~ops value with
+        | Ad_hoc { cst = c; ty_args; eval_a; } ->
+          assert (Dolmen.Std.Expr.Term.Const.equal cst c);
+          let eval_a ty =
+            if Dolmen.Std.Expr.Ty.equal ty def_ty_arg
+            then
+              match def_ty_args with
+              | [] -> def_body
+              | _ :: _ ->
+                aux cst
+                  (ty :: apply_ty_args)
+                  def_ty_args def_body value
+            else
+              eval_a ty
+          in
+          Value.mk ~ops @@ Ad_hoc {cst; ty_args; eval_a;}
+        | Partial _ ->
+          let eval_a ty =
+            if Dolmen.Std.Expr.Ty.equal ty def_ty_arg
+            then
+              match def_ty_args with
+              | [] -> def_body
+              | _ :: _ ->
+                aux cst
+                  (ty :: apply_ty_args)
+                  def_ty_args def_body value
+            else
+              value
+          in
+          Value.mk ~ops @@
+          Ad_hoc {cst; ty_args = List.rev apply_ty_args; eval_a; }
+      end
+  in
+  aux cst [] def_ty_args def_body value
+  *)
+

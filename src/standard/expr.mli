@@ -661,6 +661,9 @@ module Ty : sig
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
+  val match_ : t list -> t list -> subst option
+  (** Try and pattern mathc a list of patterns agains a list of types. *)
+
   val set_wildcard : ty_var -> t -> unit
   (** Instantiate the given wildcard. *)
 

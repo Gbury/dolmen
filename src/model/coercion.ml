@@ -1,36 +1,49 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+module E = Dolmen.Std.Expr
+exception Unsupported_coercion of E.Ty.t * E.Ty.t
+
 (* Arithmetic conversions *)
 (* ************************************************************************* *)
 
-let int_to_rat v =
-  let z = Value.extract_exn ~ops:Int.ops v in
-  Rat.mk (Q.of_bigint z)
+let cst = E.Term.Const.coerce
 
-let int_to_real v =
-  let z = Value.extract_exn ~ops:Int.ops v in
-  Real.mk (Q.of_bigint z)
+let int_to_rat =
+  let v =
+    Fun.fun_1 ~cst (fun v ->
+        let z = Value.extract_exn ~ops:Int.ops v in
+        Rat.mk (Q.of_bigint z))
+  in
+  [E.Ty.int; E.Ty.rat], (fun _ -> v)
+
+let int_to_real =
+  let v =
+    Fun.fun_1 ~cst (fun v ->
+        let z = Value.extract_exn ~ops:Int.ops v in
+        Real.mk (Q.of_bigint z))
+  in
+  [E.Ty.int; E.Ty.real], (fun _ -> v)
+
+let fallback =
+  let a = E.Ty.Var.mk "a" in
+  let b = E.Ty.Var.mk "b" in
+  [E.Ty.of_var a; E.Ty.of_var b], (fun subst ->
+      let a_ty = E.Subst.Var.get a subst in
+      let b_ty = E.Subst.Var.get b subst in
+      raise (Unsupported_coercion (a_ty, b_ty))
+    )
 
 (* Builtins *)
 (* ************************************************************************* *)
 
-module E = Dolmen.Std.Expr
-exception Unsupported_coercion of E.Ty.t * E.Ty.t
-
-let coerce src dst =
-  if E.Ty.equal src dst then (fun value -> value)
-  else match E.Ty.view src, E.Ty.view dst with
-    | `Int, `Rat -> int_to_rat
-    | `Int, `Real -> int_to_real
-    | _, _ -> raise (Unsupported_coercion (src, dst))
-
 let builtins _env (cst : E.Term.Const.t) =
   match cst.builtin with
   | Dolmen.Std.Builtin.Coercion ->
-    Some (Fun.ad_hoc ~cst (fun src ->
-        Fun.ad_hoc ~cst ~ty_args:[src] (fun dst ->
-            Fun.fun_1 ~cst ~ty_args:[src; dst] (coerce src dst)
-          )))
+    Some (Fun.ad_hoc ~cst ~arity:2 [
+        int_to_rat;
+        int_to_real;
+        fallback;
+      ])
   | _ -> None
 

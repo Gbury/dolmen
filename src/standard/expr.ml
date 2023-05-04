@@ -1029,6 +1029,25 @@ module Ty = struct
     | [], _ :: _
     | _ :: _, [] -> raise (Impossible_matching (pat, t))
 
+  let match_ pats tys =
+    let rec aux subst pats tys =
+      match pats, tys with
+      | [], [] -> subst
+      | pat :: pats, ty :: tys -> aux (pmatch subst pat ty) pats tys
+      | [], _ :: _
+      | _ :: _, [] -> raise Exit
+    in
+    try
+      let res = aux Subst.empty pats tys in
+      Subst.iter (fun var _ ->
+          match var.builtin with
+          | Builtin.Wildcard _ -> assert false
+          | _ -> ()
+        ) res;
+      Some res
+    with Exit | Impossible_matching _ ->
+      None
+
   (* Unification *)
   exception Impossible_unification of t * t
 
