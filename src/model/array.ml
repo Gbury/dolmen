@@ -101,11 +101,11 @@ let store array key value =
 (* Builtin values *)
 (* ************************************************************************* *)
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
-  | B.Const -> Some (Fun.fun_1 ~cst const)
-  | B.Select -> Some (Fun.fun_2 ~cst select)
-  | B.Store -> Some (Fun.fun_3 ~cst store)
+  | B.Const -> Some (Fun.mk_clos @@ Fun.fun_1 ~cst const)
+  | B.Select -> Some (Fun.mk_clos @@ Fun.fun_2 ~cst select)
+  | B.Store -> Some (Fun.mk_clos @@ Fun.fun_3 ~cst store)
   | _ -> None
 
 

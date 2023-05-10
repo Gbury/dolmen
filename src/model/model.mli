@@ -16,6 +16,9 @@ type t
 val empty : t
 (* The empty env. *)
 
+val print : Format.formatter -> t -> unit
+(** Print function *)
+
 (** {2 Variables and Constants values} *)
 (** ************************************************************************ *)
 

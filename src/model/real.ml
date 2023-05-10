@@ -52,32 +52,27 @@ let mk i = Value.mk ~ops i
 let get v = Value.extract_exn ~ops v
 
 let fun1 f ~cst =
-  Fun.fun_1 ~cst (fun x ->
+  Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
       f (Value.extract_exn ~ops x))
 
 let fun2 f ~cst =
-  Fun.fun_2 ~cst (fun x y ->
+  Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y))
 
 let op1 ~cst f = Some (fun1 ~cst (fun x -> mk @@ f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let op2_zero ~env ~cst f =
-  Some (Fun.fun_2 ~cst (fun x y ->
+let op2_zero ~eval ~env ~cst f =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       let v_x = Value.extract_exn ~ops x in
       let v_y = Value.extract_exn ~ops y in
-      if Q.equal Q.zero v_y then begin
-        match Model.Cst.find_opt cst (Env.model env) with
-        | Some value ->
-          (* Remove the "zero" value to aovid infinite recursive evaluation *)
-          let env = Env.update_model env (Model.Cst.remove cst) in
-          Fun.apply_val ~eval:Eval.eval env value [x; y]
-        | None -> raise (Model.Partial_interpretation (cst, [x; y]))
-      end else mk @@ f v_x v_y
+      if Q.equal Q.zero v_y then
+        Fun.corner_case ~eval env cst [] [x; y]
+      else mk @@ f v_x v_y
     ))
 
-let builtins env (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Decimal i -> Some (mk (Q.of_string i))
   | B.Lt `Real -> cmp ~cst Q.lt
@@ -88,7 +83,7 @@ let builtins env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Add `Real -> op2 ~cst Q.add
   | B.Sub `Real -> op2 ~cst Q.sub
   | B.Mul `Real -> op2 ~cst Q.mul
-  | B.Div `Real -> op2_zero Q.div ~cst ~env
+  | B.Div `Real -> op2_zero Q.div ~cst ~env ~eval
   | B.Div_e `Real -> op2 ~cst div_e
   | B.Div_t `Real -> op2 ~cst div_t
   | B.Div_f `Real -> op2 ~cst div_f

@@ -22,26 +22,26 @@ type value_function =
       cst : E.Term.Const.t;
       eval_lazy : Env.t -> (Env.t -> E.term -> Value.t) -> E.term list -> Value.t;
     }
-  | Parametric of {
+  | Poly of {
       arity : int;
       cst : E.Term.Const.t;
-      ty_args : E.Ty.t list;
-      eval_p : Value.t list -> Value.t;
+      eval_p : E.Ty.t list -> Value.t list -> Value.t;
     } (* parametric polymorphic functions (including non-polymorphic ones) *)
-
-and t =
-  | Partial of {
-      func : value_function;
-      args : E.term list; (* partial applications arguments *)
-    }
   | Ad_hoc of {
       arity : int;
+      ty_arity : int;
       cst : E.Term.Const.t;
-      ty_args : E.Ty.t list; (* partial ty app arguments *)
-      eval_l : (E.Ty.t list * (E.Ty.subst -> Value.t)) list;
+      eval_l : (E.Ty.t list * (E.Ty.subst -> value_function)) list;
       (* each element of the list is basically a case of a pattern match on
          the type arguments. *)
     } (* ad-hoc parametric polymorphic functions *)
+
+and t =
+  | Closure of {
+      func : value_function;
+      tys : E.ty list; (* type args *)
+      args : E.term list; (* partial applications arguments *)
+    }
 
 let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
 
@@ -49,31 +49,30 @@ let print_ad_hoc_case fmt (patterns, _arm) =
   Format.fprintf fmt "%a -> <fun>"
     (Format.pp_print_list ~pp_sep:(return ",@ ") E.Ty.print) patterns
 
-let print fmt = function
-  | Ad_hoc { cst; arity = _; ty_args; eval_l; } ->
-    Format.fprintf fmt "< @[<v 2>%a(%a):@ %a@] >"
-      E.Term.Const.print cst
-      (Format.pp_print_list ~pp_sep:(return ",@ ") E.Ty.print) ty_args
-      (Format.pp_print_list ~pp_sep:(return "@ ") print_ad_hoc_case) eval_l
-  | Partial { func; args; } ->
-    let f =
-      match func with
-      | Parametric { cst; ty_args = []; _ } ->
-        E.Term.of_cst cst
-      | Parametric { cst; ty_args = ((_ :: _) as ty_args); _ } ->
-        E.Term.apply (E.Term.of_cst cst) ty_args []
-      | Lambda { ty_params; term_params; body; } ->
-        E.Term.lam (ty_params, term_params) body
-      | Lazy { cst; _ } ->
-        E.Term.of_cst cst
-    in
-    match args with
-    | [] ->
-      Format.fprintf fmt "< %a >" E.Term.print f
-    | _ ->
-      Format.fprintf fmt "< @[<hov 2>%a(%a)@] >"
-        E.Term.print f
-        (Format.pp_print_list ~pp_sep:(return ",@ ") E.Term.print) args
+let print fmt (Closure { func; tys; args; }) =
+  let f =
+    match func with
+    | Poly { cst; _ } ->
+      E.Term.of_cst cst
+    | Lambda { ty_params; term_params; body; } ->
+      E.Term.lam (ty_params, term_params) body
+    | Lazy { cst; _ } ->
+      E.Term.of_cst cst
+    | Ad_hoc { cst; arity = _; ty_arity = _; eval_l = _; } ->
+      E.Term.of_cst cst
+  in
+  match tys, args with
+  | [], [] ->
+    Format.fprintf fmt "< %a >" E.Term.print f
+  | [], _ ->
+    Format.fprintf fmt "< @[<hov 2>%a(%a)@] >"
+      E.Term.print f
+      (Format.pp_print_list ~pp_sep:(return ",@ ") E.Term.print) args
+  | _, _ ->
+    Format.fprintf fmt "< @[<hov 2>%a(%a)(%a)@] >"
+      E.Term.print f
+      (Format.pp_print_list ~pp_sep:(return ",@ ") E.Ty.print) tys
+      (Format.pp_print_list ~pp_sep:(return ",@ ") E.Term.print) args
 
 let compare _ _ =
   raise Comparison_of_functional_values
@@ -85,57 +84,58 @@ let ops = Value.ops ~compare ~print ()
 (* Creation *)
 (* ************************************************************************* *)
 
-let ad_hoc ~cst ~arity eval_l =
-  Value.mk ~ops (Ad_hoc { cst; arity; ty_args= []; eval_l; })
+let mk_clos func =
+  Value.mk ~ops (Closure { func; tys = []; args = []; })
 
-let mk ~env ~eval ty_params term_params body =
+let ad_hoc ~cst ~arity ~ty_arity eval_l =
+  Ad_hoc { cst; arity; ty_arity; eval_l; }
+
+let lambda ty_params term_params body =
   match term_params with
-  | [] -> eval env body
-  | _ ->
-    let func = Lambda { ty_params; term_params; body; } in
-    Value.mk ~ops (Partial { args = []; func; })
-
-let builtin ~arity ~cst ?(ty_args=[]) eval_p =
-  if arity = 0 then eval_p []
-  else begin
-    let func = Parametric { arity; cst; ty_args; eval_p; } in
-    Value.mk ~ops (Partial { args = []; func; })
-  end
-
-let fun_1 ~cst ?ty_args f =
-  builtin ~arity:1 ~cst ?ty_args (function
-      | [x] -> f x
-      | l -> raise (Bad_arity (cst, 1, l))
-    )
-
-let fun_2 ~cst ?ty_args f =
-  builtin ~arity:2 ~cst ?ty_args (function
-      | [x; y] -> f x y
-      | l -> raise (Bad_arity (cst, 2, l))
-    )
-
-let fun_3 ~cst ?ty_args f =
-  builtin ~arity:3 ~cst ?ty_args (function
-      | [x; y; z] -> f x y z
-      | l -> raise (Bad_arity (cst, 3, l))
-    )
-
-let fun_4 ~cst ?ty_args f =
-  builtin ~arity:4 ~cst ?ty_args (function
-      | [x; y; z; t] -> f x y z t
-      | l -> raise (Bad_arity (cst, 4, l))
-    )
-
-let fun_n ~cst ?ty_args eval_f =
-  let _, params, _ = E.Ty.poly_sig (E.Term.Const.ty cst) in
-  let arity = List.length params in
-  builtin ~arity ~cst ?ty_args eval_f
+  | [] -> failwith "not a function"
+  | _ -> Lambda { ty_params; term_params; body; }
 
 let fun_lazy ~cst eval_lazy =
   let _, params, _ = E.Ty.poly_sig (E.Term.Const.ty cst) in
   let arity = List.length params in
-  let func = Lazy { arity; cst; eval_lazy; } in
-  Value.mk ~ops (Partial { args = []; func; })
+  Lazy { arity; cst; eval_lazy; }
+
+let poly ~arity ~cst eval_p =
+  if arity = 0 then assert false
+  else Poly { arity; cst; eval_p; }
+
+let builtin ~arity ~cst eval_m =
+  poly ~arity ~cst (fun _ args -> eval_m args)
+
+let fun_1 ~cst f =
+  builtin ~arity:1 ~cst (function
+      | [x] -> f x
+      | l -> raise (Bad_arity (cst, 1, l))
+    )
+
+let fun_2 ~cst f =
+  builtin ~arity:2 ~cst (function
+      | [x; y] -> f x y
+      | l -> raise (Bad_arity (cst, 2, l))
+    )
+
+let fun_3 ~cst f =
+  builtin ~arity:3 ~cst (function
+      | [x; y; z] -> f x y z
+      | l -> raise (Bad_arity (cst, 3, l))
+    )
+
+let fun_4 ~cst f =
+  builtin ~arity:4 ~cst (function
+      | [x; y; z; t] -> f x y z t
+      | l -> raise (Bad_arity (cst, 4, l))
+    )
+
+let fun_n ~cst eval_f =
+  let _, params, _ = E.Ty.poly_sig (E.Term.Const.ty cst) in
+  let arity = List.length params in
+  if arity = 0 then eval_f []
+  else mk_clos @@ builtin ~arity ~cst eval_f
 
 
 (* Application&Reduction *)
@@ -143,16 +143,36 @@ let fun_lazy ~cst eval_lazy =
 
 let arity = function
   | Lazy { arity; _ } -> arity
-  | Parametric { arity; _ } -> arity
+  | Poly { arity; _ } -> arity
+  | Ad_hoc { arity; _ } -> arity
   | Lambda { term_params; _ } -> List.length term_params
 
+let add_ty_args partial_tys partial_args new_tys =
+  match partial_args, new_tys with
+  | _, [] -> partial_tys
+  | [], _ -> partial_tys @ new_tys
+  | _ :: _, _ :: _ -> failwith "dependant application"
+
+let rec reduce_ty ~eval ~cst env ty_args = function
+  | [] -> raise (Incomplete_ad_hoc_function cst)
+  | (patterns, eval_a) :: r ->
+    begin match E.Ty.match_ patterns ty_args with
+      | None -> reduce_ty ~eval ~cst env ty_args r
+      | Some subst -> eval_a subst
+    end
+
 (* specific function for function applications directly to values *)
-let reduce_val ~eval env func args =
+let rec reduce_val ~eval env func tys args =
   match func with
   | Lazy _ -> assert false
-  | Parametric { arity; eval_p; _ } ->
+  | Poly { arity; eval_p; cst = _; } ->
     assert (List.length args = arity);
-    eval_p args
+    eval_p tys args
+  | Ad_hoc { arity; ty_arity; eval_l; cst; } ->
+    assert (List.length args = arity);
+    assert (List.length tys = ty_arity);
+    let func = reduce_ty ~eval ~cst env tys eval_l in
+    reduce_val ~eval env func [] args
   | Lambda { ty_params = _; term_params; body; } ->
     assert (List.length term_params = List.length args);
     let env =
@@ -162,17 +182,17 @@ let reduce_val ~eval env func args =
     in
     eval env body
 
-let apply_val ~eval env f new_args =
+let apply_val ~eval env f new_tys new_args =
   match Value.extract_exn ~ops f with
-  | Ad_hoc _ -> assert false
-  | Partial { func; args = partial_args; } ->
+  | Closure { func; tys; args = partial_args; } ->
+    let tys = add_ty_args tys partial_args new_tys in
     let f_arity = arity func in
     let n = List.length partial_args in
     let m = List.length new_args in
     assert (n + m = f_arity);
     let partial_args = List.map (eval env) partial_args in
     let all_args = List.rev_append partial_args new_args in
-    reduce_val ~eval env func all_args
+    reduce_val ~eval env func tys all_args
 
 (* helper function *)
 let take_drop n l =
@@ -184,15 +204,20 @@ let take_drop n l =
   aux [] n l
 
 (* regular/generic function for function applicaiton *)
-let reduce ~eval env func args =
+let rec reduce ~eval env func tys args =
   match func with
   | Lazy { arity; eval_lazy; _ } ->
     assert (List.length args = arity);
     eval_lazy env eval args
-  | Parametric { arity; eval_p; _ } ->
+  | Poly { arity; eval_p; _ } ->
     assert (List.length args = arity);
     let args = List.map (eval env) args in
-    eval_p args
+    eval_p tys args
+  | Ad_hoc { arity; ty_arity; eval_l; cst; } ->
+    assert (List.length args = arity);
+    assert (List.length tys = ty_arity);
+    let func = reduce_ty ~eval ~cst env tys eval_l in
+    reduce ~eval env func [] args
   | Lambda { ty_params = _; term_params; body; } ->
     assert (List.length term_params = List.length args);
     let env =
@@ -202,14 +227,6 @@ let reduce ~eval env func args =
         ) env term_params args
     in
     eval env body
-
-let rec apply_ty ~eval ~cst env ty_args = function
-  | [] -> raise (Incomplete_ad_hoc_function cst)
-  | (patterns, eval_a) :: r ->
-    begin match E.Ty.match_ patterns ty_args with
-      | None -> apply_ty ~eval ~cst env ty_args r
-      | Some subst -> eval_a subst
-    end
 
 let[@specialise] rec apply ~eval env v ty_args term_args =
   match ty_args, term_args with
@@ -227,78 +244,63 @@ let[@specialise] rec apply ~eval env v ty_args term_args =
           | [] -> v
           | _ :: _ -> raise (Function_value_expected v)
         end
-      | Some Ad_hoc { eval_l; ty_args = prev_ty_args; arity; cst; } ->
-        let ty_args = prev_ty_args @ ty_args in
-        let n_ty_args = List.length ty_args in
-        if n_ty_args > arity then
-          assert false
-        else if n_ty_args < arity then
-          Value.mk ~ops (Ad_hoc { cst; arity; eval_l; ty_args; })
-        else begin
-          assert (n_ty_args = arity);
-          let f = apply_ty ~eval ~cst env ty_args eval_l in
-          apply ~eval env f [] term_args
-        end
-      | Some Partial { func; args = partial_args; } ->
+      | Some Closure { func; tys = partial_tys; args = partial_args; } ->
+        let tys = add_ty_args partial_tys partial_args ty_args in
         let f_arity = arity func in
         let n = List.length partial_args in
         let m = List.length term_args in
         if n + m < f_arity then begin
           (* partial application *)
           let args = List.rev_append term_args partial_args in
-          Value.mk ~ops (Partial { func; args; })
+          Value.mk ~ops (Closure { func; tys; args; })
         end else begin
           let all_args = List.rev_append partial_args term_args in
           let full_args, over_args = take_drop f_arity all_args in
-          let v' = reduce ~eval env func full_args in
+          let v' = reduce ~eval env func tys full_args in
           (* dependant typing is not supported, we thus drop all type arguments
              after reducing a function application *)
           apply ~eval env v' [] over_args
         end
     end
 
+(* Corner cases helpers *)
+(* ************************************************************************* *)
+
+let corner_case ?post_check ~eval env cst tys args =
+  match Model.Cst.find_opt cst (Env.model env) with
+  | Some value ->
+    (* Remove the corner case value to avoid infinite recursive evaluation *)
+    let env = Env.update_model env (Model.Cst.remove cst) in
+    let res = apply_val ~eval env value tys args in
+    begin match post_check with
+      | None -> ()
+      | Some f -> f res
+    end;
+    res
+  | None -> raise (Model.Partial_interpretation (cst, args))
+
 (* Ad-hoc polymorphism helpers *)
 (* ************************************************************************* *)
 
-  (*
-let ad_hoc_instance ~cst ~def_ty_args ~def_body ~value =
-  let rec aux cst apply_ty_args def_ty_args def_body value =
-    match def_ty_args with
-    | [] -> value
-    | def_ty_arg :: def_ty_args ->
-      begin match Value.extract_exn ~ops value with
-        | Ad_hoc { cst = c; ty_args; eval_a; } ->
-          assert (Dolmen.Std.Expr.Term.Const.equal cst c);
-          let eval_a ty =
-            if Dolmen.Std.Expr.Ty.equal ty def_ty_arg
-            then
-              match def_ty_args with
-              | [] -> def_body
-              | _ :: _ ->
-                aux cst
-                  (ty :: apply_ty_args)
-                  def_ty_args def_body value
-            else
-              eval_a ty
-          in
-          Value.mk ~ops @@ Ad_hoc {cst; ty_args; eval_a;}
-        | Partial _ ->
-          let eval_a ty =
-            if Dolmen.Std.Expr.Ty.equal ty def_ty_arg
-            then
-              match def_ty_args with
-              | [] -> def_body
-              | _ :: _ ->
-                aux cst
-                  (ty :: apply_ty_args)
-                  def_ty_args def_body value
-            else
-              value
-          in
-          Value.mk ~ops @@
-          Ad_hoc {cst; ty_args = List.rev apply_ty_args; eval_a; }
+let add_ad_hoc_instance model ~cst ~ty_args ~term_params ~body =
+  let eval_l, arity, ty_arity =
+    match Model.Cst.find_opt cst model with
+    | None -> [], List.length term_params, List.length ty_args
+    | Some v ->
+      begin match Value.extract ~ops v with
+        | Some Closure {
+            tys = []; args = [];
+            func = Ad_hoc { eval_l; ty_arity; arity; cst = c; } } ->
+          assert (E.Term.Const.equal cst c);
+          assert (List.length ty_args = ty_arity);
+          assert (List.length term_params = arity);
+          eval_l, arity, ty_arity
+        | None | Some Closure _ ->
+          assert false
       end
   in
-  aux cst [] def_ty_args def_body value
-  *)
+  let func = Lambda { ty_params = []; term_params; body; } in
+  let eval_l = (ty_args, (fun _ -> func)) :: eval_l in
+  let v = mk_clos (ad_hoc ~cst ~ty_arity ~arity eval_l) in
+  Model.Cst.add cst v model
 

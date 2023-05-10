@@ -175,6 +175,18 @@ let partial_interpretation =
           pp_app (cst, args))
     ~name:"Partial Destructor" ()
 
+let unhandled_float_exponand_and_mantissa =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"unhandled-float-sizes"
+    ~message:(fun fmt (ew, mw) ->
+        Format.fprintf fmt
+          "The following size for exponand and mantissa are not currently
+          handled by dolmen: (%d, %d)." ew mw)
+    ~hints:[(fun _ -> Some (Format.dprintf "%a"
+        Format.pp_print_text
+          "This is a current implementation limitation of dolmen. \
+           Please report upstream if encounter this error, ^^")); ]
+    ~name:"Unhandled Floating point sizes" ()
+
 (* Pipe *)
 (* ************************************************************************ *)
 
@@ -246,6 +258,8 @@ module Make
     | Eval.Undefined_constant c -> _err undefined_constant c
     | Model.Partial_interpretation (cst, args) ->
       _err partial_interpretation (cst, args)
+    | Fp.Unhandled_exponand_and_mantissa { ew; mw } ->
+      _err unhandled_float_exponand_and_mantissa (ew, mw)
 
   (* Typing models *)
   (* ************************************************************************ *)
@@ -263,6 +277,7 @@ module Make
     let contents =
       List.filter_map (function
           | `Type_def _ -> None
+          | `Instanceof _ -> None (* TODO: warning/error ? *)
           | `Term_def (_id, cst, ty_params, term_params, body) ->
             let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
             Some (cst, func)
@@ -291,6 +306,19 @@ module Make
               Dolmen.Std.Expr.Term.Const.print cst
               Value.print value;
           let model = Model.Cst.add cst value model in
+          (st, model)
+        | `Instanceof (_id, cst, ty_args, ty_params, term_params, body) ->
+          assert (ty_params = []);
+          let pp_sep fmt () = Format.fprintf fmt ", @ " in
+          if State.get State.debug st then
+            Format.eprintf "[model][typed][%a] @[<hov>%a(%a) := %a@]@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) ty_args
+              Dolmen.Std.Expr.Term.print (Dolmen.Std.Expr.Term.lam ([], term_params) body);
+          let model = Fun.add_ad_hoc_instance model ~cst ~ty_args ~term_params ~body in
+          if State.get State.debug st then
+            Format.eprintf "[model][typed] %a@." Model.print model;
           (st, model)
       ) (st, model) parsed_defs.contents typed_defs
 

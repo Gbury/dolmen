@@ -47,18 +47,18 @@ module B = Dolmen.Std.Builtin
 let mk i = Value.mk ~ops i
 
 let fun1 f ~cst =
-  Fun.fun_1 ~cst (fun x ->
+  Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
       f (Value.extract_exn ~ops x))
 
 let fun2 f ~cst =
-  Fun.fun_2 ~cst (fun x y ->
+  Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y))
 
 let op1 ~cst f = Some (fun1 ~cst (fun x -> mk @@ f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Rational i -> Some (mk (Q.of_string i))
   | B.Lt `Rat -> cmp ~cst Q.lt

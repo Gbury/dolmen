@@ -22,6 +22,18 @@ type t = {
 let empty =
   { vars = V.empty; csts = C.empty; }
 
+let print fmt model =
+  Format.fprintf fmt "@[<v>@[<v 2>{";
+  V.iter (fun var value ->
+      Format.fprintf fmt "@ %a -> @[<hov 2>%a@]"
+        Dolmen.Std.Expr.Term.Var.print var Value.print value
+    ) model.vars;
+  C.iter (fun cst value ->
+      Format.fprintf fmt "@ %a -> @[<hov 2>%a@]"
+        Dolmen.Std.Expr.Term.Const.print cst Value.print value
+    ) model.csts;
+  Format.fprintf fmt "@]@ }@]"
+
 
 (* Mapped var&cst values *)
 (* ************************************************************************* *)

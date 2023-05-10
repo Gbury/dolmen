@@ -50,6 +50,7 @@ module type Typer = sig
     state * [
      | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
      | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+     | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
     ] list
 
   val decls :
@@ -182,6 +183,7 @@ module type S = sig
   type def = [
     | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
     | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+    | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
   ]
   (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
 

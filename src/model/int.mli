@@ -16,7 +16,7 @@ val mk : Z.t -> Value.t
 (** {2 Builtins} *)
 (** ************************************************************************ *)
 
-val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.builtins
 (** builtins for integers *)
 
 

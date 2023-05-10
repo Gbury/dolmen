@@ -610,28 +610,37 @@ module Smtlib2 = struct
       (* Abstract *)
       | Type.Id { Id.ns = Term; name = Simple name; } ->
         if String.length name <= 1 then `Not_found
-        else if name.[0] = '@' then begin
-          match version with
-          | `Response _ ->
-            (* the var infer does not matter *)
-            let var_infer = Type.var_infer env in
-            let sym_infer = Type.sym_infer env in
-            (* Avoid capturing `env` in the hook. *)
-            let state = Type.state env in
-            let sym_hook cst =
-              sym_infer.sym_hook cst;
-              match cst with
-              | `Ty_cst _ -> ()
-              | `Term_cst c -> add_model_constant state c
-            in
-            let sym_infer : Type.sym_infer = {
-              sym_hook;
-              infer_type_csts = false;
-              infer_term_csts = Wildcard Any_in_scope;
-            } in
-            `Infer (var_infer, sym_infer)
-          | `Script _ -> `Not_found
-        end else `Not_found
+        else begin
+          match name.[0] with
+          | '.' ->
+            begin match version with
+              | `Script _ -> `Reserved `Solver
+              | `Response _ -> `Not_found (* TODO: check what these are used for *)
+            end
+          | '@' ->
+            begin match version with
+              | `Script _ -> `Reserved `Solver
+              | `Response _ ->
+                (* the var infer does not matter *)
+                let var_infer = Type.var_infer env in
+                let sym_infer = Type.sym_infer env in
+                (* Avoid capturing `env` in the hook. *)
+                let state = Type.state env in
+                let sym_hook cst =
+                  sym_infer.sym_hook cst;
+                  match cst with
+                  | `Ty_cst _ -> ()
+                  | `Term_cst c -> add_model_constant state c
+                in
+                let sym_infer : Type.sym_infer = {
+                  sym_hook;
+                  infer_type_csts = false;
+                  infer_term_csts = Wildcard Any_in_scope;
+                } in
+                `Infer (var_infer, sym_infer)
+            end
+          | _ -> `Not_found
+        end
 
       | _ -> `Not_found
 

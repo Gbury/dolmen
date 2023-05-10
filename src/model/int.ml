@@ -51,33 +51,28 @@ module B = Dolmen.Std.Builtin
 let mk i = Value.mk ~ops i
 
 let fun1 f ~cst =
-  Fun.fun_1 ~cst (fun x ->
+  Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
       mk @@ f (Value.extract_exn ~ops x))
 
 let fun2 f ~cst =
-  Fun.fun_2 ~cst (fun x y ->
+  Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y))
 
 let op1 ~cst f = Some (fun1 ~cst (fun x -> f x))
 let op2 ~cst f = Some (fun2 ~cst (fun x y -> mk @@ f x y))
 let cmp ~cst p = Some (fun2 ~cst (fun x y -> Bool.mk @@ p x y))
 
-let op2_zero ~env ~cst f =
-  Some (Fun.fun_2 ~cst (fun x y ->
+let op2_zero ~eval ~env ~cst f =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       let v_x = Value.extract_exn ~ops x in
       let v_y = Value.extract_exn ~ops y in
-      if Z.equal Z.zero v_y then begin
-        match Model.Cst.find_opt cst (Env.model env) with
-        | Some value ->
-          (* Remove the "zero" value to aovid infinite recursive evaluation *)
-          let env = Env.update_model env (Model.Cst.remove cst) in
-          Fun.apply_val ~eval:Eval.eval env value [x; y]
-        | None -> raise (Model.Partial_interpretation (cst, [x; y]))
-      end else
+      if Z.equal Z.zero v_y then
+        Fun.corner_case ~eval env cst [] [x; y]
+      else
         mk @@ f v_x v_y
     ))
 
-let builtins env (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Integer i -> Some (mk (Z.of_string i))
   | B.Lt `Int -> cmp ~cst Z.lt
@@ -89,17 +84,17 @@ let builtins env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Sub `Int -> op2 ~cst Z.sub
   | B.Mul `Int -> op2 ~cst Z.mul
   | B.Pow `Int -> op2 ~cst pow
-  | B.Div_e `Int -> op2_zero ~env ~cst div_e
+  | B.Div_e `Int -> op2_zero ~eval ~env ~cst div_e
   | B.Div_t `Int -> op2 ~cst div_t
   | B.Div_f `Int -> op2 ~cst div_f
-  | B.Modulo_e `Int -> op2_zero ~env ~cst mod_e
+  | B.Modulo_e `Int -> op2_zero ~eval ~env ~cst mod_e
   | B.Modulo_t `Int -> op2 ~cst mod_t
   | B.Modulo_f `Int -> op2 ~cst mod_f
   | B.Divisible ->
     Some (fun2 ~cst (fun x y -> Bool.mk @@ Z.divisible x y))
   | B.Abs -> op1 ~cst Z.abs
   | B.Is_int `Int | B.Is_rat `Int ->
-    Some (Fun.fun_1 ~cst (fun _ -> Bool.mk true))
+    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun _ -> Bool.mk true))
   | B.Floor `Int | B.Ceiling `Int
   | B.Truncate `Int | B.Round `Int ->
     op1 ~cst (fun x -> x)

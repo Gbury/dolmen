@@ -206,7 +206,7 @@ module Make
   ]
 
   type builtin_reserved = [
-    | `Reserved of term_cst
+    | `Reserved of [ `Solver | term_cst ]
   ]
 
   type builtin_res = [ builtin_common | builtin_infer | builtin_reserved ]
@@ -231,6 +231,7 @@ module Make
   type binding = [
     | `Not_found
     | `Reserved of [
+        | `Solver
         | `Term
       ]
     | `Builtin of [
@@ -570,6 +571,7 @@ module Make
     | `Builtin `Ty _ -> `Builtin `Ty
     | `Builtin `Term _ -> `Builtin `Term
     | `Builtin `Tags _ -> `Builtin `Tag
+    | `Builtin `Reserved `Solver -> `Reserved `Solver
     | `Builtin `Reserved `Term_cst _ -> `Reserved `Term
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
@@ -1860,10 +1862,10 @@ module Make
     | #builtin_common as b -> builtin_apply_common env b ast args
     | `Infer (var_infer, sym_infer) ->
       infer_sym_aux env var_infer sym_infer ast s args s_ast
-    | `Reserved `Term_cst _ ->
+    | `Reserved (`Solver | `Term_cst _ ) ->
       (* reserved builtins are there to provide shadow warnings
          and provide symbols for model definitions, but they don't
-         have a semantic outsid eof that. *)
+         have a semantic outside of that. *)
       _cannot_find env ast s
 
   and parse_app_ty_var env ast v _v_ast args =
@@ -1945,7 +1947,7 @@ module Make
   and builtin_apply_builtin env ast b b_res args : res =
     match (b_res : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Reserved `Term_cst _ -> _unknown_builtin env ast b
+    | `Reserved (`Solver | `Term_cst _) -> _unknown_builtin env ast b
     | `Infer _ ->
       (* TODO: proper erorr.
          We do not have a map from builtins symbols to typed expressions. *)
@@ -2415,7 +2417,11 @@ module Make
     let params_ty = List.map T.Var.ty params in
     let ty = Ty.pi vars (Ty.arrow params_ty ret_ty) in
     if Ty.equal ty (T.Const.ty cst) then `Term (d.id, cst)
-    else _incoherent_term_redefinition env d cst reason ty
+    else begin
+      match Ty.instance_of (T.Const.ty cst) ty with
+      | None -> _incoherent_term_redefinition env d cst reason ty
+      | Some ty_args -> `Instanceof (d.id, cst, ty_args)
+    end
 
   let lookup_id_for_def _ (env, vars, params, ssig) (d: Stmt.def) =
     match ssig, find_bound env d.id with
@@ -2479,9 +2485,13 @@ module Make
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;
       List.iter (check_used_term_var ~kind:`Function_param env) params;
       `Term_def (id, f, vars, params, body)
+    | `Instanceof (id, f, ty_args), `Term body ->
+      List.iter (check_used_ty_var ~kind:`Function_param env) vars;
+      List.iter (check_used_term_var ~kind:`Function_param env) params;
+      `Instanceof (id, f, ty_args, vars, params, body)
     (* error cases *)
     | `Ty _, `Term _
-    | `Term _, `Ty _ -> assert false
+    | (`Term _ | `Instanceof _), `Ty _ -> assert false
 
   let defs ?(mode=`Create_id) env ?(attrs=[]) (d : Stmt.defs) =
     let tags = parse_attrs env [] attrs in

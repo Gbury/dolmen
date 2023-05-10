@@ -1048,6 +1048,14 @@ module Ty = struct
     with Exit | Impossible_matching _ ->
       None
 
+  let instance_of poly ty =
+    let vars, pat = split_pi poly in
+    match match_ [pat] [ty] with
+    | None -> None
+    | Some subst ->
+      let l = List.map (fun v -> Subst.Var.get v subst) vars in
+      Some l
+
   (* Unification *)
   exception Impossible_unification of t * t
 

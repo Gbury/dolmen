@@ -22,7 +22,7 @@ val get : Value.t -> Q.t
 (** {2 Corner cases & builtins} *)
 (** ************************************************************************ *)
 
-val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val builtins : Env.builtins
 (** builtins for reals *)
 
 

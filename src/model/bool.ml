@@ -20,10 +20,10 @@ let false_v = Value.mk ~ops false
 let mk b = if b then true_v else false_v
 
 let fun1 f ~cst =
-  Fun.fun_1 ~cst (fun x -> mk @@ f (Value.extract_exn ~ops x))
+  Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> mk @@ f (Value.extract_exn ~ops x))
 
 let fun2 f ~cst =
-  Fun.fun_2 ~cst (fun x y ->
+  Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
       mk @@ f (Value.extract_exn ~ops x) (Value.extract_exn ~ops y)
     )
 
@@ -34,7 +34,7 @@ let fun_n f ~cst =
   in
   Fun.fun_n ~cst func
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.True -> Some true_v
   | B.False -> Some false_v

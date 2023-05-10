@@ -1728,8 +1728,10 @@ module Typer(State : State.S) = struct
             | `Type_def (id, c, vars, body) ->
               if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body;
               `Type_def (id, c, vars, body)
-            | `Term_def (id, f, vars, args, body) ->
-              `Term_def (id, f, vars, args, body)
+            | `Term_def (id, f, vars, params, body) ->
+              `Term_def (id, f, vars, params, body)
+            | `Instanceof (id, f, ty_args, vars, params, body) ->
+              `Instanceof (id, f, ty_args, vars, params, body)
           ) l
       )
 
@@ -1808,6 +1810,7 @@ module Make
   type def = [
     | `Type_def of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Instanceof of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty list * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
   type defs = [
@@ -1881,6 +1884,15 @@ module Make
       Format.fprintf fmt
         "@[<hv 2>term-def{%a}:@ @[<hv>%a@] =@ @[<hov 2>fun (%a;@ %a) ->@ %a@]@]"
         Dolmen.Std.Id.print id Print.term_cst c
+        (Format.pp_print_list ~pp_sep Print.ty_var) vars
+        (Format.pp_print_list ~pp_sep Print.term_var) args
+        Print.term body
+    | `Instanceof (id, c, ty_args, vars, args, body) ->
+      let pp_sep fmt () = Format.fprintf fmt ",@ " in
+      Format.fprintf fmt
+        "@[<hv 2>instanceof{%a}:@ @[<hv>%a(%a)@] =@ @[<hov 2>fun (%a;@ %a) ->@ %a@]@]"
+        Dolmen.Std.Id.print id Print.term_cst c
+        (Format.pp_print_list ~pp_sep Print.ty) ty_args
         (Format.pp_print_list ~pp_sep Print.ty_var) vars
         (Format.pp_print_list ~pp_sep Print.term_var) args
         Print.term body

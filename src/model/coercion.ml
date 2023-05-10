@@ -37,10 +37,10 @@ let fallback =
 (* Builtins *)
 (* ************************************************************************* *)
 
-let builtins _env (cst : E.Term.Const.t) =
+let builtins ~eval:_ _env (cst : E.Term.Const.t) =
   match cst.builtin with
   | Dolmen.Std.Builtin.Coercion ->
-    Some (Fun.ad_hoc ~cst ~arity:2 [
+    Some (Fun.mk_clos @@ Fun.ad_hoc ~cst ~ty_arity:2 ~arity:1 [
         int_to_rat;
         int_to_real;
         fallback;

@@ -664,6 +664,12 @@ module Ty : sig
   val match_ : t list -> t list -> subst option
   (** Try and pattern mathc a list of patterns agains a list of types. *)
 
+  val instance_of : t -> t -> t list option
+  (** [instance_of poly t] decides whether [t] is an instance of [poly],
+      that is whether there are some types [l] such that a term of
+      type [poly] applied to type arguments [l] gives a term of type
+      [t]. *)
+
   val set_wildcard : ty_var -> t -> unit
   (** Instantiate the given wildcard. *)
 
