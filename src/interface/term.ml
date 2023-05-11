@@ -1309,6 +1309,9 @@ module type Smtlib_Real = sig
   val div : t -> t -> t
   (** Real division. See Smtlib theory for a full description. *)
 
+  val algebraic_ordered_root : string list -> string -> t
+  val algebraic_enclosed_root : string list -> (string * string) -> (string * string) -> t
+
 end
 
 (** Signature required by terms for typing smtlib real_int arithmetic. *)

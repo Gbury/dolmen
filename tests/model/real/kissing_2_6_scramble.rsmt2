@@ -1,0 +1,27 @@
+sat
+(
+  (define-fun x3 () Real
+    (root-of-with-ordering (coeffs (- 3) 0 4) 0))
+  (define-fun x9 () Real
+    (/ 1.0 2.0))
+  (define-fun x4 () Real
+    (root-of-with-ordering (coeffs (- 3) 0 4) 0))
+  (define-fun x6 () Real
+    (root-of-with-ordering (coeffs (- 3) 0 4) 1))
+  (define-fun x5 () Real
+    1.0)
+  (define-fun x8 () Real
+    (- (/ 1.0 2.0)))
+  (define-fun x2 () Real
+    (/ 1.0 2.0))
+  (define-fun x1 () Real
+    (- (/ 1.0 2.0)))
+  (define-fun x10 () Real
+    (- 1.0))
+  (define-fun x11 () Real
+    (root-of-with-ordering (coeffs (- 3) 0 4) 1))
+  (define-fun x12 () Real
+    0.0)
+  (define-fun x7 () Real
+    0.0)
+)

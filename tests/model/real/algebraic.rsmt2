@@ -1,0 +1,7 @@
+sat
+(
+(define-fun sqrt2 () Real (root-of-with-order (coeffs (- 2) 0 1) 1))
+; accept extensions for simplicity for SMTCOMP 2023
+(define-fun sqrt3 () Real (root-of-with-enclosure (coeffs -3 0 1) 1.0 2.0))
+(define-fun sqrt4 () Real (root-of-with-interval (coeffs (- 4) 0 1) (/ (- 1.0) 2.0) (/ 5.0 2.0)))
+)

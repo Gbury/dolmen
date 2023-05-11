@@ -1,0 +1,8 @@
+(set-logic NRA)
+(declare-fun sqrt2 () Real)
+(declare-fun sqrt3 () Real)
+(declare-fun sqrt4 () Real)
+(assert (= (* sqrt2 sqrt2) 2.0))
+(assert (= (* sqrt3 sqrt3) 3.0))
+(assert (= sqrt4 2.0))
+(check-sat)

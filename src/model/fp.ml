@@ -128,8 +128,10 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Real_to_fp (ew, prec) ->
     Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m r ->
         check ~ew ~mw:(prec - 1);
-        mk (f_of_q ~ew ~mw:(prec - 1) (mode m) (Real.get r))))
-  | B.Fp_to_fp (_ew1, _prec1, ew2, prec2) ->
+        match Real.A.to_q  @@ Real.get r with
+        | Some q -> mk (f_of_q ~ew ~mw:(prec - 1) (mode m) q)
+        | None -> invalid_arg "not implemented: algebraic number to floating point"))
+ | B.Fp_to_fp (_ew1, _prec1, ew2, prec2) ->
     Some (Fun.mk_clos @@ Fun.fun_2 ~cst
             (fun m f1 -> mk @@ f_round ~ew:ew2 ~mw:(prec2 - 1) (mode m) (fp f1)))
   | B.Sbv_to_fp (n, ew, prec) ->
@@ -156,7 +158,8 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
         mk @@
         f_of_bits ~ew ~mw:(prec - 1) (Bitv.ubitv (ew + prec) bv)))
   | B.To_real (_ew, _prec) ->
-    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun f -> Real.mk @@ (F.to_q (fp f))))
+    Some (Fun.mk_clos @@ Fun.fun_1 ~cst
+     (fun f -> Real.mk @@ Real.A.of_q @@ (F.to_q (fp f))))
   | B.Plus_infinity (ew, prec) ->
     Some (mk @@ f_inf ~ew ~mw:(prec - 1) false)
   | B.Minus_infinity (ew, prec) ->

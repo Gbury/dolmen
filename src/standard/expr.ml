@@ -2111,6 +2111,52 @@ module Term = struct
             mk' ~builtin:(Builtin.Decimal s) s [] [] Ty.real
           )
 
+      let algebraic_ordered_root =
+        let cache = Hashtbl.create 113 in
+        fun coeffs order ->
+            with_cache ~cache (fun (coeffs,order) ->
+              let algebraic = "algebraic" in
+              let len = List.fold_left (fun acc x -> 1 + acc + String.length x) 0 coeffs
+              + String.length order
+              + String.length algebraic
+              + 3
+            in
+              let b = Buffer.create len in
+              Buffer.add_string b algebraic;
+              Buffer.add_char b '(';
+              List.iter (fun x -> Buffer.add_string b x; Buffer.add_char b ';') coeffs;
+              Buffer.add_char b '|';
+              Buffer.add_string b order;
+              Buffer.add_char b ')';
+              let s = Buffer.contents b in
+                mk' ~builtin:(Builtin.Algebraic (Ordered_root {coeffs;order})) s [] [] Ty.real
+              ) (coeffs,order)
+
+              let algebraic_enclosed_root =
+                let cache = Hashtbl.create 113 in
+                fun coeffs min max ->
+                    with_cache ~cache (fun (coeffs,((min_num,min_den)as min),((max_num,max_den) as max)) ->
+                      let algebraic = "algebraic" in
+                      let len = List.fold_left (fun acc x -> 1 + acc + String.length x) 0 coeffs
+                      + String.length min_num + String.length min_den
+                      + String.length max_num + String.length max_den
+                      + String.length algebraic
+                      + 6
+                    in
+                      let b = Buffer.create len in
+                      Buffer.add_string b algebraic;
+                      Buffer.add_char b '(';
+                      List.iter (fun x -> Buffer.add_string b x; Buffer.add_char b ';') coeffs;
+                      Buffer.add_char b '|';
+                      Buffer.add_string b min_num; Buffer.add_char b '/'; Buffer.add_string b min_den;
+                      Buffer.add_char b ',';
+                      Buffer.add_string b max_num; Buffer.add_char b '/'; Buffer.add_string b max_den;
+                      Buffer.add_char b ')';
+                      let s = Buffer.contents b in
+                        mk' ~builtin:(Builtin.Algebraic (Enclosed_root {coeffs;min;max})) s [] [] Ty.real
+                        ) (coeffs,min,max)
+        
+
       let minus = mk'
           ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Real)
            "Minus" [] [Ty.real] Ty.real
@@ -3291,6 +3337,10 @@ module Term = struct
 
   module Real = struct
     let mk = real
+    let algebraic_ordered_root coeffs order =
+      apply_cst (Const.Real.algebraic_ordered_root coeffs order) [] []
+    let algebraic_enclosed_root coeffs min max =
+      apply_cst (Const.Real.algebraic_enclosed_root coeffs min max) [] []
     let div' = Const.Real.div
     let minus t = apply_cst Const.Real.minus [] [t]
     let add a b = apply_cst Const.Real.add [] [a; b]

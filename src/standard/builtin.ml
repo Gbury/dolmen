@@ -63,10 +63,15 @@ type _ t +=
 type rat_real = [ `Rat | `Real ]
 type int_rat_real = [ `Int | `Rat | `Real ]
 
+type algebraic =
+| Ordered_root of { coeffs : string list; order : string; }
+| Enclosed_root of { coeffs : string list; min : string * string; max: string * string; }
+
 type _ t +=
   | Int | Integer of string
   | Rat | Rational of string
   | Real | Decimal of string
+  | Algebraic of algebraic (* instead of algebraic_ordered_root *)
   | Lt of int_rat_real | Leq of int_rat_real
   | Gt of int_rat_real | Geq of int_rat_real
   | Minus of int_rat_real

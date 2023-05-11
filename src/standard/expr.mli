@@ -1069,6 +1069,16 @@ module Term : sig
       val real : string -> t
       (** Real literals. *)
 
+      val algebraic_ordered_root : string list -> string -> t
+      (** Algebraic number defined with a polynomial (coefficient of smallest
+              degree first), and the ordered of the root when ordered from
+              smallest to biggest *)
+
+      val algebraic_enclosed_root : string list ->
+         string * string -> string * string -> t
+      (** Algebraic number defined with a polynomial (coefficient of smallest
+            degree first), and an interval where the polynomial as uniq root *)
+
       val minus : t
       (** Real unary minus/negation. *)
 

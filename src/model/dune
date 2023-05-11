@@ -17,6 +17,8 @@
     ; compilation errors due to a missing .cmi file (and type aliases not being
     ; fully resolved).
     farith ppx_deriving.runtime
+    ; Algebraic numbers
+    calcium
   )
   (modules
     ; Model checking

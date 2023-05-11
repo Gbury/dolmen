@@ -21,7 +21,7 @@ let int_to_real =
   let v =
     Fun.fun_1 ~cst (fun v ->
         let z = Value.extract_exn ~ops:Int.ops v in
-        Real.mk (Q.of_bigint z))
+        Real.mk (Real.A.of_bigint z))
   in
   [E.Ty.int; E.Ty.real], (fun _ -> v)
 
