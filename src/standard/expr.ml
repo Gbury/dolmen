@@ -3509,9 +3509,11 @@ module Term = struct
     let roundToIntegral rm x =
       let es = match_float_type x in
       apply_cst (Const.Float.roundToIntegral es) [] [rm;x]
+    let min' = Const.Float.min
     let min x y =
       let es = match_float_type x in
       apply_cst (Const.Float.min es) [] [x;y]
+    let max' = Const.Float.max
     let max x y =
       let es = match_float_type x in
       apply_cst (Const.Float.max es) [] [x;y]

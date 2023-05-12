@@ -143,7 +143,7 @@ module type Formulas = sig
 
   type term_semantics = [
     | `Total
-    | `Extensible of term_cst
+    | `Partial of (ty_var list -> term_var list -> ty -> term_cst)
   ]
   (** Semantics of term constants. Some term constants have only partially
       defined semantics (for instance division by zero), and these constants

@@ -1405,6 +1405,9 @@ module type Smtlib_Float_Float = sig
   type t
   (** the type of terms *)
 
+  type cst
+  (** The type of term constants. *)
+
   val fp : t -> t -> t -> t
   (** Construct a floating point from bitvector literals
       (sign, exponent, significand). The sign should be of size 1. *)
@@ -1473,8 +1476,14 @@ module type Smtlib_Float_Float = sig
   val min : t -> t -> t
   (** [min f1 f2] minimum *)
 
+  val min' : int * int -> cst
+  (** Constant for float min. *)
+
   val max : t -> t -> t
   (** [max f1 f2] maximum *)
+
+  val max' : int * int -> cst
+  (** Constant for float max. *)
 
   val leq : t -> t -> t
   (** [leq f1 f2] less or equal floating point comparison *)
@@ -1559,6 +1568,9 @@ module type Smtlib_Float = sig
   type ty
   (** The type of types. *)
 
+  type cst
+  (** The type of term constants *)
+
   val ty : t -> ty
   (** Type of a term. *)
 
@@ -1571,6 +1583,7 @@ module type Smtlib_Float = sig
       of the theory requirements *)
 
   module Float : Smtlib_Float_Float with type t := t
+                                     and type cst := cst
   (** Sub-module used for namespacing the floating number part
       of the theory requirements *)
 

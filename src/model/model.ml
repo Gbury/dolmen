@@ -6,6 +6,8 @@
 
 exception Partial_interpretation of
     Dolmen.Std.Expr.Term.Const.t * Value.t list
+exception Incorrect_extension of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list * Value.t
 
 module V = Map.Make(Dolmen.Std.Expr.Term.Var)
 module C = Map.Make(Dolmen.Std.Expr.Term.Const)

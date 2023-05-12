@@ -86,7 +86,7 @@ let min_max ~eval env ~cmp ~cst =
           ~post_check:(fun res ->
               match F.classify (fp res) with
               | PZero | NZero -> ()
-              | _ -> assert false)
+              | _ -> raise (Model.Incorrect_extension (cst, [x'; y'], res)))
       | _ -> if cmp x y then mk x else mk y
     ))
 

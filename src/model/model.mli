@@ -7,6 +7,9 @@
 exception Partial_interpretation of
     Dolmen.Std.Expr.Term.Const.t * Value.t list
 
+exception Incorrect_extension of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list * Value.t
+
 (** {2 Type definitions} *)
 (** ************************************************************************ *)
 

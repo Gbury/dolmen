@@ -11,7 +11,8 @@ module Smtlib2 = struct
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Smtlib_Float with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Float with type t := Type.T.t
-                                          and type ty := Type.Ty.t) = struct
+                                          and type ty := Type.Ty.t
+                                          and type cst := Type.T.Const.t) = struct
 
     module B = T.Bitv
     module R = T.Real
@@ -143,8 +144,16 @@ module Smtlib2 = struct
             Type.builtin_term (Base.term_app2 (module Type) env s F.roundToIntegral)
           | "fp.min" ->
             Type.builtin_term (Base.term_app2 (module Type) env s F.min)
+              ~meta:(`Partial (fun _ _ ret_ty ->
+                  match Ty.view ret_ty with
+                  | `Float es -> F.min' es
+                  | _ -> F.min' (1, 1)))
           | "fp.max" ->
             Type.builtin_term (Base.term_app2 (module Type) env s F.max)
+              ~meta:(`Partial (fun _ _ ret_ty ->
+                  match Ty.view ret_ty with
+                  | `Float es -> F.max' es
+                  | _ -> F.max' (1, 1)))
           | "fp.leq" ->
             Type.builtin_term (Base.term_app_chain (module Type) env s F.leq)
           | "fp.lt" ->

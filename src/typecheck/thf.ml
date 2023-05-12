@@ -184,7 +184,7 @@ module Make
   (* term semantics *)
   type term_semantics = [
     | `Total
-    | `Extensible of T.Const.t
+    | `Partial of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
   ]
 
   (* builtin meta types *)
@@ -2441,8 +2441,10 @@ module Make
         | None ->
           assert false (* missing reason for destructor *)
       end
-    | `Term_def ret_ty, `Builtin `Reserved `Term_cst cst
-    | `Term_def ret_ty, `Builtin `Term (`Extensible cst, _) ->
+    | `Term_def ret_ty, `Builtin `Term (`Partial mk_cst, _) ->
+      let cst = mk_cst vars params ret_ty in
+      lookup_id_for_def_term env d vars params ret_ty cst Builtin
+    | `Term_def ret_ty, `Builtin `Reserved `Term_cst cst ->
       lookup_id_for_def_term env d vars params ret_ty cst Builtin
     | `Term_def ret_ty, ((`Term_cst cst) as c) ->
       begin match find_reason env c with

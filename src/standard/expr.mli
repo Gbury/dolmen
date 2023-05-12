@@ -1843,6 +1843,7 @@ module Term : sig
   module Float : sig
 
     include Dolmen_intf.Term.Smtlib_Float_Float with type t := t
+                                                 and type cst := term_cst
     (** Satisfy the required interface for typing smtlib floating points. *)
 
   end

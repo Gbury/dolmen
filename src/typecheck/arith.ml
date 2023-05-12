@@ -772,11 +772,11 @@ module Smtlib2 = struct
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
                                    ~check:(check env (F.ediv arith version)))
-                ~meta:(`Extensible T.div')
+                ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.rem
                                    ~check:(check2 env (F.mod_ arith version)))
-                ~meta:(`Extensible T.rem')
+                ~meta:(`Partial (fun _ _ _ -> T.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.abs
                     ~check:(check1 env (F.abs arith version)))
@@ -865,7 +865,7 @@ module Smtlib2 = struct
             | "/" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
                        ~check:(check env (F.div arith (parse ~arith) version env)))
-                ~meta:(`Extensible T.div')
+                ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.le
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
@@ -977,11 +977,11 @@ module Smtlib2 = struct
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.Int.div
                                    ~check:(check env (F.ediv arith version)))
-                ~meta:(`Extensible T.Int.div')
+                ~meta:(`Partial (fun _ _ _ -> T.Int.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.Int.rem
                                    ~check:(check2 env (F.mod_ arith version)))
-                ~meta:(`Extensible T.Int.rem')
+                ~meta:(`Partial (fun _ _ _ -> T.Int.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.Int.abs
                        ~check:(check1 env (F.abs arith version)))
@@ -989,7 +989,7 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (promote_int_to_real env T.Real.div)
                        ~check:(check env (F.div arith (parse ~arith) version env)))
-                ~meta:(`Extensible T.Real.div')
+                ~meta:(`Partial (fun _ _ _ -> T.Real.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.le, T.Real.le))

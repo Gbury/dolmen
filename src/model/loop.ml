@@ -175,6 +175,18 @@ let partial_interpretation =
           pp_app (cst, args))
     ~name:"Partial Destructor" ()
 
+(* TODO: add loc for the definition of the symbol being incorrectly extended *)
+let bad_extension =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"bad-extension"
+    ~message:(fun fmt (cst, args, ret) ->
+        Format.fprintf fmt
+          "The extension for symbol %a returned a non-conforming value:@ \
+           @[<hov 2>%a@ -> %a@]"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cst
+          pp_app (cst, args) Value.print ret
+      )
+    ~name:"Bad extension" ()
+
 let unhandled_float_exponand_and_mantissa =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"unhandled-float-sizes"
     ~message:(fun fmt (ew, mw) ->
@@ -258,6 +270,8 @@ module Make
     | Eval.Undefined_constant c -> _err undefined_constant c
     | Model.Partial_interpretation (cst, args) ->
       _err partial_interpretation (cst, args)
+    | Model.Incorrect_extension (cst, args, ret) ->
+      _err bad_extension (cst, args, ret)
     | Fp.Unhandled_exponand_and_mantissa { ew; mw } ->
       _err unhandled_float_exponand_and_mantissa (ew, mw)
 
