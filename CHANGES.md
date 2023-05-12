@@ -44,6 +44,8 @@ next
 - Remove the "error" keyword and statement from smtlib2
   response (model) files (PR#139)
 - Correctly compare abstract array values (PR#143)
+- Accept extensions of functions/symbols with only partially defined
+  semantics, for e.g. `fp.to_ubv`, `div`, etc.. (PR#151)
 
 v0.8.1
 ------
