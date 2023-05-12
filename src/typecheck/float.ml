@@ -45,6 +45,20 @@ module Smtlib2 = struct
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
+    let meta_to_bv mk = fun _ params ret_ty ->
+      let err () = mk 0 (0,0) in
+      match params with
+      | [_; x] ->
+        begin match Ty.view (Type.T.Var.ty x) with
+          | `Float (e, s) ->
+            begin match Ty.view ret_ty with
+              | `Bitv n -> mk n (e, s)
+              | _ -> err ()
+            end
+          | _ -> err ()
+        end
+      | _ -> err ()
+
     let indexed1 env mk i_s ast =
       let i = parse_int env ast i_s in
       mk i
@@ -201,14 +215,19 @@ module Smtlib2 = struct
                          (indexed2 env F.nan e s)))
             | "to_fp" -> `Binary (to_fp env symbol)
             | "to_fp_unsigned" -> `Binary (fun e s ->
-                Type.builtin_term (Base.term_app2_ast (module Type) env symbol
-                         (indexed2 env F.ubv_to_fp e s)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed2 env F.ubv_to_fp e s)))
             | "fp.to_ubv" -> `Unary (fun n ->
-                Type.builtin_term (Base.term_app2_ast (module Type) env symbol
-                         (indexed1 env F.to_ubv n)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed1 env F.to_ubv n))
+                  ~meta:(`Partial (meta_to_bv F.to_ubv')))
             | "fp.to_sbv" -> `Unary (fun n ->
-                Type.builtin_term (Base.term_app2_ast (module Type) env symbol
-                         (indexed1 env F.to_sbv n)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed1 env F.to_sbv n))
+                  ~meta:(`Partial (meta_to_bv F.to_sbv')))
             | _ -> `Not_indexed)
           ~err:(Base.bad_term_index_arity (module Type) env)
           ~k:(function () -> `Not_found)

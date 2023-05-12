@@ -3569,9 +3569,11 @@ module Term = struct
     let ubv_to_fp e s rm bv =
       let n = Bitv.match_bitv_type bv in
       apply_cst (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
+    let to_ubv' m (e,s) = Const.Float.to_ubv (e, s, m)
     let to_ubv m rm x =
       let (e,s) = match_float_type x in
       apply_cst (Const.Float.to_ubv (e,s,m)) [] [rm;x]
+    let to_sbv' m (e,s) = Const.Float.to_sbv (e, s, m)
     let to_sbv m rm x =
       let (e,s) = match_float_type x in
       apply_cst (Const.Float.to_sbv (e,s,m)) [] [rm;x]

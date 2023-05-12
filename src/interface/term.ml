@@ -1541,8 +1541,14 @@ module type Smtlib_Float_Float = sig
   val to_ubv: int -> t -> t -> t
   (** [to_ubv m rm f] convert to an unsigned integer (bitvector of size m) *)
 
+  val to_ubv' : int -> int * int -> cst
+  (** constant for [to_ubv] *)
+
   val to_sbv: int -> t -> t -> t
   (** [to_ubv m rm f] convert to a signed integer (bitvector of size m) *)
+
+  val to_sbv' : int -> int * int -> cst
+  (** constant for [to_sbv] *)
 
   val to_real: t -> t
   (** [to_real f] convert to a real *)
