@@ -4,6 +4,9 @@
 (** {2 Exception} *)
 (** ************************************************************************ *)
 
+module V : Map.S with type key = Dolmen.Std.Expr.Term.Var.t
+module C : Map.S with type key = Dolmen.Std.Expr.Term.Const.t
+
 exception Partial_interpretation of
     Dolmen.Std.Expr.Term.Const.t * Value.t list
 

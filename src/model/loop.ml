@@ -40,6 +40,10 @@ type acc = {
 type internal =
   | Full_check of { acc : acc; }
   | Interleaved of { answer : (typed_model * parsed_model) answer option; }
+  | Best_effort of {
+      suspended : acc Model.C.t;
+      answer : (typed_model * parsed_model) answer option;
+    }
 
 type 'st t = {
   internal : internal;
