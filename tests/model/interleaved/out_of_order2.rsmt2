@@ -1,0 +1,5 @@
+sat
+(
+  (define-fun a () Int 0)
+  (define-fun b () Int 0)
+)

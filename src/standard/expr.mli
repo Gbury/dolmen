@@ -136,6 +136,7 @@ module Tags : sig
   (** Satsify the Smtlib interface. *)
 
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
+                                   and type pos = Pretty.pos
   (** Satsify the Zf interface. *)
 
   include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
@@ -660,6 +661,15 @@ module Ty : sig
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
+  val match_ : t list -> t list -> subst option
+  (** Try and pattern mathc a list of patterns agains a list of types. *)
+
+  val instance_of : t -> t -> t list option
+  (** [instance_of poly t] decides whether [t] is an instance of [poly],
+      that is whether there are some types [l] such that a term of
+      type [poly] applied to type arguments [l] gives a term of type
+      [t]. *)
+
   val set_wildcard : ty_var -> t -> unit
   (** Instantiate the given wildcard. *)
 
@@ -824,8 +834,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a term constant. *)
+    val ty : t -> ty
+    (** Returns the type of a term constant. *)
 
     val mk : Path.t -> ty -> t
     (** Create a constant symbol. *)
@@ -909,9 +919,6 @@ module Term : sig
       val div_f : t
       (** Floor of the integer divison. *)
 
-      val div_zero : t
-      (** Integer division by zero. *)
-
       val rem_e : t
       (** Integer euclidian division remainder. *)
 
@@ -920,9 +927,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the integer division. *)
-
-      val rem_zero : t
-      (** Integer modulo zero. *)
 
       val abs : t
       (** Integer absolute value. *)
@@ -988,9 +992,6 @@ module Term : sig
       val div_f : t
       (** Floor of the rational divison. *)
 
-      val div_zero : t
-      (** Rational division by zero. *)
-
       val rem_e : t
       (** Euclidian division remainder. *)
 
@@ -999,9 +1000,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the rational division. *)
-
-      val rem_zero : t
-      (** Rational modulo zero. *)
 
       val lt : t
       (** Rational "less than" comparison. *)
@@ -1066,9 +1064,6 @@ module Term : sig
       val div_f : t
       (** Floor of the real divison. *)
 
-      val div_zero : t
-      (** Real division by zero. *)
-
       val rem_e : t
       (** Real euclidian division remainder. *)
 
@@ -1077,9 +1072,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the real division. *)
-
-      val rem_zero : t
-      (** Real modulo zero. *)
 
       val lt : t
       (** Real "less than" comparison. *)
@@ -1524,8 +1516,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a constructor. *)
+    val ty : t -> ty
+    (** Returns the type of a constructor. *)
 
     val void : t
     (** Only constructor for the type unit. *)
@@ -1851,6 +1843,7 @@ module Term : sig
   module Float : sig
 
     include Dolmen_intf.Term.Smtlib_Float_Float with type t := t
+                                                 and type cst := term_cst
     (** Satisfy the required interface for typing smtlib floating points. *)
 
   end
@@ -1900,11 +1893,6 @@ module Term : sig
     val div : t -> t -> t
     (** Exact division on rationals. *)
 
-    val div_zero : term_cst
-    (** Symbol for interpretation of division by zero. *)
-
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** Real operations *)
@@ -1926,8 +1914,6 @@ module Term : sig
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)
 
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** String operations *)

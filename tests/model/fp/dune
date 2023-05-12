@@ -67,6 +67,72 @@
   (action (diff integral.expected integral.full)))
 
 
+; Test for min_max.smt2
+; Incremental test
+
+(rule
+   (target  min_max.incremental)
+   (deps    (:response min_max.rsmt2) (:input min_max.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff min_max.expected min_max.incremental)))
+
+; Full mode test
+
+(rule
+   (target  min_max.full)
+   (deps    (:response min_max.rsmt2) (:input min_max.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff min_max.expected min_max.full)))
+
+
+; Test for min_max_bad_extension.smt2
+; Incremental test
+
+(rule
+   (target  min_max_bad_extension.incremental)
+   (deps    (:response min_max_bad_extension.rsmt2)
+            (:input min_max_bad_extension.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff min_max_bad_extension.expected min_max_bad_extension.incremental)))
+
+; Full mode test
+
+(rule
+   (target  min_max_bad_extension.full)
+   (deps    (:response min_max_bad_extension.rsmt2)
+            (:input min_max_bad_extension.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff min_max_bad_extension.expected min_max_bad_extension.full)))
+
+
 ; Test for rem.smt2
 ; Incremental test
 

@@ -1,0 +1,15 @@
+sat
+(
+  (define-fun head ((l (list Int))) Int
+    (match l (
+      (nil 0)
+      ((cons hd tl) hd)
+    ))
+  )
+  (define-fun tail ((l (list Int))) (list Int)
+    (match l (
+      ((cons hd tl) tl)
+      (nil (as nil (list Int)))
+    ))
+  )
+)

@@ -129,4 +129,36 @@
   (action (diff div_zero_2.expected div_zero_2.full)))
 
 
+; Test for div_zero_3.smt2
+; Incremental test
+
+(rule
+   (target  div_zero_3.incremental)
+   (deps    (:response div_zero_3.rsmt2) (:input div_zero_3.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_3.expected div_zero_3.incremental)))
+
+; Full mode test
+
+(rule
+   (target  div_zero_3.full)
+   (deps    (:response div_zero_3.rsmt2) (:input div_zero_3.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_3.expected div_zero_3.full)))
+
+
 ; Auto-generated part end

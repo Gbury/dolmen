@@ -16,7 +16,6 @@ module V = Dolmen.Std.Expr.Term.Var
 module C = Dolmen.Std.Expr.Term.Const
 
 exception Not_a_pattern of T.t
-exception Partial_destructor of C.t * Value.t
 
 type t = {
   head : C.t;
@@ -45,21 +44,35 @@ let ops = Value.ops ~print ~compare ()
 let mk head args =
   Value.mk ~ops { head; args; }
 
-let tester cstr value =
+let eval_tester cstr value =
   let { head; args = _ } = Value.extract_exn ~ops value in
   if C.equal cstr head then Bool.mk true else Bool.mk false
 
-let destructor cstr field value =
-  let { head; args; } = Value.extract_exn ~ops value in
+let eval_dstr ~eval env dstr cstr field tys arg =
+  let { head; args; } = Value.extract_exn ~ops arg in
   if C.equal cstr head
   then List.nth args field
-  else raise (Partial_destructor (cstr, value))
+  else begin
+    match Model.Cst.find_opt dstr (Env.model env) with
+    | Some f ->
+      (* Remove the dstr from the env to avoid infinite recursive evaluation *)
+      let env = Env.update_model env (Model.Cst.remove dstr) in
+      Fun.apply_val ~eval env f tys [arg]
+    | None -> raise (Model.Partial_interpretation (dstr, [arg]))
+  end
 
-let builtins _ (cst : C.t) =
+let builtins ~eval env (cst : C.t) =
   match cst.builtin with
-  | B.Constructor _ -> Some (Fun.fun_n ~cst (mk cst))
-  | B.Tester { cstr; _ } -> Some (Fun.fun_1 ~cst (tester cstr))
-  | B.Destructor { cstr; field; _ } -> Some (Fun.fun_1 ~cst (destructor cstr field))
+  | B.Constructor _ ->
+    Some (Fun.fun_n ~cst (mk cst))
+  | B.Tester { cstr; _ } ->
+    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (eval_tester cstr))
+  | B.Destructor { cstr; field; _ } ->
+    Some (Fun.mk_clos @@ Fun.poly ~arity:1 ~cst (fun tys args ->
+        match args with
+        | [arg] -> eval_dstr ~eval env cst cstr field tys arg
+        | _ -> raise (Fun.Bad_arity (cst, 1, args))
+      ))
   | _ -> None
 
 

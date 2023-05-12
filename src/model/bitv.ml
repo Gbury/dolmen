@@ -81,14 +81,17 @@ module B = Dolmen.Std.Builtin
 
 let mk n i = Value.mk ~ops (from_bitv n i)
 
-let cmp ~cst p = Some (Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p x y))
-let op2 ~cst ~size f = Some (Fun.fun_2 ~cst (fun x y -> mk size @@ f x y))
-let op1 ~cst ~size f = Some (Fun.fun_1 ~cst (fun x -> mk size @@ f x))
+let cmp ~cst p =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p x y))
+let op2 ~cst ~size f =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y -> mk size @@ f x y))
+let op1 ~cst ~size f =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> mk size @@ f x))
 
 let sbitv n t = Z.signed_extract (ubitv n t) 0 n
 let extract n t = Z.extract t 0 n
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Bitvec s ->
     Some (mk (String.length s) (Z.of_string_base 2 s))

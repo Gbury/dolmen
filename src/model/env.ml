@@ -7,11 +7,14 @@
 module V = Map.Make(Dolmen.Std.Expr.Term.Var)
 module C = Map.Make(Dolmen.Std.Expr.Term.Const)
 
-type t = {
-  model : Model.t;
-  builtins : t -> Dolmen.Std.Expr.Term.Const.t -> Value.t;
-}
+type builtins =
+  eval:(t -> Dolmen.Std.Expr.Term.t -> Value.t) ->
+  t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
 
+and t = {
+  model : Model.t;
+  builtins : builtins;
+}
 
 (* Common functions *)
 (* ************************************************************************* *)
@@ -19,7 +22,7 @@ type t = {
 let mk model ~builtins =
   { model; builtins; }
 
-let builtins t = t.builtins t
+let builtins t = t.builtins
 
 let model { model; _ } = model
 

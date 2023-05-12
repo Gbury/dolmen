@@ -193,7 +193,7 @@ module Print = struct
     | TyVar v -> id fmt v
     | Arrow (args, ret) ->
       Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"
-        (Format.pp_print_list ~pp_sep:(return " ->@ ") subty) args subty ret
+        (Format.pp_print_list ~pp_sep:(return " ->@ ") ty) args subty ret
     | TyApp (f, []) -> id fmt f
     | TyApp (f, l) ->
       begin match Tag.get f.tags pos with
@@ -1029,6 +1029,33 @@ module Ty = struct
     | [], _ :: _
     | _ :: _, [] -> raise (Impossible_matching (pat, t))
 
+  let match_ pats tys =
+    let rec aux subst pats tys =
+      match pats, tys with
+      | [], [] -> subst
+      | pat :: pats, ty :: tys -> aux (pmatch subst pat ty) pats tys
+      | [], _ :: _
+      | _ :: _, [] -> raise Exit
+    in
+    try
+      let res = aux Subst.empty pats tys in
+      Subst.iter (fun var _ ->
+          match var.builtin with
+          | Builtin.Wildcard _ -> assert false
+          | _ -> ()
+        ) res;
+      Some res
+    with Exit | Impossible_matching _ ->
+      None
+
+  let instance_of poly ty =
+    let vars, pat = split_pi poly in
+    match match_ [pat] [ty] with
+    | None -> None
+    | Some subst ->
+      let l = List.map (fun v -> Subst.Var.get v subst) vars in
+      Some l
+
   (* Unification *)
   exception Impossible_unification of t * t
 
@@ -1738,6 +1765,8 @@ module Term = struct
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
 
+    let ty ({ id_ty; _ } : t) = id_ty
+
     let mk path ty =
       Id.mk path ty
 
@@ -1752,10 +1781,6 @@ module Term = struct
           let fun_args = replicate i fun_arg in
           mk' ?pos ?name ?builtin ?tags cname fun_vars fun_args fun_ret
         )
-
-    let arity (c : t) =
-      let vars, args, _ = Ty.poly_sig c.id_ty in
-      List.length vars, List.length args
 
     (* Some constants *)
     let _true =
@@ -1884,7 +1909,7 @@ module Term = struct
            "Pow" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = mk'
-          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div_e `Int)
+          ~pos:Pretty.Prefix ~name:"div" ~builtin:(Builtin.Div_e `Int)
            "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = mk'
           ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Int)
@@ -1892,9 +1917,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Int)
            "Div_f" [] [Ty.int; Ty.int] Ty.int
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/0"
-           "Div_zero" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Int)
@@ -1905,9 +1927,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Int)
            "Modulo_f" [] [Ty.int; Ty.int] Ty.int
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.int; Ty.int] Ty.int
 
       let abs = mk'
           ~name:"abs" ~builtin:Builtin.Abs
@@ -1994,9 +2013,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Rat)
            "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Rat)
@@ -2007,9 +2023,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Rat)
            "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Rat)
@@ -2092,9 +2105,6 @@ module Term = struct
       let div_f = mk'
           ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Real)
            "Div_f" [] [Ty.real; Ty.real] Ty.real
-      let div_zero = mk'
-          ~pos:Pretty.Infix ~name:"/zero"
-           "Div_zero" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = mk'
           ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Real)
@@ -2105,9 +2115,6 @@ module Term = struct
       let rem_f = mk'
           ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Real)
            "Modulo_f" [] [Ty.real; Ty.real] Ty.real
-      let rem_zero = mk'
-          ~pos:Pretty.Infix ~name:"%zero"
-           "Modulo_zero" [] [Ty.real; Ty.real] Ty.real
 
       let lt = mk'
           ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Real)
@@ -2691,9 +2698,7 @@ module Term = struct
 
     exception Bad_pattern_arity of term_cst * ty list * term list
 
-    let arity (c : t) =
-      let vars, args, _ = Ty.poly_sig c.id_ty in
-      List.length vars, List.length args
+    let ty ({ id_ty; _ } : t) = id_ty
 
     let tester c =
       match c.builtin with
@@ -3177,8 +3182,8 @@ module Term = struct
   (* arithmetic *)
   module Int = struct
     let mk = int
-    let div_zero = Const.Int.div_zero
-    let rem_zero = Const.Int.rem_zero
+    let div' = Const.Int.div_e
+    let rem' = Const.Int.rem_e
     let minus t = apply_cst Const.Int.minus [] [t]
     let add a b = apply_cst Const.Int.add [] [a; b]
     let sub a b = apply_cst Const.Int.sub [] [a; b]
@@ -3211,8 +3216,6 @@ module Term = struct
 
   module Rat = struct
     let mk = rat
-    let div_zero = Const.Rat.div_zero
-    let rem_zero = Const.Rat.rem_zero
     let minus t = apply_cst Const.Rat.minus [] [t]
     let add a b = apply_cst Const.Rat.add [] [a; b]
     let sub a b = apply_cst Const.Rat.sub [] [a; b]
@@ -3241,8 +3244,7 @@ module Term = struct
 
   module Real = struct
     let mk = real
-    let div_zero = Const.Real.div_zero
-    let rem_zero = Const.Real.rem_zero
+    let div' = Const.Real.div
     let minus t = apply_cst Const.Real.minus [] [t]
     let add a b = apply_cst Const.Real.add [] [a; b]
     let sub a b = apply_cst Const.Real.sub [] [a; b]
@@ -3507,9 +3509,11 @@ module Term = struct
     let roundToIntegral rm x =
       let es = match_float_type x in
       apply_cst (Const.Float.roundToIntegral es) [] [rm;x]
+    let min' = Const.Float.min
     let min x y =
       let es = match_float_type x in
       apply_cst (Const.Float.min es) [] [x;y]
+    let max' = Const.Float.max
     let max x y =
       let es = match_float_type x in
       apply_cst (Const.Float.max es) [] [x;y]
@@ -3565,9 +3569,11 @@ module Term = struct
     let ubv_to_fp e s rm bv =
       let n = Bitv.match_bitv_type bv in
       apply_cst (Const.Float.ubv_to_fp (n,e,s)) [] [rm;bv]
+    let to_ubv' m (e,s) = Const.Float.to_ubv (e, s, m)
     let to_ubv m rm x =
       let (e,s) = match_float_type x in
       apply_cst (Const.Float.to_ubv (e,s,m)) [] [rm;x]
+    let to_sbv' m (e,s) = Const.Float.to_sbv (e, s, m)
     let to_sbv m rm x =
       let (e,s) = match_float_type x in
       apply_cst (Const.Float.to_sbv (e,s,m)) [] [rm;x]

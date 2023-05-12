@@ -65,4 +65,38 @@
   (action (diff list_tester.expected list_tester.full)))
 
 
+; Test for partial_destructor.smt2
+; Incremental test
+
+(rule
+   (target  partial_destructor.incremental)
+   (deps    (:response partial_destructor.rsmt2)
+            (:input partial_destructor.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff partial_destructor.expected partial_destructor.incremental)))
+
+; Full mode test
+
+(rule
+   (target  partial_destructor.full)
+   (deps    (:response partial_destructor.rsmt2)
+            (:input partial_destructor.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff partial_destructor.expected partial_destructor.full)))
+
+
 ; Auto-generated part end

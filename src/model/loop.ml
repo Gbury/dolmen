@@ -61,8 +61,20 @@ let empty ~mode () = {
 (* Warnings and errors *)
 (* ************************************************************************ *)
 
+module E = Dolmen.Std.Expr
+
 let pp_wrap pp fmt x =
   Format.fprintf fmt "`%a`" pp x
+
+let pp_app fmt (cst, args) =
+  match (E.Term.Const.get_tag cst E.Tags.pos) with
+  | None | Some Dolmen.Std.Pretty.Prefix ->
+    Format.fprintf fmt "(%a@ %a)"
+      E.Term.Const.print cst
+      (Format.pp_print_list ~pp_sep:Format.pp_print_space Value.print) args
+  | Some Dolmen.Std.Pretty.Infix ->
+    let pp_sep fmt () = Format.fprintf fmt " %a@ " E.Term.Const.print cst in
+    Format.pp_print_list ~pp_sep Value.print fmt args
 
 let code =
   Dolmen_loop.Code.create
@@ -152,15 +164,40 @@ let unhandled_builtin =
           (pp_wrap Dolmen.Std.Expr.Term.Const.print) c)
       ~name:"Unhandled builtin in Model verification" ()
 
-let partial_destructor =
+let partial_interpretation =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"partial-dstr"
-    ~message:(fun fmt (cstr, value) ->
+    ~message:(fun fmt (cst, args) ->
         Format.fprintf fmt
-          "Partial destructr: the destructor for constructor %a \
-           was applied to the following value: %a"
-          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cstr
-          (pp_wrap Value.print) value)
+          "The symbol %a is only partially interpreted/defined,@ \
+           and the following application does not have an intepretation:@ \
+           @[<hov 2>%a@]"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cst
+          pp_app (cst, args))
     ~name:"Partial Destructor" ()
+
+(* TODO: add loc for the definition of the symbol being incorrectly extended *)
+let bad_extension =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"bad-extension"
+    ~message:(fun fmt (cst, args, ret) ->
+        Format.fprintf fmt
+          "The extension for symbol %a returned a non-conforming value:@ \
+           @[<hov 2>%a@ -> %a@]"
+          (pp_wrap Dolmen.Std.Expr.Term.Const.print) cst
+          pp_app (cst, args) Value.print ret
+      )
+    ~name:"Bad extension" ()
+
+let unhandled_float_exponand_and_mantissa =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"unhandled-float-sizes"
+    ~message:(fun fmt (ew, mw) ->
+        Format.fprintf fmt
+          "The following size for exponand and mantissa are not currently
+          handled by dolmen: (%d, %d)." ew mw)
+    ~hints:[(fun _ -> Some (Format.dprintf "%a"
+        Format.pp_print_text
+          "This is a current implementation limitation of dolmen. \
+           Please report upstream if encounter this error, ^^")); ]
+    ~name:"Unhandled Floating point sizes" ()
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -231,7 +268,12 @@ module Make
     | Eval.Unhandled_builtin b -> _err unhandled_builtin b
     | Eval.Undefined_variable v -> _err undefined_variable v
     | Eval.Undefined_constant c -> _err undefined_constant c
-    | Adt.Partial_destructor (cstr, value) -> _err partial_destructor (cstr, value)
+    | Model.Partial_interpretation (cst, args) ->
+      _err partial_interpretation (cst, args)
+    | Model.Incorrect_extension (cst, args, ret) ->
+      _err bad_extension (cst, args, ret)
+    | Fp.Unhandled_exponand_and_mantissa { ew; mw } ->
+      _err unhandled_float_exponand_and_mantissa (ew, mw)
 
   (* Typing models *)
   (* ************************************************************************ *)
@@ -249,6 +291,7 @@ module Make
     let contents =
       List.filter_map (function
           | `Type_def _ -> None
+          | `Instanceof _ -> None (* TODO: warning/error ? *)
           | `Term_def (_id, cst, ty_params, term_params, body) ->
             let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
             Some (cst, func)
@@ -277,6 +320,19 @@ module Make
               Dolmen.Std.Expr.Term.Const.print cst
               Value.print value;
           let model = Model.Cst.add cst value model in
+          (st, model)
+        | `Instanceof (_id, cst, ty_args, ty_params, term_params, body) ->
+          assert (ty_params = []);
+          let pp_sep fmt () = Format.fprintf fmt ", @ " in
+          if State.get State.debug st then
+            Format.eprintf "[model][typed][%a] @[<hov>%a(%a) := %a@]@."
+              Dolmen.Std.Loc.fmt_compact (Dolmen.Std.Loc.full_loc loc)
+              Dolmen.Std.Expr.Term.Const.print cst
+              (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.print) ty_args
+              Dolmen.Std.Expr.Term.print (Dolmen.Std.Expr.Term.lam ([], term_params) body);
+          let model = Fun.add_ad_hoc_instance model ~cst ~ty_args ~term_params ~body in
+          if State.get State.debug st then
+            Format.eprintf "[model][typed] %a@." Model.print model;
           (st, model)
       ) (st, model) parsed_defs.contents typed_defs
 

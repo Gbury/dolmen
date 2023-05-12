@@ -21,18 +21,19 @@ exception Unhandled_builtin of Cst.t
 exception Undefined_variable of Var.t
 exception Undefined_constant of Cst.t
 
-
 (* Builtins *)
 (* ************************************************************************* *)
 
-let rec builtins l env c =
-  match l with
-  | [] -> raise (Unhandled_builtin c)
-  | b :: r ->
-    begin match b env c with
-      | Some value -> value
-      | None -> builtins r env c
-    end
+let builtins (l : Env.builtins list) : Env.builtins =
+  let rec aux ~eval env c = function
+    | [] -> None
+    | b :: r ->
+      begin match b ~eval env c with
+        | Some _ as res -> res
+        | None -> aux ~eval env c r
+      end
+  in
+  (fun ~eval env c -> aux ~eval env c l)
 
 
 (* Evaluation *)
@@ -63,7 +64,11 @@ and eval_cst env (c : Cst.t) =
       | Some value -> value
       | None -> raise (Undefined_constant c)
     end
-  | _ -> Env.builtins env c
+  | _ ->
+    begin match Env.builtins env ~eval env c with
+      | Some res -> res
+      | None -> raise (Unhandled_builtin c)
+    end
 
 and eval_apply env f ty_args args =
   Fun.apply ~eval env (eval env f) ty_args args
@@ -92,7 +97,10 @@ and eval_binder env b body =
     in
     eval env body
   | Lambda (tys, params) ->
-    Fun.mk ~env ~eval tys params body
+    begin match params with
+      | [] -> eval env body
+      | _ -> Fun.mk_clos @@ Fun.lambda tys params body
+    end
   | Exists (_tys, _terms)
   | Forall (_tys, _terms) ->
     raise Quantifier

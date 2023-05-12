@@ -425,8 +425,8 @@ module type Tff = sig
     val compare : t -> t -> int
     (** Comparison function on constant symbols. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a term constant. *)
+    val ty : t -> ty
+    (** Return the type of the constant. *)
 
     val mk : path -> ty -> t
     (** Create a constant symbol. *)
@@ -449,11 +449,11 @@ module type Tff = sig
         constructors, while [list] would be a type constant of arity 1 used to
         name the type. *)
 
+    val ty : t -> ty
+    (** Return the type of the constant. *)
+
     val compare : t -> t -> int
     (** Comparison function on constant symbols. *)
-
-    val arity : t -> int * int
-    (** Returns the arity of a constructor. *)
 
     val pattern_arity : t -> ty -> ty list -> ty list
     (** Used in the type-checking of pattern matching.
@@ -1144,21 +1144,17 @@ module type Smtlib_Int = sig
 
   include Smtlib_Arith_Common
 
+  val div' : cst
+  (** Constant for the division. *)
+
   val div : t -> t -> t
   (** Euclidian division. See Smtlib theory for a full description. *)
 
-  val div_zero : cst
-  (** A symbol used to denote the interpretation of division by zero
-      in a particular model. Has no semantics by itself, and instead is
-      used as index in the environment of model verification. *)
+  val rem' : cst
+  (** Constant for the remainder. *)
 
   val rem : t -> t -> t
   (** Euclidian integer remainder See Smtlib theory for a full description. *)
-
-  val rem_zero : cst
-  (** A symbol used to denote the interpretation of modulo by zero
-      in a particular model. Has no semantics by itself, and instead is
-      used as index in the environment of model verification. *)
 
   val abs : t -> t
   (** Arithmetic absolute value. *)
@@ -1174,13 +1170,11 @@ module type Smtlib_Real = sig
 
   include Smtlib_Arith_Common
 
+  val div' : cst
+  (** Constant for the division. *)
+
   val div : t -> t -> t
   (** Real division. See Smtlib theory for a full description. *)
-
-  val div_zero : cst
-  (** A symbol used to denote the interpretation of division by zero
-      in a particular model. Has no semantics by itself, and instead is
-      used as index in the environment of model verification. *)
 
 end
 
@@ -1411,6 +1405,9 @@ module type Smtlib_Float_Float = sig
   type t
   (** the type of terms *)
 
+  type cst
+  (** The type of term constants. *)
+
   val fp : t -> t -> t -> t
   (** Construct a floating point from bitvector literals
       (sign, exponent, significand). The sign should be of size 1. *)
@@ -1479,8 +1476,14 @@ module type Smtlib_Float_Float = sig
   val min : t -> t -> t
   (** [min f1 f2] minimum *)
 
+  val min' : int * int -> cst
+  (** Constant for float min. *)
+
   val max : t -> t -> t
   (** [max f1 f2] maximum *)
+
+  val max' : int * int -> cst
+  (** Constant for float max. *)
 
   val leq : t -> t -> t
   (** [leq f1 f2] less or equal floating point comparison *)
@@ -1538,8 +1541,14 @@ module type Smtlib_Float_Float = sig
   val to_ubv: int -> t -> t -> t
   (** [to_ubv m rm f] convert to an unsigned integer (bitvector of size m) *)
 
+  val to_ubv' : int -> int * int -> cst
+  (** constant for [to_ubv] *)
+
   val to_sbv: int -> t -> t -> t
   (** [to_ubv m rm f] convert to a signed integer (bitvector of size m) *)
+
+  val to_sbv' : int -> int * int -> cst
+  (** constant for [to_sbv] *)
 
   val to_real: t -> t
   (** [to_real f] convert to a real *)
@@ -1565,6 +1574,9 @@ module type Smtlib_Float = sig
   type ty
   (** The type of types. *)
 
+  type cst
+  (** The type of term constants *)
+
   val ty : t -> ty
   (** Type of a term. *)
 
@@ -1577,6 +1589,7 @@ module type Smtlib_Float = sig
       of the theory requirements *)
 
   module Float : Smtlib_Float_Float with type t := t
+                                     and type cst := cst
   (** Sub-module used for namespacing the floating number part
       of the theory requirements *)
 

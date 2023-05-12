@@ -4,6 +4,11 @@
 (* Type definitions & modules *)
 (* ************************************************************************* *)
 
+exception Partial_interpretation of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list
+exception Incorrect_extension of
+    Dolmen.Std.Expr.Term.Const.t * Value.t list * Value.t
+
 module V = Map.Make(Dolmen.Std.Expr.Term.Var)
 module C = Map.Make(Dolmen.Std.Expr.Term.Const)
 
@@ -19,6 +24,18 @@ type t = {
 let empty =
   { vars = V.empty; csts = C.empty; }
 
+let print fmt model =
+  Format.fprintf fmt "@[<v>@[<v 2>{";
+  V.iter (fun var value ->
+      Format.fprintf fmt "@ %a -> @[<hov 2>%a@]"
+        Dolmen.Std.Expr.Term.Var.print var Value.print value
+    ) model.vars;
+  C.iter (fun cst value ->
+      Format.fprintf fmt "@ %a -> @[<hov 2>%a@]"
+        Dolmen.Std.Expr.Term.Const.print cst Value.print value
+    ) model.csts;
+  Format.fprintf fmt "@]@ }@]"
+
 
 (* Mapped var&cst values *)
 (* ************************************************************************* *)
@@ -30,6 +47,8 @@ module type S = sig
   val find_opt : key -> t -> Value.t option
 
   val add : key -> Value.t -> t -> t
+
+  val remove : key -> t -> t
 
 end
 
@@ -47,6 +66,9 @@ module Var
   let add v value t =
     { t with vars = V.add v value t.vars; }
 
+  let remove v t =
+    { t with vars = V.remove v t.vars; }
+
 end
 
 (* csts *)
@@ -62,5 +84,8 @@ module Cst
 
   let add c value t =
     { t with csts = C.add c value t.csts; }
+
+  let remove c t =
+    { t with csts = C.remove c t.csts; }
 
 end

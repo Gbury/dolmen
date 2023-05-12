@@ -17,45 +17,79 @@ let ops =
     ~print:(fun fmt b -> Format.fprintf fmt "%a" F.pp b)
     ()
 
-
-(* Configuration for corner cases *)
-(* ************************************************************************* *)
-
-exception Min_Max_with_different_zeros
-exception FP_to_BV_undefined
-
 (* Builtins *)
 (* ************************************************************************* *)
 
 module E = Dolmen.Std.Expr
 module B = Dolmen.Std.Builtin
 
+exception Unhandled_exponand_and_mantissa of { ew : int; mw : int; }
+
 let mk f = Value.mk ~ops f
-
-let mode v = (Value.extract_exn ~ops:ops_rm v)
 let fp v = (Value.extract_exn ~ops v)
+let mode v = (Value.extract_exn ~ops:ops_rm v)
 
-let test ~cst p = Some (Fun.fun_1 ~cst (fun x -> Bool.mk @@ p (fp x)))
-let cmp ~cst p = Some (Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p (fp x) (fp y)))
+let check ~ew ~mw =
+  (* Note: this is a bit of a hack, since the `GenericFloat` module is not
+     exposed in the main interface of `Farith` *)
+  if not (Farith__GenericFloat.check_param (Z.of_int mw) (Z.of_int ew))
+  then raise (Unhandled_exponand_and_mantissa { ew; mw = mw + 1; })
+
+let test ~cst p =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> Bool.mk @@ p (fp x)))
+let cmp ~cst p =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p (fp x) (fp y)))
 let op2_mode ~cst f =
-  Some (Fun.fun_3 ~cst (fun m x y -> mk @@ f (mode m) (fp x) (fp y)))
+  Some (Fun.mk_clos @@ Fun.fun_3 ~cst (fun m x y -> mk @@ f (mode m) (fp x) (fp y)))
 let op1_mode ~cst f =
-  Some (Fun.fun_2 ~cst (fun m x -> mk @@ f (mode m) (fp x)))
-let op1 ~cst f = Some (Fun.fun_1 ~cst(fun x -> mk @@ f (fp x)))
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m x -> mk @@ f (mode m) (fp x)))
+let op1 ~cst f =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst(fun x -> mk @@ f (fp x)))
 
-let min_max ~cmp ~cst =
-      Some (Fun.fun_2 ~cst (fun x y ->
-        let x = fp x in
-        let y = fp y in
-        match F.classify x, F.classify y with
-        | NaN, _ -> mk y
-        | _, NaN -> mk x
-        | PZero, NZero | NZero, PZero -> raise Min_Max_with_different_zeros
-        | _ -> if cmp x y then mk x else mk y
-      ))
+let f_of_q ~ew ~mw mode q =
+  check ~ew ~mw;
+  F.of_q ~ew ~mw mode q
+
+let f_round ~mw ~ew mode f =
+  check ~ew ~mw;
+  F.round ~ew ~mw mode f
+
+let f_of_bits ~mw ~ew bits =
+  check ~ew ~mw;
+  F.of_bits ~ew ~mw bits
+
+let f_inf ~mw ~ew plus =
+  check ~ew ~mw;
+  F.inf ~mw ~ew plus
+
+let f_zero ~mw ~ew plus =
+  check ~mw ~ew;
+  F.zero ~mw ~ew plus
+
+let f_nan ~mw ~ew =
+  check ~ew ~mw;
+  F.nan ~ew ~mw
 
 let round_q ~neg ~mw ~ew mode r =
+  check ~mw ~ew;
   if Q.equal Q.zero r then F.zero ~mw ~ew neg else F.of_q ~mw ~ew mode r
+
+let min_max ~eval env ~cmp ~cst =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x' y' ->
+      let x = fp x' in
+      let y = fp y' in
+      match F.classify x, F.classify y with
+      | NaN, _ -> mk y
+      | _, NaN -> mk x
+      | PZero, NZero | NZero, PZero ->
+        Fun.corner_case ~eval env cst [] [x'; y']
+          ~post_check:(fun res ->
+              match F.classify (fp res) with
+              | PZero | NZero -> ()
+              | _ -> raise (Model.Incorrect_extension (cst, [x'; y'], res)))
+      | _ -> if cmp x y then mk x else mk y
+    ))
+
 
 let nearest_no_tie x =
   (* the tie break should be handled before *)
@@ -84,8 +118,7 @@ let toIntegral mode q =
   | Mode.UP -> (Int.ceil q)
 
 
-
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.RoundNearestTiesToEven -> Some (Value.mk ~ops:ops_rm Mode.NE)
   | B.RoundNearestTiesToAway -> Some (Value.mk ~ops:ops_rm Mode.NA)
@@ -93,46 +126,47 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.RoundTowardNegative -> Some (Value.mk ~ops:ops_rm Mode.DN)
   | B.RoundTowardZero -> Some (Value.mk ~ops:ops_rm Mode.ZR)
   | B.Real_to_fp (ew, prec) ->
-    Some (Fun.fun_2 ~cst (fun m r ->
-        mk (F.of_q ~ew ~mw:(prec - 1) (mode m) (Real.get r))))
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m r ->
+        check ~ew ~mw:(prec - 1);
+        mk (f_of_q ~ew ~mw:(prec - 1) (mode m) (Real.get r))))
   | B.Fp_to_fp (_ew1, _prec1, ew2, prec2) ->
-    Some (Fun.fun_2 ~cst
-            (fun m f1 -> mk @@ F.round ~ew:ew2 ~mw:(prec2 - 1) (mode m) (fp f1)))
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst
+            (fun m f1 -> mk @@ f_round ~ew:ew2 ~mw:(prec2 - 1) (mode m) (fp f1)))
   | B.Sbv_to_fp (n, ew, prec) ->
-    Some (Fun.fun_2 ~cst (fun m bv ->
-       mk @@ F.of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.sbitv n bv))))
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m bv ->
+        mk @@ f_of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.sbitv n bv))))
   | B.Ubv_to_fp (n, ew, prec) ->
-    Some (Fun.fun_2 ~cst (fun m bv ->
-       mk @@ F.of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.ubitv n bv))))
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m bv ->
+        mk @@ f_of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.ubitv n bv))))
   | B.Fp (ew, prec) ->
-    Some (Fun.fun_3 ~cst (fun bvs bve bvm ->
-      mk @@
-      F.of_bits ~ew ~mw:(prec - 1)
-           (Z.logor
-              (Z.logor
-                 (Z.shift_left
-                    (Bitv.ubitv 1 bvs)
-                    (ew + prec - 1))
-                 (Z.shift_left
-                    (Bitv.ubitv ew bve)
-                    (prec - 1)))
-              (Bitv.ubitv (prec - 1) bvm))))
-  | B.Ieee_format_to_fp (ew, prec) ->
-    Some (Fun.fun_1 ~cst (fun bv ->
+    Some (Fun.mk_clos @@ Fun.fun_3 ~cst (fun bvs bve bvm ->
         mk @@
-        F.of_bits ~ew ~mw:(prec - 1) (Bitv.ubitv (ew + prec) bv)))
+        f_of_bits ~ew ~mw:(prec - 1)
+          (Z.logor
+             (Z.logor
+                (Z.shift_left
+                   (Bitv.ubitv 1 bvs)
+                   (ew + prec - 1))
+                (Z.shift_left
+                   (Bitv.ubitv ew bve)
+                   (prec - 1)))
+             (Bitv.ubitv (prec - 1) bvm))))
+  | B.Ieee_format_to_fp (ew, prec) ->
+    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun bv ->
+        mk @@
+        f_of_bits ~ew ~mw:(prec - 1) (Bitv.ubitv (ew + prec) bv)))
   | B.To_real (_ew, _prec) ->
-    Some (Fun.fun_1 ~cst (fun f -> Real.mk @@ (F.to_q (fp f))))
+    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun f -> Real.mk @@ (F.to_q (fp f))))
   | B.Plus_infinity (ew, prec) ->
-    Some (mk @@ F.inf ~ew ~mw:(prec - 1) false)
+    Some (mk @@ f_inf ~ew ~mw:(prec - 1) false)
   | B.Minus_infinity (ew, prec) ->
-    Some (mk @@ F.inf ~ew ~mw:(prec - 1) true)
+    Some (mk @@ f_inf ~ew ~mw:(prec - 1) true)
   | B.NaN (ew, prec) ->
-    Some (mk @@ F.nan ~ew ~mw:(prec - 1))
+    Some (mk @@ f_nan ~ew ~mw:(prec - 1))
   | B.Plus_zero (ew, prec) ->
-    Some (mk @@ F.zero ~ew ~mw:(prec - 1) false)
+    Some (mk @@ f_zero ~ew ~mw:(prec - 1) false)
   | B.Minus_zero (ew, prec) ->
-    Some (mk @@ F.zero ~ew ~mw:(prec - 1) true)
+    Some (mk @@ f_zero ~ew ~mw:(prec - 1) true)
   | B.Fp_add (_ew, _prec) ->
     op2_mode ~cst F.add
   | B.Fp_sub (_ew, _prec) ->
@@ -148,7 +182,8 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Fp_div (_ew, _prec) ->
     op2_mode ~cst F.div
   | B.Fp_fma (_ew, _prec) ->
-    Some (Fun.fun_4 ~cst (fun m x y z -> mk @@ F.fma (mode m) (fp x) (fp y) (fp z)))
+    Some (Fun.mk_clos @@ Fun.fun_4 ~cst (fun m x y z ->
+        mk @@ F.fma (mode m) (fp x) (fp y) (fp z)))
   | B.Fp_eq (_ew, _prec) ->
     cmp ~cst F.eq
   | B.Fp_leq (_ew, _prec) ->
@@ -162,9 +197,9 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Fp_isInfinite (_ew, _prec) ->
     test ~cst F.is_infinite
   | B.Fp_isZero (_ew, _prec) ->
-      test ~cst F.is_zero
+    test ~cst F.is_zero
   | B.Fp_isNaN (_ew, _prec) ->
-      test ~cst F.is_nan
+    test ~cst F.is_nan
   | B.Fp_isNegative (_ew, _prec) ->
     test ~cst F.is_negative
   | B.Fp_isPositive (_ew, _prec) ->
@@ -174,7 +209,7 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Fp_isSubnormal (_ew, _prec) ->
     test ~cst F.is_subnormal
   | B.Fp_rem (ew,prec) ->
-      Some (Fun.fun_2 ~cst (fun f g ->
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun f g ->
         let f = fp f in
         let g = fp g in
         let mode = Farith.Mode.NE in
@@ -191,7 +226,7 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
           mk (round_q ~neg:(F.is_negative f) mode ~ew ~mw x)
       ))
   | B.Fp_roundToIntegral (ew,prec) ->
-          Some (Fun.fun_2 ~cst (fun m f ->
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
         let f = fp f in
         let mode = mode m in
         let mw = prec - 1 in
@@ -202,33 +237,37 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
           let n = toIntegral mode q in
           mk (round_q ~neg:(F.is_negative f) ~mw ~ew mode (Q.of_bigint n))
       ))
-  | B.Fp_min (_ew,_prec) -> min_max ~cmp:F.lt ~cst
-  | B.Fp_max (_ew,_prec) -> min_max ~cmp:F.gt ~cst
+  | B.Fp_min (_ew,_prec) -> min_max ~eval env ~cmp:F.lt ~cst
+  | B.Fp_max (_ew,_prec) -> min_max ~eval env ~cmp:F.gt ~cst
   | B.To_ubv (_ew,_prec,size) ->
-    Some (Fun.fun_2 ~cst (fun m f ->
-        let f = fp f in
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
+        let f' = fp f in
         let mode = mode m in
-        match F.classify f with
-        | (NaN | PInf | NInf) -> raise FP_to_BV_undefined
+        match F.classify f' with
+        | (NaN | PInf | NInf) ->
+          Fun.corner_case ~eval env cst [] [m; f]
         | (PNormal | NNormal | PSubn | NSubn | PZero | NZero) ->
-          let q = F.to_q f in
+          let q = F.to_q f' in
           let n = toIntegral mode q in
           if Z.sign n >= 0 && Z.numbits n <= size then
             Bitv.mk size n
-          else raise FP_to_BV_undefined
+          else
+            Fun.corner_case ~eval env cst [] [m; f]
       ))
   | B.To_sbv (_ew,_prec,size) ->
-    Some (Fun.fun_2 ~cst (fun m f ->
-        let f = fp f in
+    Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
+        let f' = fp f in
         let mode = mode m in
-        match F.classify f with
-        | (NaN | PInf | NInf) -> raise FP_to_BV_undefined
+        match F.classify f' with
+        | (NaN | PInf | NInf) ->
+          Fun.corner_case ~eval env cst [] [m; f]
         | (PNormal | NNormal | PSubn | NSubn | PZero | NZero) ->
-          let q = F.to_q f in
+          let q = F.to_q f' in
           let n = toIntegral mode q in
           let n' = Z.extract n 0 size in
           if Z.equal n (Z.signed_extract n' 0 size) then
             Bitv.mk size n'
-          else raise FP_to_BV_undefined
+          else
+            Fun.corner_case ~eval env cst [] [m; f]
       ))
   | _ -> None

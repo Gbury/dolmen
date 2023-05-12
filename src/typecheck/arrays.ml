@@ -17,7 +17,7 @@ module Ae = struct
     let parse env s =
       match s with
       | Type.Id { name = Simple "farray"; ns = Sort } ->
-        `Ty (
+        Type.builtin_ty (
           fun ast args ->
             match args with
             | [ty] ->
@@ -27,9 +27,9 @@ module Ae = struct
             | _ -> Type._error env (Ast ast) Bad_farray_arity
         )
       | Type.Builtin Array_get ->
-        `Term (Base.term_app2 (module Type) env s T.select)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.select)
       | Type.Builtin Array_set ->
-        `Term (Base.term_app3 (module Type) env s T.store)
+        Type.builtin_term (Base.term_app3 (module Type) env s T.store)
       | _ -> `Not_found
   end
 
@@ -104,18 +104,18 @@ module Smtlib2 = struct
       match s with
       (* Array theory according to the spec *)
       | Type.Id { name = Simple "Array"; ns = Sort } ->
-        `Ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env arrays))
+        Type.builtin_ty (Base.ty_app2_ast (module Type) env s (mk_array_ty env arrays))
       | Type.Id { name = Simple "select"; ns = Term } ->
-        `Term (Base.term_app2 (module Type) env s T.select)
+        Type.builtin_term (Base.term_app2 (module Type) env s T.select)
       | Type.Id { name = Simple "store"; ns = Term } ->
-        `Term (Base.term_app3 (module Type) env s T.store)
+        Type.builtin_term (Base.term_app3 (module Type) env s T.store)
 
       (* Extension, particularly needed for models *)
       | Type.Id ({ name = Simple "const"; ns = Term; } as c) ->
         begin match version with
           | `Script _ -> `Not_found
           | `Response _ ->
-            `Term (fun ast args ->
+            Type.builtin_term (fun ast args ->
                 Type._warn env (Ast ast) (Extension c);
                 let index_ty =
                   Type.wildcard env (Added_type_argument ast) Any_in_scope
