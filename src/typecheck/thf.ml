@@ -206,7 +206,10 @@ module Make
   ]
 
   type builtin_reserved = [
-    | `Reserved of [ `Solver | term_cst ]
+    | `Reserved of [
+        | `Solver
+        | `Term_cst of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
+      ]
   ]
 
   type builtin_res = [ builtin_common | builtin_infer | builtin_reserved ]
@@ -2441,10 +2444,9 @@ module Make
         | None ->
           assert false (* missing reason for destructor *)
       end
-    | `Term_def ret_ty, `Builtin `Term (`Partial mk_cst, _) ->
+    | `Term_def ret_ty, `Builtin `Term (`Partial mk_cst, _)
+    | `Term_def ret_ty, `Builtin `Reserved `Term_cst mk_cst ->
       let cst = mk_cst vars params ret_ty in
-      lookup_id_for_def_term env d vars params ret_ty cst Builtin
-    | `Term_def ret_ty, `Builtin `Reserved `Term_cst cst ->
       lookup_id_for_def_term env d vars params ret_ty cst Builtin
     | `Term_def ret_ty, ((`Term_cst cst) as c) ->
       begin match find_reason env c with

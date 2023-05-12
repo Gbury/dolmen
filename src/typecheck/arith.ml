@@ -793,8 +793,8 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                     ~check:(check env (F.comp arith (parse ~arith) version env)))
 
-            | "div0" -> `Reserved (`Term_cst T.div')
-            | "mod0" -> `Reserved (`Term_cst T.rem')
+            | "div0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
+            | "mod0" -> `Reserved (`Term_cst (fun _ _ _ -> T.rem'))
 
             | _ -> `Not_found
           end
@@ -879,7 +879,7 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                        ~check:(check env (F.comp arith (parse ~arith) version env)))
 
-            | "/0" -> `Reserved (`Term_cst T.div')
+            | "/0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
 
             | _ -> `Not_found
           end
@@ -1014,9 +1014,9 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app1 (module Type) env s T.Real.is_int)
 
 
-            | "/0" -> `Reserved (`Term_cst T.Real.div')
-            | "div0" -> `Reserved (`Term_cst T.Int.div')
-            | "mod0" -> `Reserved (`Term_cst T.Int.rem')
+            | "/0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Real.div'))
+            | "div0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Int.div'))
+            | "mod0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Int.rem'))
 
             | _ -> `Not_found
           end

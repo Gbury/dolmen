@@ -86,7 +86,7 @@ module Smtlib2 = struct
                  (Type.Bad_op_arity (symbol, [1; 2], List.length args))
       )
 
-    let parse _version env s =
+    let parse version env s =
       match s with
 
       (* sorts *)
@@ -194,6 +194,16 @@ module Smtlib2 = struct
             Type.builtin_term (Base.term_app1 (module Type) env s F.isPositive)
           | "fp.to_real" ->
             Type.builtin_term (Base.term_app1 (module Type) env s F.to_real)
+          | "fp.to_ubv" ->
+            begin match version with
+              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_ubv'))
+              | `Script _ -> `Not_found
+            end
+          | "fp.to_sbv" ->
+            begin match version with
+              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_sbv'))
+              | `Script _ -> `Not_found
+            end
           | _ -> `Not_found
         end
       | Type.Id { ns = Term; name = Indexed { basename; indexes; } } as symbol ->

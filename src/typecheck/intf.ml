@@ -162,7 +162,10 @@ module type Formulas = sig
     | `Ty    of (ty, builtin_meta_ty) builtin_common_res
     | `Term  of (term, builtin_meta_term) builtin_common_res
     | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
-    | `Reserved of [ `Solver | `Term_cst of term_cst ]
+    | `Reserved of [
+        | `Solver
+        | `Term_cst of (ty_var list -> term_var list -> ty -> term_cst)
+      ]
     | `Infer of var_infer * sym_infer
   ]
   (** The result of parsing a symbol by the theory *)

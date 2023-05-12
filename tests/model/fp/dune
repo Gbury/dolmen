@@ -199,6 +199,38 @@
   (action (diff toIntegral-has-solution-259.expected toIntegral-has-solution-259.full)))
 
 
+; Test for to_ubv.smt2
+; Incremental test
+
+(rule
+   (target  to_ubv.incremental)
+   (deps    (:response to_ubv.rsmt2) (:input to_ubv.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff to_ubv.expected to_ubv.incremental)))
+
+; Full mode test
+
+(rule
+   (target  to_ubv.full)
+   (deps    (:response to_ubv.rsmt2) (:input to_ubv.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff to_ubv.expected to_ubv.full)))
+
+
 ; Test for unit.smt2
 ; Incremental test
 
