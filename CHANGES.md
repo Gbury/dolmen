@@ -9,6 +9,8 @@ next
 
 ### UI
 
+- Make the unknown logic fatal by default, and simply enabled
+  in non-strict mode (PR#XXX)
 - Add the `--check-flow` option to checks coherence of sequences
   of statements (PR#135)
 - Ensure stability of error codes for the `dolmen` binary

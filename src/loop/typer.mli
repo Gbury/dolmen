@@ -30,6 +30,8 @@ val typer_state : ty_state -> T.state
 val almost_linear : string Report.Warning.t
 (** Almost linear warning. *)
 
+val unknown_logic : string Report.Warning.t
+(** Unknown logic warning *)
 
 
 (** {2 Typechecker Functor} *)
