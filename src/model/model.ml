@@ -4,6 +4,9 @@
 (* Type definitions & modules *)
 (* ************************************************************************* *)
 
+exception Multiple_definition_of_var of Dolmen.Std.Expr.Term.Var.t
+exception Multiple_definition_of_cst of Dolmen.Std.Expr.Term.Const.t
+
 exception Partial_interpretation of
     Dolmen.Std.Expr.Term.Const.t * Value.t list
 exception Incorrect_extension of
@@ -24,8 +27,11 @@ type t = {
 let empty =
   { vars = V.empty; csts = C.empty; }
 
+let vars { vars; _ } = vars
+let csts { csts; _ } = csts
+
 let print fmt model =
-  Format.fprintf fmt "@[<v>@[<v 2>{";
+  Format.fprintf fmt "@[<hv>@[<hv 2>{";
   V.iter (fun var value ->
       Format.fprintf fmt "@ %a -> @[<hov 2>%a@]"
         Dolmen.Std.Expr.Term.Var.print var Value.print value
@@ -35,6 +41,19 @@ let print fmt model =
         Dolmen.Std.Expr.Term.Const.print cst Value.print value
     ) model.csts;
   Format.fprintf fmt "@]@ }@]"
+
+let disjoint_union m m' =
+  let vars =
+    V.union
+      (fun v _ _ -> raise (Multiple_definition_of_var v))
+      m.vars m'.vars
+  in
+  let csts =
+    C.union
+      (fun c _ _ -> raise (Multiple_definition_of_cst c))
+      m.csts m'.csts
+  in
+  { vars; csts; }
 
 
 (* Mapped var&cst values *)

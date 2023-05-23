@@ -3,7 +3,7 @@
 
 (** {2 Typechecker state} *)
 
-module T : Dolmen_type.Tff.S
+module T : Dolmen_type.Thf.S
   with type 'a Tag.t = 'a Dolmen.Std.Tag.t
    and type Ty.t = Dolmen.Std.Expr.ty
    and type Ty.Var.t = Dolmen.Std.Expr.ty_var
@@ -75,6 +75,7 @@ module Make
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
   : S with type state := State.t
+       and type env = Typer.env
        and type 'a key := 'a State.key
        and type ty := Expr.ty
        and type ty_var := Expr.ty_var

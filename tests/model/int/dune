@@ -161,4 +161,70 @@
   (action (diff div_zero_3.expected div_zero_3.full)))
 
 
+; Test for div_zero_out_of_order.smt2
+; Incremental test
+
+(rule
+   (target  div_zero_out_of_order.incremental)
+   (deps    (:response div_zero_out_of_order.rsmt2)
+            (:input div_zero_out_of_order.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_out_of_order.expected div_zero_out_of_order.incremental)))
+
+; Full mode test
+
+(rule
+   (target  div_zero_out_of_order.full)
+   (deps    (:response div_zero_out_of_order.rsmt2)
+            (:input div_zero_out_of_order.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff div_zero_out_of_order.expected div_zero_out_of_order.full)))
+
+
+; Test for out_of_order2.smt2
+; Incremental test
+
+(rule
+   (target  out_of_order2.incremental)
+   (deps    (:response out_of_order2.rsmt2) (:input out_of_order2.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff out_of_order2.expected out_of_order2.incremental)))
+
+; Full mode test
+
+(rule
+   (target  out_of_order2.full)
+   (deps    (:response out_of_order2.rsmt2) (:input out_of_order2.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff out_of_order2.expected out_of_order2.full)))
+
+
 ; Auto-generated part end

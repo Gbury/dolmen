@@ -1800,6 +1800,8 @@ module Make
   (* Types used in Pipes *)
   (* ************************************************************************ *)
 
+  type env = Typer.env
+
   (* Used for representing typed statements *)
   type +'a stmt = {
     id : Dolmen.Std.Id.t;

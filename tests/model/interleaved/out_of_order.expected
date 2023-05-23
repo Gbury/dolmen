@@ -1,8 +1,0 @@
-File "tests/model/interleaved/out_of_order.smt2", line 3, character 0-20:
-3 | (assert (= (f 0) 0))
-    ^^^^^^^^^^^^^^^^^^^^
-Error The following constant is not defined, and thus has no value: `f`
-Hint: The interleave mode for checking model requires constants in the model
-  file to be defined in the same order as they are declared in the input
-  problem file, you might want to try using the `--check-model-mode=full`
-  option.

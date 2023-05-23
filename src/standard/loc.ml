@@ -105,6 +105,11 @@ let mk_compact offset length =
     (Obj.magic e : t)
   end
 
+let eq a b = a = b
+let hash a = Hashtbl.hash a
+let compare t t' =
+  Stdlib.compare (split_compact t) (split_compact t')
+
 (* File table *)
 (* ************************************************************************* *)
 
@@ -165,9 +170,6 @@ let max_line_length file start_line stop_line =
 
 (* Full locations *)
 (* ************************************************************************* *)
-
-let eq a b = a = b
-let hash a = Hashtbl.hash a
 
 (* Constructor functions *)
 let mk file
