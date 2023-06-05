@@ -1,1 +1,8 @@
-run 'make promote' to update this file
+File "tests/model/funs/reserved.rsmt2", line 9, character 15-26:
+9 | (define-fun f ((@_arg_1 t)) t (as @a2 t))
+                   ^^^^^^^^^^^
+Warning Shadowing: `@_arg_1` is reserved for abstract values (i.e. constants)
+File "tests/model/funs/reserved.rsmt2", line 9, character 15-26:
+9 | (define-fun f ((@_arg_1 t)) t (as @a2 t))
+                   ^^^^^^^^^^^
+Warning The following function parameter is unused: `@_arg_1`
