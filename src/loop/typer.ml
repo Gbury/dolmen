@@ -133,8 +133,8 @@ let print_reason ?(already=false) fmt r =
   match (r : T.reason) with
   | Builtin ->
     Format.fprintf fmt "is%a defined by a builtin theory" pp_already ()
-  | Reserved ->
-    Format.fprintf fmt "is reserved for model definitions"
+  | Reserved reason ->
+    Format.fprintf fmt "is reserved for %a" Format.pp_print_text reason
   | Bound (file, ast) ->
     Format.fprintf fmt "was%a bound at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
@@ -923,10 +923,11 @@ let empty_pop =
 
 let reserved =
   Report.Error.mk ~code ~mnemonic:"reserved"
-    ~message:(fun fmt id ->
+    ~message:(fun fmt (id, reason) ->
         Format.fprintf fmt
-          "@[<hov>Reserved: %a is reserved to define corner cases for models.@ @[<hov>%a@]"
-          (pp_wrap Dolmen.Std.Id.print) id Format.pp_print_text
+          "@[<hov>Reserved: %a is reserved for %a.@ @[<hov>%a@]"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Format.pp_print_text reason Format.pp_print_text
           "Therefore, the definition of the model corner case would take \
            priority and prevent defining a value for this constant.")
     ~name:"Shadowing of reserved identifier" ()
@@ -1077,12 +1078,17 @@ module Typer(State : State.S) = struct
       -> true
     | _ -> false
 
+  let typing_logic input =
+    match (input : input) with
+    | `Logic _ -> true
+    | `Response _ -> false
+
   let report_warning ~input st (T.Warning (env, fragment, w)) =
     let loc = T.fragment_loc env fragment in
     match w with
-    | T.Shadowing (id, `Reserved `Term, _)
-      when State.get_or ~default:false check_model st ->
-      error ~input ~loc st reserved id
+    | T.Shadowing (id, `Reserved reason, _)
+      when typing_logic input && State.get_or ~default:false check_model st ->
+      error ~input ~loc st reserved (id, reason)
 
     (* typer warnings that are actually errors given some languages spec *)
     | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)

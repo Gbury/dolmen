@@ -196,7 +196,10 @@ module Smtlib2 = struct
             Type.builtin_term (Base.term_app1 (module Type) env s F.to_real)
           | "fp.to_ubv" ->
             begin match version with
-              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_ubv'))
+              | `Response _ ->
+                `Reserved (
+                  "completing interpretation of fp.to_bv in models",
+                  `Term_cst (meta_to_bv F.to_ubv'))
               | `Script _ ->
                 Format.eprintf "foo ?!@.";
                 (* the regular case is handled later, because fp.to_ubv is
@@ -205,7 +208,10 @@ module Smtlib2 = struct
             end
           | "fp.to_sbv" ->
             begin match version with
-              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_sbv'))
+              | `Response _ ->
+                `Reserved (
+                  "completing interpretation of fp.to_sbv in models",
+                  `Term_cst (meta_to_bv F.to_sbv'))
               | `Script _ ->
                 (* the regular case is handled later, because fp.to_sbv is
                    an indexed identifier. *)

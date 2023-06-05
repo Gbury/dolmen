@@ -1,0 +1,10 @@
+sat
+(
+; cardinality of t is 3
+; rep: (as @a0 t)
+; rep: (as @a1 t)
+; rep: (as @a2 t)
+(define-fun a () t (as @a0 t))
+(define-fun b () t (as @a1 t))
+(define-fun f ((@_arg_1 t)) t (as @a2 t))
+)

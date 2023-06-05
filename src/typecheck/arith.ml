@@ -800,8 +800,13 @@ module Smtlib2 = struct
             | ">" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                     ~check:(check env (F.comp config (parse ~config) version env)))
-            | "div0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
-            | "mod0" -> `Reserved (`Term_cst (fun _ _ _ -> T.rem'))
+
+            | "div0" -> `Reserved (
+                "completing interpretation of division by zero in models",
+                `Term_cst (fun _ _ _ -> T.div'))
+            | "mod0" -> `Reserved (
+                "completing interpretation of modulo by zero in models",
+                `Term_cst (fun _ _ _ -> T.rem'))
 
             | _ -> `Not_found
           end
@@ -886,7 +891,9 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                        ~check:(check env (F.comp config (parse ~config) version env)))
 
-            | "/0" -> `Reserved (`Term_cst (fun _ _ _ -> T.div'))
+            | "/0" -> `Reserved (
+                "completing interpretation of division by zero in models",
+                `Term_cst (fun _ _ _ -> T.div'))
 
             | _ -> `Not_found
           end
@@ -1021,9 +1028,18 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app1 (module Type) env s T.Real.is_int)
 
 
-            | "/0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Real.div'))
-            | "div0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Int.div'))
-            | "mod0" -> `Reserved (`Term_cst (fun _ _ _ -> T.Int.rem'))
+            | "/0" ->
+              `Reserved (
+                "completing interpretation of division by zero in models",
+                `Term_cst (fun _ _ _ -> T.Real.div'))
+            | "div0" ->
+              `Reserved (
+                "completing interpretation of division by zero in models",
+                `Term_cst (fun _ _ _ -> T.Int.div'))
+            | "mod0" ->
+              `Reserved (
+                "completing interpretation of modulo by zero in models",
+                `Term_cst (fun _ _ _ -> T.Int.rem'))
 
             | _ -> `Not_found
           end
