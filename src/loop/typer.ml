@@ -1689,8 +1689,8 @@ module Typer(State : State.S) = struct
     | Auto -> true
 
   let check_decl st env d = function
-    | `Type_decl (c : Dolmen.Std.Expr.ty_cst) ->
-      begin match Dolmen.Std.Expr.Ty.definition c with
+    | `Type_decl (_, ty_def) ->
+      begin match (ty_def : Dolmen.Std.Expr.Ty.def option) with
         | None | Some Abstract ->
           if not (allow_abstract_type_decl st) then
             T._error env (Decl d) Illegal_decl
@@ -1725,9 +1725,9 @@ module Typer(State : State.S) = struct
         let l = T.defs ~mode env ?attrs d in
         List.map (fun typed ->
             match typed with
-            | `Type_def (id, c, vars, body) ->
+            | `Type_alias (id, c, vars, body) ->
               if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body;
-              `Type_def (id, c, vars, body)
+              `Type_alias (id, c, vars, body)
             | `Term_def (id, f, vars, params, body) ->
               `Term_def (id, f, vars, params, body)
             | `Instanceof (id, f, ty_args, vars, params, body) ->
@@ -1770,6 +1770,7 @@ module Make
      with type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -1780,6 +1781,7 @@ module Make
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -1808,7 +1810,7 @@ module Make
   }
 
   type def = [
-    | `Type_def of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
+    | `Type_alias of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty_var list * Expr.term_var list * Expr.term
     | `Instanceof of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty list * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
@@ -1818,7 +1820,7 @@ module Make
   ]
 
   type decl = [
-    | `Type_decl of Expr.ty_cst
+    | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
   ]
 
@@ -1875,8 +1877,8 @@ module Make
   let simple id loc (contents: typechecked)  = { id; loc; contents; }
 
   let print_def fmt = function
-    | `Type_def (id, c, vars, body) ->
-      Format.fprintf fmt "@[<hov 2>type-def:@ %a: %a(%a) ->@ %a@]"
+    | `Type_alias (id, c, vars, body) ->
+      Format.fprintf fmt "@[<hov 2>type-alias:@ %a: %a(%a) ->@ %a@]"
         Dolmen.Std.Id.print id Print.ty_cst c
         (Format.pp_print_list Print.ty_var) vars Print.ty body
     | `Term_def (id, c, vars, args, body) ->
@@ -1897,9 +1899,15 @@ module Make
         (Format.pp_print_list ~pp_sep Print.term_var) args
         Print.term body
 
+  let print_ty_def fmt = function
+    | None -> ()
+    | Some ty_def ->
+      Format.fprintf fmt " =@ %a" Print.ty_def ty_def
+
   let print_decl fmt = function
-    | `Type_decl c ->
-      Format.fprintf fmt "@[<hov 2>type-decl:@ %a@]" Print.ty_cst c
+    | `Type_decl (c, ty_def) ->
+      Format.fprintf fmt "@[<hov 2>type-def:@ %a%a@]"
+        Print.ty_cst c print_ty_def ty_def
     | `Term_decl c ->
       Format.fprintf fmt "@[<hov 2>term-decl:@ %a@]" Print.term_cst c
 

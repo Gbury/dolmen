@@ -373,7 +373,9 @@ module type Tff = sig
   type ty
   type ty_var
   type ty_const
-  (** The representation of term types, type variables, and type constants. *)
+  type ty_def
+  (** The representation of term types, type variables, and type constants,
+      and lastly type definitions. *)
 
   type 'a tag
   (** The type of tags used to annotate arbitrary terms. *)
@@ -475,7 +477,7 @@ module type Tff = sig
   val define_adt :
     ty_const -> ty_var list ->
     (path * (ty * path option) list) list ->
-    (Cstr.t * (ty * Const.t option) list) list
+    ty_def * (Cstr.t * (ty * Const.t option) list) list
   (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
       the type variables [ty_vars] as defining an algebraic datatypes with constructors
       [cstrs]. [cstrs] is a list where each elements of the form [(name, l)] defines
@@ -502,7 +504,7 @@ module type Tff = sig
   *)
 
   val define_record :
-    ty_const -> ty_var list -> (path * ty) list -> Field.t list
+    ty_const -> ty_var list -> (path * ty) list -> ty_def * Field.t list
   (** Define a (previously abstract) type to be a record type, with the given fields. *)
 
   exception Wrong_type of t * ty

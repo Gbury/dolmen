@@ -15,6 +15,7 @@ module Make
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
+      and type ty_def := Ty.def
       and type 'a tag := 'a Tag.t
       and type path := Dolmen.Std.Path.t)
   : S with module Tag = Tag

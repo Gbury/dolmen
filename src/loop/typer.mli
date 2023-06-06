@@ -60,6 +60,7 @@ module Make
      with type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -70,6 +71,7 @@ module Make
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -79,6 +81,7 @@ module Make
        and type ty := Expr.ty
        and type ty_var := Expr.ty_var
        and type ty_cst := Expr.ty_cst
+       and type ty_def := Expr.ty_def
        and type term := Expr.term
        and type term_var := Expr.term_var
        and type term_cst := Expr.term_cst
