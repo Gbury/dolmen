@@ -32,7 +32,7 @@ next
 - Rename theory-specific configuration to `config` (instead of
   `arith`, `arrays`, etc..) (PR#142)
 - Add printing function for logics (PR#142)
-
+- Attach type definitions to type-defs (PR#157)
 
 ### Loop
 
@@ -41,6 +41,7 @@ next
 - Add the `Flow` module for flow checking (PR#135)
 - Add the `check` function in `typer.ml`/`typer_intf.ml`
 - Add `update` and `update_opt` in `State` (PR#156)
+- Print type definitions in the printer of typed statements (PR#157)
 
 ### Model
 
