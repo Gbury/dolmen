@@ -36,7 +36,7 @@ next
   exit/return code for a `Code.t` (PR#134)
 - Add the `Flow` module for flow checking (PR#135)
 - Add the `check` function in `typer.ml`/`typer_intf.ml`
-- Add `update` and `update_opt` in `State`
+- Add `update` and `update_opt` in `State` (PR#156)
 
 ### Model
 
