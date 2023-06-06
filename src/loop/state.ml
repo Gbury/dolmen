@@ -105,13 +105,16 @@ module type S = sig
   (** [update key f s] updates the value associated with the key [key]
       according to the result of [f].
 
-      @raises Key_not_found if the key is not bound. *)
+      @raises Key_not_found if the key is not bound.
+      @since 0.9 *)
 
   val update_opt : 'a key -> ('a option -> 'a option) -> t -> t
   (** [update_opt key f s] updates the value associated with the key [key]
       according to the result of [f]. The argument passed to [f] is [Some v]
       if the key is currently associated with value [v], and [None] if the key
-      is not bound. *)
+      is not bound.
+
+      @since 0.9 *)
 
   val warn :
     ?file:_ file ->

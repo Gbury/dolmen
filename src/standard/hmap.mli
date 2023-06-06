@@ -34,7 +34,9 @@ module type S = sig
   val update : inj:'a injection -> key -> ('a option -> 'a option) -> t -> t
   (** [update ~inj k f m] updates the value associated with [k] in [m] according
       to [f (get ~inj k m)]. If the result is [None], the binding associated
-      with [k] is removed. *)
+      with [k] is removed.
+
+      @since 0.9 *)
 
   val find : inj:'a injection -> key -> t -> 'a
   (** Find the value for the given key, which must be of the right type.
