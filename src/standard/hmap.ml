@@ -42,6 +42,11 @@ module type S = sig
   val add : inj:'a injection -> key -> 'a -> t -> t
   (** Bind the key to the value, using [inj] *)
 
+  val update : inj:'a injection -> key -> ('a option -> 'a option) -> t -> t
+  (** [update ~inj k f m] updates the value associated with [k] in [m] according
+      to [f (get ~inj k m)]. If the result is [None], the binding associated
+      with [k] is removed. *)
+
   val find : inj:'a injection -> key -> t -> 'a
   (** Find the value for the given key, which must be of the right type.
       @raise Not_found if either the key is not found, or if its value
@@ -100,6 +105,11 @@ module Make(X : ORD) : S with type key = X.t = struct
   let get ~inj x map =
     try inj.get (M.find x map)
     with Not_found -> None
+
+  let update ~inj x f map =
+    M.update x (fun y ->
+      Option.map inj.set @@ f (Option.bind y inj.get))
+      map
 
   let add ~inj x y map =
     M.add x (inj.set y) map

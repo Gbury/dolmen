@@ -90,7 +90,9 @@ module type S = sig
   (** create a new key *)
 
   val get : 'a key -> t -> 'a
-  (** get the value associated to a key. *)
+  (** get the value associated to a key.
+
+      @raises Key_not_found if the key is not bound. *)
 
   val get_or : default:'a -> 'a key -> t -> 'a
   (** get the value associated to a key,
@@ -98,6 +100,18 @@ module type S = sig
 
   val set : 'a key -> 'a -> t -> t
   (** Set the value associated to a key. *)
+
+  val update : 'a key -> ('a -> 'a) -> t -> t
+  (** [update key f s] updates the value associated with the key [key]
+      according to the result of [f].
+
+      @raises Key_not_found if the key is not bound. *)
+
+  val update_opt : 'a key -> ('a option -> 'a option) -> t -> t
+  (** [update_opt key f s] updates the value associated with the key [key]
+      according to the result of [f]. The argument passed to [f] is [Some v]
+      if the key is currently associated with value [v], and [None] if the key
+      is not bound. *)
 
   val warn :
     ?file:_ file ->
@@ -148,8 +162,13 @@ let get_or ~default k t =
 let set k v t =
   M.add ~inj:k.inj k.id v t
 
+let update_opt k f t =
+  M.update ~inj:k.inj k.id f t
+
 let update k f t =
-  set k (f (get k t)) t
+  update_opt k (function
+    | None -> raise (Key_not_found (t, k.name, k.pipe))
+    | Some v -> Some (f v)) t
 
 let key_name { name; _ } = name
 
