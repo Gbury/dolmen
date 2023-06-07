@@ -1,0 +1,18 @@
+sat
+(
+  (define-fun z () Int
+    0)
+  (define-fun a () Int
+    7719)
+  (define-fun c () Int
+    0)
+  (define-fun d () Int
+    1)
+  (define-fun b () Int
+    21238)
+  (define-fun div0 ((x!0 Int) (x!1 Int)) Int
+    (ite (and (= x!0 21238) (= x!1 0)) 1
+      0))
+  (define-fun mod0 ((x!0 Int) (x!1 Int)) Int
+    0)
+)

@@ -42,13 +42,13 @@ module Smtlib2 = struct
   let print_features fmt { free_sorts; free_functions;
                            datatypes; quantifiers; arithmetic; arrays; } =
     Format.fprintf fmt
-      "@[<hov 2>{\
+      "{ @[<hv>\
        free_sorts : %b;@ \
        free_functions : %b;@ \
        datatypes : %b;@ \
        quantifiers : %b;@ \
        arithmetic : %a;@ \
-       arrays : %a;@ \
+       arrays : %a; \
        }@]"
       free_sorts
       free_functions
@@ -231,4 +231,8 @@ end
 type t =
   | Auto (* Default case for languages which do not have logic *)
   | Smtlib2 of Smtlib2.t
+
+let print fmt = function
+  | Auto -> Format.fprintf fmt "auto"
+  | Smtlib2 smtlib2 -> Smtlib2.print fmt smtlib2
 

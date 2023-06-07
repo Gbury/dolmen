@@ -65,4 +65,68 @@
   (action (diff fun_2.expected fun_2.full)))
 
 
+; Test for fun_3.smt2
+; Incremental test
+
+(rule
+   (target  fun_3.incremental)
+   (deps    (:input fun_3.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff fun_3.expected fun_3.incremental)))
+
+; Full mode test
+
+(rule
+   (target  fun_3.full)
+   (deps    (:input fun_3.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff fun_3.expected fun_3.full)))
+
+
+; Test for out_of_order.smt2
+; Incremental test
+
+(rule
+   (target  out_of_order.incremental)
+   (deps    (:response out_of_order.rsmt2) (:input out_of_order.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff out_of_order.expected out_of_order.incremental)))
+
+; Full mode test
+
+(rule
+   (target  out_of_order.full)
+   (deps    (:response out_of_order.rsmt2) (:input out_of_order.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff out_of_order.expected out_of_order.full)))
+
+
 ; Auto-generated part end

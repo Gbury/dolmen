@@ -15,6 +15,8 @@ module type Types = sig
 
   type formula
 
+  type env
+
 end
 
 (** This modules defines a wrapper around the bare-bones typechecker
@@ -42,7 +44,8 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val set_logic :
-    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> string -> state
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
+    string -> state * Dolmen_type.Logic.t
 
   val defs :
     mode:[`Create_id | `Use_declared_id] ->
@@ -76,6 +79,11 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Term.t list ->
     state * formula list
+
+  val typing_wrap :
+    ?attrs:Dolmen.Std.Term.t list ->
+    ?loc:Dolmen.Std.Loc.t ->
+    input:input -> state -> f:(env -> 'a) -> state * 'a
 
 end
 
@@ -122,7 +130,8 @@ module type Typer_Full = sig
     state -> state
 
   include Typer
-    with type state := state
+    with type env := env
+     and type state := state
      and type ty := Dolmen.Std.Expr.ty
      and type ty_var := Dolmen.Std.Expr.ty_var
      and type ty_cst := Dolmen.Std.Expr.ty_cst
@@ -222,7 +231,7 @@ module type S = sig
   (** Various info getters *)
 
   type set_info = [
-    | `Set_logic of string
+    | `Set_logic of string * Dolmen_type.Logic.t
     | `Set_info of Dolmen.Std.Statement.term
     | `Set_option of Dolmen.Std.Statement.term
   ]

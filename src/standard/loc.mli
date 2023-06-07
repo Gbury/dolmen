@@ -48,6 +48,9 @@ val hash : t -> int
 val eq : t -> t -> bool
 (** Location equality. *)
 
+val compare : t -> t -> int
+(** Comparision. *)
+
 val no_loc : t
 (** A dummy location pointing at the first byte of a file. *)
 

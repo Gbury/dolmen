@@ -1,4 +1,5 @@
-File "tests/model/error/missing_answer.smt2", line 3, character 0-11:
-3 | (check-sat)
-    ^^^^^^^^^^^
-Error This solve/check-sat statement lacks an answer in the response file
+File "tests/model/error/missing_answer.smt2", line 2, character 0-14:
+2 | (assert false)
+    ^^^^^^^^^^^^^^
+Error This statement requires a model in the response file in order to be
+      evaluated, but no model was found.

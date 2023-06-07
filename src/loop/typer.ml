@@ -1651,8 +1651,8 @@ module Typer(State : State.S) = struct
     let file_loc = file_loc_of_input input in
     let loc : Dolmen.Std.Loc.full = { file = file_loc; loc; } in
     match lang_of_input input with
-    | `Logic ICNF -> st
-    | `Logic Dimacs -> st
+    | `Logic ICNF -> st, Dolmen_type.Logic.Auto
+    | `Logic Dimacs -> st, Dolmen_type.Logic.Auto
     | `Logic Smtlib2 _ ->
       let logic =
         match State.get smtlib2_forced_logic st with
@@ -1666,9 +1666,12 @@ module Typer(State : State.S) = struct
           let st = warn ~input ~loc st unknown_logic s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
-      set_logic_aux ~input ~loc st (Smtlib2 l)
+      let new_logic = Dolmen_type.Logic.Smtlib2 l in
+      let st = set_logic_aux ~input ~loc st new_logic in
+      st, new_logic
     | _ ->
-      warn ~input ~loc st set_logic_not_supported ()
+      let st = warn ~input ~loc st set_logic_not_supported () in
+      st, Dolmen_type.Logic.Auto
 
   (* Declarations *)
   (* ************************************************************************ *)
@@ -1802,6 +1805,8 @@ module Make
   (* Types used in Pipes *)
   (* ************************************************************************ *)
 
+  type env = Typer.env
+
   (* Used for representing typed statements *)
   type +'a stmt = {
     id : Dolmen.Std.Id.t;
@@ -1853,7 +1858,7 @@ module Make
   ]
 
   type set_info = [
-    | `Set_logic of string
+    | `Set_logic of string * Dolmen_type.Logic.t
     | `Set_info of Dolmen.Std.Statement.term
     | `Set_option of Dolmen.Std.Statement.term
   ]
@@ -1953,8 +1958,10 @@ module Make
     | `Plain t ->
       Format.fprintf fmt "@[<hov 2>plain: %a@]"
         Dolmen.Std.Term.print t
-    | `Set_logic s ->
-      Format.fprintf fmt "@[<hov 2>set-logic: %s@]" s
+    | `Set_logic (s, logic) ->
+      Format.fprintf fmt
+        "@[<hov 2>set-logic: %s =@ %a@]"
+        s Dolmen_type.Logic.print logic
     | `Set_info t ->
       Format.fprintf fmt "@[<hov 2>set-info: %a@]"
         Dolmen.Std.Term.print t
@@ -2076,8 +2083,8 @@ module Make
 
     (* Other set_logics should check whether corresponding plugins are activated ? *)
     | { S.descr = S.Set_logic s; _ } ->
-      let st = Typer.set_logic st ~input ~loc:c.S.loc s in
-      st, (simple (other_id c) c.S.loc (`Set_logic s))
+      let st, new_logic = Typer.set_logic st ~input ~loc:c.S.loc s in
+      st, (simple (other_id c) c.S.loc (`Set_logic (s, new_logic)))
 
     (* Set/Get info *)
     | { S.descr = S.Get_info s; _ } ->
