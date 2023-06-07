@@ -7,6 +7,7 @@ module type Types = sig
   type ty
   type ty_var
   type ty_cst
+  type ty_def
 
   type term
   type term_var
@@ -48,7 +49,7 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.defs ->
     state * [
-     | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+     | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
      | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
      | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
     ] list
@@ -57,7 +58,7 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.decls ->
     state * [
-      | `Type_decl of ty_cst
+      | `Type_decl of ty_cst * ty_def option
       | `Term_decl of term_cst
     ] list
 
@@ -125,6 +126,7 @@ module type Typer_Full = sig
      and type ty := Dolmen.Std.Expr.ty
      and type ty_var := Dolmen.Std.Expr.ty_var
      and type ty_cst := Dolmen.Std.Expr.ty_cst
+     and type ty_def := Dolmen.Std.Expr.ty_def
      and type term := Dolmen.Std.Expr.term
      and type term_var := Dolmen.Std.Expr.term_var
      and type term_cst := Dolmen.Std.Expr.term_cst
@@ -170,7 +172,7 @@ module type S = sig
   (** Wrapper around statements. It records implicit type declarations. *)
 
   type decl = [
-    | `Type_decl of ty_cst
+    | `Type_decl of ty_cst * ty_def option
     | `Term_decl of term_cst
   ]
   (** The type of top-level type declarations. *)
@@ -181,7 +183,7 @@ module type S = sig
   (** A list of type declarations. *)
 
   type def = [
-    | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+    | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
     | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
     | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
   ]

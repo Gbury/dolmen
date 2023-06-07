@@ -94,6 +94,21 @@ and term = {
    for terms and formulas. *)
 and formula = term
 
+(* Type definitions *)
+type ty_def_adt_case = {
+  cstr : term_cst;
+  tester : term_cst;
+  dstrs : term_cst option array;
+}
+
+type ty_def =
+  | Abstract
+  | Adt of {
+      ty : ty_cst;
+      record : bool;
+      cases : ty_def_adt_case array;
+    }
+
 
 (* Exceptions *)
 (* ************************************************************************* *)
@@ -323,6 +338,22 @@ module Print = struct
 
   let formula = term
 
+
+  (* Type def printing *)
+
+  let ty_def_adt_case fmt { cstr; tester; dstrs; } =
+    Format.fprintf fmt
+      "| @[<v>%a@ %a@ %a@]"
+      term_cst cstr term_cst tester
+      Fmt.(array (option term_cst)) dstrs
+
+  let ty_def fmt = function
+    | Abstract -> Format.fprintf fmt "abstract"
+    | Adt { ty = _; record = _; cases; } ->
+      Format.fprintf fmt "@[<v>%a@]"
+        Fmt.(array ty_def_adt_case) cases
+
+  (* Misc *)
   let iter ~sep pp fmt k =
     let first = ref true in
     k (fun x ->
@@ -836,19 +867,7 @@ module Ty = struct
 
   (* Types definitions *)
 
-  type adt_case = {
-    cstr : term_cst;
-    tester : term_cst;
-    dstrs : term_cst option array;
-  }
-
-  type def =
-    | Abstract
-    | Adt of {
-        ty : ty_cst;
-        record : bool;
-        cases : adt_case array;
-      }
+  type def = ty_def
 
   let definition_tag : def Tag.t = Tag.create ()
 
@@ -1482,13 +1501,16 @@ module Term = struct
               dstrs.(j) <- Some dstr;
               (arg_ty, Some dstr)
           ) args in
-        cases := { Ty.cstr; tester; dstrs; } :: !cases;
+        cases := { cstr; tester; dstrs; } :: !cases;
         cstr, l'
       ) l in
     assert (not record || List.length !cases = 1);
-    Ty.define ty_const (Adt { ty = ty_const; record;
-                              cases = Array.of_list @@ List.rev !cases; });
-    l'
+    let def =
+      Adt { ty = ty_const; record;
+            cases = Array.of_list @@ List.rev !cases; }
+    in
+    Ty.define ty_const def;
+    def, l'
 
   let define_adt = define_adt_aux ~record:false
 
@@ -1497,13 +1519,16 @@ module Term = struct
     let cstr_args = List.map (fun (field_name, ty) ->
         ty, Some field_name
       ) l in
-    let l' = define_adt_aux ~record:true ty_const vars [path, cstr_args] in
+    let def, l' = define_adt_aux ~record:true ty_const vars [path, cstr_args] in
     match l' with
     | [ _, l'' ] ->
-      List.map (function
-          | _, Some dstr -> dstr
-          | _, None -> assert false
-        ) l''
+      let fields =
+        List.map (function
+            | _, Some dstr -> dstr
+            | _, None -> assert false
+          ) l''
+      in
+      def, fields
     | _ -> assert false
 
 
@@ -1622,7 +1647,7 @@ module Term = struct
         let all_occurs = ref true in
         let missing = ref [] in
         let all = ref [] in
-        Array.iter2 (fun (case : Ty.adt_case) occurs ->
+        Array.iter2 (fun (case : ty_def_adt_case) occurs ->
             if occurs
             then (all := case.cstr :: !all)
             else (all_occurs := false; missing := case.cstr :: !missing)
@@ -2711,7 +2736,7 @@ module Term = struct
 
     let void =
       match define_adt Ty.Const.unit [] [Path.global "void", []] with
-      | [void, _] -> void
+      | _, [void, _] -> void
       | _ -> assert false
 
     let pattern_arity (c : t) ret tys =
@@ -3636,4 +3661,3 @@ module Term = struct
     of_var v
 
 end
-

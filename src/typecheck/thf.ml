@@ -15,6 +15,7 @@ module Make
      with type ty := Ty.t
       and type ty_var := Ty.Var.t
       and type ty_const := Ty.Const.t
+      and type ty_def := Ty.def
       and type 'a tag := 'a Tag.t
       and type path := Dolmen.Std.Path.t)
 = struct
@@ -2216,10 +2217,11 @@ module Make
         check_no_free_wildcards env t;
         cst_path env (Id.name id), ty
       ) fields in
-    let field_list = T.define_record ty_cst ty_vars l in
+    let def, field_list = T.define_record ty_cst ty_vars l in
     List.iter2 (fun (id, _) field ->
         decl_term_field env (Decl d) id field (Declared (env.file, d))
-      ) fields field_list
+      ) fields field_list;
+    def
 
   let inductive env d ty_cst { Stmt.id; vars; cstrs; _ } =
     (* Parse the type variables *)
@@ -2241,7 +2243,7 @@ module Make
       ) cstrs_with_ids in
     (* Call the T module to define the adt and get the typed constructors
        and destructors. *)
-    let defined_cstrs = T.define_adt ty_cst ty_vars cstrs_with_strings in
+    let def, defined_cstrs = T.define_adt ty_cst ty_vars cstrs_with_strings in
     (* Register the constructors and destructors in the global env. *)
     List.iter2 (fun (cid, pargs) (c, targs) ->
         decl_term_cstr env (Decl d) cid c (Declared (env.file, d));
@@ -2255,15 +2257,23 @@ module Make
             | Some id, None ->
               _error env (Ast t) (Missing_destructor id)
           ) pargs targs
-      ) cstrs_with_ids defined_cstrs
+      ) cstrs_with_ids defined_cstrs;
+    def
 
   let define_decl env (_, cst) t =
     match cst, (t : Stmt.decl) with
-    | _, Abstract _ -> ()
+    (* Term decl *)
+    | (`Term_decl _) as res, Abstract _ -> res
+    (* Abstract type decl *)
+    | `Type_decl c, Abstract _ -> `Type_decl (c, None)
+    (* ADT type defs *)
     | `Term_decl _, Inductive _ -> assert false
-    | `Type_decl c, Inductive i -> inductive env t c i
+    | `Type_decl c, Inductive i ->
+      `Type_decl (c, Some (inductive env t c i))
+    (* Record type defs *)
     | `Term_decl _, Record _ -> assert false
-    | `Type_decl c, Record r -> record env t c r
+    | `Type_decl c, Record r ->
+      `Type_decl (c, Some (record env t c r))
 
   let parse_decl tags env (t : Stmt.decl) =
     match t with
@@ -2323,19 +2333,19 @@ module Make
       (* Then parse the complete type definition and define them.
          TODO: parse (and thus define them with T) in the topological order
              defined by the well-founded check ? *)
-      List.iter2 (define_decl env) parsed d.contents;
+      let defs = List.map2 (define_decl env) parsed d.contents in
       (* Return the defined types *)
-      List.map snd parsed
+      defs
     end else begin
       List.map (fun t ->
           (* First pre-parse all definitions and generate the typed symbols for them *)
           let env, parsed = parse_decl tags env t in
           (* Then parse the complete type definition and define them. *)
-          let () = define_decl env parsed t in
+          let def = define_decl env parsed t in
           (* Finally record them in the state *)
           let () = record_decl env parsed t in
           (* return *)
-          snd parsed
+          def
         ) d.contents
     end
 
@@ -2483,7 +2493,7 @@ module Make
     | `Ty (id, c), `Ty body ->
       assert (params = []);
       List.iter (check_used_ty_var ~kind:`Type_alias_param env) vars;
-      `Type_def (id, c, vars, body)
+      `Type_alias (id, c, vars, body)
     (* function definition *)
     | `Term (id, f), `Term body ->
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;

@@ -220,6 +220,7 @@ module Make
       and type ty := Dolmen.Std.Expr.ty
       and type ty_var := Dolmen.Std.Expr.ty_var
       and type ty_cst := Dolmen.Std.Expr.ty_cst
+      and type ty_def := Dolmen.Std.Expr.ty_def
       and type term := Dolmen.Std.Expr.term
       and type term_var := Dolmen.Std.Expr.term_var
       and type term_cst := Dolmen.Std.Expr.term_cst
@@ -290,7 +291,7 @@ module Make
   let pack_abstract_defs ~loc ~(file:  _ file) typed_defs =
     let contents =
       List.filter_map (function
-          | `Type_def _ -> None
+          | `Type_alias _ -> None
           | `Instanceof _ -> None (* TODO: warning/error ? *)
           | `Term_def (_id, cst, ty_params, term_params, body) ->
             let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in
@@ -304,7 +305,7 @@ module Make
     List.fold_left2 (fun (st, model) (parsed : Dolmen.Std.Statement.def) def ->
         let loc = Dolmen.Std.Loc.{ file = file.loc; loc = parsed.loc; } in
         match def with
-        | `Type_def _ ->
+        | `Type_alias _ ->
           (State.error ~file ~loc st type_def_in_model (), model)
         | `Term_def (_id, cst, ty_params, term_params, body) ->
           let func = Dolmen.Std.Expr.Term.lam (ty_params, term_params) body in

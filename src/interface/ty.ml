@@ -15,6 +15,9 @@ module type Tff = sig
   type t
   (** The type of types. *)
 
+  type def
+  (** The type of type definitions *)
+
   type path
   (** The type of paths to constants. *)
 

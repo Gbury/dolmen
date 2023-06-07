@@ -20,6 +20,7 @@ module type S = sig
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
      and type ty_const := Ty.Const.t
+     and type ty_def := Ty.def
      and type 'a tag := 'a Tag.t
      and type path := Dolmen.Std.Path.t
 
@@ -27,6 +28,7 @@ module type S = sig
     with type ty := Ty.t
      and type ty_var := Ty.Var.t
      and type ty_cst := Ty.Const.t
+     and type ty_def := Ty.def
      and type term := T.t
      and type term_var := T.Var.t
      and type term_cst := T.Const.t

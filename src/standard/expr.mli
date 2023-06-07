@@ -109,6 +109,24 @@ and term = {
 and formula = term
 (** Alias for signature compatibility (with Dolmen_loop.Pipes.Make for instance). *)
 
+type ty_def_adt_case = {
+  cstr : term_cst;
+  tester : term_cst;
+  dstrs : term_cst option array;
+}
+(** One case of the type definition for an algebraic datatype. *)
+
+type ty_def =
+  | Abstract
+  (** Abstract types *)
+  | Adt of {
+      ty : ty_cst;
+      record : bool;
+      cases : ty_def_adt_case array;
+    }
+  (** Algebraic datatypes, including records (which are seen as a 1-case adt). *)
+(** Type definitions. *)
+
 
 (** {2 Exceptions} *)
 (*  ************************************************************************* *)
@@ -196,6 +214,9 @@ module Print : sig
 
   val formula : formula t
   (** Printer for formulas. *)
+
+  val ty_def : ty_def t
+  (** Printer for type definitions. *)
 
 end
 
@@ -437,21 +458,8 @@ module Ty : sig
 
   (** {4 Type structure definition} *)
 
-  type adt_case = {
-    cstr : term_cst;
-    tester : term_cst;
-    dstrs : term_cst option array;
-  }
-  (** One case of an algebraic datatype definition. *)
-
-  type def =
-    | Abstract
-    | Adt of {
-        ty : ty_cst;
-        record : bool;
-        cases : adt_case array;
-      } (** *)
-  (** The various ways to define a type inside the solver. *)
+  type def = ty_def
+  (** Alias for type definitions. *)
 
   val define : ty_cst -> def -> unit
   (** Register a type definition. *)
@@ -1603,13 +1611,13 @@ module Term : sig
   end
 
   val define_record :
-    ty_const -> ty_var list -> (Path.t * ty) list -> Field.t list
+    ty_const -> ty_var list -> (Path.t * ty) list -> Ty.def * Field.t list
   (** Define a new record type. *)
 
   val define_adt :
     ty_const -> ty_var list ->
     (Path.t * (ty * Path.t option) list) list ->
-    (Cstr.t * (ty * Const.t option) list) list
+    Ty.def * (Cstr.t * (ty * Const.t option) list) list
   (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
       the type variables [ty_vars] as defining an algebraic datatypes with constructors
       [cstrs]. [cstrs] is a list where each elements of the form [(name, l)] defines

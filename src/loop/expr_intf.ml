@@ -10,6 +10,7 @@ module type S = sig
   type ty
   type ty_var
   type ty_cst
+  type ty_def
 
   type term
   type term_var
@@ -26,6 +27,7 @@ module type Print = sig
   val ty : Format.formatter -> ty -> unit
   val ty_var : Format.formatter -> ty_var -> unit
   val ty_cst : Format.formatter -> ty_cst -> unit
+  val ty_def : Format.formatter -> ty_def -> unit
 
   val term : Format.formatter -> term -> unit
   val term_var : Format.formatter -> term_var -> unit
