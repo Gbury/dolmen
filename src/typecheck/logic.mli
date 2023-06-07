@@ -61,3 +61,6 @@ type t =
   (** Smtlib2 logic. *)
 (** Wrapper type to represent the different logics. *)
 
+val print : Format.formatter -> t -> unit
+(** Printer for logics. *)
+

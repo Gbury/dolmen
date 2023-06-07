@@ -197,12 +197,19 @@ module Smtlib2 = struct
           | "fp.to_ubv" ->
             begin match version with
               | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_ubv'))
-              | `Script _ -> `Not_found
+              | `Script _ ->
+                Format.eprintf "foo ?!@.";
+                (* the regular case is handled later, because fp.to_ubv is
+                   an indexed identifier. *)
+                `Not_found
             end
           | "fp.to_sbv" ->
             begin match version with
               | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_sbv'))
-              | `Script _ -> `Not_found
+              | `Script _ ->
+                (* the regular case is handled later, because fp.to_sbv is
+                   an indexed identifier. *)
+                `Not_found
             end
           | _ -> `Not_found
         end

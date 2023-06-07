@@ -43,7 +43,8 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t -> int -> state
 
   val set_logic :
-    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> string -> state
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
+    string -> state * Dolmen_type.Logic.t
 
   val defs :
     mode:[`Create_id | `Use_declared_id] ->
@@ -228,7 +229,7 @@ module type S = sig
   (** Various info getters *)
 
   type set_info = [
-    | `Set_logic of string
+    | `Set_logic of string * Dolmen_type.Logic.t
     | `Set_info of Dolmen.Std.Statement.term
     | `Set_option of Dolmen.Std.Statement.term
   ]

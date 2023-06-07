@@ -86,7 +86,14 @@ We can now use our function to see what happens on various files:
 ```ocaml
 # test "example.smt2";;
 other_1[0-15]:
-  set-logic: LIA
+  set-logic: LIA =
+    { theories: int, core;
+      features: { free_sorts : false;
+                  free_functions : false;
+                  datatypes : false;
+                  quantifiers : true;
+                  arithmetic : linear/strict;
+                  arrays : all; }; }]}
 
 decl_1[16-37]:
   decls:

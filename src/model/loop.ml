@@ -354,11 +354,12 @@ module Make
       ) (st, model) parsed_defs.contents typed_defs
 
   let are_defs_declared st (defs : Dolmen.Std.Statement.defs) =
-    let input = `Logic (State.get State.logic_file st) in
+    let input = `Response (State.get State.response_file st) in
     Typer.typing_wrap ~input st ~f:(fun env ->
         List.for_all (fun (def : Dolmen.Std.Statement.def) ->
             match Dolmen_loop.Typer.T.find_bound env def.id with
-            | #Dolmen_loop.Typer.T.not_found -> false
+            | #Dolmen_loop.Typer.T.not_found ->
+              false
             | _ -> true
           ) defs.contents
       )
