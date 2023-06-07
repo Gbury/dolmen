@@ -14,6 +14,7 @@
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-ty">ty</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-ty">Dolmen.Std.Expr.ty</a></span>
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-ty_var">ty_var</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-ty_var">Dolmen.Std.Expr.ty_var</a></span>
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-ty_cst">ty_cst</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-ty_cst">Dolmen.Std.Expr.ty_cst</a></span>
+     <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-ty_def">ty_def</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-ty_def">Dolmen.Std.Expr.ty_def</a></span>
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-term">term</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-term">Dolmen.Std.Expr.term</a></span>
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-term_var">term_var</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-term_var">Dolmen.Std.Expr.term_var</a></span>
      <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="../../../../dolmen_loop/Dolmen_loop/Typer_intf/module-type-S/index.html#type-term_cst">term_cst</a> := <a href="../../../../dolmen/Dolmen_std/Expr/index.html#type-term_cst">Dolmen.Std.Expr.term_cst</a></span>
@@ -41,7 +42,7 @@
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-ty_var">Dolmen.Std.Expr.Term.ty_var</a> list</span>
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/Var/index.html#type-t">Dolmen.Std.Expr.Term.Var.t</a> list</span>
     * <a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-t">Dolmen.Std.Expr.Term.t</a></span>
-  <span><span>| `Type_def</span> of <span class="type-var">'d</span></span> ]</span>
+  <span><span>| `Type_alias</span> of <span class="type-var">'d</span></span> ]</span>
     list</span> <span class="arrow">&#45;&gt;</span></span>
   <span><span><span>(<span class="type-var">'e</span> * <a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-t">Dolmen.Std.Expr.Term.t</a>)</span> list</span> <a href="../index.html#type-located">located</a></span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-record_defs"><a href="#val-record_defs" class="anchor"></a><code><span><span class="keyword">val</span> record_defs : 
   <span><a href="argument-1-State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
@@ -60,7 +61,7 @@
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-ty_var">Dolmen.Std.Expr.Term.ty_var</a> list</span>
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/Var/index.html#type-t">Dolmen.Std.Expr.Term.Var.t</a> list</span>
     * <a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-t">Dolmen.Std.Expr.Term.t</a></span>
-  <span><span>| `Type_def</span> of <span class="type-var">'d</span></span> ]</span>
+  <span><span>| `Type_alias</span> of <span class="type-var">'d</span></span> ]</span>
     list</span> <span class="arrow">&#45;&gt;</span></span>
   <a href="argument-1-State/index.html#type-t">State.t</a> * <a href="../../Model/index.html#type-t">Model.t</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-is_id_declared"><a href="#val-is_id_declared" class="anchor"></a><code><span><span class="keyword">val</span> is_id_declared : <span><a href="../../../../dolmen_loop/Dolmen_loop/Typer/T/index.html#type-state">Dolmen_loop.Typer.T.state</a> <span class="arrow">&#45;&gt;</span></span> <span><a href="../../../../dolmen/Dolmen_std/Id/index.html#type-t">Dolmen.Std.Id.t</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-are_defs_declared"><a href="#val-are_defs_declared" class="anchor"></a><code><span><span class="keyword">val</span> are_defs_declared : <span><a href="argument-1-State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span> <span><a href="../../../../dolmen/Dolmen_std/Statement/index.html#type-defs">Dolmen.Std.Statement.defs</a> <span class="arrow">&#45;&gt;</span></span> bool</span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-type_model_aux"><a href="#val-type_model_aux" class="anchor"></a><code><span><span class="keyword">val</span> type_model_aux : 
   <span>input:<a href="argument-3-Typer/index.html#type-input">Typer.input</a> <span class="arrow">&#45;&gt;</span></span>
@@ -122,7 +123,7 @@
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-ty_var">Dolmen.Std.Expr.Term.ty_var</a> list</span>
     * <span><a href="../../../../dolmen/Dolmen_std/Expr/Term/Var/index.html#type-t">Dolmen.Std.Expr.Term.Var.t</a> list</span>
     * <a href="../../../../dolmen/Dolmen_std/Expr/Term/index.html#type-t">Dolmen.Std.Expr.Term.t</a></span>
-  <span><span>| `Type_def</span> of <span class="type-var">'c</span></span> ]</span>
+  <span><span>| `Type_alias</span> of <span class="type-var">'c</span></span> ]</span>
     list</span> <span class="arrow">&#45;&gt;</span></span>
   <a href="argument-1-State/index.html#type-t">State.t</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-check_hyps"><a href="#val-check_hyps" class="anchor"></a><code><span><span class="keyword">val</span> check_hyps : 
   <span><a href="argument-1-State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>

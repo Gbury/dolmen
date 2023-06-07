@@ -4,6 +4,7 @@
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-ty">ty</a> := <a href="../argument-1-Expr/index.html#type-ty">Expr.ty</a></span>
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-ty_var">ty_var</a> := <a href="../argument-1-Expr/index.html#type-ty_var">Expr.ty_var</a></span>
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-ty_cst">ty_cst</a> := <a href="../argument-1-Expr/index.html#type-ty_cst">Expr.ty_cst</a></span>
+  <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-ty_def">ty_def</a> := <a href="../argument-1-Expr/index.html#type-ty_def">Expr.ty_def</a></span>
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-term">term</a> := <a href="../argument-1-Expr/index.html#type-term">Expr.term</a></span>
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-term_var">term_var</a> := <a href="../argument-1-Expr/index.html#type-term_var">Expr.term_var</a></span>
   <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="../../../Typer_intf/module-type-Types/index.html#type-term_cst">term_cst</a> := <a href="../argument-1-Expr/index.html#type-term_cst">Expr.term_cst</a></span>
@@ -20,7 +21,7 @@
   <span>?attrs:<span><a href="../../../../../dolmen/Dolmen_std/Term/index.html#type-t">Dolmen.Std.Term.t</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../../../../dolmen/Dolmen_std/Statement/index.html#type-defs">Dolmen.Std.Statement.defs</a> <span class="arrow">&#45;&gt;</span></span>
   <a href="../argument-3-State/index.html#type-t">State.t</a>
-  * <span><span>[ <span>`Type_def of <a href="../../../../../dolmen/Dolmen_std/Id/index.html#type-t">Dolmen.Std.Id.t</a> * <a href="../argument-1-Expr/index.html#type-ty_cst">Expr.ty_cst</a> * <span><a href="../argument-1-Expr/index.html#type-ty_var">Expr.ty_var</a> list</span> * <a href="../argument-1-Expr/index.html#type-ty">Expr.ty</a></span>
+  * <span><span>[ <span>`Type_alias of <a href="../../../../../dolmen/Dolmen_std/Id/index.html#type-t">Dolmen.Std.Id.t</a> * <a href="../argument-1-Expr/index.html#type-ty_cst">Expr.ty_cst</a> * <span><a href="../argument-1-Expr/index.html#type-ty_var">Expr.ty_var</a> list</span> * <a href="../argument-1-Expr/index.html#type-ty">Expr.ty</a></span>
     <span><span>| `Term_def</span> of
       <a href="../../../../../dolmen/Dolmen_std/Id/index.html#type-t">Dolmen.Std.Id.t</a>
       * <a href="../argument-1-Expr/index.html#type-term_cst">Expr.term_cst</a>
@@ -40,7 +41,10 @@
   <span>?loc:<a href="../../../../../dolmen/Dolmen_std/Loc/index.html#type-t">Dolmen.Std.Loc.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span>?attrs:<span><a href="../../../../../dolmen/Dolmen_std/Term/index.html#type-t">Dolmen.Std.Term.t</a> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../../../../dolmen/Dolmen_std/Statement/index.html#type-decls">Dolmen.Std.Statement.decls</a> <span class="arrow">&#45;&gt;</span></span>
-  <a href="../argument-3-State/index.html#type-t">State.t</a> * <span><span>[ <span>`Type_decl of <a href="../argument-1-Expr/index.html#type-ty_cst">Expr.ty_cst</a></span> <span><span>| `Term_decl</span> of <a href="../argument-1-Expr/index.html#type-term_cst">Expr.term_cst</a></span> ]</span> list</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-terms"><a href="#val-terms" class="anchor"></a><code><span><span class="keyword">val</span> terms : 
+  <a href="../argument-3-State/index.html#type-t">State.t</a>
+  * <span><span>[ <span>`Type_decl of <a href="../argument-1-Expr/index.html#type-ty_cst">Expr.ty_cst</a> * <span><a href="../argument-1-Expr/index.html#type-ty_def">Expr.ty_def</a> option</span></span>
+    <span><span>| `Term_decl</span> of <a href="../argument-1-Expr/index.html#type-term_cst">Expr.term_cst</a></span> ]</span>
+      list</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-terms"><a href="#val-terms" class="anchor"></a><code><span><span class="keyword">val</span> terms : 
   <span><a href="../argument-3-State/index.html#type-t">State.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span>input:<a href="#type-input">input</a> <span class="arrow">&#45;&gt;</span></span>
   <span>?loc:<a href="../../../../../dolmen/Dolmen_std/Loc/index.html#type-t">Dolmen.Std.Loc.t</a> <span class="arrow">&#45;&gt;</span></span>
