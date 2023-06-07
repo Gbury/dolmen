@@ -327,8 +327,14 @@ let reports_opts strict warn_modifiers =
   let conf = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let conf =
     if not strict then conf
-    else Dolmen_loop.Report.Conf.fatal conf
+    else begin
+      let fatal warn conf = Dolmen_loop.Report.Conf.fatal conf warn in
+      conf
+      |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.almost_linear))
+      |> fatal
+        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.unknown_logic))
+    end
   in
   let res =
     List.fold_left (fun conf l ->
