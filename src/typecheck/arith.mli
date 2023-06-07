@@ -22,12 +22,14 @@ end
 (** Smtlib Integer and Real Arithmetic *)
 module Smtlib2 : sig
 
-  type arith =
+  type config =
     | Regular
     | Linear of [ `Large | `Strict ]
     | Difference of [ `IDL | `RDL | `UFIDL ] (**)
   (** The different type of arithmetic restrictions, see the comment in
       arith.ml for more information. *)
+
+  val print_config : Format.formatter -> config -> unit
 
   (** Standalone Integer arithmetic *)
   module Int : sig
@@ -49,7 +51,7 @@ module Smtlib2 : sig
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : config:config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
     end
 
@@ -75,7 +77,7 @@ module Smtlib2 : sig
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : config:config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
     end
 
@@ -106,7 +108,7 @@ module Smtlib2 : sig
             int or real), but another type was found. *)
       (** Additional errors specific to arithmetic typing. *)
 
-      val parse : arith:arith -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+      val parse : config:config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
       (** Parsing function for type-checking *)
 
     end

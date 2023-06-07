@@ -20,10 +20,8 @@ next
 - Add `attrs` fields for all declarations and definition types,
   and correctly attach predicate attribute to individual definitions
   (PR#130)
-
 - Restore support for toplevel "and" in non-recursive predicate/function
   definitions in Alt-Ergo syntax (PR #147, fixes issue #144)
-  
 - Add support for hexadecimal floats in Alt-Ergo syntax (PR #148, fixes
   issue #145)
 
@@ -31,6 +29,10 @@ next
 
 - Ignore arithmetic restrictions when typing model values. This
   particularly affects difference logic (PR#141)
+- Rename theory-specific configuration to `config` (instead of
+  `arith`, `arrays`, etc..) (PR#142)
+- Add printing function for logics (PR#142)
+
 
 ### Loop
 

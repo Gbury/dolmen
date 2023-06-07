@@ -1318,13 +1318,13 @@ module Typer(State : State.S) = struct
         | `Floats -> Smtlib2_Float.parse v :: acc
         | `String -> Smtlib2_String.parse v :: acc
         | `Arrays ->
-          Smtlib2_Arrays.parse ~arrays:l.features.arrays v :: acc
+          Smtlib2_Arrays.parse ~config:l.features.arrays v :: acc
         | `Ints ->
-          Smtlib2_Ints.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Ints.parse ~config:l.features.arithmetic v :: acc
         | `Reals ->
-          Smtlib2_Reals.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Reals.parse ~config:l.features.arithmetic v :: acc
         | `Reals_Ints ->
-          Smtlib2_Reals_Ints.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Reals_Ints.parse ~config:l.features.arithmetic v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
