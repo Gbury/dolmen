@@ -836,7 +836,7 @@ let non_linear_expression =
     ~hints:[text_hint]
     ~name:"Non linear expression in linear arithmetic logic" ()
 
-let bitvector_app_expected_nat =
+let bitvector_app_expected_nat_lit =
   Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat"
     ~message:(fun fmt t ->
         Format.fprintf fmt "Expected a natural number as an argument, \
