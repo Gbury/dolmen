@@ -842,7 +842,7 @@ let non_linear_expression =
     ~name:"Non linear expression in linear arithmetic logic" ()
 
 let bitvector_app_expected_nat_lit =
-  Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat"
+  Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat-lit"
     ~message:(fun fmt t ->
         Format.fprintf fmt "Expected a natural number as an argument, \
                             but instead got the following untyped term:@ %a"
