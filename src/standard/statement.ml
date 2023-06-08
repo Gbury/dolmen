@@ -268,8 +268,12 @@ let rec print_descr fmt = function
   | Prove { hyps = []; goals } ->
       Format.fprintf fmt "@[<hov 2>prove:@ %a@]"
         (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) goals
-  | Prove { hyps; _ } ->
+  | Prove { hyps; goals = [] } ->
     Format.fprintf fmt "@[<hov 2>prove-assuming:@ %a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) hyps
+  | Prove { hyps; goals } ->
+    Format.fprintf fmt "@[<hov 2>prove:@ %a@ assuming:@ %a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) goals
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) hyps
 
   | Clause l ->
