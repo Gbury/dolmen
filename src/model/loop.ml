@@ -629,9 +629,9 @@ module Make
     let clause = { file; loc; contents; } in
     check_acc st (Clause clause)
 
-  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc (hyps, _) =
+  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc (hyps, goals) =
     let local_hyps = List.map (fun contents -> { file; loc; contents; }) hyps in
-(*     let local_goals = List.map (fun contents -> { file; loc = no_loc; contents; }) goals in *)
+    let local_goals = List.map (fun contents -> { file; loc; contents; }) goals in
     let st =
       List.fold_left (fun st local_hyp ->
           check_acc st (Hyp local_hyp)
@@ -665,7 +665,12 @@ module Make
             assert false
         end else begin
           (* **3** Lastly check that at least one goal evaluated to "true" *)
-          match evaluated_goals with
+          let goals =
+            List.fold_left (fun evaluated_goals goal ->
+              eval_goal ~reraise:false st model evaluated_goals goal |> snd
+            ) evaluated_goals local_goals
+          in
+          match goals with
           | [] -> st
           | l when List.exists (fun { contents; _ } -> contents) l -> st
           | l -> State.error ~file ~loc st bad_model (`Goals l)
