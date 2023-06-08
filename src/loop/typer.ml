@@ -844,7 +844,7 @@ let non_linear_expression =
 let bitvector_app_expected_nat_lit =
   Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat-lit"
     ~message:(fun fmt t ->
-        Format.fprintf fmt "Expected a natural number as an argument, \
+        Format.fprintf fmt "Expected a natural number literal as an argument, \
                             but instead got the following untyped term:@ %a"
           Dolmen_std.Term.print t)
     ~hints:[bv_expected_nat_lit_hint]
