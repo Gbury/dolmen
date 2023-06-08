@@ -1957,7 +1957,7 @@ module Make
       Format.fprintf fmt "@[<v 2>clause:@ %a@]"
         (Format.pp_print_list Print.formula) l
     | `Solve (hyps, goals) ->
-      Format.fprintf fmt "@[<hov 2>solve: %a assuming: %a@]"
+      Format.fprintf fmt "@[<hov 2>solve: %a@ assuming: %a@]"
         (Format.pp_print_list Print.formula) goals
         (Format.pp_print_list Print.formula) hyps
     | `Get_info s ->
