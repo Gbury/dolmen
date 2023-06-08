@@ -476,7 +476,7 @@ let assumption ?loc l =
   mk ?loc (Prove { hyps = l; goals = [] })
 
 (* Smtlib wrappers *)
-let check_sat ?loc ?name hyps goals = mk ?loc ?id:name (Prove {hyps; goals})
+let check_sat ?loc ?name hyps = mk ?loc ?id:name (Prove {hyps; goals = []})
 let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =

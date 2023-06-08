@@ -631,6 +631,7 @@ module Make
 
   let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc (hyps, _) =
     let local_hyps = List.map (fun contents -> { file; loc; contents; }) hyps in
+(*     let local_goals = List.map (fun contents -> { file; loc = no_loc; contents; }) goals in *)
     let st =
       List.fold_left (fun st local_hyp ->
           check_acc st (Hyp local_hyp)

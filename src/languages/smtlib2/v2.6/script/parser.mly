@@ -357,9 +357,9 @@ command:
   | OPEN ASSERT t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.assert_ ~loc t }
   | OPEN CHECK_SAT CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc [] [] }
+    { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc [] }
   | OPEN CHECK_SAT_ASSUMING OPEN l=prop_literal* CLOSE CLOSE
-    { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc l [] }
+    { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc l }
   | OPEN DECLARE_CONST s=SYMBOL ty=sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc I.(mk term s) [] [] ty }
   | OPEN DECLARE_DATATYPE s=SYMBOL d=datatype_dec CLOSE

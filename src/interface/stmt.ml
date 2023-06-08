@@ -166,7 +166,7 @@ module type Logic = sig
   val assert_     : ?loc:location -> term -> t
   (** Add an assertion to the current set of assertions. *)
 
-  val check_sat   : ?loc:location -> ?name:id -> term list -> term list -> t
+  val check_sat   : ?loc:location -> ?name:id -> term list -> t
   (** Directive that instructs the prover to solve the current set of assertions,
       under some local assumptions. *)
 
