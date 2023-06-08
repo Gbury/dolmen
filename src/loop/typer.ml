@@ -848,7 +848,7 @@ let bitvector_app_expected_nat_lit =
                             but instead got the following untyped term:@ %a"
           Dolmen_std.Term.print t)
     ~hints:[bv_expected_nat_lit_hint]
-    ~name:"Bad bitvector application argument type." ()
+    ~name:"Bad bitvector application argument" ()
 
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
