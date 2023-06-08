@@ -203,11 +203,11 @@ module Make
   ]
 
   type builtin_infer = [
-    | `Infer of var_infer * sym_infer
+    | `Infer of string * var_infer * sym_infer
   ]
 
   type builtin_reserved = [
-    | `Reserved of [
+    | `Reserved of string * [
         | `Solver
         | `Term_cst of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
       ]
@@ -222,7 +222,7 @@ module Make
 
   type reason =
     | Builtin
-    | Reserved
+    | Reserved of string
     | Bound of Loc.file * Ast.t
     | Inferred of Loc.file * Ast.t
     | Defined of Loc.file * Stmt.def
@@ -234,10 +234,7 @@ module Make
 
   type binding = [
     | `Not_found
-    | `Reserved of [
-        | `Solver
-        | `Term
-      ]
+    | `Reserved of string
     | `Builtin of [
         | `Ttype
         | `Ty
@@ -550,7 +547,7 @@ module Make
     try
       let r =
         match v with
-        | `Builtin `Reserved _ -> Reserved
+        | `Builtin `Reserved (reason, _) -> Reserved reason
         | `Builtin _ -> Builtin
         | `Ty_var v -> E.find v env.type_locs
         | `Term_var v -> F.find v env.term_locs
@@ -567,16 +564,13 @@ module Make
   let with_reason reason bound : binding =
     match (bound : [ bound | not_found ]) with
     | `Not_found -> `Not_found
-    | `Builtin `Infer _ ->
-      (* infer-builtins should not last long: they should be instantly
-         replaced by the corresponding inferred constant. *)
-      assert false
+    | `Builtin `Infer (reason, _, _) -> `Reserved reason
     | `Builtin `Ttype _ -> `Builtin `Ttype
     | `Builtin `Ty _ -> `Builtin `Ty
     | `Builtin `Term _ -> `Builtin `Term
     | `Builtin `Tags _ -> `Builtin `Tag
-    | `Builtin `Reserved `Solver -> `Reserved `Solver
-    | `Builtin `Reserved `Term_cst _ -> `Reserved `Term
+    | `Builtin `Reserved (reason, `Solver) -> `Reserved reason
+    | `Builtin `Reserved (reason, `Term_cst _) -> `Reserved reason
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
     | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
@@ -590,7 +584,7 @@ module Make
     match (binding : binding) with
     | `Not_found -> assert false
     | `Builtin _ -> Some Builtin
-    | `Reserved _ -> Some Reserved
+    | `Reserved reason -> Some (Reserved reason)
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -1122,7 +1116,7 @@ module Make
     | Bound (_, t) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
-    | Builtin | Reserved | Declared _ | Defined _
+    | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
@@ -1136,7 +1130,7 @@ module Make
       _warn env (Ast t) (Unused_term_variable (kind, v))
     (* variables should not be declare-able nor builtin,
        and we do not use any term wildcards. *)
-    | Builtin | Reserved | Declared _ | Defined _
+    | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
@@ -1864,9 +1858,9 @@ module Make
   and builtin_apply_id env b ast s s_ast args : res =
     match (b : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Infer (var_infer, sym_infer) ->
+    | `Infer (_reason, var_infer, sym_infer) ->
       infer_sym_aux env var_infer sym_infer ast s args s_ast
-    | `Reserved (`Solver | `Term_cst _ ) ->
+    | `Reserved (_reason, (`Solver | `Term_cst _ )) ->
       (* reserved builtins are there to provide shadow warnings
          and provide symbols for model definitions, but they don't
          have a semantic outside of that. *)
@@ -1951,7 +1945,7 @@ module Make
   and builtin_apply_builtin env ast b b_res args : res =
     match (b_res : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Reserved (`Solver | `Term_cst _) -> _unknown_builtin env ast b
+    | `Reserved (_reason, (`Solver | `Term_cst _)) -> _unknown_builtin env ast b
     | `Infer _ ->
       (* TODO: proper erorr.
          We do not have a map from builtins symbols to typed expressions. *)
@@ -2455,7 +2449,7 @@ module Make
           assert false (* missing reason for destructor *)
       end
     | `Term_def ret_ty, `Builtin `Term (`Partial mk_cst, _)
-    | `Term_def ret_ty, `Builtin `Reserved `Term_cst mk_cst ->
+    | `Term_def ret_ty, `Builtin `Reserved (_, `Term_cst mk_cst) ->
       let cst = mk_cst vars params ret_ty in
       lookup_id_for_def_term env d vars params ret_ty cst Builtin
     | `Term_def ret_ty, ((`Term_cst cst) as c) ->

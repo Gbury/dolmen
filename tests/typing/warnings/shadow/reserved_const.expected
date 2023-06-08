@@ -1,4 +1,5 @@
 File "tests/typing/warnings/shadow/reserved_const.smt2", line 2, character 0-25:
 2 | (declare-fun div0 () Int)
     ^^^^^^^^^^^^^^^^^^^^^^^^^
-Warning Shadowing: `div0` is reserved for model definitions
+Warning Shadowing: `div0` is reserved for completing interpretation of
+        division by zero in models

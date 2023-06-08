@@ -129,4 +129,36 @@
   (action (diff out_of_order.expected out_of_order.full)))
 
 
+; Test for reserved.smt2
+; Incremental test
+
+(rule
+   (target  reserved.incremental)
+   (deps    (:response reserved.rsmt2) (:input reserved.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff reserved.expected reserved.incremental)))
+
+; Full mode test
+
+(rule
+   (target  reserved.full)
+   (deps    (:response reserved.rsmt2) (:input reserved.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff reserved.expected reserved.full)))
+
+
 ; Auto-generated part end
