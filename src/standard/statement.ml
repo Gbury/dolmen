@@ -452,6 +452,8 @@ let case_split ?loc id t =
 let prove_goal ?loc id t =
   mk ~id ?loc (Prove { hyps = []; goals = [t] })
 
+let prove_sat ?loc ~name hyps = mk ?loc ~id:name (Prove {hyps; goals = []})
+
 let rewriting ?loc id l =
   mk ~id ?loc @@ Pack (List.map (fun t ->
       antecedent ?loc (Term.add_attr (Term.const Id.rwrt_rule) t)
@@ -480,7 +482,7 @@ let assumption ?loc l =
   mk ?loc (Prove { hyps = l; goals = [] })
 
 (* Smtlib wrappers *)
-let check_sat ?loc ?name hyps = mk ?loc ?id:name (Prove {hyps; goals = []})
+let check_sat ?loc hyps = mk ?loc (Prove {hyps; goals = []})
 let assert_ ?loc t = antecedent ?loc t
 
 let type_decl ?loc id n =
