@@ -12,7 +12,7 @@ module Ae : sig
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       (** Error raised when a character that isn't '0' or '1' is used inside a
-          literal bitvector. *)
+          literal bitvector in binary form. *)
       | Expected_nat_lit : Dolmen.Std.Term.t -> Dolmen.Std.Term.t Type.err
       (** Error raised when a function that expects a literal natural number
           as an argument receives something else. *)
