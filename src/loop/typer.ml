@@ -317,6 +317,11 @@ let poly_param_hint _ =
        This means that only monomorphic types can appear as
        parameters of a function type.")
 
+let bv_expected_nat_lit_hint _ =
+  Some (
+    Format.dprintf "%a" Format.pp_print_text
+      "Some bitvector functions in alt-ergo require their first argument \
+       to be a literal natural number.")
 
 (* Typing warnings *)
 (* ************************************************************************ *)
@@ -842,8 +847,8 @@ let bitvector_app_expected_nat_lit =
         Format.fprintf fmt "Expected a natural number as an argument, \
                             but instead got the following untyped term:@ %a"
           Dolmen_std.Term.print t)
-    ~name:"Some bitvector functions in alt-ergo require their first argument \
-           to be a literal natural number" ()
+    ~hints:[bv_expected_nat_lit_hint]
+    ~name:"Bad bitvector application argument type." ()
 
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
@@ -1220,7 +1225,7 @@ module Typer(State : State.S) = struct
     | Ae_Bitv.Invalid_bin_char c ->
       error ~input ~loc st invalid_bin_bitvector_char c
     | Ae_Bitv.Expected_nat_lit t ->
-      error ~input ~loc st bitvector_app_expected_nat t
+      error ~input ~loc st bitvector_app_expected_nat_lit t
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
       error ~input ~loc st expected_arith_type (ty, "")
