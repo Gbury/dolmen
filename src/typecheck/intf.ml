@@ -21,6 +21,7 @@ module type Formulas = sig
   type ty
   type ty_var
   type ty_cst
+  type ty_def
 
   type term
   type term_var
@@ -136,12 +137,36 @@ module type Formulas = sig
     | Tags  of tag list (**)
   (** The results of parsing an untyped term.  *)
 
+  type builtin_meta_ttype = unit
+  type builtin_meta_ty = unit
+  type builtin_meta_tags = unit
+  (** Some type aliases *)
+
+  type term_semantics = [
+    | `Total
+    | `Partial of (ty_var list -> term_var list -> ty -> term_cst)
+  ]
+  (** Semantics of term constants. Some term constants have only partially
+      defined semantics (for instance division by zero), and these constants
+      can have their semantics/interpretation extended/completed by later
+      definitions. *)
+
+  type builtin_meta_term = term_semantics
+  (** Meta data for term builtins. *)
+
+  type ('res, 'meta) builtin_common_res =
+    'meta * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'res)
+  (** Small record to hold the results of builtin parsing by theories. *)
+
   type builtin_res = [
-    | `Ttype of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit)
-    | `Ty    of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty)
-    | `Term  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term)
-    | `Tags  of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list)
-    | `Reserved of [ `Term_cst of term_cst ]
+    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
+    | `Ty    of (ty, builtin_meta_ty) builtin_common_res
+    | `Term  of (term, builtin_meta_term) builtin_common_res
+    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
+    | `Reserved of [
+        | `Solver
+        | `Term_cst of (ty_var list -> term_var list -> ty -> term_cst)
+      ]
     | `Infer of var_infer * sym_infer
   ]
   (** The result of parsing a symbol by the theory *)
@@ -163,6 +188,7 @@ module type Formulas = sig
   type binding = [
     | `Not_found
     | `Reserved of [
+        | `Solver
         | `Term
       ]
     | `Builtin of [
@@ -356,6 +382,12 @@ module type Formulas = sig
     | Unbound_type_wildcards :
         (ty_var * wildcard_source list) list -> Dolmen.Std.Term.t err
     (** *)
+    | Incoherent_type_redefinition :
+        Dolmen.Std.Id.t * ty_cst * reason * int -> Dolmen.Std.Statement.def err
+    (** *)
+    | Incoherent_term_redefinition :
+        Dolmen.Std.Id.t * term_cst * reason * ty -> Dolmen.Std.Statement.def err
+    (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
     | Unhandled_ast : Dolmen.Std.Term.t err
@@ -512,6 +544,9 @@ module type Formulas = sig
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 
+  val find_reason : env -> bound -> reason option
+  (** Return the reason (if any) for the given typed symbol. *)
+
   val decl_ty_const :
     env -> _ fragment -> Dolmen.Std.Id.t -> ty_cst -> reason -> unit
   (** Declare a new type constant in the global environment used by the
@@ -534,6 +569,28 @@ module type Formulas = sig
   val set_global_custom_state : state -> 'a Dolmen.Std.Tag.t -> 'a -> unit
   (** Set a custom value in the global environment or state. *)
 
+
+  (** {2 Builtin helpers} *)
+
+  val builtin_ttype :
+    ?meta:builtin_meta_ttype ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->
+    [> builtin_res]
+
+  val builtin_ty :
+    ?meta:builtin_meta_ty ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> ty) ->
+    [> builtin_res]
+
+  val builtin_term :
+    ?meta:builtin_meta_term ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> term) ->
+    [> builtin_res]
+
+  val builtin_tags :
+    ?meta:builtin_meta_tags ->
+    (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> tag list) ->
+    [> builtin_res]
 
 
   (** {2 Parsing functions} *)
@@ -572,7 +629,7 @@ module type Formulas = sig
   val decls :
     env -> ?attrs:Dolmen.Std.Term.t list ->
     Dolmen.Std.Statement.decls -> [
-      | `Type_decl of ty_cst
+      | `Type_decl of ty_cst * ty_def option
       | `Term_decl of term_cst
     ] list
   (** Parse a list of potentially mutually recursive declarations. *)
@@ -581,8 +638,9 @@ module type Formulas = sig
     ?mode:[`Create_id | `Use_declared_id] ->
     env -> ?attrs:Dolmen.Std.Term.t list ->
     Dolmen.Std.Statement.defs -> [
-      | `Type_def of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+      | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
       | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+      | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
     ] list
   (** Parse a definition *)
 

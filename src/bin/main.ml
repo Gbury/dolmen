@@ -23,19 +23,15 @@ let debug_typed_pipe st stmt =
 (* Run dolmen (regular use) *)
 (* ************************ *)
 
-let handle_exn st exn =
-  let _st = Errors.exn st exn in
+let handle_exn st bt exn =
+  let _st = Errors.exn st bt exn in
   exit 125
 
 let finally st e =
   match e with
   | None -> st
   | Some (bt,exn) ->
-    (* Print the backtrace if requested *)
-    if Loop.State.(get bt) st then (
-      Format.eprintf "foo ?!@.";
-      Printexc.print_raw_backtrace stdout bt);
-    handle_exn st exn
+    handle_exn st bt exn
 
 let run st =
   if Loop.State.get Loop.State.debug st then begin
@@ -46,7 +42,9 @@ let run st =
     try
       Loop.Parser.parse_logic [] st
         (Loop.State.get Loop.State.logic_file st)
-    with exn -> handle_exn st exn
+    with exn ->
+      let bt = Printexc.get_raw_backtrace () in
+      handle_exn st bt exn
   in
   let st =
     let open Loop.Pipeline in

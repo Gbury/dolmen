@@ -9,6 +9,8 @@ next
 
 ### UI
 
+- Make the unknown logic fatal by default, and simply enabled
+  in non-strict mode (PR#158)
 - Add the `--check-flow` option to checks coherence of sequences
   of statements (PR#135)
 - Ensure stability of error codes for the `dolmen` binary
@@ -18,6 +20,19 @@ next
 - Add `attrs` fields for all declarations and definition types,
   and correctly attach predicate attribute to individual definitions
   (PR#130)
+- Restore support for toplevel "and" in non-recursive predicate/function
+  definitions in Alt-Ergo syntax (PR #147, fixes issue #144)
+- Add support for hexadecimal floats in Alt-Ergo syntax (PR #148, fixes
+  issue #145)
+
+### Typing
+
+- Ignore arithmetic restrictions when typing model values. This
+  particularly affects difference logic (PR#141)
+- Rename theory-specific configuration to `config` (instead of
+  `arith`, `arrays`, etc..) (PR#142)
+- Add printing function for logics (PR#142)
+- Attach type definitions to type-defs (PR#157)
 
 ### Loop
 
@@ -25,7 +40,18 @@ next
   exit/return code for a `Code.t` (PR#134)
 - Add the `Flow` module for flow checking (PR#135)
 - Add the `check` function in `typer.ml`/`typer_intf.ml`
+- Add `update` and `update_opt` in `State` (PR#156)
+- Print type definitions in the printer of typed statements (PR#157)
 
+### Model
+
+- Fix bug in bitvector implementation: negative inputs to `bvsmod`
+  would raise an internal error (PR#138)
+- Remove the "error" keyword and statement from smtlib2
+  response (model) files (PR#139)
+- Correctly compare abstract array values (PR#143)
+- Accept extensions of functions/symbols with only partially defined
+  semantics, for e.g. `fp.to_ubv`, `div`, etc.. (PR#151)
 
 v0.8.1
 ------

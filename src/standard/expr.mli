@@ -109,6 +109,24 @@ and term = {
 and formula = term
 (** Alias for signature compatibility (with Dolmen_loop.Pipes.Make for instance). *)
 
+type ty_def_adt_case = {
+  cstr : term_cst;
+  tester : term_cst;
+  dstrs : term_cst option array;
+}
+(** One case of the type definition for an algebraic datatype. *)
+
+type ty_def =
+  | Abstract
+  (** Abstract types *)
+  | Adt of {
+      ty : ty_cst;
+      record : bool;
+      cases : ty_def_adt_case array;
+    }
+  (** Algebraic datatypes, including records (which are seen as a 1-case adt). *)
+(** Type definitions. *)
+
 
 (** {2 Exceptions} *)
 (*  ************************************************************************* *)
@@ -136,6 +154,7 @@ module Tags : sig
   (** Satsify the Smtlib interface. *)
 
   include Dolmen_intf.Tag.Zf_Base with type 'a t := 'a t
+                                   and type pos = Pretty.pos
   (** Satsify the Zf interface. *)
 
   include Dolmen_intf.Tag.Ae_Base with type 'a t := 'a t
@@ -195,6 +214,9 @@ module Print : sig
 
   val formula : formula t
   (** Printer for formulas. *)
+
+  val ty_def : ty_def t
+  (** Printer for type definitions. *)
 
 end
 
@@ -436,21 +458,8 @@ module Ty : sig
 
   (** {4 Type structure definition} *)
 
-  type adt_case = {
-    cstr : term_cst;
-    tester : term_cst;
-    dstrs : term_cst option array;
-  }
-  (** One case of an algebraic datatype definition. *)
-
-  type def =
-    | Abstract
-    | Adt of {
-        ty : ty_cst;
-        record : bool;
-        cases : adt_case array;
-      } (** *)
-  (** The various ways to define a type inside the solver. *)
+  type def = ty_def
+  (** Alias for type definitions. *)
 
   val define : ty_cst -> def -> unit
   (** Register a type definition. *)
@@ -660,6 +669,15 @@ module Ty : sig
   val unify : t -> t -> t option
   (** Try and unify two types. *)
 
+  val match_ : t list -> t list -> subst option
+  (** Try and pattern mathc a list of patterns agains a list of types. *)
+
+  val instance_of : t -> t -> t list option
+  (** [instance_of poly t] decides whether [t] is an instance of [poly],
+      that is whether there are some types [l] such that a term of
+      type [poly] applied to type arguments [l] gives a term of type
+      [t]. *)
+
   val set_wildcard : ty_var -> t -> unit
   (** Instantiate the given wildcard. *)
 
@@ -824,8 +842,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a term constant. *)
+    val ty : t -> ty
+    (** Returns the type of a term constant. *)
 
     val mk : Path.t -> ty -> t
     (** Create a constant symbol. *)
@@ -909,9 +927,6 @@ module Term : sig
       val div_f : t
       (** Floor of the integer divison. *)
 
-      val div_zero : t
-      (** Integer division by zero. *)
-
       val rem_e : t
       (** Integer euclidian division remainder. *)
 
@@ -920,9 +935,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the integer division. *)
-
-      val rem_zero : t
-      (** Integer modulo zero. *)
 
       val abs : t
       (** Integer absolute value. *)
@@ -988,9 +1000,6 @@ module Term : sig
       val div_f : t
       (** Floor of the rational divison. *)
 
-      val div_zero : t
-      (** Rational division by zero. *)
-
       val rem_e : t
       (** Euclidian division remainder. *)
 
@@ -999,9 +1008,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the rational division. *)
-
-      val rem_zero : t
-      (** Rational modulo zero. *)
 
       val lt : t
       (** Rational "less than" comparison. *)
@@ -1066,9 +1072,6 @@ module Term : sig
       val div_f : t
       (** Floor of the real divison. *)
 
-      val div_zero : t
-      (** Real division by zero. *)
-
       val rem_e : t
       (** Real euclidian division remainder. *)
 
@@ -1077,9 +1080,6 @@ module Term : sig
 
       val rem_f : t
       (** Floor of the real division. *)
-
-      val rem_zero : t
-      (** Real modulo zero. *)
 
       val lt : t
       (** Real "less than" comparison. *)
@@ -1524,8 +1524,8 @@ module Term : sig
     val compare : t -> t -> int
     (** Comparison function on variables. *)
 
-    val arity : t -> int * int
-    (** Returns the arity of a constructor. *)
+    val ty : t -> ty
+    (** Returns the type of a constructor. *)
 
     val void : t
     (** Only constructor for the type unit. *)
@@ -1611,13 +1611,13 @@ module Term : sig
   end
 
   val define_record :
-    ty_const -> ty_var list -> (Path.t * ty) list -> Field.t list
+    ty_const -> ty_var list -> (Path.t * ty) list -> Ty.def * Field.t list
   (** Define a new record type. *)
 
   val define_adt :
     ty_const -> ty_var list ->
     (Path.t * (ty * Path.t option) list) list ->
-    (Cstr.t * (ty * Const.t option) list) list
+    Ty.def * (Cstr.t * (ty * Const.t option) list) list
   (** [define_aft t vars cstrs] defines the type constant [t], parametrised over
       the type variables [ty_vars] as defining an algebraic datatypes with constructors
       [cstrs]. [cstrs] is a list where each elements of the form [(name, l)] defines
@@ -1851,6 +1851,7 @@ module Term : sig
   module Float : sig
 
     include Dolmen_intf.Term.Smtlib_Float_Float with type t := t
+                                                 and type cst := term_cst
     (** Satisfy the required interface for typing smtlib floating points. *)
 
   end
@@ -1900,11 +1901,6 @@ module Term : sig
     val div : t -> t -> t
     (** Exact division on rationals. *)
 
-    val div_zero : term_cst
-    (** Symbol for interpretation of division by zero. *)
-
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** Real operations *)
@@ -1926,8 +1922,6 @@ module Term : sig
     val floor_to_int : t -> t
     (** Greatest integer smaller than the given real *)
 
-    val rem_zero : term_cst
-    (** Symbol for interpretation of modulo by zero. *)
   end
 
   (** String operations *)

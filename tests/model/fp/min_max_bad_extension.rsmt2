@@ -1,0 +1,5 @@
+sat
+(
+(define-fun fp.min ((a (_ FloatingPoint 5 11)) (b (_ FloatingPoint 5 11))) (_ FloatingPoint 5 11)
+   (ite (and (= a (_ +zero 5 11)) (= b (_ -zero 5 11))) (_ NaN 5 11) (fp.min a b)))
+)

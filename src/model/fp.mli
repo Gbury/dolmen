@@ -14,5 +14,9 @@ val mk : F.t -> Value.t
 (** {2 Corner cases & builtins} *)
 (** ************************************************************************ *)
 
-val builtins : Env.t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+exception Unhandled_exponand_and_mantissa of { ew : int; mw : int; }
+(** Raised when the exponand and mantissa siez do not respect the constraints
+    imposed by `Farith`. *)
+
+val builtins : Env.builtins
 (** builtins for floating-points *)

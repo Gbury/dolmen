@@ -1,0 +1,8 @@
+File "tests/model/int/div_zero_out_of_order.rsmt2", line 16, character 20-29:
+16 |   (define-fun mod0 ((x!0 Int) (x!1 Int)) Int
+                         ^^^^^^^^^
+Warning The following function parameter is unused: `x!0`
+File "tests/model/int/div_zero_out_of_order.rsmt2", line 16, character 30-39:
+16 |   (define-fun mod0 ((x!0 Int) (x!1 Int)) Int
+                                   ^^^^^^^^^
+Warning The following function parameter is unused: `x!1`

@@ -1,0 +1,5 @@
+sat
+(
+(define-fun fp.to_ubv ((rm RoundingMode) (f (_ FloatingPoint 5 11))) (_ BitVec 32)
+  (ite (= f (_ NaN 5 11)) #b00000000000000000000000000000000 ((_ fp.to_ubv 32) rm f)))
+)

@@ -34,13 +34,13 @@ val parse_indexed :
 val bad_ty_index_arity :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
   'env -> string -> int -> int ->
-  [> `Ty of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'ty) ]
+  [> `Ty of (unit * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'ty)) ]
 (** Suitable [err] function for {parse_id} for typing sort indexed families. *)
 
 val bad_term_index_arity :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
   'env -> string -> int -> int ->
-  [> `Term of (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term) ]
+  [> `Term of ([> `Total] * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)) ]
 (** Suitable [err] function for {parse_id} for typing term indexed families. *)
 
 

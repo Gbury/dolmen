@@ -11,7 +11,8 @@ module Smtlib2 = struct
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Smtlib_Float with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Float with type t := Type.T.t
-                                          and type ty := Type.Ty.t) = struct
+                                          and type ty := Type.Ty.t
+                                          and type cst := Type.T.Const.t) = struct
 
     module B = T.Bitv
     module R = T.Real
@@ -44,6 +45,20 @@ module Smtlib2 = struct
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
+    let meta_to_bv mk = fun _ params ret_ty ->
+      let err () = mk 0 (0,0) in
+      match params with
+      | [_; x] ->
+        begin match Ty.view (Type.T.Var.ty x) with
+          | `Float (e, s) ->
+            begin match Ty.view ret_ty with
+              | `Bitv n -> mk n (e, s)
+              | _ -> err ()
+            end
+          | _ -> err ()
+        end
+      | _ -> err ()
+
     let indexed1 env mk i_s ast =
       let i = parse_int env ast i_s in
       mk i
@@ -53,7 +68,7 @@ module Smtlib2 = struct
       let j = parse_int env ast j_s in
       mk i j
 
-    let to_fp env symbol e s = `Term (fun ast args ->
+    let to_fp env symbol e s = Type.builtin_term (fun ast args ->
         let e = parse_int env ast e in
         let s = parse_int env ast s in
         let args = List.map (Type.parse_term env) args in
@@ -71,29 +86,29 @@ module Smtlib2 = struct
                  (Type.Bad_op_arity (symbol, [1; 2], List.length args))
       )
 
-    let parse _version env s =
+    let parse version env s =
       match s with
 
       (* sorts *)
       | Type.Id { ns = Sort; name = Simple "Float16"; } ->
-        `Ty (Base.app0 (module Type) env s (Ty.float 5 11))
+        Type.builtin_ty (Base.app0 (module Type) env s (Ty.float 5 11))
       | Type.Id { ns = Sort; name = Simple "Float32"; } ->
-        `Ty (Base.app0 (module Type) env s (Ty.float 8 24))
+        Type.builtin_ty (Base.app0 (module Type) env s (Ty.float 8 24))
       | Type.Id { ns = Sort; name = Simple "Float64"; } ->
-        `Ty (Base.app0 (module Type) env s (Ty.float 11 53))
+        Type.builtin_ty (Base.app0 (module Type) env s (Ty.float 11 53))
       | Type.Id { ns = Sort; name = Simple "Float128"; } ->
-        `Ty (Base.app0 (module Type) env s (Ty.float 15 113))
+        Type.builtin_ty (Base.app0 (module Type) env s (Ty.float 15 113))
       | Type.Id { ns = Sort; name = Simple "RoundingMode"; } ->
-        `Ty (Base.app0 (module Type) env s Ty.roundingMode)
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.roundingMode)
 
       (* indexed sorts *)
       | Type.Id { ns = Sort; name = Indexed { basename; indexes; } } ->
         Base.parse_indexed basename indexes (function
             | "BitVec" -> `Unary (function n_s ->
-                `Ty (Base.app0_ast (module Type) env s
+                Type.builtin_ty (Base.app0_ast (module Type) env s
                        (indexed1 env Ty.bitv n_s)))
             | "FloatingPoint" -> `Binary (fun n_e n_s ->
-                `Ty (Base.app0_ast (module Type) env s
+                Type.builtin_ty (Base.app0_ast (module Type) env s
                        (indexed2 env Ty.float n_e n_s)))
             | _ -> `Not_indexed)
           ~err:(Base.bad_ty_index_arity (module Type) env)
@@ -102,104 +117,134 @@ module Smtlib2 = struct
 
       (* Bitvector litterals *)
       | Type.Id { ns = Value Binary; name = Simple name; } ->
-        `Term (Base.app0_ast (module Type) env s (parse_binary env name))
+        Type.builtin_term (Base.app0_ast (module Type) env s (parse_binary env name))
       | Type.Id { ns = Value Hexadecimal; name = Simple name; } ->
-        `Term (Base.app0_ast (module Type) env s (parse_hexa env name))
+        Type.builtin_term (Base.app0_ast (module Type) env s (parse_hexa env name))
 
       (* terms *)
       | Type.Id { ns = Term; name = Simple name; } ->
         begin match name with
           | "fp" ->
-            `Term (Base.term_app3 (module Type) env s F.fp)
+            Type.builtin_term (Base.term_app3 (module Type) env s F.fp)
           | "RNE" | "roundNearestTiesToEven" ->
-            `Term (Base.app0 (module Type) env s F.roundNearestTiesToEven)
+            Type.builtin_term (Base.app0 (module Type) env s F.roundNearestTiesToEven)
           | "RNA" | "roundNearestTiesToAway" ->
-            `Term (Base.app0 (module Type) env s F.roundNearestTiesToAway)
+            Type.builtin_term (Base.app0 (module Type) env s F.roundNearestTiesToAway)
           | "RTP" | "roundTowardPositive" ->
-            `Term (Base.app0 (module Type) env s F.roundTowardPositive)
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardPositive)
           | "RTN" | "roundTowardNegative" ->
-            `Term (Base.app0 (module Type) env s F.roundTowardNegative)
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardNegative)
           | "RTZ" | "roundTowardZero" ->
-            `Term (Base.app0 (module Type) env s F.roundTowardZero)
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardZero)
           | "fp.abs" ->
-            `Term (Base.term_app1 (module Type) env s F.abs)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.abs)
           | "fp.neg" ->
-            `Term (Base.term_app1 (module Type) env s F.neg)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.neg)
           | "fp.add" ->
-            `Term (Base.term_app3 (module Type) env s F.add)
+            Type.builtin_term (Base.term_app3 (module Type) env s F.add)
           | "fp.sub" ->
-            `Term (Base.term_app3 (module Type) env s F.sub)
+            Type.builtin_term (Base.term_app3 (module Type) env s F.sub)
           | "fp.mul" ->
-            `Term (Base.term_app3 (module Type) env s F.mul)
+            Type.builtin_term (Base.term_app3 (module Type) env s F.mul)
           | "fp.div" ->
-            `Term (Base.term_app3 (module Type) env s F.div)
+            Type.builtin_term (Base.term_app3 (module Type) env s F.div)
           | "fp.fma" ->
-            `Term (Base.term_app4 (module Type) env s F.fma)
+            Type.builtin_term (Base.term_app4 (module Type) env s F.fma)
           | "fp.sqrt" ->
-            `Term (Base.term_app2 (module Type) env s F.sqrt)
+            Type.builtin_term (Base.term_app2 (module Type) env s F.sqrt)
           | "fp.rem" ->
-            `Term (Base.term_app2 (module Type) env s F.rem)
+            Type.builtin_term (Base.term_app2 (module Type) env s F.rem)
           | "fp.roundToIntegral" ->
-            `Term (Base.term_app2 (module Type) env s F.roundToIntegral)
+            Type.builtin_term (Base.term_app2 (module Type) env s F.roundToIntegral)
           | "fp.min" ->
-            `Term (Base.term_app2 (module Type) env s F.min)
+            Type.builtin_term (Base.term_app2 (module Type) env s F.min)
+              ~meta:(`Partial (fun _ _ ret_ty ->
+                  match Ty.view ret_ty with
+                  | `Float es -> F.min' es
+                  | _ -> F.min' (1, 1)))
           | "fp.max" ->
-            `Term (Base.term_app2 (module Type) env s F.max)
+            Type.builtin_term (Base.term_app2 (module Type) env s F.max)
+              ~meta:(`Partial (fun _ _ ret_ty ->
+                  match Ty.view ret_ty with
+                  | `Float es -> F.max' es
+                  | _ -> F.max' (1, 1)))
           | "fp.leq" ->
-            `Term (Base.term_app_chain (module Type) env s F.leq)
+            Type.builtin_term (Base.term_app_chain (module Type) env s F.leq)
           | "fp.lt" ->
-            `Term (Base.term_app_chain (module Type) env s F.lt)
+            Type.builtin_term (Base.term_app_chain (module Type) env s F.lt)
           | "fp.geq" ->
-            `Term (Base.term_app_chain (module Type) env s F.geq)
+            Type.builtin_term (Base.term_app_chain (module Type) env s F.geq)
           | "fp.gt" ->
-            `Term (Base.term_app_chain (module Type) env s F.gt)
+            Type.builtin_term (Base.term_app_chain (module Type) env s F.gt)
           | "fp.eq" ->
-            `Term (Base.term_app_chain (module Type) env s F.eq)
+            Type.builtin_term (Base.term_app_chain (module Type) env s F.eq)
           | "fp.isNormal" ->
-            `Term (Base.term_app1 (module Type) env s F.isNormal)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isNormal)
           | "fp.isSubnormal" ->
-            `Term (Base.term_app1 (module Type) env s F.isSubnormal)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isSubnormal)
           | "fp.isZero" ->
-            `Term (Base.term_app1 (module Type) env s F.isZero)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isZero)
           | "fp.isInfinite" ->
-            `Term (Base.term_app1 (module Type) env s F.isInfinite)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isInfinite)
           | "fp.isNaN" ->
-            `Term (Base.term_app1 (module Type) env s F.isNaN)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isNaN)
           | "fp.isNegative" ->
-            `Term (Base.term_app1 (module Type) env s F.isNegative)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isNegative)
           | "fp.isPositive" ->
-            `Term (Base.term_app1 (module Type) env s F.isPositive)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.isPositive)
           | "fp.to_real" ->
-            `Term (Base.term_app1 (module Type) env s F.to_real)
+            Type.builtin_term (Base.term_app1 (module Type) env s F.to_real)
+          | "fp.to_ubv" ->
+            begin match version with
+              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_ubv'))
+              | `Script _ ->
+                Format.eprintf "foo ?!@.";
+                (* the regular case is handled later, because fp.to_ubv is
+                   an indexed identifier. *)
+                `Not_found
+            end
+          | "fp.to_sbv" ->
+            begin match version with
+              | `Response _ -> `Reserved (`Term_cst (meta_to_bv F.to_sbv'))
+              | `Script _ ->
+                (* the regular case is handled later, because fp.to_sbv is
+                   an indexed identifier. *)
+                `Not_found
+            end
           | _ -> `Not_found
         end
       | Type.Id { ns = Term; name = Indexed { basename; indexes; } } as symbol ->
         Base.parse_indexed basename indexes (function
             | "+oo" -> `Binary (fun e s ->
-                `Term (Base.app0_ast (module Type) env symbol
+                Type.builtin_term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.plus_infinity e s)))
             | "-oo" -> `Binary (fun e s ->
-                `Term (Base.app0_ast (module Type) env symbol
+                Type.builtin_term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.minus_infinity e s)))
             | "+zero" -> `Binary (fun e s ->
-                `Term (Base.app0_ast (module Type) env symbol
+                Type.builtin_term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.plus_zero e s)))
             | "-zero" -> `Binary (fun e s ->
-                `Term (Base.app0_ast (module Type) env symbol
+                Type.builtin_term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.minus_zero e s)))
             | "NaN" -> `Binary (fun e s ->
-                `Term (Base.app0_ast (module Type) env symbol
+                Type.builtin_term (Base.app0_ast (module Type) env symbol
                          (indexed2 env F.nan e s)))
             | "to_fp" -> `Binary (to_fp env symbol)
             | "to_fp_unsigned" -> `Binary (fun e s ->
-                `Term (Base.term_app2_ast (module Type) env symbol
-                         (indexed2 env F.ubv_to_fp e s)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed2 env F.ubv_to_fp e s)))
             | "fp.to_ubv" -> `Unary (fun n ->
-                `Term (Base.term_app2_ast (module Type) env symbol
-                         (indexed1 env F.to_ubv n)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed1 env F.to_ubv n))
+                  ~meta:(`Partial (meta_to_bv F.to_ubv')))
             | "fp.to_sbv" -> `Unary (fun n ->
-                `Term (Base.term_app2_ast (module Type) env symbol
-                         (indexed1 env F.to_sbv n)))
+                Type.builtin_term
+                  (Base.term_app2_ast (module Type) env symbol
+                     (indexed1 env F.to_sbv n))
+                  ~meta:(`Partial (meta_to_bv F.to_sbv')))
             | _ -> `Not_indexed)
           ~err:(Base.bad_term_index_arity (module Type) env)
           ~k:(function () -> `Not_found)

@@ -7,14 +7,29 @@
 (** Bitvectors are represented by an unsigned unbounded integer. *)
 type t = Z.t
 
-let print = Z.pp_print
 let compare = Z.compare
+
+let print_bitpattern fmt t =
+  let rec aux fmt t n =
+    if n < 0 then ()
+    else begin
+      Format.fprintf fmt "%d" (if Z.testbit t n then 1 else 0);
+      aux fmt t (n - 1)
+    end
+  in
+  aux fmt t (Z.numbits t - 1)
+
+let print fmt t =
+  Format.fprintf fmt "%a / #%a"
+    Z.pp_print t print_bitpattern t
 
 let ops = Value.ops ~print ~compare ()
 
 
 (* Value helpers *)
 (* ************************************************************************* *)
+
+
 
 let is_unsigned_integer size z =
   Z.sign z >= 0 && Z.numbits z <= size
@@ -28,9 +43,9 @@ let ubitv n t =
 let from_bitv n t =
   (* TODO: proper error *)
   if not (is_unsigned_integer n t) then (
-    Format.eprintf "@[[BV] %s(%a) is not of size %i@]@."
+    (* Format.eprintf "@[[BV] %s(%a) is not of size %i@]@."
       (Z.format (Printf.sprintf "%%0+#%ib" n) t)
-      Z.pp_print t n;
+      Z.pp_print t n; *)
     assert false (* Internal error *)
   );
   t
@@ -66,14 +81,17 @@ module B = Dolmen.Std.Builtin
 
 let mk n i = Value.mk ~ops (from_bitv n i)
 
-let cmp ~cst p = Some (Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p x y))
-let op2 ~cst ~size f = Some (Fun.fun_2 ~cst (fun x y -> mk size @@ f x y))
-let op1 ~cst ~size f = Some (Fun.fun_1 ~cst (fun x -> mk size @@ f x))
+let cmp ~cst p =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y -> Bool.mk @@ p x y))
+let op2 ~cst ~size f =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y -> mk size @@ f x y))
+let op1 ~cst ~size f =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> mk size @@ f x))
 
 let sbitv n t = Z.signed_extract (ubitv n t) 0 n
 let extract n t = Z.extract t 0 n
 
-let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
   | B.Bitvec s ->
     Some (mk (String.length s) (Z.of_string_base 2 s))
@@ -146,9 +164,11 @@ let builtins _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_smod n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
-        let a = sbitv n a in
-        if Z.equal b Z.zero then  from_bitv n a
-        else extract n (Z.sub a (Z.mul (Z.fdiv a b) b)))
+        if Z.equal b Z.zero then from_bitv n (ubitv n a)
+        else begin
+          let a = sbitv n a in
+          extract n (Z.sub a (Z.mul (Z.fdiv a b) b))
+        end)
   | B.Bitv_shl n ->
     op2 ~cst ~size:n (fun a b ->
         let b = ubitv n b in

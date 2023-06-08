@@ -58,7 +58,6 @@ reserved:
   | MATCH { "match" }
   | SAT { "sat" }
   | UNSAT { "unsat" }
-  | ERROR { "error" }
   | MODEL { "model" }
   | DEFINE_FUN { "define-fun" }
   | DEFINE_FUN_REC { "define-fun-rec" }
@@ -243,9 +242,6 @@ answer:
   | SAT OPEN MODEL? model=definition* CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       S.sat ~loc (Some model) }
-  | OPEN ERROR message=STR CLOSE
-    { let loc = L.mk_pos $startpos $endpos in
-      S.error ~loc message }
 
 file:
   | l=answer* EOF

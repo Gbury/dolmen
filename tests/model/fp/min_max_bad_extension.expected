@@ -1,0 +1,7 @@
+File "tests/model/fp/min_max_bad_extension.smt2", line 2, character 0 to line 5, character 24:
+2 | (assert (let (
+3 |   (a (_ +zero 5 11))
+4 |   (b (_ -zero 5 11))
+5 |   ) (= (fp.min a b) a)))
+Error The extension for symbol `fp.min` returned a non-conforming value:
+      (fp.min +0 -0) -> NaN

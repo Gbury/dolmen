@@ -22,13 +22,15 @@ end
 (** Smtlib array builtins *)
 module Smtlib2 : sig
 
-  type arrays =
+  type config =
     | All
     | Only_int_int
     | Only_ints_real
     | Only_bitvec (**)
   (** The difference type of array restrictions that can be imposed by
       logics. *)
+
+  val print_config : Format.formatter -> config -> unit
 
   module Tff
       (Type : Tff_intf.S)
@@ -47,7 +49,7 @@ module Smtlib2 : sig
           (typically `const`). *)
     (** Warnings for array type-checking. *)
 
-    val parse : arrays:arrays -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+    val parse : config:config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
 
 end

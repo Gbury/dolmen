@@ -3,7 +3,7 @@
 
 (** {2 Typechecker state} *)
 
-module T : Dolmen_type.Tff.S
+module T : Dolmen_type.Thf.S
   with type 'a Tag.t = 'a Dolmen.Std.Tag.t
    and type Ty.t = Dolmen.Std.Expr.ty
    and type Ty.Var.t = Dolmen.Std.Expr.ty_var
@@ -30,6 +30,8 @@ val typer_state : ty_state -> T.state
 val almost_linear : string Report.Warning.t
 (** Almost linear warning. *)
 
+val unknown_logic : string Report.Warning.t
+(** Unknown logic warning *)
 
 
 (** {2 Typechecker Functor} *)
@@ -58,6 +60,7 @@ module Make
      with type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -68,15 +71,18 @@ module Make
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
       and type formula := Expr.formula)
   : S with type state := State.t
+       and type env = Typer.env
        and type 'a key := 'a State.key
        and type ty := Expr.ty
        and type ty_var := Expr.ty_var
        and type ty_cst := Expr.ty_cst
+       and type ty_def := Expr.ty_def
        and type term := Expr.term
        and type term_var := Expr.term_var
        and type term_cst := Expr.term_cst

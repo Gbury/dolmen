@@ -256,7 +256,9 @@ let text_hint = function
   | msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
 
 let poly_hint (c, expected, actual) =
-  let n_ty, n_t = Dolmen.Std.Expr.Term.Const.arity c in
+  let vars, params, _ = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
+  let n_ty = List.length vars in
+  let n_t = List.length params in
   let total_arity = n_ty + n_t in
   match expected with
   | [x] when x = total_arity && actual = n_t ->
@@ -758,6 +760,37 @@ let unbound_type_wildcards =
       )
     ~name:"Under-specified type inference" ()
 
+let incoherent_type_redefinition =
+  Report.Error.mk ~code ~mnemonic:"incoherent-type-def"
+    ~message:(fun fmt (id, cst, reason, n) ->
+        Format.fprintf fmt
+          "Incoherent redefinition for type constructor %a.@ \
+           The new definition has arity %d,@ \
+           but the declaration had arity %d.@ \
+           %a %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          n (Dolmen.Std.Expr.Ty.Const.arity cst)
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason ~already:false) reason
+      )
+    ~name:"Incoherent arity for type definition" ()
+
+let incoherent_term_redefinition =
+  Report.Error.mk ~code ~mnemonic:"incoherent-term-def"
+    ~message:(fun fmt (id, cst, reason, ty) ->
+        Format.fprintf fmt
+          "@[<v>Incoherent redefinition for term constant %a.@ \
+           The new definition has type:@   @[<hov>%a@]@ \
+           but the declaration had type:@   @[<hov>%a@]@ \
+           %a %a@]"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Dolmen.Std.Expr.Ty.print ty
+          Dolmen.Std.Expr.Ty.print (Dolmen.Std.Expr.Term.Const.ty cst)
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason ~already:false) reason
+      )
+    ~name:"Incoherent type for term definition" ()
+
 let unhandled_ast : (T.env * Dolmen_std.Term.t T.fragment) Report.Error.t =
   Report.Error.mk ~code ~mnemonic:"unhandled-ast"
     ~message:(fun fmt (env, fragment) ->
@@ -1174,6 +1207,10 @@ module Typer(State : State.S) = struct
       error ~input ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
     | T.Unbound_type_wildcards tys ->
       error ~input ~loc st unbound_type_wildcards (env, tys)
+    | T.Incoherent_type_redefinition (id, cst, reason, n) ->
+      error ~input ~loc st incoherent_type_redefinition (id, cst, reason, n)
+    | T.Incoherent_term_redefinition (id, cst, reason, ty) ->
+      error ~input ~loc st incoherent_term_redefinition (id, cst, reason, ty)
     | T.Unhandled_ast ->
       error ~input ~loc st unhandled_ast (env, fragment)
     (* Alt-Ergo Functional Array errors *)
@@ -1295,13 +1332,13 @@ module Typer(State : State.S) = struct
         | `Floats -> Smtlib2_Float.parse v :: acc
         | `String -> Smtlib2_String.parse v :: acc
         | `Arrays ->
-          Smtlib2_Arrays.parse ~arrays:l.features.arrays v :: acc
+          Smtlib2_Arrays.parse ~config:l.features.arrays v :: acc
         | `Ints ->
-          Smtlib2_Ints.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Ints.parse ~config:l.features.arithmetic v :: acc
         | `Reals ->
-          Smtlib2_Reals.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Reals.parse ~config:l.features.arithmetic v :: acc
         | `Reals_Ints ->
-          Smtlib2_Reals_Ints.parse ~arith:l.features.arithmetic v :: acc
+          Smtlib2_Reals_Ints.parse ~config:l.features.arithmetic v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories
 
   let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
@@ -1628,8 +1665,8 @@ module Typer(State : State.S) = struct
     let file_loc = file_loc_of_input input in
     let loc : Dolmen.Std.Loc.full = { file = file_loc; loc; } in
     match lang_of_input input with
-    | `Logic ICNF -> st
-    | `Logic Dimacs -> st
+    | `Logic ICNF -> st, Dolmen_type.Logic.Auto
+    | `Logic Dimacs -> st, Dolmen_type.Logic.Auto
     | `Logic Smtlib2 _ ->
       let logic =
         match State.get smtlib2_forced_logic st with
@@ -1643,9 +1680,12 @@ module Typer(State : State.S) = struct
           let st = warn ~input ~loc st unknown_logic s in
           st, Dolmen_type.Logic.Smtlib2.all
       in
-      set_logic_aux ~input ~loc st (Smtlib2 l)
+      let new_logic = Dolmen_type.Logic.Smtlib2 l in
+      let st = set_logic_aux ~input ~loc st new_logic in
+      st, new_logic
     | _ ->
-      warn ~input ~loc st set_logic_not_supported ()
+      let st = warn ~input ~loc st set_logic_not_supported () in
+      st, Dolmen_type.Logic.Auto
 
   (* Declarations *)
   (* ************************************************************************ *)
@@ -1666,8 +1706,8 @@ module Typer(State : State.S) = struct
     | Auto -> true
 
   let check_decl st env d = function
-    | `Type_decl (c : Dolmen.Std.Expr.ty_cst) ->
-      begin match Dolmen.Std.Expr.Ty.definition c with
+    | `Type_decl (_, ty_def) ->
+      begin match (ty_def : Dolmen.Std.Expr.Ty.def option) with
         | None | Some Abstract ->
           if not (allow_abstract_type_decl st) then
             T._error env (Decl d) Illegal_decl
@@ -1702,11 +1742,13 @@ module Typer(State : State.S) = struct
         let l = T.defs ~mode env ?attrs d in
         List.map (fun typed ->
             match typed with
-            | `Type_def (id, c, vars, body) ->
+            | `Type_alias (id, c, vars, body) ->
               if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body;
-              `Type_def (id, c, vars, body)
-            | `Term_def (id, f, vars, args, body) ->
-              `Term_def (id, f, vars, args, body)
+              `Type_alias (id, c, vars, body)
+            | `Term_def (id, f, vars, params, body) ->
+              `Term_def (id, f, vars, params, body)
+            | `Instanceof (id, f, ty_args, vars, params, body) ->
+              `Instanceof (id, f, ty_args, vars, params, body)
           ) l
       )
 
@@ -1745,6 +1787,7 @@ module Make
      with type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -1755,6 +1798,7 @@ module Make
       and type ty := Expr.ty
       and type ty_var := Expr.ty_var
       and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
       and type term := Expr.term
       and type term_var := Expr.term_var
       and type term_cst := Expr.term_cst
@@ -1775,6 +1819,8 @@ module Make
   (* Types used in Pipes *)
   (* ************************************************************************ *)
 
+  type env = Typer.env
+
   (* Used for representing typed statements *)
   type +'a stmt = {
     id : Dolmen.Std.Id.t;
@@ -1783,8 +1829,9 @@ module Make
   }
 
   type def = [
-    | `Type_def of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
+    | `Type_alias of Dolmen.Std.Id.t * Expr.ty_cst * Expr.ty_var list * Expr.ty
     | `Term_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty_var list * Expr.term_var list * Expr.term
+    | `Instanceof of Dolmen.Std.Id.t * Expr.term_cst * Expr.ty list * Expr.ty_var list * Expr.term_var list * Expr.term
   ]
 
   type defs = [
@@ -1792,7 +1839,7 @@ module Make
   ]
 
   type decl = [
-    | `Type_decl of Expr.ty_cst
+    | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
   ]
 
@@ -1825,7 +1872,7 @@ module Make
   ]
 
   type set_info = [
-    | `Set_logic of string
+    | `Set_logic of string * Dolmen_type.Logic.t
     | `Set_info of Dolmen.Std.Statement.term
     | `Set_option of Dolmen.Std.Statement.term
   ]
@@ -1849,8 +1896,8 @@ module Make
   let simple id loc (contents: typechecked)  = { id; loc; contents; }
 
   let print_def fmt = function
-    | `Type_def (id, c, vars, body) ->
-      Format.fprintf fmt "@[<hov 2>type-def:@ %a: %a(%a) ->@ %a@]"
+    | `Type_alias (id, c, vars, body) ->
+      Format.fprintf fmt "@[<hov 2>type-alias:@ %a: %a(%a) ->@ %a@]"
         Dolmen.Std.Id.print id Print.ty_cst c
         (Format.pp_print_list Print.ty_var) vars Print.ty body
     | `Term_def (id, c, vars, args, body) ->
@@ -1861,10 +1908,25 @@ module Make
         (Format.pp_print_list ~pp_sep Print.ty_var) vars
         (Format.pp_print_list ~pp_sep Print.term_var) args
         Print.term body
+    | `Instanceof (id, c, ty_args, vars, args, body) ->
+      let pp_sep fmt () = Format.fprintf fmt ",@ " in
+      Format.fprintf fmt
+        "@[<hv 2>instanceof{%a}:@ @[<hv>%a(%a)@] =@ @[<hov 2>fun (%a;@ %a) ->@ %a@]@]"
+        Dolmen.Std.Id.print id Print.term_cst c
+        (Format.pp_print_list ~pp_sep Print.ty) ty_args
+        (Format.pp_print_list ~pp_sep Print.ty_var) vars
+        (Format.pp_print_list ~pp_sep Print.term_var) args
+        Print.term body
+
+  let print_ty_def fmt = function
+    | None -> ()
+    | Some ty_def ->
+      Format.fprintf fmt " =@ %a" Print.ty_def ty_def
 
   let print_decl fmt = function
-    | `Type_decl c ->
-      Format.fprintf fmt "@[<hov 2>type-decl:@ %a@]" Print.ty_cst c
+    | `Type_decl (c, ty_def) ->
+      Format.fprintf fmt "@[<hov 2>type-def:@ %a%a@]"
+        Print.ty_cst c print_ty_def ty_def
     | `Term_decl c ->
       Format.fprintf fmt "@[<hov 2>term-decl:@ %a@]" Print.term_cst c
 
@@ -1910,8 +1972,10 @@ module Make
     | `Plain t ->
       Format.fprintf fmt "@[<hov 2>plain: %a@]"
         Dolmen.Std.Term.print t
-    | `Set_logic s ->
-      Format.fprintf fmt "@[<hov 2>set-logic: %s@]" s
+    | `Set_logic (s, logic) ->
+      Format.fprintf fmt
+        "@[<hov 2>set-logic: %s =@ %a@]"
+        s Dolmen_type.Logic.print logic
     | `Set_info t ->
       Format.fprintf fmt "@[<hov 2>set-info: %a@]"
         Dolmen.Std.Term.print t
@@ -2033,8 +2097,8 @@ module Make
 
     (* Other set_logics should check whether corresponding plugins are activated ? *)
     | { S.descr = S.Set_logic s; _ } ->
-      let st = Typer.set_logic st ~input ~loc:c.S.loc s in
-      st, (simple (other_id c) c.S.loc (`Set_logic s))
+      let st, new_logic = Typer.set_logic st ~input ~loc:c.S.loc s in
+      st, (simple (other_id c) c.S.loc (`Set_logic (s, new_logic)))
 
     (* Set/Get info *)
     | { S.descr = S.Get_info s; _ } ->

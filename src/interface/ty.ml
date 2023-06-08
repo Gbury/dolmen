@@ -15,6 +15,9 @@ module type Tff = sig
   type t
   (** The type of types. *)
 
+  type def
+  (** The type of type definitions *)
+
   type path
   (** The type of paths to constants. *)
 
@@ -139,6 +142,12 @@ module type Tff = sig
   val freshen : t -> t
   (** Replaces all bound variables in a type, ensuring that the returned type
       contains only fresh bound type variables. *)
+
+  val instance_of : t -> t -> t list option
+  (** [instance_of poly t] decides whether [t] is an instance of [poly],
+      that is whether there are some types [l] such that a term of
+      type [poly] applied to type arguments [l] gives a term of type
+      [t]. *)
 
 end
 

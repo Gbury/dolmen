@@ -15,19 +15,56 @@ module Smtlib2 = struct
     | `Reals_Ints
   ]
 
+  let print_theory fmt th =
+    match (th : theory) with
+    | `Core -> Format.fprintf fmt "core"
+    | `Arrays -> Format.fprintf fmt "arrays"
+    | `Bitvectors -> Format.fprintf fmt "bitv"
+    | `Floats -> Format.fprintf fmt "floats"
+    | `String -> Format.fprintf fmt "string"
+    | `Ints -> Format.fprintf fmt "int"
+    | `Reals -> Format.fprintf fmt "real"
+    | `Reals_Ints -> Format.fprintf fmt "int+real"
+
+  let print_theories fmt l =
+    let pp_sep fmt () = Format.fprintf fmt ",@ " in
+    Format.pp_print_list ~pp_sep print_theory fmt l
+
   type features = {
     free_sorts      : bool;
     free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
-    arithmetic      : Arith.Smtlib2.arith;
-    arrays          : Arrays.Smtlib2.arrays;
+    arithmetic      : Arith.Smtlib2.config;
+    arrays          : Arrays.Smtlib2.config;
   }
+
+  let print_features fmt { free_sorts; free_functions;
+                           datatypes; quantifiers; arithmetic; arrays; } =
+    Format.fprintf fmt
+      "{ @[<hv>\
+       free_sorts : %b;@ \
+       free_functions : %b;@ \
+       datatypes : %b;@ \
+       quantifiers : %b;@ \
+       arithmetic : %a;@ \
+       arrays : %a; \
+       }@]"
+      free_sorts
+      free_functions
+      datatypes
+      quantifiers
+      Arith.Smtlib2.print_config arithmetic
+      Arrays.Smtlib2.print_config arrays
 
   type t = {
     theories      : theory list;
     features      : features;
   }
+
+  let print fmt { theories; features; } =
+    Format.fprintf fmt "@[<hov 2>{ theories: %a;@ features: %a;@ }]}"
+      print_theories theories print_features features
 
   let all = {
     theories = [ `Core; `Arrays; `Bitvectors; `Floats; `Reals_Ints ];
@@ -194,4 +231,8 @@ end
 type t =
   | Auto (* Default case for languages which do not have logic *)
   | Smtlib2 of Smtlib2.t
+
+let print fmt = function
+  | Auto -> Format.fprintf fmt "auto"
+  | Smtlib2 smtlib2 -> Smtlib2.print fmt smtlib2
 

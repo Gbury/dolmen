@@ -2,7 +2,7 @@
 (* Exceptions *)
 (* ************************************************************************* *)
 
-let exn st = function
+let exn st bt = function
 
   (* Internal exception used for jumping.
      This should only be used ot raise a state that has just been
@@ -51,6 +51,5 @@ let exn st = function
 
   (* Generic catch-all *)
   | exn ->
-    let bt = Printexc.get_raw_backtrace () in
     Loop.State.error st Dolmen_loop.Report.Error.uncaught_exn (exn, bt)
 

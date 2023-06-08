@@ -120,6 +120,7 @@ let input_mode_conv = Arg.enum input_mode_list
 (* Check model modes *)
 (* ************************************************************************* *)
 
+(*
 type model_mode = Dolmen_model.Loop.mode
 
 let model_mode_list = [
@@ -128,7 +129,7 @@ let model_mode_list = [
   ]
 
 let model_mode_conv = Arg.enum model_mode_list
-
+*)
 
 (* Mnemonic converter *)
 (* ************************************************************************ *)
@@ -327,8 +328,14 @@ let reports_opts strict warn_modifiers =
   let conf = Dolmen_loop.Report.Conf.mk ~default:Enabled in
   let conf =
     if not strict then conf
-    else Dolmen_loop.Report.Conf.fatal conf
+    else begin
+      let fatal warn conf = Dolmen_loop.Report.Conf.fatal conf warn in
+      conf
+      |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.almost_linear))
+      |> fatal
+        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.unknown_logic))
+    end
   in
   let res =
     List.fold_left (fun conf l ->
@@ -350,7 +357,7 @@ let mk_run_state
     flow_check
     header_check header_licenses
     header_lang_version
-    smtlib2_forced_logic type_check check_model check_model_mode
+    smtlib2_forced_logic type_check check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
   =
   (* Side-effects *)
@@ -364,7 +371,7 @@ let mk_run_state
   let () = if bt then Printexc.record_backtrace true in
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
-  let () = Hints.model ~check_model ~check_model_mode in
+  let () = Hints.model ~check_model (* ~check_model_mode *) in
   (* State creation *)
   Loop.State.empty
   |> Loop.State.init
@@ -378,7 +385,7 @@ let mk_run_state
   |> Loop.Typer_Pipe.init ~type_check
   |> Loop.Check.init
     ~check_model
-    ~check_model_mode
+    (* ~check_model_mode *)
   |> Loop.Flow.init ~flow_check
   |> Loop.Header.init
     ~header_check
@@ -599,6 +606,7 @@ let state =
         "Whether to check models (require providing a response file)." in
     Arg.(value & opt bool false & info ["check-model"] ~doc ~docs)
   in
+  (*
   let check_model_mode =
     let doc = Format.asprintf
         "Choose the mode for model verification. Must be %s.
@@ -617,6 +625,7 @@ let state =
         (Arg.doc_alts_enum ~quoted:true model_mode_list) in
     Arg.(value & opt model_mode_conv Full & info ["check-model-mode"] ~doc ~docs)
   in
+  *)
   let report_style =
     let doc = Format.asprintf
         "Control the way locations are printed for error and warnings messages.
@@ -647,7 +656,7 @@ let state =
         flow_check $
         header_check $ header_licenses $
         header_lang_version $
-        force_smtlib2_logic $ typing $ check_model $ check_model_mode $
+        force_smtlib2_logic $ typing $ check_model $ (* check_model_mode $ *)
         debug $ report_style $ max_warn $ reports $ syntax_error_ref)
 
 

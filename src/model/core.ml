@@ -18,12 +18,12 @@ let rec distinct = function
     if List.for_all (fun y -> Value.compare x y <> 0) r
     then distinct r else Bool.mk false
 
-let builtins _ (cst : E.Term.Const.t) =
+let builtins ~eval:_ _ (cst : E.Term.Const.t) =
   match cst.builtin with
   | B.Equal -> Some (Fun.fun_n ~cst all_equals)
   | B.Distinct -> Some (Fun.fun_n ~cst distinct)
   | B.Ite ->
-    Some (Fun.fun_lazy ~cst (fun env eval args ->
+    Some (Fun.mk_clos @@ Fun.fun_lazy ~cst (fun env eval args ->
         match args with
         | [cond; then_; else_] ->
           if Value.extract_exn ~ops:Bool.ops (eval env cond)

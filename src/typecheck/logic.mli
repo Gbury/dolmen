@@ -26,8 +26,8 @@ module Smtlib2 : sig
     free_functions  : bool;
     datatypes       : bool;
     quantifiers     : bool;
-    arithmetic      : Arith.Smtlib2.arith;
-    arrays          : Arrays.Smtlib2.arrays;
+    arithmetic      : Arith.Smtlib2.config;
+    arrays          : Arrays.Smtlib2.config;
   }
   (** Smtlib features. *)
 
@@ -36,6 +36,12 @@ module Smtlib2 : sig
     features      : features;
   }
   (** Structured representation of an smtlib logic. *)
+
+  val print : Format.formatter -> t -> unit
+  val print_theory : Format.formatter -> theory -> unit
+  val print_theories : Format.formatter -> theory list -> unit
+  val print_features : Format.formatter -> features -> unit
+  (** Printing functions *)
 
   val parse : string -> t option
   (** Parses an smtlib logic string and returns its structured version. *)
@@ -54,4 +60,7 @@ type t =
   | Smtlib2 of Smtlib2.t
   (** Smtlib2 logic. *)
 (** Wrapper type to represent the different logics. *)
+
+val print : Format.formatter -> t -> unit
+(** Printer for logics. *)
 

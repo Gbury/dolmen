@@ -7,12 +7,14 @@
 type t
 (** The type of environments for evaluations. *)
 
-val mk :
-  Model.t ->
-  builtins:(t -> Dolmen.Std.Expr.Term.Const.t -> Value.t) -> t
+type builtins =
+  eval:(t -> Dolmen.Std.Expr.Term.t -> Value.t) ->
+  t -> Dolmen.Std.Expr.Term.Const.t -> Value.t option
+
+val mk : Model.t -> builtins:builtins -> t
 (* The empty env. *)
 
-val builtins : t -> Dolmen.Std.Expr.Term.Const.t -> Value.t
+val builtins : t -> builtins
 (** Return the builtins stored in the env. *)
 
 val model : t -> Model.t

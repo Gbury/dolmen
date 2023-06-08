@@ -1,0 +1,8 @@
+File "tests/model/funs/out_of_order.rsmt2", line 3, character 17-24:
+3 |   (define-fun g ((x Int)) Int 1)
+                     ^^^^^^^
+Warning The following function parameter is unused: `x`
+File "tests/model/funs/out_of_order.rsmt2", line 4, character 17-24:
+4 |   (define-fun f ((x Int)) Int 0)
+                     ^^^^^^^
+Warning The following function parameter is unused: `x`
