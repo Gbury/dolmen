@@ -12,7 +12,7 @@ module Ae = struct
 
     type _ Type.err +=
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
-      | Expected_Nat : Dolmen.Std.Term.t -> Dolmen.Std.Term.t Type.err
+      | Expected_nat_lit : Dolmen.Std.Term.t -> Dolmen.Std.Term.t Type.err
 
     let parse_binary env s ast =
       match String.iter Misc.Bitv.check_bin s with
@@ -23,11 +23,13 @@ module Ae = struct
     let int_of_term env ast a =
       match a.Dolmen_std.Term.term with
       | Symbol { ns = Value Integer; name = Simple name; } ->
+        (* the namespace guarantees that the `name` is an integer literal
+           therefore `int_of_string` should not raise an exception *)
         let i = int_of_string name in
         if i >= 0 then i else
-          Type._error env (Ast ast) (Expected_Nat a)
+          Type._error env (Ast ast) (Expected_nat_lit a)
       | _ ->
-        Type._error env (Ast ast) (Expected_Nat a)
+        Type._error env (Ast ast) (Expected_nat_lit a)
 
     let app_int_term env symbol mk =
       Base.make_op2 (module Type) env symbol

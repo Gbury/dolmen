@@ -807,8 +807,10 @@ let bitvector_app_expected_nat =
   Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat"
     ~message:(fun fmt t ->
         Format.fprintf fmt "Expected a natural number as an argument, \
-                            instead got %a" Dolmen_std.Term.print t)
-    ~name:"Bad bitvector application argument type." ()
+                            but instead got the following untyped term:@ %a"
+          Dolmen_std.Term.print t)
+    ~name:"Some bitvector functions in alt-ergo require their first argument \
+           to be a literal natural number" ()
 
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
@@ -1180,7 +1182,7 @@ module Typer(State : State.S) = struct
     (* Alt-Ergo Bit-Vector errors *)
     | Ae_Bitv.Invalid_bin_char c ->
       error ~input ~loc st invalid_bin_bitvector_char c
-    | Ae_Bitv.Expected_Nat t ->
+    | Ae_Bitv.Expected_nat_lit t ->
       error ~input ~loc st bitvector_app_expected_nat t
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
