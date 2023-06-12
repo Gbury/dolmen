@@ -282,25 +282,25 @@ let poly_hint (c, expected, actual) =
 
 let literal_hint b id =
   if not b then None else
-  match (id : Dolmen.Std.Id.t) with
-  | { ns = Value Integer; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include integer arithmtic")
-  | { ns = Value Rational; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include rational arithmtic")
-  | { ns = Value Real; name = Simple _; } ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include real arithmtic")
-  | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
-    when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
-    Some (
-      Format.dprintf "%a" Format.pp_print_text
-        "The current logic does not include extended bitvector literals")
-  | _ -> None
+    match (id : Dolmen.Std.Id.t) with
+    | { ns = Value Integer; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include integer arithmtic")
+    | { ns = Value Rational; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include rational arithmtic")
+    | { ns = Value Real; name = Simple _; } ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include real arithmtic")
+    | { ns = Term; name = Indexed { basename = s; indexes = _; }; }
+      when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
+      Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "The current logic does not include extended bitvector literals")
+    | _ -> None
 
 let poly_arg_hint _ =
   Some (
@@ -317,6 +317,11 @@ let poly_param_hint _ =
        This means that only monomorphic types can appear as
        parameters of a function type.")
 
+let bv_expected_nat_lit_hint _ =
+  Some (
+    Format.dprintf "%a" Format.pp_print_text
+      "Some bitvector functions in alt-ergo require their first argument \
+       to be a literal natural number.")
 
 (* Typing warnings *)
 (* ************************************************************************ *)
@@ -804,7 +809,7 @@ let bad_farray_arity =
   Report.Error.mk ~code ~mnemonic:"bad-farray-arity"
     ~message:(fun fmt () ->
         Format.fprintf fmt "Functional array types in Alt-Ergo expect either one or two type \
-        parameters.")
+                            parameters.")
     ~name:"Bad functional array arity" ()
 
 let expected_arith_type =
@@ -835,6 +840,15 @@ let non_linear_expression =
         Format.fprintf fmt "Non-linear expressions are forbidden by the logic.")
     ~hints:[text_hint]
     ~name:"Non linear expression in linear arithmetic logic" ()
+
+let bitvector_app_expected_nat_lit =
+  Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat-lit"
+    ~message:(fun fmt t ->
+        Format.fprintf fmt "Expected a natural number literal as an argument, \
+                            but instead got the following untyped term:@ %a"
+          Dolmen_std.Term.print t)
+    ~hints:[bv_expected_nat_lit_hint]
+    ~name:"Bad bitvector application argument" ()
 
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
@@ -942,9 +956,9 @@ let incorrect_sexpression =
 let unknown_error =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
     ~message:(fun fmt cstr_name ->
-      Format.fprintf fmt
-        "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
-        cstr_name)
+        Format.fprintf fmt
+          "@[<v>Unknown typing error:@ %s@ please report upstream, ^^@]"
+          cstr_name)
     ~name:"Unknown typing error" ()
 
 
@@ -1121,7 +1135,7 @@ module Typer(State : State.S) = struct
       warn ~input ~loc st almost_linear msg
     | _ ->
       warn ~input ~loc st unknown_warning
-          (Obj.Extension_constructor.(name (of_val w)))
+        (Obj.Extension_constructor.(name (of_val w)))
 
   (* Report type errors *)
   (* ************************************************************************ *)
@@ -1135,7 +1149,7 @@ module Typer(State : State.S) = struct
     (* Generic error for when something was expected but not there *)
     | T.Expected (expect, got) ->
       error ~input ~loc st expect_error (expect, got)
-      (* Arity errors *)
+    (* Arity errors *)
     | T.Bad_index_arity (s, expected, actual) ->
       error ~input ~loc st bad_index_arity (s, expected, actual)
     | T.Bad_ty_arity (c, actual) ->
@@ -1213,6 +1227,11 @@ module Typer(State : State.S) = struct
     (* Alt-Ergo Functional Array errors *)
     | Ae_Arrays.Bad_farray_arity ->
       error ~input ~loc st bad_farray_arity ()
+    (* Alt-Ergo Bit-Vector errors *)
+    | Ae_Bitv.Invalid_bin_char c ->
+      error ~input ~loc st invalid_bin_bitvector_char c
+    | Ae_Bitv.Expected_nat_lit t ->
+      error ~input ~loc st bitvector_app_expected_nat_lit t
     (* Alt-Ergo Arithmetic errors *)
     | Ae_Arith.Expected_arith_type ty ->
       error ~input ~loc st expected_arith_type (ty, "")

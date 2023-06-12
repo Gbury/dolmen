@@ -798,8 +798,131 @@ module type Ae_Bitv = sig
 
   val extract : int -> int -> t -> t
   (** Bitvector extraction, using in that order,
-      the start and then end the position of the
+      the start and then end positions of the
       bitvector to extract. *)
+
+  val repeat : int -> t -> t
+  (** Repetition of a bitvector. *)
+
+  val zero_extend : int -> t -> t
+  (** Extend the given bitvector with the given number of 0s. *)
+
+  val sign_extend : int -> t -> t
+  (** Extend the given bitvector with its most significant bit
+      repeated the given number of times. *)
+
+  val rotate_right : int -> t -> t
+  (** [rotate_right i x] means rotate bits of x to the right i times. *)
+
+  val rotate_left : int -> t -> t
+  (** [rotate_left i x] means rotate bits of x to the left i times. *)
+
+  val not : t -> t
+  (** Bitwise negation. *)
+
+  val and_ : t -> t -> t
+  (** Bitwise conjunction. *)
+
+  val or_ : t -> t -> t
+  (** Bitwise disjunction. *)
+
+  val nand : t -> t -> t
+  (** [nand s t] abbreviates [not (and_ s t)]. *)
+
+  val nor : t -> t -> t
+  (** [nor s t] abbreviates [not (or_ s t)]. *)
+
+  val xor : t -> t -> t
+  (** [xor s t] abbreviates [or_ (and_ s (not t)) (and_ (not s) t)]. *)
+
+  val xnor : t -> t -> t
+  (** [xnor s t] abbreviates [or_ (and_ s t) (and_ (not s) (not t))]. *)
+
+  val comp : t -> t -> t
+  (** Bitwise comparison. [comp s t] equals [#b1] iff [s] and [t]
+      are bitwise equal. *)
+
+  val neg : t -> t
+  (** Arithmetic complement on bitvectors.
+      Supposing an input bitvector of size [m] representing
+      an integer [k], the resulting term should represent
+      the integer [2^m - k]. *)
+
+  val add : t -> t -> t
+  (** Arithmetic addition on bitvectors, modulo the size of
+      the bitvectors (overflows wrap around [2^m] where [m]
+      is the size of the two input bitvectors). *)
+
+  val sub : t -> t -> t
+  (** Arithmetic substraction on bitvectors, modulo the size
+      of the bitvectors (2's complement subtraction modulo).
+      [sub s t] should be equal to [add s (neg t)]. *)
+
+  val mul : t -> t -> t
+  (** Arithmetic multiplication on bitvectors, modulo the size
+      of the bitvectors (see {!add}). *)
+
+  val udiv : t -> t -> t
+  (** Arithmetic euclidian integer division on bitvectors. *)
+
+  val urem : t -> t -> t
+  (** Arithmetic euclidian integer remainder on bitvectors. *)
+
+  val sdiv : t -> t -> t
+  (** Arithmetic 2's complement signed division.
+      (see smtlib's specification for more information). *)
+
+  val srem : t -> t -> t
+  (** Arithmetic 2's complement signed remainder (sign follows dividend).
+      (see smtlib's specification for more information). *)
+
+  val smod : t -> t -> t
+  (** Arithmetic 2's complement signed remainder (sign follows divisor).
+      (see smtlib's specification for more information). *)
+
+  val shl : t -> t -> t
+  (** Logical shift left. [shl t k] return the result of
+      shifting [t] to the left [k] times. In other words,
+      this should return the bitvector representing
+      [t * 2^k] (since bitvectors represent integers using
+      the least significatn bit in cell 0). *)
+
+  val lshr : t -> t -> t
+  (** Logical shift right. [lshr t k] return the result of
+      shifting [t] to the right [k] times. In other words,
+      this should return the bitvector representing
+      [t / (2^k)]. *)
+
+  val ashr : t -> t -> t
+  (** Arithmetic shift right, like logical shift right except that the most
+      significant bits of the result always copy the most significant
+      bit of the first argument*)
+
+  val ult : t -> t -> t
+  (** Boolean arithmetic comparison (less than).
+      [ult s t] should return the [true] term iff [s < t]. *)
+
+  val ule : t -> t -> t
+  (** Boolean arithmetic comparison (less or equal than). *)
+
+  val ugt : t -> t -> t
+  (** Boolean arithmetic comparison (greater than). *)
+
+  val uge : t -> t -> t
+  (** Boolean arithmetic comparison (greater or equal than). *)
+
+  val slt : t -> t -> t
+  (** Boolean signed arithmetic comparison (less than).
+      (See smtlib's specification for more information) *)
+
+  val sle : t -> t -> t
+  (** Boolean signed arithmetic comparison (less or equal than). *)
+
+  val sgt : t -> t -> t
+  (** Boolean signed arithmetic comparison (greater than). *)
+
+  val sge : t -> t -> t
+  (** Boolean signed arithmetic comparison (greater or equal than). *)
 
 end
 
@@ -1258,7 +1381,7 @@ module type Smtlib_Bitv = sig
   (** Repetition of a bitvector. *)
 
   val zero_extend : int -> t -> t
-  (** Extend the given bitvector with the given numer of 0. *)
+  (** Extend the given bitvector with the given number of 0s. *)
 
   val sign_extend : int -> t -> t
   (** Extend the given bitvector with its most significant bit
@@ -1292,7 +1415,7 @@ module type Smtlib_Bitv = sig
   (** [xnor s t] abbreviates [or_ (and_ s t) (and_ (not s) (not t))]. *)
 
   val comp : t -> t -> t
-  (** Bitwise comparison. [comp s t] equald [#b1] iff [s] and [t]
+  (** Bitwise comparison. [comp s t] equals [#b1] iff [s] and [t]
       are bitwise equal. *)
 
   val neg : t -> t
@@ -1326,11 +1449,11 @@ module type Smtlib_Bitv = sig
       (see smtlib's specification for more information). *)
 
   val srem : t -> t -> t
-  (** Arithmetic 2's coplement signed remainder (sign follows dividend).
+  (** Arithmetic 2's complement signed remainder (sign follows dividend).
       (see smtlib's specification for more information). *)
 
   val smod : t -> t -> t
-  (** Arithmetic 2's coplement signed remainder (sign follows divisor).
+  (** Arithmetic 2's complement signed remainder (sign follows divisor).
       (see smtlib's specification for more information). *)
 
   val shl : t -> t -> t
