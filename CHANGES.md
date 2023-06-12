@@ -34,6 +34,7 @@ next
 - Add printing function for logics (PR#142)
 - Attach type definitions to type-defs (PR#157)
 - Add a proper reason for reserved builtins (PR#155)
+- Add bitvector builtins for alt-ergo's language (PR#136)
 
 ### Loop
 
