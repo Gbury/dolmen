@@ -629,7 +629,7 @@ module Make
     let clause = { file; loc; contents; } in
     check_acc st (Clause clause)
 
-  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc (local_hyps, local_goals) =
+  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc local_hyps local_goals =
     (* **0** Evaluate local hyps and goals *)
     let st =
       List.fold_left (fun st local_hyp ->
@@ -701,8 +701,8 @@ module Make
           check_goal ~file ~loc st contents
         | `Clause contents ->
           check_clause ~file ~loc st contents
-        | `Solve l ->
-          check_solve ~file ~loc st l
+        | `Solve (hyps, goals) ->
+          check_solve ~file ~loc st hyps goals
       else
         st
     in
