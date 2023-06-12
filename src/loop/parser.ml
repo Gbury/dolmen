@@ -60,6 +60,12 @@ let parsing_error =
             p_ref prod lexed expected)
     ~name:"Parsing error" ()
 
+let stdin_prelude =
+  Report.Error.mk ~code:Code.parsing ~mnemonic:"stdin-prelude"
+    ~message:(fun fmt () ->
+      Format.fprintf fmt
+        "Standard input can't be used as a prelude.")
+    ~name:"Prelude error" ()
 
 (* Pipe functor *)
 (* ************************************************************************ *)
@@ -119,25 +125,21 @@ module Make(State : State.S) = struct
       | Some `Incremental -> State.warn ?loc st full_mode_switch lang
       | _ -> st
     in
-    State.set State.logic_file { file with mode = Some `Full; } st
+    st, { file with mode = Some `Full }
 
-  let set_logic_file ?loc st old (file : _ file) =
+  let switch_to_full_mode_if_needed ?loc st old (file : _ file) =
     match file.lang with
     | Some Logic.Alt_ergo -> switch_to_full_mode ?loc "Alt-Ergo" st old file
-    | _ -> State.set State.logic_file file st
+    | _ -> st, file
 
-  let set_logic_file ?loc st (new_file : _ file) =
-    let old_file = State.get State.logic_file st in
-    match old_file.lang with
-    | None -> set_logic_file ?loc st old_file new_file
-    | Some l ->
-      begin match new_file.lang with
-        | None -> set_logic_file ?loc st old_file new_file
-        | Some l' ->
-          if l = l'
-          then set_logic_file ?loc st old_file new_file
-          else State.error ~file:new_file ?loc st input_lang_changed (l', l)
-      end
+  let set_logic_file ?loc st (file : _ file) =
+    let old = State.get State.logic_file st in
+    match old.lang, file.lang with
+    | Some l, Some l' when l <> l' ->
+      State.error ~file ?loc st input_lang_changed (l', l)
+    | _ ->
+      let st, new_file = switch_to_full_mode_if_needed ?loc st old file in
+      State.set State.logic_file new_file st
 
   (* Parsing *)
   (* ************************************************************************ *)
@@ -190,70 +192,119 @@ module Make(State : State.S) = struct
       let st = State.error st ~file ~loc:{ file = file.loc; loc; } parsing_error (syntax_error_ref, perr) in
       st, None
 
-  let parse_logic prelude st (file : Logic.language file) =
-    (* Parse the input *)
-    let st, file, g =
-      try
-        match file.source with
-        | `Stdin ->
-          let lang, file_loc, gen, _ = Logic.parse_input
-              ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
-          in
-          let file = { file with loc = file_loc; lang = Some lang; } in
-          st, file, gen
-        | `Raw (filename, contents) ->
-          let lang =
-            match file.lang with
-            | Some l -> l
-            | None ->
-              let res, _, _ = Logic.of_filename filename in
-              res
-          in
-          begin match file.mode with
-          | None
-          | Some `Incremental ->
-            let lang, file_loc, gen, cl = Logic.parse_input
-                ~language:lang (`Raw (filename, lang, contents)) in
-            let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_finally gen cl
-          | Some `Full ->
-            let lang, file_loc, l = Logic.parse_raw_lazy ~language:lang
-              ~filename contents
-            in
-            let file = { file with loc = file_loc; lang = Some lang; } in
-            st, file, gen_of_llist l
-          end
-        | `File f ->
-          let s = Dolmen.Std.Statement.include_ f [] in
-          (* Auto-detect input format *)
-          let lang =
-            match file.lang with
-            | Some l -> l
-            | None ->
-              let res, _, _ = Logic.of_filename f in
-              res
-          in
-          (* Formats Dimacs and Tptp are descriptive and lack the emission
-              of formal solve/prove instructions, so we need to add them. *)
-          let s' =
-            match lang with
-            | Logic.Zf
-            | Logic.ICNF
-            | Logic.Smtlib2 _
-            | Logic.Alt_ergo -> s
-            | Logic.Dimacs
-            | Logic.Tptp _ ->
-              Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
-          in
-          let file = { file with lang = Some lang; } in
-          st, file, (Gen.singleton s')
-      with
-      | Logic.Extension_not_found ext ->
-        State.error st extension_not_found ext, file, Gen.empty
+  let parse_stdin st (file : Logic.language file) =
+    let lang, file_loc, gen, _ = Logic.parse_input
+        ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
     in
-    let st = set_logic_file st file in
-    (* Wrap the resulting parser *)
-    st, wrap_parser ~file (Gen.append (Gen.of_list prelude) g)
+    let file = { file with loc = file_loc; lang = Some lang; } in
+    st, file, gen
+
+  let parse_file st source (file : Logic.language file) lang =
+    (* Parse the input *)
+    match source with
+    | `Raw (filename, contents) ->
+      begin match file.mode with
+      | None
+      | Some `Incremental ->
+        let lang, file_loc, gen, cl = Logic.parse_input
+            ~language:lang (`Raw (filename, lang, contents)) in
+        let file = { file with loc = file_loc; lang = Some lang; } in
+        st, file, gen_finally gen cl
+      | Some `Full ->
+        let lang, file_loc, l = Logic.parse_raw_lazy ~language:lang
+          ~filename contents
+        in
+        let file = { file with loc = file_loc; lang = Some lang; } in
+        st, file, gen_of_llist l
+      end
+    | `File f ->
+      let s = Dolmen.Std.Statement.include_ f [] in
+      (* Formats Dimacs and Tptp are descriptive and lack the emission
+          of formal solve/prove instructions, so we need to add them. *)
+      let s' =
+        match lang with
+        | Logic.Zf
+        | Logic.ICNF
+        | Logic.Smtlib2 _
+        | Logic.Alt_ergo -> s
+        | Logic.Dimacs
+        | Logic.Tptp _ ->
+          Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
+      in
+      let file = { file with lang = Some lang; } in
+      st, file, (Gen.singleton s')
+
+  (* This is a ['a Gen.t] with a threaded state. *)
+  type 'a gen' = {g: State.t -> State.t * 'a option} [@@unboxed]
+
+  let flat_map (f : 'a -> 'b gen') ({ g } : 'a gen') : 'b gen' =
+    (* [cur_f] holds the last generator returned by a call to [f] *)
+    let cur_f = ref None in
+    let rec aux st =
+      match !cur_f with
+      | None ->
+        (* [cur_f] is empty, get a new one and try again *)
+        let st, x = g st in
+        begin match x with
+        | None -> st, None
+        | Some x ->
+          cur_f := Some (f x);
+          aux st
+        end
+      | Some { g = c } ->
+        (* We got a generator, use it or refill it *)
+        let st, c' = c st in
+        match c' with
+        | Some _ -> st, c'
+        | None ->
+          cur_f := None;
+          aux st
+    in
+    { g = aux }
+
+  (* [map_st_gen f g] calls [f] on all the values produced by [g] in order,
+     threading the state.
+
+     [f] is *not* a generator but a function in the state monad. *)
+  let map_st_gen f (g : _ Gen.t) : _ gen' =
+    { g = fun st ->
+      begin match g () with
+      | None -> st, None
+      | Some x -> f st x
+      end }
+
+  let parse_logic ?(preludes = []) file =
+    Gen.(
+      append
+        (of_list preludes |> map (fun p -> (p, true)))
+        (singleton (file, false)))
+    |> map_st_gen (fun st ((file : _ file), is_prelude) ->
+      match file.source with
+      | `Stdin when is_prelude ->
+        State.error ~file st stdin_prelude (), None
+      | `Stdin ->
+        let st, file, g = parse_stdin st file in
+        let st = State.set State.logic_file file st in
+        st, Some ({ g = wrap_parser ~file g })
+      | `Raw (filename, _) | `File filename as source ->
+        (* NB: We need to make sure the lang is set before calling
+            [switch_to_full_mode_if_needed] *)
+        try
+          let file, lang =
+            match file.lang with
+            | Some l -> file, l
+            | None ->
+              (* Auto-detect input format *)
+              let l, _, _ = Logic.of_filename filename in
+              { file with lang = Some l }, l
+          in
+          let st, file = switch_to_full_mode_if_needed st file file in
+          let st, file, g = parse_file st source file lang in
+          let st = State.set State.logic_file file st in
+          st, Some ({ g = wrap_parser ~file g })
+        with Logic.Extension_not_found ext ->
+          State.error st extension_not_found ext, None
+    ) |> flat_map Fun.id |> fun { g } -> g
 
   let parse_response prelude st (file : Response.language file) =
     (* Parse the input *)
@@ -358,4 +409,3 @@ module Make(State : State.S) = struct
     ret
 
 end
-

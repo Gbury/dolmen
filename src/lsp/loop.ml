@@ -35,7 +35,7 @@ let finally st e =
     let res = handle_exn st exn in
     raise (Finished res)
 
-let process prelude path opt_contents =
+let process preludes path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
   let l_file : _ State.file = {
@@ -56,7 +56,7 @@ let process prelude path opt_contents =
     |> State.init
       ~debug:false ~report_style:Regular ~reports
       ~max_warn:max_int ~time_limit:0. ~size_limit:max_float
-      ~logic_file:l_file ~response_file:r_file
+      ~response_file:r_file
     |> Parser.init ~syntax_error_ref:false
     |> Typer.init
     |> Typer_Pipe.init ~type_check:true
@@ -66,7 +66,7 @@ let process prelude path opt_contents =
       ~header_lang_version:None
   in
   try
-    let st, g = Parser.parse_logic prelude st l_file in
+    let g = Parser.parse_logic ~preludes l_file in
     let open Pipeline in
     let st = run ~finally g st (
         (fix (op ~name:"expand" Parser.expand) (
@@ -80,4 +80,3 @@ let process prelude path opt_contents =
   with
   | Finished res -> res
   | exn -> handle_exn st exn
-

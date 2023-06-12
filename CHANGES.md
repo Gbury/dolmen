@@ -46,6 +46,9 @@ next
 - Add the `check` function in `typer.ml`/`typer_intf.ml`
 - Add `update` and `update_opt` in `State` (PR#156)
 - Print type definitions in the printer of typed statements (PR#157)
+- Prelude statements have been removed and replaced with prelude files (PR#160)
+- `Typer.additional_builtins` is now a `State.key` and takes the current state
+  and language as arguments (PR#160)
 
 ### Model
 

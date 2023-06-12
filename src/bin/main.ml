@@ -33,15 +33,14 @@ let finally st e =
   | Some (bt,exn) ->
     handle_exn st bt exn
 
-let run st =
+let run st preludes logic_file =
   if Loop.State.get Loop.State.debug st then begin
     Dolmen.Std.Expr.Print.print_index := true;
     ()
   end;
-  let st, g =
+  let g =
     try
-      Loop.Parser.parse_logic [] st
-        (Loop.State.get Loop.State.logic_file st)
+      Loop.Parser.parse_logic ~preludes logic_file
     with exn ->
       let bt = Printexc.get_raw_backtrace () in
       handle_exn st bt exn
@@ -137,8 +136,8 @@ let () =
     exit 0
   | Error (`Parse | `Term | `Exn) ->
     exit Cmdliner.Cmd.Exit.cli_error
-  | Ok (`Ok Run { state }) ->
-    run state
+  | Ok (`Ok Run { state ; preludes; logic_file }) ->
+    run state preludes logic_file
   | Ok (`Ok Doc { report; conf; }) ->
     doc conf report
   | Ok (`Ok List_reports { conf; }) ->

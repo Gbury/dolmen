@@ -1008,6 +1008,11 @@ module Typer(State : State.S) = struct
   type warning = T.warning
   type builtin_symbols = T.builtin_symbols
 
+  type lang = [
+    | `Logic of Logic.language
+    | `Response of Response.language
+  ]
+
   let pipe = "Typer"
   let ty_state : ty_state State.key =
     State.create_key ~pipe "ty_state"
@@ -1015,27 +1020,25 @@ module Typer(State : State.S) = struct
     State.create_key ~pipe:"Model" "check_model"
   let smtlib2_forced_logic : string option State.key =
     State.create_key ~pipe "smtlib2_forced_logic"
+  let additional_builtins : (state -> lang -> T.builtin_symbols) State.key =
+    State.create_key ~pipe "additional_builtins"
 
   let init
       ?ty_state:(ty_state_value=new_state ())
       ?smtlib2_forced_logic:(smtlib2_forced_logic_value=None)
+      ?additional_builtins:(additional_builtins_value=fun _ _ _ _ -> `Not_found)
       st =
     st
     |> State.set ty_state ty_state_value
     |> State.set smtlib2_forced_logic smtlib2_forced_logic_value
+    |> State.set additional_builtins additional_builtins_value
 
-  (* Input elpers *)
+  (* Input helpers *)
   (* ************************************************************************ *)
 
   type input = [
     | `Logic of Logic.language file
     | `Response of Response.language file
-  ]
-
-  type lang = [
-    | `Missing
-    | `Logic of Logic.language
-    | `Response of Response.language
   ]
 
   let warn ~input ~loc st warn payload =
@@ -1053,7 +1056,7 @@ module Typer(State : State.S) = struct
     | `Logic f -> f.loc
     | `Response f -> f.loc
 
-  let lang_of_input (input : input) : lang =
+  let lang_of_input (input : input) : [ lang | `Missing ]=
     match input with
     | `Logic f ->
       begin match f.lang with
@@ -1352,16 +1355,17 @@ module Typer(State : State.S) = struct
           Smtlib2_Reals_Ints.parse ~config:l.features.arithmetic v :: acc
       ) [] l.Dolmen_type.Logic.Smtlib2.theories
 
-  let additional_builtins = ref (fun _ _ -> `Not_found : T.builtin_symbols)
-
   let typing_env ?(attrs=[]) ~loc warnings (st : State.t) (input : input) =
-    let additional_builtins env args = !additional_builtins env args in
     let file = file_loc_of_input input in
 
     (* Match the language to determine bultins and other options *)
-    match lang_of_input input with
-    | `Missing -> assert false
-
+    let lang =
+      match lang_of_input input with
+      | `Missing -> assert false
+      | #lang as lang -> lang
+    in
+    let additional_builtins = State.get additional_builtins st st lang in
+    match lang with
     (* Dimacs & iCNF
        - these infer the declarations of their constants
          (we could declare them when the number of clauses and variables
@@ -2182,4 +2186,3 @@ module Make
     res
 
 end
-

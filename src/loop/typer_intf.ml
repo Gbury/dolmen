@@ -31,6 +31,11 @@ module type Typer = sig
     | `Response of Response.language State.file
   ]
 
+  type lang = [
+    | `Logic of Logic.language
+    | `Response of Response.language
+  ]
+
   val reset :
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
@@ -124,11 +129,6 @@ module type Typer_Full = sig
   (** Force the typechecker to use the given logic (instead of using the one declared
       in the `set-logic` statement). *)
 
-  val init :
-    ?ty_state:ty_state ->
-    ?smtlib2_forced_logic:string option ->
-    state -> state
-
   include Typer
     with type env := env
      and type state := state
@@ -143,16 +143,25 @@ module type Typer_Full = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
+  val init :
+    ?ty_state:ty_state ->
+    ?smtlib2_forced_logic:string option ->
+    ?additional_builtins:(state -> lang -> builtin_symbols) ->
+    state -> state
+
+  val additional_builtins : (state -> lang -> builtin_symbols) key
+  (** Add new builtin symbols to the typechecker, depending on the current
+      language.
+
+      {b Note.} The additional builtins are never used for Dimacs and iCNF.
+
+      @before 0.9 [additional_builtins] had type [builtin_symbols ref]. *)
+
   val report_error : input:input -> state -> error -> state
   (** Report a typing error by calling the appropriate state function. *)
 
   val report_warning : input:input -> state -> warning -> state
   (** Return a typing warning by calling the appropriate state function. *)
-
-  val additional_builtins : builtin_symbols ref
-  (** This reference can be modified to parse new builtin symbols. By default no
-      additional builtin symbols are parsed. It is added for all the languages
-      except Dimacs, and iCNF. *)
 
   val pop_inferred_model_constants : state -> Dolmen.Std.Expr.term_cst list
   (** TODO:doc *)

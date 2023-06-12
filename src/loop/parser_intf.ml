@@ -33,11 +33,17 @@ module type S = sig
   *)
 
   val parse_logic :
-    Dolmen.Std.Statement.t list -> state -> Logic.language State.file ->
-    state * (state -> state * Dolmen.Std.Statement.t option)
-  (** Parsing function. Reads a list of prelude statements, and the state and
-      returns a tuple of the new state (including the detected input language),
-      together with a statement generator. *)
+    ?preludes:Logic.language State.file list -> Logic.language State.file ->
+    (state -> state * Dolmen.Std.Statement.t option)
+  (** Parsing function. Builds a statement generator from a file.
+
+      The prelude files in [preludes] must not have a [`Stdin] source, and are
+      parsed first. They may have a different language than the main file, and
+      do not influence language detection for the main file.
+
+      @before 0.9 The type was more complicated.
+      @before 0.9 Prelude files were not supported, and the [preludes] argument
+      did not exist. *)
 
   val parse_response :
     Dolmen.Std.Answer.t list -> state -> Response.language State.file ->

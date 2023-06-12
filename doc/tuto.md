@@ -57,10 +57,11 @@ let test file =
     |> State.init
        ~debug:false ~report_style:Contextual ~max_warn:max_int
        ~reports:(Dolmen_loop.Report.Conf.mk ~default:Enabled)
-       ~logic_file ~response_file
+       ~response_file
        (* these limits are ignored in this example; to actually enforce
           the limits, one has to use the `run` function from `Dolmen_loop.Pipeline` *)
        ~time_limit:0. ~size_limit:0.
+    |> State.set State.logic_file logic_file
     |> Typer_aux.init
     |> Typer.init ~type_check:true
   in

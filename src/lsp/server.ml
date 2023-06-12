@@ -36,7 +36,8 @@ let preprocess_uri uri =
 let mk_prelude files =
   List.map (
     fun f ->
-      Dolmen_std.Statement.include_ f []
+      let dir, file = Dolmen_loop.State.split_input (`File f) in
+      Dolmen_loop.State.mk_file dir file
   ) files
 
 class dolmen_lsp_server =
@@ -95,7 +96,3 @@ class dolmen_lsp_server =
       notify_back#send_diagnostic []
 
   end
-
-
-
-
