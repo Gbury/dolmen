@@ -201,7 +201,6 @@ module Smtlib2 = struct
                   "completing interpretation of fp.to_bv in models",
                   `Term_cst (meta_to_bv F.to_ubv'))
               | `Script _ ->
-                Format.eprintf "foo ?!@.";
                 (* the regular case is handled later, because fp.to_ubv is
                    an indexed identifier. *)
                 `Not_found

@@ -583,7 +583,7 @@ let tptp ?loc ?annot kind id role body =
       begin match body with
         | `Term t -> Consequent t
         | `Clause _ ->
-          Format.eprintf "WARNING: conjecture in a cnf context";
+          (* Format.eprintf "WARNING: conjecture in a cnf context"; *)
           Pack []
       end
     | "type" ->
@@ -592,7 +592,7 @@ let tptp ?loc ?annot kind id role body =
           Decls { recursive = false;
                   contents = [abstract ?loc s ty]; }
         | _ ->
-          Format.eprintf "WARNING: unexpected type declaration@.";
+          (* Format.eprintf "WARNING: unexpected type declaration@."; *)
           Pack []
       end
     | "plain" ->
@@ -604,7 +604,7 @@ let tptp ?loc ?annot kind id role body =
     | "fi_functors"
     | "fi_predicates" -> Pack []
     | _ ->
-      Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role;
+      (* Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role; *)
       Pack []
   in
   mk ~id ?loc ~attrs descr
