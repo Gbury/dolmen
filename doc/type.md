@@ -21,21 +21,22 @@ let state =
   |> State.init
      ~debug:false ~report_style:Regular ~max_warn:max_int
      ~reports:(Dolmen_loop.Report.Conf.mk ~default:Enabled)
-     ~logic_file ~response_file
+     ~response_file
      (* these limits are ignored in this example; to actually enforce
         the limits, one has to use the `run` function from `Dolmen_loop.Pipeline` *)
      ~time_limit:0. ~size_limit:0.
+  |> State.set State.logic_file logic_file
   |> Typer_aux.init
   |> Typer.init ~type_check:true
 
 (* We can add some custom builtin theories to type extensions if we want *)
-let () =
+let state =
   (* We define a dummy builtin theory that does nothing *)
-  let new_builtin _env _symbol = `Not_found in
+  let new_builtins _state _lang _env _symbol = `Not_found in
   (* We add it to the builtins used during typechecking (in addition to
      all the theories that will naturally be used depending on the `set-logic`
      statement) *)
-  Typer_aux.additional_builtins := new_builtin
+  State.set Typer_aux.additional_builtins new_builtins state
 
 (* Now we can iter on all the parsed statements *)
 let () =

@@ -110,7 +110,7 @@ let scan_folder path =
       List.sort String.compare folders
     | "." | ".." ->
       aux files folders h
-    | s ->
+    | s when Filename.extension s <> ".t" ->
       let f = Filename.concat path s in
       let stat = Unix.stat f in
       begin match stat.st_kind with
@@ -118,6 +118,7 @@ let scan_folder path =
         | Unix.S_DIR -> aux files (s :: folders) h
         | _ -> aux files folders h
       end
+    | _ -> aux files folders h
   in
   aux [] [] handle
 

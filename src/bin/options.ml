@@ -34,6 +34,8 @@ let () =
 type cmd =
   | Run of {
       state : Loop.State.t;
+      preludes: Dolmen_loop.Logic.language Loop.State.file list;
+      logic_file : Dolmen_loop.Logic.language Loop.State.file;
     }
   | List_reports of {
       conf : Dolmen_loop.Report.Conf.t;
@@ -353,7 +355,7 @@ let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
-    logic_file response_file
+    response_file
     flow_check
     header_check header_licenses
     header_lang_version
@@ -377,7 +379,7 @@ let mk_run_state
   |> Loop.State.init
     ~bt ~debug ~report_style ~reports
     ~max_warn ~time_limit ~size_limit
-    ~logic_file ~response_file
+    ~response_file
   |> Loop.Parser.init
     ~syntax_error_ref
     ~interactive_prompt:Loop.Parser.interactive_prompt_lang
@@ -523,6 +525,16 @@ let response_file =
   in
   Term.(const mk_file $ response_lang $ response_mode $ response)
 
+let mk_preludes =
+  List.map (fun f -> mk_file None None (`File f))
+
+let preludes =
+  let docs = common_section in
+  let preludes =
+    let doc = "Optional prelude file to be loaded before the input file." in
+    Arg.(value & opt_all string [] & info ["p"; "prelude"] ~doc ~docs)
+  in
+  Term.(const mk_preludes $ preludes)
 
 (* State term *)
 (* ************************************************************************* *)
@@ -652,7 +664,7 @@ let state =
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
-        logic_file $ response_file $
+        response_file $
         flow_check $
         header_check $ header_licenses $
         header_lang_version $
@@ -664,10 +676,10 @@ let state =
 (* ************************************************************************* *)
 
 let cli =
-  let aux state list doc =
+  let aux state preludes logic_file list doc =
     match list, doc with
     | false, None ->
-      `Ok (Run { state; })
+      `Ok (Run { state; logic_file; preludes })
     | false, Some report ->
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (Doc { report; conf; })
@@ -688,5 +700,4 @@ let cli =
     let doc = "The warning or error of which to show the documentation." in
     Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic")
   in
-  Term.(ret (const aux $ state $ list $ doc))
-
+  Term.(ret (const aux $ state $ preludes $ logic_file $ list $ doc))

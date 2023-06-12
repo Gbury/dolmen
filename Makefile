@@ -17,7 +17,7 @@ top:
 doc:
 	dune build $(FLAGS) @doc
 
-gentests: $(wildcard tests/**/*)
+gentests: $(filter-out $(wildcard tests/**/*.t/**/*),$(wildcard tests/**/*))
 	dune exec -- tools/gentests.exe tests/
 
 test: gentests

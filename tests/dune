@@ -1,0 +1,3 @@
+(cram
+  (package dolmen_bin)
+  (deps %{bin:dolmen}))

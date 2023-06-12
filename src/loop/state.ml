@@ -201,7 +201,6 @@ let init
     ?cur_warn:(cur_warn_value=0)
     ~time_limit:time_limit_value
     ~size_limit:size_limit_value
-    ~logic_file:logic_file_value
     ~response_file:response_file_value
     st =
   st
@@ -213,7 +212,6 @@ let init
   |> set cur_warn cur_warn_value
   |> set time_limit time_limit_value
   |> set size_limit size_limit_value
-  |> set logic_file logic_file_value
   |> set response_file response_file_value
 
 (* State and locations *)
@@ -333,5 +331,3 @@ let warn ?file ?loc st warn payload =
           Report.Warning.print (warn, payload)
           Report.Warning.print_hints (warn, payload)
     end
-
-
