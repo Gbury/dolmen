@@ -165,6 +165,38 @@
   (action (diff rem.expected rem.full)))
 
 
+; Test for small_fp.smt2
+; Incremental test
+
+(rule
+   (target  small_fp.incremental)
+   (deps    (:response small_fp.rsmt2) (:input small_fp.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff small_fp.expected small_fp.incremental)))
+
+; Full mode test
+
+(rule
+   (target  small_fp.full)
+   (deps    (:response small_fp.rsmt2) (:input small_fp.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff small_fp.expected small_fp.full)))
+
+
 ; Test for toIntegral-has-solution-259.smt2
 ; Incremental test
 
