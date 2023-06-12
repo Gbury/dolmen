@@ -51,7 +51,10 @@ type 'a group = {
 type defs = def group
 type decls = decl group
 
-type local = { hyps: term list; goals: term list }
+type local = {
+  hyps: term list;
+  goals: term list
+}
 
 (* Description of statements. *)
 type descr =
@@ -450,9 +453,10 @@ let case_split ?loc id t =
   mk ~id ?loc ~attrs (Antecedent t)
 
 let prove_goal ?loc id t =
-  mk ~id ?loc (Prove { hyps = []; goals = [t] })
+  mk ~id ?loc (Prove { hyps = []; goals = [t]; })
 
-let prove_sat ?loc ~name hyps = mk ?loc ~id:name (Prove {hyps; goals = []})
+let prove_sat ?loc ~name hyps =
+  mk ?loc ~id:name (Prove { hyps; goals = []; })
 
 let rewriting ?loc id l =
   mk ~id ?loc @@ Pack (List.map (fun t ->
@@ -479,11 +483,13 @@ let p_inccnf ?loc () =
 let clause ?loc l = mk_clause ?loc l
 
 let assumption ?loc l =
-  mk ?loc (Prove { hyps = l; goals = [] })
+  mk ?loc (Prove { hyps = l; goals = []; })
 
 (* Smtlib wrappers *)
-let check_sat ?loc hyps = mk ?loc (Prove {hyps; goals = []})
 let assert_ ?loc t = antecedent ?loc t
+
+let check_sat ?loc hyps =
+  mk ?loc (Prove { hyps; goals = []; })
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
