@@ -17,6 +17,9 @@ module Options : sig
   val map : ('a -> 'b) -> 'a option -> 'b option
   (** Map over options. *)
 
+  val map2 : ('a -> 'b -> 'c) -> 'a option -> 'b option -> 'c option
+  (** Map2 over options *)
+
 end
 
 (** List helpers *)

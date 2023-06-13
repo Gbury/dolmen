@@ -573,9 +573,11 @@ module type Tff = sig
   (** Given a constructor [c] and a term [t], returns a terms that evaluates
       to [true] iff [t] has [c] as head constructor. *)
 
+  val _true : t
+  (** The `true` literal. *)
+
   val _and : t list -> t
   (** Conjunction of formulas *)
-
 
   val lam : ty_var list * Var.t list -> t -> t
   (** Create a local function. *)
@@ -681,8 +683,11 @@ module type Ae_Base = sig
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
 
-  val in_interval : t -> bool * bool -> t -> t -> t
-  (** Semantic trigger: "in interval" check. *)
+  val multi_trigger : t list -> t
+  (** Create a multi trigger from a list of arbtirary terms. *)
+
+  val semantic_trigger : t -> t
+  (** Semantic triggers for alt-ergo. *)
 
   val maps_to : term_var -> t -> t
   (** Semantic trigger: maps to. *)
@@ -741,8 +746,8 @@ module type Ae_Arith = sig
   val real : string -> t
   (** Real literals *)
 
-  val _and : t list -> t
-  (** Conjunction of formulas *)
+  val semantic_trigger : t -> t
+  (** Semantic triggers for alt-ergo. *)
 
   module Int : sig
     include Ae_Arith_Common with type t := t
@@ -1219,6 +1224,9 @@ module type Smtlib_Base = sig
 
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
+
+  val multi_trigger : t list -> t
+  (** Create a multi trigger from a list of arbtirary terms. *)
 
 end
 
