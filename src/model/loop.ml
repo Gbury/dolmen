@@ -219,8 +219,9 @@ let unhandled_float_exponand_and_mantissa =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"unhandled-float-sizes"
     ~message:(fun fmt (ew, mw) ->
         Format.fprintf fmt
-          "The following size for exponand and mantissa are not currently
-          handled by dolmen: (%d, %d)." ew mw)
+          "%a:@ (%d, %d)." Format.pp_print_text
+          "The following size for exponand and mantissa are not currently \
+           handled by dolmen" ew mw)
     ~hints:[(fun _ -> Some (Format.dprintf "%a"
         Format.pp_print_text
           "This is a current implementation limitation of dolmen. \

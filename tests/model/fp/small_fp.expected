@@ -3,7 +3,7 @@ File "tests/model/fp/small_fp.smt2", line 2, character 0 to line 5, character 19
 3 |   (a (_ +zero 2 4))
 4 |   (b (_ -zero 2 4))
 5 |   ) (not (= a b))))
-Error The following size for exponand and mantissa are not currently
-          handled by dolmen: (2, 4).
+Error The following size for exponand and mantissa are not currently handled
+      by dolmen: (2, 4).
 Hint: This is a current implementation limitation of dolmen. Please report
   upstream if encounter this error, ^^
