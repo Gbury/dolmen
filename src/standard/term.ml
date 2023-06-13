@@ -48,6 +48,7 @@ type builtin =
   | Record_with
   | Record_access       (* record operations *)
 
+  | Multi_trigger       (* multi-triggers *)
   | Maps_to
   | In_interval of bool * bool
   | Check | Cut         (* alt-ergo builtins *)
@@ -144,6 +145,7 @@ let builtin_to_string = function
   | Record -> "record"
   | Record_with -> "record_with"
   | Record_access -> "."
+  | Multi_trigger -> "multi"
   | Maps_to -> "↦"
   | In_interval (b, b') ->
     let bracket = function true -> "]" | false -> "[" in
@@ -516,38 +518,39 @@ let arrow ?loc arg ret = fun_ty ?loc [arg] ret
 
 module S = Set.Make(Id)
 
-let rec free_vars acc t =
+let rec free_ids ~test acc t =
   match t.term with
   | Builtin _ -> acc
-  | Colon (t, t') -> free_vars (free_vars acc t) t'
-  | Symbol i -> if i.Id.ns = Namespace.Var then S.add i acc else acc
+  | Colon (t, t') -> free_ids ~test (free_ids ~test acc t) t'
+  | Symbol id -> if test id then S.add id acc else acc
   | App (t, l) ->
-    List.fold_left free_vars (free_vars acc t) l
+    List.fold_left (free_ids ~test) (free_ids ~test acc t) l
   | Binder (Arrow, l, t) ->
-    List.fold_left free_vars (free_vars acc t) l
+    List.fold_left (free_ids ~test) (free_ids ~test acc t) l
   | Binder (_, l, t) ->
-    let s = free_vars S.empty t in
+    let s = free_ids ~test S.empty t in
     let bound, free =
-      List.fold_left free_vars_bound (S.empty, S.empty) l
+      List.fold_left (free_ids_bound ~test) (S.empty, S.empty) l
     in
     let s' = S.filter (fun x -> not (S.mem x bound)) s in
     S.union acc (S.union s' free)
   | Match (t, l) ->
     let acc = List.fold_left (fun acc (pattern, branch) ->
-        let s = free_vars S.empty branch in
-        let bound = free_vars S.empty pattern in
+        let s = free_ids ~test S.empty branch in
+        let bound = free_ids ~test S.empty pattern in
         let s' = S.filter (fun x -> not (S.mem x bound)) s in
         S.union s' acc
       ) acc l in
-    free_vars acc t
+    free_ids ~test acc t
 
-and free_vars_bound (bound, free) t =
+and free_ids_bound ~test (bound, free) t =
   match t.term with
-  | Colon (v, ty) -> free_vars bound v, free_vars free ty
-  | _ -> free_vars bound t, free
+  | Colon (v, ty) -> free_ids ~test bound v, free_ids ~test free ty
+  | _ -> free_ids ~test bound t, free
 
 let fv t =
-  S.elements (free_vars S.empty t)
+  let test id = id.Id.ns = Namespace.Var in
+  S.elements (free_ids ~test S.empty t)
 
 
 (* {2 Wrappers for alt-ergo} *)
@@ -557,7 +560,8 @@ let bitv ?loc s = const ?loc Id.(mk (Value Bitvector) s)
 let cut = unary (builtin Cut)
 let check = unary (builtin Check)
 
-let trigger = and_
+let trigger ?loc l =
+  apply ?loc (builtin ?loc Multi_trigger ()) l
 
 let triggers_t = Id.(mk Attr "triggers")
 let triggers ?loc t = function
@@ -583,7 +587,6 @@ let maps_to ?loc id t =
 
 let in_interval ?loc t (lb, ls) (rb, rs) =
   tertiary (builtin (In_interval (ls, rs))) ?loc t lb rb
-
 
 (* {2 Wrappers for dimacs} *)
 

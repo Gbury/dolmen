@@ -175,6 +175,12 @@ module type Ae_Base = sig
   val unit : t
   (** Unit type *)
 
+  val int : t
+  (** The type of integers *)
+
+  val real : t
+  (** The type of reals *)
+
 end
 
 (** Signature required by types for typing ae's arithmetic *)

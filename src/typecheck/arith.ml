@@ -11,32 +11,69 @@ module Ae = struct
       (Type : Tff_intf.S)
       (Ty : Dolmen.Intf.Ty.Ae_Arith with type t := Type.Ty.t)
       (T : Dolmen.Intf.Term.Ae_Arith with type t := Type.T.t
-                                        and type ty := Type.Ty.t) = struct
+                                      and type ty := Type.Ty.t) = struct
 
-      type _ Type.err +=
+    type _ Type.err +=
       | Expected_arith_type : Type.Ty.t -> Term.t Type.err
 
-      let dispatch1 env (mk_int, mk_real) ast t =
-        let ty = T.ty t in
-        match Ty.view ty with
-        | `Int -> mk_int t
-        | `Real -> mk_real t
-        | _ -> Type._error env (Ast ast) (Expected_arith_type ty)
+    let dispatch1 env (mk_int, mk_real) ast t =
+      let ty = T.ty t in
+      match Ty.view ty with
+      | `Int -> mk_int t
+      | `Real -> mk_real t
+      | _ -> Type._error env (Ast ast) (Expected_arith_type ty)
 
-      let dispatch2 env (mk_int, mk_real) ast a b =
-        let tya = T.ty a in
-        match Ty.view tya with
-        | `Int -> mk_int a b
-        | `Real -> mk_real a b
-        | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
+    let dispatch2 env (mk_int, mk_real) ast a b =
+      let tya = T.ty a in
+      match Ty.view tya with
+      | `Int -> mk_int a b
+      | `Real -> mk_real a b
+      | _ -> Type._error env (Ast ast) (Expected_arith_type tya)
 
-      let promote_to_real t =
-        let ty = T.ty t in
-        match Ty.view ty with
-        | `Int -> T.Int.to_real t
-        | `Real -> t
-        (* this will result in a more precise typing error later, so it's okay *)
-        | _ -> t
+    let promote_to_real t =
+      let ty = T.ty t in
+      match Ty.view ty with
+      | `Int -> T.Int.to_real t
+      | `Real -> t
+      (* this will result in a more precise typing error later, so it's okay *)
+      | _ -> t
+
+    let parse_bound env ast =
+      match ast.Term.term with
+      | Symbol { ns = Term; name = Simple "?" } -> None
+      | _ ->
+        let t = Type.parse_term env ast in
+        Some t
+
+    let parse_in_interval env ~strict_lower ~strict_upper _ (ast, lower, upper) =
+      let t = Type.parse_term env ast in
+      let t_ty = T.ty t in
+      let x = Type.T.Var.mk "x" t_ty in
+      let x_t = Type.T.of_var x in
+      let mk strict a b =
+        match Ty.view t_ty with
+        | `Int -> if strict then T.Int.lt a b else T.Int.le a b
+        | `Real -> if strict then T.Real.lt a b else T.Real.le a b
+        | _ -> Type._error env (Ast ast) (Expected_arith_type t_ty)
+      in
+      let lower =
+        Misc.Options.map2 (mk strict_lower)
+          (parse_bound env lower) (Some x_t)
+      in
+      let upper =
+        Misc.Options.map2 (mk strict_upper)
+          (Some x_t) (parse_bound env upper)
+      in
+      match lower, upper with
+      | None, None -> Type.T._true
+      | None, Some b
+      | Some b, None ->
+        T.semantic_trigger @@
+        Type.T.letin [x, t] b
+      | Some b, Some b' ->
+        T.semantic_trigger @@
+        Type.T.letin [x, t] @@
+        Type.T._and [b; b']
 
       let parse env s =
         match s with
@@ -91,7 +128,7 @@ module Ae = struct
                   ); _
               } as l_st; r_st] ->
               Base.term_app_list (module Type) env s
-                T._and ast [l_st; Term.lt lr_st r_st]
+                Type.T._and ast [l_st; Term.lt lr_st r_st]
             | _ ->
               Base.term_app2_ast (module Type) env s
                 (dispatch2 env (T.Int.lt, T.Real.lt)) ast args
@@ -106,7 +143,7 @@ module Ae = struct
                   ); _
               } as l_st; r_st] ->
               Base.term_app_list (module Type) env s
-                T._and ast [l_st; Term.leq lr_st r_st]
+                Type.T._and ast [l_st; Term.leq lr_st r_st]
             | _ ->
               Base.term_app2_ast (module Type) env s
                 (dispatch2 env (T.Int.le, T.Real.le)) ast args
@@ -121,7 +158,7 @@ module Ae = struct
                   ); _
               } as l_st; r_st] ->
               Base.term_app_list (module Type) env s
-                T._and ast [l_st; Term.gt lr_st r_st]
+                Type.T._and ast [l_st; Term.gt lr_st r_st]
             | _ ->
               Base.term_app2_ast (module Type) env s
                 (dispatch2 env (T.Int.gt, T.Real.gt)) ast args
@@ -136,11 +173,18 @@ module Ae = struct
                   ); _
               } as l_st; r_st] ->
               Base.term_app_list (module Type) env s
-                T._and ast [l_st; Term.geq lr_st r_st]
+                Type.T._and ast [l_st; Term.geq lr_st r_st]
             | _ ->
               Base.term_app2_ast (module Type) env s
                 (dispatch2 env (T.Int.ge, T.Real.ge)) ast args
           )
+
+      (* In_interval semantic trigger *)
+      | Type.Builtin (Term.In_interval (strict_lower, strict_upper)) ->
+        Type.builtin_term (
+          Base.make_op3 (module Type) env s
+            (parse_in_interval env ~strict_lower ~strict_upper)
+        )
 
         (* Catch-all *)
         | _ -> `Not_found

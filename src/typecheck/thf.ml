@@ -1402,7 +1402,7 @@ module Make
     | Ty ty -> Ty.add_tag ty tag v
     | Term t -> T.add_tag t tag v
 
-  (* Expression parsing *)
+  (* Small helpers *)
   (* ************************************************************************ *)
 
   let expect_anything env =
@@ -1424,6 +1424,12 @@ module Make
     match ast.Ast.attr with
     | [] -> f ast
     | l -> apply_attr env (f ast) ast l
+
+  let with_var_infer env var_infer = { env with var_infer }
+  let with_sym_infer env sym_infer = { env with sym_infer }
+
+  (* Expression parsing *)
+  (* ************************************************************************ *)
 
   let rec parse_expr (env : env) t : res =
     let[@inline] aux t = parse_expr_aux env t in

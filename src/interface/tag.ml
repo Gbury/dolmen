@@ -34,8 +34,9 @@ module type Ae_Base = sig
   val named : string t
   (** A tag used to name formulas in alt-ergo. *)
 
-  val triggers : term list list t
-  (** Multi-triggers that can be added to quantified formulas *)
+  val triggers : term list t
+  (** Multi-triggers that can be added to quantified formulas.
+      Each term is a multi-trigger represented as a conjunction of triggers. *)
 
   val filters : term list t
   (** Filters that can be added to quantified formulas *)
@@ -55,9 +56,11 @@ module type Smtlib_Base = sig
     (** A tag used to named formulas in smtlib.
         Should correspond to the `:named` attribute. *)
 
-    val triggers : term list list t
+    val triggers : term list t
     (** Multi-triggers (typically annotated on the body of
-        a quantified formula and not the quantified formula itself). *)
+        a quantified formula and not the quantified formula itself).
+        Each term is a multi-trigger represented as a
+        conjunction of triggers. *)
 
     val rwrt : unit t
     (** A flag (i.e. unit tag), indicating that the tagged term/formula

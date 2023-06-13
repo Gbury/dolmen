@@ -8,6 +8,11 @@ module Options = struct
     | None -> None
     | Some x -> Some (f x)
 
+  let map2 f x y =
+    match x, y with
+    | None, _ | _, None -> None
+    | Some a, Some b -> Some (f a b)
+
 end
 
 (* List helpers *)

@@ -94,22 +94,23 @@ type _ t +=
       guarded by a clause verifying the rational is an integer). *)
 
 type _ t +=
-  | In_interval of bool * bool
-  (** [In_interval (b1, b2): Int -> Int -> Int -> Prop]:
-      Tests whether or not an interger is in an interval, [b1] (resp. [b2])
-      determines if the interval is open on the lower bound
-      (resp. upper bound).
-
-      [warning:] It is an Alt-Ergo semantic trigger that should only be
-      allowed inside theories. *)
+  | Multi_trigger
+  (** [Multi_trigger: 'a1 ... 'an. 'a1 -> ... -> 'an -> Prop]:
+      Create a multi trigger: it takes an arbitrarily long list
+      of terms of arbitrary types. *)
 
   | Maps_to
-  (** [Maps_to: 'term_var -> 'term -> 'term]:
+  (** [Maps_to: 'term_var -> 'term -> Prop]:
       Used in semantic triggers for floating point arithmetic.
       See [alt-ergo/src/preludes/fpa-theory-2017-01-04-16h00.ae].
 
       [warning:] It is an Alt-Ergo semantic trigger that should only be
       allowed inside theories. *)
+
+  | Semantic_trigger
+  (** [Semantic_trigger: Prop -> Prop]:
+      Denote that its argument is a semantic trigger
+      (used only by Alt-ergo currently). *)
 
 (** {2 Boolean Builtins} *)
 (*  ************************************************************************* *)

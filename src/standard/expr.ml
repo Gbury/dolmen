@@ -1895,9 +1895,17 @@ module Term = struct
       mk' ~builtin:Builtin.Coercion "coerce"
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
-    let in_interval (b1, b2) = mk'
-        ~name:"in_interval" ~builtin:(Builtin.In_interval (b1, b2))
-        "InInterval" [] [Ty.int; Ty.int; Ty.int] Ty.prop
+    let multi_trigger =
+      with_cache ~cache:(Hashtbl.create 5) (fun n ->
+          let vars = List.init n (fun _ -> Ty.Var.mk "_") in
+          let tys = List.map Ty.of_var vars in
+          mk' ~name:"multi-trigger" ~builtin:Builtin.Multi_trigger
+            "Multi_trigger" vars tys Ty.prop
+        )
+
+    let semantic_trigger =
+      mk' ~name:"sem_trig" ~builtin:Builtin.Semantic_trigger
+        "Semantic_trigger" [] [Ty.prop] Ty.prop
 
     let maps_to =
       let a = Ty.Var.mk "alpha" in
@@ -3140,9 +3148,14 @@ module Term = struct
       in
       mk_record aux l
 
+  (* Triggers *)
+  let multi_trigger l =
+    let tys = List.map ty l in
+    apply_cst (Const.multi_trigger (List.length l)) tys l
+
   (* Alt-Ergo's semantic triggers *)
-  let in_interval t (b1, b2) t1 t2 =
-    apply_cst (Const.in_interval (b1, b2)) [] [t; t1; t2]
+  let semantic_trigger trig =
+    apply_cst Const.semantic_trigger [] [trig]
 
   let maps_to tv t =
     let ntv = of_var tv in

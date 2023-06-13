@@ -448,14 +448,23 @@ module type Formulas = sig
     builtin_symbols -> env
   (** Create a new environment. *)
 
+  val state : env -> state
+  (** Get the mutable state for an env. *)
+
+
+  (** {2 Inference for vars and syms} *)
+
   val var_infer : env -> var_infer
   (** Getter for an env's var infer. *)
+
+  val with_var_infer : env -> var_infer -> env
+  (** Set the variable inference configuation *)
 
   val sym_infer : env -> sym_infer
   (** Getter for an env's sym infer. *)
 
-  val state : env -> state
-  (** Get the mutable state for an env. *)
+  val with_sym_infer : env -> sym_infer -> env
+  (** Set the symbol inference configuration *)
 
 
   (** {2 Errors & Warnings} *)

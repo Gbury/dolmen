@@ -891,8 +891,11 @@ module Term : sig
     val coerce : t
     (** Type coercion. *)
 
-    val in_interval : bool * bool -> t
-    (** Interger interval inclusion. *)
+    val multi_trigger : int -> t
+    (** Multi_triggers, indexed by the number of triggers. *)
+
+    val semantic_trigger : t
+    (** Semantic_triggers. *)
 
     val maps_to : t
     (** Mapping (used in triggers).  *)
@@ -1815,10 +1818,15 @@ module Term : sig
   val subst : ?fix:bool -> Ty.subst -> subst -> t -> t
   (** Substitution over terms. *)
 
+  (* Triggers *)
+
+  val multi_trigger : t list -> t
+  (** Create a multi trigger from a list of arbtirary terms. *)
+
   (* Alt-Ergo's semantic triggers *)
 
-  val in_interval : t -> bool * bool -> t -> t -> t
-  (** Interger interval inclusion. *)
+  val semantic_trigger : t -> t
+  (** Semantic triggers. *)
 
   val maps_to : Var.t -> t -> t
   (** Variable mapping to term. *)

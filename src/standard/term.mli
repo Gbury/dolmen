@@ -123,6 +123,8 @@ type builtin =
   | Record_access
   (** Record field access *)
 
+  | Multi_trigger
+  (* Multi-triggers *)
   | Maps_to
   (** Mapping; used in Alt-ergo triggers. *)
   | In_interval of bool * bool
@@ -167,7 +169,7 @@ type binder =
   *)
   | Let_par
   (** Similar to [Let_seq]; except that the list of bindings should be considered all
-      bound at the same time/level/scope. 
+      bound at the same time/level/scope.
       More precisely, for [Let_seq], the list of bindings is to be understood
       sequentially (i.e. [Let_seq (b1 :: b2 ...)] is semantically the same as
       [Let_seq b1 (Let_seq b2 (..))]. For [Let_par], the list of bindings all
@@ -241,6 +243,15 @@ val ite_t : ?loc:location -> unit -> t
 
 
 (** {2 Term inspection} *)
+
+module S : Set.S with type elt = Id.t
+(** Sets of Ids *)
+
+val free_ids :
+  test:(Id.t -> bool) ->
+  S.t -> t -> S.t
+(** Returns the set of identifiers that respect the test:predicate function,
+    and occurs free in the term (i.e. not bound by a binder). *)
 
 val fv : t -> Id.t list
 (** Return the list of free variables (i.e currently, Ids that are in
