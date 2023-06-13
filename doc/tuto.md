@@ -103,7 +103,7 @@ hyp_1[38-60]:
   hyp: 2 = (1 + x)
 
 prove_1[61-72]:
-  solve-assuming:
+  solve:  assuming:
 
 - : unit = ()
 # (* on errors, the default behaviour of Dolmen_loop.State is to print the error

@@ -211,7 +211,9 @@ module type S = sig
   (** The type of top-level assertion statements *)
 
   type solve = [
-    | `Solve of formula list
+    | `Solve of formula list * formula list
+    (** [`Solve (hyps, goals)] represents a sequent with local hypotheses [hyps]
+        and local goals [goals]. *)
   ]
   (** Top-level solve instruction *)
 

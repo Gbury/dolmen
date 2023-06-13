@@ -138,6 +138,8 @@ module type Logic = sig
   val prove_goal : ?loc:location -> id -> term -> t
   (** Goal declaration. *)
 
+  val prove_sat : ?loc:location -> name:id -> term list -> t
+  (** Check-sat declaration. *)
 
   (** {2 Dimacs&iCNF Statements} *)
 
@@ -169,7 +171,7 @@ module type Logic = sig
 
   val check_sat   : ?loc:location -> term list -> t
   (** Directive that instructs the prover to solve the current set of assertions,
-      undr some local assumptions. *)
+      under some local assumptions. *)
 
   val set_logic   : ?loc:location -> string -> t
   (** Set the logic to be used for solving. *)

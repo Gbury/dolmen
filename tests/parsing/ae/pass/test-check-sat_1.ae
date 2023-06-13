@@ -1,0 +1,5 @@
+logic x: int
+logic f: int -> int
+
+check_sat g: f(x) = f(x+1)
+

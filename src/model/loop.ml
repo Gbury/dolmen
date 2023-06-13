@@ -629,16 +629,20 @@ module Make
     let clause = { file; loc; contents; } in
     check_acc st (Clause clause)
 
-  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc l =
-    let local_hyps = List.map (fun contents -> { file; loc; contents; }) l in
+  let check_solve st ~(file : _ Dolmen_loop.State.file) ~loc local_hyps local_goals =
+    (* **0** Evaluate local hyps and goals *)
     let st =
       List.fold_left (fun st local_hyp ->
-          check_acc st (Hyp local_hyp)
+          check_acc st (Hyp { file; loc; contents = local_hyp; })
         ) st local_hyps
     in
-    let t = State.get check_state st in
     let st =
-      match t.answer with
+      List.fold_left (fun st local_goal ->
+          check_acc st (Goal { file; loc; contents = local_goal; })
+        ) st local_goals
+    in
+    let st =
+      match (State.get check_state st).answer with
       | Sat { parsed; model; delayed; evaluated_goals; } ->
         (* **1** Warn about parsed and untyped model definitions *)
         let st =
@@ -671,6 +675,7 @@ module Make
         end
       | _ -> st
     in
+    (* **4** Reset the state *)
     reset st
 
   (* Pipe/toplevel function *)
@@ -683,21 +688,21 @@ module Make
         let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
         match c.contents with
         | #Typer_Pipe.exit
-          | #Typer_Pipe.decls
-          | #Typer_Pipe.get_info
-          | #Typer_Pipe.set_info -> st
-          | #Typer_Pipe.stack_control ->
-            State.error ~file ~loc st assertion_stack_not_supported ()
-          | `Defs defs ->
-            check_defs ~file ~loc st defs
-          | `Hyp contents ->
-            check_hyps ~file ~loc st contents
-          | `Goal contents ->
-            check_goal ~file ~loc st contents
-          | `Clause contents ->
-            check_clause ~file ~loc st contents
-          | `Solve l ->
-            check_solve ~file ~loc st l
+        | #Typer_Pipe.decls
+        | #Typer_Pipe.get_info
+        | #Typer_Pipe.set_info -> st
+        | #Typer_Pipe.stack_control ->
+          State.error ~file ~loc st assertion_stack_not_supported ()
+        | `Defs defs ->
+          check_defs ~file ~loc st defs
+        | `Hyp contents ->
+          check_hyps ~file ~loc st contents
+        | `Goal contents ->
+          check_goal ~file ~loc st contents
+        | `Clause contents ->
+          check_clause ~file ~loc st contents
+        | `Solve (hyps, goals) ->
+          check_solve ~file ~loc st hyps goals
       else
         st
     in

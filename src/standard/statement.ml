@@ -51,6 +51,11 @@ type 'a group = {
 type defs = def group
 type decls = decl group
 
+type local = {
+  hyps: term list;
+  goals: term list
+}
+
 (* Description of statements. *)
 type descr =
   | Pack of t list
@@ -61,7 +66,7 @@ type descr =
 
   | Plain of term
 
-  | Prove of term list
+  | Prove of local
   | Clause of term list
   | Antecedent of term
   | Consequent of term
@@ -154,9 +159,10 @@ let rec pp_descr b = function
   | Plain t -> Printf.bprintf b "plain: %a" Term.pp t
 
   | Prove [] -> Printf.bprintf b "Prove"
-  | Prove l ->
-    Printf.bprintf b "Prove assuming: %a"
-      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" && " ~pp:Term.pp) l
+  | Prove { hyps; goals } ->
+    Printf.bprintf b "Prove: %a, assuming: %a"
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" || " ~pp:Term.pp) goals
+      (Misc.pp_list ~pp_sep:Buffer.add_string ~sep:" && " ~pp:Term.pp) hyps
 
   | Clause l ->
     Printf.bprintf b "clause: %a"
@@ -261,10 +267,17 @@ let rec print_descr fmt = function
 
   | Plain t -> Format.fprintf fmt "@[<hov 2>plain: %a@]" Term.print t
 
-  | Prove [] -> Format.fprintf fmt "prove"
-  | Prove l ->
+  | Prove { hyps = []; goals = [] } -> Format.fprintf fmt "prove"
+  | Prove { hyps = []; goals } ->
+      Format.fprintf fmt "@[<hov 2>prove:@ %a@]"
+        (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) goals
+  | Prove { hyps; goals = [] } ->
     Format.fprintf fmt "@[<hov 2>prove-assuming:@ %a@]"
-      (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) l
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) hyps
+  | Prove { hyps; goals } ->
+    Format.fprintf fmt "@[<hov 2>prove:@ %a@ assuming:@ %a@]"
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" ||@ " ~print:Term.print) goals
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" &&@ " ~print:Term.print) hyps
 
   | Clause l ->
     Format.fprintf fmt "@[<hov 2>clause:@ %a@]"
@@ -326,7 +339,7 @@ let push ?loc i = mk ?loc (Push i)
 let reset_assertions ?loc () = mk ?loc Reset_assertions
 
 (* Assumptions and fact checking *)
-let prove ?loc () = mk ?loc (Prove [])
+let prove ?loc () = mk ?loc (Prove { hyps = []; goals = [] })
 let mk_clause ?loc ?attrs l = mk ?loc ?attrs (Clause l)
 let consequent ?loc ?attrs t = mk ?loc ?attrs (Consequent t)
 let antecedent ?loc ?attrs t = mk ?loc ?attrs (Antecedent t)
@@ -440,10 +453,10 @@ let case_split ?loc id t =
   mk ~id ?loc ~attrs (Antecedent t)
 
 let prove_goal ?loc id t =
-  mk ~id ?loc @@ Pack [
-    mk ~id ?loc (Consequent t);
-    mk (Prove []);
-  ]
+  mk ~id ?loc (Prove { hyps = []; goals = [t]; })
+
+let prove_sat ?loc ~name hyps =
+  mk ?loc ~id:name (Prove { hyps; goals = []; })
 
 let rewriting ?loc id l =
   mk ~id ?loc @@ Pack (List.map (fun t ->
@@ -470,11 +483,13 @@ let p_inccnf ?loc () =
 let clause ?loc l = mk_clause ?loc l
 
 let assumption ?loc l =
-  mk ?loc (Prove l)
+  mk ?loc (Prove { hyps = l; goals = []; })
 
 (* Smtlib wrappers *)
-let check_sat ?loc l = mk ?loc (Prove l)
 let assert_ ?loc t = antecedent ?loc t
+
+let check_sat ?loc hyps =
+  mk ?loc (Prove { hyps; goals = []; })
 
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in

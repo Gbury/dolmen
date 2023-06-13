@@ -176,7 +176,6 @@ module type Statement = sig
   (** Solve the current set of assertions for satisfiability,
       under the local assumptions specified. *)
 
-
   (** Models *)
 
   val get_model : ?loc:location -> unit -> t

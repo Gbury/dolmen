@@ -229,4 +229,7 @@ module type Statement = sig
   val prove_goal : ?loc:location -> id -> term -> t
   (** Goal declaration. *)
 
+  val prove_sat : ?loc:location -> name:id -> term list -> t
+  (** Check-sat declaration. *)
+
 end
