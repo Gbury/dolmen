@@ -154,8 +154,10 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_sdiv n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
-        if Z.equal b Z.zero then extract n Z.one
-        else extract n (Z.div (sbitv n a) b))
+        let a = sbitv n a in
+        if Z.equal b Z.zero then
+          if Z.sign a >= 0 then extract n Z.minus_one else extract n Z.one
+        else extract n (Z.div a b))
   | B.Bitv_srem n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
