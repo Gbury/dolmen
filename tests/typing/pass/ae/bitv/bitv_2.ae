@@ -1,0 +1,19 @@
+
+logic a: bitv[8]
+logic b: bitv[8]
+
+goal g1:
+  repeat(2,zero_extend(2, a)) =
+  sign_extend(4, rotate_right(2, b) @ rotate_right(2, a))
+
+goal g2:
+  bvxnor ((bvxor ((bvnor ((bvnand(a, b)), b)), a)), b) =
+  bvashr (bvlshr (bvshl (bvor ((bvand (a, (bvnot (b)))), b), a), b), a)
+
+goal g3:
+  bvsmod (bvadd (bvneg (a), bvsub (bvmul (a, b), b)), a) =
+  bvudiv (repeat (8, bvcomp (a, b)), bvurem (bvsdiv (a, b), bvsrem(a, b)))
+
+goal g4:
+  bvult (a, b) and bvule (a, b) and bvugt (a, b) and bvuge (a, b) and
+  bvslt (a, b) and bvsle (a, b) and bvsgt (a, b) and bvsge (a, b)
