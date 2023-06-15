@@ -24,6 +24,8 @@ next
   definitions in Alt-Ergo syntax (PR #147, fixes issue #144)
 - Add support for hexadecimal floats in Alt-Ergo syntax (PR #148, fixes
   issue #145)
+- Add local goals to the `Prove` statement (PR#140)
+- Add a check-sat/prove-sat statement to ae's language (PR#140)
 
 ### Typing
 
