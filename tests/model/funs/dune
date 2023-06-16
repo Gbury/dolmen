@@ -97,6 +97,38 @@
   (action (diff fun_3.expected fun_3.full)))
 
 
+; Test for issue_163.smt2
+; Incremental test
+
+(rule
+   (target  issue_163.incremental)
+   (deps    (:response issue_163.rsmt2) (:input issue_163.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff issue_163.expected issue_163.incremental)))
+
+; Full mode test
+
+(rule
+   (target  issue_163.full)
+   (deps    (:response issue_163.rsmt2) (:input issue_163.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff issue_163.expected issue_163.full)))
+
+
 ; Test for out_of_order.smt2
 ; Incremental test
 

@@ -1,0 +1,6 @@
+sat
+(
+  (define-fun x156 () x152 (as @x152_34 x152))
+  (define-fun x53 () x152 (as @x152_19 x152))
+  (define-fun x310 () x152 (as @x152_19 x152))
+)

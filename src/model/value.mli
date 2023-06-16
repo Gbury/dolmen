@@ -13,6 +13,8 @@ exception Extraction_failed of t * any_ops
 (* Creating/extracting values *)
 (* ************************************************************************* *)
 
+val dummy : t
+
 val mk : ops:'a ops -> 'a -> t
 
 val extract : ops:'a ops -> t -> 'a option
