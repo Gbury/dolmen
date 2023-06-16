@@ -329,6 +329,9 @@ let annot = Term.apply
 let mk ?id ?(loc=Loc.no_loc) ?(attrs=[]) descr =
   { id; descr; loc; attrs; }
 
+let add_attrs attrs t =
+  { t with attrs = attrs @ t.attrs; }
+
 (* Pack *)
 let pack ?id ?loc ?attrs l =
   mk ?id ?loc ?attrs (Pack l)

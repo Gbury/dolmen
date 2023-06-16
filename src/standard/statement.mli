@@ -171,6 +171,9 @@ include Dolmen_intf.Stmt.Logic
 
 (** {2 Additional functions} *)
 
+val add_attrs : term list -> t -> t
+(** Add some attributes to a statement. *)
+
 val mk_decls :
   ?loc:location -> ?attrs:term list -> recursive:bool -> decl list -> t
 (** Create a group of declarations *)

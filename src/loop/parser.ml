@@ -376,9 +376,13 @@ module Make(State : State.S) = struct
 
   let expand st c =
     let ret = match c with
-      | { S.descr = S.Pack l; _ } ->
+      | { S.descr = S.Pack l; attrs; _ } ->
         let file = State.get State.logic_file st in
-        st, `Gen (merge, wrap_parser ~file (Gen.of_list l))
+        let g =
+          Gen.of_list l
+          |> Gen.map (S.add_attrs attrs)
+        in
+        st, `Gen (merge, wrap_parser ~file g)
       (* TODO: filter the statements by passing some options *)
       | { S.descr = S.Include file; _ } ->
         let logic_file = State.get State.logic_file st in
