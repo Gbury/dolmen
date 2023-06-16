@@ -25,10 +25,6 @@ val empty : t
 val print : Format.formatter -> t -> unit
 (** Print function *)
 
-val vars : t -> Value.t V.t
-
-val csts : t -> Value.t C.t
-
 val disjoint_union : t -> t -> t
 (** Disjoint union *)
 

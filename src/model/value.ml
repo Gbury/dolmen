@@ -54,6 +54,9 @@ let[@inline] mk (type a) ~(ops: a ops) (x : a) =
   let (module V) = ops in
   Value (V.Val, ops, x)
 
+let dummy =
+  let ops = ops ~compare ~print:(fun fmt () -> Format.fprintf fmt "()") () in
+  mk ~ops ()
 
 (* Std operations *)
 (* ************************************************************************* *)

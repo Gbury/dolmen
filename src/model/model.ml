@@ -27,9 +27,6 @@ type t = {
 let empty =
   { vars = V.empty; csts = C.empty; }
 
-let vars { vars; _ } = vars
-let csts { csts; _ } = csts
-
 let print fmt model =
   Format.fprintf fmt "@[<hv>@[<hv 2>{";
   V.iter (fun var value ->
