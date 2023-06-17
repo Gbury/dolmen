@@ -34,7 +34,7 @@ let preprocess_uri uri =
   else uri
 
 let mk_prelude files =
-  List.map (
+  List.rev_map (
     fun f ->
       let dir, file = Dolmen_loop.State.split_input (`File f) in
       Dolmen_loop.State.mk_file dir file

@@ -38,6 +38,18 @@ let finally st e =
 let process preludes path opt_contents =
   let dir = Filename.dirname path in
   let file = Filename.basename path in
+  let preludes =
+    let rec aux l =
+      match l with
+      | [] -> []
+      | State.{ dir = d; source = `File f; _ } :: _
+        when String.equal f file && String.equal dir d -> []
+      (* When the opened file is one of the prelude files, ignore it and the
+         following prelude files. *)
+      | h :: t -> h :: aux t
+    in
+    aux preludes
+  in
   let l_file : _ State.file = {
     lang = None; mode = None; dir;
     loc = Dolmen.Std.Loc.mk_file "";
