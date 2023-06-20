@@ -8,17 +8,17 @@ exception ServerError of string
 let parse_settings settings =
   match settings with
   | `Assoc [ "preludes", `List l ] ->
-    List.fold_left (
-      fun acc s ->
+    List.map (
+      fun s ->
         match s with
-        | `String f -> f :: acc
+        | `String f -> f
         | _ ->
           raise (ServerError (
               Format.asprintf
                 "Expected a path to a prelude file as a string, \
                  instead got %a@."
                 Yojson.Safe.pp s))
-    ) [] l
+    ) l
   | _ ->
     raise (ServerError (
         Format.asprintf
@@ -34,7 +34,7 @@ let preprocess_uri uri =
   else uri
 
 let mk_prelude files =
-  List.rev_map (
+  List.map (
     fun f ->
       let dir, file = Dolmen_loop.State.split_input (`File f) in
       Dolmen_loop.State.mk_file dir file
