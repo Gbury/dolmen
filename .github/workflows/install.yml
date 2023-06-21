@@ -107,6 +107,15 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
+    # For windows, pin to a git repo to avoid a problem with
+    # tar unable to correctly handle symlinks to directories in
+    # archives when they are in the wrong order
+    # The branch win32 also includes the patch for ocaml that comes from
+    # the mingw opam repo, cf
+    # https://github.com/fdopen/opam-repository-mingw/blob/opam2/packages/ocamlbuild/ocamlbuild.0.14.2/files/ocamlbuild-0.14.2.patch
+    - name: Pin ocamlbuild (windows-only)
+      run: opam pin add ocamlbuild https://github.com/Gbury/ocamlbuild.git#win32
+      if: matrix.os == 'windows-latest'
     # Install dependencies
     - name: Install dependencies
       run: opam install . --deps-only --with-test --with-doc
