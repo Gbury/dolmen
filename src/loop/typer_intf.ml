@@ -186,6 +186,7 @@ module type S = sig
     id          : Dolmen.Std.Id.t;
     loc         : Dolmen.Std.Loc.t;
     contents    : 'a;
+    attrs       : Dolmen.Std.Term.t list;
   }
   (** Wrapper around statements. It records implicit type declarations. *)
 
