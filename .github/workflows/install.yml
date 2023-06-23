@@ -99,13 +99,18 @@ jobs:
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
       with:
+        # disabling the automatic opam pin because this forces the
+        # installation of dependencies, and in some cases (e.g. windows,
+        # see later actions) we need to do some other things (such as
+        # adding repos) before installing dependencies.
+        opam-pin: false
         ocaml-compiler: ${{ matrix.ocaml-version }}
     # Debug
     - name: Debugging
       run: opam switch list-available
       if: always ()
     # If on windows: add the official repo as a second repo.
-    # THis is ebcause the current setup-ocaml will set the
+    # This is ebcause the current setup-ocaml will set the
     # opam-repository-mingw as the repo, and it has not been
     # updated since august 2021. Still, since it contains fixes
     # specific to windows for some packages, it's useful to have,
