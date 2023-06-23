@@ -104,6 +104,15 @@ jobs:
     - name: Debugging
       run: opam switch list-available
       if: always ()
+    # If on windows: add the official repo as a second repo.
+    # THis is ebcause the current setup-ocaml will set the
+    # opam-repository-mingw as the repo, and it has not been
+    # updated since august 2021. Still, since it contains fixes
+    # specific to windows for some packages, it's useful to have,
+    # but we also need the official repo for recent packages
+    - name: Add official repo (windows only)
+      run: opam repo add upstream https://opam.ocaml.org --rank 2 --all-switches --set-default
+      if: matrix.os == 'windows-latest'
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
