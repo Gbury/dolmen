@@ -2576,11 +2576,11 @@ module Term = struct
           )
       let to_ubv =
         with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.To_ubv (bv,e,s)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.To_ubv (e,s,bv)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
       let to_sbv =
         with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.To_sbv (bv,e,s)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.To_sbv (e,s,bv)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
 
     end

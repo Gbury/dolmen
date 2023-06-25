@@ -37,7 +37,10 @@ let is_unsigned_integer size z =
 let ubitv n t =
   let t = Value.extract_exn ~ops t in
   (* the typing of expressions should guarantee that this never happens *)
-  if not (is_unsigned_integer n t) then invalid_arg "not unsigned integer";
+  if not (is_unsigned_integer n t) then
+    (invalid_arg
+      (Format.asprintf "%a is not an unsigned integer of size %i"
+         Z.pp_print t n));
   t
 
 let from_bitv n t =
