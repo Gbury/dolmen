@@ -37,7 +37,10 @@ let is_unsigned_integer size z =
 let ubitv n t =
   let t = Value.extract_exn ~ops t in
   (* the typing of expressions should guarantee that this never happens *)
-  if not (is_unsigned_integer n t) then invalid_arg "not unsigned integer";
+  if not (is_unsigned_integer n t) then
+    (invalid_arg
+      (Format.asprintf "%a is not an unsigned integer of size %i"
+         Z.pp_print t n));
   t
 
 let from_bitv n t =
@@ -154,8 +157,10 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_sdiv n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
-        if Z.equal b Z.zero then extract n Z.one
-        else extract n (Z.div (sbitv n a) b))
+        let a = sbitv n a in
+        if Z.equal b Z.zero then
+          if Z.sign a >= 0 then extract n Z.minus_one else extract n Z.one
+        else extract n (Z.div a b))
   | B.Bitv_srem n ->
     op2 ~cst ~size:n (fun a b ->
         let b = sbitv n b in
