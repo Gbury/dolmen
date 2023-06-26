@@ -14,6 +14,9 @@
 (assert (= #b1 (bvudiv #b0 #b0)))
 (assert (= #b1 (bvudiv #b1 #b0)))
 (assert (= #b11 (bvudiv #b11 #b00)))
+(assert (= #b11 (bvudiv #b00 #b00)))
+(assert (= #b11 (bvudiv #b01 #b00)))
+(assert (= #b11 (bvudiv #b00 #b00)))
 
 (declare-fun a () (_ BitVec 2))
 (assert (= #b11 (bvudiv #b00 a)))
@@ -22,12 +25,18 @@
 ;;;;; remainder by zero evaluates to the first operand.
 (assert (= #b0 (bvurem #b0 #b0)))
 (assert (= #b1 (bvurem #b1 #b0)))
-(assert (= #b11 (bvudiv #b11 #b00)))
+(assert (= #b11 (bvurem #b11 #b00)))
+(assert (= #b00 (bvurem #b00 #b00)))
+(assert (= #b01 (bvurem #b01 #b00)))
+(assert (= #b00 (bvurem #b00 #b00)))
 
-;;;;; bvsdiv by zero evaluates to first operand if it's positive, otherwise 1.
+;;;;; bvsdiv by zero evaluates to -1 if it's positive, otherwise 1.
 (assert (= #b1 (bvsdiv #b0 #b0)))
 (assert (= #b1 (bvsdiv #b1 #b0)))
 (assert (= #b01 (bvsdiv #b11 #b00)))
+(assert (= #b01 (bvsdiv #b10 #b00)))
+(assert (= #b11 (bvsdiv #b01 #b00)))
+(assert (= #b11 (bvsdiv #b00 #b00)))
 
 ;;;;; bvsrem by zero evaluates to the first operand.
 (assert (= #b0 (bvsrem #b0 #b0)))
