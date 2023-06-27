@@ -23,6 +23,7 @@ let ops =
 module E = Dolmen.Std.Expr
 module B = Dolmen.Std.Builtin
 
+exception Real_to_fp of { a : Real.A.t; }
 exception Unhandled_exponand_and_mantissa of { ew : int; mw : int; }
 
 let mk f = Value.mk ~ops f
@@ -128,9 +129,10 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Real_to_fp (ew, prec) ->
     Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m r ->
         check ~ew ~mw:(prec - 1);
-        match Real.A.to_q  @@ Real.get r with
+        let a = Real.get r in
+        match Real.A.to_q a with
         | Some q -> mk (f_of_q ~ew ~mw:(prec - 1) (mode m) q)
-        | None -> invalid_arg "not implemented: algebraic number to floating point"))
+        | None -> raise (Real_to_fp { a })))
  | B.Fp_to_fp (_ew1, _prec1, ew2, prec2) ->
     Some (Fun.mk_clos @@ Fun.fun_2 ~cst
             (fun m f1 -> mk @@ f_round ~ew:ew2 ~mw:(prec2 - 1) (mode m) (fp f1)))

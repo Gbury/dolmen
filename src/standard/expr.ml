@@ -2111,51 +2111,42 @@ module Term = struct
             mk' ~builtin:(Builtin.Decimal s) s [] [] Ty.real
           )
 
-      let algebraic_ordered_root =
-        let cache = Hashtbl.create 113 in
-        fun coeffs order ->
-            with_cache ~cache (fun (coeffs,order) ->
-              let algebraic = "algebraic" in
-              let len = List.fold_left (fun acc x -> 1 + acc + String.length x) 0 coeffs
-              + String.length order
-              + String.length algebraic
-              + 3
-            in
-              let b = Buffer.create len in
-              Buffer.add_string b algebraic;
-              Buffer.add_char b '(';
-              List.iter (fun x -> Buffer.add_string b x; Buffer.add_char b ';') coeffs;
-              Buffer.add_char b '|';
-              Buffer.add_string b order;
-              Buffer.add_char b ')';
-              let s = Buffer.contents b in
-                mk' ~builtin:(Builtin.Algebraic (Ordered_root {coeffs;order})) s [] [] Ty.real
-              ) (coeffs,order)
+      let print_rat fmt (num,denom) =
+        Format.fprintf fmt "%s / %s" num denom
 
-              let algebraic_enclosed_root =
-                let cache = Hashtbl.create 113 in
-                fun coeffs min max ->
-                    with_cache ~cache (fun (coeffs,((min_num,min_den)as min),((max_num,max_den) as max)) ->
-                      let algebraic = "algebraic" in
-                      let len = List.fold_left (fun acc x -> 1 + acc + String.length x) 0 coeffs
-                      + String.length min_num + String.length min_den
-                      + String.length max_num + String.length max_den
-                      + String.length algebraic
-                      + 6
-                    in
-                      let b = Buffer.create len in
-                      Buffer.add_string b algebraic;
-                      Buffer.add_char b '(';
-                      List.iter (fun x -> Buffer.add_string b x; Buffer.add_char b ';') coeffs;
-                      Buffer.add_char b '|';
-                      Buffer.add_string b min_num; Buffer.add_char b '/'; Buffer.add_string b min_den;
-                      Buffer.add_char b ',';
-                      Buffer.add_string b max_num; Buffer.add_char b '/'; Buffer.add_string b max_den;
-                      Buffer.add_char b ')';
-                      let s = Buffer.contents b in
-                        mk' ~builtin:(Builtin.Algebraic (Enclosed_root {coeffs;min;max})) s [] [] Ty.real
-                        ) (coeffs,min,max)
-        
+      let print_coef fmt c =
+        let n = String.length c in
+        assert (n > 0);
+        if c.[0] = '-'
+        then Format.fprintf fmt "- %s" (String.sub c 1 (n - 1))
+        else Format.fprintf fmt "+ %s" c
+
+      let print_monomial fmt (c, n) =
+        if c = "0" then ()
+        else if n <= 0 then print_coef fmt c
+        else Format.fprintf fmt "%a x^%d" print_coef c n
+
+      let print_polynomial fmt l =
+        let rec aux fmt n = function
+          | [] -> ()
+          | c :: r -> print_monomial fmt (c, n); aux fmt (n + 1) r
+        in
+        aux fmt 0 l
+
+      let algebraic_ordered_root =
+        with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,order) ->
+            let s = Format.asprintf "root<%s, %a>" order print_polynomial coeffs in
+            mk' ~builtin:(Builtin.Algebraic (Ordered_root {coeffs;order})) s [] [] Ty.real
+          )
+
+      let algebraic_enclosed_root =
+        with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,min,max) ->
+            let s =
+              Format.asprintf "root<%a,%a,%a>"
+                print_rat min print_rat max print_polynomial coeffs
+            in
+            mk' ~builtin:(Builtin.Algebraic (Enclosed_root {coeffs;min;max})) s [] [] Ty.real
+          )
 
       let minus = mk'
           ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Real)
@@ -3338,9 +3329,9 @@ module Term = struct
   module Real = struct
     let mk = real
     let algebraic_ordered_root coeffs order =
-      apply_cst (Const.Real.algebraic_ordered_root coeffs order) [] []
+      apply_cst (Const.Real.algebraic_ordered_root (coeffs, order)) [] []
     let algebraic_enclosed_root coeffs min max =
-      apply_cst (Const.Real.algebraic_enclosed_root coeffs min max) [] []
+      apply_cst (Const.Real.algebraic_enclosed_root (coeffs, min, max)) [] []
     let div' = Const.Real.div
     let minus t = apply_cst Const.Real.minus [] [t]
     let add a b = apply_cst Const.Real.add [] [a; b]

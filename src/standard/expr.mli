@@ -1066,18 +1066,21 @@ module Term : sig
 
     (** A module for real constant symbols that occur in terms. *)
     module Real : sig
+
       val real : string -> t
       (** Real literals. *)
 
-      val algebraic_ordered_root : string list -> string -> t
+      val algebraic_ordered_root :
+        string list * string -> t
       (** Algebraic number defined with a polynomial (coefficient of smallest
-              degree first), and the ordered of the root when ordered from
-              smallest to biggest *)
+          degree first), and the ordered of the root when ordered from
+          smallest to biggest *)
 
-      val algebraic_enclosed_root : string list ->
-         string * string -> string * string -> t
+      val algebraic_enclosed_root :
+        string list * (string * string) * (string * string) -> t
       (** Algebraic number defined with a polynomial (coefficient of smallest
-            degree first), and an interval where the polynomial as uniq root *)
+          degree first), and an interval where the polynomial has a unique root.
+          Each bound of the interval is a rational expressed as two integers. *)
 
       val minus : t
       (** Real unary minus/negation. *)

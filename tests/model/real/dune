@@ -65,6 +65,70 @@
   (action (diff algebraic.expected algebraic.full)))
 
 
+; Test for bad_ordered_root.smt2
+; Incremental test
+
+(rule
+   (target  bad_ordered_root.incremental)
+   (deps    (:response bad_ordered_root.rsmt2) (:input bad_ordered_root.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_ordered_root.expected bad_ordered_root.incremental)))
+
+; Full mode test
+
+(rule
+   (target  bad_ordered_root.full)
+   (deps    (:response bad_ordered_root.rsmt2) (:input bad_ordered_root.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_ordered_root.expected bad_ordered_root.full)))
+
+
+; Test for complex_roots.smt2
+; Incremental test
+
+(rule
+   (target  complex_roots.incremental)
+   (deps    (:response complex_roots.rsmt2) (:input complex_roots.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_roots.expected complex_roots.incremental)))
+
+; Full mode test
+
+(rule
+   (target  complex_roots.full)
+   (deps    (:response complex_roots.rsmt2) (:input complex_roots.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_roots.expected complex_roots.full)))
+
+
 ; Test for div.smt2
 ; Incremental test
 

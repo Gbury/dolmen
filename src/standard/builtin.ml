@@ -71,7 +71,7 @@ type _ t +=
   | Int | Integer of string
   | Rat | Rational of string
   | Real | Decimal of string
-  | Algebraic of algebraic (* instead of algebraic_ordered_root *)
+  | Algebraic of algebraic
   | Lt of int_rat_real | Leq of int_rat_real
   | Gt of int_rat_real | Geq of int_rat_real
   | Minus of int_rat_real

@@ -67,6 +67,12 @@ module E = Dolmen.Std.Expr
 let pp_wrap pp fmt x =
   Format.fprintf fmt "`%a`" pp x
 
+let pp_order fmt = function
+  | 0 -> Format.fprintf fmt "1st"
+  | 1 -> Format.fprintf fmt "2nd"
+  | 2 -> Format.fprintf fmt "3rd"
+  | n -> Format.fprintf fmt "%dth" (n + 1)
+
 let pp_app fmt (cst, args) =
   match (E.Term.Const.get_tag cst E.Tags.pos) with
   | None | Some Dolmen.Std.Pretty.Prefix ->
@@ -86,6 +92,13 @@ let pp_defs_loc ~file fmt (defs : Dolmen.Std.Statement.defs) =
 let pp_located fmt { contents = _; file = _; loc; } =
   let loc = Dolmen.Std.Loc.full_loc loc in
   Format.fprintf fmt "%a" Dolmen.Std.Loc.fmt loc
+
+let limitation_hint=
+  (fun _ -> Some (
+       Format.dprintf "%a"
+         Format.pp_print_text
+         "This is a current implementation limitation of dolmen. \
+          Please report upstream if encounter this error, ^^"))
 
 let code =
   Dolmen_loop.Code.create
@@ -230,11 +243,43 @@ let unhandled_float_exponand_and_mantissa =
           "%a:@ (%d, %d)." Format.pp_print_text
           "The following size for exponand and mantissa are not currently \
            handled by dolmen" ew mw)
-    ~hints:[(fun _ -> Some (Format.dprintf "%a"
-        Format.pp_print_text
-          "This is a current implementation limitation of dolmen. \
-           Please report upstream if encounter this error, ^^")); ]
+    ~hints:[ limitation_hint; ]
     ~name:"Unhandled Floating point sizes" ()
+
+let real_to_fp =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"real-to-fp"
+    ~message:(fun fmt a ->
+        Format.fprintf fmt
+          "%a:@ %a"
+          Format.pp_print_text
+          "Dolmen cannot currently convert the following non-rational \
+           real number to a floating point number"
+          Real.A.pp a)
+    ~hints:[ limitation_hint; ]
+    ~name:"Real to FP" ()
+
+let no_ordered_root =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"no-ordered-root"
+    ~message:(fun fmt (poly, num_roots, order) ->
+        Format.fprintf fmt "%a %d %a %a root:@ %a"
+          Format.pp_print_text "The following polynomial has" num_roots
+          Format.pp_print_text "roots, but the model tried to use its"
+          pp_order order Real.Poly.pp poly)
+    ~hints:[ (fun _ -> Some (
+        Format.dprintf "%a" Format.pp_print_text
+          "Root orders start at 0 for the first (smallest) root"));
+      ]
+    ~name:"No Ordered root" ()
+
+let complex_roots =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"complex-roots"
+    ~message:(fun fmt poly ->
+        Format.fprintf fmt "%a:@ %a"
+          Format.pp_print_text
+          "The following polynomial has complex roots, \
+           which prevents from ordering roots"
+          Real.Poly.pp poly)
+    ~name:"Complex Roots" ()
 
 (* Pipe *)
 (* ************************************************************************ *)
@@ -302,13 +347,26 @@ module Make
     try
       Eval.eval env term
     with
-    | Eval.Quantifier -> _err fo_model ()
-    | Eval.Unhandled_builtin b -> _err unhandled_builtin b
-    | Eval.Undefined_variable v -> _err undefined_variable v
+
+    (* Evaluation errors *)
+    | Eval.Quantifier ->
+      _err fo_model ()
+    | Eval.Unhandled_builtin b ->
+      _err unhandled_builtin b
+    | Eval.Undefined_variable v ->
+      _err undefined_variable v
     | Model.Incorrect_extension (cst, args, ret) ->
       _err bad_extension (cst, args, ret)
+    | Fp.Real_to_fp { a } ->
+      _err real_to_fp a
     | Fp.Unhandled_exponand_and_mantissa { ew; mw } ->
       _err unhandled_float_exponand_and_mantissa (ew, mw)
+    | Real.A.Complex_roots { poly; } ->
+      _err complex_roots poly
+    | Real.A.No_ordered_root { poly; num_roots; order; } ->
+      _err no_ordered_root (poly, num_roots, order)
+
+    (* Special cases for delayed evaluation *)
     | Eval.Undefined_constant c as exn ->
       if reraise_for_delayed_eval
       then raise exn

@@ -1310,7 +1310,15 @@ module type Smtlib_Real = sig
   (** Real division. See Smtlib theory for a full description. *)
 
   val algebraic_ordered_root : string list -> string -> t
-  val algebraic_enclosed_root : string list -> (string * string) -> (string * string) -> t
+  (** Algebraic number defined with a polynomial (coefficient of smallest
+      degree first), and the ordered of the root when ordered from
+      smallest to biggest *)
+
+  val algebraic_enclosed_root :
+    string list -> (string * string) -> (string * string) -> t
+  (** Algebraic number defined with a polynomial (coefficient of smallest
+      degree first), and an interval where the polynomial has a unique root.
+      Each bound of the interval is a rational expressed as two integers. *)
 
 end
 

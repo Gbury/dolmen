@@ -1,0 +1,6 @@
+File "tests/model/real/bad_ordered_root.rsmt2", line 3, character 2-66:
+3 |   (define-fun a () Real (root-of-with-order (coeffs 1 0 (- 1)) 2))
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error The following polynomial has 2 roots, but the model tried to use
+      its 3rd root: -x^2+1
+Hint: Root orders start at 0 for the first (smallest) root
