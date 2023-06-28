@@ -2114,35 +2114,45 @@ module Term = struct
       let print_rat fmt (num,denom) =
         Format.fprintf fmt "%s / %s" num denom
 
-      let print_coef fmt c =
+      let print_coef ~sign fmt c =
         let n = String.length c in
         assert (n > 0);
-        if c.[0] = '-'
-        then Format.fprintf fmt "- %s" (String.sub c 1 (n - 1))
-        else Format.fprintf fmt "+ %s" c
+        if c.[0] = '-' then
+          if c = "-1" then
+            Format.fprintf fmt "-"
+          else
+            Format.fprintf fmt "-%s" (String.sub c 1 (n - 1))
+        else if sign then
+          Format.fprintf fmt "+%s" c
+        else
+          Format.fprintf fmt "%s" c
 
-      let print_monomial fmt (c, n) =
+      let print_monomial ~sign fmt (c, n) =
         if c = "0" then ()
-        else if n <= 0 then print_coef fmt c
-        else Format.fprintf fmt "%a x^%d" print_coef c n
+        else if n <= 0
+        then Format.fprintf fmt "%a@," (print_coef ~sign) c
+        else Format.fprintf fmt "%ax^%d@," (print_coef ~sign) c n
 
       let print_polynomial fmt l =
-        let rec aux fmt n = function
+        let rec aux fmt sign n = function
           | [] -> ()
-          | c :: r -> print_monomial fmt (c, n); aux fmt (n + 1) r
+          | c :: r ->
+            let () = print_monomial ~sign fmt (c, n) in
+            let sign = sign || c <> "0" in
+            aux fmt sign (n + 1) r
         in
-        aux fmt 0 l
+        aux fmt false 0 l
 
       let algebraic_ordered_root =
         with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,order) ->
-            let s = Format.asprintf "root<%s, %a>" order print_polynomial coeffs in
+            let s = Format.asprintf "root<%s, @[<hov>%a@]>" order print_polynomial coeffs in
             mk' ~builtin:(Builtin.Algebraic (Ordered_root {coeffs;order})) s [] [] Ty.real
           )
 
       let algebraic_enclosed_root =
         with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,min,max) ->
             let s =
-              Format.asprintf "root<%a,%a,%a>"
+              Format.asprintf "root<%a,%a,@[<hov>%a@]>"
                 print_rat min print_rat max print_polynomial coeffs
             in
             mk' ~builtin:(Builtin.Algebraic (Enclosed_root {coeffs;min;max})) s [] [] Ty.real

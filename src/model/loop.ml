@@ -281,6 +281,22 @@ let complex_roots =
           Real.Poly.pp poly)
     ~name:"Complex Roots" ()
 
+let bad_root_enclosure =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"bad-root-enclsoure"
+    ~message:(fun fmt (poly, min, max, roots) ->
+        match roots with
+        | [] ->
+          Format.fprintf fmt "%a@ %a@ and@ %a:@ %a"
+            Format.pp_print_text "There are no roots between"
+            Q.pp_print min Q.pp_print max Real.Poly.pp poly
+        | _ ->
+          Format.fprintf fmt
+            "The@ polynomial@ '%a'@ has@ more@ than@ one@ root@ beetween@ \
+             %a@ and@ %a: %a"
+          Real.Poly.pp poly Q.pp_print min Q.pp_print max
+          Fmt.(list ~sep:Fmt.(any ",@ ") Real.A.pp) roots)
+    ~name:"Bad Root enclosure" ()
+
 (* Pipe *)
 (* ************************************************************************ *)
 
@@ -365,6 +381,8 @@ module Make
       _err complex_roots poly
     | Real.A.No_ordered_root { poly; num_roots; order; } ->
       _err no_ordered_root (poly, num_roots, order)
+    | Real.A.Bad_root_enclosure { poly; min; max; roots; } ->
+      _err bad_root_enclosure (poly, min, max, roots)
 
     (* Special cases for delayed evaluation *)
     | Eval.Undefined_constant c as exn ->

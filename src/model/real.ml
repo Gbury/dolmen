@@ -273,7 +273,8 @@ module A = struct
   let from_enclosure poly min max =
     let poly = Flint.FMPZ_poly.create poly in
     let roots = Calcium.QQBAR.from_roots ~unsorted:true poly in
-    (* TODO: do we need to check that all roots are real ? *)
+    (* Note: the comparisons in [inside] will only succeed if [r] is a real
+       (i.e. no complex part), so we do not need to filter out non-real roots. *)
     let roots = Stdlib.Array.map (Calcium.CA.from_qqbar ~ctx) roots in
     let inside r =
       Calcium.CA.compare_q ~ctx r min >= 0 &&

@@ -1,0 +1,4 @@
+File "tests/model/real/bad_root_enclosure.rsmt2", line 3, character 2-80:
+3 |   (define-fun a () Real (root-of-with-enclosure (coeffs 1 0 (- 1)) (- 1.0) 1.0))
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error The polynomial '-x^2+1' has more than one root beetween -1 and 1: 1, -1

@@ -1,0 +1,4 @@
+sat
+(
+  (define-fun a () Real (root-of-with-enclosure (coeffs 1 0 0 (- 1)) 1.0 1.0))
+)

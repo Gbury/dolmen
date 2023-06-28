@@ -97,6 +97,74 @@
   (action (diff bad_ordered_root.expected bad_ordered_root.full)))
 
 
+; Test for bad_root_enclosure.smt2
+; Incremental test
+
+(rule
+   (target  bad_root_enclosure.incremental)
+   (deps    (:response bad_root_enclosure.rsmt2)
+            (:input bad_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_root_enclosure.expected bad_root_enclosure.incremental)))
+
+; Full mode test
+
+(rule
+   (target  bad_root_enclosure.full)
+   (deps    (:response bad_root_enclosure.rsmt2)
+            (:input bad_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_root_enclosure.expected bad_root_enclosure.full)))
+
+
+; Test for complex_root_enclosure.smt2
+; Incremental test
+
+(rule
+   (target  complex_root_enclosure.incremental)
+   (deps    (:response complex_root_enclosure.rsmt2)
+            (:input complex_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_root_enclosure.expected complex_root_enclosure.incremental)))
+
+; Full mode test
+
+(rule
+   (target  complex_root_enclosure.full)
+   (deps    (:response complex_root_enclosure.rsmt2)
+            (:input complex_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_root_enclosure.expected complex_root_enclosure.full)))
+
+
 ; Test for complex_roots.smt2
 ; Incremental test
 
