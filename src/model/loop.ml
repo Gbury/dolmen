@@ -93,7 +93,7 @@ let pp_located fmt { contents = _; file = _; loc; } =
   let loc = Dolmen.Std.Loc.full_loc loc in
   Format.fprintf fmt "%a" Dolmen.Std.Loc.fmt loc
 
-let limitation_hint=
+let limitation_hint =
   (fun _ -> Some (
        Format.dprintf "%a"
          Format.pp_print_text
