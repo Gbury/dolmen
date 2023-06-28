@@ -59,6 +59,7 @@ next
 - Correctly compare abstract array values (PR#143)
 - Accept extensions of functions/symbols with only partially defined
   semantics, for e.g. `fp.to_ubv`, `div`, etc.. (PR#151)
+- Error out on incremental problems (PR#169)
 
 v0.8.1
 ------
