@@ -1,4 +1,4 @@
-File "tests/model/error/missing_answer.smt2", line 2, character 0-14:
+File "tests/model/misc/missing_answer.smt2", line 2, character 0-14:
 2 | (assert false)
     ^^^^^^^^^^^^^^
 Error This statement requires a model in the response file in order to be

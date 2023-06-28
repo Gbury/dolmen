@@ -33,6 +33,38 @@
   (action (diff add.expected add.full)))
 
 
+; Test for bad_div_zero.smt2
+; Incremental test
+
+(rule
+   (target  bad_div_zero.incremental)
+   (deps    (:response bad_div_zero.rsmt2) (:input bad_div_zero.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_div_zero.expected bad_div_zero.incremental)))
+
+; Full mode test
+
+(rule
+   (target  bad_div_zero.full)
+   (deps    (:response bad_div_zero.rsmt2) (:input bad_div_zero.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_div_zero.expected bad_div_zero.full)))
+
+
 ; Test for div.smt2
 ; Incremental test
 

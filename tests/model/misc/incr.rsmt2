@@ -1,0 +1,13 @@
+sat
+(
+  (define-fun a () Int (- 1))
+  (define-fun b () Int 1)
+)
+sat
+(
+  ; This is not a correct model, as this only
+  ; satisfies the last assertion (a*b>0), and not
+  ; the first one (a < 0).
+  (define-fun a () Int 1)
+  (define-fun b () Int 1)
+)

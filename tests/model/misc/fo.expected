@@ -1,8 +1,8 @@
-File "tests/model/error/fo.rsmt2", line 3, character 15-22:
+File "tests/model/misc/fo.rsmt2", line 3, character 15-22:
 3 | (define-fun p ((x Int)) Bool true)
                    ^^^^^^^
 Warning The following function parameter is unused: `x`
-File "tests/model/error/fo.smt2", line 3, character 0-33:
+File "tests/model/misc/fo.smt2", line 3, character 0-33:
 3 | (assert (forall ((x Int)) (p x)))
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Error Models cannot be checked for formulas that contain quantifiers

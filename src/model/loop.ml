@@ -33,6 +33,7 @@ type answer =
       evaluated_goals : bool located list;
       delayed : acc list Model.C.t;
     }
+  | Post_sat
 
 type 'st input =
   | Init
@@ -90,6 +91,13 @@ let code =
   Dolmen_loop.Code.create
     ~category:"Model"
     ~descr:"on model verification errors"
+
+let incr_check_not_supported =
+  Dolmen_loop.Report.Error.mk ~code ~mnemonic:"incr-model-check"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "%a"
+          Format.pp_print_text "Incremental problems are not supported")
+    ~name:"Incremental model check" ()
 
 let type_def_in_model =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"type-def-in-model"
@@ -419,38 +427,40 @@ module Make
   (* Pipe function *)
   (* ************************************************************************ *)
 
+  let gen_answer gen st =
+    let file = State.get State.response_file st in
+    match (gen st : _ * _ option) with
+    | st, None -> st, None
+    | st, Some (answer : Dolmen.Std.Answer.t) ->
+      let loc = Dolmen.Std.Loc.{ file = file.loc; loc = answer.loc; } in
+      begin match answer.Dolmen.Std.Answer.descr with
+        | Unsat -> st, Unsat loc
+        | Error _ -> st, Error loc
+        | Sat None ->
+          st, Sat {
+            parsed = [];
+            model = Model.empty;
+            delayed = Model.C.empty;
+            evaluated_goals = [];
+          }
+        | Sat Some parsed ->
+          st, Sat {
+            parsed;
+            model = Model.empty;
+            delayed = Model.C.empty;
+            evaluated_goals = [];
+          }
+      end
+
   let next_answer st =
     let t = State.get check_state st in
     match t.input with
-    | Response_loaded gen -> gen st
+    | Response_loaded gen ->
+      gen st
     | Init ->
       let file = State.get State.response_file st in
       let st, gen = Parse.parse_response [] st file in
-      let answers st =
-        let file = State.get State.response_file st in
-        match gen st with
-        | st, None -> st, None
-        | st, Some answer ->
-          let loc = Dolmen.Std.Loc.{ file = file.loc; loc = answer.loc; } in
-          begin match answer.Dolmen.Std.Answer.descr with
-            | Unsat -> st, Unsat loc
-            | Error _ -> st, Error loc
-            | Sat None ->
-              st, Sat {
-                parsed = [];
-                model = Model.empty;
-                delayed = Model.C.empty;
-                evaluated_goals = [];
-              }
-            | Sat Some parsed ->
-              st, Sat {
-                parsed;
-                model = Model.empty;
-                delayed = Model.C.empty;
-                evaluated_goals = [];
-              }
-          end
-      in
+      let answers = gen_answer gen in
       let st =
         State.set check_state
           { t with input = Response_loaded answers; } st
@@ -461,8 +471,9 @@ module Make
      in the original problem (and not the model file) that triggered
      this module to read the model. Use multi-locs to better explain
      that. *)
-  let get_answer ~file ~loc st t = function
-    | (Unsat _ | Error _ | Sat _) as a -> st, a
+  let get_answer ~file ~loc st =
+    match (State.get check_state st).answer with
+    | (Unsat _ | Error _ | Sat _ | Post_sat) as a -> st, a
     | None ->
       let st, answer = next_answer st in
       let st =
@@ -475,15 +486,12 @@ module Make
         | Unsat loc ->
           let file = State.get State.response_file st in
           State.warn ~file ~loc st cannot_check_proofs ()
-        | Sat _ ->
+        | Sat _ | Post_sat ->
           st
       in
+      let t = State.get check_state st in
       let st = State.set check_state { t with answer; } st in
       st, answer
-
-  let reset st =
-    let t = State.get check_state st in
-    State.set check_state { t with answer = None; } st
 
   (* Evaluation functions *)
   (* ************************************************************************ *)
@@ -606,13 +614,15 @@ module Make
 
   let check_acc st acc =
     let file, loc = file_loc_of_acc acc in
-    let t = State.get check_state st in
-    let st, answer = get_answer ~file ~loc st t t.answer in
+    let st, answer = get_answer ~file ~loc st in
     match answer with
+    | Post_sat ->
+      State.error ~file ~loc st incr_check_not_supported ()
     | Sat { parsed; model; delayed; evaluated_goals; } ->
       let st, parsed, model, delayed, evaluated_goals =
         eval_loop st parsed model delayed evaluated_goals acc
       in
+      let t = State.get check_state st in
       let t = { t with answer = Sat { parsed; model; delayed; evaluated_goals; } } in
       State.set check_state t st
     | _ -> st
@@ -681,14 +691,16 @@ module Make
       | _ -> st
     in
     (* **4** Reset the state *)
-    reset st
+    let t = State.get check_state st in
+    State.set check_state { t with answer = Post_sat; } st
 
   (* Pipe/toplevel function *)
   (* ************************************************************************ *)
 
   let check st (c : Typer_Pipe.typechecked Typer_Pipe.stmt) =
     let st =
-      if State.get check_model st then
+      if not (State.get check_model st) then st
+      else begin
         let file = State.get State.logic_file st in
         let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
         match c.contents with
@@ -708,8 +720,7 @@ module Make
           check_clause ~file ~loc st contents
         | `Solve (hyps, goals) ->
           check_solve ~file ~loc st hyps goals
-      else
-        st
+      end
     in
     st, c
 

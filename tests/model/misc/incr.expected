@@ -1,0 +1,4 @@
+File "tests/model/misc/incr.smt2", line 8, character 0-22:
+8 | (assert (< 0 (* a b)))
+    ^^^^^^^^^^^^^^^^^^^^^^
+Error Incremental problems are not supported
