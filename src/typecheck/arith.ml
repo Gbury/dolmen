@@ -773,6 +773,11 @@ module Smtlib2 = struct
   (* Polynomial coefficients for algebraic numbers *)
   module Poly(Type : Tff_intf.S) = struct
 
+    let parse_order env ast =
+      match ast.Term.term with
+      | Symbol { Id.ns = Value (Integer); name = Simple name; } -> name
+      | _ -> Type._error env (Ast ast) (Type.Expected ("a positive integer", None))
+
     let parse_int_as_string env ast =
       let rec is_int i s =
         String.length s <= i ||
@@ -794,7 +799,7 @@ module Smtlib2 = struct
         (* TODO: is this one necessary ? *)
         name
       | _ ->
-        Type._error env (Ast ast) (Type.Expected ("An integer constant", None))
+        Type._error env (Ast ast) (Type.Expected ("an integer constant", None))
 
     let parse_rat_as_string env ast =
       match ast.Term.term with
@@ -813,7 +818,7 @@ module Smtlib2 = struct
              {term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name2; };_}]) ->
         ("-" ^ name1, name2)
       | _ ->
-        Type._error env (Ast ast) (Type.Expected ("A rational constant", None))
+        Type._error env (Ast ast) (Type.Expected ("a rational constant", None))
 
     let parse_poly_coeffs_as_strings env ast =
       match ast.Term.term with
@@ -821,7 +826,7 @@ module Smtlib2 = struct
         List.map (parse_int_as_string env) args
       | _ ->
         Type._error env (Ast ast)
-          (Type.Expected ("A list of coefficient starting with \"coeffs\"", None))
+          (Type.Expected ("a list of coefficient starting with \"coeffs\"", None))
 
   end
 
@@ -1013,10 +1018,7 @@ module Smtlib2 = struct
                     name = Simple ("root-of-with-order"|"root-of-with-ordering"); } ->
           Type.builtin_term (Base.make_op2 (module Type) env s (fun _ast (coeffs,num) ->
               let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
-              let num = match num.term with
-                | Symbol { Id.ns = Value (Integer); name = Simple name; } -> name
-                | _ -> Type._error env (Ast num) (Forbidden "A positive integer is expected")
-              in
+              let num = P.parse_order env num in
               T.algebraic_ordered_root coeffs num
             ))
         | Type.Id { Id.ns = Term;
@@ -1142,10 +1144,7 @@ module Smtlib2 = struct
                     name = Simple ("root-of-with-order"|"root-of-with-ordering"); } ->
           Type.builtin_term (Base.make_op2 (module Type) env s (fun _ast (coeffs,num) ->
               let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
-              let num = match num.term with
-                | Symbol { Id.ns = Value (Integer); name = Simple name; } -> name
-                | _ -> Type._error env (Ast num) (Forbidden "A positive integer is expected")
-              in
+              let num = P.parse_order env num in
               T.Real.algebraic_ordered_root coeffs num
             ))
         | Type.Id { Id.ns = Term;
