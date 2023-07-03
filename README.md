@@ -73,3 +73,8 @@ Supported languages
 | zf (zipperposition)   | :heavy_check_mark:  | :heavy_check_mark:  |                     |
 
 
+Acknowledgements
+----------------
+
+This work is currently in part funded by [OCamlPro](https://ocamlpro.com)
+
