@@ -52,14 +52,7 @@ let eval_dstr ~eval env dstr cstr field tys arg =
   let { head; args; } = Value.extract_exn ~ops arg in
   if C.equal cstr head
   then List.nth args field
-  else begin
-    match Model.Cst.find_opt dstr (Env.model env) with
-    | Some f ->
-      (* Remove the dstr from the env to avoid infinite recursive evaluation *)
-      let env = Env.update_model env (Model.Cst.remove dstr) in
-      Fun.apply_val ~eval env f tys [arg]
-    | None -> raise (Model.Partial_interpretation (dstr, [arg]))
-  end
+  else Fun.corner_case ~eval env dstr tys [arg]
 
 let builtins ~eval env (cst : C.t) =
   match cst.builtin with
