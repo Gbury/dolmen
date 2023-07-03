@@ -712,6 +712,10 @@ module Make
           State.error ~file ~loc st assertion_stack_not_supported ()
         | `Defs defs ->
           check_defs ~file ~loc st defs
+        | `Sys_def _ ->
+            st
+        | `Sys_check -> 
+            st
         | `Hyp contents ->
           check_hyps ~file ~loc st contents
         | `Goal contents ->

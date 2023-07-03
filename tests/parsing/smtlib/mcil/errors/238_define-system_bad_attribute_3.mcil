@@ -1,0 +1,1 @@
+(define-system system :subsys (a s) :query)

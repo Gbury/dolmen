@@ -1,0 +1,1 @@
+(check-system sys :reachabe ((q (r))) f)

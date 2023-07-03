@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/280_define-system_bad_attribute.mcil", line 1, character 29-39:
+1 | (define-system sys :input () :reachable)
+                                 ^^^^^^^^^^
+Error while parsing a system definition, read the reserved word ':reachable',
+      but expected an attribute from the set (:output, :local, :subsys,
+      :init, :trans, :inv).

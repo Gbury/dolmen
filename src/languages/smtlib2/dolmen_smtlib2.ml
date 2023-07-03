@@ -22,11 +22,13 @@ module Script = struct
     | `Latest
     | `V2_6
     | `Poly
+    | `MCIL
   ]
 
   (* Alias the sub-libraries *)
   module V2_6 = Dolmen_smtlib2_v6.Script
   module Poly = Dolmen_smtlib2_poly
+  module MCIL = Dolmen_smtlib2_mcil
 
   (* Alias for the latest module *)
   module Latest = V2_6

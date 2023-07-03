@@ -43,6 +43,35 @@ type def = {
   attrs : term list;
 }
 
+type sys_def = {
+  id     : Id.t;
+  loc    : location;
+  input  : term list option;
+  output : term list option;
+  local  : term list option;
+  init   : term option;
+  trans  : term option;
+  inv    : term option;
+  subs   : (Id.t * Id.t * term list) list;
+}
+
+type sys_check = {
+  id         : Id.t;
+  loc        : location;
+  input      : term list option;
+  output     : term list option;
+  local      : term list option;
+  reachable  : (Id.t * term) list;
+  assumption : (Id.t * term) list;
+  queries    : (Id.t * term list) list;
+}
+
+type enum_sort = {
+  id      : Id.t;
+  loc : location;
+  values  : Id.t list;
+}
+
 type 'a group = {
   contents : 'a list;
   recursive : bool;
@@ -82,6 +111,9 @@ type descr =
 
   | Defs of def group
   | Decls of decl group
+
+  | Def_sys of sys_def
+  | Chk_sys of sys_check
 
   | Get_proof
   | Get_unsat_core
@@ -256,6 +288,55 @@ let print_group print fmt ({ contents; recursive; } : _ group) =
   else
     aux fmt contents
 
+
+let print_attr fmt attr = 
+  match attr with
+  | Some attr -> Term.print fmt attr
+  | None -> Format.fprintf fmt "()" 
+
+let print_opt_attrs fmt attrs = 
+  match attrs with
+  | None -> Format.fprintf fmt "()"
+  | Some attrs -> print_attrs fmt attrs
+  
+let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; subs;} : sys_def) =
+  let print_sub fmt (local_name, sys_name, vars) = 
+    Format.fprintf fmt "@[<hov 2>subsys: ( %a : %a ) :: ( %a ) @]"
+      Id.print local_name
+      Id.print sys_name
+      (fun fmt vars -> List.iter (Format.fprintf fmt "%a " Term.print) vars) vars in
+
+  let print_subs fmt subs = 
+    List.iter (Format.fprintf fmt "@,%a" print_sub) subs in
+
+  Format.fprintf fmt "@[<hov 2>def-sys:@ %a =@ {@,input = %a;@,output = %a;@,local = %a;@,init = %a;@,trans = %a;@,inv = %a;%a;@ }@]"
+      Id.print id
+      print_opt_attrs input
+      print_opt_attrs output
+      print_opt_attrs local
+      print_attr init
+      print_attr trans
+      print_attr inv
+      print_subs subs
+
+let print_check_sys fmt ({id; loc = _; input; output; local; reachable; assumption; queries}: sys_check) =
+  let print_formula base_name fmt (name, term) = 
+    Format.fprintf fmt "@,%s %a = %a;" base_name Id.print name Term.print term in
+
+  let print_query fmt (name, formula_names) = 
+    Format.fprintf fmt "query %a (%a);@ "
+      Id.print name
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:Term.print) formula_names in
+
+  Format.fprintf fmt "@[<hov 2>check-sys:@ %a =@ {@,input = %a;@,output = %a;@,local = %a;%a@;%a@;%a@,}@]"
+  Id.print id
+  print_opt_attrs input
+  print_opt_attrs output
+  print_opt_attrs local
+  (Misc.print_list ~print_sep:Format.fprintf ~sep:"@," ~print:(print_formula "assumption")) assumption
+  (Misc.print_list ~print_sep:Format.fprintf ~sep:"@," ~print:(print_formula "reachable")) reachable
+  (Misc.print_list ~print_sep:Format.fprintf ~sep:"@," ~print:print_query) queries
+
 let rec print_descr fmt = function
   | Pack l ->
     Format.fprintf fmt "@[<hov 2>pack(%d):@ %a@]" (List.length l)
@@ -304,6 +385,9 @@ let rec print_descr fmt = function
 
   | Defs d -> print_group print_def fmt d
   | Decls d -> print_group print_decl fmt d
+
+  | Def_sys d -> print_def_sys fmt d
+  | Chk_sys d -> print_check_sys fmt d
 
   | Get_proof -> Format.fprintf fmt "get-proof"
   | Get_unsat_core -> Format.fprintf fmt "get-unsat-core"
@@ -407,6 +491,27 @@ let group_decls ?loc ?attrs ~recursive l =
 
 let mk_defs ?loc ?attrs ~recursive defs =
   mk ?loc ?attrs (Defs { recursive; contents = defs; })
+
+let mk_def_sys ?(loc=no_loc) id vars subs conds =
+  let input = List.assoc_opt ":input" vars in
+  let output = List.assoc_opt ":output" vars in
+  let local = List.assoc_opt ":local" vars in
+  let init = List.assoc_opt ":init" conds in
+  let trans = List.assoc_opt ":trans" conds in
+  let inv = List.assoc_opt ":inv" conds in
+  
+  mk ~loc (Def_sys {id; loc; input; output; local; init; trans; inv; subs} )
+
+let mk_check_sys ?(loc=no_loc) id vars formulas queries =
+  let assoc_many key = List.filter_map (fun (ident, value) -> if ident = key then Some value else None ) in
+  
+  let input = List.assoc_opt ":input" vars in
+  let output = List.assoc_opt ":output" vars in
+  let local = List.assoc_opt ":local" vars in
+  let reachable = assoc_many ":reachable" formulas in
+  let assumption = assoc_many ":assumption" formulas in
+
+  mk ~loc (Chk_sys {id; loc; input; output; local; reachable; assumption; queries} )
 
 let group_defs ?loc ?attrs ~recursive l =
   let defs, others = List.fold_left (fun (defs, others) s ->
@@ -527,6 +632,14 @@ let pred_def ?(loc=no_loc) id vars params body =
   mk_defs ~loc ~recursive:false [
     { loc; attrs; id; vars; params; ret_ty; body; }
   ]
+
+let sys_def ?loc id vars subs conds = 
+  mk_def_sys ?loc id vars subs conds
+
+let sys_check ?loc id vars formulas queries = 
+  let _ = id, vars, formulas, queries in
+  mk_check_sys ?loc id vars formulas queries
+
 
 let funs_def_rec ?loc l =
   let contents = List.map (fun (id, vars, params, ret_ty, body) ->

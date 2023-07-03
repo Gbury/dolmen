@@ -1,0 +1,4 @@
+File "tests/typing/errors/mcil/undefined-subsystem.mcil", line 2, character 0-39:
+2 | (define-system sys :subsys (a (b Int)))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Undefined system: `b`

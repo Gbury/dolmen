@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/266_declare-enum-sort_unclosed.mcil", line 1, character 32-37:
+1 | (declare-enum-sort enum (A B C) error)
+                                    ^^^^^
+Error while parsing an enumeration declaration, read the symbol 'error',
+      but expected a closing parenthesis.

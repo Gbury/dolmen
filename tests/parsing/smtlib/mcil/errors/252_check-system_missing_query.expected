@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/252_check-system_missing_query.mcil", line 1, character 24-25:
+1 | (check-system sys :query)
+                            ^
+Error while parsing a check-system query, read a closing parenthesis,
+      but expected a query of the form (query_name (reachable_var1 ...
+      reachable_varN)).

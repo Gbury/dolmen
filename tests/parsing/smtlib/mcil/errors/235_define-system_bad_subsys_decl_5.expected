@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/235_define-system_bad_subsys_decl_5.mcil", line 1, character 34-39:
+1 | (define-system sys :subsys (a (b) :init) )
+                                      ^^^^^
+Error while parsing a subsystem declaration, read the reserved word ':init',
+      but expected a closing parenthesis.

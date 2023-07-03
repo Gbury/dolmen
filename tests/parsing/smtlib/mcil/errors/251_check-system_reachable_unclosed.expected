@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/251_check-system_reachable_unclosed.mcil", line 1, character 40-41:
+1 | (check-system sys :reachable (a (= 1 2) b))
+                                            ^
+Error while parsing a reachability condition definition, read the symbol 'b',
+      but expected a closing parenthesis.

@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/274_check-system_bad_system_name.mcil", line 1, character 14-15:
+1 | (check-system _)
+                  ^
+Error while parsing a check-system command, read the reserved word '_',
+      but expected a symbol corresponding to a defined system.

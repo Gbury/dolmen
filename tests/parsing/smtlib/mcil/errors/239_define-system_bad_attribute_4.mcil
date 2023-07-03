@@ -1,0 +1,1 @@
+(define-system system :init (= 1 1) :query)

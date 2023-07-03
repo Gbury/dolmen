@@ -1,0 +1,4 @@
+File "tests/typing/errors/mcil/undefined-system.mcil", line 2, character 0-32:
+2 | (check-system sys :query (q ()))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Undefined system: `sys`

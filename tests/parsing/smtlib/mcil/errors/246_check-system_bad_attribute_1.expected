@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/246_check-system_bad_attribute_1.mcil", line 1, character 18-27:
+1 | (check-system sys :reachabe ((q (r))) f)
+                      ^^^^^^^^^
+Error while parsing a check-system command, read the keyword ':reachabe',
+      but expected an attribute from the set (:input, :output, :local,
+      :assumption, :reachable, :query, :queries).

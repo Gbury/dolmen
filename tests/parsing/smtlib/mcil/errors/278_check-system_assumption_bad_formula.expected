@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/278_check-system_assumption_bad_formula.mcil", line 1, character 32-33:
+1 | (check-system s1 :assumption (a _))
+                                    ^
+Error while parsing an assumption of a check-system command,
+      read the reserved word '_',
+      but expected a formula.

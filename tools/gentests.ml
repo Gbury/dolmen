@@ -29,6 +29,7 @@ let is_a_pb file =
   | ".ae"
   | ".cnf"
   | ".icnf"
+  | ".mcil"
   | ".smt2"
   | ".psmt2"
   | ".p"

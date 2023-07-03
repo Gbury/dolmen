@@ -108,6 +108,8 @@ let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
     Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_def fmt d
   | T.Decls d ->
     Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_decl fmt d
+  | T.SysDef d ->
+    Dolmen.Std.Statement.print_def_sys fmt d
   | T.Located _ ->
     let full = T.fragment_loc env fragment in
     let loc = Dolmen.Std.Loc.full_loc full in
@@ -147,6 +149,9 @@ let print_reason ?(already=false) fmt r =
   | Declared (file, d) ->
     Format.fprintf fmt "was%a declared at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
+  | SysDefined (file, s) ->
+    Format.fprintf fmt "was%a defined as a system at %a"
+      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file s.loc)
   | Implicit_in_def (file, d) ->
     Format.fprintf fmt "was%a implicitly introduced in the definition at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
@@ -599,6 +604,13 @@ let unbound_identifier =
       (fun (id, _, lit_hint) -> literal_hint lit_hint id);
       (fun (_, msg, _) -> text_hint msg);]
     ~name:"Unbound identifier" ()
+
+let undefined_system =
+  Report.Error.mk ~code ~mnemonic:"undefined-system"
+  ~message:(fun fmt id ->
+      Format.fprintf fmt "Undefined system:@ %a"
+        (pp_wrap Dolmen.Std.Id.print) id)
+  ~name:"Undefined system" ()
 
 let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
@@ -1195,6 +1207,8 @@ module Typer(State : State.S) = struct
       error ~input ~loc st cannot_tag_ttype ()
     | T.Cannot_find (id, msg) ->
       error ~input ~loc st unbound_identifier (id, msg, true)
+    | T.Cannot_find_system id ->
+      error ~input ~loc st undefined_system id
     | T.Forbidden_quantifier ->
       error ~input ~loc st forbidden_quant ()
     | T.Missing_destructor id ->
@@ -1767,6 +1781,20 @@ module Typer(State : State.S) = struct
           ) l
       )
 
+  (* MCIL Only System Definitions and Checks *)
+  (* ************************************************************************ *)
+
+  let sys_def st ~input loc ?attrs d =
+    typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
+        T.sys_def env d
+    )
+
+  let check_sys st ~input loc ?attrs d =
+    typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
+        T.check_sys env d
+    )
+  
+
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
@@ -1854,6 +1882,11 @@ module Make
     | `Defs of def list
   ]
 
+  type sys = [
+    | `Sys_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.term_var list * Expr.term_var list * Expr.term_var list (* id, inputs, outputs, locals *)
+    | `Sys_check
+  ]
+
   type decl = [
     | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
@@ -1905,7 +1938,7 @@ module Make
   ]
 
   (* Agregate types *)
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+  type typechecked = [ sys | defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
 
   (* Simple constructor *)
   (* let tr implicit contents = { implicit; contents; } *)
@@ -1955,6 +1988,8 @@ module Make
     | `Decls l ->
       Format.fprintf fmt "@[<v 2>decls:@ %a@]"
         (Format.pp_print_list print_decl) l
+    | `Sys_def _ -> Format.fprintf fmt "@[<v 2>sys-def:@ TODO Print typechecked value @]"
+    | `Sys_check -> Format.fprintf fmt "@[<v 2>sys-check:@ TODO Print typechecked value @]"
     | `Hyp f ->
       Format.fprintf fmt "@[<hov 2>hyp:@ %a@]" Print.formula f
     | `Goal f ->
@@ -2147,6 +2182,16 @@ module Make
       let st, l = Typer.decls st ~input ~loc ~attrs l in
       let res : typechecked stmt = simple (decl_id c) loc attrs (`Decls l) in
       st, (res)
+    
+    (* MCIL Custom commands*)
+    | { S.descr = S.Def_sys s ; loc ; attrs; _ } -> 
+      let st, l = Typer.sys_def st ~input loc ~attrs s in
+      let res : typechecked stmt = simple (decl_id c) loc attrs l in
+      st, res
+    | { S.descr = S.Chk_sys s ; loc ; attrs ; _ } ->
+      let st, l = Typer.check_sys st ~input loc ~attrs s in
+      let res : typechecked stmt = simple (decl_id c) loc attrs l in
+      st, res
 
     (* Smtlib's proof/model instructions *)
     | { S.descr = S.Get_proof; loc; attrs; _ } ->

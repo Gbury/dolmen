@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/263_declare-enum-sort_missing_name.mcil", line 1, character 18-19:
+1 | (declare-enum-sort)
+                      ^
+Error while parsing an enumeration declaration, read a closing parenthesis,
+      but expected a symbol for the enumeration sort name.

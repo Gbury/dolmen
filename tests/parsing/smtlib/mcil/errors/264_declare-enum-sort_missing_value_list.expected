@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/264_declare-enum-sort_missing_value_list.mcil", line 1, character 23-24:
+1 | (declare-enum-sort enum)
+                           ^
+Error while parsing an enumeration declaration, read a closing parenthesis,
+      but expected a list of enumeration values (enum1 enum2 ...).

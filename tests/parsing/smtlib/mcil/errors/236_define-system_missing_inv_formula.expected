@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/236_define-system_missing_inv_formula.mcil", line 1, character 24-25:
+1 | (define-system sys :inv )
+                            ^
+Error while parsing an invariant formula definition,
+      read a closing parenthesis,
+      but expected a formula.

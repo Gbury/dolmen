@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/237_define-system_missing_init_formula.mcil", line 1, character 24-25:
+1 | (define-system sys :init)
+                            ^
+Error while parsing an initial state condition definition,
+      read a closing parenthesis,
+      but expected a formula.

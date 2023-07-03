@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/mcil/errors/224_define-system_bad_input_list.mcil", line 1, character 27-30:
+1 | (define-system sys :input (Int))
+                               ^^^
+Error while parsing a system input variable declaration,
+      read the symbol 'Int',
+      but expected a sorted variable of the form "(var sort)", or a closing
+      parenthesis.

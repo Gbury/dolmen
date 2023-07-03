@@ -149,6 +149,10 @@ module Make
     | `Term_cst of T.Const.t
   ]
 
+  type system_cst = [
+    | `Sys_cst of T.Const.t *  T.Const.t *  T.Const.t
+  ]
+
   type term_cstr = [
     | `Cstr of T.Cstr.t
   ]
@@ -162,7 +166,7 @@ module Make
   ]
 
   (* Constants that can be bound to a dolmen identifier. *)
-  type cst = [ ty_cst | term_cst | term_cstr | term_dstr | term_field ]
+  type cst = [ system_cst | ty_cst | term_cst | term_cstr | term_dstr | term_field ]
 
   (* Inference of variables and symbols *)
   type var_infer = {
@@ -227,6 +231,7 @@ module Make
     | Inferred of Loc.file * Ast.t
     | Defined of Loc.file * Stmt.def
     | Declared of Loc.file * Stmt.decl
+    | SysDefined of Loc.file * Stmt.sys_def
     | Implicit_in_def of Loc.file * Stmt.def
     | Implicit_in_decl of Loc.file * Stmt.decl
     | Implicit_in_term of Loc.file * Ast.t
@@ -250,6 +255,7 @@ module Make
         | `Cstr of T.Cstr.t * reason option
         | `Dstr of T.Const.t * reason option
         | `Term of T.Const.t * reason option
+        | `System of T.Const.t * T.Const.t * T.Const.t * reason option
         | `Field of T.Field.t * reason option
       ]
   ]
@@ -286,6 +292,7 @@ module Make
     | Defs : Stmt.defs -> Stmt.defs fragment
     | Decl : Stmt.decl -> Stmt.decl fragment
     | Decls : Stmt.decls -> Stmt.decls fragment
+    | SysDef : Stmt.sys_def -> Stmt.sys_def fragment
     | Located : Loc.t -> Loc.t fragment
 
   let decl_loc d =
@@ -355,6 +362,7 @@ module Make
     | Cannot_tag_tag : Ast.t err
     | Cannot_tag_ttype : Ast.t err
     | Cannot_find : Id.t * string -> Ast.t err
+    | Cannot_find_system : Id.t -> Loc.t err
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
     | Type_def_rec : Stmt.def -> Stmt.defs err
@@ -394,10 +402,14 @@ module Make
 
     mutable csts : cst M.t;
     (* association between dolmen ids and types/terms constants. *)
+    mutable systems: cst M.t;
+    (* defined systems *)
     mutable ttype_locs : reason R.t;
     (* stores reasons for typing of type constructors *)
     mutable const_locs : reason S.t;
     (* stores reasons for typing of constants *)
+    mutable system_locs : reason S.t S.t S.t;
+    (* stores reasons for typing of system_locs *)
     mutable cstrs_locs : reason U.t;
     (* stores reasons for typing adt constructors *)
     mutable dstrs_locs : reason S.t;
@@ -529,6 +541,7 @@ module Make
       | Decl d -> decl_loc d
       | Decls { contents = []; _ } -> Loc.no_loc
       | Decls { contents = d :: _; _ } -> decl_loc d
+      | SysDef s -> s.loc
       | Located l -> l
     in
     { file = env.file;
@@ -554,6 +567,7 @@ module Make
         | `Letin (_, _, v, _) -> F.find v env.term_locs
         | `Ty_cst c -> R.find c env.st.ttype_locs
         | `Term_cst c -> S.find c env.st.const_locs
+        | `Sys_cst (i, o, l) -> S.find i (S.find o (S.find l env.st.system_locs))
         | `Cstr c -> U.find c env.st.cstrs_locs
         | `Dstr c -> S.find c env.st.dstrs_locs
         | `Field f -> V.find f env.st.field_locs
@@ -576,6 +590,7 @@ module Make
     | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
+    | `Sys_cst (i, o, l) -> `Constant (`System (i, o, l, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
     | `Dstr c -> `Constant (`Dstr (c, reason))
     | `Field f -> `Constant (`Field (f, reason))
@@ -589,6 +604,7 @@ module Make
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
     | `Constant `Term (_, reason)
+    | `Constant `System (_, _, _, reason)
     | `Constant `Cstr (_, reason)
     | `Constant `Dstr (_, reason)
     | `Constant `Field (_, reason)
@@ -698,6 +714,9 @@ module Make
   let _cannot_find ?(hint="") env ast s =
     _error env (Ast ast) (Cannot_find (s, hint))
 
+  let _cannot_find_system env loc id =
+    _error env (Located loc) (Cannot_find_system id)
+
   let _id_def_conflict env loc id binding =
     _error env (Located loc) (Id_definition_conflict (id, binding))
 
@@ -770,8 +789,10 @@ module Make
 
   let new_state () = {
     csts = M.empty;
+    systems = M.empty;
     ttype_locs = R.empty;
     const_locs = S.empty;
+    system_locs = S.empty;
     cstrs_locs = U.empty;
     dstrs_locs = S.empty;
     field_locs = V.empty;
@@ -780,9 +801,11 @@ module Make
 
   let copy_state st = {
     csts = st.csts;
+    systems = st.systems;
     custom = st.custom;
     ttype_locs = st.ttype_locs;
     const_locs = st.const_locs;
+    system_locs = st.system_locs;
     cstrs_locs = st.cstrs_locs;
     dstrs_locs = st.dstrs_locs;
     field_locs = st.field_locs;
@@ -1116,7 +1139,7 @@ module Make
     | Bound (_, t) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
-    | Builtin | Reserved _ | Declared _ | Defined _
+    | Builtin | Reserved _ | Declared _ | Defined _ | SysDefined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
@@ -1130,7 +1153,7 @@ module Make
       _warn env (Ast t) (Unused_term_variable (kind, v))
     (* variables should not be declare-able nor builtin,
        and we do not use any term wildcards. *)
-    | Builtin | Reserved _ | Declared _ | Defined _
+    | Builtin | Reserved _ | Declared _ | Defined _ | SysDefined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
       assert false
 
@@ -1851,6 +1874,7 @@ module Make
     | `Letin (_, _, v, t) -> parse_app_letin_var env ast v s_ast t args
     | `Ty_cst f -> parse_app_ty_cst env ast f args
     | `Term_cst f -> parse_app_term_cst env ast f args
+    | `Sys_cst (_, _, _) -> assert false (* Todo if needed *)
     | `Dstr c -> parse_app_term_cst env ast c args
     | `Cstr c ->
       parse_app_cstr env ast c args
@@ -2527,9 +2551,281 @@ module Make
         ) d.contents
     end
 
+  (* MCIL Only System Definitions and Checks *)
+  (* ************************************************************************ *)
+  (* Const declarations *)
+  let add_system env fragment id reason v =
+    begin match find_bound env id with
+      | `Not_found -> ()
+      | `Builtin `Infer _ -> () (* inferred builtins are meant to be shadowed/replaced *)
+      | #bound as old -> _shadow env fragment id old reason v
+    end;
+    env.st.systems <- M.add id v env.st.systems
+
+  let find_system env sid : [cst | not_found] = 
+    match M.find_opt sid env.st.systems with
+    | Some res -> (res :> [cst | not_found])
+    | None -> `Not_found
+
+  let split_fo_args2 _ n_ty n_t args = (* from split_fo_args *)
+    let n_args = List.length args in
+    if n_args = n_ty + n_t then
+      `Ok (Misc.Lists.take_drop n_ty args)
+    else
+      `Bad_arity ([n_ty + n_t], n_args)
+     
+
+  let parse_sys_app_symbol env s args_asts = (*from parse_app_term_cst*)
+    let n_ty, n_t = arity (T.Const.ty s) in
+      let ty_args, t_l =
+        match split_fo_args2 env n_ty n_t args_asts with
+        | `Ok (l, l') ->
+          let ty_args = List.map (parse_ty env) l in
+          ty_args, l'
+        | `Fixed (l, l') -> l, l'
+        | `Bad_arity _ ->
+          Format.printf "Bad arity in check-system definition or subsystem declaration.\n" ;
+          assert false (* [Kian] TODO better error*)(* _bad_term_arity env f expected actual ast *)
+      in
+      let t_args = List.map (parse_term env) t_l in
+
+      (* [Kian] TODO Do better here once we change the type of a sys def *)
+      if (not (Ty.equal (T.ty (T.apply_cst s ty_args t_args)) (Ty.prop))) then (
+        Format.printf "Bad arity in check-system definition or subsystem declaration.\n" ;
+        assert false)
+
+  let parse_sys_app env loc sid input output local = 
+    let sys = match find_system env sid with
+      | #cst as res -> (res :> [ bound | not_found ])
+      | `Not_found ->
+        (find_builtin env sid :> [ bound | not_found ])
+    in
+    match sys with 
+    | `Sys_cst (i, o, l) -> 
+      if ((List.length input) > 0) then parse_sys_app_symbol env i input ;
+      if List.length output > 0 then parse_sys_app_symbol env o output ;
+      if List.length local > 0 then parse_sys_app_symbol env l local ;
+    | _ -> 
+      _cannot_find_system env loc sid
+
+  let op_list_to_list l =
+    match l with
+      | Some l -> l
+      | None -> []
+
+  let op_funct_app f o = 
+    match o with 
+      | Some o -> Some (f o)
+      | None -> None
+
+  let parse_opt_prop env prop = 
+    match op_funct_app (parse_expr env) prop with 
+      (* [Kian] TODO: Add proper errors rather than assertions *)
+      | Some (Term body) ->
+        if (not ((T.ty body) == Ty.prop)) then (
+          Format.printf ":init, :trans, or :inv statement is of type %a but must be boolean.\n" Ty.print (T.ty body) ;
+          assert false)
+      | _ -> () (* [Kian]  no body means valid typecheck*)
+
+  let parse_sys env primed_env (d: Stmt.sys_def) = 
+    parse_opt_prop env d.init ; 
+    parse_opt_prop primed_env d.trans ; 
+    parse_opt_prop env d.inv
+
+  let parse_primed_params env params =
+    let rec aux env acc = function
+      | [] -> env, List.rev acc
+      | p :: r ->
+        let id, v, ast = parse_typed_var_in_binding_pos env p in
+        let primed_id =  match (Id.name id) with
+        | Simple name ->
+          Id.create (Id.ns id) (Dolmen_std.Name.simple (name ^ "'") )
+        | _ -> assert false in
+        let env = add_term_var env primed_id v ast in
+        aux env (v :: acc) r
+    in
+    aux env [] params
+
+  let parse_mcil_sig env input output local =
+    let env, input_parsed  = parse_def_params env (op_list_to_list input) in
+    let env, output_parsed = parse_def_params env (op_list_to_list output) in
+    let env, local_parsed  = parse_def_params env (op_list_to_list local) in
+    let primed_env = split_env_for_def env in
+    let primed_env, _ = parse_primed_params primed_env (op_list_to_list input) in
+    let primed_env, _ = parse_primed_params primed_env (op_list_to_list output) in
+    let primed_env, _ = parse_primed_params primed_env (op_list_to_list local) in
+
+
+    env, primed_env, input_parsed, output_parsed, local_parsed
+    
+  let mk_term_cst env name ty =
+    T.Const.mk (cst_path env name) ty
+
+  let create_id_for_sig env input output local (s: Stmt.sys_def) =
+    let input_tys  = Ty.arrow  (List.map (fun p -> T.Var.ty p) input ) Ty.prop in
+    let output_tys = Ty.arrow  (List.map (fun p -> T.Var.ty p) output ) Ty.prop in
+    let local_tys  = Ty.arrow  (List.map (fun p -> T.Var.ty p) local ) Ty.prop  in
+    
+    (* [Kian] TODO Change the last element in the type to a 'unit' type *)
+    (* let ty = Ty.arrow input_tys (Ty.arrow output_tys  (Ty.arrow local_tys Ty.prop) ) in *)
+    let i = mk_term_cst env (Id.name s.id) input_tys in
+    let o = mk_term_cst env (Id.name s.id) output_tys in
+    let l = mk_term_cst env (Id.name s.id) local_tys in
+    
+    let (f : cst) = `Sys_cst (i, o, l) in
+
+    let reason = (SysDefined (env.file, s)) in
+    
+    (* Create a new thing that is not a term const? *)
+    add_system env (SysDef s) s.id reason f; 
+    env.st.system_locs <-  S.add i (S.add o (S.add l reason S.empty) S.empty) S.empty ;
+    s.id, i (* `Term (s.id, f) *)
+
+  let id_for_sig env input output local (s: Stmt.sys_def) =
+    create_id_for_sig env input output local s
+    
+  let finalize_sys id f env input output local = 
+    let _ = env in (* [Kian] TODO determine if commented code below is needed
+      Was causing errors and its purpose is unknown. *)
+    (* List.iter (check_used_term_var ~kind:`Function_param env) input;
+    List.iter (check_used_term_var ~kind:`Function_param env) output;
+    List.iter (check_used_term_var ~kind:`Function_param env) local; *)
+
+    `Sys_def (id, f, input, output, local)
+
+  let parse_subsystems env (parent_system : Stmt.sys_def) = 
+    parent_system.subs |> (List.fold_left (fun other_subs (local_name, sub_name, args) -> (
+      (* Make sure local name isn't used twice *)
+      let local_name_not_defined = ((List.find_opt (Id.equal local_name) other_subs) = None) in
+      (if (not local_name_not_defined) then 
+        Format.printf "Subsystem with local name %a is already declared and cannot be redeclared in %a\n" Id.print local_name Id.print parent_system.id ;
+        assert local_name_not_defined );
+      let rec split k xs = match xs with
+        | [] -> failwith "firstk"
+        | x::xs -> 
+          if k=1 then 
+            [x], xs 
+          else 
+            if k=0 then
+              [], x::xs
+            else
+              let fk, lk = split (k-1) xs in x::fk, lk in
+
+      let parse_sys_app env sid = 
+        let sys = match find_system env sid with
+          | #cst as res -> (res :> [ bound | not_found ])
+          | `Not_found ->
+            (find_builtin env sid :> [ bound | not_found ])
+        in
+        match sys with 
+        | `Sys_cst (i,o, _) -> 
+          let _, n_t = arity (T.Const.ty i) in
+          let input, output = split n_t args in
+            if ((List.length input) > 0) then parse_sys_app_symbol env i input ;
+            if ((List.length input) > 0) then parse_sys_app_symbol env o output ;
+          (* Locals are not parsed as they are created implicitly *)
+        | _ -> _cannot_find_system env parent_system.loc sid
+      in
+      parse_sys_app env sub_name ;
+      local_name :: other_subs
+    ))) []
+
+
+  let sys_def env (d : Stmt.sys_def) =
+    let env = split_env_for_def env in
+    let ssig_env, ssig_primed_env, input , output , local = parse_mcil_sig env d.input d.output d.local in
+    parse_sys ssig_env ssig_primed_env d ;
+    let _ = parse_subsystems ssig_env d in
+
+    let id, f = id_for_sig ssig_env input output local d in
+
+    (* [Kian] Finalize Def -- What do these do? *)
+
+    (* let def = parse_def ssig t in
+    let ssig = close_wildcards_in_sig ssig t in
+    let id = id_for_def ~freshen:false ~defs:d ~mode tags ssig t in *)
+    finalize_sys id f env input output local
+
   (* High-level parsing function *)
   (* ************************************************************************ *)
+  
+  let parse_property env prop_type_name prop_map r = 
+    let id, (body: Ast.t) = r in
+    match (parse_expr env body) with
+      | Term t -> 
+        let prop_type = T.ty t in
+        
+        (* [Kian] TODO make this a proper error *)
+        (if (not (Ty.equal prop_type Ty.prop)) then 
+          Format.printf "%s prop %a has type %a but must be of type boolean\n" prop_type_name Id.print id Ty.print prop_type ;
+          assert (Ty.equal prop_type Ty.prop) ) ;
 
+        (* let env = add_term_var env id term_var body in *)
+        id :: prop_map (* [Kian] could make this a map for quicker lookups *)
+        
+        | _ -> assert false (* [Kian] TODO add real error here *)
+
+  let parse_reachable_properties _ primed_env (d: Stmt.sys_check) = 
+    (* Parse reach and assumption bodies to verify that they are boolean *)
+    List.fold_left (parse_property primed_env "Reachability") [] d.reachable
+   
+  let parse_assumption_properties _ primed_env (d: Stmt.sys_check) = 
+    List.fold_left (parse_property primed_env "Assumption") [] d.assumption 
+
+  let parse_queries (a_map, r_map) (d: Stmt.sys_check) = 
+    let check_query queries (id, props) = 
+      (* [Kian] TODO make a better error message and possibly use a map *)
+      (if (List.mem id queries) then Format.printf "Query %a already defined\n" Id.print id ; assert (not (List.mem id queries))); 
+
+      (* [Kian] TODO make a better error message *)
+      (* [Kian] possibly prevent duplicate uses of props *)
+       
+      (* [Kian] TODO add better error messages *)
+      (* [Kian] possibly prevent duplicate uses of props *)
+      let r_seen = (List.fold_left (fun r_seen prop -> match prop with 
+        | { Ast.term = Ast.Symbol s; _ } ->
+          (* prop is an assumption *)
+          (if ((List.find_opt (Id.equal s) a_map) != None) then (
+            (if r_seen then (Format.printf "An assumption was found in querty %a after a reachability property. All assumptions must be stated first." Id.print id) ; assert (not r_seen) ) ;
+            r_seen
+          ) else
+            (* prop is a reachability statement *)
+            (if ((List.find_opt (Id.equal s) r_map) != None) then (
+              true
+            ) 
+            (* Prop was not declared *)
+            else 
+              failwith (Format.asprintf "Property %a referenced in query %a is not defined" Id.print s Id.print id)));
+        | _ -> assert false ) false props) in
+
+      if (not r_seen) then Format.printf "At least one reachability property must be present in a query." ; assert r_seen ;
+
+      id :: queries in
+    List.fold_left check_query [] d.queries
+  
+  let check_sys env (c : Stmt.sys_check) = 
+    let env = split_env_for_def env in
+    let ssig_env, ssig_primed_env, _ , _ , _ = parse_mcil_sig env c.input c.output c.local in
+    
+    (* Verify that a system exists with the same variables *)
+    parse_sys_app 
+      ssig_env c.loc c.id 
+      (op_list_to_list c.input) 
+      (op_list_to_list c.output)
+      (op_list_to_list c.local);
+    
+    (* Verify the reachability predicate assignments are valid. Add to env *)
+    (* [Kian] TODO We will need a third env with only primed vars once we add more than just reachability
+       properties. See the check-system definition on GitHub for clarification. *)
+    let reachability_prop_map = parse_reachable_properties ssig_env ssig_primed_env c in
+    let assumption_prop_map = parse_assumption_properties ssig_env ssig_primed_env c in
+
+    (* [Kian] Type check the queries. Try to treat them like function decls? (where args must be bools)  *)
+    let _ = parse_queries (assumption_prop_map, reachability_prop_map) c in
+
+    (* [Kian] No need to add the check-system to the environment?  *)
+    `Sys_check
+  
   let parse env ast =
     let res = parse_prop env ast in
     let _env, res = finalize_wildcards_prop (`Term ast) env ast res in

@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/223_define-system_missing_input_list.mcil", line 1, character 25-26:
+1 | (define-system sys :input)
+                             ^
+Error while parsing a system input definition, read a closing parenthesis,
+      but expected a list of sorted variables.

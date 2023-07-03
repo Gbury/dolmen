@@ -3,5 +3,5 @@
   (name         dolmen_smtlib2)
   (public_name  dolmen.smtlib2)
   (modules      Dolmen_smtlib2)
-  (libraries    dolmen_smtlib2_v6 dolmen_smtlib2_poly)
+  (libraries    dolmen_smtlib2_v6 dolmen_smtlib2_poly dolmen_smtlib2_mcil)
 )

@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/259_check-system_bad_query_or_unclosed.mcil", line 1, character 36-37:
+1 | (check-system sys :queries ((q (r)) x))
+                                        ^
+Error while parsing a check-system query list, read the symbol 'x',
+      but expected a check-system query definition or closing parenthesis.

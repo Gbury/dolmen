@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/232_define-system_bad_subsys_decl_4.mcil", line 1, character 31-32:
+1 | (define-system sys :subsys (a ()))
+                                   ^
+Error while parsing a subsystem call, read a closing parenthesis,
+      but expected a defined subsystem name.

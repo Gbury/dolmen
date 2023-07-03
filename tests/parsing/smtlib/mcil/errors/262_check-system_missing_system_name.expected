@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/262_check-system_missing_system_name.mcil", line 1, character 14-15:
+1 | (define-system)
+                  ^
+Error while parsing a system definition, read a closing parenthesis,
+      but expected a system name symbol.
