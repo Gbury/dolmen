@@ -1,0 +1,23 @@
+; This file declares several small systems
+; This is used to verify that the parser and
+; typechecker work as expected but 
+; no check system commands are issued. 
+
+(set-logic QF_LIA)
+
+(define-system Delay :input ( (i Int) ) :output ( (o Int) )
+ :init (= o 0)
+ :trans (= o' i) ; the new output is the old input
+)
+
+(define-system Delay :input ( (i Int) ) :output ( (o Int) )
+ :init (<= 0 o 10) ; more than one possible initial output
+ :trans (= o' i)
+)
+
+(define-system StutteringClockedCopy
+ :input ((clock Bool) (i Int))
+ :output ((o Int))
+ :init (=> clock (= o i)) ; o is arbitrary when clock is false 
+ :trans (ite clock (= o' i') (= o' o)) ; ite is if-then-else
+)
