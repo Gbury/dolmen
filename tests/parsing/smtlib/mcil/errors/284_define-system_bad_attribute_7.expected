@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/284_define-system_bad_attribute_7.mcil", line 1, character 26-27:
+1 | (define-system sys :inv t _)
+                              ^
+Error while parsing a system definition, read the reserved word '_',
+      but expected an attribute from the set (:input, :output, :local,
+      :subsys, :init, :trans) or a closing parenthesis.

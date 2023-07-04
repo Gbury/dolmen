@@ -71,12 +71,12 @@ type def = {
 type sys_def = {
   id     : Id.t;
   loc    : location;
-  input  : term list option;
-  output : term list option;
-  local  : term list option;
-  init   : term option;
-  trans  : term option;
-  inv    : term option;
+  input  : term list;
+  output : term list;
+  local  : term list;
+  init   : term;
+  trans  : term;
+  inv    : term;
   subs   : (Id.t * Id.t * term list) list;
 }
 (** System definition. *)
@@ -84,9 +84,9 @@ type sys_def = {
 type sys_check = {
   id         : Id.t;
   loc        : location;
-  input      : term list option;
-  output     : term list option;
-  local      : term list option;
+  input      : term list;
+  output     : term list;
+  local      : term list;
   reachable  : (Id.t * term) list;
   assumption : (Id.t * term) list;
   queries    : (Id.t * term list) list;

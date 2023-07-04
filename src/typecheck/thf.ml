@@ -2608,29 +2608,19 @@ module Make
     | _ -> 
       _cannot_find_system env loc sid
 
-  let op_list_to_list l =
-    match l with
-      | Some l -> l
-      | None -> []
-
-  let op_funct_app f o = 
-    match o with 
-      | Some o -> Some (f o)
-      | None -> None
-
-  let parse_opt_prop env prop = 
-    match op_funct_app (parse_expr env) prop with 
+  let parse_cond env cond = 
+    match (parse_expr env) cond with 
       (* [Kian] TODO: Add proper errors rather than assertions *)
-      | Some (Term body) ->
+      | Term body ->
         if (not ((T.ty body) == Ty.prop)) then (
           Format.printf ":init, :trans, or :inv statement is of type %a but must be boolean.\n" Ty.print (T.ty body) ;
           assert false)
       | _ -> () (* [Kian]  no body means valid typecheck*)
 
   let parse_sys env primed_env (d: Stmt.sys_def) = 
-    parse_opt_prop env d.init ; 
-    parse_opt_prop primed_env d.trans ; 
-    parse_opt_prop env d.inv
+    parse_cond env d.init ; 
+    parse_cond primed_env d.trans ; 
+    parse_cond env d.inv
 
   let parse_primed_params env params =
     let rec aux env acc = function
@@ -2647,13 +2637,13 @@ module Make
     aux env [] params
 
   let parse_mcil_sig env input output local =
-    let env, input_parsed  = parse_def_params env (op_list_to_list input) in
-    let env, output_parsed = parse_def_params env (op_list_to_list output) in
-    let env, local_parsed  = parse_def_params env (op_list_to_list local) in
+    let env, input_parsed  = parse_def_params env input in
+    let env, output_parsed = parse_def_params env output in
+    let env, local_parsed  = parse_def_params env local in
     let primed_env = split_env_for_def env in
-    let primed_env, _ = parse_primed_params primed_env (op_list_to_list input) in
-    let primed_env, _ = parse_primed_params primed_env (op_list_to_list output) in
-    let primed_env, _ = parse_primed_params primed_env (op_list_to_list local) in
+    let primed_env, _ = parse_primed_params primed_env input in
+    let primed_env, _ = parse_primed_params primed_env output in
+    let primed_env, _ = parse_primed_params primed_env local in
 
 
     env, primed_env, input_parsed, output_parsed, local_parsed
@@ -2809,10 +2799,7 @@ module Make
     
     (* Verify that a system exists with the same variables *)
     parse_sys_app 
-      ssig_env c.loc c.id 
-      (op_list_to_list c.input) 
-      (op_list_to_list c.output)
-      (op_list_to_list c.local);
+      ssig_env c.loc c.id c.input c.output c.local;
     
     (* Verify the reachability predicate assignments are valid. Add to env *)
     (* [Kian] TODO We will need a third env with only primed vars once we add more than just reachability

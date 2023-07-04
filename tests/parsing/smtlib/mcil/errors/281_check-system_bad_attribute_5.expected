@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/281_check-system_bad_attribute_5.mcil", line 1, character 29-30:
+1 | (check-system sys :output () _)
+                                 ^
+Error while parsing a check-system command, read the reserved word '_',
+      but expected an attribute from the set (:input, :local, :assumption,
+      :reachable, :query, :queries).

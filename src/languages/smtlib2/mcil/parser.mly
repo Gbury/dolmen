@@ -337,56 +337,145 @@ function_def:
   | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), [], args, ret, body }
 
-system_var_dec:
-  | SYS_INPUT OPEN args=sorted_var* CLOSE
-  { ":input", args }
-  | SYS_OUTPUT OPEN args=sorted_var* CLOSE
-  { ":output", args }
-  | SYS_LOCAL OPEN args=sorted_var* CLOSE
-  { ":local", args }
+input_var_decl:
+  | SYS_INPUT OPEN vars=sorted_var* CLOSE 
+  { L.mk_pos $startpos $endpos, vars }
 
-system_cond_def:
-  | SYS_INIT body=term
-  { ":init", body }
-  | SYS_TRANS body=term
-  { ":trans", body }
-  | SYS_INV body=term
-  { ":inv", body }
-  // TODO HANDLE EMPTY BODIES
+output_var_decl:
+  | SYS_OUTPUT OPEN vars=sorted_var* CLOSE
+  { L.mk_pos $startpos $endpos, vars }
+
+local_var_decl:
+  | SYS_LOCAL OPEN vars=sorted_var* CLOSE
+  { L.mk_pos $startpos $endpos, vars }
+
+system_var_decls_lst:
+  | i=input_var_decl others=system_var_decls_lst
+  { let input, output, local = others in
+    i :: input, output, local
+  }
+  | o=output_var_decl others=system_var_decls_lst
+  { let input, output, local = others in
+    input, o :: output, local 
+  }
+  | l=local_var_decl others=system_var_decls_lst
+  { let input, output, local = others in
+    input, output, l :: local 
+  }
+  | i=input_var_decl
+  { [i], [], [] }
+  | o=output_var_decl
+  { [], [o], [] }
+  | l=local_var_decl
+  { [], [], [l] }
+
+system_var_decls:
+  | decls=system_var_decls_lst
+  {
+    let get_system_var_decl var_decl attr_name =
+      match var_decl with
+      | [] -> []
+      | [(_, d)] -> d
+      | _ :: (loc, _) :: _ ->
+        let msg = Format.dprintf "%a attribute is not repeatable"
+          Format.pp_print_text attr_name
+        in
+        raise (L.Syntax_error (loc, `Regular msg))
+    in 
+    let input, output, local = decls in
+    get_system_var_decl input ":input",
+    get_system_var_decl output ":output",
+    get_system_var_decl local ":local"
+  }
+
+opt_system_var_decls:
+  | { [], [], [] }
+  | decls=system_var_decls { decls }
 
 system_subsys_dec:
   | SYS_SUBSYS OPEN local_name=SYMBOL OPEN sub_name=SYMBOL args=pattern_symbol* CLOSE CLOSE
-  
   { I.(mk term local_name), I.(mk term sub_name), args }
   | SYS_SUBSYS OPEN local_name=SYMBOL sub_name=SYMBOL CLOSE
   { I.(mk term local_name), I.(mk term sub_name), [] }
 
-subs_and_conds:
-  | sub=system_subsys_dec others=subs_and_conds
-    {let subs, conds = others in
-     sub::subs, conds}
-  | cond=system_cond_def others=subs_and_conds
-    {let subs, conds = others in
-     subs, cond::conds}
+init_cond:
+  | SYS_INIT cond=term
+  { L.mk_pos $startpos $endpos, cond }
+
+trans_cond:
+  | SYS_TRANS cond=term
+  { L.mk_pos $startpos $endpos, cond }
+
+inv_cond:
+  | SYS_INV cond=term
+  { L.mk_pos $startpos $endpos, cond }
+
+subs_and_conds_lst:
+  | sub=system_subsys_dec others=subs_and_conds_lst
+  { let subs, init, trans, inv = others in
+    sub::subs, init, trans, inv
+  }
+  | i=init_cond others=subs_and_conds_lst
+  { let subs, init, trans, inv = others in
+    subs, i :: init, trans, inv
+  }
+  | t=trans_cond others=subs_and_conds_lst
+  { let subs, init, trans, inv = others in
+    subs, init, t :: trans, inv
+  }
+  | i=inv_cond others=subs_and_conds_lst
+  { let subs, init, trans, inv = others in
+    subs, init, trans, i :: inv
+  }
   | sub=system_subsys_dec
-    {[sub], []}
-  | cond=system_cond_def
-    {[], [cond]}
+  { [sub], [], [], [] }
+  | init=init_cond
+  { [], [init], [], [] }
+  | trans=trans_cond
+  { [], [], [trans], [] }
+  | inv=inv_cond
+  { [], [], [], [inv] }
+
+subs_and_conds:
+  | sc=subs_and_conds_lst
+  {
+    let get_cond cond_lst attr_name =
+      match cond_lst with
+      | [] -> T.const I.(mk term "true")
+      | [(_, c)] -> c
+      | _ :: (loc, _) :: _ ->
+        let msg = Format.dprintf "%a attribute is not repeatable"
+          Format.pp_print_text attr_name
+        in
+        raise (L.Syntax_error (loc, `Regular msg))
+    in
+    let subs, init, trans, inv = sc in
+    subs,
+    get_cond init ":init",
+    get_cond trans ":trans",
+    get_cond inv ":inv"
+  }
 
 opt_subs_and_conds :
-  | { [], [] }
+  | 
+  { let true_ = T.const I.(mk term "true") in 
+    [], true_, true_, true_ 
+  }
   | sc=subs_and_conds { sc }
 
 system_def:
-  | s=SYMBOL args=system_var_dec* sc=opt_subs_and_conds
-    { let subs, conds = sc in
-    I.(mk term s), args, subs, conds}
+  | s=SYMBOL vars=opt_system_var_decls sc=opt_subs_and_conds
+  { let subs, init, trans, inv = sc in
+    I.(mk term s), vars, subs, init, trans, inv
+  }
 
-sys_check_attr:
-  | CHECK_REACH OPEN s=SYMBOL body=term CLOSE
-  { ":reachable", (I.(mk term s), body) }
-  | CHECK_ASSUMPTION OPEN s=SYMBOL body=term CLOSE
-  { ":assumption", (I.(mk term s), body) }
+reach_cond:
+  | CHECK_REACH OPEN s=SYMBOL cond=term CLOSE
+  { I.(mk term s), cond }
+
+assump_cond:
+  | CHECK_ASSUMPTION OPEN s=SYMBOL cond=term CLOSE
+  { I.(mk term s), cond }
 
 sys_check_query_base:
   | OPEN s=SYMBOL OPEN args=pattern_symbol* CLOSE CLOSE
@@ -399,27 +488,34 @@ sys_check_query:
   { queries }
 
 sys_check_attrs_and_queries:
-  | a=sys_check_attr others=sys_check_attrs_and_queries
-    { let attrs, queries = others in
-      a :: attrs, queries
-    }
+  | a=assump_cond others=sys_check_attrs_and_queries
+  { let assumption, reachable, queries = others in
+    a :: assumption, reachable, queries
+  }
+  | r=reach_cond others=sys_check_attrs_and_queries
+  { let assumption, reachable, queries = others in
+    assumption, r :: reachable, queries
+  }
   | q=sys_check_query others=sys_check_attrs_and_queries
-    { let attrs, queries = others in
-      attrs, q :: queries
-    }
-  | a=sys_check_attr
-    { [a], [] }
+  { let assumption, reachable, queries = others in
+    assumption, reachable, q :: queries
+  }
+  | a=assump_cond
+  { [a], [], [] }
+  | r=reach_cond
+  { [], [r], [] }
   | q=sys_check_query
-    { [], [q] }
+  { [], [], [q] }
 
 opt_sys_check_attrs_and_queries:
-  | { [], [] }
+  | { [], [], [] }
   | aq = sys_check_attrs_and_queries { aq }
 
 system_check:
-  | s=SYMBOL args=system_var_dec* attrs_queries=opt_sys_check_attrs_and_queries
-    { let attrs, queries = attrs_queries in
-      I.(mk term s), args, attrs, List.flatten queries}
+  | s=SYMBOL vars=opt_system_var_decls attrs_queries=opt_sys_check_attrs_and_queries
+  { let assumption, reachable, queries = attrs_queries in
+    I.(mk term s), vars, assumption, reachable, List.flatten queries
+  }
 
 /* Additional rule for prop_literals symbols, to have lighter
    semantic actions in prop_literal reductions. */
@@ -509,19 +605,22 @@ command:
       let loc = L.mk_pos $startpos $endpos in
       S.funs_def_rec ~loc res }
   | OPEN DEFINE_SYS f=system_def CLOSE
-    { let id, vars, subs, conds = f in
+    { let id, vars, subs, init, trans, inv = f in
+      let input, output, local = vars in
       let loc = L.mk_pos $startpos $endpos in
-      S.sys_def ~loc id vars subs conds }
+      S.sys_def ~loc id ~input ~output ~local ~subs ~init ~trans ~inv }
   | OPEN DECLARE_ENUM_SORT s=SYMBOL OPEN d=enum_constructor_dec+ CLOSE CLOSE
     {
       let constructors = d in
       let loc = L.mk_pos $startpos $endpos in
       S.datatypes ~loc [I.(mk sort s), [], constructors]
     }
-  | OPEN CHECK_SYS f=system_check CLOSE
-  { let id, vars, formulas, queries = f in
-    let loc = L.mk_pos $startpos $endpos in
-    S.sys_check ~loc id vars formulas queries }
+  | OPEN CHECK_SYS sc=system_check CLOSE
+    { let id, vars, assumption, reachable, queries = sc in
+      let input, output, local = vars in
+      let loc = L.mk_pos $startpos $endpos in
+      S.sys_check ~loc id ~input ~output ~local ~assumption ~reachable ~queries
+    }
   | OPEN DEFINE_SORT s=SYMBOL OPEN args=SYMBOL* CLOSE ty=sort CLOSE
     { let id = I.(mk sort s) in
       let l = List.map I.(mk sort) args in

@@ -1601,4 +1601,164 @@
   (action (diff 280_define-system_bad_attribute.expected 280_define-system_bad_attribute.full)))
 
 
+; Test for 281_check-system_bad_attribute_5.mcil
+; Incremental test
+
+(rule
+   (target  281_check-system_bad_attribute_5.incremental)
+   (deps    (:input 281_check-system_bad_attribute_5.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 281_check-system_bad_attribute_5.expected 281_check-system_bad_attribute_5.incremental)))
+
+; Full mode test
+
+(rule
+   (target  281_check-system_bad_attribute_5.full)
+   (deps    (:input 281_check-system_bad_attribute_5.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 281_check-system_bad_attribute_5.expected 281_check-system_bad_attribute_5.full)))
+
+
+; Test for 282_check-system_bad_attribute_6.mcil
+; Incremental test
+
+(rule
+   (target  282_check-system_bad_attribute_6.incremental)
+   (deps    (:input 282_check-system_bad_attribute_6.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 282_check-system_bad_attribute_6.expected 282_check-system_bad_attribute_6.incremental)))
+
+; Full mode test
+
+(rule
+   (target  282_check-system_bad_attribute_6.full)
+   (deps    (:input 282_check-system_bad_attribute_6.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 282_check-system_bad_attribute_6.expected 282_check-system_bad_attribute_6.full)))
+
+
+; Test for 283_define-system_bad_attribute_6.mcil
+; Incremental test
+
+(rule
+   (target  283_define-system_bad_attribute_6.incremental)
+   (deps    (:input 283_define-system_bad_attribute_6.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 283_define-system_bad_attribute_6.expected 283_define-system_bad_attribute_6.incremental)))
+
+; Full mode test
+
+(rule
+   (target  283_define-system_bad_attribute_6.full)
+   (deps    (:input 283_define-system_bad_attribute_6.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 283_define-system_bad_attribute_6.expected 283_define-system_bad_attribute_6.full)))
+
+
+; Test for 284_define-system_bad_attribute_7.mcil
+; Incremental test
+
+(rule
+   (target  284_define-system_bad_attribute_7.incremental)
+   (deps    (:input 284_define-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 284_define-system_bad_attribute_7.expected 284_define-system_bad_attribute_7.incremental)))
+
+; Full mode test
+
+(rule
+   (target  284_define-system_bad_attribute_7.full)
+   (deps    (:input 284_define-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 284_define-system_bad_attribute_7.expected 284_define-system_bad_attribute_7.full)))
+
+
+; Test for 285_check-system_bad_attribute_7.mcil
+; Incremental test
+
+(rule
+   (target  285_check-system_bad_attribute_7.incremental)
+   (deps    (:input 285_check-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 285_check-system_bad_attribute_7.expected 285_check-system_bad_attribute_7.incremental)))
+
+; Full mode test
+
+(rule
+   (target  285_check-system_bad_attribute_7.full)
+   (deps    (:input 285_check-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 285_check-system_bad_attribute_7.expected 285_check-system_bad_attribute_7.full)))
+
+
 ; Auto-generated part end

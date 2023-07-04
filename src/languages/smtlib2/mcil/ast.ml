@@ -157,7 +157,11 @@ module type Statement = sig
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t
   (** Declare a list of mutually recursive functions. *)
 
-  val sys_def : ?loc:location -> id -> (string * term list) list -> (id * id * term list) list -> (string * term ) list -> t
+  val sys_def : 
+    ?loc:location -> id ->
+    input:term list -> output:term list -> local:term list ->
+    subs:(id * id * term list) list ->
+    init:term -> trans:term -> inv:term -> t
   (** Defines a new transition system.  *)
 
 
@@ -176,8 +180,10 @@ module type Statement = sig
       under the local assumptions specified. *)
 
   val sys_check : ?loc:location -> id ->
-    (string * term list) list ->
-    (string * (id * term)) list -> (id * term list) list -> t
+    input:term list -> output:term list -> local:term list ->
+    assumption:(id * term) list ->
+    reachable:(id * term) list ->
+    queries:(id * term list) list -> t
   (** Check the existence of a trace in a transition system **)
 
 
