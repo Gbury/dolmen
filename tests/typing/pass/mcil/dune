@@ -257,6 +257,102 @@
   (action (diff ThreeBitCounter.expected ThreeBitCounter.full)))
 
 
+; Test for TimedSwitch1.mcil
+; Incremental test
+
+(rule
+   (target  TimedSwitch1.incremental)
+   (deps    (:input TimedSwitch1.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch1.expected TimedSwitch1.incremental)))
+
+; Full mode test
+
+(rule
+   (target  TimedSwitch1.full)
+   (deps    (:input TimedSwitch1.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch1.expected TimedSwitch1.full)))
+
+
+; Test for TimedSwitch2.mcil
+; Incremental test
+
+(rule
+   (target  TimedSwitch2.incremental)
+   (deps    (:input TimedSwitch2.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch2.expected TimedSwitch2.incremental)))
+
+; Full mode test
+
+(rule
+   (target  TimedSwitch2.full)
+   (deps    (:input TimedSwitch2.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch2.expected TimedSwitch2.full)))
+
+
+; Test for TimedSwitch3.mcil
+; Incremental test
+
+(rule
+   (target  TimedSwitch3.incremental)
+   (deps    (:input TimedSwitch3.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch3.expected TimedSwitch3.incremental)))
+
+; Full mode test
+
+(rule
+   (target  TimedSwitch3.full)
+   (deps    (:input TimedSwitch3.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TimedSwitch3.expected TimedSwitch3.full)))
+
+
 ; Test for TrafficLight1.mcil
 ; Incremental test
 
@@ -319,6 +415,38 @@
   (alias runtest)
   (package dolmen_bin)
   (action (diff TrafficLight3.expected TrafficLight3.full)))
+
+
+; Test for TrafficLightEnum.mcil
+; Incremental test
+
+(rule
+   (target  TrafficLightEnum.incremental)
+   (deps    (:input TrafficLightEnum.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TrafficLightEnum.expected TrafficLightEnum.incremental)))
+
+; Full mode test
+
+(rule
+   (target  TrafficLightEnum.full)
+   (deps    (:input TrafficLightEnum.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff TrafficLightEnum.expected TrafficLightEnum.full)))
 
 
 ; Auto-generated part end
