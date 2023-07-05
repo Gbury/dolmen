@@ -27,13 +27,17 @@ bug-reports: "https://github.com/Gbury/dolmen/issues"
 doc: "https://gbury.github.io/dolmen"
 synopsis: "A parser library for automated deduction"
 description:
-"Dolmen is a parser library. It currently targets languages used in automated theorem provers,
-but may be extended to other domains.
+"Dolmen aims at providing tools to help in writing programs in the field of theorem proving,
+SMT solving, and model checking. The project includes a few libraries, a CLI binary and an
+LSP server, split over several opam packages.
+
+This is the Dolmen parser library. It currently targets languages used in automated theorem provers,
+as well as model checking, and may be extended to other domains later.
 
 Dolmen provides functors that takes as arguments a representation of terms and statements,
 and returns a module that can parse files (or streams of tokens) into the provided representation
 of terms or statements. This is meant so that Dolmen can be used as a drop-in replacement of existing
 parser, in order to factorize parsers among projects.
 
-Additionally, Dolmen also provides a standard implementation of terms and statements that cna be
-used ot instantiate its parsers."
+Additionally, Dolmen also provides a standard implementation of terms and statements that can be
+used to instantiate its parsers."

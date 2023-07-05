@@ -22,4 +22,4 @@ dev-repo: "git+https://github.com/Gbury/dolmen.git"
 bug-reports: "https://github.com/Gbury/dolmen/issues"
 
 doc: "https://gbury.github.io/dolmen"
-synopsis: "A typechecker for automated deduction languages"
+synopsis: "The Dolmen library for typecheking languages."

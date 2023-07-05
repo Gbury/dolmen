@@ -14,8 +14,9 @@ depends: [
   "dolmen_type" {= version }
   "dune" { >= "3.0" }
   "gen"
-  "odoc" { with-doc }
   "pp_loc" { >= "2.0.0" }
+  "odoc" { with-doc }
+  "mdx" { with-test }
 ]
 tags: [ "logic" "computation" "automated theorem prover" ]
 homepage: "https://github.com/Gbury/dolmen"
