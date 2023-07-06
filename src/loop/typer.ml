@@ -850,6 +850,23 @@ let bitvector_app_expected_nat_lit =
     ~hints:[bv_expected_nat_lit_hint]
     ~name:"Bad bitvector application argument" ()
 
+let non_positive_bitv_size =
+  Report.Error.mk ~code ~mnemonic:"bitvector-non-positive-size"
+    ~message:(fun fmt i ->
+        Format.fprintf fmt "%a: %d"
+          Format.pp_print_text
+          "Bitvector sizes must be positive (i.e. > 0), \
+           which is not the case for the following size" i)
+    ~name:"Non positive bitvector size" ()
+
+let invalid_smt2_bitv_extract =
+  Report.Error.mk ~code ~mnemonic:"bitvector-smt2-extract"
+    ~message:(fun fmt (i, j) ->
+        Format.fprintf fmt "Indexes i=%d and j=%d@ %a"
+          i j Format.pp_print_text
+          "in (_ extract i j) must be so that i >= j")
+    ~name:"Invalid smtlib2 bitvector extract" ()
+
 let invalid_bin_bitvector_char =
   Report.Error.mk ~code ~mnemonic:"invalid-bv-bin-char"
     ~message:(fun fmt c ->
@@ -1258,6 +1275,10 @@ module Typer(State : State.S) = struct
         (ty, "The stmlib Reals_Ints theory requires an arithmetic type in order to \
               correctly desugar the expression.")
     (* Smtlib Bitvector errors *)
+    | Smtlib2_Bitv.Non_positive_bitvector_size i ->
+      error ~input ~loc st non_positive_bitv_size i
+    | Smtlib2_Bitv.Invalid_extract (i, j) ->
+      error ~input ~loc st invalid_smt2_bitv_extract (i, j)
     | Smtlib2_Bitv.Invalid_bin_char c
     | Smtlib2_Float.Invalid_bin_char c ->
       error ~input ~loc st invalid_bin_bitvector_char c
