@@ -145,50 +145,85 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Bitv with type t := Type.T.t) = struct
 
     type _ Type.err +=
+      | Non_positive_bitvector_size : int -> Dolmen.Std.Term.t Type.err
+      | Invalid_extract : int * int -> Dolmen.Std.Term.t Type.err
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err
 
     let parse_int env ast s =
-      match int_of_string s with
-      | i when i >= 0 -> i
-      | _ ->
+      try int_of_string s
+      with Failure _ ->
         Type._error env (Ast ast)
-          (Type.Expected ("a positive integer", None))
-      | exception Failure _ ->
-        Type._error env (Ast ast)
-          (Type.Expected ("a positive integer", None))
+          (Type.Expected ("an index that is an integer", None))
+
+    let parse_positive_int env ast s =
+      let i = parse_int env ast s in
+      if i > 0 then i
+      else Type._error env (Ast ast)
+          (Type.Expected ("an index that is a positive integer", None))
+
+    let parse_nonnegative_int env ast s =
+      let i = parse_int env ast s in
+      if i >= 0 then i
+      else Type._error env (Ast ast)
+          (Type.Expected ("an index that is a non-negative integer", None))
+
+    let parse_bitv_size env ast s =
+      let i = parse_int env ast s in
+      if i > 0 then i
+      else Type._error env (Ast ast) (Non_positive_bitvector_size i)
 
     let parse_binary env s ast =
       match Misc.Bitv.parse_binary s with
-      | s -> T.mk s
+      | s ->
+        if String.length s > 0 then T.mk s
+        else begin
+          Type._error env (Ast ast)
+            (Type.Expected ("a non-empty bitvector (in binary form)", None))
+        end
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_bin_char c)
 
     let parse_hexa env s ast =
       match Misc.Bitv.parse_hexa s with
-      | s -> T.mk s
+      | s ->
+        if String.length s > 0 then T.mk s
+        else begin
+          Type._error env (Ast ast)
+            (Type.Expected ("a non-empty bitvector (in hexadecimal form)", None))
+        end
       | exception Misc.Bitv.Invalid_char c ->
         Type._error env (Ast ast) (Invalid_hex_char c)
 
     let parse_extended_lit env symbol s n =
       Base.make_op0 (module Type) env symbol (fun ast () ->
           assert (String.length s >= 2);
-          let n = parse_int env ast n in
+          let n = parse_bitv_size env ast n in
           match Misc.Bitv.parse_decimal s n with
-          | s -> T.mk s
+          | s ->
+            if String.length s > 0 then T.mk s
+            else begin
+              Type._error env (Ast ast)
+                (Type.Expected ("a non-empty bitvector (in decimal form)", None))
+            end
           | exception Misc.Bitv.Invalid_char c ->
             Type._error env (Ast ast) (Invalid_dec_char c)
         )
 
-    let indexed1 env mk i_s ast =
-      let i = parse_int env ast i_s in
+    let indexed_positive env mk i_s ast =
+      let i = parse_positive_int env ast i_s in
       mk i
 
-    let indexed2 env mk i_s j_s ast =
-      let i = parse_int env ast i_s in
-      let j = parse_int env ast j_s in
-      mk i j
+    let indexed_nonnegative env mk i_s ast =
+      let i = parse_nonnegative_int env ast i_s in
+      mk i
+
+    let indexed_extract env i_s j_s ast =
+      let i = parse_nonnegative_int env ast i_s in
+      let j = parse_nonnegative_int env ast j_s in
+      if i >= j then T.extract i j
+      else Type._error env (Ast ast) (Invalid_extract (i, j))
 
     let parse _version env s =
       match s with
@@ -198,7 +233,7 @@ module Smtlib2 = struct
         Base.parse_indexed basename indexes (function
             | "BitVec" -> `Unary (function n_s ->
                 Type.builtin_ty (Base.app0_ast (module Type) env symbol (fun ast ->
-                    Ty.bitv (parse_int env ast n_s))))
+                    Ty.bitv (parse_bitv_size env ast n_s))))
             | _ -> `Not_indexed
           ) ~k:(fun _ -> `Not_found)
           ~err:(Base.bad_ty_index_arity (module Type) env)
@@ -284,22 +319,22 @@ module Smtlib2 = struct
               `Unary (fun n -> Type.builtin_term (parse_extended_lit env symbol s n))
             | "repeat" -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed1 env T.repeat i_s)))
+                         (indexed_positive env T.repeat i_s)))
             | "zero_extend" -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed1 env T.zero_extend i_s)))
+                         (indexed_nonnegative env T.zero_extend i_s)))
             | "sign_extend" -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed1 env T.sign_extend i_s)))
+                         (indexed_nonnegative env T.sign_extend i_s)))
             | "rotate_right" -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed1 env T.rotate_right i_s)))
+                         (indexed_nonnegative env T.rotate_right i_s)))
             | "rotate_left" -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed1 env T.rotate_left i_s)))
+                         (indexed_nonnegative env T.rotate_left i_s)))
             | "extract" -> `Binary (fun i_s j_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
-                         (indexed2 env T.extract i_s j_s)))
+                         (indexed_extract env i_s j_s)))
             | _ -> `Not_indexed)
           ~err:(Base.bad_term_index_arity (module Type) env)
           ~k:(function () -> `Not_found)

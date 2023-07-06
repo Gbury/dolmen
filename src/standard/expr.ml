@@ -642,6 +642,7 @@ module Ty = struct
 
   exception Bad_arity of ty_cst * ty list
   exception Prenex_polymorphism of ty
+  exception Non_positive_bitvector_size of int
 
   (* printing *)
   let print = Print.ty
@@ -953,7 +954,8 @@ module Ty = struct
     let array = mk' ~builtin:Builtin.Array "array" 2
     let bitv =
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
-          mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
+          if i <= 0 then raise (Non_positive_bitvector_size i)
+          else mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
         )
     let float =
       with_cache ~cache:(Hashtbl.create 13) (fun (e,s) ->

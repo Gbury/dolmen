@@ -344,7 +344,8 @@ type _ t +=
 
 type _ t +=
   | Bitv of int
-  (** [Bitv n: ttype]: type constructor for bitvectors of length [n]. *)
+  (** [Bitv n: ttype]: type constructor for bitvectors of length [n].
+      Ensures that [n > 0]. *)
   | Bitvec of string
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
