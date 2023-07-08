@@ -139,3 +139,6 @@ assume that [smtlib-mode](https://github.com/mebsout/smtlib-mode) is installed. 
                   ))
 ```
 
+### VS Code
+
+Install the VS Code extension [SMT-LSP](https://marketplace.visualstudio.com/items?itemName=hra687261.smt-lsp), through the marketplace or by launching VS Code Quick Open (Ctrl+P) and running: `ext install hra687261.smt-lsp`
