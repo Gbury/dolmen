@@ -128,13 +128,19 @@ type ty_def =
 (** Type definitions. *)
 
 
-(** {2 Exceptions} *)
+(** {2 Exceptions & Helpers} *)
 (*  ************************************************************************* *)
 
 exception Already_aliased of ty_cst
 exception Type_already_defined of ty_cst
 exception Record_type_expected of ty_cst
 exception Wildcard_already_set of ty_var
+
+val with_cache : ?size:int -> ('a -> 'b) -> 'a -> 'b
+(** Memoize the given function using a hashtable as cache. Useful to
+    wrap functions such as {!Ty.Var.mk} when some symbol is indexed
+    over **simple** arguments (for instance in the case of bitvectors).
+    By default, the size is the 16, which is the minmum size of a hashtbl. *)
 
 
 (** {2 Native Tags} *)

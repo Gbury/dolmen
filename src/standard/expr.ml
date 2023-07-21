@@ -419,14 +419,17 @@ let rec list_find_map f = function
       | None -> list_find_map f r
     end
 
-(* automatic cache *)
-let with_cache ~cache f x =
-  match Hashtbl.find cache x with
-  | res -> res
-  | exception Not_found ->
-    let res = f x in
-    Hashtbl.add cache x res;
-    res
+(* Automatic cache
+   Note: as of writing this, [16] is the minimum size of a hashtbl. *)
+let with_cache ?(size=16) f =
+  let cache = Hashtbl.create size in
+  (fun x ->
+     match Hashtbl.find cache x with
+     | res -> res
+     | exception Not_found ->
+       let res = f x in
+       Hashtbl.add cache x res;
+       res)
 
 
 (* Ids *)
@@ -953,12 +956,12 @@ module Ty = struct
     let string_reg_lang = mk' ~builtin:Builtin.String_RegLan "string_reglang" 0
     let array = mk' ~builtin:Builtin.Array "array" 2
     let bitv =
-      with_cache ~cache:(Hashtbl.create 13) (fun i ->
+      with_cache (fun i ->
           if i <= 0 then raise (Non_positive_bitvector_size i)
           else mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
         )
     let float =
-      with_cache ~cache:(Hashtbl.create 13) (fun (e,s) ->
+      with_cache (fun (e,s) ->
           mk' ~builtin:(Builtin.Float(e,s)) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
         )
     let roundingMode = mk' ~builtin:Builtin.RoundingMode "RoundingMode" 0
@@ -1805,7 +1808,7 @@ module Term = struct
     let indexed
         ?pos ?name ?builtin ?tags
         cname fun_vars fun_arg fun_ret =
-      with_cache ~cache:(Hashtbl.create 13) (fun i ->
+      with_cache (fun i ->
           let fun_args = replicate i fun_arg in
           mk' ?pos ?name ?builtin ?tags cname fun_vars fun_args fun_ret
         )
@@ -1899,7 +1902,7 @@ module Term = struct
         [a; b] [Ty.of_var a] (Ty.of_var b)
 
     let multi_trigger =
-      with_cache ~cache:(Hashtbl.create 5) (fun n ->
+      with_cache (fun n ->
           let vars = List.init n (fun _ -> Ty.Var.mk "_") in
           let tys = List.map Ty.of_var vars in
           mk' ~name:"multi-trigger" ~builtin:Builtin.Multi_trigger
@@ -1920,7 +1923,7 @@ module Term = struct
     module Int = struct
 
       let int =
-        with_cache ~cache:(Hashtbl.create 113) (fun s ->
+        with_cache (fun s ->
             mk' ~builtin:(Builtin.Integer s) s [] [] Ty.int
           )
 
@@ -2017,7 +2020,7 @@ module Term = struct
     module Rat = struct
 
       let rat =
-        with_cache ~cache:(Hashtbl.create 113) (fun s ->
+        with_cache (fun s ->
             mk' ~builtin:(Builtin.Rational s) s [] [] Ty.rat
           )
 
@@ -2104,7 +2107,7 @@ module Term = struct
     module Real = struct
 
       let real =
-        with_cache ~cache:(Hashtbl.create 113) (fun s ->
+        with_cache (fun s ->
             mk' ~builtin:(Builtin.Decimal s) s [] [] Ty.real
           )
 
@@ -2236,13 +2239,13 @@ module Term = struct
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
       let concat =
-        with_cache ~cache:(Hashtbl.create 13) (fun (n, m) ->
+        with_cache (fun (n, m) ->
             mk' ~builtin:(Builtin.Bitv_concat{n;m}) "bitv_concat"
               [] [Ty.bitv n; Ty.bitv m] (Ty.bitv (n + m))
           )
 
       let extract =
-        with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
+        with_cache (fun (i, j, n) ->
             if 0 <= j && j <= i && i < n then
               mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
                 (Format.asprintf "bitv_extract_%d_%d" i j) []
@@ -2252,179 +2255,179 @@ module Term = struct
           )
 
       let repeat =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+        with_cache (fun (k, n) ->
             mk' ~builtin:(Builtin.Bitv_repeat{n;k}) (Format.asprintf "bitv_repeat_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n * k))
           )
 
       let zero_extend =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+        with_cache (fun (k, n) ->
             mk' ~builtin:(Builtin.Bitv_zero_extend{n;k}) (Format.asprintf "zero_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let sign_extend =
-        with_cache ~cache:(Hashtbl.create 13) (fun (k, n) ->
+        with_cache (fun (k, n) ->
             mk' ~builtin:(Builtin.Bitv_sign_extend{n;k}) (Format.asprintf "sign_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let rotate_right =
-        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+        with_cache (fun (i, n) ->
             mk' ~builtin:(Builtin.Bitv_rotate_right{n;i})
               (Format.asprintf "rotate_right_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let rotate_left =
-        with_cache ~cache:(Hashtbl.create 13) (fun (i, n) ->
+        with_cache (fun (i, n) ->
             mk' ~builtin:(Builtin.Bitv_rotate_left{n;i})
               (Format.asprintf "rotate_left_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let not =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_not n) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let and_ =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_and n) "bvand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_or n) "bvor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_nand n) "bvnand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_nor n) "bvnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_xor n) "bvxor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_xnor n) "bvxnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_comp n) "bvcomp" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_neg n) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let add =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_add n) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sub =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let mul =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_mul n) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let udiv =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_udiv n) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let urem =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_urem n) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sdiv =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_sdiv n) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let srem =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_srem n) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let smod =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_smod n) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let shl =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_shl n) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let lshr =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_lshr n) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ashr =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_ashr n) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ult =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_ult n) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ule =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_ule n) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ugt =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_ugt n) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let uge =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_uge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let slt =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_slt n) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sle =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_sle n) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sgt =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_sgt n) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sge =
-        with_cache ~cache:(Hashtbl.create 13) (fun n ->
+        with_cache (fun n ->
             mk' ~builtin:(Builtin.Bitv_sge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
@@ -2433,7 +2436,7 @@ module Term = struct
     module Float = struct
 
       let fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun (e, s) ->
+        with_cache (fun (e, s) ->
             mk' ~builtin:(Builtin.Fp(e, s)) "fp" []
               [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
@@ -2457,7 +2460,7 @@ module Term = struct
           point format with optionally a rounding mode and a particular result
           type *)
       let fp_gen_fun ~args ?rm ?res name builtin =
-        with_cache ~cache:(Hashtbl.create 13) (fun es ->
+        with_cache (fun es ->
             let fp = Ty.float' es in
             let args = List.init args (fun _ -> fp) in
             let args = match rm with None -> args | Some () -> Ty.roundingMode::args in
@@ -2561,31 +2564,31 @@ module Term = struct
           (fun (e,s) -> Builtin.To_real (e,s))
 
       let ieee_format_to_fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
+        with_cache (fun ((e,s) as es) ->
             mk' ~builtin:(Builtin.Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
           )
       let to_fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun (e1,s1,e2,s2) ->
+        with_cache (fun (e1,s1,e2,s2) ->
             mk' ~builtin:(Builtin.Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
           )
       let real_to_fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun ((e,s) as es) ->
+        with_cache (fun ((e,s) as es) ->
             mk' ~builtin:(Builtin.Real_to_fp (e,s)) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
           )
       let sbv_to_fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
+        with_cache (fun (bv,e,s) ->
             mk' ~builtin:(Builtin.Sbv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let ubv_to_fp =
-        with_cache ~cache:(Hashtbl.create 13) (fun (bv,e,s) ->
+        with_cache (fun (bv,e,s) ->
             mk' ~builtin:(Builtin.Ubv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let to_ubv =
-        with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
+        with_cache (fun (e,s,bv) ->
             mk' ~builtin:(Builtin.To_ubv (e,s,bv)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
       let to_sbv =
-        with_cache ~cache:(Hashtbl.create 13) (fun (e,s,bv) ->
+        with_cache (fun (e,s,bv) ->
             mk' ~builtin:(Builtin.To_sbv (e,s,bv)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
 
@@ -2594,7 +2597,7 @@ module Term = struct
     module String = struct
 
       let string =
-        with_cache ~cache:(Hashtbl.create 13) (fun s ->
+        with_cache (fun s ->
             mk' ~builtin:(Builtin.Str s) (Format.asprintf {|"%s"|} s) [] [] Ty.string
           )
 
@@ -2703,12 +2706,12 @@ module Term = struct
           mk' ~builtin:Builtin.Re_option "option"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let power =
-          with_cache ~cache:(Hashtbl.create 13) (fun n ->
+          with_cache (fun n ->
               mk' ~builtin:(Builtin.Re_power n) (Format.asprintf "power_%d" n)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
         let loop =
-          with_cache ~cache:(Hashtbl.create 13) (fun (n1, n2) ->
+          with_cache (fun (n1, n2) ->
               mk' ~builtin:(Builtin.Re_loop (n1, n2)) (Format.asprintf "loop_%d_%d" n1 n2)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
