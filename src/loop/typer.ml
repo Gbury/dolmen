@@ -861,10 +861,22 @@ let non_positive_bitv_size =
 
 let invalid_smt2_bitv_extract =
   Report.Error.mk ~code ~mnemonic:"bitvector-smt2-extract"
-    ~message:(fun fmt (i, j) ->
-        Format.fprintf fmt "Indexes i=%d and j=%d@ %a"
-          i j Format.pp_print_text
-          "in (_ extract i j) must be so that i >= j")
+    ~message:(fun fmt (i, j, m) ->
+        if not (j <= i) then
+          Format.fprintf fmt "Indexes i=%d and j=%d@ %a"
+            i j Format.pp_print_text
+            "in (_ extract i j) must be so that j <= i"
+        else if not (i < m) then
+          Format.fprintf fmt
+            "Out of bound extract: (_ extract %d %d) %a >= %d,@ %a %d"
+            i j Format.pp_print_text
+            "must be applied to a bitvector of a size" i
+            Format.pp_print_text
+            "but is here applied to a bitvector of size" m
+        else
+          Format.fprintf fmt
+            "Invalid bitvector extract (please report upstream, ^^)"
+      )
     ~name:"Invalid smtlib2 bitvector extract" ()
 
 let invalid_bin_bitvector_char =
@@ -1277,8 +1289,8 @@ module Typer(State : State.S) = struct
     (* Smtlib Bitvector errors *)
     | Smtlib2_Bitv.Non_positive_bitvector_size i ->
       error ~input ~loc st non_positive_bitv_size i
-    | Smtlib2_Bitv.Invalid_extract (i, j) ->
-      error ~input ~loc st invalid_smt2_bitv_extract (i, j)
+    | Smtlib2_Bitv.Invalid_extract (i, j, m) ->
+      error ~input ~loc st invalid_smt2_bitv_extract (i, j, m)
     | Smtlib2_Bitv.Invalid_bin_char c
     | Smtlib2_Float.Invalid_bin_char c ->
       error ~input ~loc st invalid_bin_bitvector_char c
