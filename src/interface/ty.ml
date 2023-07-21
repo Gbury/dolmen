@@ -353,6 +353,16 @@ module type Smtlib_Bitv = sig
   val bitv : int -> t
   (** Create a fixed size bitvector type. *)
 
+  type view =  private [>
+    | `Bitv of int
+  ]
+(** Partial views for types. These are used in the bitv theory
+    to check invariant on indexes of bitv operations (e.g.
+    check that the indexes of an extract do not go out of bounds). *)
+
+  val view : t -> view
+  (** Partial view of a type. *)
+
 end
 
 (** Signature required by types for typing smtlib bitvectors *)

@@ -1,0 +1,4 @@
+File "tests/typing/errors/bitv_size/extract_1.smt2", line 4, character 6-25:
+4 |   ((a ((_ extract 2 3) b)))
+          ^^^^^^^^^^^^^^^^^^^
+Error Indexes i=2 and j=3 in (_ extract i j) must be so that j <= i

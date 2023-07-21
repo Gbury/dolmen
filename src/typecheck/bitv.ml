@@ -146,7 +146,7 @@ module Smtlib2 = struct
 
     type _ Type.err +=
       | Non_positive_bitvector_size : int -> Dolmen.Std.Term.t Type.err
-      | Invalid_extract : int * int -> Dolmen.Std.Term.t Type.err
+      | Invalid_extract : int * int * int -> Dolmen.Std.Term.t Type.err
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err
@@ -219,11 +219,16 @@ module Smtlib2 = struct
       let i = parse_nonnegative_int env ast i_s in
       mk i
 
-    let indexed_extract env i_s j_s ast =
+    let indexed_extract env i_s j_s ast bitv =
       let i = parse_nonnegative_int env ast i_s in
       let j = parse_nonnegative_int env ast j_s in
-      if i >= j then T.extract i j
-      else Type._error env (Ast ast) (Invalid_extract (i, j))
+      match Ty.view (Type.T.ty bitv) with
+      | `Bitv m ->
+        if j <= i && i < m then
+          T.extract i j bitv
+        else
+          Type._error env (Ast ast) (Invalid_extract (i, j, m))
+      | _ -> T.extract i j bitv
 
     let parse _version env s =
       match s with
