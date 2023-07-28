@@ -344,7 +344,8 @@ type _ t +=
 
 type _ t +=
   | Bitv of int
-  (** [Bitv n: ttype]: type constructor for bitvectors of length [n]. *)
+  (** [Bitv n: ttype]: type constructor for bitvectors of length [n].
+      Ensures that [n > 0]. *)
   | Bitvec of string
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
@@ -354,7 +355,8 @@ type _ t +=
       concatenation operator on bitvectors. *)
   | Bitv_extract of { n : int; i : int; j : int }
   (** [Bitv_extract(n, i, j): Bitv(n) -> Bitv(i - j + 1)]:
-      bitvector extraction, from index [j] up to [i] (both included). *)
+      bitvector extraction, from index [j] up to [i] (both included).
+      Ensures that [0 <= j <= i < n]. *)
   | Bitv_repeat of { n : int; k : int }
   (** [Bitv_repeat(n,k): Bitv(n) -> Bitv(n*k)]:
       bitvector repeatition. *)

@@ -642,6 +642,7 @@ module Ty = struct
 
   exception Bad_arity of ty_cst * ty list
   exception Prenex_polymorphism of ty
+  exception Non_positive_bitvector_size of int
 
   (* printing *)
   let print = Print.ty
@@ -953,7 +954,8 @@ module Ty = struct
     let array = mk' ~builtin:Builtin.Array "array" 2
     let bitv =
       with_cache ~cache:(Hashtbl.create 13) (fun i ->
-          mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
+          if i <= 0 then raise (Non_positive_bitvector_size i)
+          else mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
         )
     let float =
       with_cache ~cache:(Hashtbl.create 13) (fun (e,s) ->
@@ -1289,6 +1291,7 @@ module Term = struct
   exception Over_application of t list
   exception Bad_poly_arity of ty_var list * ty list
 
+  exception Impossible_bitv_extract of int * int * int
 
   (* *)
 
@@ -2240,9 +2243,12 @@ module Term = struct
 
       let extract =
         with_cache ~cache:(Hashtbl.create 13) (fun (i, j, n) ->
-            mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
-              (Format.asprintf "bitv_extract_%d_%d" i j) []
-              [Ty.bitv n] (Ty.bitv (i - j + 1))
+            if 0 <= j && j <= i && i < n then
+              mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
+                (Format.asprintf "bitv_extract_%d_%d" i j) []
+                [Ty.bitv n] (Ty.bitv (i - j + 1))
+            else
+              raise (Impossible_bitv_extract (i, j, n))
           )
 
       let repeat =

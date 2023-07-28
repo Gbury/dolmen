@@ -33,6 +33,8 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Bitv with type t := Type.T.t) : sig
 
     type _ Type.err +=
+      | Non_positive_bitvector_size : int -> Dolmen.Std.Term.t Type.err
+      | Invalid_extract : int * int * int -> Dolmen.Std.Term.t Type.err
       | Invalid_bin_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_hex_char : char -> Dolmen.Std.Term.t Type.err
       | Invalid_dec_char : char -> Dolmen.Std.Term.t Type.err

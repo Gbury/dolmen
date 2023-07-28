@@ -1,0 +1,5 @@
+File "tests/typing/errors/bitv_size/zero_bitv.smt2", line 2, character 18-30:
+2 | (declare-fun b () (_ BitVec 0))
+                      ^^^^^^^^^^^^
+Error Bitvector sizes must be positive (i.e. > 0), which is not the case for
+      the following size: 0

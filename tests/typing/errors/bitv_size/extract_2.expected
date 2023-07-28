@@ -1,0 +1,5 @@
+File "tests/typing/errors/bitv_size/extract_2.smt2", line 3, character 13-38:
+3 | (assert (= x ((_ extract 10 0) #b1010)))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Out of bound extract: (_ extract 10 0) must be applied to a bitvector
+      of a size >= 10, but is here applied to a bitvector of size 4
