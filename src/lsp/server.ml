@@ -11,7 +11,7 @@ let parse_settings settings =
     List.map (
       fun s ->
         match s with
-        | `String f -> f
+        | `String f -> Unix.realpath f
         | _ ->
           raise (ServerError (
               Format.asprintf
