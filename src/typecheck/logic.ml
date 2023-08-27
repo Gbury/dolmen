@@ -67,7 +67,7 @@ module Smtlib2 = struct
       print_theories theories print_features features
 
   let all = {
-    theories = [ `Core; `Arrays; `Bitvectors; `Floats; `Reals_Ints ];
+    theories = [ `Core; `Arrays; `Bitvectors; `Floats; `String; `Reals_Ints ];
     features = {
       free_sorts = true;
       free_functions = true;
