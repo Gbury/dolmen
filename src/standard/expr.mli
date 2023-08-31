@@ -140,7 +140,22 @@ val with_cache : ?size:int -> ('a -> 'b) -> 'a -> 'b
 (** Memoize the given function using a hashtable as cache. Useful to
     wrap functions such as {!Ty.Var.mk} when some symbol is indexed
     over **simple** arguments (for instance in the case of bitvectors).
-    By default, the size is the 16, which is the minmum size of a hashtbl. *)
+    By default, the size is the 16, which is the minmum size of a hashtbl.
+
+    WARNING: One must be careful about order of execution when using this
+    function. In particular, eta-expansion can break the cache behaviour.
+    For instance the following is a correct use of this function:
+    [
+      (** correct version *)
+      let add_one = with_cache ((+) 1)
+    ]
+    However, the following is incorrect and will instead create a new cache
+    for each call to the function
+    [
+      (** bad version *)
+      let bad_add_one x = with_cache ((+) 1) x
+    ]
+*)
 
 
 (** {2 Native Tags} *)
