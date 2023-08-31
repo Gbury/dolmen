@@ -41,13 +41,13 @@ module Smtlib2 : sig
                                           and type cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Std.Term.t Type.warn
+        | Restriction : config * string -> Dolmen.Std.Term.t Type.warn
         (** Warning for expressions which tecnically do not respect the strict
             spec but respect the large spec. *)
       (** Arithmetic type-checking warnings *)
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Std.Term.t Type.err
+        | Forbidden : config * string -> Dolmen.Std.Term.t Type.err
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
@@ -67,13 +67,13 @@ module Smtlib2 : sig
                                            and type cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Std.Term.t Type.warn
+        | Restriction : config * string -> Dolmen.Std.Term.t Type.warn
         (** Warning for expressions which tecnically do not respect the strict
             spec but respect the large spec. *)
       (** Arithmetic type-checking warnings *)
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Std.Term.t Type.err
+        | Forbidden : config * string -> Dolmen.Std.Term.t Type.err
         (** Error for expressions which do not respect the spec. *)
       (** Arithmetic type-checking errors *)
 
@@ -95,13 +95,13 @@ module Smtlib2 : sig
                                                and type Real.cst := Type.T.Const.t) : sig
 
       type _ Type.warn +=
-        | Restriction : string -> Dolmen.Std.Term.t Type.warn
+        | Restriction : config * string -> Dolmen.Std.Term.t Type.warn
         (** Warning for expressions which tecnically do not respect the strict
             spec but respect the large spec. *)
       (** Arithmetic type-checking warnings *)
 
       type _ Type.err +=
-        | Forbidden : string -> Dolmen.Std.Term.t Type.err
+        | Forbidden : config * string -> Dolmen.Std.Term.t Type.err
         (** Error for expressions which do not respect the spec. *)
         | Expected_arith_type : Type.Ty.t -> Dolmen.Std.Term.t Type.err
         (** Error raised when an arithmetic type was expected (i.e. either

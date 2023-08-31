@@ -334,7 +334,7 @@ let reports_opts strict warn_modifiers =
       let fatal warn conf = Dolmen_loop.Report.Conf.fatal conf warn in
       conf
       |> fatal
-        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.almost_linear))
+        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.bad_arith_expr))
       |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.unknown_logic))
     end

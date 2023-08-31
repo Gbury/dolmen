@@ -27,8 +27,15 @@ val typer_state : ty_state -> T.state
 
 (* {2 Warnings} *)
 
-val almost_linear : string Report.Warning.t
-(** Almost linear warning. *)
+val forbidden_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Error.t
+(** Error for arithmetic expressions that do not respect the specification (e.g.
+    non-linear expressions, expressions not in difference logic, etc...). *)
+
+val bad_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Warning.t
+(** Warning for arithmetic expressions that do not strictly conform to the
+    specification (e.g. linear arithmetic), but are close enough that they
+    should probably be accepted. *)
+
 
 val unknown_logic : string Report.Warning.t
 (** Unknown logic warning *)
