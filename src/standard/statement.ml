@@ -293,7 +293,7 @@ let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; su
       (fun fmt vars -> List.iter (Format.fprintf fmt "%a " Term.print) vars) vars in
 
   let print_subs fmt subs = 
-    List.iter (Format.fprintf fmt "@,%a" print_sub) subs in
+    List.iter (Format.fprintf fmt "%a" print_sub) subs in
 
   Format.fprintf fmt "@[<hov 2>def-sys:@ %a =@ {@,input = %a;@,output = %a;@,local = %a;@,init = %a;@,trans = %a;@,inv = %a;%a;@ }@]"
       Id.print id
@@ -307,10 +307,10 @@ let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; su
 
 let print_check_sys fmt ({id; loc = _; input; output; local; reachable; assumption; queries}: sys_check) =
   let print_formula base_name fmt (name, term) = 
-    Format.fprintf fmt "@,%s %a = %a;" base_name Id.print name Term.print term in
+    Format.fprintf fmt "%s %a = %a;" base_name Id.print name Term.print term in
 
   let print_query fmt (name, formula_names) = 
-    Format.fprintf fmt "query %a (%a);@ "
+    Format.fprintf fmt "query %a (%a);"
       Id.print name
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:Term.print) formula_names in
 
