@@ -1,5 +1,5 @@
 File "tests/locs/too_long.smt2", line 2, character 150-157:
-Fatal Warning This is a non-linear expression according to the smtlib spec.
+Fatal Warning This expression does not conform to the specification for linear arithmetic
 Hint: multiplication in strict linear arithmetic expects an integer or
   rational literal and a symbol (variable or constant) but was given:
   - an integer coefficient

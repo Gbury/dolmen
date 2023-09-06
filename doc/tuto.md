@@ -93,7 +93,7 @@ other_1[0-15]:
                   free_functions : false;
                   datatypes : false;
                   quantifiers : true;
-                  arithmetic : linear/strict;
+                  arithmetic : linear;
                   arrays : all; }; }]}
 
 decl_1[16-37]:
@@ -116,7 +116,7 @@ prove_1[61-72]:
 File "typing_error.smt2", line 3, character 13-20:
 3 | (assert (= 2 (* x x)))
                  ^^^^^^^
-Error Non-linear expressions are forbidden by the logic.
+Error Forbidden expression in linear arithmetic
 Hint: multiplication in strict linear arithmetic expects an integer or
   rational literal and a symbol (variable or constant) but was given:
   - a symbol (or quantified variable)
