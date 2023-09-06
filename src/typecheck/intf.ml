@@ -181,7 +181,6 @@ module type Formulas = sig
     | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
     | Declared of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
-    | SysDefined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.sys_def
     | Implicit_in_def of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
     | Implicit_in_decl of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
     | Implicit_in_term of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
@@ -205,7 +204,6 @@ module type Formulas = sig
         | `Cstr of term_cstr * reason option
         | `Dstr of term_cst * reason option
         | `Term of term_cst * reason option
-        | `System of term_cst * term_cst * term_cst * reason option
         | `Field of term_field * reason option
       ]
   ]
@@ -216,6 +214,7 @@ module type Formulas = sig
     | `Quantified
     | `Function_param
     | `Type_alias_param
+    | `Trans_sys_param
   ]
   (** The type of kinds of variables *)
 
@@ -233,7 +232,6 @@ module type Formulas = sig
     | Defs : Dolmen.Std.Statement.defs -> Dolmen.Std.Statement.defs fragment
     | Decl : Dolmen.Std.Statement.decl -> Dolmen.Std.Statement.decl fragment
     | Decls : Dolmen.Std.Statement.decls -> Dolmen.Std.Statement.decls fragment
-    | SysDef : Dolmen.Std.Statement.sys_def -> Dolmen.Std.Statement.sys_def fragment
     | Located : Dolmen.Std.Loc.t -> Dolmen.Std.Loc.t fragment (**)
   (** Fragments of input that represent the sources of warnings/errors *)
 
@@ -456,6 +454,12 @@ module type Formulas = sig
   val state : env -> state
   (** Get the mutable state for an env. *)
 
+  val add_term_var : env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
+
+  val check_used_term_var : kind:var_kind -> env -> term_var -> builtin_meta_tags
+
+  val check_no_free_wildcards : env -> Dolmen.Std.Term.t -> unit
+
 
   (** {2 Inference for vars and syms} *)
 
@@ -527,7 +531,6 @@ module type Formulas = sig
     | `Dstr of term_cst
     | `Field of term_field
     | `Ty_cst of ty_cst
-    | `Sys_cst of term_cst * term_cst * term_cst
     | `Term_cst of term_cst
   ]
   (** Constant bindings *)
@@ -636,6 +639,9 @@ module type Formulas = sig
   (** Unwrap a result, raising the adequate typing error
       if the result if not as expected. *)
 
+  val parse_typed_var_in_binding_pos :
+    env -> Dolmen.Std.Term.t -> Dolmen.Std.Id.t * term_var * Dolmen.Std.Term.t
+
 
   (** {2 High-level functions} *)
 
@@ -656,13 +662,6 @@ module type Formulas = sig
       | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
     ] list
   (** Parse a definition *)
-
-
-  val sys_def : env -> Dolmen.Std.Statement.sys_def -> [> `Sys_def of Dolmen.Std.Id.t * term_cst * term_var list * term_var list * term_var list]
-  (** Parse a system definition *)
-
-  val check_sys : env -> Dolmen.Std.Statement.sys_check -> [> `Sys_check ]
-  (** Parse a system check *)
 
   val parse : term typer
   (** Parse a formula *)

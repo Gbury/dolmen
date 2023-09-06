@@ -68,7 +68,7 @@ module type Typer = sig
       Dolmen_std.Loc.t ->
       ?attrs:Dolmen_std.Term.t list ->
       Dolmen_std.Statement.sys_def ->
-      state * [> `Sys_def of Dolmen.Std.Id.t * term_cst * term_var list * term_var list * term_var list]
+      state * [> `Sys_def of Dolmen.Std.Id.t * term_var list * term_var list * term_var list]
 
   val check_sys :
     state ->
@@ -230,7 +230,7 @@ module type S = sig
   (** A list of definitions *)
 
   type sys = [
-    | `Sys_def of Dolmen.Std.Id.t * term_cst * term_var list * term_var list * term_var list
+    | `Sys_def of Dolmen.Std.Id.t * term_var list * term_var list * term_var list
     | `Sys_check
   ]
 

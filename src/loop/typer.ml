@@ -62,6 +62,8 @@ module Smtlib2_String =
   Dolmen_type.Strings.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
+module MCIL_Trans_Sys = Dolmen_type.Trans_sys.MCIL(T)
+
 (* Zf *)
 module Zf_Core =
   Dolmen_type.Core.Zf.Tff(T)(Dolmen.Std.Expr.Tags)
@@ -108,8 +110,6 @@ let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
     Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_def fmt d
   | T.Decls d ->
     Dolmen.Std.Statement.print_group Dolmen.Std.Statement.print_decl fmt d
-  | T.SysDef d ->
-    Dolmen.Std.Statement.print_def_sys fmt d
   | T.Located _ ->
     let full = T.fragment_loc env fragment in
     let loc = Dolmen.Std.Loc.full_loc full in
@@ -127,6 +127,7 @@ let print_var_kind fmt k =
   | `Quantified -> Format.fprintf fmt "quantified variable"
   | `Function_param -> Format.fprintf fmt "function parameter"
   | `Type_alias_param -> Format.fprintf fmt "type alias parameter"
+  | `Trans_sys_param -> Format.fprintf fmt "transition system parameter"
 
 let print_reason ?(already=false) fmt r =
   let pp_already fmt () =
@@ -149,9 +150,6 @@ let print_reason ?(already=false) fmt r =
   | Declared (file, d) ->
     Format.fprintf fmt "was%a declared at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file (decl_loc d))
-  | SysDefined (file, s) ->
-    Format.fprintf fmt "was%a defined as a system at %a"
-      pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file s.loc)
   | Implicit_in_def (file, d) ->
     Format.fprintf fmt "was%a implicitly introduced in the definition at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file d.loc)
@@ -1786,12 +1784,12 @@ module Typer(State : State.S) = struct
 
   let sys_def st ~input loc ?attrs d =
     typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
-        T.sys_def env d
+        MCIL_Trans_Sys.parse_def env d
     )
 
   let check_sys st ~input loc ?attrs d =
     typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
-        T.check_sys env d
+        MCIL_Trans_Sys.parse_check env d
     )
   
 
@@ -1883,7 +1881,7 @@ module Make
   ]
 
   type sys = [
-    | `Sys_def of Dolmen.Std.Id.t * Expr.term_cst * Expr.term_var list * Expr.term_var list * Expr.term_var list (* id, inputs, outputs, locals *)
+    | `Sys_def of Dolmen.Std.Id.t * Expr.term_var list * Expr.term_var list * Expr.term_var list (* id, inputs, outputs, locals *)
     | `Sys_check
   ]
 
