@@ -93,13 +93,6 @@ type sys_check = {
 }
 (** System check. *)
 
-type enum_sort = {
-  id      : Id.t;
-  loc     : location;
-  values  : Id.t list;
-}
-(** Enumeration declaration. *)
-
 type 'a group = {
   contents : 'a list;
   recursive : bool;

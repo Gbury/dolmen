@@ -66,12 +66,6 @@ type sys_check = {
   queries    : (Id.t * term list) list;
 }
 
-type enum_sort = {
-  id      : Id.t;
-  loc : location;
-  values  : Id.t list;
-}
-
 type 'a group = {
   contents : 'a list;
   recursive : bool;
