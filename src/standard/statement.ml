@@ -52,7 +52,7 @@ type sys_def = {
   init   : term;
   trans  : term;
   inv    : term;
-  subs   : (Id.t * term) list;
+  subs   : (Id.t * term * location) list;
 }
 
 type sys_check = {
@@ -61,9 +61,9 @@ type sys_check = {
   input      : term list;
   output     : term list;
   local      : term list;
-  reachable  : (Id.t * term) list;
-  assumption : (Id.t * term) list;
-  queries    : (Id.t * term list) list;
+  reachable  : (Id.t * term * location) list;
+  assumption : (Id.t * term * location) list;
+  queries    : (Id.t * term list * location) list;
 }
 
 type 'a group = {
@@ -286,7 +286,7 @@ let print_group print fmt ({ contents; recursive; } : _ group) =
 let print_attr fmt attr = Term.print fmt attr 
   
 let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; subs;} : sys_def) =
-  let print_sub fmt (local_name, subsys_inst) = 
+  let print_sub fmt (local_name, subsys_inst, _) = 
     Format.fprintf fmt "@[<hov 2>subsys: ( %a = %a ) @]"
       Id.print local_name
       Term.print subsys_inst
@@ -306,10 +306,10 @@ let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; su
       print_subs subs
 
 let print_check_sys fmt ({sid; loc = _; input; output; local; reachable; assumption; queries}: sys_check) =
-  let print_formula base_name fmt (name, term) = 
+  let print_formula base_name fmt (name, term, _) = 
     Format.fprintf fmt "%s %a = %a;" base_name Id.print name Term.print term in
 
-  let print_query fmt (name, formula_names) = 
+  let print_query fmt (name, formula_names, _) = 
     Format.fprintf fmt "query %a (%a);"
       Id.print name
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:Term.print) formula_names in

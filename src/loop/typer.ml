@@ -618,6 +618,15 @@ let bad_system_instantiation_arity =
           expected actual (pp_wrap Dolmen.Std.Id.print) id)
     ~name:"Incorrect arity for transition system instantiation" ()
 
+let duplicate_definition =
+  Report.Error.mk ~code ~mnemonic:"duplicate-definition"
+    ~message:(fun fmt (id, file, old) ->
+        Format.fprintf fmt
+          "Duplicate declaration of %a, which was already defined at %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file old))
+    ~name:"Duplicate definition of the same symbol" ()
+
 let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
     ~message:(fun fmt (id, old) ->
@@ -1297,6 +1306,8 @@ module Typer(State : State.S) = struct
       error ~input ~loc st undefined_transition_system id
     | MCIL_Trans_Sys.Bad_inst_arity (id, exp, act) ->
       error ~input ~loc st bad_system_instantiation_arity (id, exp, act)
+    | MCIL_Trans_Sys.Duplicate_definition (id, old) ->
+      error ~input ~loc st duplicate_definition (id, T.file env, old)
     (* Bad sexpr *)
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg

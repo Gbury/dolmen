@@ -2,6 +2,7 @@
 
 module Id = Dolmen.Std.Id
 module Ast = Dolmen.Std.Term
+module Loc = Dolmen.Std.Loc
 module Stmt = Dolmen.Std.Statement
 
 module M = Map.Make(Dolmen.Std.Id)
@@ -13,8 +14,10 @@ module S = Set.Make(Dolmen.Std.Id)
 module MCIL (Type : Tff_intf.S) = struct
   
   type _ Type.err +=
-    | Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
     | Bad_inst_arity : Dolmen.Std.Id.t * int * int -> Dolmen.Std.Loc.t Type.err
+    | Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
+    | Duplicate_definition : Dolmen.Std.Id.t * Dolmen.Std.Loc.t -> Dolmen.Std.Loc.t Type.err
+
 
   let key = Dolmen.Std.Tag.create ()
 
@@ -76,6 +79,12 @@ module MCIL (Type : Tff_intf.S) = struct
   let _bad_inst_arity env loc id e a =
     Type._error env (Located loc) (Bad_inst_arity (id, e, a))
 
+  let _duplicate_definition env loc1 id loc2 =
+    let loc1, loc2 =
+      if Loc.compare loc1 loc2 < 0 then loc2, loc1 else loc1, loc2
+    in
+    Type._error env (Located loc1) (Duplicate_definition (id, loc2))
+
   let ensure env ast t ty =
     Type._wrap2 env ast Type.T.ensure t ty
 
@@ -91,17 +100,12 @@ module MCIL (Type : Tff_intf.S) = struct
   let parse_subsystems env (parent : Stmt.sys_def) =
     let defs = get_defs env in
     List.fold_left
-      (fun other_subs (local_name, sub_inst) ->
+      (fun other_subs (local_name, sub_inst, loc) ->
         (* Make sure local name isn't used twice *)
-        if S.mem local_name other_subs then
-          (* TODO: add proper error *)
-          let msg =
-            Format.asprintf 
-              "Subsystem with local name `%a` is already declared"
-                Id.print local_name
-          in
-          failwith msg
-        else (
+        match M.find_opt local_name other_subs with
+        | Some other_loc ->
+          _duplicate_definition env loc local_name other_loc
+        | None -> (
           let sub_id, sid_loc, args, inst_loc = get_app_info sub_inst in
           let sub_inputs, sub_outputs =
             match M.find_opt sub_id defs with
@@ -123,10 +127,10 @@ module MCIL (Type : Tff_intf.S) = struct
             )
             args
             params ;
-          S.add local_name other_subs
+          M.add local_name loc other_subs
         )
       )
-      S.empty
+      M.empty
       parent.subs
     |> ignore
 
@@ -201,47 +205,37 @@ module MCIL (Type : Tff_intf.S) = struct
 
   let parse_conditions env ids conds =
     List.fold_left
-      (fun acc (id, f) -> 
-        if S.mem id acc then
-          (* TODO: add proper error *)
-          let msg =
-            Format.asprintf 
-              "Duplicate declaration of `%a`"
-                Id.print id
-          in
-          failwith msg
-        else
-          parse_condition env f ; S.add id acc
+      (fun acc (id, f, loc) -> 
+        match M.find_opt id acc with
+        | Some other_loc ->
+          _duplicate_definition env loc id other_loc
+        | None ->
+          parse_condition env f ; M.add id loc acc
       )
       ids
       conds
 
   let parse_assumptions_and_conditions (_, env') (c : Stmt.sys_check) =
-    let cids = parse_conditions env' S.empty c.assumption in
+    let cids = parse_conditions env' M.empty c.assumption in
     let cids = parse_conditions env' cids c.reachable in
     cids
 
   let parse_queries (env,_) cond_ids (c : Stmt.sys_check) =
-    let parse_query query_ids (id, conds) =
-      if S.mem id query_ids then
-        (* TODO: add proper error *)
-        let msg =
-          Format.asprintf 
-            "Duplicate declaration of `%a`"
-              Id.print id
-        in
-        failwith msg
-      else
+    let parse_query query_ids (id, conds, loc) =
+      match M.find_opt id query_ids with
+      | Some old_loc ->
+        _duplicate_definition env loc id old_loc
+      | None ->
         conds |> List.iter (function
         | { Ast.term = Ast.Symbol s; _ } as ast -> (
-          if not (S.mem s cond_ids) then
+          if not (M.mem s cond_ids) then
             Type._error env (Ast ast) (Type.Cannot_find (s, ""));
         )
         | _ -> assert false
         ) ;
-        S.add id query_ids
+        M.add id loc query_ids
     in
-    List.fold_left parse_query S.empty c.queries |> ignore
+    List.fold_left parse_query M.empty c.queries |> ignore
 
   let parse_check env (c : Stmt.sys_check) =
     let envs = parse_check_sig env c in

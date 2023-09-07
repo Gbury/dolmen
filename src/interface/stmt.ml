@@ -210,15 +210,15 @@ module type Logic = sig
   val sys_def     :
     ?loc:location -> id -> 
     input:term list -> output:term list -> local:term list -> 
-    subs:(id * term) list ->
+    subs:(id * term * location) list ->
     init:term -> trans:term -> inv:term -> t
   (** Defines a new transition system. *)
 
   val sys_check : ?loc:location -> term ->
     input:term list -> output:term list -> local:term list ->
-    assumption:(id * term) list ->
-    reachable:(id * term) list ->
-    queries:(id * term list) list -> t
+    assumption:(id * term * location) list ->
+    reachable:(id * term * location) list ->
+    queries:(id * term list * location) list -> t
   (** Check the existence of a trace in a transition system **)
 
   val funs_def_rec : ?loc:location -> (id * term list * term list * term * term) list -> t

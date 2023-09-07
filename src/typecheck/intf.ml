@@ -452,12 +452,14 @@ module type Formulas = sig
   val state : env -> state
   (** Get the mutable state for an env. *)
 
+  val file : env -> Dolmen.Std.Loc.file
+  (** Get the file for an env. *)
+
   val add_term_var : env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
 
   val check_used_term_var : kind:var_kind -> env -> term_var -> builtin_meta_tags
 
   val check_no_free_wildcards : env -> Dolmen.Std.Term.t -> unit
-
 
   (** {2 Inference for vars and syms} *)
 

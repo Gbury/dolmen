@@ -488,6 +488,8 @@ module Make
 
   let state env = env.st
 
+  let file env = env.file
+
   let var_infer env = env.var_infer
 
   let sym_infer env = env.sym_infer

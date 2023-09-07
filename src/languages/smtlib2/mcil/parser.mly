@@ -400,7 +400,7 @@ system_instantiation:
 
 system_subsys_dec:
   | SYS_SUBSYS OPEN local_name=SYMBOL sys_inst=system_instantiation CLOSE
-  { I.(mk term local_name), sys_inst }
+  { let loc = L.mk_pos $startpos $endpos in I.(mk term local_name), sys_inst, loc }
 
 init_cond:
   | SYS_INIT cond=term
@@ -475,15 +475,15 @@ system_def:
 
 reach_cond:
   | CHECK_REACH OPEN s=SYMBOL cond=term CLOSE
-  { I.(mk term s), cond }
+  { let loc = L.mk_pos $startpos $endpos in I.(mk term s), cond, loc }
 
 assump_cond:
   | CHECK_ASSUMPTION OPEN s=SYMBOL cond=term CLOSE
-  { I.(mk term s), cond }
+  { let loc = L.mk_pos $startpos $endpos in I.(mk term s), cond, loc }
 
 sys_check_query_base:
   | OPEN s=SYMBOL OPEN args=pattern_symbol* CLOSE CLOSE
-  {I.(mk term s), args}
+  { let loc = L.mk_pos $startpos $endpos in I.(mk term s), args, loc }
 
 sys_check_query:
   | CHECK_QUERY query=sys_check_query_base

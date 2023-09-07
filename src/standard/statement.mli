@@ -77,7 +77,7 @@ type sys_def = {
   init   : term;
   trans  : term;
   inv    : term;
-  subs   : (Id.t * term) list;
+  subs   : (Id.t * term * location) list;
 }
 (** System definition. *)
 
@@ -87,9 +87,9 @@ type sys_check = {
   input      : term list;
   output     : term list;
   local      : term list;
-  reachable  : (Id.t * term) list;
-  assumption : (Id.t * term) list;
-  queries    : (Id.t * term list) list;
+  reachable  : (Id.t * term * location) list;
+  assumption : (Id.t * term * location) list;
+  queries    : (Id.t * term list * location) list;
 }
 (** System check. *)
 
