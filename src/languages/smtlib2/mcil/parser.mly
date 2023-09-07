@@ -511,10 +511,13 @@ opt_sys_check_attrs_and_queries:
   | { [], [], [] }
   | aq = sys_check_attrs_and_queries { aq }
 
+sys_symbol:
+  | s=pattern_symbol { s }
+
 system_check:
-  | s=SYMBOL vars=opt_system_var_decls attrs_queries=opt_sys_check_attrs_and_queries
+  | sid=sys_symbol vars=opt_system_var_decls attrs_queries=opt_sys_check_attrs_and_queries
   { let assumption, reachable, queries = attrs_queries in
-    I.(mk term s), vars, assumption, reachable, List.flatten queries
+    sid, vars, assumption, reachable, List.flatten queries
   }
 
 /* Additional rule for prop_literals symbols, to have lighter
@@ -616,10 +619,10 @@ command:
       S.datatypes ~loc [I.(mk sort s), [], constructors]
     }
   | OPEN CHECK_SYS sc=system_check CLOSE
-    { let id, vars, assumption, reachable, queries = sc in
+    { let sid, vars, assumption, reachable, queries = sc in
       let input, output, local = vars in
       let loc = L.mk_pos $startpos $endpos in
-      S.sys_check ~loc id ~input ~output ~local ~assumption ~reachable ~queries
+      S.sys_check ~loc sid ~input ~output ~local ~assumption ~reachable ~queries
     }
   | OPEN DEFINE_SORT s=SYMBOL OPEN args=SYMBOL* CLOSE ty=sort CLOSE
     { let id = I.(mk sort s) in

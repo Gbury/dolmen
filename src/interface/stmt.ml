@@ -214,7 +214,7 @@ module type Logic = sig
     init:term -> trans:term -> inv:term -> t
   (** Defines a new transition system. *)
 
-  val sys_check : ?loc:location -> id ->
+  val sys_check : ?loc:location -> term ->
     input:term list -> output:term list -> local:term list ->
     assumption:(id * term) list ->
     reachable:(id * term) list ->

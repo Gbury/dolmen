@@ -56,7 +56,7 @@ type sys_def = {
 }
 
 type sys_check = {
-  id         : Id.t;
+  sid        : term;
   loc        : location;
   input      : term list;
   output     : term list;
@@ -305,7 +305,7 @@ let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; su
       print_attr inv
       print_subs subs
 
-let print_check_sys fmt ({id; loc = _; input; output; local; reachable; assumption; queries}: sys_check) =
+let print_check_sys fmt ({sid; loc = _; input; output; local; reachable; assumption; queries}: sys_check) =
   let print_formula base_name fmt (name, term) = 
     Format.fprintf fmt "%s %a = %a;" base_name Id.print name Term.print term in
 
@@ -315,7 +315,7 @@ let print_check_sys fmt ({id; loc = _; input; output; local; reachable; assumpti
       (Misc.print_list ~print_sep:Format.fprintf ~sep:" " ~print:Term.print) formula_names in
 
   Format.fprintf fmt "@[<hov 2>check-sys:@ %a =@ {@,input = %a;@,output = %a;@,local = %a;%a@;%a@;%a@,}@]"
-  Id.print id
+  Term.print sid
   print_attrs input
   print_attrs output
   print_attrs local
@@ -481,8 +481,8 @@ let mk_defs ?loc ?attrs ~recursive defs =
 let sys_def ?(loc=no_loc) id ~input ~output ~local ~subs ~init ~trans ~inv =
   mk ~loc (Def_sys {id; loc; input; output; local; init; trans; inv; subs} )
 
-let sys_check ?(loc=no_loc) id ~input ~output ~local ~assumption ~reachable ~queries =
-  mk ~loc (Chk_sys {id; loc; input; output; local; reachable; assumption; queries} )
+let sys_check ?(loc=no_loc) sid ~input ~output ~local ~assumption ~reachable ~queries =
+  mk ~loc (Chk_sys {sid; loc; input; output; local; reachable; assumption; queries} )
 
 let group_defs ?loc ?attrs ~recursive l =
   let defs, others = List.fold_left (fun (defs, others) s ->

@@ -179,7 +179,7 @@ module type Statement = sig
   (** Solve the current set of assertions for satisfiability,
       under the local assumptions specified. *)
 
-  val sys_check : ?loc:location -> id ->
+  val sys_check : ?loc:location -> term ->
     input:term list -> output:term list -> local:term list ->
     assumption:(id * term) list ->
     reachable:(id * term) list ->

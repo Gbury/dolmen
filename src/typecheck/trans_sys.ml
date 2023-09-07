@@ -33,6 +33,14 @@ module MCIL (Type : Tff_intf.S) = struct
       Id.create (Id.ns id) (Dolmen_std.Name.simple (name ^ "'") )
     | _ -> assert false
 
+  let get_symbol_id = function
+    | { Ast.term = Ast.Symbol s; _ } -> s
+    | _ -> assert false
+
+  let get_symbol_id_and_loc = function
+    | { Ast.term = Ast.Symbol s; loc; _ } -> s, loc
+    | _ -> assert false
+
   let parse_def_params (env, env') params =
     let rec aux env env' acc = function
       | [] -> (env, env'), List.rev acc
@@ -141,8 +149,9 @@ module MCIL (Type : Tff_intf.S) = struct
     define_sys d.id ssig ;
     finalize_sys d ssig
 
-  let get_sys_sig env loc id =
+  let get_sys_sig env sid =
     let defs = get_defs env in
+    let id, loc = get_symbol_id_and_loc sid in
     match M.find_opt id defs with
     | None -> _cannot_find_system env loc id
     | Some (`Trans_Sys ssig) -> ssig
@@ -176,13 +185,14 @@ module MCIL (Type : Tff_intf.S) = struct
     )
 
   let parse_check_sig env (c : Stmt.sys_check) =
-    let sys_input, sys_output, sys_local = get_sys_sig env c.loc c.id in
+    let sys_input, sys_output, sys_local = get_sys_sig env c.sid in
     let (envs, input, output, local) =
       parse_sig env c.input c.output c.local
     in
-    let envs = check_sig envs c.id sys_input input in
-    let envs = check_sig envs c.id sys_output output in
-    let envs = check_sig envs c.id sys_local local in
+    let id = get_symbol_id c.sid in
+    let envs = check_sig envs id sys_input input in
+    let envs = check_sig envs id sys_output output in
+    let envs = check_sig envs id sys_local local in
     envs
 
   let parse_conditions env ids conds =

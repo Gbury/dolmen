@@ -82,7 +82,7 @@ type sys_def = {
 (** System definition. *)
 
 type sys_check = {
-  id         : Id.t;
+  sid        : term;
   loc        : location;
   input      : term list;
   output     : term list;
