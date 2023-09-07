@@ -221,7 +221,7 @@ module MCIL (Type : Tff_intf.S) = struct
     let cids = parse_conditions env' cids c.reachable in
     cids
 
-  let parse_queries cond_ids (c : Stmt.sys_check) =
+  let parse_queries (env,_) cond_ids (c : Stmt.sys_check) =
     let parse_query query_ids (id, conds) =
       if S.mem id query_ids then
         (* TODO: add proper error *)
@@ -233,15 +233,9 @@ module MCIL (Type : Tff_intf.S) = struct
         failwith msg
       else
         conds |> List.iter (function
-        | { Ast.term = Ast.Symbol s; _ } -> (
+        | { Ast.term = Ast.Symbol s; _ } as ast -> (
           if not (S.mem s cond_ids) then
-            (* TODO: add proper error *)
-            let msg =
-              Format.asprintf
-                "Condition `%a` referenced in query `%a` is not defined"
-                Id.print s Id.print id
-            in
-            failwith msg;
+            Type._error env (Ast ast) (Type.Cannot_find (s, ""));
         )
         | _ -> assert false
         ) ;
@@ -252,7 +246,7 @@ module MCIL (Type : Tff_intf.S) = struct
   let parse_check env (c : Stmt.sys_check) =
     let envs = parse_check_sig env c in
     let cids = parse_assumptions_and_conditions envs c in
-    parse_queries cids c ;
+    parse_queries envs cids c ;
     `Sys_check
 
 end
