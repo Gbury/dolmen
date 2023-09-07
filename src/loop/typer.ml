@@ -610,6 +610,14 @@ let undefined_transition_system =
         (pp_wrap Dolmen.Std.Id.print) id)
   ~name:"Undefined transition system" ()
 
+let bad_system_instantiation_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-system-instantiation-arity"
+    ~message:(fun fmt (id, expected, actual) ->
+        Format.fprintf fmt
+          "Bad arity: expected %d arguments but got %d arguments for system %a"
+          expected actual (pp_wrap Dolmen.Std.Id.print) id)
+    ~name:"Incorrect arity for transition system instantiation" ()
+
 let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
     ~message:(fun fmt (id, old) ->
@@ -1287,6 +1295,8 @@ module Typer(State : State.S) = struct
     (* MCIL errors *)
     | MCIL_Trans_Sys.Cannot_find_system id ->
       error ~input ~loc st undefined_transition_system id
+    | MCIL_Trans_Sys.Bad_inst_arity (id, exp, act) ->
+      error ~input ~loc st bad_system_instantiation_arity (id, exp, act)
     (* Bad sexpr *)
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg

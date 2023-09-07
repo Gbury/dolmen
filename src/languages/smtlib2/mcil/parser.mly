@@ -392,11 +392,15 @@ opt_system_var_decls:
   | { [], [], [] }
   | decls=system_var_decls { decls }
 
+system_instantiation:
+  | c=pattern_symbol
+    { c }
+  | OPEN f=pattern_symbol args=pattern_symbol+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+
 system_subsys_dec:
-  | SYS_SUBSYS OPEN local_name=SYMBOL OPEN sub_name=SYMBOL args=pattern_symbol* CLOSE CLOSE
-  { I.(mk term local_name), I.(mk term sub_name), args }
-  | SYS_SUBSYS OPEN local_name=SYMBOL sub_name=SYMBOL CLOSE
-  { I.(mk term local_name), I.(mk term sub_name), [] }
+  | SYS_SUBSYS OPEN local_name=SYMBOL sys_inst=system_instantiation CLOSE
+  { I.(mk term local_name), sys_inst }
 
 init_cond:
   | SYS_INIT cond=term

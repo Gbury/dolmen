@@ -160,7 +160,7 @@ module type Statement = sig
   val sys_def : 
     ?loc:location -> id ->
     input:term list -> output:term list -> local:term list ->
-    subs:(id * id * term list) list ->
+    subs:(id * term) list ->
     init:term -> trans:term -> inv:term -> t
   (** Defines a new transition system.  *)
 

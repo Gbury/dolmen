@@ -52,7 +52,7 @@ type sys_def = {
   init   : term;
   trans  : term;
   inv    : term;
-  subs   : (Id.t * Id.t * term list) list;
+  subs   : (Id.t * term) list;
 }
 
 type sys_check = {
@@ -286,11 +286,11 @@ let print_group print fmt ({ contents; recursive; } : _ group) =
 let print_attr fmt attr = Term.print fmt attr 
   
 let print_def_sys fmt ({ id; loc = _; input; output; local; init; trans; inv; subs;} : sys_def) =
-  let print_sub fmt (local_name, sys_name, vars) = 
-    Format.fprintf fmt "@[<hov 2>subsys: ( %a : %a ) :: ( %a ) @]"
+  let print_sub fmt (local_name, subsys_inst) = 
+    Format.fprintf fmt "@[<hov 2>subsys: ( %a = %a ) @]"
       Id.print local_name
-      Id.print sys_name
-      (fun fmt vars -> List.iter (Format.fprintf fmt "%a " Term.print) vars) vars in
+      Term.print subsys_inst
+  in
 
   let print_subs fmt subs = 
     List.iter (Format.fprintf fmt "%a" print_sub) subs in

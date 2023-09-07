@@ -13,7 +13,8 @@ module S = Set.Make(Dolmen.Std.Id)
 module MCIL (Type : Tff_intf.S) = struct
   
   type _ Type.err +=
-    Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
+    | Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
+    | Bad_inst_arity : Dolmen.Std.Id.t * int * int -> Dolmen.Std.Loc.t Type.err
 
   let key = Dolmen.Std.Tag.create ()
 
@@ -39,6 +40,11 @@ module MCIL (Type : Tff_intf.S) = struct
 
   let get_symbol_id_and_loc = function
     | { Ast.term = Ast.Symbol s; loc; _ } -> s, loc
+    | _ -> assert false
+
+  let get_app_info = function
+    | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; loc=s_loc; _}, args); loc=app_loc; _ } ->
+      s, s_loc, args, app_loc
     | _ -> assert false
 
   let parse_def_params (env, env') params =
@@ -67,6 +73,9 @@ module MCIL (Type : Tff_intf.S) = struct
   let _cannot_find_system env loc id =
     Type._error env (Located loc) (Cannot_find_system id)
 
+  let _bad_inst_arity env loc id e a =
+    Type._error env (Located loc) (Bad_inst_arity (id, e, a))
+
   let ensure env ast t ty =
     Type._wrap2 env ast Type.T.ensure t ty
 
@@ -82,7 +91,7 @@ module MCIL (Type : Tff_intf.S) = struct
   let parse_subsystems env (parent : Stmt.sys_def) =
     let defs = get_defs env in
     List.fold_left
-      (fun other_subs (local_name, sub_name, args) ->
+      (fun other_subs (local_name, sub_inst) ->
         (* Make sure local name isn't used twice *)
         if S.mem local_name other_subs then
           (* TODO: add proper error *)
@@ -93,10 +102,11 @@ module MCIL (Type : Tff_intf.S) = struct
           in
           failwith msg
         else (
+          let sub_id, sid_loc, args, inst_loc = get_app_info sub_inst in
           let sub_inputs, sub_outputs =
-            match M.find_opt sub_name defs with
+            match M.find_opt sub_id defs with
             | None ->
-                _cannot_find_system env parent.loc sub_name
+                _cannot_find_system env sid_loc sub_id
             | Some (`Trans_Sys (input, output, _)) ->
                 (vars input, vars output)
           in
@@ -104,13 +114,7 @@ module MCIL (Type : Tff_intf.S) = struct
           let params = sub_inputs @ sub_outputs in
           let num_params = List.length params in
           if (num_args != num_params) then (
-            (* TODO: add proper error *)
-            let msg =
-              Format.asprintf 
-                "Bad arity for instance `%a` of system `%a`: expected %d arguments but got %d"
-                Id.print local_name Id.print sub_name num_params num_args
-            in
-            failwith msg
+            _bad_inst_arity env inst_loc sub_id num_params num_args
           ) ;
           List.iter2
             (fun arg param ->

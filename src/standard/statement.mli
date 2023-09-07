@@ -77,7 +77,7 @@ type sys_def = {
   init   : term;
   trans  : term;
   inv    : term;
-  subs   : (Id.t * Id.t * term list) list;
+  subs   : (Id.t * term) list;
 }
 (** System definition. *)
 
