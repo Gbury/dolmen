@@ -3,6 +3,11 @@
 
 module MCIL (Type : Tff_intf.S) : sig
   
+  type _ Type.err +=
+    Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
+    (** Error raised when an transition system cannot be found *)
+  (** Additional errors specific to MCIL typing. *)
+
   val parse_def : 
     Type.env ->
     Dolmen.Std.Statement.sys_def ->

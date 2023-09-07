@@ -356,7 +356,6 @@ module Make
     | Cannot_tag_tag : Ast.t err
     | Cannot_tag_ttype : Ast.t err
     | Cannot_find : Id.t * string -> Ast.t err
-    | Cannot_find_system : Id.t -> Loc.t err
     | Forbidden_quantifier : Ast.t err
     | Missing_destructor : Id.t -> Ast.t err
     | Type_def_rec : Stmt.def -> Stmt.defs err

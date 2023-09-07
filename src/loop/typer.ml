@@ -603,12 +603,12 @@ let unbound_identifier =
       (fun (_, msg, _) -> text_hint msg);]
     ~name:"Unbound identifier" ()
 
-let undefined_system =
-  Report.Error.mk ~code ~mnemonic:"undefined-system"
+let undefined_transition_system =
+  Report.Error.mk ~code ~mnemonic:"undefined-transition-system"
   ~message:(fun fmt id ->
-      Format.fprintf fmt "Undefined system:@ %a"
+      Format.fprintf fmt "Undefined transition system:@ %a"
         (pp_wrap Dolmen.Std.Id.print) id)
-  ~name:"Undefined system" ()
+  ~name:"Undefined transition system" ()
 
 let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
@@ -1205,8 +1205,6 @@ module Typer(State : State.S) = struct
       error ~input ~loc st cannot_tag_ttype ()
     | T.Cannot_find (id, msg) ->
       error ~input ~loc st unbound_identifier (id, msg, true)
-    | T.Cannot_find_system id ->
-      error ~input ~loc st undefined_system id
     | T.Forbidden_quantifier ->
       error ~input ~loc st forbidden_quant ()
     | T.Missing_destructor id ->
@@ -1286,6 +1284,9 @@ module Typer(State : State.S) = struct
       error ~input ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
       error ~input ~loc st invalid_string_escape_sequence (s, i)
+    (* MCIL errors *)
+    | MCIL_Trans_Sys.Cannot_find_system id ->
+      error ~input ~loc st undefined_transition_system id
     (* Bad sexpr *)
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg

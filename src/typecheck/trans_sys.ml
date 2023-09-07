@@ -12,6 +12,9 @@ module S = Set.Make(Dolmen.Std.Id)
 
 module MCIL (Type : Tff_intf.S) = struct
   
+  type _ Type.err +=
+    Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t Type.err
+
   let key = Dolmen.Std.Tag.create ()
 
   let get_defs env =
@@ -54,7 +57,7 @@ module MCIL (Type : Tff_intf.S) = struct
     Type.parse_prop env cond |> ignore
 
   let _cannot_find_system env loc id =
-    Type._error env (Located loc) (Type.Cannot_find_system id)
+    Type._error env (Located loc) (Cannot_find_system id)
 
   let ensure env ast t ty =
     Type._wrap2 env ast Type.T.ensure t ty

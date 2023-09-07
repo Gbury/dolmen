@@ -348,8 +348,6 @@ module type Formulas = sig
     (** *)
     | Cannot_find : Dolmen.Std.Id.t * string -> Dolmen.Std.Term.t err
     (** *)
-    | Cannot_find_system : Dolmen.Std.Id.t -> Dolmen.Std.Loc.t err
-    (** *)
     | Forbidden_quantifier : Dolmen.Std.Term.t err
     (** *)
     | Missing_destructor : Dolmen.Std.Id.t -> Dolmen.Std.Term.t err
