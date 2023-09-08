@@ -1,5 +1,5 @@
-File "tests/parsing/smtlib/mcil/errors/235_define-system_bad_subsys_decl_5.mcil", line 1, character 32-33:
-1 | (define-system sys :subsys (a (b)) )
-                                    ^
-Error while parsing a subsystem instantiation, read a closing parenthesis,
-      but expected a symbol as an argument.
+File "tests/parsing/smtlib/mcil/errors/235_define-system_bad_subsys_decl_5.mcil", line 1, character 33-34:
+1 | (define-system sys :subsys (n (s _)))
+                                     ^
+Error while parsing a system instantiation, read the reserved word '_',
+      but expected a system variable as an argument.

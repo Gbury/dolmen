@@ -449,6 +449,38 @@
   (action (diff 232_define-system_bad_subsys_decl_4.expected 232_define-system_bad_subsys_decl_4.full)))
 
 
+; Test for 233_define-system_bad_attribute_7.mcil
+; Incremental test
+
+(rule
+   (target  233_define-system_bad_attribute_7.incremental)
+   (deps    (:input 233_define-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 233_define-system_bad_attribute_7.expected 233_define-system_bad_attribute_7.incremental)))
+
+; Full mode test
+
+(rule
+   (target  233_define-system_bad_attribute_7.full)
+   (deps    (:input 233_define-system_bad_attribute_7.mcil))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff 233_define-system_bad_attribute_7.expected 233_define-system_bad_attribute_7.full)))
+
+
 ; Test for 234_check-system_bad_query_1.mcil
 ; Incremental test
 
@@ -577,12 +609,12 @@
   (action (diff 237_define-system_missing_init_formula.expected 237_define-system_missing_init_formula.full)))
 
 
-; Test for 238_define-system_bad_attribute_3.mcil
+; Test for 238_define-system_bad_subsys_decl_5.mcil
 ; Incremental test
 
 (rule
-   (target  238_define-system_bad_attribute_3.incremental)
-   (deps    (:input 238_define-system_bad_attribute_3.mcil))
+   (target  238_define-system_bad_subsys_decl_5.incremental)
+   (deps    (:input 238_define-system_bad_subsys_decl_5.mcil))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -591,13 +623,13 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 238_define-system_bad_attribute_3.expected 238_define-system_bad_attribute_3.incremental)))
+  (action (diff 238_define-system_bad_subsys_decl_5.expected 238_define-system_bad_subsys_decl_5.incremental)))
 
 ; Full mode test
 
 (rule
-   (target  238_define-system_bad_attribute_3.full)
-   (deps    (:input 238_define-system_bad_attribute_3.mcil))
+   (target  238_define-system_bad_subsys_decl_5.full)
+   (deps    (:input 238_define-system_bad_subsys_decl_5.mcil))
    (package dolmen_bin)
    (action (chdir %{workspace_root}
             (with-outputs-to %{target}
@@ -606,7 +638,7 @@
 (rule
   (alias runtest)
   (package dolmen_bin)
-  (action (diff 238_define-system_bad_attribute_3.expected 238_define-system_bad_attribute_3.full)))
+  (action (diff 238_define-system_bad_subsys_decl_5.expected 238_define-system_bad_subsys_decl_5.full)))
 
 
 ; Test for 239_define-system_bad_attribute_4.mcil

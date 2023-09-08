@@ -1,1 +1,1 @@
-(define-system sys :subsys (a b c))
+(define-system sys :subsys (a (b) _))

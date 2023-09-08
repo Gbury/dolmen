@@ -392,11 +392,15 @@ opt_system_var_decls:
   | { [], [], [] }
   | decls=system_var_decls { decls }
 
+sys_symbol:
+  | s=pattern_symbol { s }
+
+sys_var_symbol:
+  | s=pattern_symbol { s }
+
 system_instantiation:
-  | c=pattern_symbol
-    { c }
-  | OPEN f=pattern_symbol args=pattern_symbol+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f args }
+  | OPEN s=sys_symbol args=sys_var_symbol* CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc s args }
 
 system_subsys_dec:
   | SYS_SUBSYS OPEN local_name=SYMBOL sys_inst=system_instantiation CLOSE
@@ -481,8 +485,11 @@ assump_cond:
   | CHECK_ASSUMPTION OPEN s=SYMBOL cond=term CLOSE
   { let loc = L.mk_pos $startpos $endpos in I.(mk term s), cond, loc }
 
+cond_symbol:
+  | s=pattern_symbol { s }
+
 sys_check_query_base:
-  | OPEN s=SYMBOL OPEN args=pattern_symbol* CLOSE CLOSE
+  | OPEN s=SYMBOL OPEN args=cond_symbol* CLOSE CLOSE
   { let loc = L.mk_pos $startpos $endpos in I.(mk term s), args, loc }
 
 sys_check_query:
@@ -514,9 +521,6 @@ sys_check_attrs_and_queries:
 opt_sys_check_attrs_and_queries:
   | { [], [], [] }
   | aq = sys_check_attrs_and_queries { aq }
-
-sys_symbol:
-  | s=pattern_symbol { s }
 
 system_check:
   | sid=sys_symbol vars=opt_system_var_decls attrs_queries=opt_sys_check_attrs_and_queries

@@ -1,8 +1,5 @@
-File "tests/parsing/smtlib/mcil/errors/231_define-system_bad_subsys_decl_3.mcil", line 1, character 32-33:
-1 | (define-system sys :subsys (a b c))
-                                    ^
-Error while parsing a subsystem declaration with zero arguments,
-      read the symbol 'c',
-      but expected a closing parenthesis. To define a subsystem with
-      arguments parentheses must be added around the subsystem name and args:
-       (local_name (subsystem_name var_a var_b ...)).
+File "tests/parsing/smtlib/mcil/errors/231_define-system_bad_subsys_decl_3.mcil", line 1, character 34-35:
+1 | (define-system sys :subsys (a (b) _))
+                                      ^
+Error while parsing a subsystem declaration, read the reserved word '_',
+      but expected a closing parenthesis.
