@@ -255,6 +255,10 @@ let text_hint = function
   | "" -> None
   | msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
 
+let text_hint2 = function
+  | _, "" -> None
+  | _, msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
+
 let poly_hint (c, expected, actual) =
   let vars, params, _ = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
   let n_ty = List.length vars in
@@ -375,12 +379,13 @@ let redundant_pattern =
           "This pattern is useless (i.e. it is made redundant by earlier patterns)")
     ~name:"Redundant pattern" ()
 
-let almost_linear =
-  Report.Warning.mk ~code ~mnemonic:"almost-linear-expr"
-    ~message:(fun fmt _ ->
+let bad_arith_expr =
+  Report.Warning.mk ~code ~mnemonic:"bad-arith-expr"
+    ~message:(fun fmt (config, _) ->
         Format.fprintf fmt
-          "This is a non-linear expression according to the smtlib spec.")
-    ~hints:[text_hint]
+          "This expression does not conform to the specification for %a arithmetic"
+          Dolmen_type.Arith.Smtlib2.print_config config)
+    ~hints:[text_hint2]
     ~name:"Non-linear expression in linear arithmetic" ()
 
 let array_extension =
@@ -834,12 +839,13 @@ let forbidden_array_sort =
     ~hints:[text_hint]
     ~name:"Forbidden array sort" ()
 
-let non_linear_expression =
-  Report.Error.mk ~code ~mnemonic:"non-linear-expr"
-    ~message:(fun fmt _ ->
-        Format.fprintf fmt "Non-linear expressions are forbidden by the logic.")
-    ~hints:[text_hint]
-    ~name:"Non linear expression in linear arithmetic logic" ()
+let forbidden_arith_expr =
+  Report.Error.mk ~code ~mnemonic:"forbidden-arith"
+    ~message:(fun fmt (config, _msg) ->
+        Format.fprintf fmt "Forbidden expression in %a arithmetic"
+          Dolmen_type.Arith.Smtlib2.print_config config)
+    ~hints:[text_hint2]
+    ~name:"Forbidden arithmetic expression" ()
 
 let bitvector_app_expected_nat_lit =
   Report.Error.mk ~code ~mnemonic:"bitvector-app-expected-nat-lit"
@@ -1161,10 +1167,10 @@ module Typer(State : State.S) = struct
       warn ~input ~loc st redundant_pattern pattern
     | Smtlib2_Arrays.Extension id ->
       warn ~input ~loc st array_extension id
-    | Smtlib2_Ints.Restriction msg
-    | Smtlib2_Reals.Restriction msg
-    | Smtlib2_Reals_Ints.Restriction msg ->
-      warn ~input ~loc st almost_linear msg
+    | Smtlib2_Ints.Restriction (config, msg)
+    | Smtlib2_Reals.Restriction (config, msg)
+    | Smtlib2_Reals_Ints.Restriction (config, msg) ->
+      warn ~input ~loc st bad_arith_expr (config, msg)
     | _ ->
       warn ~input ~loc st unknown_warning
         (Obj.Extension_constructor.(name (of_val w)))
@@ -1278,10 +1284,10 @@ module Typer(State : State.S) = struct
     | Smtlib2_Arrays.Forbidden msg ->
       error ~input ~loc st forbidden_array_sort msg
     (* Smtlib Arithmetic errors *)
-    | Smtlib2_Ints.Forbidden msg
-    | Smtlib2_Reals.Forbidden msg
-    | Smtlib2_Reals_Ints.Forbidden msg ->
-      error ~input ~loc st non_linear_expression msg
+    | Smtlib2_Ints.Forbidden (config, msg)
+    | Smtlib2_Reals.Forbidden (config, msg)
+    | Smtlib2_Reals_Ints.Forbidden (config, msg) ->
+      error ~input ~loc st forbidden_arith_expr (config, msg)
     | Smtlib2_Reals_Ints.Expected_arith_type ty ->
       error ~input ~loc st expected_arith_type
         (ty, "The stmlib Reals_Ints theory requires an arithmetic type in order to \

@@ -235,11 +235,11 @@ module Smtlib2 = struct
 
   let print_config fmt = function
     | Regular -> Format.fprintf fmt "regular"
-    | Linear `Large -> Format.fprintf fmt "linear/large"
-    | Linear `Strict -> Format.fprintf fmt "linear/strict"
-    | Difference `IDL -> Format.fprintf fmt "idl"
-    | Difference `RDL -> Format.fprintf fmt "rdl"
-    | Difference `UFIDL -> Format.fprintf fmt "ufidl"
+    | Linear `Large -> Format.fprintf fmt "linear (large)"
+    | Linear `Strict -> Format.fprintf fmt "linear"
+    | Difference `IDL -> Format.fprintf fmt "IDL"
+    | Difference `RDL -> Format.fprintf fmt "RDL"
+    | Difference `UFIDL -> Format.fprintf fmt "UFIDL"
 
   (* In order to establish the needed classification and correctly raise warnings
      or errors, we first need a fine-grained view of terms according to an arithmetic
@@ -506,9 +506,11 @@ module Smtlib2 = struct
             | Numeral _ -> aux non_numeral_seen r
             | _ ->
               if non_numeral_seen then
-                Error (Format.asprintf "subtraction in difference logic (QF_UFIDL version) \
-                                        expects all but at most one of its arguments to be \
-                                        numerals")
+                Error (
+                  Format.asprintf
+                    "addition/subtraction in difference logic \
+                     (in UFIDL/QF_UFIDL) expects all but at most \
+                     one of its arguments to be numerals")
               else
                 aux true r
           end
@@ -781,19 +783,19 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Term.t Type.warn
+        | Restriction : config * string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Term.t Type.err
+        | Forbidden : config * string -> Term.t Type.err
 
-      let check env filter ast args =
+      let check config env filter ast args =
         match filter args with
         | Ok -> ()
-        | Warn msg -> Type._warn env (Ast ast) (Restriction msg)
-        | Error msg -> Type._error env (Ast ast) (Forbidden msg)
+        | Warn msg -> Type._warn env (Ast ast) (Restriction (config, msg))
+        | Error msg -> Type._error env (Ast ast) (Forbidden (config, msg))
 
-      let check1 env filter ast a = check env filter ast [a]
-      let check2 env filter ast a b = check env filter ast [a; b]
+      let check1 config env filter ast a = check config env filter ast [a]
+      let check2 config env filter ast a b = check config env filter ast [a; b]
 
       let rec parse ~config version env s =
         match s with
@@ -809,41 +811,41 @@ module Smtlib2 = struct
             | "-" ->
               Type.builtin_term (fun ast args -> match args with
                   | [x] ->
-                    check env (F.minus config (parse ~config) version env) ast args;
+                    check config env (F.minus config (parse ~config) version env) ast args;
                     T.minus (Type.parse_term env x)
                   | _ ->
                     Base.term_app_left (module Type) env s T.sub ast args
-                      ~check:(check env (F.sub config (parse ~config) version env))
+                      ~check:(check config env (F.sub config (parse ~config) version env))
                 )
             | "+" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.add
-                    ~check:(check env (F.add config (parse ~config) version env)))
+                    ~check:(check config env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.mul
-                       ~check:(check env (F.mul config (parse ~config) version env)))
+                       ~check:(check config env (F.mul config (parse ~config) version env)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
-                                   ~check:(check env (F.ediv config version)))
+                                   ~check:(check config env (F.ediv config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.rem
-                                   ~check:(check2 env (F.mod_ config version)))
+                                   ~check:(check2 config env (F.mod_ config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.abs
-                    ~check:(check1 env (F.abs config version)))
+                    ~check:(check1 config env (F.abs config version)))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.le
-                    ~check:(check env (F.comp config (parse ~config) version env)))
+                    ~check:(check config env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.lt
-                    ~check:(check env (F.comp config (parse ~config) version env)))
+                    ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.ge
-                    ~check:(check env (F.comp config (parse ~config) version env)))
+                    ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
-                    ~check:(check env (F.comp config (parse ~config) version env)))
+                    ~check:(check config env (F.comp config (parse ~config) version env)))
 
             | "div0" -> `Reserved (
                 "completing interpretation of division by zero in models",
@@ -861,7 +863,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       Type.builtin_term (Base.term_app1 (module Type) env s (T.divisible n)
-                               ~check:(check1 env (F.divisible config version)))
+                               ~check:(check1 config env (F.divisible config version)))
                     )
                 | _ -> `Not_indexed
               )
@@ -881,16 +883,16 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Term.t Type.warn
+        | Restriction : config * string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Term.t Type.err
+        | Forbidden : config * string -> Term.t Type.err
 
-      let check env filter ast args =
+      let check config env filter ast args =
         match filter args with
         | Ok -> ()
-        | Warn msg -> Type._warn env (Ast ast) (Restriction msg)
-        | Error msg -> Type._error env (Ast ast) (Forbidden msg)
+        | Warn msg -> Type._warn env (Ast ast) (Restriction (config, msg))
+        | Error msg -> Type._error env (Ast ast) (Forbidden (config, msg))
 
       let rec parse ~config version env s =
         match s with
@@ -906,34 +908,34 @@ module Smtlib2 = struct
             | "-" -> Type.builtin_term (fun ast args ->
                 match args with
                 | [x] ->
-                  check env (F.minus config (parse ~config) version env) ast args;
+                  check config env (F.minus config (parse ~config) version env) ast args;
                   T.minus (Type.parse_term env x)
                 | _ ->
                   Base.term_app_left (module Type) env s T.sub ast args
-                    ~check:(check env (F.sub config (parse ~config) version env))
+                    ~check:(check config env (F.sub config (parse ~config) version env))
               )
             | "+" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.add
-                       ~check:(check env (F.add config (parse ~config) version env)))
+                       ~check:(check config env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.mul
-                       ~check:(check env (F.mul config (parse ~config) version env)))
+                       ~check:(check config env (F.mul config (parse ~config) version env)))
             | "/" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
-                       ~check:(check env (F.div config (parse ~config) version env)))
+                       ~check:(check config env (F.div config (parse ~config) version env)))
                 ~meta:(`Partial (fun _ _ _ -> T.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.le
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.lt
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.ge
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
 
             | "/0" -> `Reserved (
                 "completing interpretation of division by zero in models",
@@ -959,20 +961,20 @@ module Smtlib2 = struct
       module F = Filter(Type)
 
       type _ Type.warn +=
-        | Restriction : string -> Term.t Type.warn
+        | Restriction : config * string -> Term.t Type.warn
 
       type _ Type.err +=
-        | Forbidden : string -> Term.t Type.err
+        | Forbidden : config * string -> Term.t Type.err
         | Expected_arith_type : Type.Ty.t -> Term.t Type.err
 
-      let check env filter ast args =
+      let check config env filter ast args =
         match filter args with
         | Ok -> ()
-        | Warn msg -> Type._warn env (Ast ast) (Restriction msg)
-        | Error msg -> Type._error env (Ast ast) (Forbidden msg)
+        | Warn msg -> Type._warn env (Ast ast) (Restriction (config, msg))
+        | Error msg -> Type._error env (Ast ast) (Forbidden (config, msg))
 
-      let check1 env filter ast a = check env filter ast [a]
-      let check2 env filter ast a b = check env filter ast [a; b]
+      let check1 config env filter ast a = check config env filter ast [a]
+      let check2 config env filter ast a b = check config env filter ast [a; b]
 
       let dispatch1 env (mk_int, mk_real) ast t =
         match Ty.view @@ T.ty t with
@@ -1018,52 +1020,52 @@ module Smtlib2 = struct
                 | [_] ->
                   Base.term_app1_ast (module Type) env s
                     (dispatch1 env (T.Int.minus, T.Real.minus)) ast args
-                    ~check:(check1 env (F.minus config (parse ~config) version env))
+                    ~check:(check1 config env (F.minus config (parse ~config) version env))
                 | _ ->
                   Base.term_app_left_ast (module Type) env s
                     (dispatch2 env (T.Int.sub, T.Real.sub)) ast args
-                    ~check:(check env (F.sub config (parse ~config) version env))
+                    ~check:(check config env (F.sub config (parse ~config) version env))
               )
             | "+" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.add, T.Real.add))
-                       ~check:(check env (F.add config (parse ~config) version env)))
+                       ~check:(check config env (F.add config (parse ~config) version env)))
             | "*" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.mul, T.Real.mul))
-                       ~check:(check env (F.mul config (parse ~config) version env)))
+                       ~check:(check config env (F.mul config (parse ~config) version env)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.Int.div
-                                   ~check:(check env (F.ediv config version)))
+                                   ~check:(check config env (F.ediv config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.Int.div'))
             | "mod" ->
               Type.builtin_term (Base.term_app2 (module Type) env s T.Int.rem
-                                   ~check:(check2 env (F.mod_ config version)))
+                                   ~check:(check2 config env (F.mod_ config version)))
                 ~meta:(`Partial (fun _ _ _ -> T.Int.rem'))
             | "abs" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.Int.abs
-                       ~check:(check1 env (F.abs config version)))
+                       ~check:(check1 config env (F.abs config version)))
             | "/" ->
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (promote_int_to_real env T.Real.div)
-                       ~check:(check env (F.div config (parse ~config) version env)))
+                       ~check:(check config env (F.div config (parse ~config) version env)))
                 ~meta:(`Partial (fun _ _ _ -> T.Real.div'))
             | "<=" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.le, T.Real.le))
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | "<" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.lt, T.Real.lt))
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">=" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.ge, T.Real.ge))
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | ">" ->
               Type.builtin_term (Base.term_app_chain_ast (module Type) env s
                        (dispatch2 env (T.Int.gt, T.Real.gt))
-                       ~check:(check env (F.comp config (parse ~config) version env)))
+                       ~check:(check config env (F.comp config (parse ~config) version env)))
             | "to_real" ->
               Type.builtin_term (Base.term_app1 (module Type) env s T.Int.to_real)
             | "to_int" ->
@@ -1094,7 +1096,7 @@ module Smtlib2 = struct
                 | "divisible" ->
                   `Unary (function n ->
                       Type.builtin_term (Base.term_app1 (module Type) env s (T.Int.divisible n)
-                               ~check:(check1 env (F.divisible config version))))
+                               ~check:(check1 config env (F.divisible config version))))
                 | _ -> `Not_indexed
               )
 
