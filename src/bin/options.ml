@@ -11,8 +11,10 @@ let model_section = "MODEL CHECKING"
 let error_section = "ERROR HANDLING"
 let flow_section = "FLOW CHECKING"
 let header_section = "HEADER CHECKING"
-let common_section = Manpage.s_options
+let option_section = Manpage.s_options
+let common_section = Manpage.s_common_options
 let profiling_section = "PROFILING"
+let internal_section = "INTERNAL"
 
 (* Initialise error codes *)
 (* ************************************************************************* *)
@@ -118,20 +120,6 @@ let input_mode_list = [
   ]
 
 let input_mode_conv = Arg.enum input_mode_list
-
-(* Check model modes *)
-(* ************************************************************************* *)
-
-(*
-type model_mode = Dolmen_model.Loop.mode
-
-let model_mode_list = [
-    "full", Dolmen_model.Loop.Full;
-    "interleave", Dolmen_model.Loop.Interleave;
-  ]
-
-let model_mode_conv = Arg.enum model_mode_list
-*)
 
 (* Mnemonic converter *)
 (* ************************************************************************ *)
@@ -280,7 +268,7 @@ let report_style =
   ]
 
 
-(* Smtlib2 logic *)
+(* Smtlib2 logic and extensions *)
 (* ************************************************************************ *)
 
 let smtlib2_logic =
@@ -293,6 +281,13 @@ let smtlib2_logic =
   let print fmt _s = Format.fprintf fmt "" in
   Arg.conv (parse, print)
 
+let smtlib2_ext_list =
+  List.map
+    (fun ext -> Dolmen_std.Extensions.Smtlib2.name ext, ext)
+    (Dolmen_std.Extensions.Smtlib2.exts ())
+
+let smtlib2_ext =
+  Arg.enum smtlib2_ext_list
 
 
 (* State creation *)
@@ -359,13 +354,15 @@ let mk_run_state
     flow_check
     header_check header_licenses
     header_lang_version
-    smtlib2_forced_logic type_check check_model (* check_model_mode *)
+    smtlib2_forced_logic smtlib2_exts
+    type_check check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
   =
   (* Side-effects *)
   let () = Option.iter Gc.set gc_opt in
   let () = set_color Unix.stdout Format.std_formatter colors in
   let () = set_color Unix.stderr Format.err_formatter colors in
+  let () = List.iter Dolmen_std.Extensions.Smtlib2.enable smtlib2_exts in
   (* base (which is a transitive dependency, due to farith),
      unconditionally enables backtraces, which is fine. But that means that
      for our purpose, we need to store whether to print the backtraces somewhere
@@ -477,7 +474,7 @@ let mk_file lang mode input =
   Loop.State.mk_file ?lang ?mode dir source
 
 let logic_file =
-  let docs = common_section in
+  let docs = option_section in
   let in_lang =
     let doc = Format.asprintf
         "Set the input language to $(docv); must be %s."
@@ -529,7 +526,7 @@ let mk_preludes =
   List.map (fun f -> mk_file None None (`File f))
 
 let preludes =
-  let docs = common_section in
+  let docs = option_section in
   let preludes =
     let doc = "Optional prelude file to be loaded before the input file." in
     Arg.(value & opt_all string [] & info ["p"; "prelude"] ~doc ~docs)
@@ -540,7 +537,7 @@ let preludes =
 (* ************************************************************************* *)
 
 let state =
-  let docs = common_section in
+  let docs = option_section in
   let gc =
     let doc = "Print statistics about the gc upon exiting" in
     Arg.(value & flag & info ["g"; "gc"] ~doc ~docs:gc_section)
@@ -550,8 +547,10 @@ let state =
     Arg.(value & flag & info ["b"; "backtrace"] ~doc ~docs:error_section)
   in
   let colors =
-    let doc = "Activate coloring of output" in
-    Arg.(value & opt color_conv Auto & info ["color"] ~doc ~docs)
+    let doc =
+      "Activate coloring of output. Available options are: auto, always, never."
+    in
+    Arg.(value & opt color_conv Auto & info ["color"] ~doc ~docs:common_section)
   in
   let abort_on_bug =
     let doc = Format.asprintf
@@ -605,6 +604,14 @@ let state =
                replaces the string in the set-logic command by instead using
                the one given on the command line." in
     Arg.(value & opt (some smtlib2_logic) None & info ["force-smtlib2-logic"] ~doc ~docs)
+  in
+  let smtlib2_extensions =
+    let doc = Format.asprintf
+        "Activate smtlib2 extension. Currently an experimental option. \
+        $(docv) must be %s" (Arg.doc_alts_enum smtlib2_ext_list)
+    in
+    Arg.(value & opt_all smtlib2_ext [] &
+         info ["internal-smtlib2-extension"] ~docs:internal_section ~doc)
   in
   let debug =
     let doc = Format.asprintf
@@ -668,7 +675,8 @@ let state =
         flow_check $
         header_check $ header_licenses $
         header_lang_version $
-        force_smtlib2_logic $ typing $ check_model $ (* check_model_mode $ *)
+        force_smtlib2_logic $ smtlib2_extensions $
+        typing $ check_model $ (* check_model_mode $ *)
         debug $ report_style $ max_warn $ reports $ syntax_error_ref)
 
 
@@ -676,6 +684,7 @@ let state =
 (* ************************************************************************* *)
 
 let cli =
+  let docs = option_section in
   let aux state preludes logic_file list doc =
     match list, doc with
     | false, None ->
@@ -694,10 +703,10 @@ let cli =
   let list =
     let doc = "List all reports (i.e. warnings and errors),
                that dolmen can emit." in
-    Arg.(value & flag & info ["list"] ~doc)
+    Arg.(value & flag & info ["list"] ~doc ~docs)
   in
   let doc =
     let doc = "The warning or error of which to show the documentation." in
-    Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic")
+    Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic" ~docs)
   in
   Term.(ret (const aux $ state $ preludes $ logic_file $ list $ doc))

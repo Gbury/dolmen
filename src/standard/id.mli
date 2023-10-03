@@ -47,6 +47,9 @@ val name : t -> Name.t
 
 (** {2 Standard attributes} *)
 
+val stmt : t
+(** Used to attach names to extension statements. *)
+
 val ac_symbol : t
 (** Used to denote associative-commutative symbols. *)
 

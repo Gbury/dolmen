@@ -9,6 +9,7 @@ module P = Dolmen.Class.Logic.Make
     (Dolmen.Std.Id)
     (Dolmen.Std.Term)
     (Dolmen.Std.Statement)
+    (Dolmen.Std.Extensions)
 
 include (P : Dolmen.Class.Logic.S with type statement := Dolmen.Std.Statement.t
                                    and type file := Dolmen.Std.Loc.file)

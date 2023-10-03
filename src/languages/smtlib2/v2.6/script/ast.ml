@@ -8,6 +8,23 @@
     in an interactive loop (so it includes directive for getting and setting options,
     getting information about the solver's internal model, etc...) *)
 
+module type Extension = sig
+
+  type location
+  (** The type of locations. *)
+
+  type term
+  (** The type of terms *)
+
+  type statement
+  (** The type of statements *)
+
+  val statement : string -> (?loc:location -> term list -> statement) option
+  (** Called on statements of the form `(<id> <term>)` where `<id>` is
+      not the name of a statement in the official smtlib specification. *)
+
+end
+
 module type Id = sig
 
   type t

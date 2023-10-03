@@ -54,6 +54,9 @@ module Make
     (S : Dolmen_intf.Stmt.Logic with type location := L.t
                                  and type id := I.t
                                  and type term := T.t)
+    (E : Dolmen_intf.Ext.Logic with type location := L.t
+                                and type term := T.t
+                                and type statement := S.t)
   : S with type file := L.file
        and type statement := S.t
 = struct
@@ -103,9 +106,9 @@ module Make
 
     (* Smtlib2 *)
     Smtlib2 `Latest, ".smt2",
-    (module Dolmen_smtlib2.Script.Latest.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Script.Latest.Make(L)(I)(T)(S)(E.Smtlib2) : S);
     Smtlib2 `V2_6, ".smt2",
-    (module Dolmen_smtlib2.Script.V2_6.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Script.V2_6.Make(L)(I)(T)(S)(E.Smtlib2) : S);
     Smtlib2 `Poly, ".psmt2",
     (module Dolmen_smtlib2.Script.Poly.Make(L)(I)(T)(S) : S);
 

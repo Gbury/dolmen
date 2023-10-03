@@ -79,8 +79,10 @@ let tracked ~track ns path =
 (* Standard attributes *)
 (* ************************************************************************* *)
 
+let stmt = mk Attr "stmt"
 let ac_symbol = mk Attr "ac"
 let predicate_def = mk Attr "predicate"
+
 let case_split = mk Decl "case_split"
 let theory_decl = mk Decl "theory"
 let rwrt_rule = mk Decl "rewrite_rule"

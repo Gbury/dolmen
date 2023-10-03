@@ -112,5 +112,8 @@ module Make
     (S : Dolmen_intf.Stmt.Logic with type location := L.t
                                  and type id := I.t
                                  and type term := T.t)
+    (E : Dolmen_intf.Ext.Logic with type location := L.t
+                                and type term := T.t
+                                and type statement := S.t)
   : S with type statement := S.t and type file := L.file
 

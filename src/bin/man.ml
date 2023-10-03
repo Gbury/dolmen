@@ -9,6 +9,8 @@ let cli = [
   `P "Dolmen is a tool to parse and type input files that contain problem \
       used in automated deduction.";
   `S Options.common_section;
+  `P "Generic options for CLI binaries";
+  `S Options.option_section;
   `P "Common options for the dolmen binary";
   `S Options.model_section;
   `P "Options to use dolmen to verify models output by provers";
@@ -39,6 +41,8 @@ let cli = [
      );
   `S Options.gc_section;
   `P "Options to fine-tune the gc, only experts should use these.";
+  `S Options.internal_section;
+  `P "Options for internal testing of Dolmen, use at your own risks, ^^";
   `S Cmdliner.Manpage.s_exit_status;
   `P "dolmen exits with the following status:";
   `S Cmdliner.Manpage.s_bugs;
