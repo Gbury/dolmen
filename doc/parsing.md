@@ -47,6 +47,7 @@ and try to parse a file named "example.smt2" in the home of the current user:
 module P =
   Dolmen.Smtlib2.Script.Latest.Make
     (Dolmen.Std.Loc)(Dolmen.Std.Id)(Dolmen.Std.Term)(Dolmen.Std.Statement)
+    (Dolmen.Std.Extensions.Smtlib2)
 
 let _ = P.parse_file "example.smt2"
 ```

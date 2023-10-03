@@ -16,7 +16,7 @@ the following code will give you a quick start:
 open Dolmen
 
 (* Instantiate a module for parsing logic languages *)
-module Logic = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)
+module Logic = Class.Logic.Make(Std.Loc)(Std.Id)(Std.Term)(Std.Statement)(Std.Extensions)
 
 (* instantiate the modules for typechecking *)
 module State = Dolmen_loop.State

@@ -5,10 +5,12 @@
 %parameter <I : Ast.Id>
 %parameter <T : Ast.Term with type location := L.t and type id := I.t>
 %parameter <S : Ast.Statement with type location := L.t and type id := I.t and type term := T.t>
+%parameter <E : Ast.Extension with type location := L.t and type term := T.t and type statement := S.t>
 
 %start <T.t> term
 %start <S.t list> file
 %start <S.t option> input
+
 
 %{
 
@@ -453,6 +455,23 @@ command:
     { let loc = L.mk_pos $startpos $endpos in S.set_logic ~loc s }
   | OPEN SET_OPTION c=command_option CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.set_option ~loc c }
+
+  | OPEN e=extension_statement l=s_expr* CLOSE
+    { let loc = Some (L.mk_pos $startpos $endpos) in
+      e ?loc l }
+;
+
+extension_statement:
+  | s=SYMBOL
+    { match E.statement s with
+      | Some mk_ext -> mk_ext
+      | None ->
+        let loc = L.mk_pos $startpos $endpos in
+        raise (L.Syntax_error (loc, `Advanced ("115",
+          Format.dprintf "a command",
+          Format.dprintf "the symbol '%s'" s,
+          Format.dprintf "a command name")))
+    }
 ;
 
 file:

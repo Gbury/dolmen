@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.6/errors/115_command_bad_name_2.smt2", line 3, character 1-9:
+3 | (minimize a)
+     ^^^^^^^^
+Error while parsing a command, read the symbol 'minimize',
+      but expected a command name.

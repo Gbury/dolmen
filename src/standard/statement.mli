@@ -171,6 +171,13 @@ include Dolmen_intf.Stmt.Logic
 
 (** {2 Additional functions} *)
 
+val plain : ?id:Id.t -> ?loc:location -> ?attrs:term list -> term -> t
+(** Create a 'Plain' statement.
+    'Plain' statements carry a term as payload, and serve to encode input
+    statements whose semantics are not expressible using the other
+    statements. To do that, attributes are attached to allow users to
+    *)
+
 val add_attrs : term list -> t -> t
 (** Add some attributes to a statement. *)
 

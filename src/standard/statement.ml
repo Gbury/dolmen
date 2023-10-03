@@ -336,6 +336,10 @@ let add_attrs attrs t =
 let pack ?id ?loc ?attrs l =
   mk ?id ?loc ?attrs (Pack l)
 
+(* Plain *)
+let plain ?id ?loc ?attrs t =
+  mk ?id ?loc ?attrs (Plain t)
+
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
 let push ?loc i = mk ?loc (Push i)
