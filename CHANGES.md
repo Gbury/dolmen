@@ -2,6 +2,10 @@
 next
 ----
 
+### Parsing
+
+- Add parsing extensions for the smtlib2 language (PR#190)
+
 ### Typing
 
 - Enforce some missing constraints on bitvectors
