@@ -1,4 +1,19 @@
 
+next
+----
+
+### Typing
+
+- Enforce some missing constraints on bitvectors
+  indexes and sizes for the smtlib2 BV theory (PR#172, PR#175)
+- Slightly improve wording for errors and warnings concerning
+  non linearity and other arithmetic restrictions (PR#184)
+
+### Loop
+
+- Add the String theory to the ALL logic of smtlib2 (PR#182)
+
+
 v0.9
 ----
 
