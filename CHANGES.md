@@ -2,9 +2,19 @@
 next
 ----
 
+### UI
+
+- Improved the printing of some data-structures (PR#190)
+
+### Std
+
+- Replace the `Plain` statement with the `Other` statement,
+  which is a more general version (PR#190)
+
 ### Parsing
 
 - Add parsing extensions for the smtlib2 language (PR#190)
+- Better split elements of clauses in `cnf` TPTP statements (PR#190)
 
 ### Typing
 
