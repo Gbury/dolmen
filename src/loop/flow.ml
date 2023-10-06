@@ -246,7 +246,7 @@ module Smtlib2(State : State.S)
       end
 
     (* smtlib ref case: 'gsio' *)
-    | Plain _
+    | Other _
     | Get_info _ | Set_info _
     | Get_option _ | Set_option _ ->
       begin match mode with

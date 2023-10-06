@@ -200,7 +200,6 @@ module Tptp = struct
       (Ty : Dolmen.Intf.Ty.Tptp_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Tptp_Tff_Core with type t = Type.T.t) = struct
 
-    let mk_or a b = T._or [a; b]
     let mk_and a b = T._and [a; b]
 
     let parse _version env s =
@@ -229,7 +228,9 @@ module Tptp = struct
       | Type.Builtin Ast.Not ->
         Type.builtin_term (Base.term_app1 (module Type) env s T.neg)
       | Type.Builtin Ast.Or ->
-        Type.builtin_term (Base.term_app2 (module Type) env s mk_or)
+        (* tptp clauses are transformed into quantified disjunction when needed,
+           and these disjunction may not be binary. *)
+        Type.builtin_term (Base.term_app_list (module Type) env s T._or)
       | Type.Builtin Ast.And ->
         Type.builtin_term (Base.term_app2 (module Type) env s mk_and)
       | Type.Builtin Ast.Xor ->

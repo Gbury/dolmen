@@ -1923,7 +1923,7 @@ module Make
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Plain of Dolmen.Std.Statement.term
+    | `Other of Dolmen.Std.Id.t * Dolmen.Std.Statement.term list
   ]
 
   type set_info = [
@@ -2026,9 +2026,10 @@ module Make
       Format.fprintf fmt "@[<hov 2>get-assertions@]"
     | `Echo s ->
       Format.fprintf fmt "@[<hov 2>echo: %s@]" s
-    | `Plain t ->
-      Format.fprintf fmt "@[<hov 2>plain: %a@]"
-        Dolmen.Std.Term.print t
+    | `Other (name, args) ->
+      Format.fprintf fmt "@[<hov 2>other/%a: %a@]"
+        Dolmen.Std.Id.print name
+        (Format.pp_print_list Dolmen.Std.Term.print) args
     | `Set_logic (s, logic) ->
       Format.fprintf fmt
         "@[<hov 2>set-logic: %s =@ %a@]"
@@ -2137,8 +2138,8 @@ module Make
 
     (* Plain statements
        TODO: allow the `plain` function to return a meaningful value *)
-    | { S.descr = S.Plain t; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Plain t))
+    | { S.descr = S.Other { name; args; }; loc; attrs; _ } ->
+      st, (simple (other_id c) loc attrs (`Other (name, args)))
 
     (* Hypotheses and goal statements *)
     | { S.descr = S.Prove { hyps; goals }; loc; attrs; _ } ->

@@ -56,6 +56,11 @@ type local = {
   goals: term list
 }
 
+type other = {
+  name : Id.t;
+  args : term list;
+}
+
 (* Description of statements. *)
 type descr =
   | Pack of t list
@@ -63,8 +68,6 @@ type descr =
   | Pop of int
   | Push of int
   | Reset_assertions
-
-  | Plain of term
 
   | Prove of local
   | Clause of term list
@@ -91,6 +94,8 @@ type descr =
   | Get_assignment
 
   | Get_assertions
+
+  | Other of other
 
   | Echo of string
   | Reset
@@ -205,7 +210,7 @@ and pp b = function { descr; _ } ->
 let print_attrs fmt = function
   | [] -> ()
   | l ->
-    Format.fprintf fmt "@[<hov>{ %a }@]@ "
+    Format.fprintf fmt "@[<hov>{ %a }@]@,"
       (Format.pp_print_list Term.print) l
 
 let print_abstract fmt ({ id; loc = _; attrs; ty; } : abstract) =
@@ -265,8 +270,6 @@ let rec print_descr fmt = function
   | Push i -> Format.fprintf fmt "push: %d" i
   | Reset_assertions -> Format.fprintf fmt "reset assertions"
 
-  | Plain t -> Format.fprintf fmt "@[<hov 2>plain: %a@]" Term.print t
-
   | Prove { hyps = []; goals = [] } -> Format.fprintf fmt "prove"
   | Prove { hyps = []; goals } ->
       Format.fprintf fmt "@[<hov 2>prove:@ %a@]"
@@ -315,12 +318,21 @@ let rec print_descr fmt = function
   | Get_assignment -> Format.fprintf fmt "get-assignment"
   | Get_assertions -> Format.fprintf fmt "get-assertions"
 
+  | Other { name; args; } ->
+    Format.fprintf fmt "@[<hov 2>other/%a: %a@]"
+      Id.print name
+      (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) args
+
   | Echo s -> Format.fprintf fmt "echo: %s" s
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
 
-and print fmt = function { descr; attrs; _ } ->
-  Format.fprintf fmt "%a%a" print_attrs attrs print_descr descr
+and print_id_opt fmt = function
+  | None -> ()
+  | Some id -> Format.fprintf fmt "%a@," Id.print id
+
+and print fmt = function { id; descr; attrs; _ } ->
+  Format.fprintf fmt "@[<hv>%a%a%a@]" print_id_opt id print_attrs attrs print_descr descr
 
 (** Annotations *)
 let annot = Term.apply
@@ -337,8 +349,8 @@ let pack ?id ?loc ?attrs l =
   mk ?id ?loc ?attrs (Pack l)
 
 (* Plain *)
-let plain ?id ?loc ?attrs t =
-  mk ?id ?loc ?attrs (Plain t)
+let other ?id ?loc ?attrs name args =
+  mk ?id ?loc ?attrs (Other { name; args; })
 
 (* Push/Pop *)
 let pop ?loc i = mk ?loc (Pop i)
@@ -589,7 +601,13 @@ let tptp ?loc ?annot kind id role body =
     match annot with
     | None -> [] | Some t -> [t]
   in
-  let descr = match role with
+  let ok descr = mk ~id ?loc ~attrs descr in
+  let other () =
+    match body with
+    | `Term t -> other ~id ?loc ~attrs Id.(mk Decl role) [t]
+    | `Clause l -> other ~id ?loc ~attrs Id.(mk Decl role) l
+  in
+  match role with
     | "axiom"
     | "hypothesis"
     | "definition"
@@ -598,38 +616,22 @@ let tptp ?loc ?annot kind id role body =
     | "assumption"
     | "negated_conjecture" ->
       begin match body with
-        | `Term t -> Antecedent t
-        | `Clause (_, l) -> Clause l
+        | `Term t -> ok (Antecedent t)
+        | `Clause l -> ok (Clause l)
       end
     | "conjecture" ->
       begin match body with
-        | `Term t -> Consequent t
-        | `Clause _ ->
-          (* Format.eprintf "WARNING: conjecture in a cnf context"; *)
-          Pack []
+        | `Term t -> ok (Consequent t)
+        | `Clause _ -> other ()
       end
     | "type" ->
       begin match body with
         | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
-          Decls { recursive = false;
-                  contents = [abstract ?loc s ty]; }
-        | _ ->
-          (* Format.eprintf "WARNING: unexpected type declaration@."; *)
-          Pack []
+          ok (Decls { recursive = false;
+                  contents = [abstract ?loc s ty]; })
+        | _ -> other ()
       end
-    | "plain" ->
-      begin match body with
-        | `Term t | `Clause (t, _) -> Plain t
-      end
-    | "unknown"
-    | "fi_domain"
-    | "fi_functors"
-    | "fi_predicates" -> Pack []
-    | _ ->
-      (* Format.eprintf "WARNING: unknown tptp formula role: '%s'@." role; *)
-      Pack []
-  in
-  mk ~id ?loc ~attrs descr
+    | _ -> other ()
 
 let tpi ?loc ?annot id role t = tptp ?loc ?annot "tpi" id role (`Term t)
 let thf ?loc ?annot id role t = tptp ?loc ?annot "thf" id role (`Term t)
@@ -637,12 +639,13 @@ let tff ?loc ?annot id role t = tptp ?loc ?annot "tff" id role (`Term t)
 let fof ?loc ?annot id role t = tptp ?loc ?annot "fof" id role (`Term t)
 
 let cnf ?loc ?annot id role t =
-  let l =
+  let rec split_or t =
     match t with
     | { Term.term = Term.App
-            ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } -> l
+            ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } ->
+      List.concat_map split_or l
     | _ -> [t]
   in
-  tptp ?loc ?annot "cnf" id role (`Clause (t, l))
+  tptp ?loc ?annot "cnf" id role (`Clause (split_or t))
 
 

@@ -238,7 +238,7 @@ module type S = sig
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Plain of Dolmen.Std.Statement.term
+    | `Other of Dolmen.Std.Id.t * Dolmen.Std.Statement.term list
   ]
   (** Various info getters *)
 
