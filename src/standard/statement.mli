@@ -81,6 +81,19 @@ type decls = decl group
 type local = { hyps: term list; goals: term list }
 (** Local hypothesis and consequents used by [Prove]. *)
 
+type other = {
+  name : Id.t;
+  (** The name of the statement, used to determine its semantics. For instance,
+      it might be `plain` or `minimize`. *)
+  args : term list;
+  (** The arguments/payloads of the statements. The elements of the list, and
+      their interpretation depends on the input language and the contents of the
+      `name`. *)
+}
+(** 'Other' statements serve to encode input statements whose semantics are not
+    expressible using the other statements. Examples of that are `plain` statements
+    from TPTP, or extension statements from SMTLIBv2. *)
+
 type descr =
   | Pack of t list
   (** Pack a list of statements that have a semantic meaning (for instance
@@ -92,9 +105,6 @@ type descr =
   (** Push as many new levels on the stack of assertions as specified. *)
   | Reset_assertions
   (** Reset all assertions. *)
-
-  | Plain of term
-  (** A plain statement containing a term with no defined semantics. *)
 
   | Prove of local
   (** Try and prove the current consequents or local consequents, under
@@ -144,6 +154,10 @@ type descr =
   | Get_assertions
   (** Get the current set of assertions. *)
 
+  | Other of other
+  (** A statement with no semantics, or semantics that are not expressible with the
+      current type of statements. *)
+
   | Echo of string
   (** Prints the string. *)
   | Reset
@@ -171,12 +185,8 @@ include Dolmen_intf.Stmt.Logic
 
 (** {2 Additional functions} *)
 
-val plain : ?id:Id.t -> ?loc:location -> ?attrs:term list -> term -> t
-(** Create a 'Plain' statement.
-    'Plain' statements carry a term as payload, and serve to encode input
-    statements whose semantics are not expressible using the other
-    statements. To do that, attributes are attached to allow users to
-    *)
+val other : ?id:Id.t -> ?loc:location -> ?attrs:term list -> Id.t -> term list -> t
+(** Create an 'Other' statement. *)
 
 val add_attrs : term list -> t -> t
 (** Add some attributes to a statement. *)

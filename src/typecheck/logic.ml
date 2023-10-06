@@ -63,7 +63,7 @@ module Smtlib2 = struct
   }
 
   let print fmt { theories; features; } =
-    Format.fprintf fmt "@[<hov 2>{ theories: %a;@ features: %a;@ }]}"
+    Format.fprintf fmt "@[<hov 2>{ theories: @[<hov>%a@];@ features: %a;@ }]}"
       print_theories theories print_features features
 
   let all = {
