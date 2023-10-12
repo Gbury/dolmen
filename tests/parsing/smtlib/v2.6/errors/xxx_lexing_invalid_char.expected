@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/v2.6/errors/xxx_lexing_invalid_char.smt2", line 1, character 23-24:
+1 | (declare-fun float (Int, Int) Real)
+                           ^
+Error Lexing error: invalid character ','

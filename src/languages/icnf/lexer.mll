@@ -44,6 +44,7 @@ rule token newline = parse
   | _               { raise Error }
 
 and comment newline = parse
-  | '\n'  { newline lexbuf; token newline lexbuf }
-  | printable_char { comment newline lexbuf }
+  | '\n'            { newline lexbuf; token newline lexbuf }
+  | printable_char  { comment newline lexbuf }
+  | _               { raise Error }
 

@@ -137,7 +137,8 @@ rule token newline = parse
   | keyword as s        { KEYWORD s }
   | simple_symbol as s
   | '|' (quoted_symbol_char* as s) '|'
-    { symbol newline lexbuf s }
+      { symbol newline lexbuf s }
+  | _                   { raise Error }
 
 and string newline b = parse
   | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
@@ -145,4 +146,5 @@ and string newline b = parse
   | (printable_char | white_space_char) as c
     { if c = '\n' then newline lexbuf;
       Buffer.add_char b c; string newline b lexbuf }
+  | _                   { raise Error }
 
