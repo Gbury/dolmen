@@ -6561,4 +6561,36 @@
   (action (diff xxx_define_funs_res_mismatched_lists.expected xxx_define_funs_res_mismatched_lists.full)))
 
 
+; Test for xxx_lexing_invalid_char.smt2
+; Incremental test
+
+(rule
+   (target  xxx_lexing_invalid_char.incremental)
+   (deps    (:input xxx_lexing_invalid_char.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_lexing_invalid_char.expected xxx_lexing_invalid_char.incremental)))
+
+; Full mode test
+
+(rule
+   (target  xxx_lexing_invalid_char.full)
+   (deps    (:input xxx_lexing_invalid_char.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff xxx_lexing_invalid_char.expected xxx_lexing_invalid_char.full)))
+
+
 ; Auto-generated part end
