@@ -24,6 +24,8 @@ next
   indexes and sizes for the smtlib2 BV theory (PR#172, PR#175)
 - Slightly improve wording for errors and warnings concerning
   non linearity and other arithmetic restrictions (PR#184)
+- More information for reserved Id, resulting in more precise
+  errors when smt2 scripts use reserved ids (PR#193)
 
 ### Loop
 
