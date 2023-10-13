@@ -110,7 +110,7 @@ module Make
     Smtlib2 `V2_6, ".smt2",
     (module Dolmen_smtlib2.Script.V2_6.Make(L)(I)(T)(S)(E.Smtlib2) : S);
     Smtlib2 `Poly, ".psmt2",
-    (module Dolmen_smtlib2.Script.Poly.Make(L)(I)(T)(S) : S);
+    (module Dolmen_smtlib2.Script.Poly.Make(L)(I)(T)(S)(E.Smtlib2) : S);
 
     (* TPTP *)
     Tptp `Latest, ".p",
