@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/234_check-system_bad_query_1.mcil", line 1, character 34-40:
+1 | (check-system system :query (q (r :query)))
+                                      ^^^^^^
+Error while parsing a query definition, read the reserved word ':query',
+      but expected a reachability variable name or closing parenthesis.

@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/257_check-system_missing_queries_list.mcil", line 1, character 27-28:
+1 | (check-system sys :queries )
+                               ^
+Error while parsing a check-system query list, read a closing parenthesis,
+      but expected a list of queries of the form ((query_name (reachable_var1
+      ... reachable_varN)) ... ).

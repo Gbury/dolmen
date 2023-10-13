@@ -1,0 +1,4 @@
+File "tests/typing/errors/mcil/undefined-subsystem.mcil", line 2, character 31-32:
+2 | (define-system sys :subsys (a (b Int)))
+                                   ^
+Error Undefined transition system: `b`

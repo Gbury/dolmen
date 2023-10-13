@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/260_check-system_bad_attribute_3.mcil", line 1, character 37-38:
+1 | (check-system sys :queries ((q (r))) f)
+                                         ^
+Error while parsing a check-system command, read the symbol 'f',
+      but expected an attribute from the set (:assumption, :reachable,
+      :query, :queries) or a closing parenthesis.

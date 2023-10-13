@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/253_check-system_missing_query_name.mcil", line 1, character 26-27:
+1 | (check-system sys :query ())
+                              ^
+Error while parsing a check-system query, read a closing parenthesis,
+      but expected a query name.

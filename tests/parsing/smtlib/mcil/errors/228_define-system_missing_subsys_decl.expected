@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/228_define-system_missing_subsys_decl.mcil", line 1, character 27-28:
+1 | (define-system sys :subsys )
+                               ^
+Error while parsing a subsystem declaration, read a closing parenthesis,
+      but expected an s-expression of the form (local_name (subsystem_name
+      var_1 ...)).

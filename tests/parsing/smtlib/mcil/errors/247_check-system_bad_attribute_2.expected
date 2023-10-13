@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/247_check-system_bad_attribute_2.mcil", line 1, character 28-34:
+1 | (check-system sys :input () :trans)
+                                ^^^^^^
+Error while parsing a check-system command, read the reserved word ':trans',
+      but expected an attribute from the set (:input, :output, :local,
+      :assumption, :reachable, :query, :queries).

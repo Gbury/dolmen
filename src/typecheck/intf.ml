@@ -214,6 +214,7 @@ module type Formulas = sig
     | `Quantified
     | `Function_param
     | `Type_alias_param
+    | `Trans_sys_param
   ]
   (** The type of kinds of variables *)
 
@@ -451,6 +452,14 @@ module type Formulas = sig
   val state : env -> state
   (** Get the mutable state for an env. *)
 
+  val file : env -> Dolmen.Std.Loc.file
+  (** Get the file for an env. *)
+
+  val add_term_var : env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
+
+  val check_used_term_var : kind:var_kind -> env -> term_var -> builtin_meta_tags
+
+  val check_no_free_wildcards : env -> Dolmen.Std.Term.t -> unit
 
   (** {2 Inference for vars and syms} *)
 
@@ -629,6 +638,9 @@ module type Formulas = sig
   val unwrap_term : env -> Dolmen.Std.Term.t -> res -> term
   (** Unwrap a result, raising the adequate typing error
       if the result if not as expected. *)
+
+  val parse_typed_var_in_binding_pos :
+    env -> Dolmen.Std.Term.t -> Dolmen.Std.Id.t * term_var * Dolmen.Std.Term.t
 
 
   (** {2 High-level functions} *)

@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/227_define-system_missing_trans_formula.mcil", line 1, character 26-27:
+1 | (define-system sys :trans )
+                              ^
+Error while parsing a transition condition definition,
+      read a closing parenthesis,
+      but expected a formula.

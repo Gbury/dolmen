@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/254_check-system_query_missing_condition_var_list.mcil", line 1, character 27-28:
+1 | (check-system sys :query (q))
+                               ^
+Error while parsing a check-system query, read a closing parenthesis,
+      but expected a list of reachability variables.

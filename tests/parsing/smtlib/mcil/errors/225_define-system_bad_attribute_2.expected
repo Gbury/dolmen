@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/225_define-system_bad_attribute_2.mcil", line 1, character 29-34:
+1 | (define-system sys :input () error)
+                                 ^^^^^
+Error while parsing a system definition, read the symbol 'error',
+      but expected an attribute from the set (:input, :output, :local,
+      :subsys, :init, :trans, :inv).

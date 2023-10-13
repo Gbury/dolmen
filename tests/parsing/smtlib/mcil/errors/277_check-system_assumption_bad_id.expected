@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/277_check-system_assumption_bad_id.mcil", line 1, character 30-31:
+1 | (check-system s1 :assumption (_))
+                                  ^
+Error while parsing an assumption of a check-system command,
+      read the reserved word '_',
+      but expected an identifier.

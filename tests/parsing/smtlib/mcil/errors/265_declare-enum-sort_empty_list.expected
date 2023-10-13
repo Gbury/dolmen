@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/265_declare-enum-sort_empty_list.mcil", line 1, character 25-26:
+1 | (declare-enum-sort enum ())
+                             ^
+Error while parsing an enumeration declaration, read a closing parenthesis,
+      but expected a nonempty list of enumeration values (enum1 enum2 ...).

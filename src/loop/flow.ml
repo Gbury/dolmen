@@ -339,7 +339,7 @@ module Smtlib2(State : State.S)
       end
 
     (* smtlib ref case: 'ad' *)
-    | Defs _ | Decls _
+    | Defs _ | Decls _ | Def_sys _ | Chk_sys _
     | Clause _ | Antecedent _ | Consequent _ ->
       begin match mode with
         | Start_mode -> no_set_logic st mode stmt

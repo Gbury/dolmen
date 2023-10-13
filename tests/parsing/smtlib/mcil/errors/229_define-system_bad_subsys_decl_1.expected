@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/229_define-system_bad_subsys_decl_1.mcil", line 1, character 28-29:
+1 | (define-system sys :subsys ())
+                                ^
+Error while parsing a subsystem declaration, read a closing parenthesis,
+      but expected a local subsystem name.

@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/mcil/errors/220_define-system_bad_output_list.mcil", line 1, character 28-31:
+1 | (define-system sys :output (Int))
+                                ^^^
+Error while parsing a system output variable declaration,
+      read the symbol 'Int',
+      but expected a sorted variable of the form "(var sort)", or a closing
+      parenthesis.

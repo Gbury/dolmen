@@ -62,6 +62,8 @@ module Smtlib2_String =
   Dolmen_type.Strings.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
+module MCIL_Trans_Sys = Dolmen_type.Trans_sys.MCIL(T)
+
 (* Zf *)
 module Zf_Core =
   Dolmen_type.Core.Zf.Tff(T)(Dolmen.Std.Expr.Tags)
@@ -125,6 +127,7 @@ let print_var_kind fmt k =
   | `Quantified -> Format.fprintf fmt "quantified variable"
   | `Function_param -> Format.fprintf fmt "function parameter"
   | `Type_alias_param -> Format.fprintf fmt "type alias parameter"
+  | `Trans_sys_param -> Format.fprintf fmt "transition system parameter"
 
 let print_reason ?(already=false) fmt r =
   let pp_already fmt () =
@@ -604,6 +607,30 @@ let unbound_identifier =
       (fun (id, _, lit_hint) -> literal_hint lit_hint id);
       (fun (_, msg, _) -> text_hint msg);]
     ~name:"Unbound identifier" ()
+
+let undefined_transition_system =
+  Report.Error.mk ~code ~mnemonic:"undefined-transition-system"
+  ~message:(fun fmt id ->
+      Format.fprintf fmt "Undefined transition system:@ %a"
+        (pp_wrap Dolmen.Std.Id.print) id)
+  ~name:"Undefined transition system" ()
+
+let bad_system_instantiation_arity =
+  Report.Error.mk ~code ~mnemonic:"bad-system-instantiation-arity"
+    ~message:(fun fmt (id, expected, actual) ->
+        Format.fprintf fmt
+          "Bad arity: expected %d arguments but got %d arguments for system %a"
+          expected actual (pp_wrap Dolmen.Std.Id.print) id)
+    ~name:"Incorrect arity for transition system instantiation" ()
+
+let duplicate_definition =
+  Report.Error.mk ~code ~mnemonic:"duplicate-definition"
+    ~message:(fun fmt (id, file, old) ->
+        Format.fprintf fmt
+          "Duplicate declaration of %a, which was already defined at %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file old))
+    ~name:"Duplicate definition of the same symbol" ()
 
 let multiple_declarations =
   Report.Error.mk ~code ~mnemonic:"redeclaration"
@@ -1313,6 +1340,13 @@ module Typer(State : State.S) = struct
       error ~input ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
       error ~input ~loc st invalid_string_escape_sequence (s, i)
+    (* MCIL errors *)
+    | MCIL_Trans_Sys.Cannot_find_system id ->
+      error ~input ~loc st undefined_transition_system id
+    | MCIL_Trans_Sys.Bad_inst_arity (id, exp, act) ->
+      error ~input ~loc st bad_system_instantiation_arity (id, exp, act)
+    | MCIL_Trans_Sys.Duplicate_definition (id, old) ->
+      error ~input ~loc st duplicate_definition (id, T.file env, old)
     (* Bad sexpr *)
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg
@@ -1806,6 +1840,20 @@ module Typer(State : State.S) = struct
           ) l
       )
 
+  (* MCIL Only System Definitions and Checks *)
+  (* ************************************************************************ *)
+
+  let sys_def st ~input loc ?attrs d =
+    typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
+        MCIL_Trans_Sys.parse_def env d
+    )
+
+  let check_sys st ~input loc ?attrs d =
+    typing_wrap ?attrs ?loc:(Some loc) ~input st ~f:(fun env ->
+        MCIL_Trans_Sys.parse_check env d
+    )
+  
+
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
@@ -1893,6 +1941,11 @@ module Make
     | `Defs of def list
   ]
 
+  type sys = [
+    | `Sys_def of Dolmen.Std.Id.t * Expr.term_var list * Expr.term_var list * Expr.term_var list (* id, inputs, outputs, locals *)
+    | `Sys_check
+  ]
+
   type decl = [
     | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
@@ -1944,7 +1997,7 @@ module Make
   ]
 
   (* Agregate types *)
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+  type typechecked = [ sys | defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
 
   (* Simple constructor *)
   (* let tr implicit contents = { implicit; contents; } *)
@@ -1994,6 +2047,8 @@ module Make
     | `Decls l ->
       Format.fprintf fmt "@[<v 2>decls:@ %a@]"
         (Format.pp_print_list print_decl) l
+    | `Sys_def _ -> Format.fprintf fmt "@[<v 2>sys-def:@ TODO Print typechecked value @]"
+    | `Sys_check -> Format.fprintf fmt "@[<v 2>sys-check:@ TODO Print typechecked value @]"
     | `Hyp f ->
       Format.fprintf fmt "@[<hov 2>hyp:@ %a@]" Print.formula f
     | `Goal f ->
@@ -2187,6 +2242,16 @@ module Make
       let st, l = Typer.decls st ~input ~loc ~attrs l in
       let res : typechecked stmt = simple (decl_id c) loc attrs (`Decls l) in
       st, (res)
+    
+    (* MCIL Custom commands*)
+    | { S.descr = S.Def_sys s ; loc ; attrs; _ } -> 
+      let st, l = Typer.sys_def st ~input loc ~attrs s in
+      let res : typechecked stmt = simple (decl_id c) loc attrs l in
+      st, res
+    | { S.descr = S.Chk_sys s ; loc ; attrs ; _ } ->
+      let st, l = Typer.check_sys st ~input loc ~attrs s in
+      let res : typechecked stmt = simple (decl_id c) loc attrs l in
+      st, res
 
     (* Smtlib's proof/model instructions *)
     | { S.descr = S.Get_proof; loc; attrs; _ } ->

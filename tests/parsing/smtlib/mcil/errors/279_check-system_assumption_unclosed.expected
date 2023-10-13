@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/279_check-system_assumption_unclosed.mcil", line 1, character 34-35:
+1 | (check-system s1 :assumption (a t _))
+                                      ^
+Error while parsing an assumption of a check-system command,
+      read the reserved word '_',
+      but expected a closing parenthesis.

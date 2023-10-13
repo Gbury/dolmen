@@ -1,0 +1,4 @@
+File "tests/typing/errors/mcil/repeated_input.mcil", line 5, character 2-18:
+5 |   :input ((y Int))
+      ^^^^^^^^^^^^^^^^
+Error :input attribute is not repeatable

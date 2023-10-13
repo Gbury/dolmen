@@ -68,6 +68,31 @@ type def = {
 }
 (** Term definition. *)
 
+type sys_def = {
+  id     : Id.t;
+  loc    : location;
+  input  : term list;
+  output : term list;
+  local  : term list;
+  init   : term;
+  trans  : term;
+  inv    : term;
+  subs   : (Id.t * term * location) list;
+}
+(** System definition. *)
+
+type sys_check = {
+  sid        : term;
+  loc        : location;
+  input      : term list;
+  output     : term list;
+  local      : term list;
+  reachable  : (Id.t * term * location) list;
+  assumption : (Id.t * term * location) list;
+  queries    : (Id.t * term list * location) list;
+}
+(** System check. *)
+
 type 'a group = {
   contents : 'a list;
   recursive : bool;
@@ -137,6 +162,11 @@ type descr =
   (** Symbol definition, i.e the symbol is equal to the given term. *)
   | Decls of decl group
   (** A list of potentially recursive type definitions. *)
+
+  | Def_sys of sys_def
+  (** System definition. *)
+  | Chk_sys of sys_check
+  (** Checks the existence of a trace in a transition system. *)
 
   | Get_proof
   (** Get the proof of the last sequent (if it was proved). *)
@@ -229,4 +259,7 @@ val print_group :
   (Format.formatter -> 'a -> unit) ->
   Format.formatter -> 'a group -> unit
 (* Printer for groups. *)
+
+val print_def_sys : Format.formatter -> sys_def -> unit
+(* Printer for system definition. *)
 

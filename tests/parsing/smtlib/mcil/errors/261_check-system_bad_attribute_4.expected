@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/261_check-system_bad_attribute_4.mcil", line 1, character 41-47:
+1 | (check-system sys :reachable (r (= 1 1)) :trans)
+                                             ^^^^^^
+Error while parsing a check-system command, read the reserved word ':trans',
+      but expected an attribute from the set (:assumption, :reachable,
+      :query, :queries) or a closing parenthesis.

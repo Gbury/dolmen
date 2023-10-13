@@ -1,0 +1,6 @@
+(set-logic ALL)
+
+(define-system S1
+  :input ((x Int))
+  :input ((y Int))
+)

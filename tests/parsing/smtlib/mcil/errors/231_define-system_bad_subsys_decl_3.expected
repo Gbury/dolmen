@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/231_define-system_bad_subsys_decl_3.mcil", line 1, character 34-35:
+1 | (define-system sys :subsys (a (b) _))
+                                      ^
+Error while parsing a subsystem declaration, read the reserved word '_',
+      but expected a closing parenthesis.

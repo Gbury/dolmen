@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/239_define-system_bad_attribute_4.mcil", line 1, character 36-42:
+1 | (define-system system :init (= 1 1) :query)
+                                        ^^^^^^
+Error while parsing a system definition, read the reserved word ':query',
+      but expected an attribute from the set (:subsys, :init, :trans, :inv).

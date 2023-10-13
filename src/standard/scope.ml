@@ -15,6 +15,7 @@ module Make
   type term_var = Term_Var_Map.key
   type term_cst = Term_Cst_Map.key
 
+
   type id = [
     | `Type_var of type_var
     | `Type_cst of type_cst
@@ -54,7 +55,7 @@ module Make
     let type_csts = Type_Cst_Map.empty in
     let term_vars = Term_Var_Map.empty in
     let term_csts = Term_Cst_Map.empty in
-    { conf; in_scope; type_vars; type_csts; term_vars; term_csts; }
+    { conf; in_scope; type_vars; type_csts; term_vars; term_csts }
 
   let find_opt t id =
     match id with

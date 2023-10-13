@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/269_declare-enum-sort_bad_enum_name.mcil", line 1, character 19-20:
+1 | (declare-enum-sort _)
+                       ^
+Error while parsing an enumeration declaration, read the reserved word '_',
+      but expected a symbol for the enumeration sort name.

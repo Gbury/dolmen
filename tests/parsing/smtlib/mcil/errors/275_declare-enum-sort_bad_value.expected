@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/275_declare-enum-sort_bad_value.mcil", line 1, character 25-26:
+1 | (declare-enum-sort e (c1 _))
+                             ^
+Error while parsing an enumeration declaration, read the reserved word '_',
+      but expected an enumeration value; note that keywords and reserved
+      words (such as '_', 'as', ...) are not valid enumeration values.

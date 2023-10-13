@@ -1,0 +1,1 @@
+(check-system sys :query (q (r) s))

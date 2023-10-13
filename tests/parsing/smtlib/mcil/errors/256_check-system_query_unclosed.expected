@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/mcil/errors/256_check-system_query_unclosed.mcil", line 1, character 32-33:
+1 | (check-system sys :query (q (r) s))
+                                    ^
+Error while parsing a check-system query, read the symbol 's',
+      but expected a closing parenthesis.

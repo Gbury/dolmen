@@ -1,0 +1,1 @@
+(check-system s1 :assumption (a t _))

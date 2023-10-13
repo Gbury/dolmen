@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/mcil/errors/248_check-system_missing_reachable_formula_1.mcil", line 1, character 28-29:
+1 | (check-system sys :reachable)
+                                ^
+Error while parsing a reachability condition definition,
+      read a closing parenthesis,
+      but expected an s-expression of the form (name formula).

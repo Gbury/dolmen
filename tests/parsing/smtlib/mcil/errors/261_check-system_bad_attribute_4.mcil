@@ -1,0 +1,1 @@
+(check-system sys :reachable (r (= 1 1)) :trans)

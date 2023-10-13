@@ -1,0 +1,4 @@
+File "tests/typing/errors/mcil/repeated_init.mcil", line 5, character 2-13:
+5 |   :init false 
+      ^^^^^^^^^^^
+Error :init attribute is not repeatable

@@ -260,6 +260,7 @@ module Make
     | `Quantified
     | `Function_param
     | `Type_alias_param
+    | `Trans_sys_param
   ]
   (** The type of kinds of variables *)
 
@@ -486,6 +487,8 @@ module Make
   (* ************************************************************************ *)
 
   let state env = env.st
+
+  let file env = env.file
 
   let var_infer env = env.var_infer
 
