@@ -178,51 +178,13 @@ module Make
     sym_hook : [ ty_cst | term_cst ] -> unit;
   }
 
-  (* Record for results  *)
-  type ('res, 'meta) builtin_common_res =
-    'meta * (Ast.t -> Ast.t list -> 'res)
-
-  (* term semantics *)
-  type term_semantics = [
-    | `Total
-    | `Partial of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
-  ]
-
-  (* builtin meta types *)
-  type builtin_meta_ttype = unit
-  type builtin_meta_ty = unit
-  type builtin_meta_tags = unit
-  type builtin_meta_term = term_semantics
-
-  (* Result of parsing a symbol by the theory *)
-  type builtin_common = [
-    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
-    | `Ty    of (Ty.t, builtin_meta_ty) builtin_common_res
-    | `Term  of (T.t, builtin_meta_term) builtin_common_res
-    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
-  ]
-
-  type builtin_infer = [
-    | `Infer of string * var_infer * sym_infer
-  ]
-
-  type builtin_reserved = [
-    | `Reserved of string * [
-        | `Solver
-        | `Term_cst of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
-      ]
-  ]
-
-  type builtin_res = [ builtin_common | builtin_infer | builtin_reserved ]
-
-  (* Names that are bound to a dolmen identifier by the builtins *)
-  type builtin = [
-    | `Builtin of builtin_res
-  ]
+  type reservation =
+    | Strict
+    | Model_completion
 
   type reason =
     | Builtin
-    | Reserved of string
+    | Reserved of reservation * string
     | Bound of Loc.file * Ast.t
     | Inferred of Loc.file * Ast.t
     | Defined of Loc.file * Stmt.def
@@ -234,7 +196,10 @@ module Make
 
   type binding = [
     | `Not_found
-    | `Reserved of string
+    | `Reserved of [
+        | `Model of string
+        | `Solver of string
+      ]
     | `Builtin of [
         | `Ttype
         | `Ty
@@ -254,6 +219,53 @@ module Make
       ]
   ]
   (** The bindings that can occur. *)
+
+  (* Shorthand for common builtin results *)
+  type ('res, 'meta) builtin_common_res =
+    'meta * (Ast.t -> Ast.t list -> 'res)
+
+  (* term semantics *)
+  type partial_semantics = [
+    | `Partial of (Ty.Var.t list -> T.Var.t list -> Ty.t -> T.Const.t)
+  ]
+
+  type term_semantics = [
+    | partial_semantics
+    | `Total
+  ]
+
+  (* builtin meta types *)
+  type builtin_meta_ttype = unit
+  type builtin_meta_ty = unit
+  type builtin_meta_tags = unit
+  type builtin_meta_term = term_semantics
+
+  (* Result of parsing a symbol by the theory *)
+  type builtin_common = [
+    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
+    | `Ty    of (Ty.t, builtin_meta_ty) builtin_common_res
+    | `Term  of (T.t, builtin_meta_term) builtin_common_res
+    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
+  ]
+
+  type builtin_infer = [
+    | `Infer of binding * var_infer * sym_infer
+  ]
+
+  type builtin_reserved = [
+    | `Reserved of [
+        | `Solver of string
+        | `Model of string * partial_semantics
+      ]
+  ]
+
+  type builtin_res = [ builtin_common | builtin_infer | builtin_reserved ]
+
+  (* Names that are bound to a dolmen identifier by the builtins *)
+  type builtin = [
+    | `Builtin of builtin_res
+  ]
+
 
   type var_kind = [
     | `Let_bound
@@ -547,7 +559,8 @@ module Make
     try
       let r =
         match v with
-        | `Builtin `Reserved (reason, _) -> Reserved reason
+        | `Builtin `Reserved `Solver reason -> Reserved (Strict, reason)
+        | `Builtin `Reserved `Model (reason, _) -> Reserved (Model_completion, reason)
         | `Builtin _ -> Builtin
         | `Ty_var v -> E.find v env.type_locs
         | `Term_var v -> F.find v env.term_locs
@@ -564,13 +577,13 @@ module Make
   let with_reason reason bound : binding =
     match (bound : [ bound | not_found ]) with
     | `Not_found -> `Not_found
-    | `Builtin `Infer (reason, _, _) -> `Reserved reason
+    | `Builtin `Infer (binding, _, _) -> binding
     | `Builtin `Ttype _ -> `Builtin `Ttype
     | `Builtin `Ty _ -> `Builtin `Ty
     | `Builtin `Term _ -> `Builtin `Term
     | `Builtin `Tags _ -> `Builtin `Tag
-    | `Builtin `Reserved (reason, `Solver) -> `Reserved reason
-    | `Builtin `Reserved (reason, `Term_cst _) -> `Reserved reason
+    | `Builtin `Reserved (`Solver reason) -> `Reserved (`Solver reason)
+    | `Builtin `Reserved (`Model (reason, _)) -> `Reserved (`Model reason)
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
     | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
@@ -584,7 +597,8 @@ module Make
     match (binding : binding) with
     | `Not_found -> assert false
     | `Builtin _ -> Some Builtin
-    | `Reserved reason -> Some (Reserved reason)
+    | `Reserved `Solver reason -> Some (Reserved (Strict, reason))
+    | `Reserved `Model reason -> Some (Reserved (Model_completion, reason))
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -1866,7 +1880,7 @@ module Make
     | #builtin_common as b -> builtin_apply_common env b ast args
     | `Infer (_reason, var_infer, sym_infer) ->
       infer_sym_aux env var_infer sym_infer ast s args s_ast
-    | `Reserved (_reason, (`Solver | `Term_cst _ )) ->
+    | `Reserved ((`Solver _ | `Model _ )) ->
       (* reserved builtins are there to provide shadow warnings
          and provide symbols for model definitions, but they don't
          have a semantic outside of that. *)
@@ -1951,7 +1965,7 @@ module Make
   and builtin_apply_builtin env ast b b_res args : res =
     match (b_res : builtin_res) with
     | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Reserved (_reason, (`Solver | `Term_cst _)) -> _unknown_builtin env ast b
+    | `Reserved ((`Solver _ | `Model _)) -> _unknown_builtin env ast b
     | `Infer _ ->
       (* TODO: proper erorr.
          We do not have a map from builtins symbols to typed expressions. *)
@@ -2455,7 +2469,7 @@ module Make
           assert false (* missing reason for destructor *)
       end
     | `Term_def ret_ty, `Builtin `Term (`Partial mk_cst, _)
-    | `Term_def ret_ty, `Builtin `Reserved (_, `Term_cst mk_cst) ->
+    | `Term_def ret_ty, `Builtin `Reserved (`Model (_, `Partial mk_cst)) ->
       let cst = mk_cst vars params ret_ty in
       lookup_id_for_def_term env d vars params ret_ty cst Builtin
     | `Term_def ret_ty, ((`Term_cst cst) as c) ->

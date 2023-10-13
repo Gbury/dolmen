@@ -133,8 +133,14 @@ let print_reason ?(already=false) fmt r =
   match (r : T.reason) with
   | Builtin ->
     Format.fprintf fmt "is%a defined by a builtin theory" pp_already ()
-  | Reserved reason ->
+  | Reserved (Strict, reason) ->
     Format.fprintf fmt "is reserved for %a" Format.pp_print_text reason
+  | Reserved (Model_completion, reason) ->
+    Format.fprintf fmt "is reserved for %a.@ %a"
+      Format.pp_print_text reason
+      Format.pp_print_text
+      "Therefore, the definition of the model corner case would take \
+       priority and prevent defining a value for this constant."
   | Bound (file, ast) ->
     Format.fprintf fmt "was%a bound at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
@@ -242,6 +248,10 @@ let rec print_wildcard_origin_loc env fmt = function
       (pp_wrap Dolmen.Std.Id.print) variable
       Dolmen.Std.Loc.fmt_pos loc
 
+let print_reserved fmt = function
+  | `Solver reason ->
+    Format.fprintf fmt "to be used by solvers for %a"
+      Format.pp_print_text reason
 
 (* Hint printers *)
 (* ************************************************************************ *)
@@ -972,13 +982,11 @@ let empty_pop =
 
 let reserved =
   Report.Error.mk ~code ~mnemonic:"reserved"
-    ~message:(fun fmt (id, reason) ->
+    ~message:(fun fmt (id, reserved) ->
         Format.fprintf fmt
-          "@[<hov>Reserved: %a is reserved for %a.@ @[<hov>%a@]"
+          "@[<hov>Reserved: %a is reserved %a."
           (pp_wrap Dolmen.Std.Id.print) id
-          Format.pp_print_text reason Format.pp_print_text
-          "Therefore, the definition of the model corner case would take \
-           priority and prevent defining a value for this constant.")
+          print_reserved reserved)
     ~name:"Shadowing of reserved identifier" ()
 
 let incorrect_sexpression =
@@ -1138,9 +1146,8 @@ module Typer(State : State.S) = struct
   let report_warning ~input st (T.Warning (env, fragment, w)) =
     let loc = T.fragment_loc env fragment in
     match w with
-    | T.Shadowing (id, `Reserved reason, _)
-      when typing_logic input && State.get_or ~default:false check_model st ->
-      error ~input ~loc st reserved (id, reason)
+    | T.Shadowing (id, `Reserved ((`Solver _) as r), _) when typing_logic input ->
+      error ~input ~loc st reserved (id, r)
 
     (* typer warnings that are actually errors given some languages spec *)
     | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)

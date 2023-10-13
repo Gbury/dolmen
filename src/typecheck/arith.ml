@@ -847,12 +847,12 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                     ~check:(check config env (F.comp config (parse ~config) version env)))
 
-            | "div0" -> `Reserved (
+            | "div0" -> `Reserved (`Model (
                 "completing interpretation of division by zero in models",
-                `Term_cst (fun _ _ _ -> T.div'))
-            | "mod0" -> `Reserved (
+                `Partial (fun _ _ _ -> T.div')))
+            | "mod0" -> `Reserved (`Model (
                 "completing interpretation of modulo by zero in models",
-                `Term_cst (fun _ _ _ -> T.rem'))
+                `Partial (fun _ _ _ -> T.rem')))
 
             | _ -> `Not_found
           end
@@ -937,9 +937,9 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_chain (module Type) env s T.gt
                        ~check:(check config env (F.comp config (parse ~config) version env)))
 
-            | "/0" -> `Reserved (
+            | "/0" -> `Reserved (`Model (
                 "completing interpretation of division by zero in models",
-                `Term_cst (fun _ _ _ -> T.div'))
+                `Partial (fun _ _ _ -> T.div')))
 
             | _ -> `Not_found
           end
@@ -1075,17 +1075,17 @@ module Smtlib2 = struct
 
 
             | "/0" ->
-              `Reserved (
+              `Reserved (`Model (
                 "completing interpretation of division by zero in models",
-                `Term_cst (fun _ _ _ -> T.Real.div'))
+                `Partial (fun _ _ _ -> T.Real.div')))
             | "div0" ->
-              `Reserved (
+              `Reserved (`Model (
                 "completing interpretation of division by zero in models",
-                `Term_cst (fun _ _ _ -> T.Int.div'))
+                `Partial (fun _ _ _ -> T.Int.div')))
             | "mod0" ->
-              `Reserved (
+              `Reserved (`Model (
                 "completing interpretation of modulo by zero in models",
-                `Term_cst (fun _ _ _ -> T.Int.rem'))
+                `Partial (fun _ _ _ -> T.Int.rem')))
 
             | _ -> `Not_found
           end
