@@ -13,7 +13,7 @@ next
 
 ### Parsing
 
-- Add parsing extensions for the smtlib2 language (PR#190)
+- Add parsing extensions for the smtlib2 language (PR#190, PR#194)
 - Better split elements of clauses in `cnf` TPTP statements (PR#190)
 - Ensure illegal chars raise the correct error during lexing
   (Issue#191, PR#192)
