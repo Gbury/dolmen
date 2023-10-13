@@ -639,9 +639,8 @@ module Smtlib2 = struct
           | '.' ->
             begin match version with
               | `Script _ ->
-                `Reserved (
-                  "solver-generated function symbols other than abstract values",
-                  `Solver)
+                `Reserved (`Solver
+                  "solver-generated function symbols other than abstract values")
               (* this is effectively a namespace reserved for solver-generated symbols
                  in their output. In such case, we expect these symbols to be explicitly
                  bound/defined somewher, so we need not do anything specific. *)
@@ -649,7 +648,7 @@ module Smtlib2 = struct
             end
           | '@' ->
             begin match version with
-              | `Script _ -> `Reserved ("abstract values in models", `Solver)
+              | `Script _ -> `Reserved (`Solver "abstract values in models")
               | `Response _ ->
                 (* the var infer does not matter *)
                 let var_infer = Type.var_infer env in
@@ -667,7 +666,7 @@ module Smtlib2 = struct
                   infer_type_csts = false;
                   infer_term_csts = Wildcard Any_in_scope;
                 } in
-                `Infer ("abstract values (i.e. constants)", var_infer, sym_infer)
+                `Infer (`Reserved (`Solver "abstract values (i.e. constants)"), var_infer, sym_infer)
             end
           | _ -> `Not_found
         end

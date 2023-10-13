@@ -197,9 +197,9 @@ module Smtlib2 = struct
           | "fp.to_ubv" ->
             begin match version with
               | `Response _ ->
-                `Reserved (
+                `Reserved (`Model (
                   "completing interpretation of fp.to_bv in models",
-                  `Term_cst (meta_to_bv F.to_ubv'))
+                  `Partial (meta_to_bv F.to_ubv')))
               | `Script _ ->
                 (* the regular case is handled later, because fp.to_ubv is
                    an indexed identifier. *)
@@ -208,9 +208,9 @@ module Smtlib2 = struct
           | "fp.to_sbv" ->
             begin match version with
               | `Response _ ->
-                `Reserved (
+                `Reserved (`Model (
                   "completing interpretation of fp.to_sbv in models",
-                  `Term_cst (meta_to_bv F.to_sbv'))
+                  `Partial (meta_to_bv F.to_sbv')))
               | `Script _ ->
                 (* the regular case is handled later, because fp.to_sbv is
                    an indexed identifier. *)

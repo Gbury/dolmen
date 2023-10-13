@@ -1,0 +1,5 @@
+File "tests/typing/errors/reserved/dot.smt2", line 2, character 0-28:
+2 | (declare-fun |.bar| () Bool)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Reserved: `.bar` is reserved to be used by solvers for solver-generated
+      function symbols other than abstract values.

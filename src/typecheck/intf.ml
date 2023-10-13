@@ -137,46 +137,21 @@ module type Formulas = sig
     | Tags  of tag list (**)
   (** The results of parsing an untyped term.  *)
 
-  type builtin_meta_ttype = unit
-  type builtin_meta_ty = unit
-  type builtin_meta_tags = unit
-  (** Some type aliases *)
-
-  type term_semantics = [
-    | `Total
-    | `Partial of (ty_var list -> term_var list -> ty -> term_cst)
-  ]
-  (** Semantics of term constants. Some term constants have only partially
-      defined semantics (for instance division by zero), and these constants
-      can have their semantics/interpretation extended/completed by later
-      definitions. *)
-
-  type builtin_meta_term = term_semantics
-  (** Meta data for term builtins. *)
-
-  type ('res, 'meta) builtin_common_res =
-    'meta * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'res)
-  (** Small record to hold the results of builtin parsing by theories. *)
-
-  type builtin_res = [
-    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
-    | `Ty    of (ty, builtin_meta_ty) builtin_common_res
-    | `Term  of (term, builtin_meta_term) builtin_common_res
-    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
-    | `Reserved of string * [
-        | `Solver
-        | `Term_cst of (ty_var list -> term_var list -> ty -> term_cst)
-      ]
-    | `Infer of string * var_infer * sym_infer
-  ]
-  (** The result of parsing a symbol by the theory *)
-
-  type not_found = [ `Not_found ]
-  (** Not bound bindings *)
+  type reservation =
+     | Strict
+     (** Strict reservation: the language dictates that the corresponding id
+         is reserved for another use, and therefore cannot appear in its position. *)
+     | Model_completion
+     (** Soft reservation: the id is not technically reserved by the language, but it
+         happens that it is used in models to complete the interpretation of a partial
+         symbol (for isntance division by zero). *)
+  (** Types of reservation of symbols: some symbols/id are reserved for some uses, and
+      therefore cannot/should not occur at some positions. This type tries and explain
+      the reason for such restrictions. *)
 
   type reason =
     | Builtin
-    | Reserved of string
+    | Reserved of reservation * string
     | Bound of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
@@ -188,7 +163,10 @@ module type Formulas = sig
 
   type binding = [
     | `Not_found
-    | `Reserved of string
+    | `Reserved of [
+        | `Model of string
+        | `Solver of string
+      ]
     | `Builtin of [
         | `Ttype
         | `Ty
@@ -207,7 +185,49 @@ module type Formulas = sig
         | `Field of term_field * reason option
       ]
   ]
+
   (** The bindings that can occur. *)
+  type builtin_meta_ttype = unit
+  type builtin_meta_ty = unit
+  type builtin_meta_tags = unit
+  (** Some type aliases *)
+
+  type partial_semantics = [
+    | `Partial of (ty_var list -> term_var list -> ty -> term_cst)
+  ]
+
+  type term_semantics = [
+    | partial_semantics
+    | `Total
+  ]
+  (** Semantics of term constants. Some term constants have only partially
+      defined semantics (for instance division by zero), and these constants
+      can have their semantics/interpretation extended/completed by later
+      definitions. *)
+
+  type builtin_meta_term = term_semantics
+  (** Meta data for term builtins. *)
+
+  type ('res, 'meta) builtin_common_res =
+    'meta * (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'res)
+  (** Small record to hold the results of builtin parsing by theories. *)
+
+  type builtin_res = [
+    | `Ttype of (unit, builtin_meta_ttype) builtin_common_res
+    | `Ty    of (ty, builtin_meta_ty) builtin_common_res
+    | `Term  of (term, builtin_meta_term) builtin_common_res
+    | `Tags  of (tag list, builtin_meta_tags) builtin_common_res
+    | `Reserved of [
+        | `Solver of string
+        | `Model of string * partial_semantics
+      ]
+    | `Infer of binding * var_infer * sym_infer
+  ]
+  (** The result of parsing a symbol by the theory *)
+
+  type not_found = [ `Not_found ]
+  (** Not bound bindings *)
+
 
   type var_kind = [
     | `Let_bound

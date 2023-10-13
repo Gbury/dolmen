@@ -1,0 +1,5 @@
+File "tests/typing/errors/reserved/arobase.smt2", line 2, character 0-25:
+2 | (declare-fun @foo () Int)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Reserved: `@foo` is reserved to be used by solvers for abstract values
+      in models.
