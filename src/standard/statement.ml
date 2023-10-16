@@ -643,7 +643,7 @@ let cnf ?loc ?annot id role t =
     match t with
     | { Term.term = Term.App
             ({ Term.term = Term.Builtin Term.Or; _ }, l); _ } ->
-      List.concat_map split_or l
+      Misc.list_concat_map split_or l
     | _ -> [t]
   in
   tptp ?loc ?annot "cnf" id role (`Clause (split_or t))

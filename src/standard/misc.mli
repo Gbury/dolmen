@@ -68,6 +68,8 @@ val print_list :
 val foldn : int -> ('a -> 'a) -> 'a -> 'a
 (** Applies the given function [n] times. *)
 
+val list_concat_map : ('a -> 'b list) -> 'a list -> 'b list
+(** Same as {List.concat_map} (which is not available on ocaml.4.08). *)
 
 (** {2 Lexbuf helpers} *)
 

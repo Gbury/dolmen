@@ -170,6 +170,14 @@ let rec print_list ~print_sep ~sep ~print fmt = function
       print h print_sep sep
       (print_list ~print_sep ~sep ~print) r
 
+let list_concat_map f l =
+  let rec aux f acc = function
+    | [] -> List.rev acc
+    | x :: l ->
+       let xs = f x in
+       aux f (List.rev_append xs acc) l
+  in aux f [] l
+
 
 (* Iteration *)
 (* ************************************************************************* *)
