@@ -955,55 +955,6 @@ module Smtlib2 = struct
         | Warn msg -> Type._warn env (Ast ast) (Restriction (config, msg))
         | Error msg -> Type._error env (Ast ast) (Forbidden (config, msg))
 
-      let parse_int env ast =
-        let rec is_int i s =
-          String.length s <= i ||
-          begin
-            match s.[i] with
-            | '-' -> i = 0
-            | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' -> true
-            | _ -> false
-          end
-          || is_int (i+1) s
-        in
-      match ast.Term.term with
-        | Symbol  { Id.ns = Value (Integer); name = Simple name; } ->
-          name
-        | App({term = Symbol { Id.ns = Term; name = Simple "-"; };_},
-              [{term=Symbol  { Id.ns = Value (Integer); name = Simple name; };_}]) ->
-            "-"^name
-        | Symbol  { Id.ns = Term; name = Simple name; } when is_int 0 name ->
-          name
-        | _ ->
-          Type._error env (Ast ast) (Forbidden "An integer constant is expected")
-
-      let parse_rat env ast =
-        match ast.Term.term with
-        | Symbol  { Id.ns = Value (Integer | Rational | Real); name = Simple name; } ->
-            (name,"1.0")
-        | App({term = Symbol { Id.ns = Term; name = Simple "-"; };_},
-              [{term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name; };_}]) ->
-              "-"^name,"1.0"
-        | App({term = Symbol { Id.ns = Term; name = Simple "/"; };_},
-              [{term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name1; };_};
-                {term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name2; };_}]) ->
-                (name1,name2)
-        | App({term = Symbol { Id.ns = Term; name = Simple "/"; };_},
-                [{term=App({term = Symbol { Id.ns = Term; name = Simple "-"; };_},
-                  [{term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name1};_}]);_};
-                {term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name2; };_}]) ->
-                ("-"^name1,name2)
-          | _ ->
-            Type._error env (Ast ast) (Forbidden "A rational model is expected")
-
-      let parse_coeffs env ast =
-        match ast.Term.term with
-        | App ({term = Symbol { Id.ns = Term; name = Simple "coeffs"; };_},args) ->
-          List.map (parse_int env) args
-        | _ ->
-          Type._error env (Ast ast)
-           (Forbidden "A list of coefficient starting with \"coeffs\" is expected")
-
       let rec parse ~config version env s =
         match s with
 

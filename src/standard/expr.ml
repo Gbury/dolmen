@@ -2144,13 +2144,13 @@ module Term = struct
         aux fmt false 0 l
 
       let algebraic_ordered_root =
-        with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,order) ->
+        with_cache (fun (coeffs,order) ->
             let s = Format.asprintf "root<%s, @[<hov>%a@]>" order print_polynomial coeffs in
             mk' ~builtin:(Builtin.Algebraic (Ordered_root {coeffs;order})) s [] [] Ty.real
           )
 
       let algebraic_enclosed_root =
-        with_cache ~cache:(Hashtbl.create 13) (fun (coeffs,min,max) ->
+        with_cache (fun (coeffs,min,max) ->
             let s =
               Format.asprintf "root<%a,%a,@[<hov>%a@]>"
                 print_rat min print_rat max print_polynomial coeffs
