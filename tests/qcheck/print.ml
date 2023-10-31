@@ -1,4 +1,6 @@
 
+(* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
+
 (* Functor instanciation *)
 (* ************************************************************************* *)
 
@@ -13,8 +15,7 @@ module L = Dolmen.Class.Logic.Make
 (* ************************************************************************* *)
 
 let identifier
-    ~print ~template ~name ~is_print_exn ~language ~gen
-  =
+    ~print ~template ~name ~is_print_exn ~language ~gen =
   QCheck2.Test.make
     ~count:1_000 ~long_factor:1_000
     ~print:(fun name -> Format.asprintf template print name)
@@ -70,5 +71,34 @@ let smtlib2_id_printable =
     ~name:"Print.smtlib2_6.id_printable"
     ~is_print_exn:(function
         | Dolmen.Smtlib2.Script.V2_6.Print.Cannot_print _ -> true
+        | _ -> false)
+
+(* this test is mainly there to check that non-printable ids are correctly
+   rejected by the printer, so we allow everything in the generator. *)
+let poly_smtlib2_id =
+  identifier
+    ~language:(Smtlib2 `Poly)
+    ~print:Dolmen.Smtlib2.Script.Poly.Print.id
+    ~gen:(Generators.name ~printable:false
+         ~simple:true ~indexed:true ~qualified:true)
+    ~template:{|(assert %a)|}
+    ~name:"Print.smtlib2_poly.id"
+    ~is_print_exn:(function
+        | Dolmen.Smtlib2.Script.Poly.Print.Cannot_print _ -> true
+        | _ -> false)
+
+(* this test is mainly there to check that printing of printable ids is correct,
+   and is accepted by the parser, so we restrict the generated names to one that
+   have reasonablke chances of being printed. *)
+let poly_smtlib2_id_printable =
+  identifier
+    ~language:(Smtlib2 `V2_6)
+    ~print:Dolmen.Smtlib2.Script.Poly.Print.id
+    ~gen:(Generators.name ~printable:true
+            ~simple:true ~indexed:true ~qualified:false)
+    ~template:{|(assert %a)|}
+    ~name:"Print.smtlib2_poly.id_printable"
+    ~is_print_exn:(function
+        | Dolmen.Smtlib2.Script.Poly.Print.Cannot_print _ -> true
         | _ -> false)
 

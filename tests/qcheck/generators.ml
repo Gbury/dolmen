@@ -1,4 +1,6 @@
 
+(* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
+
 let name ~printable ~simple ~indexed ~qualified =
   let string =
     if printable
