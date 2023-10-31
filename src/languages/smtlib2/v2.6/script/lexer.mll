@@ -138,6 +138,16 @@
     try M.find s reserved_words
     with Not_found -> SYMBOL s
 
+  let quoted_symbol newline lexbuf s =
+    (* register the newlines in quoted symbols to maintain correct locations.*)
+    for i = 0 to (String.length s - 1) do
+      match s.[i] with
+      | '\n' -> newline lexbuf
+      | _ -> ()
+    done;
+    (* Quoted symbols allow to use reserved words as symbols *)
+    SYMBOL s
+
 }
 
 let white_space_char = ['\t' '\n' '\r' ' ']
@@ -182,10 +192,9 @@ rule token newline = parse
   | binary as s         { BIN s }
   | '"'                 { string newline (Buffer.create 42) lexbuf }
   | keyword as s        { KEYWORD s }
-  | simple_symbol as s
-  | '|' (quoted_symbol_char* as s) '|'
-      { symbol newline lexbuf s }
-  | _                   { raise Error }
+  | simple_symbol as s                  { symbol newline lexbuf s}
+  | '|' (quoted_symbol_char* as s) '|'  { quoted_symbol newline lexbuf s }
+  | _                                   { raise Error }
 
 and string newline b = parse
   | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
