@@ -87,9 +87,10 @@ let categorize_symbol s =
   | "set-option" -> Quoted
   | _  ->
     (* we are guaranteed that `s` is not the empty string *)
-    if not (is_digit s.[0]) && (String.for_all is_simple_symbol_char s) then
+    if not (is_digit s.[0]) &&
+       (Dolmen_std.Misc.string_for_all is_simple_symbol_char s) then
       Simple
-    else if String.for_all is_quoted_symbol_char s then
+    else if Dolmen_std.Misc.string_for_all is_quoted_symbol_char s then
       Quoted
     else
       Unprintable
