@@ -1,0 +1,5 @@
+(set-logic UFNIA)
+(declare-const x Int)
+(declare-const y Int)
+(assert (= (! (+ x y) :named t ) t))
+(exit)

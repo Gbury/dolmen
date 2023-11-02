@@ -12,12 +12,15 @@ let debug_parsed_pipe st c =
       Dolmen.Std.Statement.print c;
   st, c
 
-let debug_typed_pipe st stmt =
-  if Loop.State.get Loop.State.debug st then
-    Format.eprintf "[logic][typed][%a] @[<hov>%a@]@\n@."
-      Dolmen.Std.Loc.print_compact stmt.Loop.Typer_Pipe.loc
-      Loop.Typer_Pipe.print stmt;
-  st, stmt
+let debug_typed_pipe st stmts =
+  if Loop.State.get Loop.State.debug st then begin
+    List.iter (fun stmt ->
+        Format.eprintf "[logic][typed][%a] @[<hov>%a@]@\n"
+          Dolmen.Std.Loc.print_compact stmt.Loop.Typer_Pipe.loc
+          Loop.Typer_Pipe.print stmt) stmts;
+    Format.eprintf "@.";
+  end;
+  st, stmts
 
 
 (* Run dolmen (regular use) *)

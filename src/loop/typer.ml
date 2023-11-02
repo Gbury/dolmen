@@ -996,6 +996,23 @@ let incorrect_sexpression =
       )
     ~name:"Incorrect S-expression" ()
 
+let non_closed_named_term =
+  Report.Error.mk ~code ~mnemonic:"non-cloed-named-term"
+    ~message:(fun fmt (ty_vars, t_vars) ->
+        let pp_sep fmt () = Format.fprintf fmt ",@ " in
+        Format.fprintf fmt "%a:@ %a%a%a"
+          Format.pp_print_text
+          "Named terms must be closed, but the following variables \
+           are free"
+          (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Ty.Var.print) ty_vars
+          (match ty_vars with
+           | [] -> (fun _ _ -> ())
+           | _ :: _ -> pp_sep
+          ) ()
+          (Format.pp_print_list ~pp_sep Dolmen.Std.Expr.Term.Var.print) t_vars
+      )
+    ~name:"Non-closed Named Term" ()
+
 let unknown_error =
   Report.Error.mk ~code:Code.bug ~mnemonic:"unknown-typing-error"
     ~message:(fun fmt cstr_name ->
@@ -1320,9 +1337,11 @@ module Typer(State : State.S) = struct
       error ~input ~loc st invalid_string_char c
     | Smtlib2_String.Invalid_escape_sequence (s, i) ->
       error ~input ~loc st invalid_string_escape_sequence (s, i)
-    (* Bad sexpr *)
+    (* Smtlib2 core errors *)
     | Smtlib2_Core.Incorrect_sexpression msg ->
       error ~input ~loc st incorrect_sexpression msg
+    | Smtlib2_Core.Non_closed_named_term (ty_vars, t_vars) ->
+      error ~input ~loc st non_closed_named_term (ty_vars, t_vars)
     (* Uncaught exception during type-checking *)
     | T.Uncaught_exn ((Alarm.Out_of_time |
                        Alarm.Out_of_space |
@@ -1748,9 +1767,38 @@ module Typer(State : State.S) = struct
       let st = warn ~input ~loc st set_logic_not_supported () in
       st, Dolmen_type.Logic.Auto
 
-  (* Declarations *)
+  (* Some types *)
   (* ************************************************************************ *)
 
+  type decl = [
+    | `Term_decl of Dolmen_std.Expr.ty Dolmen_std.Expr.id
+    | `Type_decl of
+        Dolmen_std.Expr.type_fun Dolmen_std.Expr.id *
+        Dolmen_std.Expr.ty_def option
+  ]
+
+  type def = [
+    | `Instanceof of
+        Dolmen_std.Id.t * Dolmen_std.Expr.ty Dolmen_std.Expr.id *
+        Dolmen_std.Expr.ty list *
+        Dolmen_std.Expr.type_ Dolmen_std.Expr.id list *
+        Dolmen_std.Expr.ty Dolmen_std.Expr.id list * Dolmen_std.Expr.term
+    | `Term_def of
+        Dolmen_std.Id.t * Dolmen_std.Expr.ty Dolmen_std.Expr.id *
+        Dolmen_std.Expr.type_ Dolmen_std.Expr.id list *
+        Dolmen_std.Expr.ty Dolmen_std.Expr.id list * Dolmen_std.Expr.term
+    | `Type_alias of
+        Dolmen_std.Id.t * Dolmen_std.Expr.type_fun Dolmen_std.Expr.id *
+        Dolmen_std.Expr.type_ Dolmen_std.Expr.id list * Dolmen_std.Expr.ty
+  ]
+
+  type 'a ret = {
+    implicit_decls : decl list;
+    implicit_defs : def list;
+    ret : 'a;
+  }
+
+  (* Declarations helpers *)
   let allow_function_decl (st : State.t) =
     match (State.get ty_state st).logic with
     | Smtlib2 logic -> logic.features.free_functions
@@ -1784,53 +1832,96 @@ module Typer(State : State.S) = struct
       if is_function && not (allow_function_decl st) then
         T._error env (Decl d) Illegal_decl
 
-  let check_decls st env l decls =
-    List.iter2 (check_decl st env) l decls
+  let tr_decl st env parsed_decl typed_decl =
+    let () = check_decl st env parsed_decl typed_decl in
+    typed_decl
 
-  let decls (st : State.t) ~input ?loc ?attrs d =
+  (* definitions helpers *)
+  let tr_def ~implicit ~recursive typed_def =
+    match typed_def with
+    | `Type_alias (id, c, vars, body) ->
+      if not recursive && not implicit then begin
+        Dolmen.Std.Expr.Ty.alias_to c vars body;
+        `Type_alias (id, c, vars, body)
+      end else
+        assert false (* TODO: proper exception *)
+    | `Term_def (id, f, vars, params, body) ->
+      `Term_def (id, f, vars, params, body)
+    | `Instanceof (id, f, ty_args, vars, params, body) ->
+      `Instanceof (id, f, ty_args, vars, params, body)
+
+  let empty_ret ret =
+    { implicit_decls = [];
+      implicit_defs = [];
+      ret; }
+
+  let mk_ret ~f (ret : _ T.ret) =
+    let implicit_decls = ret.implicit_decls in
+    let implicit_defs =
+      List.map (tr_def ~implicit:true ~recursive:false) ret.implicit_defs
+    in
+    let ret = f ret.result in
+    { implicit_decls; implicit_defs; ret; }
+
+  let merge_rets l =
+    let implicit_decls =
+      Dolmen_std.Misc.list_concat_map (fun r -> r.implicit_decls) l
+    in
+    let implicit_defs =
+      Dolmen_std.Misc.list_concat_map (fun r -> r.implicit_defs) l
+    in
+    let ret = List.map (fun r -> r.ret) l in
+    { implicit_decls; implicit_defs; ret; }
+
+  (* Declarations *)
+  (* ************************************************************************ *)
+
+  let decls (st : State.t) ~input ?loc ?attrs d : state * decl list ret =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
-        let decls = T.decls env ?attrs d in
-        let () = check_decls st env d.contents decls in
-        decls
+        let ret_decls = T.decls env ?attrs d in
+        mk_ret ret_decls ~f:(List.map2 (tr_decl st env) d.contents)
       )
-
 
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let defs ~mode st ~input ?loc ?attrs d =
+  let defs ~mode st ~input ?loc ?attrs d : state * def list ret =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
-        let l = T.defs ~mode env ?attrs d in
-        List.map (fun typed ->
-            match typed with
-            | `Type_alias (id, c, vars, body) ->
-              if not d.recursive then Dolmen.Std.Expr.Ty.alias_to c vars body;
-              `Type_alias (id, c, vars, body)
-            | `Term_def (id, f, vars, params, body) ->
-              `Term_def (id, f, vars, params, body)
-            | `Instanceof (id, f, ty_args, vars, params, body) ->
-              `Instanceof (id, f, ty_args, vars, params, body)
-          ) l
+        let ret_defs = T.defs ~mode env ?attrs d in
+        mk_ret ret_defs ~f:(List.map (tr_def ~implicit:false ~recursive:d.recursive))
       )
 
   (* Wrappers around the Type-checking module *)
   (* ************************************************************************ *)
 
-  let terms st ~input ?loc ?attrs = function
-    | [] -> st, []
-    | l ->
+  let terms st ~input ?loc ?attrs l : state * _ ret =
+    match l with
+    | [] -> st, empty_ret []
+    | _ ->
       typing_wrap ?attrs ?loc ~input st
-        ~f:(fun env -> List.map (T.parse_term env) l)
+        ~f:(fun env ->
+            let ret_l = List.map (T.term env) l in
+            let rets = List.map (mk_ret ~f:(fun t -> t)) ret_l in
+            merge_rets rets
+          )
 
-  let formula st ~input ?loc ?attrs ~goal:_ (t : Dolmen.Std.Term.t) =
+  let formula st ~input ?loc ?attrs ~goal:_ t : state * _ ret =
     typing_wrap ?attrs ?loc ~input st
-      ~f:(fun env -> T.parse env t)
+      ~f:(fun env ->
+          let ret_f = T.formula env t in
+          mk_ret ret_f ~f:(fun f -> f)
+        )
 
-  let formulas st ~input ?loc ?attrs = function
-    | [] -> st, []
-    | l ->
+  let formulas st ~input ?loc ?attrs l : state * _ ret =
+    match l with
+    | [] -> st, empty_ret []
+    | _ ->
       typing_wrap ?attrs ?loc ~input st
-        ~f:(fun env -> List.map (T.parse env) l)
+        ~f:(fun env ->
+            let ret_l = List.map (T.formula env) l in
+            let rets = List.map (mk_ret ~f:(fun t -> t)) ret_l in
+            merge_rets rets
+          )
 
 end
 
@@ -1884,10 +1975,11 @@ module Make
 
   (* Used for representing typed statements *)
   type +'a stmt = {
-    id : Dolmen.Std.Id.t;
-    loc : Dolmen.Std.Loc.t;
+    id        : Dolmen.Std.Id.t;
+    loc       : Dolmen.Std.Loc.t;
     contents  : 'a;
-    attrs : Dolmen.Std.Term.t list;
+    attrs     : Dolmen.Std.Term.t list;
+    implicit  : bool;
   }
 
   type def = [
@@ -1954,9 +2046,8 @@ module Make
   type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
 
   (* Simple constructor *)
-  (* let tr implicit contents = { implicit; contents; } *)
-  let simple id loc attrs (contents: typechecked) =
-    { id; loc; attrs; contents; }
+  let mk_stmt ?(implicit=false) id loc attrs (contents: typechecked) =
+    { id; loc; attrs; contents; implicit; }
 
   let print_def fmt = function
     | `Type_alias (id, c, vars, body) ->
@@ -2064,7 +2155,7 @@ module Make
   let print_attrs fmt attrs =
     List.iter (print_attr fmt) attrs
 
-  let print fmt ({ id; loc; attrs; contents; } : typechecked stmt) =
+  let print fmt ({ id; loc; attrs; contents; implicit = _; } : typechecked stmt) =
     Format.fprintf fmt "@[<v 2>%a[%a]:@,%a%a@]"
       Dolmen.Std.Id.print id
       Dolmen.Std.Loc.print_compact loc
@@ -2074,14 +2165,19 @@ module Make
   (* Typechecking *)
   (* ************************************************************************ *)
 
-  let stmt_id ref_name =
+  let new_stmt_id ref_name =
     let counter = ref 0 in
+    (fun () ->
+       let () = incr counter in
+       let name = Format.sprintf "%s_%d" ref_name !counter in
+       Dolmen.Std.Id.mk Dolmen.Std.Id.decl name
+    )
+
+  let stmt_id ref_name =
+    let new_id = new_stmt_id ref_name in
     (fun c ->
        match c.Dolmen.Std.Statement.id with
-       | None ->
-         let () = incr counter in
-         let name = Format.sprintf "%s_%d" ref_name !counter in
-         Dolmen.Std.Id.mk Dolmen.Std.Id.decl name
+       | None -> new_id ()
        | Some id -> id)
 
   let def_id   = stmt_id "def"
@@ -2090,6 +2186,22 @@ module Make
   let goal_id  = stmt_id "goal"
   let prove_id = stmt_id "prove"
   let other_id = stmt_id "other"
+
+  let implicit_decl_name = new_stmt_id "implicit_decl"
+  let implicit_def_name = new_stmt_id "implicit_def"
+
+  let implicits loc attrs ({ implicit_decls; implicit_defs; ret = _; } : _ Typer.ret) =
+    let decls =
+      List.map (fun d ->
+          mk_stmt ~implicit:true (implicit_decl_name ()) loc attrs (`Decls [d])
+        ) implicit_decls
+    in
+    let defs =
+      List.map (fun d ->
+          mk_stmt ~implicit:true (implicit_def_name ()) loc attrs (`Defs [d])
+        ) implicit_defs
+    in
+    decls @ defs
 
   let fv_list l =
     let l' = List.map Dolmen.Std.Term.fv l in
@@ -2132,91 +2244,94 @@ module Make
     (* State&Assertion stack management *)
     | { S.descr = S.Reset; loc; attrs; _ } ->
       let st = Typer.reset st ~loc () in
-      st, simple (other_id c) loc attrs `Reset
+      st, [mk_stmt (other_id c) loc attrs `Reset]
     | { S.descr = S.Pop i; loc; attrs; _ } ->
       let st = Typer.pop st ~input ~loc i in
-      st, (simple (other_id c) loc attrs (`Pop i))
+      st, [mk_stmt (other_id c) loc attrs (`Pop i)]
     | { S.descr = S.Push i; loc; attrs; _ } ->
       let st = Typer.push st ~input ~loc i in
-      st, (simple (other_id c) loc attrs (`Push i))
+      st, [mk_stmt (other_id c) loc attrs (`Push i)]
     | { S.descr = S.Reset_assertions; loc; attrs; _ } ->
       let st = Typer.reset_assertions st ~loc () in
-      st, (simple (other_id c) loc attrs `Reset_assertions)
+      st, [mk_stmt (other_id c) loc attrs `Reset_assertions]
 
     (* Plain statements
        TODO: allow the `plain` function to return a meaningful value *)
     | { S.descr = S.Other { name; args; }; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Other (name, args)))
+      st, [mk_stmt (other_id c) loc attrs (`Other (name, args))]
 
-    (* Hypotheses and goal statements *)
+    (* Prove statements (with local hyps/goals) *)
     | { S.descr = S.Prove { hyps; goals }; loc; attrs; _ } ->
-      let st, hyps = Typer.formulas st ~input ~loc ~attrs hyps in
-      let st, goals = Typer.formulas st ~input ~loc ~attrs goals in
-      st, (simple (prove_id c) loc attrs(`Solve (hyps, goals)))
+      let st, h_ret = Typer.formulas st ~input ~loc ~attrs hyps in
+      let st, g_ret = Typer.formulas st ~input ~loc ~attrs goals in
+      let prove = mk_stmt (prove_id c) loc attrs (`Solve (h_ret.ret, g_ret.ret)) in
+      st, (implicits loc attrs h_ret @
+           implicits loc attrs g_ret @
+           [prove])
 
     (* Hypotheses & Goals *)
     | { S.descr = S.Clause l; loc; attrs; _ } ->
       let st, res = Typer.formulas st ~input ~loc ~attrs l in
-      let stmt : typechecked stmt = simple (hyp_id c) loc attrs (`Clause res) in
-      st, stmt
+      let clause : typechecked stmt = mk_stmt (hyp_id c) loc attrs (`Clause res.ret) in
+      st, (implicits loc attrs res @ [clause])
     | { S.descr = S.Antecedent t; loc; attrs; _ } ->
-      let st, ret = Typer.formula st ~input ~loc ~attrs ~goal:false t in
-      let stmt : typechecked stmt = simple (hyp_id c) loc attrs (`Hyp ret) in
-      st, stmt
+      let st, f = Typer.formula st ~input ~loc ~attrs ~goal:false t in
+      let hyp : typechecked stmt = mk_stmt (hyp_id c) loc attrs (`Hyp f.ret) in
+      st, (implicits loc attrs f @ [hyp])
     | { S.descr = S.Consequent t; loc; attrs; _ } ->
-      let st, ret = Typer.formula st ~input ~loc ~attrs ~goal:true t in
-      let stmt : typechecked stmt = simple (goal_id c) loc attrs (`Goal ret) in
-      st, stmt
+      let st, f = Typer.formula st ~input ~loc ~attrs ~goal:true t in
+      let goal : typechecked stmt = mk_stmt (goal_id c) loc attrs (`Goal f.ret) in
+      st, (implicits loc attrs f @ [goal])
 
     (* Other set_logics should check whether corresponding plugins are activated ? *)
     | { S.descr = S.Set_logic s; loc; attrs; _ } ->
       let st, new_logic = Typer.set_logic st ~input ~loc s in
-      st, (simple (other_id c) loc attrs (`Set_logic (s, new_logic)))
+      st, [mk_stmt (other_id c) loc attrs (`Set_logic (s, new_logic))]
 
     (* Set/Get info *)
     | { S.descr = S.Get_info s; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Get_info s))
+      st, [mk_stmt (other_id c) loc attrs (`Get_info s)]
     | { S.descr = S.Set_info t; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Set_info t))
+      st, [mk_stmt (other_id c) loc attrs (`Set_info t)]
 
     (* Set/Get options *)
     | { S.descr = S.Get_option s; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Get_option s))
+      st, [mk_stmt (other_id c) loc attrs (`Get_option s)]
     | { S.descr = S.Set_option t; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Set_option t))
+      st, [mk_stmt (other_id c) loc attrs (`Set_option t)]
 
     (* Declarations and definitions *)
-    | { S.descr = S.Defs d; loc; attrs; _ } ->
-      let st, l = Typer.defs ~mode:`Create_id st ~input ~loc ~attrs d in
-      let res : typechecked stmt = simple (def_id c) loc attrs (`Defs l) in
-      st, (res)
     | { S.descr = S.Decls l; loc; attrs; _ } ->
-      let st, l = Typer.decls st ~input ~loc ~attrs l in
-      let res : typechecked stmt = simple (decl_id c) loc attrs (`Decls l) in
-      st, (res)
+      let st, res = Typer.decls st ~input ~loc ~attrs l in
+      let decls : typechecked stmt = mk_stmt (decl_id c) loc attrs (`Decls res.ret) in
+      st, (implicits loc attrs res @ [decls])
+    | { S.descr = S.Defs d; loc; attrs; _ } ->
+      let st, res = Typer.defs ~mode:`Create_id st ~input ~loc ~attrs d in
+      let defs : typechecked stmt = mk_stmt (def_id c) loc attrs (`Defs res.ret) in
+      st, (implicits loc attrs res @ [defs])
 
     (* Smtlib's proof/model instructions *)
     | { S.descr = S.Get_proof; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_proof)
+      st, [mk_stmt (other_id c) loc attrs `Get_proof]
     | { S.descr = S.Get_unsat_core; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_unsat_core)
+      st, [mk_stmt (other_id c) loc attrs `Get_unsat_core]
     | { S.descr = S.Get_unsat_assumptions; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_unsat_assumptions)
+      st, [mk_stmt (other_id c) loc attrs `Get_unsat_assumptions]
     | { S.descr = S.Get_model; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_model)
+      st, [mk_stmt (other_id c) loc attrs `Get_model]
     | { S.descr = S.Get_value l; loc; attrs; _ } ->
-      let st, l = Typer.terms st ~input ~loc ~attrs l in
-      st, (simple (other_id c) loc attrs (`Get_value l))
+      let st, res = Typer.terms st ~input ~loc ~attrs l in
+      st, (implicits loc attrs res @ [mk_stmt (other_id c) loc attrs (`Get_value res.ret)])
     | { S.descr = S.Get_assignment; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_assignment)
+      st, [mk_stmt (other_id c) loc attrs `Get_assignment]
     (* Assertions *)
     | { S.descr = S.Get_assertions; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Get_assertions)
+      st, [mk_stmt (other_id c) loc attrs `Get_assertions]
     (* Misc *)
     | { S.descr = S.Echo s; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs (`Echo s))
+      st, [mk_stmt (other_id c) loc attrs (`Echo s)]
     | { S.descr = S.Exit; loc; attrs; _ } ->
-      st, (simple (other_id c) loc attrs `Exit)
+      st, [mk_stmt (other_id c) loc attrs `Exit]
 
     (* packs and includes *)
     | { S.descr = S.Include _; _ } -> assert false

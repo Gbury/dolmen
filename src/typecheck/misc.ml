@@ -61,6 +61,13 @@ module Lists = struct
         aux f accu (x :: l_accu) l in
     aux f accu [] l
 
+  let split3 l =
+    let rec aux l1 l2 l3 = function
+      | [] -> List.rev l1, List.rev l2, List.rev l3
+      | (a, b, c) :: r -> aux (a :: l1) (b :: l2) (c :: l3) r
+    in
+    aux [] [] [] l
+
 end
 
 (* String manipulation *)

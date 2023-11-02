@@ -501,6 +501,7 @@ module Smtlib2 = struct
 
     type _ Type.err +=
       | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
+      | Non_closed_named_term : Type.Ty.Var.t list * Type.T.Var.t list -> Dolmen.Std.Term.t Type.err
 
     let inferred_model_constants = Dolmen.Std.Tag.create ()
 
@@ -514,14 +515,9 @@ module Smtlib2 = struct
       Type.set_global_custom_state state inferred_model_constants (c :: l)
 
     let parse_name env = function
-      | ({ Ast.term = Ast.Symbol s; _ } as ast)
-      | ({ Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } as ast) ->
-        begin match Dolmen.Std.Id.name s with
-          | Simple s -> s
-          | _ -> Type._error env (Ast ast) (Type.Expected ("simple name", None))
-        end
-      | ast ->
-        Type._error env (Ast ast) (Type.Expected ("symbol", None))
+      | { Ast.term = Ast.Symbol s; _ }
+      | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _ } -> s
+      | ast -> Type._error env (Ast ast) (Type.Expected ("symbol", None))
 
     let extract_sexpr_list_from_sexpr env = function
       | { Ast.term = Ast.App ({ Ast.term = Ast.Builtin Sexpr; _ }, l); _} -> l
@@ -598,10 +594,43 @@ module Smtlib2 = struct
 
       (* Named formulas *)
       | Type.Id { name = Simple ":named"; ns = Attr } ->
-        Type.builtin_tags (Base.make_op1 (module Type) env s (fun _ t ->
-            let name = parse_name env t in
-            [Type.Set (Tag.named, name)]
-          ))
+        begin match version with
+          | `Response _ ->
+            (* ":named" attributes in models do not make sense.
+               TODO: maybe a proper error here would be better ? *)
+            `Not_found
+          | `Script _ ->
+            Type.builtin_tags (Base.make_op1 (module Type) env s (fun _ named ->
+                [Type.Hook (fun res_ast res ->
+                     match (res : Type.res) with
+                     | Term t ->
+                       (* Check that the named term is closed *)
+                       begin match Type.T.fv t with
+                         | [], [] -> ()
+                         | ty_vars, t_vars ->
+                           Type._error env (Type.Ast res_ast)
+                             (Non_closed_named_term (ty_vars, t_vars))
+                       end;
+                       let ty = Type.T.ty t in
+                       let id = parse_name env named in
+                       let path = Type.cst_path env id.name in
+                       let f = Type.T.Const.mk path ty in
+                       (* Ids in attributes are created with namespace Attr, but named ids
+                          are meant to be also used in terms, so we need to tweak the
+                          namespace before declaring the binding. *)
+                       let bound_id = { id with ns = Term } in
+                       Type.decl_term_const env (Type.Ast res_ast) bound_id f
+                         (Type.Implicit_in_term (Type.file env, res_ast));
+                       Type.register_implicit env
+                         (`Term_def (bound_id, f, [], [], t));
+                       Type.T.Const.set_tag f Tag.named "";
+                       Type.Term (Type.T.apply_cst f [] [])
+                     | _ ->
+                       assert false
+                   )
+                ]
+              ))
+        end
 
       (* Trigger annotations *)
       | Type.Id { name = Simple ":pattern"; ns = Attr } ->

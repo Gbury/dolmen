@@ -128,9 +128,10 @@ module type Formulas = sig
   type tag =
     | Set : 'a ast_tag * 'a -> tag
     | Add : 'a list ast_tag * 'a -> tag
+    | Hook : (Dolmen.Std.Term.t -> res -> res) -> tag
   (** Existencial wrapper around tags *)
 
-  type res =
+  and res =
     | Ttype
     | Ty    of ty
     | Term  of term
@@ -228,7 +229,6 @@ module type Formulas = sig
   type not_found = [ `Not_found ]
   (** Not bound bindings *)
 
-
   type var_kind = [
     | `Let_bound
     | `Quantified
@@ -242,6 +242,18 @@ module type Formulas = sig
     | Builtin of Dolmen.Std.Term.builtin (**)
   (** Wrapper around potential function symbols from the Dolmen AST. *)
 
+  type decl = [
+    | `Type_decl of ty_cst * ty_def option
+    | `Term_decl of term_cst
+  ]
+
+  type def = [
+    | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+    | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+    | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
+  ]
+
+  type implicit = [ decl | def ]
 
   (** {2 Errors and warnings} *)
 
@@ -495,6 +507,9 @@ module type Formulas = sig
   val _error : env -> 'a fragment -> 'a err -> _
   (** Raise an error *)
 
+  val file : env -> Dolmen.Std.Loc.file
+  (** Return the current file for th eenv. *)
+
   val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** From a dolmen identifier, return a list of existing bound identifiers
       in the env that are up to [~limit] in terms of distance of edition. *)
@@ -584,7 +599,8 @@ module type Formulas = sig
   (** Declare a new term constant in the global environment used by the
       given environment *)
 
-
+  val register_implicit : env -> implicit -> unit
+  (** Register a new implicit declaration/definition *)
 
   (** {2 Custom global state} *)
 
@@ -653,25 +669,25 @@ module type Formulas = sig
 
   (** {2 High-level functions} *)
 
+  type 'a ret = {
+    implicit_decls : decl list;
+    implicit_defs : def list;
+    result : 'a;
+  }
+
   val decls :
     env -> ?attrs:Dolmen.Std.Term.t list ->
-    Dolmen.Std.Statement.decls -> [
-      | `Type_decl of ty_cst * ty_def option
-      | `Term_decl of term_cst
-    ] list
+    Dolmen.Std.Statement.decls -> decl list ret
   (** Parse a list of potentially mutually recursive declarations. *)
 
   val defs :
     ?mode:[`Create_id | `Use_declared_id] ->
     env -> ?attrs:Dolmen.Std.Term.t list ->
-    Dolmen.Std.Statement.defs -> [
-      | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
-      | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
-      | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
-    ] list
+    Dolmen.Std.Statement.defs -> def list ret
   (** Parse a definition *)
 
-  val parse : term typer
-  (** Parse a formula *)
+  val term : env -> Dolmen.Std.Term.t -> term ret
+  val formula : env -> Dolmen.Std.Term.t -> term ret
+  (** Top-level functions to typecheck terms and formulas. *)
 
 end

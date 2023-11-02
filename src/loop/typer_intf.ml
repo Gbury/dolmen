@@ -36,6 +36,23 @@ module type Typer = sig
     | `Response of Response.language
   ]
 
+  type decl = [
+    | `Type_decl of ty_cst * ty_def option
+    | `Term_decl of term_cst
+  ]
+
+  type def = [
+    | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+    | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+    | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
+  ]
+
+  type 'a ret = {
+    implicit_decls : decl list;
+    implicit_defs : def list;
+    ret : 'a;
+  }
+
   val reset :
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
@@ -52,38 +69,31 @@ module type Typer = sig
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     string -> state * Dolmen_type.Logic.t
 
+  val decls :
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
+    ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.decls ->
+    state * decl list ret
+
   val defs :
     mode:[`Create_id | `Use_declared_id] ->
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.defs ->
-    state * [
-     | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
-     | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
-     | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
-    ] list
-
-  val decls :
-    state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
-    ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Statement.decls ->
-    state * [
-      | `Type_decl of ty_cst * ty_def option
-      | `Term_decl of term_cst
-    ] list
+    state * def list ret
 
   val terms :
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Term.t list ->
-    state * term list
+    state * term list ret
 
   val formula :
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> goal:bool -> Dolmen.Std.Term.t ->
-    state * formula
+    state * formula ret
 
   val formulas :
     state -> input:input -> ?loc:Dolmen.Std.Loc.t ->
     ?attrs:Dolmen.Std.Term.t list -> Dolmen.Std.Term.t list ->
-    state * formula list
+    state * formula list ret
 
   val typing_wrap :
     ?attrs:Dolmen.Std.Term.t list ->
@@ -187,6 +197,7 @@ module type S = sig
     loc         : Dolmen.Std.Loc.t;
     contents    : 'a;
     attrs       : Dolmen.Std.Term.t list;
+    implicit    : bool;
   }
   (** Wrapper around statements. It records implicit type declarations. *)
 
@@ -268,11 +279,11 @@ module type S = sig
   val print : Format.formatter -> typechecked stmt -> unit
   (** Printing funciton for typechecked statements. *)
 
-  val check : state -> Dolmen.Std.Statement.t -> state * typechecked stmt
+  val check : state -> Dolmen.Std.Statement.t -> state * typechecked stmt list
   (** Typechecks a statement. *)
 
   val typecheck : state -> Dolmen.Std.Statement.t ->
-    state * [ `Continue of typechecked stmt | `Done of unit ]
+    state * [ `Continue of typechecked stmt list | `Done of unit ]
   (** Typechecks a statement. *)
 
 end
