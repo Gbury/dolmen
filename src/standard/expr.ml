@@ -400,16 +400,6 @@ let list_take l n =
   in
   aux [] l n
 
-(* List.concat_map *)
-let list_concat_map f l =
-  let rec aux acc f = function
-    | [] -> List.rev acc
-    | x :: r ->
-      let l = f x in
-      aux (List.rev_append l acc) f r
-  in
-  aux [] f l
-
 (* List.find_map *)
 let rec list_find_map f = function
   | [] -> None
@@ -1607,10 +1597,10 @@ module Term = struct
       | [] | _ :: _ :: _-> assert false (* internal error *)
 
     let specialise_matrix arity c p =
-      list_concat_map (specialise_row arity c) p
+      Misc.list_concat_map (specialise_row arity c) p
 
     let default_matrix (p : matrix) : matrix =
-      list_concat_map (function
+      Misc.list_concat_map (function
           | [] -> assert false
           | p_i_1 :: p_i_r ->
             begin match p_i_1.head with
