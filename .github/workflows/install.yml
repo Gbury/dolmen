@@ -98,8 +98,21 @@ jobs:
     # Setup ocaml/opam
     - name: Setup ocaml/opam
       uses: avsm/setup-ocaml@v2
+      if: matrix.os != 'windows-latest'
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam
+      uses: avsm/setup-ocaml@v2
+      if: matrix.os == 'windows-latest'
+      with:
+        ocaml-compiler: ${{ matrix.ocaml-version }}
+        # If on windows: use both the mingw repo **and** the official repo.
+        # This is because the mingw repo contians fixes windows-specific, but
+        # it has not been updated since august 2021.
+        opam-repositories: |
+          mingw: https://github.com/ocaml-opam/opam-repository-mingw.git
+          default: https://github.com/ocaml/opam-repository.git
     # Debug
     - name: Debugging
       run: opam switch list-available
@@ -122,7 +135,7 @@ jobs:
     # Install each package
     - name: Install dolmen
       run: opam install . --with-test --with-doc
-      timeout-minutes: 20
       # Ensure that installation does not take too long
       # (particularly with regards to flambda)
+      timeout-minutes: 20
 

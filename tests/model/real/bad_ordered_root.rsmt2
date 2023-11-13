@@ -1,0 +1,4 @@
+sat
+(
+  (define-fun a () Real (root-of-with-order (coeffs 1 0 (- 1)) 2))
+)

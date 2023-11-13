@@ -33,6 +33,170 @@
   (action (diff add.expected add.full)))
 
 
+; Test for algebraic.smt2
+; Incremental test
+
+(rule
+   (target  algebraic.incremental)
+   (deps    (:response algebraic.rsmt2) (:input algebraic.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff algebraic.expected algebraic.incremental)))
+
+; Full mode test
+
+(rule
+   (target  algebraic.full)
+   (deps    (:response algebraic.rsmt2) (:input algebraic.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff algebraic.expected algebraic.full)))
+
+
+; Test for bad_ordered_root.smt2
+; Incremental test
+
+(rule
+   (target  bad_ordered_root.incremental)
+   (deps    (:response bad_ordered_root.rsmt2) (:input bad_ordered_root.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_ordered_root.expected bad_ordered_root.incremental)))
+
+; Full mode test
+
+(rule
+   (target  bad_ordered_root.full)
+   (deps    (:response bad_ordered_root.rsmt2) (:input bad_ordered_root.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_ordered_root.expected bad_ordered_root.full)))
+
+
+; Test for bad_root_enclosure.smt2
+; Incremental test
+
+(rule
+   (target  bad_root_enclosure.incremental)
+   (deps    (:response bad_root_enclosure.rsmt2)
+            (:input bad_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_root_enclosure.expected bad_root_enclosure.incremental)))
+
+; Full mode test
+
+(rule
+   (target  bad_root_enclosure.full)
+   (deps    (:response bad_root_enclosure.rsmt2)
+            (:input bad_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff bad_root_enclosure.expected bad_root_enclosure.full)))
+
+
+; Test for complex_root_enclosure.smt2
+; Incremental test
+
+(rule
+   (target  complex_root_enclosure.incremental)
+   (deps    (:response complex_root_enclosure.rsmt2)
+            (:input complex_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_root_enclosure.expected complex_root_enclosure.incremental)))
+
+; Full mode test
+
+(rule
+   (target  complex_root_enclosure.full)
+   (deps    (:response complex_root_enclosure.rsmt2)
+            (:input complex_root_enclosure.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_root_enclosure.expected complex_root_enclosure.full)))
+
+
+; Test for complex_roots.smt2
+; Incremental test
+
+(rule
+   (target  complex_roots.incremental)
+   (deps    (:response complex_roots.rsmt2) (:input complex_roots.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_roots.expected complex_roots.incremental)))
+
+; Full mode test
+
+(rule
+   (target  complex_roots.full)
+   (deps    (:response complex_roots.rsmt2) (:input complex_roots.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff complex_roots.expected complex_roots.full)))
+
+
 ; Test for div.smt2
 ; Incremental test
 
@@ -95,6 +259,40 @@
   (alias runtest)
   (package dolmen_bin)
   (action (diff div_zero_1.expected div_zero_1.full)))
+
+
+; Test for kissing_2_6_scramble.smt2
+; Incremental test
+
+(rule
+   (target  kissing_2_6_scramble.incremental)
+   (deps    (:response kissing_2_6_scramble.rsmt2)
+            (:input kissing_2_6_scramble.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff kissing_2_6_scramble.expected kissing_2_6_scramble.incremental)))
+
+; Full mode test
+
+(rule
+   (target  kissing_2_6_scramble.full)
+   (deps    (:response kissing_2_6_scramble.rsmt2)
+            (:input kissing_2_6_scramble.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff kissing_2_6_scramble.expected kissing_2_6_scramble.full)))
 
 
 ; Auto-generated part end

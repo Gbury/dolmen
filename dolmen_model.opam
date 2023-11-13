@@ -16,6 +16,7 @@ depends: [
   "odoc" { with-doc }
   "zarith" { >= "1.10" }
   "farith"
+  "calcium" { >= "0.3" }
 ]
 tags: [ "logic" "type" "model" "modelchecking" "first order" ]
 homepage: "https://github.com/Gbury/dolmen"

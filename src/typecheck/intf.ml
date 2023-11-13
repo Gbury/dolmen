@@ -495,6 +495,9 @@ module type Formulas = sig
   val _error : env -> 'a fragment -> 'a err -> _
   (** Raise an error *)
 
+  val _expected : env -> string -> Dolmen.Std.Term.t -> res option -> _
+  (** Helper to raise the [Expected] error. *)
+
   val suggest : limit:int -> env -> Dolmen.Std.Id.t -> Dolmen.Std.Id.t list
   (** From a dolmen identifier, return a list of existing bound identifiers
       in the env that are up to [~limit] in terms of distance of edition. *)

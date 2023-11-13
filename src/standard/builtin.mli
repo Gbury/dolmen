@@ -166,6 +166,27 @@ type _ t +=
 (** {2 Arithmetic Builtins} *)
 (*  ************************************************************************* *)
 
+type algebraic =
+  | Ordered_root of { coeffs : string list; order : string; }
+  (** [Ordered_root{ coeffs; order = n; }: Real]
+      This real represent the n-th root (including multiplicity) of the
+      polynomial represented by [coeffs]. The numbers in [coeffs] are the
+      coefficients of the monomials, in increasing order of exponent. Each
+      string represents an integer number, potentially preceded by a "-" sign.
+      For instance the list [["1"; "0"; "-2"; "1"]] representes the polynomial
+      [x^3 - 2*x^2 + 1].*)
+  | Enclosed_root of {
+      coeffs : string list;
+      min : string * string;
+      max : string * string; }
+  (** [Enclosed_root{coeefs; min; max; }: Real]
+      This represents a real that is a root of the polynomial represented by
+      [coeffs] (see doc of {Ordered_root} for explanations about how [coeffs]
+      represent polynomial), which is in the interval [min; max]. There should
+      be exactly one root in that interval, but this property is not checked
+      during typechecking. *)
+(** Type used to represent algebraic numbers. *)
+
 type _ t +=
   | Int
   (** [Int: ttype] the type for signed integers of arbitrary precision. *)
@@ -194,6 +215,9 @@ type _ t +=
       representation for the real number [2].
 
       Real literals can be parsed using ZArith's [Q.of_string]. *)
+  | Algebraic of algebraic
+  (** [Algebraic: Real] real literals, using algebraic numbers. See
+      documentation of the {algebraic} type for more information. *)
   | Lt of [ `Int | `Rat | `Real ]
   (** [Lt: {a=(Int|Rational|Real)} a -> a -> Prop]:
       strict comparison (less than) on numbers

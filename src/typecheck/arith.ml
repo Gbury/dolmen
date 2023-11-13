@@ -770,6 +770,66 @@ module Smtlib2 = struct
 
   end
 
+  (* Polynomial coefficients for algebraic numbers *)
+  module Poly(Type : Tff_intf.S) = struct
+
+    let parse_order env ast =
+      match ast.Term.term with
+      | Symbol { Id.ns = Value (Integer); name = Simple name; } -> name
+      | _ -> Type._error env (Ast ast) (Type.Expected ("a positive integer", None))
+
+    let parse_int_as_string env ast =
+      let rec is_int i s =
+        String.length s <= i ||
+        begin
+          match s.[i] with
+          | '-' -> i = 0
+          | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' -> true
+          | _ -> false
+        end
+        || is_int (i+1) s
+      in
+      match ast.Term.term with
+      | Symbol  { Id.ns = Value (Integer); name = Simple name; } ->
+        name
+      | App({ term = Symbol { Id.ns = Term; name = Simple "-"; };_},
+            [{ term = Symbol  { Id.ns = Value (Integer); name = Simple name; }; _}]) ->
+        "-" ^ name
+      | Symbol  { Id.ns = Term; name = Simple name; } when is_int 0 name ->
+        (* TODO: is this one necessary ? *)
+        name
+      | _ ->
+        Type._error env (Ast ast) (Type.Expected ("an integer constant", None))
+
+    let parse_rat_as_string env ast =
+      match ast.Term.term with
+      | Symbol  { Id.ns = Value (Integer | Rational | Real); name = Simple name; } ->
+        (name, "1.0")
+      | App({term = Symbol { Id.ns = Term; name = Simple "-"; };_},
+            [{term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name; };_}]) ->
+        ("-" ^ name, "1.0")
+      | App({term = Symbol { Id.ns = Term; name = Simple "/"; };_},
+            [{term = Symbol { Id.ns = Value (Integer | Rational | Real ); name = Simple name1; };_};
+             {term = Symbol { Id.ns = Value (Integer | Rational | Real ); name = Simple name2; };_}]) ->
+        (name1, name2)
+      | App({term = Symbol { Id.ns = Term; name = Simple "/"; };_},
+            [{term=App({term = Symbol { Id.ns = Term; name = Simple "-"; };_},
+                       [{term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name1};_}]);_};
+             {term=Symbol  { Id.ns = Value (Integer | Rational | Real ); name = Simple name2; };_}]) ->
+        ("-" ^ name1, name2)
+      | _ ->
+        Type._error env (Ast ast) (Type.Expected ("a rational constant", None))
+
+    let parse_poly_coeffs_as_strings env ast =
+      match ast.Term.term with
+      | App ({term = Symbol { Id.ns = Term; name = Simple "coeffs"; };_},args) ->
+        List.map (parse_int_as_string env) args
+      | _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("a list of coefficient starting with \"coeffs\"", None))
+
+  end
+
   (* Integer arithmetics *)
 
   module Int = struct
@@ -880,6 +940,7 @@ module Smtlib2 = struct
         (T : Dolmen.Intf.Term.Smtlib_Real with type t := Type.T.t
                                            and type cst := Type.T.Const.t) = struct
 
+      module P = Poly(Type)
       module F = Filter(Type)
 
       type _ Type.warn +=
@@ -896,12 +957,30 @@ module Smtlib2 = struct
 
       let rec parse ~config version env s =
         match s with
+
         (* type *)
         | Type.Id { Id.ns = Sort; name = Simple "Real"; } ->
           Type.builtin_ty (Base.app0 (module Type) env s Ty.real)
+
         (* values *)
         | Type.Id { Id.ns = Value (Integer | Real); name = Simple name; } ->
           Type.builtin_term (Base.app0 (module Type) env s (T.mk name))
+        | Type.Id { Id.ns = Term;
+                    name = Simple ("root-of-with-order"|"root-of-with-ordering"); } ->
+          Type.builtin_term (Base.make_op2 (module Type) env s (fun _ast (coeffs,num) ->
+              let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
+              let num = P.parse_order env num in
+              T.algebraic_ordered_root coeffs num
+            ))
+        | Type.Id { Id.ns = Term;
+                    name = Simple ("root-of-with-enclosure"|"root-of-with-interval"); } ->
+          Type.builtin_term (Base.make_op3 (module Type) env s (fun _ast (coeffs,min,max) ->
+              let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
+              let min = P.parse_rat_as_string env min in
+              let max = P.parse_rat_as_string env max in
+              T.algebraic_enclosed_root coeffs min max
+            ))
+
         (* terms *)
         | Type.Id { Id.ns = Term; name = Simple name; } ->
           begin match name with
@@ -958,6 +1037,7 @@ module Smtlib2 = struct
                                                and type Int.cst := Type.T.Const.t
                                                and type Real.cst := Type.T.Const.t) = struct
 
+      module P = Poly(Type)
       module F = Filter(Type)
 
       type _ Type.warn +=
@@ -1011,6 +1091,21 @@ module Smtlib2 = struct
           Type.builtin_term (Base.app0 (module Type) env s (T.Int.mk name))
         | Type.Id { Id.ns = Value Real; name = Simple name; } ->
           Type.builtin_term (Base.app0 (module Type) env s (T.Real.mk name))
+        | Type.Id { Id.ns = Term;
+                    name = Simple ("root-of-with-order"|"root-of-with-ordering"); } ->
+          Type.builtin_term (Base.make_op2 (module Type) env s (fun _ast (coeffs,num) ->
+              let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
+              let num = P.parse_order env num in
+              T.Real.algebraic_ordered_root coeffs num
+            ))
+        | Type.Id { Id.ns = Term;
+                    name = Simple ("root-of-with-enclosure"|"root-of-with-interval"); } ->
+          Type.builtin_term (Base.make_op3 (module Type) env s (fun _ast (coeffs,min,max) ->
+              let coeffs = P.parse_poly_coeffs_as_strings env coeffs in
+              let min = P.parse_rat_as_string env min in
+              let max = P.parse_rat_as_string env max in
+              T.Real.algebraic_enclosed_root coeffs min max
+            ))
 
         (* terms *)
         | Type.Id { Id.ns = Term; name = Simple name; } ->

@@ -1,0 +1,5 @@
+File "tests/model/real/complex_roots.rsmt2", line 3, character 2-68:
+3 |   (define-fun a () Real (root-of-with-order (coeffs 1 0 0 (- 1)) 2))
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error The following polynomial has complex roots, which prevents from
+      ordering roots: -x^3+1

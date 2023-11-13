@@ -90,10 +90,6 @@ let print_res fmt res =
     Format.fprintf fmt "the term@ %a" (pp_wrap Dolmen.Std.Expr.Term.print) t
   | T.Tags _ -> Format.fprintf fmt "some tags"
 
-let print_opt pp fmt = function
-  | None -> Format.fprintf fmt "<none>"
-  | Some x -> pp fmt x
-
 let rec print_expected fmt = function
   | [] -> assert false
   | x :: [] -> Format.fprintf fmt "%d" x
@@ -445,8 +441,12 @@ let not_well_founded_datatype =
 let expect_error =
   Report.Error.mk ~code ~mnemonic:"typing-bad-kind"
     ~message:(fun fmt (expected, got) ->
-        Format.fprintf fmt "Expected %s but got %a"
-          expected (print_opt print_res) got)
+        let pp_got fmt got =
+          match got with
+          | None -> ()
+          | Some res -> Format.fprintf fmt ",@ but got %a" print_res res
+        in
+        Format.fprintf fmt "Expected %s%a" expected pp_got got)
     ~name:"Bad kind" ()
 
 let bad_index_arity =
