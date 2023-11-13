@@ -3,7 +3,7 @@
   (name       main)
   (libraries
     ; Dolmen deps
-    dolmen_std
+    dolmen dolmen_std dolmen_class
     ; Qcheck
     qcheck qcheck-core qcheck-core.runner)
 )

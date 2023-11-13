@@ -9,6 +9,9 @@ module type Statement = Ast.Statement
 module type Extension = Ast.Extension
 (** Implementation requirement for the Smtlib format. *)
 
+module Print = Print
+(** Printing functions. *)
+
 module Make
     (L : Dolmen_intf.Location.S)
     (I : Id)

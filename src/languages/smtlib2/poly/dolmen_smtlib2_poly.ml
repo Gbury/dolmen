@@ -6,6 +6,8 @@ module type Term = Ast.Term
 module type Statement = Ast.Statement
 module type Extension = Ast.Extension
 
+module Print = Print
+
 module Make
     (L : Dolmen_intf.Location.S)
     (I : Id)

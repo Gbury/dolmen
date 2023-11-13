@@ -13,10 +13,19 @@ next
 
 ### Parsing
 
+- Treat quoted symbols from the stdlib as symbols, regardless of
+  their contents. Previously a `|assert|` would be understood as the
+  reserved work `assert`, allowing e.g. `(|assert| false)`. From now on
+  these are understood as symbols, so one can `(declare |assert| () Bool)`
+  (PR#198)
 - Add parsing extensions for the smtlib2 language (PR#190, PR#194)
 - Better split elements of clauses in `cnf` TPTP statements (PR#190)
 - Ensure illegal chars raise the correct error during lexing
   (Issue#191, PR#192)
+
+### Printing
+
+- Add printers for smtlib identifiers (PR#198)
 
 ### Typing
 

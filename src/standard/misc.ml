@@ -1,6 +1,17 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
+(* Strings *)
+(* ************************************************************************* *)
+
+let string_for_all pred s =
+  let rec aux p s i =
+    if i < 0 then true
+    else if p (String.unsafe_get s i) then aux p s (i - 1)
+    else false
+  in
+  aux pred s (String.length s - 1)
+
 (* File extensions *)
 (* ************************************************************************* *)
 
