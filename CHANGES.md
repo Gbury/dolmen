@@ -15,7 +15,7 @@ next
 
 - Treat quoted symbols from the stdlib as symbols, regardless of
   their contents. Previously a `|assert|` would be understood as the
-  reserved work `assert`, allowing e.g. `(|assert| false)`. Fomr now on
+  reserved work `assert`, allowing e.g. `(|assert| false)`. From now on
   these are understood as symbols, so one can `(declare |assert| () Bool)`
   (PR#198)
 - Add parsing extensions for the smtlib2 language (PR#190, PR#194)
