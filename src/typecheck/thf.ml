@@ -404,6 +404,8 @@ module Make
         Id.t * Ty.Const.t * reason * int -> Stmt.def err
     | Incoherent_term_redefinition :
         Id.t * T.Const.t * reason * Ty.t -> Stmt.def err
+    | Inferred_builtin : Ast.builtin -> Ast.t err
+    | Forbidden_hook : Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
@@ -568,7 +570,7 @@ module Make
 
   let rec find_pattern_ast pat asts parsed =
     match asts, parsed with
-    | [], _ | _, [] -> assert false
+    | [], _ | _, [] -> assert false (* internal invariant *)
     | (ast, _) :: r, (t, _) :: r' ->
       if pat == t then ast else find_pattern_ast pat r r'
 
@@ -756,6 +758,12 @@ module Make
     _error env (Def def)
       (Incoherent_term_redefinition (def.id, cst, reason, ty))
 
+  let _inferred_builtin env ast b =
+    _error env (Ast ast) (Inferred_builtin b)
+
+  let _forbidden_hook env ast =
+    _error env (Ast ast) Forbidden_hook
+
   let _wrap_exn env ast = function
     | Ty.Prenex_polymorphism ty ->
       _non_prenex_polymorphism env ast ty
@@ -834,6 +842,7 @@ module Make
 
   let cst_path _env name =
     match (name : Dolmen.Std.Name.t) with
+    (* TODO; proper error *)
     | Indexed _ -> assert false
     | Simple name ->
       Dolmen.Std.Path.global name
@@ -1157,6 +1166,9 @@ module Make
     (* variables should not be declare-able nor builtin *)
     | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
+      (* this should never happen, and we could simply do nothing in this case;
+         the assert is there to see if it can happen and what kind of situation
+         would trigger that. *)
       assert false
 
   let find_term_var_reason env v =
@@ -1171,6 +1183,9 @@ module Make
        and we do not use any term wildcards. *)
     | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
+      (* this should never happen, and we could simply do nothing in this case;
+         the assert is there to see if it can happen and what kind of situation
+         would trigger that. *)
       assert false
 
 
@@ -1549,7 +1564,7 @@ module Make
     | ast -> _error env (Ast ast) Unhandled_ast
 
   and apply_attr env res ast l =
-    List.fold_left (fun res tag ->
+    List.fold_left (fun res (_ast, tag) ->
         match (tag : tag) with
         | Set (tag, v) -> set_tag env ast tag v res; res
         | Add (tag, v) -> add_tag env ast tag v res; res
@@ -1558,7 +1573,7 @@ module Make
 
   and parse_attr env ast =
     match parse_expr (expect_anything env) ast with
-    | Tags l -> l
+    | Tags l -> List.map (fun tag -> ast, tag) l
     | res -> _expected env "tag" ast (Some res)
 
   and parse_attrs env acc = function
@@ -1979,7 +1994,9 @@ module Make
   and parse_app_builtin env ast b args =
     match env.builtins env (Builtin b) with
     | `Not_found -> _unknown_builtin env ast b
-    | #builtin_res as b_res -> builtin_apply_builtin env ast b b_res args
+    | #builtin_infer -> _inferred_builtin env ast b
+    | #builtin_reserved -> _unknown_builtin env ast b
+    | #builtin_common as b -> builtin_apply_common env b ast args
 
   and builtin_apply_common env b ast args =
     match (b : builtin_common) with
@@ -1987,15 +2004,6 @@ module Make
     | `Ty (_meta, f) -> Ty (_wrap2 env ast f ast args)
     | `Term (_meta, f) -> Term (_wrap2 env ast f ast args)
     | `Tags (_meta, f) -> Tags (_wrap2 env ast f ast args)
-
-  and builtin_apply_builtin env ast b b_res args : res =
-    match (b_res : builtin_res) with
-    | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Reserved ((`Solver _ | `Model _)) -> _unknown_builtin env ast b
-    | `Infer _ ->
-      (* TODO: proper erorr.
-         We do not have a map from builtins symbols to typed expressions. *)
-      assert false
 
   and parse_builtin env ast b =
     parse_app_builtin env ast b []
@@ -2347,9 +2355,9 @@ module Make
           check_no_free_wildcards env ast;
           let c = mk_ty_cst env (Id.name id) n in
           List.iter (function
-              | Set (tag, v) -> Ty.Const.set_tag c tag v
-              | Add (tag, v) -> Ty.Const.add_tag c tag v
-              | Hook _ -> assert false (* TODO; proper error *)
+              | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+              | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+              | ast, Hook _ -> _forbidden_hook env ast
             ) tags;
           env, (id, `Type_decl c)
         | `Fun_ty (vars, args, ret) ->
@@ -2357,9 +2365,9 @@ module Make
           let env, ty = finalize_wildcards_ty (`Decl t) env ast ty in
           let f = mk_term_cst env (Id.name id) ty in
           List.iter (function
-              | Set (tag, v) -> T.Const.set_tag f tag v
-              | Add (tag, v) -> T.Const.add_tag f tag v
-              | Hook _ -> assert false (* TODO: proper error *)
+              | _, Set (tag, v) -> T.Const.set_tag f tag v
+              | _, Add (tag, v) -> T.Const.add_tag f tag v
+              | ast, Hook _ -> _forbidden_hook env ast
             ) tags;
           env, (id, `Term_decl f)
       end
@@ -2369,9 +2377,9 @@ module Make
       let n = List.length vars in
       let c = mk_ty_cst env (Id.name id) n in
       List.iter (function
-          | Set (tag, v) -> Ty.Const.set_tag c tag v
-          | Add (tag, v) -> Ty.Const.add_tag c tag v
-          | Hook _ -> assert false (* TODO: proper error *)
+          | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+          | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       env, (id, `Type_decl c)
 
@@ -2469,9 +2477,9 @@ module Make
       assert (params = []);
       let c = mk_ty_cst env (Id.name d.id) (List.length vars) in
       List.iter (function
-          | Set (tag, v) -> Ty.Const.set_tag c tag v
-          | Add (tag, v) -> Ty.Const.add_tag c tag v
-          | Hook _ -> assert false (* TODO: proper error *)
+          | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+          | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       if defs.Stmt.recursive
       then _error env (Defs defs) (Type_def_rec d)
@@ -2483,9 +2491,9 @@ module Make
       let ty = if freshen then Ty.freshen ty else ty in
       let f = mk_term_cst env (Id.name d.id) ty in
       List.iter (function
-          | Set (tag, v) -> T.Const.set_tag f tag v
-          | Add (tag, v) -> T.Const.add_tag f tag v
-          | Hook _ -> assert false (* TODO: proper error *)
+          | _, Set (tag, v) -> T.Const.set_tag f tag v
+          | _, Add (tag, v) -> T.Const.add_tag f tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       decl_term_const env (Def d) d.id f (Defined (env.file, d));
       `Term (d.id, f)

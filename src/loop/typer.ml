@@ -1284,6 +1284,12 @@ module Typer(State : State.S) = struct
       error ~input ~loc st incoherent_type_redefinition (id, cst, reason, n)
     | T.Incoherent_term_redefinition (id, cst, reason, ty) ->
       error ~input ~loc st incoherent_term_redefinition (id, cst, reason, ty)
+    | T.Inferred_builtin b ->
+      error ~input ~loc st Report.Error.internal_error
+        (Format.dprintf "Inferred_builtin %a" Dolmen.Std.Term.print_builtin b)
+    | T.Forbidden_hook ->
+      error ~input ~loc st Report.Error.internal_error
+        (Format.dprintf "Forbidden Hook")
     | T.Unhandled_ast ->
       error ~input ~loc st unhandled_ast (env, fragment)
     (* Alt-Ergo Functional Array errors *)
@@ -1488,7 +1494,7 @@ module Typer(State : State.S) = struct
 
     (* Zipperposition Format
        - no inference of constants
-       - only the base builtin
+       - base + arith builtins
     *)
     | `Logic Zf ->
       let poly = T.Flexible in

@@ -26,6 +26,10 @@ next
   non linearity and other arithmetic restrictions (PR#184)
 - More information for reserved Id, resulting in more precise
   errors when smt2 scripts use reserved ids (PR#193)
+- Expose implicit declarations/definitions that happen during
+  typechecking (PR#199)
+- Treat smtlib `:named` annotations as implicit definitions as
+  required by the spec (PR#199)
 
 ### Loop
 

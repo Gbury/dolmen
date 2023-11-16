@@ -418,6 +418,10 @@ module type Formulas = sig
     | Incoherent_term_redefinition :
         Dolmen.Std.Id.t * term_cst * reason * ty -> Dolmen.Std.Statement.def err
     (** *)
+    | Inferred_builtin : Dolmen.Std.Term.builtin -> Dolmen.Std.Term.t err
+    (** *)
+    | Forbidden_hook : Dolmen.Std.Term.t err
+    (** *)
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Dolmen.Std.Term.t err
     (** *)
     | Unhandled_ast : Dolmen.Std.Term.t err
