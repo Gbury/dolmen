@@ -960,6 +960,12 @@ let illegal_decl =
         Format.fprintf fmt "Illegal declaration.")
     ~name:"Illegal declaration in a file" ()
 
+let illegal_def =
+  Report.Error.mk ~code ~mnemonic:"illegal-def"
+    ~message:(fun fmt () ->
+        Format.fprintf fmt "Illegal definition.")
+    ~name:"Illegal definition" ()
+
 let invalid_push =
   Report.Error.mk ~code ~mnemonic:"invalid-push"
     ~message:(fun fmt () ->
@@ -1136,6 +1142,7 @@ module Typer(State : State.S) = struct
     | Bad_tptp_kind : string option -> Dolmen.Std.Loc.t T.err
     | Missing_smtlib_logic : Dolmen.Std.Loc.t T.err
     | Illegal_decl : Dolmen.Std.Statement.decl T.err
+    | Illegal_def : Dolmen.Std.Loc.t T.err
     | Invalid_push_n : Dolmen.Std.Loc.t T.err
     | Invalid_pop_n : Dolmen.Std.Loc.t T.err
     | Pop_with_empty_stack : Dolmen.Std.Loc.t T.err
@@ -1364,6 +1371,8 @@ module Typer(State : State.S) = struct
     (* Illegal declarations *)
     | Illegal_decl ->
       error ~input ~loc st illegal_decl ()
+    | Illegal_def ->
+      error ~input ~loc st illegal_def ()
     (* Push/Pop errors *)
     | Invalid_push_n ->
       error ~input ~loc st invalid_push ()
@@ -1432,8 +1441,14 @@ module Typer(State : State.S) = struct
     (* Match the language to determine bultins and other options *)
     let lang =
       match lang_of_input input with
-      | `Missing -> assert false
       | #lang as lang -> lang
+      | `Missing ->
+        let st =
+          error st ~input ~loc:{ file; loc; } Report.Error.internal_error
+            (Format.dprintf "Missing input language \
+                             (should have been set during parsing)")
+        in
+        raise (State.Error st)
     in
     let additional_builtins = State.get additional_builtins st st lang in
     match lang with
@@ -1694,7 +1709,6 @@ module Typer(State : State.S) = struct
       stack = [];
     } st
 
-
   let rec push st ~input ?(loc=Dolmen.Std.Loc.no_loc) = function
     | 0 -> st
     | i ->
@@ -1842,18 +1856,19 @@ module Typer(State : State.S) = struct
     let () = check_decl st env parsed_decl typed_decl in
     typed_decl
 
-  (* definitions helpers *)
-  let tr_def ~implicit ~recursive typed_def =
+  (* Definitions helpers, this function should only be called in the context
+     of a typing_wrap function. *)
+  let tr_def env ~implicit ~recursive typed_def =
     match typed_def with
-    | `Type_alias (id, c, vars, body) ->
+    | `Type_alias (loc, id, c, vars, body) ->
       if not recursive && not implicit then begin
         Dolmen.Std.Expr.Ty.alias_to c vars body;
         `Type_alias (id, c, vars, body)
       end else
-        assert false (* TODO: proper exception *)
-    | `Term_def (id, f, vars, params, body) ->
+        T._error env (Located loc) Illegal_def
+    | `Term_def (_loc, id, f, vars, params, body) ->
       `Term_def (id, f, vars, params, body)
-    | `Instanceof (id, f, ty_args, vars, params, body) ->
+    | `Instanceof (_loc, id, f, ty_args, vars, params, body) ->
       `Instanceof (id, f, ty_args, vars, params, body)
 
   let empty_ret ret =
@@ -1861,10 +1876,10 @@ module Typer(State : State.S) = struct
       implicit_defs = [];
       ret; }
 
-  let mk_ret ~f (ret : _ T.ret) =
+  let mk_ret env ~f (ret : _ T.ret) =
     let implicit_decls = ret.implicit_decls in
     let implicit_defs =
-      List.map (tr_def ~implicit:true ~recursive:false) ret.implicit_defs
+      List.map (tr_def env ~implicit:true ~recursive:false) ret.implicit_defs
     in
     let ret = f ret.result in
     { implicit_decls; implicit_defs; ret; }
@@ -1885,7 +1900,7 @@ module Typer(State : State.S) = struct
   let decls (st : State.t) ~input ?loc ?attrs d : state * decl list ret =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
         let ret_decls = T.decls env ?attrs d in
-        mk_ret ret_decls ~f:(List.map2 (tr_decl st env) d.contents)
+        mk_ret env ret_decls ~f:(List.map2 (tr_decl st env) d.contents)
       )
 
   (* Definitions *)
@@ -1894,7 +1909,7 @@ module Typer(State : State.S) = struct
   let defs ~mode st ~input ?loc ?attrs d : state * def list ret =
     typing_wrap ?attrs ?loc ~input st ~f:(fun env ->
         let ret_defs = T.defs ~mode env ?attrs d in
-        mk_ret ret_defs ~f:(List.map (tr_def ~implicit:false ~recursive:d.recursive))
+        mk_ret env ret_defs ~f:(List.map (tr_def env ~implicit:false ~recursive:d.recursive))
       )
 
   (* Wrappers around the Type-checking module *)
@@ -1907,7 +1922,7 @@ module Typer(State : State.S) = struct
       typing_wrap ?attrs ?loc ~input st
         ~f:(fun env ->
             let ret_l = List.map (T.term env) l in
-            let rets = List.map (mk_ret ~f:(fun t -> t)) ret_l in
+            let rets = List.map (mk_ret env ~f:(fun t -> t)) ret_l in
             merge_rets rets
           )
 
@@ -1915,7 +1930,7 @@ module Typer(State : State.S) = struct
     typing_wrap ?attrs ?loc ~input st
       ~f:(fun env ->
           let ret_f = T.formula env t in
-          mk_ret ret_f ~f:(fun f -> f)
+          mk_ret env ret_f ~f:(fun f -> f)
         )
 
   let formulas st ~input ?loc ?attrs l : state * _ ret =
@@ -1925,7 +1940,7 @@ module Typer(State : State.S) = struct
       typing_wrap ?attrs ?loc ~input st
         ~f:(fun env ->
             let ret_l = List.map (T.formula env) l in
-            let rets = List.map (mk_ret ~f:(fun t -> t)) ret_l in
+            let rets = List.map (mk_ret env ~f:(fun t -> t)) ret_l in
             merge_rets rets
           )
 
@@ -2233,7 +2248,7 @@ module Make
         | free_vars ->
           let loc = c.S.loc in
           let f = match l with
-            | [] -> assert false
+            | [] -> Dolmen.Std.Term.false_ ~loc ()
             | [p] -> p
             | _ -> Dolmen.Std.Term.apply ~loc (Dolmen.Std.Term.or_t ~loc ()) l
           in

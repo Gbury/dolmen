@@ -248,9 +248,9 @@ module type Formulas = sig
   ]
 
   type def = [
-    | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
-    | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
-    | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
+    | `Type_alias of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * ty_cst * ty_var list * ty
+    | `Term_def of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
+    | `Instanceof of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
   ]
 
   type implicit = [ decl | def ]

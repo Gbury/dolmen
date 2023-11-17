@@ -623,7 +623,7 @@ module Smtlib2 = struct
                        Type.decl_term_const env (Type.Ast res_ast) bound_id f
                          (Type.Implicit_in_term (Type.file env, res_ast));
                        Type.register_implicit env
-                         (`Term_def (bound_id, f, [], [], t));
+                         (`Term_def (res_ast.loc, bound_id, f, [], [], t));
                        Type.Term (Type.T.apply_cst f [] [])
                      | _ ->
                        assert false

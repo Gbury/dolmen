@@ -281,9 +281,9 @@ module Make
   (** The type of info for top-level declarations *)
 
   type def = [
-    | `Type_alias of Dolmen.Std.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
-    | `Term_def of Dolmen.Std.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
-    | `Instanceof of Dolmen.Std.Id.t * T.Const.t * Ty.t list * Ty.Var.t list * T.Var.t list * T.t
+    | `Type_alias of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
+    | `Term_def of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
+    | `Instanceof of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * T.Const.t * Ty.t list * Ty.Var.t list * T.Var.t list * T.t
   ]
   (** The type of info for top-level definitions *)
 
@@ -2551,10 +2551,10 @@ module Make
       _id_def_conflict env d.loc d.id (with_reason (find_reason env bound) bound)
 
 
-  let id_for_def ~freshen ~mode ~defs tags ssig d =
+  let id_for_def ~freshen ~mode ~defs tags ssig (d : Stmt.def) =
     match mode with
-    | `Create_id -> create_id_for_def ~freshen ~defs tags ssig d
-    | `Use_declared_id -> lookup_id_for_def tags ssig d
+    | `Create_id -> d.loc, create_id_for_def ~freshen ~defs tags ssig d
+    | `Use_declared_id -> d.loc, lookup_id_for_def tags ssig d
 
   let parse_def (env, _vars, _params, ssig) (d : Stmt.def) =
     match ssig, parse_expr env d.body with
@@ -2565,23 +2565,23 @@ module Make
       _expected env "term or a type" d.body (Some ret)
     | _ -> assert false
 
-  let finalize_def id (env, vars, params, _ssig) (ast, ret) =
+  let finalize_def (loc, id) (env, vars, params, _ssig) (ast, ret) =
     check_no_free_wildcards env ast;
     match id, ret with
     (* type alias *)
     | `Ty (id, c), `Ty body ->
       assert (params = []);
       List.iter (check_used_ty_var ~kind:`Type_alias_param env) vars;
-      `Type_alias (id, c, vars, body)
+      `Type_alias (loc, id, c, vars, body)
     (* function definition *)
     | `Term (id, f), `Term body ->
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;
       List.iter (check_used_term_var ~kind:`Function_param env) params;
-      `Term_def (id, f, vars, params, body)
+      `Term_def (loc, id, f, vars, params, body)
     | `Instanceof (id, f, ty_args), `Term body ->
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;
       List.iter (check_used_term_var ~kind:`Function_param env) params;
-      `Instanceof (id, f, ty_args, vars, params, body)
+      `Instanceof (loc, id, f, ty_args, vars, params, body)
     (* error cases *)
     | `Ty _, `Term _
     | (`Term _ | `Instanceof _), `Ty _ -> assert false
