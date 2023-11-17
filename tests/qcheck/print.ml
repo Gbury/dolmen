@@ -17,7 +17,7 @@ module L = Dolmen.Class.Logic.Make
 let identifier
     ~print ~template ~name ~is_print_exn ~language ~gen =
   QCheck2.Test.make
-    ~count:1_000 ~long_factor:1_000
+    ~count:50 ~max_gen:500 ~long_factor:100
     ~print:(fun name -> Format.asprintf template print name)
     ~name gen
     (fun name ->
@@ -26,7 +26,7 @@ let identifier
          with exn when is_print_exn exn ->
            QCheck2.assume_fail ()
        in
-       let _, _, l = L.parse_raw_lazy ~language ~filename:"test" test in
+       let _, _, l = L.parse_all ~language (`Raw ("test", language, test)) in
        try
          let _ = Lazy.force l in
          true

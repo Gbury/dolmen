@@ -97,3 +97,8 @@ val mk_lexbuf :
     contents to be parsed. *)
 
 
+(** {2 In_channel helpers} *)
+
+val read_all : size:int -> in_channel -> string
+(** Read all the contents of an in_channel into a string. *)
+

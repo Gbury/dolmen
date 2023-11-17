@@ -51,21 +51,34 @@ module type S = sig
     string -> language * file * statement list
   (** Given a filename, parse the file, and return the detected language
       together with the list of statements parsed.
+
+      WARNING: please note that this function makes it difficult to report
+               error locations, since exceptions might be raised during parsing
+               and any caller of this function will not have access to the [file]
+               return value of the function, which is necessary to correctly
+               interpret the locations in error exceptions. Instead, please use
+               either {parse_all} or {parse_input}.
+
       @param language specify a language; overrides auto-detection. *)
 
-  val parse_file_lazy :
+  val parse_all :
     ?language:language ->
-    string -> language * file * statement list Lazy.t
-  (** Given a filename, parse the file, and return the detected language
-      together with the list of statements parsed.
-      @param language specify a language; overrides auto-detection. *)
+    [< `File of string
+    | `Stdin of language
+    | `Raw of string * language * string ] ->
+    language * file * statement list Lazy.t
+  (** Full (but lazy) parsing of either a file (see {!parse_file}), stdin
+      (with given language), or some arbitrary contents, of the form
+      [`Raw (filename, language, contents)].
+      Returns a triplet [(lan, file, stmts)], containing:
+      - the language [lan] detected
+      - a [file] value that stores the metadata about file locations
+      - a lazy list of statements [stmts]; forcing this list will run the actual
+        parsing of the whole input given as argument, and may raise errors, if
+        any arises during the parsing (such as lexical errors, etc..)
 
-  val parse_raw_lazy :
-    ?language:language ->
-    filename:string -> string -> language * file * statement list Lazy.t
-  (** Given a filename and a string, parse the string, and return the detected
-      language together with the list of statements parsed.
-      @param language specify a language; overrides auto-detection. *)
+      @param language specify a language for parsing, overrides auto-detection
+      and stdin specification. *)
 
   val parse_input :
     ?language:language ->
@@ -76,9 +89,12 @@ module type S = sig
   (** Incremental parsing of either a file (see {!parse_file}), stdin
       (with given language), or some arbitrary contents, of the form
       [`Raw (filename, language, contents)].
-      Returns a triplet [(lan, gen, cl)], containing
-      the language detexted [lan], a genratro function [gen] for parsing the input,
-      and a cleanup function [cl] to call in order to cleanup the file descriptors.
+      Returns a quadruplet [(lan, file, gen, cl)], containing:
+      - the language [lan] detected
+      - a [file] value that stores the metadata about file locations
+      - a genrator function [gen] for parsing the input,
+      - a cleanup function [cl] to call in order to cleanup the file descriptors
+
       @param language specify a language for parsing, overrides auto-detection
       and stdin specification. *)
 

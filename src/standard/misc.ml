@@ -234,3 +234,25 @@ let mk_lexbuf i =
     set_file buf filename;
     buf, cl
 
+(* Read everything from stdin *)
+(* ************************************************************************* *)
+(* Implementations mostly taken from containers, see
+   https://github.com/c-cube/ocaml-containers/blob/master/src/core/CCIO.ml *)
+
+let read_all ~size ic =
+  let buf = ref (Bytes.create size) in
+  let len = ref 0 in
+  try
+    while true do
+      (* resize *)
+      if !len = Bytes.length !buf then buf := Bytes.extend !buf 0 !len;
+      assert (Bytes.length !buf > !len);
+      let n = input ic !buf !len (Bytes.length !buf - !len) in
+      len := !len + n;
+      if n = 0 then raise Exit
+      (* exhausted *)
+    done;
+    assert false (* never reached*)
+  with Exit ->
+    Bytes.sub_string !buf 0 !len
+

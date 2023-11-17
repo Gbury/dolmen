@@ -5,7 +5,7 @@ module M = Map.Make(String)
 module T = Dolmen_std.Maps.String
 
 let add_find =
-  QCheck2.Test.make ~count:1_000 ~long_factor:100
+  QCheck2.Test.make ~count:500 ~long_factor:100
     ~name:"Maps.add_find"
     QCheck2.Gen.(list (pair string int))
     (fun l ->

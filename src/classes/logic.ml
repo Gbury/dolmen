@@ -24,12 +24,11 @@ module type S = sig
   val parse_file :
     ?language:language ->
     string -> language * file * statement list
-  val parse_file_lazy :
+  val parse_all :
     ?language:language ->
-    string -> language * file * statement list Lazy.t
-  val parse_raw_lazy :
-    ?language:language ->
-    filename:string -> string -> language * file * statement list Lazy.t
+    [< `File of string | `Stdin of language
+    | `Raw of string * language * string ] ->
+    language * file * statement list Lazy.t
   val parse_input :
     ?language:language ->
     [< `File of string | `Stdin of language
@@ -156,15 +155,6 @@ module Make
     let locfile, res = P.parse_file file in
     l, locfile, res
 
-  let parse_file_lazy ?language file =
-    let l, _, (module P : S) =
-      match language with
-      | None -> of_filename file
-      | Some l -> of_language l
-    in
-    let locfile, res = P.parse_file_lazy file in
-    l, locfile, res
-
   let parse_raw_lazy ?language ~filename contents =
     let l, _, (module P : S) =
       match language with
@@ -173,6 +163,28 @@ module Make
     in
     let locfile, res = P.parse_raw_lazy ~filename contents in
     l, locfile, res
+
+  let parse_all ?language = function
+    | `File file ->
+      let l, _, (module P : S) =
+        match language with
+        | None -> of_filename file
+        | Some l -> of_language l
+      in
+      let locfile, res = P.parse_file_lazy file in
+      l, locfile, res
+    | `Raw (filename, l, s) ->
+      let language =
+        match language with Some _ -> language | None -> Some l
+      in
+      parse_raw_lazy ?language ~filename s
+    | `Stdin l ->
+      let filename = "<stdin>" in
+      let s = Dolmen_std.Misc.read_all ~size:1024 stdin in
+      let language =
+        match language with Some _ -> language | None -> Some l
+      in
+      parse_raw_lazy ?language ~filename s
 
   let parse_input ?language = function
     | `File file ->
