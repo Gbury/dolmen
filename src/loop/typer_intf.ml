@@ -280,7 +280,13 @@ module type S = sig
   (** Printing funciton for typechecked statements. *)
 
   val check : state -> Dolmen.Std.Statement.t -> state * typechecked stmt list
-  (** Typechecks a statement. *)
+  (** Typechecks a statement. This returns a list because some languages have implicit
+      declarations and definitions: for intance, tptp has symbol inferrence (which result
+      in implicit declarations), and smtlib has `:named` annotation (which result in implicit
+      definitions). The list is returned in dependency order: implicits declarations/definitions
+      are first in the list, and they should be in an order such that only later statements
+      can depend on earlier statements.
+  *)
 
   val typecheck : state -> Dolmen.Std.Statement.t ->
     state * [ `Continue of typechecked stmt list | `Done of unit ]

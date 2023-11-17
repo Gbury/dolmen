@@ -615,6 +615,7 @@ module Smtlib2 = struct
                        let id = parse_name env named in
                        let path = Type.cst_path env id.name in
                        let f = Type.T.Const.mk path ty in
+                       Type.T.Const.set_tag f Tag.named "";
                        (* Ids in attributes are created with namespace Attr, but named ids
                           are meant to be also used in terms, so we need to tweak the
                           namespace before declaring the binding. *)
@@ -623,7 +624,6 @@ module Smtlib2 = struct
                          (Type.Implicit_in_term (Type.file env, res_ast));
                        Type.register_implicit env
                          (`Term_def (bound_id, f, [], [], t));
-                       Type.T.Const.set_tag f Tag.named "";
                        Type.Term (Type.T.apply_cst f [] [])
                      | _ ->
                        assert false
