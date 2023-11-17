@@ -997,7 +997,7 @@ let incorrect_sexpression =
     ~name:"Incorrect S-expression" ()
 
 let non_closed_named_term =
-  Report.Error.mk ~code ~mnemonic:"non-cloed-named-term"
+  Report.Error.mk ~code ~mnemonic:"non-closed-named-term"
     ~message:(fun fmt (ty_vars, t_vars) ->
         let pp_sep fmt () = Format.fprintf fmt ",@ " in
         Format.fprintf fmt "%a:@ %a%a%a"
