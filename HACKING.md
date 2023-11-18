@@ -85,6 +85,27 @@ just run `make coverage` and it should open the coverage report in a browser
 window for you (via xdg-open).
 
 
+## Guidelines and coding recommandations
+
+This section sums up useful guidelines and recommendations conerning the various
+parts of the code.
+
+### Lexers
+
+- Lexers should alwyas have a fallback case that raises the `Error` exception
+  (else, ocamllex-generated parsers raise weird errors when no match can be found)
+
+### Parsers
+
+- In general, parsers should be as simple as possible and, as much as possible
+  strive to only generate a structured representation of the input, without doing
+  anything smart or semantic-related. Instead, most (if not all) of the processing
+  should be done during typechecking. For instance, if a language does not define
+  a specific syntax rule for equality, and instead just treat equality as a regular
+  application (either a regular prefix application, or a generic infix appllication),
+  then a parser should generate a regular application node (and **not** use the `Equal`
+  builtin).
+
 
 ## Hand-written syntax error messages
 
