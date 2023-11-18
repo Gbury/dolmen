@@ -28,14 +28,13 @@ module type S = sig
       Separates directory and file because most include directives in languages
       are relative to the directory of the original file being processed. *)
 
-  val parse_file : string -> file * statement list
-  (** Parse the whole given file into a list. *)
-
-  val parse_file_lazy : string -> file * statement list Lazy.t
-  (** Parse the whole given file into a list. *)
-
-  val parse_raw_lazy : filename:string -> string -> file * statement list Lazy.t
-  (** Parse the whole given string into a list. *)
+  val parse_all :
+    [ `Stdin | `File of string | `Contents of string * string ] ->
+    file * statement list Lazy.t
+  (** Whole input parsing. Given an input to read (either a file, stdin,
+      or some contents of the form [(filename, s)] where [s] is the contents to parse),
+      returns a lazy list of the parsed statements. Forcing the lazy list may raise
+      an exception if some error occurs during parsing (e.g. lexing or parsing error). *)
 
   val parse_input :
     [ `Stdin | `File of string | `Contents of string * string ] ->

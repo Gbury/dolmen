@@ -341,8 +341,9 @@ module Make(State : State.S) = struct
             let file = { file with loc = file_loc; lang = Some lang; } in
             st, file, gen_finally gen cl
           | Some `Full ->
-            let lang, file_loc, l = Response.parse_raw_lazy ?language:file.lang
-              ~filename contents
+            let lang, file_loc, l =
+              Response.parse_all ?language:file.lang
+              (`Raw (filename, Response.Smtlib2 `Latest, contents))
             in
             let file = { file with loc = file_loc; lang = Some lang; } in
             st, file, gen_of_llist l
@@ -363,7 +364,7 @@ module Make(State : State.S) = struct
                   st, file, gen_finally gen cl
                 | Some `Full ->
                   let lang, file_loc, l =
-                    Response.parse_file_lazy ?language:file.lang filename
+                    Response.parse_all ?language:file.lang (`File filename)
                   in
                   let file = { file with loc = file_loc; lang = Some lang; } in
                   st, file, gen_of_llist l

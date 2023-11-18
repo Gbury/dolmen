@@ -49,7 +49,7 @@ module P =
     (Dolmen.Std.Loc)(Dolmen.Std.Id)(Dolmen.Std.Term)(Dolmen.Std.Statement)
     (Dolmen.Std.Extensions.Smtlib2)
 
-let _ = P.parse_file "example.smt2"
+let _ = P.parse_all (`File "example.smt2")
 ```
 
 For more examples, see the [tutorial](https://github.com/Gbury/dolmen/tree/master/doc/tuto.md).

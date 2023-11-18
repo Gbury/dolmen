@@ -14,6 +14,7 @@ module type S = sig
   exception Extension_not_found of string
   (** Raised when trying to find a language given a file extension. *)
 
+
   (** {2 Supported languages} *)
 
   type language =
@@ -39,27 +40,13 @@ module type S = sig
   val string_of_language : language -> string
   (** String representation of the variant *)
 
+
   (** {2 High-level parsing} *)
 
   val find :
     ?language:language ->
     ?dir:string -> string -> string option
   (** Tries and find the given file, using the language specification. *)
-
-  val parse_file :
-    ?language:language ->
-    string -> language * file * statement list
-  (** Given a filename, parse the file, and return the detected language
-      together with the list of statements parsed.
-
-      WARNING: please note that this function makes it difficult to report
-               error locations, since exceptions might be raised during parsing
-               and any caller of this function will not have access to the [file]
-               return value of the function, which is necessary to correctly
-               interpret the locations in error exceptions. Instead, please use
-               either {parse_all} or {parse_input}.
-
-      @param language specify a language; overrides auto-detection. *)
 
   val parse_all :
     ?language:language ->
@@ -86,7 +73,7 @@ module type S = sig
     | `Stdin of language
     | `Raw of string * language * string ] ->
     language * file * (unit -> statement option) * (unit -> unit)
-  (** Incremental parsing of either a file (see {!parse_file}), stdin
+  (** Incremental parsing of either a file, stdin
       (with given language), or some arbitrary contents, of the form
       [`Raw (filename, language, contents)].
       Returns a quadruplet [(lan, file, gen, cl)], containing:
