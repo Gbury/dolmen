@@ -106,14 +106,14 @@ module Make
   type tag =
     | Set : 'a Tag.t * 'a -> tag
     | Add : 'a list Tag.t * 'a -> tag
+    | Hook : (Ast.t -> res -> res) -> tag
 
   (* Result of parsing an expression *)
-  type res =
+  and res =
     | Ttype
     | Ty    of Ty.t
     | Term  of T.t
     | Tags  of tag list
-
 
   (* Wrapper around potential function symbols in Dolmen *)
   type symbol = Intf.symbol =
@@ -266,7 +266,6 @@ module Make
     | `Builtin of builtin_res
   ]
 
-
   type var_kind = [
     | `Let_bound
     | `Quantified
@@ -274,6 +273,23 @@ module Make
     | `Type_alias_param
   ]
   (** The type of kinds of variables *)
+
+  type decl = [
+    | `Type_decl of Ty.Const.t * Ty.def option
+    | `Term_decl of T.Const.t
+  ]
+  (** The type of info for top-level declarations *)
+
+  type def = [
+    | `Type_alias of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * Ty.Const.t * Ty.Var.t list * Ty.t
+    | `Term_def of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * T.Const.t * Ty.Var.t list * T.Var.t list * T.t
+    | `Instanceof of Dolmen.Std.Loc.t * Dolmen.Std.Id.t * T.Const.t * Ty.t list * Ty.Var.t list * T.Var.t list * T.t
+  ]
+  (** The type of info for top-level definitions *)
+
+  type implicit = [ decl | def ]
+  (** Convenient alias for implicit declarations/definitions. *)
+
 
   (* Maps & Hashtbls *)
   (* ************************************************************************ *)
@@ -388,6 +404,8 @@ module Make
         Id.t * Ty.Const.t * reason * int -> Stmt.def err
     | Incoherent_term_redefinition :
         Id.t * T.Const.t * reason * Ty.t -> Stmt.def err
+    | Inferred_builtin : Ast.builtin -> Ast.t err
+    | Forbidden_hook : Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
     | Unhandled_ast : Ast.t err
 
@@ -417,10 +435,12 @@ module Make
     mutable field_locs : reason V.t;
     (* stores reasons for typing record fields *)
 
+    mutable implicits : implicit list;
+    (** Stores the ids that have been implicitly declared/defined *)
+
     mutable custom : Hmap.map;
     (* heterogeneous map for theories to store custom information,
        all the while being kept in sync with changes in the global state. *)
-
   }
 
   (* The local environments used for type-checking. *)
@@ -527,6 +547,8 @@ module Make
   let _error env fragment e =
     raise (Typing_error (Error (env, fragment, e)))
 
+  let file env = env.file
+
   let loc env loc : Loc.full =
     { file = env.file; loc; }
 
@@ -548,7 +570,7 @@ module Make
 
   let rec find_pattern_ast pat asts parsed =
     match asts, parsed with
-    | [], _ | _, [] -> assert false
+    | [], _ | _, [] -> assert false (* internal invariant *)
     | (ast, _) :: r, (t, _) :: r' ->
       if pat == t then ast else find_pattern_ast pat r r'
 
@@ -736,6 +758,12 @@ module Make
     _error env (Def def)
       (Incoherent_term_redefinition (def.id, cst, reason, ty))
 
+  let _inferred_builtin env ast b =
+    _error env (Ast ast) (Inferred_builtin b)
+
+  let _forbidden_hook env ast =
+    _error env (Ast ast) Forbidden_hook
+
   let _wrap_exn env ast = function
     | Ty.Prenex_polymorphism ty ->
       _non_prenex_polymorphism env ast ty
@@ -790,6 +818,7 @@ module Make
     dstrs_locs = S.empty;
     field_locs = V.empty;
     custom = Hmap.empty;
+    implicits = [];
   }
 
   let copy_state st = {
@@ -800,6 +829,7 @@ module Make
     cstrs_locs = st.cstrs_locs;
     dstrs_locs = st.dstrs_locs;
     field_locs = st.field_locs;
+    implicits = st.implicits;
   }
 
   (* Var/Const creation *)
@@ -812,6 +842,7 @@ module Make
 
   let cst_path _env name =
     match (name : Dolmen.Std.Name.t) with
+    (* TODO; proper error *)
     | Indexed _ -> assert false
     | Simple name ->
       Dolmen.Std.Path.global name
@@ -829,6 +860,9 @@ module Make
 
   let mk_term_cst env name ty =
     T.Const.mk (cst_path env name) ty
+
+  let register_implicit env (implicit : implicit) =
+    env.st.implicits <- implicit :: env.st.implicits
 
 
   (* Const declarations *)
@@ -1132,6 +1166,9 @@ module Make
     (* variables should not be declare-able nor builtin *)
     | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
+      (* this should never happen, and we could simply do nothing in this case;
+         the assert is there to see if it can happen and what kind of situation
+         would trigger that. *)
       assert false
 
   let find_term_var_reason env v =
@@ -1146,6 +1183,9 @@ module Make
        and we do not use any term wildcards. *)
     | Builtin | Reserved _ | Declared _ | Defined _
     | Implicit_in_def _ | Implicit_in_decl _ | Implicit_in_term _ ->
+      (* this should never happen, and we could simply do nothing in this case;
+         the assert is there to see if it can happen and what kind of situation
+         would trigger that. *)
       assert false
 
 
@@ -1524,15 +1564,16 @@ module Make
     | ast -> _error env (Ast ast) Unhandled_ast
 
   and apply_attr env res ast l =
-    let () = List.iter (function
-        | Set (tag, v) -> set_tag env ast tag v res
-        | Add (tag, v) -> add_tag env ast tag v res
-      ) (parse_attrs env [] l) in
-    res
+    List.fold_left (fun res (_ast, tag) ->
+        match (tag : tag) with
+        | Set (tag, v) -> set_tag env ast tag v res; res
+        | Add (tag, v) -> add_tag env ast tag v res; res
+        | Hook f -> f ast res
+      ) res (parse_attrs env [] l)
 
   and parse_attr env ast =
     match parse_expr (expect_anything env) ast with
-    | Tags l -> l
+    | Tags l -> List.map (fun tag -> ast, tag) l
     | res -> _expected env "tag" ast (Some res)
 
   and parse_attrs env acc = function
@@ -1953,7 +1994,9 @@ module Make
   and parse_app_builtin env ast b args =
     match env.builtins env (Builtin b) with
     | `Not_found -> _unknown_builtin env ast b
-    | #builtin_res as b_res -> builtin_apply_builtin env ast b b_res args
+    | #builtin_infer -> _inferred_builtin env ast b
+    | #builtin_reserved -> _unknown_builtin env ast b
+    | #builtin_common as b -> builtin_apply_common env b ast args
 
   and builtin_apply_common env b ast args =
     match (b : builtin_common) with
@@ -1961,15 +2004,6 @@ module Make
     | `Ty (_meta, f) -> Ty (_wrap2 env ast f ast args)
     | `Term (_meta, f) -> Term (_wrap2 env ast f ast args)
     | `Tags (_meta, f) -> Tags (_wrap2 env ast f ast args)
-
-  and builtin_apply_builtin env ast b b_res args : res =
-    match (b_res : builtin_res) with
-    | #builtin_common as b -> builtin_apply_common env b ast args
-    | `Reserved ((`Solver _ | `Model _)) -> _unknown_builtin env ast b
-    | `Infer _ ->
-      (* TODO: proper erorr.
-         We do not have a map from builtins symbols to typed expressions. *)
-      assert false
 
   and parse_builtin env ast b =
     parse_app_builtin env ast b []
@@ -2068,6 +2102,7 @@ module Make
           let n = List.length args in
           let f = mk_ty_cst env (Id.name s) n in
           decl_ty_const env (Ast ast) s f (Inferred (env.file, s_ast));
+          register_implicit env (`Type_decl (f, None));
           sym_infer.sym_hook (`Ty_cst f);
           parse_app_ty_cst env ast f args
         end
@@ -2090,6 +2125,7 @@ module Make
                 sym.inferred_ty <- f_ty;
                 let f = mk_term_cst env (Id.name s) f_ty in
                 decl_term_const env (Ast ast) s f (Inferred (env.file, s_ast));
+                register_implicit env (`Term_decl f);
                 sym_infer.sym_hook (`Term_cst f);
                 f
               | _ -> assert false
@@ -2169,6 +2205,27 @@ module Make
     | t ->
       let ty = parse_ty env t in
       ty, None
+
+  (* Helpers for toplevel exposed functions *)
+  (* ************************************************************************ *)
+
+  type 'a ret = {
+    implicit_decls : decl list;
+    implicit_defs : def list;
+    result : 'a;
+  }
+
+  let mk_ret env result =
+    let implicits = env.st.implicits in
+    env.st.implicits <- [];
+    let implicit_decls, implicit_defs =
+      List.fold_left (fun (decls, defs) implicit ->
+          match (implicit : implicit) with
+          | #decl as d -> d :: decls, defs
+          | #def as d -> decls, d :: defs
+        ) ([], []) implicits
+    in
+    { implicit_decls; implicit_defs; result; }
 
 
   (* Typechecking mutually recursive datatypes *)
@@ -2298,8 +2355,9 @@ module Make
           check_no_free_wildcards env ast;
           let c = mk_ty_cst env (Id.name id) n in
           List.iter (function
-              | Set (tag, v) -> Ty.Const.set_tag c tag v
-              | Add (tag, v) -> Ty.Const.add_tag c tag v
+              | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+              | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+              | ast, Hook _ -> _forbidden_hook env ast
             ) tags;
           env, (id, `Type_decl c)
         | `Fun_ty (vars, args, ret) ->
@@ -2307,8 +2365,9 @@ module Make
           let env, ty = finalize_wildcards_ty (`Decl t) env ast ty in
           let f = mk_term_cst env (Id.name id) ty in
           List.iter (function
-              | Set (tag, v) -> T.Const.set_tag f tag v
-              | Add (tag, v) -> T.Const.add_tag f tag v
+              | _, Set (tag, v) -> T.Const.set_tag f tag v
+              | _, Add (tag, v) -> T.Const.add_tag f tag v
+              | ast, Hook _ -> _forbidden_hook env ast
             ) tags;
           env, (id, `Term_decl f)
       end
@@ -2318,8 +2377,9 @@ module Make
       let n = List.length vars in
       let c = mk_ty_cst env (Id.name id) n in
       List.iter (function
-          | Set (tag, v) -> Ty.Const.set_tag c tag v
-          | Add (tag, v) -> Ty.Const.add_tag c tag v
+          | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+          | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       env, (id, `Type_decl c)
 
@@ -2328,40 +2388,43 @@ module Make
     | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared (env.file, t))
     | `Term_decl f -> decl_term_const env (Decl t) id f (Declared (env.file, t))
 
-  let decls env ?(attrs=[]) (d: Stmt.decl Stmt.group) =
+  let decls env ?(attrs=[]) (d: Stmt.decl Stmt.group) : decl list ret =
     let tags =
       List.flatten @@ List.map (fun ast ->
-        let l = parse_attr env ast in
-        check_no_free_wildcards env ast;
-        l
+          let l = parse_attr env ast in
+          check_no_free_wildcards env ast;
+          l
         ) attrs
     in
-    if d.recursive then begin
-      (* Check well-foundedness *)
-      check_well_founded env d d.contents;
-      (* First pre-parse all definitions and generate the typed symbols for them *)
-      let env, parsed = Misc.Lists.fold_left_map (parse_decl tags) env d.contents in
-      (* Then, since the decls are recursive, register in the global env the type
-         const for each decl before fully parsing and defining them. *)
-      let () = List.iter2 (record_decl env) parsed d.contents in
-      (* Then parse the complete type definition and define them.
-         TODO: parse (and thus define them with T) in the topological order
-             defined by the well-founded check ? *)
-      let defs = List.map2 (define_decl env) parsed d.contents in
-      (* Return the defined types *)
-      defs
-    end else begin
-      List.map (fun t ->
-          (* First pre-parse all definitions and generate the typed symbols for them *)
-          let env, parsed = parse_decl tags env t in
-          (* Then parse the complete type definition and define them. *)
-          let def = define_decl env parsed t in
-          (* Finally record them in the state *)
-          let () = record_decl env parsed t in
-          (* return *)
-          def
-        ) d.contents
-    end
+    let decls =
+      if d.recursive then begin
+        (* Check well-foundedness *)
+        check_well_founded env d d.contents;
+        (* First pre-parse all definitions and generate the typed symbols for them *)
+        let env, parsed = Misc.Lists.fold_left_map (parse_decl tags) env d.contents in
+        (* Then, since the decls are recursive, register in the global env the type
+           const for each decl before fully parsing and defining them. *)
+        let () = List.iter2 (record_decl env) parsed d.contents in
+        (* Then parse the complete type definition and define them.
+           TODO: parse (and thus define them with T) in the topological order
+               defined by the well-founded check ? *)
+        let defs = List.map2 (define_decl env) parsed d.contents in
+        (* Return the defined types *)
+        defs
+      end else begin
+        List.map (fun t ->
+            (* First pre-parse all definitions and generate the typed symbols for them *)
+            let env, parsed = parse_decl tags env t in
+            (* Then parse the complete type definition and define them. *)
+            let def = define_decl env parsed t in
+            (* Finally record them in the state *)
+            let () = record_decl env parsed t in
+            (* return *)
+            def
+          ) d.contents
+      end
+    in
+    mk_ret env decls
 
   (* Definitions *)
   (* ************************************************************************ *)
@@ -2414,8 +2477,9 @@ module Make
       assert (params = []);
       let c = mk_ty_cst env (Id.name d.id) (List.length vars) in
       List.iter (function
-          | Set (tag, v) -> Ty.Const.set_tag c tag v
-          | Add (tag, v) -> Ty.Const.add_tag c tag v
+          | _, Set (tag, v) -> Ty.Const.set_tag c tag v
+          | _, Add (tag, v) -> Ty.Const.add_tag c tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       if defs.Stmt.recursive
       then _error env (Defs defs) (Type_def_rec d)
@@ -2427,8 +2491,9 @@ module Make
       let ty = if freshen then Ty.freshen ty else ty in
       let f = mk_term_cst env (Id.name d.id) ty in
       List.iter (function
-          | Set (tag, v) -> T.Const.set_tag f tag v
-          | Add (tag, v) -> T.Const.add_tag f tag v
+          | _, Set (tag, v) -> T.Const.set_tag f tag v
+          | _, Add (tag, v) -> T.Const.add_tag f tag v
+          | ast, Hook _ -> _forbidden_hook env ast
         ) tags;
       decl_term_const env (Def d) d.id f (Defined (env.file, d));
       `Term (d.id, f)
@@ -2486,10 +2551,10 @@ module Make
       _id_def_conflict env d.loc d.id (with_reason (find_reason env bound) bound)
 
 
-  let id_for_def ~freshen ~mode ~defs tags ssig d =
+  let id_for_def ~freshen ~mode ~defs tags ssig (d : Stmt.def) =
     match mode with
-    | `Create_id -> create_id_for_def ~freshen ~defs tags ssig d
-    | `Use_declared_id -> lookup_id_for_def tags ssig d
+    | `Create_id -> d.loc, create_id_for_def ~freshen ~defs tags ssig d
+    | `Use_declared_id -> d.loc, lookup_id_for_def tags ssig d
 
   let parse_def (env, _vars, _params, ssig) (d : Stmt.def) =
     match ssig, parse_expr env d.body with
@@ -2500,29 +2565,30 @@ module Make
       _expected env "term or a type" d.body (Some ret)
     | _ -> assert false
 
-  let finalize_def id (env, vars, params, _ssig) (ast, ret) =
+  let finalize_def (loc, id) (env, vars, params, _ssig) (ast, ret) =
     check_no_free_wildcards env ast;
     match id, ret with
     (* type alias *)
     | `Ty (id, c), `Ty body ->
       assert (params = []);
       List.iter (check_used_ty_var ~kind:`Type_alias_param env) vars;
-      `Type_alias (id, c, vars, body)
+      `Type_alias (loc, id, c, vars, body)
     (* function definition *)
     | `Term (id, f), `Term body ->
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;
       List.iter (check_used_term_var ~kind:`Function_param env) params;
-      `Term_def (id, f, vars, params, body)
+      `Term_def (loc, id, f, vars, params, body)
     | `Instanceof (id, f, ty_args), `Term body ->
       List.iter (check_used_ty_var ~kind:`Function_param env) vars;
       List.iter (check_used_term_var ~kind:`Function_param env) params;
-      `Instanceof (id, f, ty_args, vars, params, body)
+      `Instanceof (loc, id, f, ty_args, vars, params, body)
     (* error cases *)
     | `Ty _, `Term _
     | (`Term _ | `Instanceof _), `Ty _ -> assert false
 
-  let defs ?(mode=`Create_id) env ?(attrs=[]) (d : Stmt.defs) =
+  let defs ?(mode=`Create_id) env ?(attrs=[]) (d : Stmt.defs) : def list ret =
     let tags = parse_attrs env [] attrs in
+    let defs =
     if d.recursive then begin
       let envs = List.map (fun _ -> split_env_for_def env) d.contents in
       let sigs = List.map2 parse_def_sig envs d.contents in
@@ -2540,13 +2606,20 @@ module Make
           finalize_def id ssig def
         ) d.contents
     end
+    in
+    mk_ret env defs
 
   (* High-level parsing function *)
   (* ************************************************************************ *)
 
-  let parse env ast =
+  let term env ast : _ ret =
+    let res = parse_term env ast in
+    let env, res = finalize_wildcards_prop (`Term ast) env ast res in
+    mk_ret env res
+
+  let formula env ast : _ ret =
     let res = parse_prop env ast in
-    let _env, res = finalize_wildcards_prop (`Term ast) env ast res in
-    res
+    let env, res = finalize_wildcards_prop (`Term ast) env ast res in
+    mk_ret env res
 
 end

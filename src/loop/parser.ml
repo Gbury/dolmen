@@ -110,7 +110,6 @@ module Make(State : State.S) = struct
   (* Helper functions *)
   (* ************************************************************************ *)
 
-
   let gen_of_llist l =
     let l = ref l in
     (fun () -> match Lazy.force !l with

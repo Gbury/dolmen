@@ -170,7 +170,7 @@ module Error = struct
   let internal_error =
     mk ~code:Code.bug ~mnemonic:"internal-error"
       ~message:(fun fmt t ->
-          Format.fprintf fmt "%t" t)
+          Format.fprintf fmt "@[<v>%t@ Please report upstream, ^^@]" t)
       ~name:"Internal Error" ()
 
   let uncaught_exn =

@@ -79,6 +79,7 @@ module Smtlib2 : sig
 
     type _ Type.err +=
       | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
+      | Non_closed_named_term : Type.Ty.Var.t list * Type.T.Var.t list -> Dolmen.Std.Term.t Type.err
 
     val inferred_model_constants : Type.T.Const.t list Dolmen.Std.Tag.t
 

@@ -47,6 +47,9 @@ module Lists : sig
   val fold_left_map : ('a -> 'b -> 'a * 'c) -> 'a -> 'b list -> 'a * 'c list
   (** Same as {!List.fold_left_map} (which is onlt available for ocaml >= 4.11). *)
 
+  val split3 : ('a * 'b * 'c) list -> 'a list * 'b list * 'c list
+  (** Similar to [List.split] but for triplets. *)
+
 end
 
 (** String helper *)
