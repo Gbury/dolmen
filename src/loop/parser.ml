@@ -192,11 +192,20 @@ module Make(State : State.S) = struct
       st, None
 
   let parse_stdin st (file : Logic.language file) =
-    let lang, file_loc, gen, _ = Logic.parse_input
-        ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
-    in
-    let file = { file with loc = file_loc; lang = Some lang; } in
-    st, file, gen
+    match file.mode with
+    | None
+    | Some `Incremental ->
+      let lang, file_loc, gen, _ = Logic.parse_input
+          ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
+      in
+      let file = { file with loc = file_loc; lang = Some lang; } in
+      st, file, gen
+    | Some `Full ->
+      let lang, file_loc, l = Logic.parse_all
+          ?language:file.lang (`Stdin (Logic.Smtlib2 `Latest))
+      in
+      let file = { file with loc = file_loc; lang = Some lang; } in
+      st, file, gen_of_llist l
 
   let parse_file st source (file : Logic.language file) lang =
     (* Parse the input *)
@@ -210,8 +219,8 @@ module Make(State : State.S) = struct
         let file = { file with loc = file_loc; lang = Some lang; } in
         st, file, gen_finally gen cl
       | Some `Full ->
-        let lang, file_loc, l = Logic.parse_raw_lazy ~language:lang
-          ~filename contents
+        let lang, file_loc, l = Logic.parse_all
+            ~language:lang (`Raw (filename, lang, contents))
         in
         let file = { file with loc = file_loc; lang = Some lang; } in
         st, file, gen_of_llist l
@@ -332,8 +341,9 @@ module Make(State : State.S) = struct
             let file = { file with loc = file_loc; lang = Some lang; } in
             st, file, gen_finally gen cl
           | Some `Full ->
-            let lang, file_loc, l = Response.parse_raw_lazy ?language:file.lang
-              ~filename contents
+            let lang, file_loc, l =
+              Response.parse_all ?language:file.lang
+              (`Raw (filename, Response.Smtlib2 `Latest, contents))
             in
             let file = { file with loc = file_loc; lang = Some lang; } in
             st, file, gen_of_llist l
@@ -354,7 +364,7 @@ module Make(State : State.S) = struct
                   st, file, gen_finally gen cl
                 | Some `Full ->
                   let lang, file_loc, l =
-                    Response.parse_file_lazy ?language:file.lang filename
+                    Response.parse_all ?language:file.lang (`File filename)
                   in
                   let file = { file with loc = file_loc; lang = Some lang; } in
                   st, file, gen_of_llist l
@@ -401,7 +411,7 @@ module Make(State : State.S) = struct
                 let st = set_logic_file st new_logic_file in
                 st, `Gen (merge, wrap_parser ~file:new_logic_file (gen_finally gen cl))
               | Some `Full ->
-                let lang, file_loc, l = Logic.parse_file_lazy ?language file in
+                let lang, file_loc, l = Logic.parse_all ?language (`File file) in
                 let new_logic_file = { logic_file with loc = file_loc; lang = Some lang; } in
                 let st = set_logic_file st new_logic_file in
                 st, `Gen (merge, wrap_parser ~file:new_logic_file (gen_of_llist l))

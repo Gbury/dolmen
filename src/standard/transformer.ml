@@ -130,36 +130,9 @@ module Make
   (* Instantiations of the parsing loop
      ---------------------------------- *)
 
-  let parse_file file =
-    let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
-    let locfile = Loc.mk_file file in
-    let newline = Loc.newline locfile in
-    let sync = Loc.update_size locfile in
-    let k_exn () = cleanup () in
-    let res = parse_aux ~k_exn newline sync lexbuf Parser.file () in
-    let () = cleanup () in
-    locfile, res
-
-  let parse_file_lazy file =
-    let lexbuf, cleanup = Misc.mk_lexbuf (`File file) in
-    let locfile = Loc.mk_file file in
-    let newline = Loc.newline locfile in
-    let sync = Loc.update_size locfile in
-    let k_exn () = cleanup () in
-    let res =
-      lazy (
-        let res =
-          parse_aux ~k_exn newline sync lexbuf Parser.file ()
-        in
-        let () = cleanup () in
-        res
-      )
-    in
-    locfile, res
-
-  let parse_raw_lazy ~filename contents =
-    let lexbuf, cleanup = Misc.mk_lexbuf (`Contents (filename, contents)) in
-    let locfile = Loc.mk_file filename in
+  let parse_all i =
+    let lexbuf, cleanup = Misc.mk_lexbuf i in
+    let locfile = Loc.mk_file (Misc.filename_of_input i) in
     let newline = Loc.newline locfile in
     let sync = Loc.update_size locfile in
     let k_exn () = cleanup () in

@@ -31,8 +31,12 @@ let test file =
   (* Parse the file, and we get a tuple:
     - format: the guessed format (according to the file extension)
     - loc: some meta-data used for source file locations
-    - statements: the list of top-level directives found in the file *)
-  let format, loc, parsed_statements = Logic.parse_file file in
+    - statements: a lazy list of top-level directives found in the file *)
+  let format, loc, parsed_statements_lazy = Logic.parse_all (`File file) in
+
+  (* Any lexing/parsing error will be raised when forcing the lazy list
+     of statements *)
+  let parsed_statements = Lazy.force parsed_statements_lazy in
 
   (* You can match on the detected format of the input *)
   let () =
