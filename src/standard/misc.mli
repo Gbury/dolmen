@@ -96,9 +96,3 @@ val mk_lexbuf :
     stream (to report errors), and then a string with the actual
     contents to be parsed. *)
 
-
-(** {2 In_channel helpers} *)
-
-val read_all : size:int -> in_channel -> string
-(** Read all the contents of an in_channel into a string. *)
-
