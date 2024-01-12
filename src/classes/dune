@@ -13,7 +13,7 @@
     dolmen_smtlib2_poly
     dolmen_smtlib2_v6 dolmen_smtlib2_v6_script dolmen_smtlib2_v6_response
     ; TPTP & versions
-    dolmen_tptp dolmen_tptp_v6_3_0
+    dolmen_tptp dolmen_tptp_v6_3_0 dolmen_tptp_v8_2_0
     ; Menhir deps
     menhirLib)
   (modules Logic Response)

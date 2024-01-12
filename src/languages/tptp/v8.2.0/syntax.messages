@@ -1,0 +1,4711 @@
+file: XOR
+##
+## Ends in an error in state: 0.
+##
+## file' -> . file [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI XOR
+##
+## Ends in an error in state: 1.
+##
+## tpi_annotated -> TPI . LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN XOR
+##
+## Ends in an error in state: 2.
+##
+## tpi_annotated -> TPI LEFT_PAREN . name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 6.
+##
+## tpi_annotated -> TPI LEFT_PAREN name . COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 7.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA . formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 9.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role . COMMA tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 10.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA . tpi_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT XOR
+##
+## Ends in an error in state: 17.
+##
+## let_term -> LET_TT . LEFT_PAREN tff_let_term_defn COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN XOR
+##
+## Ends in an error in state: 18.
+##
+## let_term -> LET_TT LEFT_PAREN . tff_let_term_defn COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TT LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT XOR
+##
+## Ends in an error in state: 19.
+##
+## let_term -> LET_FT . LEFT_PAREN tff_let_formula_defn COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN XOR
+##
+## Ends in an error in state: 20.
+##
+## let_term -> LET_FT LEFT_PAREN . tff_let_formula_defn COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FT LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN LEFT_PAREN XOR
+##
+## Ends in an error in state: 21.
+##
+## tff_let_formula_binding -> LEFT_PAREN . tff_let_formula_binding RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T XOR
+##
+## Ends in an error in state: 22.
+##
+## conditional_term -> ITE_T . LEFT_PAREN tff_logic_formula COMMA term COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN XOR
+##
+## Ends in an error in state: 23.
+##
+## conditional_term -> ITE_T LEFT_PAREN . tff_logic_formula COMMA term COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF XOR
+##
+## Ends in an error in state: 24.
+##
+## tff_let -> LET_TF . LEFT_PAREN tff_let_term_defn COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN XOR
+##
+## Ends in an error in state: 25.
+##
+## tff_let -> LET_TF LEFT_PAREN . tff_let_term_defn COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN LEFT_PAREN XOR
+##
+## Ends in an error in state: 26.
+##
+## tff_let_term_binding -> LEFT_PAREN . tff_let_term_binding RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD UPPER_WORD
+##
+## Ends in an error in state: 32.
+##
+## constant -> tptp_functor . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LESS LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+## plain_term -> tptp_functor . LEFT_PAREN arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## tptp_functor
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD LEFT_PAREN XOR
+##
+## Ends in an error in state: 33.
+##
+## plain_term -> tptp_functor LEFT_PAREN . arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## tptp_functor LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD LEFT_PAREN DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 34.
+##
+## arguments -> term . [ RIGHT_PAREN ]
+## arguments -> term . COMMA arguments [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD LEFT_PAREN DISTINCT_OBJECT COMMA XOR
+##
+## Ends in an error in state: 35.
+##
+## arguments -> term COMMA . arguments [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## term COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD UPPER_WORD
+##
+## Ends in an error in state: 37.
+##
+## system_constant -> system_functor . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+## system_term -> system_functor . LEFT_PAREN arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## system_functor
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD LEFT_PAREN XOR
+##
+## Ends in an error in state: 38.
+##
+## system_term -> system_functor LEFT_PAREN . arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## system_functor LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD UPPER_WORD
+##
+## Ends in an error in state: 50.
+##
+## defined_constant -> defined_functor . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+## defined_plain_term -> defined_functor . LEFT_PAREN arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## defined_functor
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD LEFT_PAREN XOR
+##
+## Ends in an error in state: 51.
+##
+## defined_plain_term -> defined_functor LEFT_PAREN . arguments RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## defined_functor LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 67.
+##
+## tff_let_term_binding -> LEFT_PAREN tff_let_term_binding . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_let_term_binding
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 69.
+##
+## tff_let_term_binding -> term . EQUAL term [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN DISTINCT_OBJECT EQUAL XOR
+##
+## Ends in an error in state: 70.
+##
+## tff_let_term_binding -> term EQUAL . term [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term EQUAL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN FORALL XOR
+##
+## Ends in an error in state: 72.
+##
+## tff_let_term_defn -> FORALL . LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON tff_let_term_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN FORALL LEFT_BRACKET XOR
+##
+## Ends in an error in state: 73.
+##
+## tff_let_term_defn -> FORALL LEFT_BRACKET . tff_variable_list RIGHT_BRACKET COLON tff_let_term_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD XOR
+##
+## Ends in an error in state: 74.
+##
+## tff_typed_variable -> variable . COLON tff_atomic_type [ RIGHT_BRACKET COMMA ]
+## tff_variable -> variable . [ RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## variable
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COLON XOR
+##
+## Ends in an error in state: 75.
+##
+## tff_typed_variable -> variable COLON . tff_atomic_type [ RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## variable COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD XOR
+##
+## Ends in an error in state: 79.
+##
+## tff_atomic_type -> atomic_word . [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ARROW ]
+## tff_atomic_type -> atomic_word . LEFT_PAREN tff_type_arguments RIGHT_PAREN [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ARROW ]
+##
+## The known suffix of the stack is as follows:
+## atomic_word
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD LEFT_PAREN XOR
+##
+## Ends in an error in state: 80.
+##
+## tff_atomic_type -> atomic_word LEFT_PAREN . tff_type_arguments RIGHT_PAREN [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ARROW ]
+##
+## The known suffix of the stack is as follows:
+## atomic_word LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD LEFT_PAREN LOWER_WORD STAR
+##
+## Ends in an error in state: 83.
+##
+## tff_type_arguments -> tff_atomic_type . [ RIGHT_PAREN ]
+## tff_type_arguments -> tff_atomic_type . COMMA tff_type_arguments [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_atomic_type
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 79, spurious reduction of production tff_atomic_type -> atomic_word
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD LEFT_PAREN LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 84.
+##
+## tff_type_arguments -> tff_atomic_type COMMA . tff_type_arguments [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_atomic_type COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN FORALL LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 88.
+##
+## tff_let_term_defn -> FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET . COLON tff_let_term_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN FORALL LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON XOR
+##
+## Ends in an error in state: 89.
+##
+## tff_let_term_defn -> FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON . tff_let_term_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COLON DOLLAR_WORD XOR
+##
+## Ends in an error in state: 92.
+##
+## tff_variable_list -> tff_variable . [ RIGHT_BRACKET ]
+## tff_variable_list -> tff_variable . COMMA tff_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## tff_variable
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COMMA XOR
+##
+## Ends in an error in state: 93.
+##
+## tff_variable_list -> tff_variable COMMA . tff_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## tff_variable COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 96.
+##
+## tff_let -> LET_TF LEFT_PAREN tff_let_term_defn . COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN tff_let_term_defn
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT COMMA XOR
+##
+## Ends in an error in state: 97.
+##
+## tff_let -> LET_TF LEFT_PAREN tff_let_term_defn COMMA . tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN tff_let_term_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF XOR
+##
+## Ends in an error in state: 98.
+##
+## tff_let -> LET_FF . LEFT_PAREN tff_let_formula_defn COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN XOR
+##
+## Ends in an error in state: 99.
+##
+## tff_let -> LET_FF LEFT_PAREN . tff_let_formula_defn COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN FORALL XOR
+##
+## Ends in an error in state: 100.
+##
+## tff_let_formula_defn -> FORALL . LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON tff_let_formula_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN FORALL LEFT_BRACKET XOR
+##
+## Ends in an error in state: 101.
+##
+## tff_let_formula_defn -> FORALL LEFT_BRACKET . tff_variable_list RIGHT_BRACKET COLON tff_let_formula_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN FORALL LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 103.
+##
+## tff_let_formula_defn -> FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET . COLON tff_let_formula_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN FORALL LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON XOR
+##
+## Ends in an error in state: 104.
+##
+## tff_let_formula_defn -> FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON . tff_let_formula_defn [ COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 107.
+##
+## defined_infix_formula -> term . defined_infix_pred term [ VLINE RIGHT_PAREN EQUIV COMMA ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD EQUAL XOR
+##
+## Ends in an error in state: 110.
+##
+## defined_infix_formula -> term defined_infix_pred . term [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## term defined_infix_pred
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD STAR
+##
+## Ends in an error in state: 112.
+##
+## function_term -> system_term . [ NOT_EQUAL EQUAL ]
+## system_atomic_formula -> system_term . [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## system_term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 37, spurious reduction of production system_constant -> system_functor
+## In state 39, spurious reduction of production system_term -> system_constant
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD STAR
+##
+## Ends in an error in state: 114.
+##
+## function_term -> plain_term . [ NOT_EQUAL EQUAL ]
+## plain_atomic_formula -> plain_term . [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## plain_term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 32, spurious reduction of production constant -> tptp_functor
+## In state 55, spurious reduction of production plain_term -> constant
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD STAR
+##
+## Ends in an error in state: 116.
+##
+## defined_atomic_term -> defined_plain_term . [ NOT_EQUAL EQUAL ]
+## defined_plain_formula -> defined_plain_term . [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## defined_plain_term
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN DOLLAR_WORD XOR
+##
+## Ends in an error in state: 120.
+##
+## tff_let_formula_binding -> atomic_formula . EQUIV tff_unitary_formula [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## atomic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN DOLLAR_WORD EQUIV XOR
+##
+## Ends in an error in state: 121.
+##
+## tff_let_formula_binding -> atomic_formula EQUIV . tff_unitary_formula [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## atomic_formula EQUIV
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT LEFT_PAREN XOR
+##
+## Ends in an error in state: 122.
+##
+## tff_unitary_formula -> LEFT_PAREN . tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F XOR
+##
+## Ends in an error in state: 123.
+##
+## tff_conditional -> ITE_F . LEFT_PAREN tff_logic_formula COMMA tff_logic_formula COMMA tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN XOR
+##
+## Ends in an error in state: 124.
+##
+## tff_conditional -> ITE_F LEFT_PAREN . tff_logic_formula COMMA tff_logic_formula COMMA tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT XOR
+##
+## Ends in an error in state: 128.
+##
+## tff_unary_formula -> unary_connective . tff_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## unary_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 134.
+##
+## defined_infix_formula -> term . defined_infix_pred term [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+## fol_infix_unary -> term . infix_inequality term [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD NOT_EQUAL XOR
+##
+## Ends in an error in state: 136.
+##
+## fol_infix_unary -> term infix_inequality . term [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## term infix_inequality
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS XOR
+##
+## Ends in an error in state: 138.
+##
+## tff_quantified_formula -> fol_quantifier . LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON tff_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET XOR
+##
+## Ends in an error in state: 139.
+##
+## tff_quantified_formula -> fol_quantifier LEFT_BRACKET . tff_variable_list RIGHT_BRACKET COLON tff_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 141.
+##
+## tff_quantified_formula -> fol_quantifier LEFT_BRACKET tff_variable_list RIGHT_BRACKET . COLON tff_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET tff_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON XOR
+##
+## Ends in an error in state: 142.
+##
+## tff_quantified_formula -> fol_quantifier LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON . tff_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD RIGHT_PAREN STAR
+##
+## Ends in an error in state: 146.
+##
+## tff_and_formula -> tff_unitary_formula . AND tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## tff_binary_nonassoc -> tff_unitary_formula . binary_connective tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## tff_logic_formula -> tff_unitary_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## tff_or_formula -> tff_unitary_formula . VLINE tff_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE XOR
+##
+## Ends in an error in state: 148.
+##
+## tff_or_formula -> tff_unitary_formula VLINE . tff_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND XOR
+##
+## Ends in an error in state: 155.
+##
+## tff_and_formula -> tff_unitary_formula AND . tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD EQUIV XOR
+##
+## Ends in an error in state: 157.
+##
+## tff_binary_nonassoc -> tff_unitary_formula binary_connective . tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_formula binary_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE DOLLAR_WORD XOR
+##
+## Ends in an error in state: 159.
+##
+## tff_binary_assoc -> tff_or_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## tff_or_formula -> tff_or_formula . VLINE tff_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_or_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 149, spurious reduction of production tff_or_formula -> tff_unitary_formula VLINE tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE DOLLAR_WORD VLINE XOR
+##
+## Ends in an error in state: 160.
+##
+## tff_or_formula -> tff_or_formula VLINE . tff_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_or_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DOLLAR_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 162.
+##
+## tff_conditional -> ITE_F LEFT_PAREN tff_logic_formula . COMMA tff_logic_formula COMMA tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 163.
+##
+## tff_conditional -> ITE_F LEFT_PAREN tff_logic_formula COMMA . tff_logic_formula COMMA tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN tff_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DOLLAR_WORD COMMA DOLLAR_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 164.
+##
+## tff_conditional -> ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula . COMMA tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DOLLAR_WORD COMMA DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 165.
+##
+## tff_conditional -> ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula COMMA . tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DOLLAR_WORD COMMA DOLLAR_WORD COMMA DOLLAR_WORD COMMA
+##
+## Ends in an error in state: 166.
+##
+## tff_conditional -> ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula COMMA tff_logic_formula . RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN tff_logic_formula COMMA tff_logic_formula COMMA tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND DOLLAR_WORD XOR
+##
+## Ends in an error in state: 171.
+##
+## tff_and_formula -> tff_and_formula . AND tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## tff_binary_assoc -> tff_and_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_and_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 156, spurious reduction of production tff_and_formula -> tff_unitary_formula AND tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND DOLLAR_WORD AND XOR
+##
+## Ends in an error in state: 172.
+##
+## tff_and_formula -> tff_and_formula AND . tff_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## tff_and_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD COMMA
+##
+## Ends in an error in state: 174.
+##
+## tff_unitary_formula -> LEFT_PAREN tff_logic_formula . RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD XOR
+##
+## Ends in an error in state: 177.
+##
+## tff_let -> LET_FF LEFT_PAREN tff_let_formula_defn . COMMA tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN tff_let_formula_defn
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
+## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 178.
+##
+## tff_let -> LET_FF LEFT_PAREN tff_let_formula_defn COMMA . tff_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN tff_let_formula_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN XOR
+##
+## Ends in an error in state: 179.
+##
+## tff_sequent -> LEFT_PAREN . tff_sequent RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## tff_typed_atom -> LEFT_PAREN . tff_typed_atom RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## tff_unitary_formula -> LEFT_PAREN . tff_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET XOR
+##
+## Ends in an error in state: 180.
+##
+## tff_tuple -> LEFT_BRACKET . RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+## tff_tuple -> LEFT_BRACKET . tff_tuple_list RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DOLLAR_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 184.
+##
+## tff_tuple_list -> tff_logic_formula . [ RIGHT_BRACKET ]
+## tff_tuple_list -> tff_logic_formula . COMMA tff_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 185.
+##
+## tff_tuple_list -> tff_logic_formula COMMA . tff_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## tff_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD UPPER_WORD
+##
+## Ends in an error in state: 187.
+##
+## constant -> tptp_functor . [ XOR VLINE RIGHT_PAREN NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA AND ]
+## plain_term -> tptp_functor . LEFT_PAREN arguments RIGHT_PAREN [ XOR VLINE RIGHT_PAREN NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA AND ]
+## tff_untyped_atom -> tptp_functor . [ COLON ]
+##
+## The known suffix of the stack is as follows:
+## tptp_functor
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON XOR
+##
+## Ends in an error in state: 189.
+##
+## tff_typed_atom -> tff_untyped_atom COLON . tff_top_level_type [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_untyped_atom COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN XOR
+##
+## Ends in an error in state: 190.
+##
+## tff_top_level_type -> LEFT_PAREN . tff_top_level_type RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## tff_unitary_type -> LEFT_PAREN . tff_xprod_type RIGHT_PAREN [ STAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY XOR
+##
+## Ends in an error in state: 191.
+##
+## tff_quantified_type -> FORALL_TY . LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON tff_monotype [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL_TY
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET XOR
+##
+## Ends in an error in state: 192.
+##
+## tff_quantified_type -> FORALL_TY LEFT_BRACKET . tff_variable_list RIGHT_BRACKET COLON tff_monotype [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL_TY LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 194.
+##
+## tff_quantified_type -> FORALL_TY LEFT_BRACKET tff_variable_list RIGHT_BRACKET . COLON tff_monotype [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL_TY LEFT_BRACKET tff_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON XOR
+##
+## Ends in an error in state: 195.
+##
+## tff_quantified_type -> FORALL_TY LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON . tff_monotype [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## FORALL_TY LEFT_BRACKET tff_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON LEFT_PAREN XOR
+##
+## Ends in an error in state: 196.
+##
+## tff_monotype -> LEFT_PAREN . tff_mapping_type RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON LEFT_PAREN LEFT_PAREN XOR
+##
+## Ends in an error in state: 197.
+##
+## tff_unitary_type -> LEFT_PAREN . tff_xprod_type RIGHT_PAREN [ STAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN LOWER_WORD STAR DOLLAR_WORD XOR
+##
+## Ends in an error in state: 198.
+##
+## tff_unitary_type -> LEFT_PAREN tff_xprod_type . RIGHT_PAREN [ STAR ARROW ]
+## tff_xprod_type -> tff_xprod_type . STAR tff_atomic_type [ STAR RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_xprod_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN LOWER_WORD STAR LOWER_WORD STAR XOR
+##
+## Ends in an error in state: 199.
+##
+## tff_xprod_type -> tff_xprod_type STAR . tff_atomic_type [ STAR RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_xprod_type STAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON LEFT_PAREN LEFT_PAREN DOLLAR_WORD XOR
+##
+## Ends in an error in state: 202.
+##
+## tff_xprod_type -> tff_unitary_type . STAR tff_atomic_type [ STAR RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN LOWER_WORD STAR XOR
+##
+## Ends in an error in state: 203.
+##
+## tff_xprod_type -> tff_unitary_type STAR . tff_atomic_type [ STAR RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_type STAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD STAR
+##
+## Ends in an error in state: 206.
+##
+## tff_mapping_type -> tff_unitary_type . ARROW tff_atomic_type [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_type
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 79, spurious reduction of production tff_atomic_type -> atomic_word
+## In state 218, spurious reduction of production tff_unitary_type -> tff_atomic_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD ARROW XOR
+##
+## Ends in an error in state: 207.
+##
+## tff_mapping_type -> tff_unitary_type ARROW . tff_atomic_type [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_type ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON FORALL_TY LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON LEFT_PAREN LOWER_WORD ARROW DOLLAR_WORD XOR
+##
+## Ends in an error in state: 209.
+##
+## tff_monotype -> LEFT_PAREN tff_mapping_type . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_mapping_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN LEFT_PAREN LOWER_WORD STAR LOWER_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 213.
+##
+## tff_mapping_type -> tff_unitary_type . ARROW tff_atomic_type [ RIGHT_PAREN ]
+## tff_xprod_type -> tff_unitary_type . STAR tff_atomic_type [ STAR RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## tff_unitary_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LEFT_PAREN LOWER_WORD COMMA
+##
+## Ends in an error in state: 214.
+##
+## tff_top_level_type -> LEFT_PAREN tff_top_level_type . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_top_level_type
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 79, spurious reduction of production tff_atomic_type -> atomic_word
+## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD COLON LOWER_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 218.
+##
+## tff_top_level_type -> tff_atomic_type . [ RIGHT_PAREN COMMA ]
+## tff_unitary_type -> tff_atomic_type . [ STAR ARROW ]
+##
+## The known suffix of the stack is as follows:
+## tff_atomic_type
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 79, spurious reduction of production tff_atomic_type -> atomic_word
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_DOLLAR_WORD COLON LOWER_WORD COMMA
+##
+## Ends in an error in state: 220.
+##
+## tff_typed_atom -> LEFT_PAREN tff_typed_atom . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_typed_atom
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 79, spurious reduction of production tff_atomic_type -> atomic_word
+## In state 218, spurious reduction of production tff_top_level_type -> tff_atomic_type
+## In state 219, spurious reduction of production tff_typed_atom -> tff_untyped_atom COLON tff_top_level_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 222.
+##
+## tff_sequent -> tff_tuple . GENTZEN_ARROW tff_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_tuple
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW XOR
+##
+## Ends in an error in state: 223.
+##
+## tff_sequent -> tff_tuple GENTZEN_ARROW . tff_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## tff_tuple GENTZEN_ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 225.
+##
+## tff_sequent -> LEFT_PAREN tff_sequent . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_sequent
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_DOLLAR_WORD UPPER_WORD
+##
+## Ends in an error in state: 227.
+##
+## system_constant -> system_functor . [ XOR VLINE RIGHT_PAREN NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA AND ]
+## system_term -> system_functor . LEFT_PAREN arguments RIGHT_PAREN [ XOR VLINE RIGHT_PAREN NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA AND ]
+## tff_untyped_atom -> system_functor . [ COLON ]
+##
+## The known suffix of the stack is as follows:
+## system_functor
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 231.
+##
+## tff_let -> LET_FF LEFT_PAREN tff_let_formula_defn COMMA tff_formula . RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN tff_let_formula_defn COMMA tff_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 233.
+##
+## tff_let -> LET_TF LEFT_PAREN tff_let_term_defn COMMA tff_formula . RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN tff_let_term_defn COMMA tff_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN DOLLAR_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 235.
+##
+## conditional_term -> ITE_T LEFT_PAREN tff_logic_formula . COMMA term COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN tff_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 236.
+##
+## conditional_term -> ITE_T LEFT_PAREN tff_logic_formula COMMA . term COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN tff_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN DOLLAR_WORD COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 237.
+##
+## conditional_term -> ITE_T LEFT_PAREN tff_logic_formula COMMA term . COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN tff_logic_formula COMMA term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN DOLLAR_WORD COMMA DISTINCT_OBJECT COMMA XOR
+##
+## Ends in an error in state: 238.
+##
+## conditional_term -> ITE_T LEFT_PAREN tff_logic_formula COMMA term COMMA . term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN tff_logic_formula COMMA term COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_T LEFT_PAREN DOLLAR_WORD COMMA DISTINCT_OBJECT COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 239.
+##
+## conditional_term -> ITE_T LEFT_PAREN tff_logic_formula COMMA term COMMA term . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_T LEFT_PAREN tff_logic_formula COMMA term COMMA term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD XOR
+##
+## Ends in an error in state: 241.
+##
+## tff_let_formula_binding -> LEFT_PAREN tff_let_formula_binding . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN tff_let_formula_binding
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD XOR
+##
+## Ends in an error in state: 243.
+##
+## let_term -> LET_FT LEFT_PAREN tff_let_formula_defn . COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FT LEFT_PAREN tff_let_formula_defn
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 176, spurious reduction of production tff_let_formula_binding -> atomic_formula EQUIV tff_unitary_formula
+## In state 106, spurious reduction of production tff_let_formula_defn -> tff_let_formula_binding
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 244.
+##
+## let_term -> LET_FT LEFT_PAREN tff_let_formula_defn COMMA . term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FT LEFT_PAREN tff_let_formula_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FT LEFT_PAREN DOLLAR_WORD EQUIV DOLLAR_WORD COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 245.
+##
+## let_term -> LET_FT LEFT_PAREN tff_let_formula_defn COMMA term . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FT LEFT_PAREN tff_let_formula_defn COMMA term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 247.
+##
+## let_term -> LET_TT LEFT_PAREN tff_let_term_defn . COMMA term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TT LEFT_PAREN tff_let_term_defn
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT COMMA XOR
+##
+## Ends in an error in state: 248.
+##
+## let_term -> LET_TT LEFT_PAREN tff_let_term_defn COMMA . term RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TT LEFT_PAREN tff_let_term_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TT LEFT_PAREN DISTINCT_OBJECT EQUAL DISTINCT_OBJECT COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 249.
+##
+## let_term -> LET_TT LEFT_PAREN tff_let_term_defn COMMA term . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TT LEFT_PAREN tff_let_term_defn COMMA term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN XOR
+##
+## Ends in an error in state: 251.
+##
+## fof_sequent -> LEFT_PAREN . fof_sequent RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## fof_unitary_formula -> LEFT_PAREN . fof_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET XOR
+##
+## Ends in an error in state: 252.
+##
+## fof_tuple -> LEFT_BRACKET . RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+## fof_tuple -> LEFT_BRACKET . fof_tuple_list RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT LEFT_PAREN XOR
+##
+## Ends in an error in state: 254.
+##
+## fof_unitary_formula -> LEFT_PAREN . fof_logic_formula RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT XOR
+##
+## Ends in an error in state: 255.
+##
+## fof_unary_formula -> unary_connective . fof_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## unary_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS XOR
+##
+## Ends in an error in state: 256.
+##
+## fof_quantified_formula -> fol_quantifier . LEFT_BRACKET fof_variable_list RIGHT_BRACKET COLON fof_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET XOR
+##
+## Ends in an error in state: 257.
+##
+## fof_quantified_formula -> fol_quantifier LEFT_BRACKET . fof_variable_list RIGHT_BRACKET COLON fof_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD XOR
+##
+## Ends in an error in state: 258.
+##
+## fof_variable_list -> variable . [ RIGHT_BRACKET ]
+## fof_variable_list -> variable . COMMA fof_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## variable
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COMMA XOR
+##
+## Ends in an error in state: 259.
+##
+## fof_variable_list -> variable COMMA . fof_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## variable COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 262.
+##
+## fof_quantified_formula -> fol_quantifier LEFT_BRACKET fof_variable_list RIGHT_BRACKET . COLON fof_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET fof_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON XOR
+##
+## Ends in an error in state: 263.
+##
+## fof_quantified_formula -> fol_quantifier LEFT_BRACKET fof_variable_list RIGHT_BRACKET COLON . fof_unitary_formula [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fol_quantifier LEFT_BRACKET fof_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD RIGHT_PAREN STAR
+##
+## Ends in an error in state: 270.
+##
+## fof_and_formula -> fof_unitary_formula . AND fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## fof_binary_nonassoc -> fof_unitary_formula . binary_connective fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## fof_logic_formula -> fof_unitary_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## fof_or_formula -> fof_unitary_formula . VLINE fof_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE XOR
+##
+## Ends in an error in state: 271.
+##
+## fof_or_formula -> fof_unitary_formula VLINE . fof_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_unitary_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND XOR
+##
+## Ends in an error in state: 273.
+##
+## fof_and_formula -> fof_unitary_formula AND . fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fof_unitary_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD EQUIV XOR
+##
+## Ends in an error in state: 275.
+##
+## fof_binary_nonassoc -> fof_unitary_formula binary_connective . fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_unitary_formula binary_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE DOLLAR_WORD XOR
+##
+## Ends in an error in state: 277.
+##
+## fof_binary_assoc -> fof_or_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## fof_or_formula -> fof_or_formula . VLINE fof_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_or_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 272, spurious reduction of production fof_or_formula -> fof_unitary_formula VLINE fof_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE DOLLAR_WORD VLINE XOR
+##
+## Ends in an error in state: 278.
+##
+## fof_or_formula -> fof_or_formula VLINE . fof_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_or_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD COMMA
+##
+## Ends in an error in state: 280.
+##
+## fof_unitary_formula -> LEFT_PAREN fof_logic_formula . RIGHT_PAREN [ XOR VLINE RIGHT_PAREN RIGHT_BRACKET NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN fof_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND DOLLAR_WORD XOR
+##
+## Ends in an error in state: 285.
+##
+## fof_and_formula -> fof_and_formula . AND fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## fof_binary_assoc -> fof_and_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_and_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 274, spurious reduction of production fof_and_formula -> fof_unitary_formula AND fof_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD AND DOLLAR_WORD AND XOR
+##
+## Ends in an error in state: 286.
+##
+## fof_and_formula -> fof_and_formula AND . fof_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## fof_and_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DOLLAR_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 290.
+##
+## fof_tuple_list -> fof_logic_formula . [ RIGHT_BRACKET ]
+## fof_tuple_list -> fof_logic_formula . COMMA fof_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## fof_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 291.
+##
+## fof_tuple_list -> fof_logic_formula COMMA . fof_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## fof_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 293.
+##
+## fof_sequent -> fof_tuple . GENTZEN_ARROW fof_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_tuple
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW XOR
+##
+## Ends in an error in state: 294.
+##
+## fof_sequent -> fof_tuple GENTZEN_ARROW . fof_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## fof_tuple GENTZEN_ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 296.
+##
+## fof_sequent -> LEFT_PAREN fof_sequent . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN fof_sequent
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 298.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula . annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+## In state 496, spurious reduction of production tpi_formula -> fof_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA XOR
+##
+## Ends in an error in state: 299.
+##
+## annotations -> COMMA . source optional_info [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LEFT_BRACKET XOR
+##
+## Ends in an error in state: 300.
+##
+## general_list -> LEFT_BRACKET . RIGHT_BRACKET [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## general_list -> LEFT_BRACKET . general_terms RIGHT_BRACKET [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_THF XOR
+##
+## Ends in an error in state: 302.
+##
+## formula_data -> DOLLAR_THF . LEFT_PAREN thf_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_THF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_THF LEFT_PAREN TPI
+##
+## Ends in an error in state: 303.
+##
+## formula_data -> DOLLAR_THF LEFT_PAREN . thf_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_THF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF XOR
+##
+## Ends in an error in state: 307.
+##
+## thf_let -> LET_TF . LEFT_PAREN thf_let_term_defn COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN XOR
+##
+## Ends in an error in state: 308.
+##
+## thf_let -> LET_TF LEFT_PAREN . thf_let_term_defn COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS XOR
+##
+## Ends in an error in state: 314.
+##
+## thf_quantified_formula -> thf_quantifier . LEFT_BRACKET thf_variable_list RIGHT_BRACKET COLON thf_unitary_formula [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_quantifier
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET XOR
+##
+## Ends in an error in state: 315.
+##
+## thf_quantified_formula -> thf_quantifier LEFT_BRACKET . thf_variable_list RIGHT_BRACKET COLON thf_unitary_formula [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_quantifier LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD XOR
+##
+## Ends in an error in state: 316.
+##
+## thf_typed_variable -> variable . COLON thf_top_level_type [ RIGHT_BRACKET COMMA ]
+## thf_variable -> variable . [ RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## variable
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COLON TPI
+##
+## Ends in an error in state: 317.
+##
+## thf_typed_variable -> variable COLON . thf_top_level_type [ RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## variable COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF XOR
+##
+## Ends in an error in state: 318.
+##
+## thf_let -> LET_FF . LEFT_PAREN thf_let_formula_defn COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN XOR
+##
+## Ends in an error in state: 319.
+##
+## thf_let -> LET_FF LEFT_PAREN . thf_let_formula_defn COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 321.
+##
+## thf_let -> LET_FF LEFT_PAREN thf_let_formula_defn . COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN thf_let_formula_defn
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT COMMA TPI
+##
+## Ends in an error in state: 322.
+##
+## thf_let -> LET_FF LEFT_PAREN thf_let_formula_defn COMMA . thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN thf_let_formula_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN TPI
+##
+## Ends in an error in state: 323.
+##
+## thf_sequent -> LEFT_PAREN . thf_sequent RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## thf_typeable_formula -> LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ COLON ]
+## thf_unitary_formula -> LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET TPI
+##
+## Ends in an error in state: 324.
+##
+## thf_tuple -> LEFT_BRACKET . RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+## thf_tuple -> LEFT_BRACKET . thf_tuple_list RIGHT_BRACKET [ RIGHT_PAREN GENTZEN_ARROW COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET LEFT_PAREN TPI
+##
+## Ends in an error in state: 326.
+##
+## thf_typeable_formula -> LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ COLON ]
+## thf_unitary_formula -> LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F XOR
+##
+## Ends in an error in state: 327.
+##
+## thf_conditional -> ITE_F . LEFT_PAREN thf_logic_formula COMMA thf_logic_formula COMMA thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN TPI
+##
+## Ends in an error in state: 328.
+##
+## thf_conditional -> ITE_F LEFT_PAREN . thf_logic_formula COMMA thf_logic_formula COMMA thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT STAR DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 331.
+##
+## thf_binary_type -> thf_xprod_type . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_xprod_type -> thf_xprod_type . STAR thf_unitary_type [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_xprod_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT STAR DISTINCT_OBJECT STAR TPI
+##
+## Ends in an error in state: 332.
+##
+## thf_xprod_type -> thf_xprod_type STAR . thf_unitary_type [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_xprod_type STAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT EQUIV LEFT_PAREN TPI
+##
+## Ends in an error in state: 333.
+##
+## thf_unitary_formula -> LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT STAR TPI
+##
+## Ends in an error in state: 335.
+##
+## thf_xprod_type -> thf_unitary_type STAR . thf_unitary_type [ STAR RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_type STAR
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT UPPER_WORD
+##
+## Ends in an error in state: 339.
+##
+## thf_conn_term -> thf_unary_connective . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA COLON ARROW APPLY AND ]
+## thf_unary_formula -> thf_unary_connective . LEFT_PAREN thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_unary_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT LEFT_PAREN TPI
+##
+## Ends in an error in state: 340.
+##
+## thf_unary_formula -> thf_unary_connective LEFT_PAREN . thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_unary_connective LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT LEFT_PAREN DISTINCT_OBJECT RIGHT_PAREN COLON
+##
+## Ends in an error in state: 341.
+##
+## thf_and_formula -> thf_unitary_formula . AND thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## thf_apply_formula -> thf_unitary_formula . APPLY thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA APPLY ]
+## thf_binary_pair -> thf_unitary_formula . thf_pair_connective thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_logic_formula -> thf_unitary_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_or_formula -> thf_unitary_formula . VLINE thf_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_unitary_type -> thf_unitary_formula . [ STAR PLUS ARROW ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT VLINE TPI
+##
+## Ends in an error in state: 342.
+##
+## thf_or_formula -> thf_unitary_formula VLINE . thf_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT APPLY TPI
+##
+## Ends in an error in state: 356.
+##
+## thf_apply_formula -> thf_unitary_formula APPLY . thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA APPLY ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_formula APPLY
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT AND TPI
+##
+## Ends in an error in state: 358.
+##
+## thf_and_formula -> thf_unitary_formula AND . thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT EQUIV TPI
+##
+## Ends in an error in state: 360.
+##
+## thf_binary_pair -> thf_unitary_formula thf_pair_connective . thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_formula thf_pair_connective
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT PLUS DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 362.
+##
+## thf_binary_type -> thf_union_type . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_union_type -> thf_union_type . PLUS thf_unitary_type [ RIGHT_PAREN RIGHT_BRACKET PLUS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_union_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT PLUS DISTINCT_OBJECT PLUS TPI
+##
+## Ends in an error in state: 363.
+##
+## thf_union_type -> thf_union_type PLUS . thf_unitary_type [ RIGHT_PAREN RIGHT_BRACKET PLUS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_union_type PLUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT COLON TPI
+##
+## Ends in an error in state: 366.
+##
+## thf_type_formula -> thf_typeable_formula COLON . thf_top_level_type [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_typeable_formula COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT VLINE DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 370.
+##
+## thf_binary_tuple -> thf_or_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_or_formula -> thf_or_formula . VLINE thf_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_or_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT VLINE DISTINCT_OBJECT VLINE TPI
+##
+## Ends in an error in state: 371.
+##
+## thf_or_formula -> thf_or_formula VLINE . thf_unitary_formula [ VLINE RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_or_formula VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT UPPER_WORD
+##
+## Ends in an error in state: 379.
+##
+## thf_typeable_formula -> thf_atom . [ COLON ]
+## thf_unitary_formula -> thf_atom . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_atom
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT APPLY DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 380.
+##
+## thf_apply_formula -> thf_apply_formula . APPLY thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA APPLY ]
+## thf_binary_tuple -> thf_apply_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_apply_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT APPLY DISTINCT_OBJECT APPLY TPI
+##
+## Ends in an error in state: 381.
+##
+## thf_apply_formula -> thf_apply_formula APPLY . thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA APPLY ]
+##
+## The known suffix of the stack is as follows:
+## thf_apply_formula APPLY
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT AND DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 383.
+##
+## thf_and_formula -> thf_and_formula . AND thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+## thf_binary_tuple -> thf_and_formula . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_and_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT AND DISTINCT_OBJECT AND TPI
+##
+## Ends in an error in state: 384.
+##
+## thf_and_formula -> thf_and_formula AND . thf_unitary_formula [ RIGHT_PAREN RIGHT_BRACKET COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_and_formula AND
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD LESS XOR
+##
+## Ends in an error in state: 387.
+##
+## subtype_sign -> LESS . LESS [ SINGLE_QUOTED LOWER_WORD ]
+##
+## The known suffix of the stack is as follows:
+## LESS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LOWER_WORD LESS LESS XOR
+##
+## Ends in an error in state: 389.
+##
+## thf_subtype -> constant subtype_sign . constant [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## constant subtype_sign
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT LEFT_PAREN DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 392.
+##
+## thf_unary_formula -> thf_unary_connective LEFT_PAREN thf_logic_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_unary_connective LEFT_PAREN thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT PLUS TPI
+##
+## Ends in an error in state: 394.
+##
+## thf_union_type -> thf_unitary_type PLUS . thf_unitary_type [ RIGHT_PAREN RIGHT_BRACKET PLUS COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_type PLUS
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT ARROW TPI
+##
+## Ends in an error in state: 396.
+##
+## thf_mapping_type -> thf_unitary_type ARROW . thf_unitary_type [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_mapping_type -> thf_unitary_type ARROW . thf_mapping_type [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_type ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT ARROW DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 397.
+##
+## thf_mapping_type -> thf_unitary_type . ARROW thf_unitary_type [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_mapping_type -> thf_unitary_type ARROW thf_unitary_type . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## thf_mapping_type -> thf_unitary_type . ARROW thf_mapping_type [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_unitary_type ARROW thf_unitary_type
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT EQUIV LEFT_PAREN DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 399.
+##
+## thf_unitary_formula -> LEFT_PAREN thf_logic_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DISTINCT_OBJECT RIGHT_PAREN
+##
+## Ends in an error in state: 402.
+##
+## thf_conditional -> ITE_F LEFT_PAREN thf_logic_formula . COMMA thf_logic_formula COMMA thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DISTINCT_OBJECT COMMA TPI
+##
+## Ends in an error in state: 403.
+##
+## thf_conditional -> ITE_F LEFT_PAREN thf_logic_formula COMMA . thf_logic_formula COMMA thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN thf_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DISTINCT_OBJECT COMMA DISTINCT_OBJECT RIGHT_PAREN
+##
+## Ends in an error in state: 404.
+##
+## thf_conditional -> ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula . COMMA thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DISTINCT_OBJECT COMMA DISTINCT_OBJECT COMMA TPI
+##
+## Ends in an error in state: 405.
+##
+## thf_conditional -> ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula COMMA . thf_logic_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA ITE_F LEFT_PAREN DISTINCT_OBJECT COMMA DISTINCT_OBJECT COMMA DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 406.
+##
+## thf_conditional -> ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula COMMA thf_logic_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## ITE_F LEFT_PAREN thf_logic_formula COMMA thf_logic_formula COMMA thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 408.
+##
+## thf_typeable_formula -> LEFT_PAREN thf_logic_formula . RIGHT_PAREN [ COLON ]
+## thf_unitary_formula -> LEFT_PAREN thf_logic_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DISTINCT_OBJECT RIGHT_PAREN UPPER_WORD
+##
+## Ends in an error in state: 409.
+##
+## thf_typeable_formula -> LEFT_PAREN thf_logic_formula RIGHT_PAREN . [ COLON ]
+## thf_unitary_formula -> LEFT_PAREN thf_logic_formula RIGHT_PAREN . [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN thf_logic_formula RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DISTINCT_OBJECT RIGHT_PAREN
+##
+## Ends in an error in state: 412.
+##
+## thf_tuple_list -> thf_logic_formula . [ RIGHT_BRACKET ]
+## thf_tuple_list -> thf_logic_formula . COMMA thf_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## thf_logic_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET DISTINCT_OBJECT COMMA TPI
+##
+## Ends in an error in state: 413.
+##
+## thf_tuple_list -> thf_logic_formula COMMA . thf_tuple_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## thf_logic_formula COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 415.
+##
+## thf_sequent -> thf_tuple . GENTZEN_ARROW thf_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_tuple
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW XOR
+##
+## Ends in an error in state: 416.
+##
+## thf_sequent -> thf_tuple GENTZEN_ARROW . thf_tuple [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## thf_tuple GENTZEN_ARROW
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN LEFT_BRACKET RIGHT_BRACKET GENTZEN_ARROW LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 418.
+##
+## thf_sequent -> LEFT_PAREN thf_sequent . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN thf_sequent
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_FF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT COMMA DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 422.
+##
+## thf_let -> LET_FF LEFT_PAREN thf_let_formula_defn COMMA thf_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_FF LEFT_PAREN thf_let_formula_defn COMMA thf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 426.
+##
+## thf_quantified_formula -> thf_quantifier LEFT_BRACKET thf_variable_list RIGHT_BRACKET . COLON thf_unitary_formula [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_quantifier LEFT_BRACKET thf_variable_list RIGHT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON TPI
+##
+## Ends in an error in state: 427.
+##
+## thf_quantified_formula -> thf_quantifier LEFT_BRACKET thf_variable_list RIGHT_BRACKET COLON . thf_unitary_formula [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## thf_quantifier LEFT_BRACKET thf_variable_list RIGHT_BRACKET COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COLON DISTINCT_OBJECT RIGHT_PAREN
+##
+## Ends in an error in state: 429.
+##
+## thf_variable_list -> thf_variable . [ RIGHT_BRACKET ]
+## thf_variable_list -> thf_variable . COMMA thf_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## thf_variable
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 374, spurious reduction of production thf_top_level_type -> thf_logic_formula
+## In state 424, spurious reduction of production thf_typed_variable -> variable COLON thf_top_level_type
+## In state 432, spurious reduction of production thf_variable -> thf_typed_variable
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA EXISTS LEFT_BRACKET UPPER_WORD COMMA XOR
+##
+## Ends in an error in state: 430.
+##
+## thf_variable_list -> thf_variable COMMA . thf_variable_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## thf_variable COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 434.
+##
+## thf_let -> LET_TF LEFT_PAREN thf_let_term_defn . COMMA thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN thf_let_term_defn
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT COMMA TPI
+##
+## Ends in an error in state: 435.
+##
+## thf_let -> LET_TF LEFT_PAREN thf_let_term_defn COMMA . thf_formula RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN thf_let_term_defn COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LET_TF LEFT_PAREN EXISTS LEFT_BRACKET UPPER_WORD RIGHT_BRACKET COLON DISTINCT_OBJECT COMMA DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 436.
+##
+## thf_let -> LET_TF LEFT_PAREN thf_let_term_defn COMMA thf_formula . RIGHT_PAREN [ XOR VLINE STAR RIGHT_PAREN RIGHT_BRACKET PLUS NOT_EQUAL NOTVLINE NOTAND LEFT_IMPLY IMPLY EQUIV EQUAL COMMA ARROW APPLY AND ]
+##
+## The known suffix of the stack is as follows:
+## LET_TF LEFT_PAREN thf_let_term_defn COMMA thf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_THF LEFT_PAREN DISTINCT_OBJECT COMMA
+##
+## Ends in an error in state: 438.
+##
+## formula_data -> DOLLAR_THF LEFT_PAREN thf_formula . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_THF LEFT_PAREN thf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_TFF XOR
+##
+## Ends in an error in state: 440.
+##
+## formula_data -> DOLLAR_TFF . LEFT_PAREN tff_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_TFF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_TFF LEFT_PAREN XOR
+##
+## Ends in an error in state: 441.
+##
+## formula_data -> DOLLAR_TFF LEFT_PAREN . tff_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_TFF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_TFF LEFT_PAREN DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 442.
+##
+## formula_data -> DOLLAR_TFF LEFT_PAREN tff_formula . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_TFF LEFT_PAREN tff_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOT XOR
+##
+## Ends in an error in state: 444.
+##
+## formula_data -> DOLLAR_FOT . LEFT_PAREN term RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOT
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOT LEFT_PAREN XOR
+##
+## Ends in an error in state: 445.
+##
+## formula_data -> DOLLAR_FOT LEFT_PAREN . term RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOT LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOT LEFT_PAREN DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 446.
+##
+## formula_data -> DOLLAR_FOT LEFT_PAREN term . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOT LEFT_PAREN term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOF XOR
+##
+## Ends in an error in state: 448.
+##
+## formula_data -> DOLLAR_FOF . LEFT_PAREN fof_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOF LEFT_PAREN XOR
+##
+## Ends in an error in state: 449.
+##
+## formula_data -> DOLLAR_FOF LEFT_PAREN . fof_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_FOF LEFT_PAREN DOLLAR_WORD COMMA
+##
+## Ends in an error in state: 452.
+##
+## formula_data -> DOLLAR_FOF LEFT_PAREN fof_formula . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_FOF LEFT_PAREN fof_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_CNF XOR
+##
+## Ends in an error in state: 454.
+##
+## formula_data -> DOLLAR_CNF . LEFT_PAREN cnf_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_CNF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_CNF LEFT_PAREN XOR
+##
+## Ends in an error in state: 455.
+##
+## formula_data -> DOLLAR_CNF LEFT_PAREN . cnf_formula RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_CNF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN XOR
+##
+## Ends in an error in state: 456.
+##
+## cnf_formula -> LEFT_PAREN . disjunction RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA NOT XOR
+##
+## Ends in an error in state: 457.
+##
+## literal -> unary_negation . atomic_formula [ VLINE RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## unary_negation
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD XOR
+##
+## Ends in an error in state: 461.
+##
+## cnf_formula -> LEFT_PAREN disjunction . RIGHT_PAREN [ RIGHT_PAREN COMMA ]
+## disjunction -> disjunction . VLINE literal [ VLINE RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_PAREN disjunction
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD VLINE XOR
+##
+## Ends in an error in state: 462.
+##
+## disjunction -> disjunction VLINE . literal [ VLINE RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## disjunction VLINE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD XOR
+##
+## Ends in an error in state: 466.
+##
+## cnf_formula -> disjunction . [ RIGHT_PAREN COMMA ]
+## disjunction -> disjunction . VLINE literal [ VLINE RIGHT_PAREN COMMA ]
+##
+## The known suffix of the stack is as follows:
+## disjunction
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DOLLAR_CNF LEFT_PAREN DOLLAR_WORD COMMA
+##
+## Ends in an error in state: 467.
+##
+## formula_data -> DOLLAR_CNF LEFT_PAREN cnf_formula . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## DOLLAR_CNF LEFT_PAREN cnf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 464, spurious reduction of production literal -> atomic_formula
+## In state 459, spurious reduction of production disjunction -> literal
+## In state 466, spurious reduction of production cnf_formula -> disjunction
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LEFT_BRACKET LOWER_WORD RIGHT_PAREN
+##
+## Ends in an error in state: 471.
+##
+## general_list -> LEFT_BRACKET general_terms . RIGHT_BRACKET [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LEFT_BRACKET general_terms
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 483, spurious reduction of production general_data -> atomic_word
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 473, spurious reduction of production general_terms -> general_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LEFT_BRACKET LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 473.
+##
+## general_terms -> general_term . [ RIGHT_PAREN RIGHT_BRACKET ]
+## general_terms -> general_term . COMMA general_terms [ RIGHT_PAREN RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## general_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LEFT_BRACKET LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 474.
+##
+## general_terms -> general_term COMMA . general_terms [ RIGHT_PAREN RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## general_term COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA DISTINCT_OBJECT XOR
+##
+## Ends in an error in state: 478.
+##
+## general_term -> general_data . [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+## general_term -> general_data . COLON general_term [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## general_data
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COLON XOR
+##
+## Ends in an error in state: 479.
+##
+## general_term -> general_data COLON . general_term [ RIGHT_PAREN RIGHT_BRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## general_data COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 483.
+##
+## general_data -> atomic_word . [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+## general_function -> atomic_word . LEFT_PAREN general_terms RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## atomic_word
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD LEFT_PAREN XOR
+##
+## Ends in an error in state: 484.
+##
+## general_function -> atomic_word LEFT_PAREN . general_terms RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## atomic_word LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD LEFT_PAREN LOWER_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 485.
+##
+## general_function -> atomic_word LEFT_PAREN general_terms . RIGHT_PAREN [ RIGHT_PAREN RIGHT_BRACKET COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## atomic_word LEFT_PAREN general_terms
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 483, spurious reduction of production general_data -> atomic_word
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 473, spurious reduction of production general_terms -> general_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 487.
+##
+## annotations -> COMMA source . optional_info [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## COMMA source
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 483, spurious reduction of production general_data -> atomic_word
+## In state 478, spurious reduction of production general_term -> general_data
+## In state 492, spurious reduction of production source -> general_term
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 488.
+##
+## optional_info -> COMMA . useful_info [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 493.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 494.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF XOR
+##
+## Ends in an error in state: 497.
+##
+## thf_annotated -> THF . LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN XOR
+##
+## Ends in an error in state: 498.
+##
+## thf_annotated -> THF LEFT_PAREN . name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 499.
+##
+## thf_annotated -> THF LEFT_PAREN name . COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 500.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA . formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 501.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role . COMMA thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA TPI
+##
+## Ends in an error in state: 502.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA . thf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT RIGHT_BRACKET
+##
+## Ends in an error in state: 503.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula . annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 504.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT RIGHT_PAREN XOR
+##
+## Ends in an error in state: 505.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF XOR
+##
+## Ends in an error in state: 507.
+##
+## tff_annotated -> TFF . LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN XOR
+##
+## Ends in an error in state: 508.
+##
+## tff_annotated -> TFF LEFT_PAREN . name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 509.
+##
+## tff_annotated -> TFF LEFT_PAREN name . COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 510.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA . formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 511.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role . COMMA tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 512.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA . tff_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 513.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula . annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 514.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 515.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE XOR
+##
+## Ends in an error in state: 517.
+##
+## tptp_include -> INCLUDE . LEFT_PAREN file_name formula_section RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN XOR
+##
+## Ends in an error in state: 518.
+##
+## tptp_include -> INCLUDE LEFT_PAREN . file_name formula_section RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED XOR
+##
+## Ends in an error in state: 520.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name . formula_section RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA XOR
+##
+## Ends in an error in state: 521.
+##
+## formula_section -> COMMA . LEFT_BRACKET name_list RIGHT_BRACKET [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA LEFT_BRACKET XOR
+##
+## Ends in an error in state: 522.
+##
+## formula_section -> COMMA LEFT_BRACKET . name_list RIGHT_BRACKET [ RIGHT_PAREN ]
+##
+## The known suffix of the stack is as follows:
+## COMMA LEFT_BRACKET
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA LEFT_BRACKET INTEGER XOR
+##
+## Ends in an error in state: 525.
+##
+## name_list -> name . [ RIGHT_BRACKET ]
+## name_list -> name . COMMA name_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA LEFT_BRACKET INTEGER COMMA XOR
+##
+## Ends in an error in state: 526.
+##
+## name_list -> name COMMA . name_list [ RIGHT_BRACKET ]
+##
+## The known suffix of the stack is as follows:
+## name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA LEFT_BRACKET INTEGER RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 528.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name formula_section . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name formula_section
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED RIGHT_PAREN XOR
+##
+## Ends in an error in state: 529.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name formula_section RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name formula_section RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF XOR
+##
+## Ends in an error in state: 531.
+##
+## fof_annotated -> FOF . LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN XOR
+##
+## Ends in an error in state: 532.
+##
+## fof_annotated -> FOF LEFT_PAREN . name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 533.
+##
+## fof_annotated -> FOF LEFT_PAREN name . COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 534.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA . formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 535.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role . COMMA fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 536.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA . fof_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 537.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula . annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 538.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 539.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF XOR
+##
+## Ends in an error in state: 541.
+##
+## cnf_annotated -> CNF . LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN XOR
+##
+## Ends in an error in state: 542.
+##
+## cnf_annotated -> CNF LEFT_PAREN . name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 543.
+##
+## cnf_annotated -> CNF LEFT_PAREN name . COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 544.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA . formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 545.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role . COMMA cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 546.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA . cnf_formula annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 547.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula . annotations RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 548.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations . RIGHT_PAREN DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 549.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN . DOT [ TPI THF TFF INCLUDE FOF EOF CNF ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+file: INCLUDE LEFT_PAREN SINGLE_QUOTED RIGHT_PAREN DOT XOR
+##
+## Ends in an error in state: 551.
+##
+## list(tptp_input) -> tptp_input . list(tptp_input) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## tptp_input
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: XOR
+##
+## Ends in an error in state: 563.
+##
+## input' -> . input [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI XOR
+##
+## Ends in an error in state: 564.
+##
+## tpi_annotated -> TPI . LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN XOR
+##
+## Ends in an error in state: 565.
+##
+## tpi_annotated -> TPI LEFT_PAREN . name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 566.
+##
+## tpi_annotated -> TPI LEFT_PAREN name . COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 567.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA . formula_role COMMA tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 568.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role . COMMA tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 569.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA . tpi_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 570.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula . annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+## In state 496, spurious reduction of production tpi_formula -> fof_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 571.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TPI LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 572.
+##
+## tpi_annotated -> TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TPI LEFT_PAREN name COMMA formula_role COMMA tpi_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF XOR
+##
+## Ends in an error in state: 574.
+##
+## thf_annotated -> THF . LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN XOR
+##
+## Ends in an error in state: 575.
+##
+## thf_annotated -> THF LEFT_PAREN . name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 576.
+##
+## thf_annotated -> THF LEFT_PAREN name . COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 577.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA . formula_role COMMA thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 578.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role . COMMA thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA TPI
+##
+## Ends in an error in state: 579.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA . thf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT RIGHT_BRACKET
+##
+## Ends in an error in state: 580.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula . annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 379, spurious reduction of production thf_unitary_formula -> thf_atom
+## In state 341, spurious reduction of production thf_logic_formula -> thf_unitary_formula
+## In state 421, spurious reduction of production thf_formula -> thf_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 581.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: THF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DISTINCT_OBJECT RIGHT_PAREN XOR
+##
+## Ends in an error in state: 582.
+##
+## thf_annotated -> THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## THF LEFT_PAREN name COMMA formula_role COMMA thf_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF XOR
+##
+## Ends in an error in state: 584.
+##
+## tff_annotated -> TFF . LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN XOR
+##
+## Ends in an error in state: 585.
+##
+## tff_annotated -> TFF LEFT_PAREN . name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 586.
+##
+## tff_annotated -> TFF LEFT_PAREN name . COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 587.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA . formula_role COMMA tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 588.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role . COMMA tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 589.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA . tff_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 590.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula . annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 145, spurious reduction of production tff_unitary_formula -> atomic_formula
+## In state 146, spurious reduction of production tff_logic_formula -> tff_unitary_formula
+## In state 230, spurious reduction of production tff_formula -> tff_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 591.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: TFF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 592.
+##
+## tff_annotated -> TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## TFF LEFT_PAREN name COMMA formula_role COMMA tff_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE XOR
+##
+## Ends in an error in state: 594.
+##
+## tptp_include -> INCLUDE . LEFT_PAREN file_name formula_section RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE LEFT_PAREN XOR
+##
+## Ends in an error in state: 595.
+##
+## tptp_include -> INCLUDE LEFT_PAREN . file_name formula_section RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE LEFT_PAREN SINGLE_QUOTED XOR
+##
+## Ends in an error in state: 596.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name . formula_section RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE LEFT_PAREN SINGLE_QUOTED COMMA LEFT_BRACKET INTEGER RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 597.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name formula_section . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name formula_section
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: INCLUDE LEFT_PAREN SINGLE_QUOTED RIGHT_PAREN XOR
+##
+## Ends in an error in state: 598.
+##
+## tptp_include -> INCLUDE LEFT_PAREN file_name formula_section RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE LEFT_PAREN file_name formula_section RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF XOR
+##
+## Ends in an error in state: 600.
+##
+## fof_annotated -> FOF . LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN XOR
+##
+## Ends in an error in state: 601.
+##
+## fof_annotated -> FOF LEFT_PAREN . name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 602.
+##
+## fof_annotated -> FOF LEFT_PAREN name . COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 603.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA . formula_role COMMA fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 604.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role . COMMA fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 605.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA . fof_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_BRACKET
+##
+## Ends in an error in state: 606.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula . annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 50, spurious reduction of production defined_constant -> defined_functor
+## In state 52, spurious reduction of production defined_plain_term -> defined_constant
+## In state 116, spurious reduction of production defined_plain_formula -> defined_plain_term
+## In state 117, spurious reduction of production defined_atomic_formula -> defined_plain_formula
+## In state 119, spurious reduction of production atomic_formula -> defined_atomic_formula
+## In state 268, spurious reduction of production fof_unitary_formula -> atomic_formula
+## In state 270, spurious reduction of production fof_logic_formula -> fof_unitary_formula
+## In state 451, spurious reduction of production fof_formula -> fof_logic_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 607.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: FOF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 608.
+##
+## fof_annotated -> FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## FOF LEFT_PAREN name COMMA formula_role COMMA fof_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF XOR
+##
+## Ends in an error in state: 611.
+##
+## cnf_annotated -> CNF . LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN XOR
+##
+## Ends in an error in state: 612.
+##
+## cnf_annotated -> CNF LEFT_PAREN . name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER XOR
+##
+## Ends in an error in state: 613.
+##
+## cnf_annotated -> CNF LEFT_PAREN name . COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA XOR
+##
+## Ends in an error in state: 614.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA . formula_role COMMA cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD XOR
+##
+## Ends in an error in state: 615.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role . COMMA cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA XOR
+##
+## Ends in an error in state: 616.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA . cnf_formula annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA LEFT_PAREN DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 617.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula . annotations RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD COMMA LOWER_WORD COMMA LEFT_BRACKET RIGHT_BRACKET XOR
+##
+## Ends in an error in state: 618.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations . RIGHT_PAREN DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+input: CNF LEFT_PAREN INTEGER COMMA LOWER_WORD COMMA DOLLAR_WORD RIGHT_PAREN XOR
+##
+## Ends in an error in state: 619.
+##
+## cnf_annotated -> CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN . DOT [ # ]
+##
+## The known suffix of the stack is as follows:
+## CNF LEFT_PAREN name COMMA formula_role COMMA cnf_formula annotations RIGHT_PAREN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
