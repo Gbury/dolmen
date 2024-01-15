@@ -568,7 +568,7 @@ tff_non_atomic_type:
 
 tf1_quantified_type:
   | FORALL_TY LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET COMMA t=tff_monotype
-    { let loc = L.mk_pos $startpos $endpos in T.pi ~loc l t }
+    { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
 
 tff_monotype:
   | t=tff_atomic_type
@@ -673,7 +673,74 @@ nxf_key_pair:
   | t=nxf_definition
     { t }
 
+ntf_connective_name:
+  | c=def_or_sys_constant
+    { c }
 
+ntf_index:
+  | HASH t=tff_unitary_term
+    { t }
+
+ntf_short_connective:
+  /* TODO: make these ast builtins ? requires to find names for these */
+  | LEFT_BRACKET DOT RIGHT_BRACKET
+    { let c = I.mk I.term "[.]" in
+      let loc = L.mk_pos $startpos $endpos in T.const ~loc c }
+  | LESS DOT ARROW
+    { let c = I.mk I.term "<.>" in
+      let loc = L.mk_pos $startpos $endpos in T.const ~loc c }
+  | LEFT_CURLY DOT RIGHT_CURLY
+    { let c = I.mk I.term "{.}" in
+      let loc = L.mk_pos $startpos $endpos in T.const ~loc c }
+  | LEFT_PAREN DOT RIGHT_PAREN
+    { let c = I.mk I.term "(.)" in
+      let loc = L.mk_pos $startpos $endpos in T.const ~loc c }
+
+tff_logic_defn:
+  | x=tff_logic_defn_LHS eq=identical l=tff_logic_defn_RHS
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc eq (x :: l) }
+
+tff_logic_defn_LHS:
+  | c=defined_constant
+    { c }
+
+tff_logic_defn_RHS:
+  | t=tff_term
+    { [t] }
+  | LEFT_BRACKET l=tff_logic_defn_terms RIGHT_BRACKET
+  { l }
+
+tff_logic_defn_terms:
+  | t=tff_logic_defn_term
+    { [t] }
+  | t=tff_logic_defn_term COMMA l=tff_logic_defn_terms
+    { t :: l }
+
+tff_logic_defn_term:
+  | t=tff_term
+  | t=txf_definition
+    { t }
+
+
+/* ************ */
+/* TCF formulas */
+
+tcf_formula:
+  | t=tcf_logic_formula
+  | t=tff_atom_typing
+    { t }
+
+tcf_logic_formula:
+  | t=tcf_quantified_formula
+  | t=cnf_formmula
+    { t }
+
+tcf_quantified_formula:
+  | FORALL LEFT_BRACKET l=tff_variable_list RIGHT_BRACKET COMMA t=tcf_logic_formula
+    { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
+
+
+/* ************ */
 /* FOF formulas */
 
 fof_formula:
@@ -692,7 +759,7 @@ fof_binary_formula:
     { f }
 
 fof_binary_nonassoc:
-  | f=fof_unitary_formula c=binary_connective g=fof_unitary_formula
+  | f=fof_unit_formula c=nonassoc_connective g=fof_unit_formula
     { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f; g] }
 
 fof_binary_assoc:
@@ -701,26 +768,39 @@ fof_binary_assoc:
     { f }
 
 fof_or_formula:
-  | f=fof_unitary_formula VLINE g=fof_unitary_formula
-  | f=fof_or_formula VLINE g=fof_unitary_formula
+  | f=fof_unit_formula VLINE g=fof_unit_formula
+  | f=fof_or_formula VLINE g=fof_unit_formula
     { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
 fof_and_formula:
-  | f=fof_unitary_formula AND g=fof_unitary_formula
-  | f=fof_and_formula AND g=fof_unitary_formula
+  | f=fof_unit_formula AND g=fof_unit_formula
+  | f=fof_and_formula AND g=fof_unit_formula
     { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.and_t ~loc () in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; g] }
 
+fof_unary_formula:
+  | c=unary_connection f=fof_unit_formula
+    { let loc = L.mk_pos $satrtpos $endpos in T.apply ~loc c [f] }
+  | t=fof_infix_unary
+
+fof_infix_unary:
+  | a=fof_term f=infix_inequality b=fof_term
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [a; b] }
+
+fof_unit_formula:
+  | t=fof_unitary_formula
+  | t=fof_unary_formula
+    { t }
+
 fof_unitary_formula:
   | f=fof_quantified_formula
-  | f=fof_unary_formula
-  | f=atomic_formula
+  | f=fof_atomic_formula
   | LEFT_PAREN f=fof_logic_formula RIGHT_PAREN
     { f }
 
 fof_quantified_formula:
-  | q=fol_quantifier LEFT_BRACKET l=fof_variable_list RIGHT_BRACKET COLON f=fof_unitary_formula
+  | q=fof_quantifier LEFT_BRACKET l=fof_variable_list RIGHT_BRACKET COLON f=fof_unit_formula
     { let loc = Some (L.mk_pos $startpos $endpos) in q ?loc l f }
 
 fof_variable_list:
@@ -729,105 +809,166 @@ fof_variable_list:
   | v=variable COMMA l=fof_variable_list
     { v :: l }
 
-fof_unary_formula:
-  | c=unary_connective f=fof_unitary_formula
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f] }
-  | f=fol_infix_unary
-    { f }
+fof_atomic_formula:
+  | t=fof_plain_atomic_formula
+  | t=fof_defined_atomic_formula
+  | t=fof_system_atomic_formula
+    { t }
+
+fof_plain_atomic_formula:
+  | t=fof_plain_term
+    { t }
+
+fof_defined_atomic_formula:
+  | t=fof_defined_plain_formula
+  | t=fof_defined_infix_formula
+    { t }
+
+fof_defined_plain_formula:
+  | t=fof_defined_plain_term
+    { t }
+
+fof_defined_infix_formula:
+  | a=fof_term f=defined_infix_pred b=fof_term
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [a; b] }
+
+fof_system_atomic_formula:
+  | t=fof_system_term
+    { t }
+
+fof_plain_term:
+  | c=constant
+    { c }
+  | f=functor LEFT_PAREN l=fof_arguments RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f l }
+
+fof_defined_term:
+  | t=defined_term
+  | t=fof_defined_atomic_term
+    { t }
+
+fof_defined_atomic_term:
+  | t=fof_defined_plain_term
+    { t }
+
+fof_defined_plain_term:
+  | c=defined_constant
+    { c }
+  | f=functor LEFT_PAREN l=fof_arguments RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f l }
+
+fof_system_term:
+  | c=system_constant
+    { c }
+  | f=system_functor LEFT_PAREN l=fof_arguments RIGHT_PAREN
+    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f l }
+
+fof_arguments:
+  | t=fof_term
+    { [t] }
+  | t=fof_term COMMA l=fof_arguments
+    { t :: l }
+
+fof_term:
+  | t=fof_function_term
+    { t }
+  | v=variable
+    { v }
+
+fof_function_term:
+  | t=fof_plain_term
+  | t=fof_defined_term
+  | t=fof_system_term
+    { t }
 
 fof_sequent:
-  | hyp=fof_tuple GENTZEN_ARROW goal=fof_tuple
+  | hyp=fof_formula_tuple GENTZEN_ARROW goal=fof_formula_tuple
     { let loc = L.mk_pos $startpos $endpos in T.sequent ~loc hyp goal }
   | LEFT_PAREN t=fof_sequent RIGHT_PAREN
     { t }
 
-fof_tuple:
-  | LEFT_BRACKET RIGHT_BRACKET
+fof_formula_tuple:
+  | LEFT_CURLY RIGHT_CURLY
     { [] }
-  | LEFT_BRACKET l=fof_tuple_list RIGHT_BRACKET
+  | LEFT_CURLY l=fof_formula_tuple_list RIGHT_CURLY
     { l }
 
-fof_tuple_list:
+fof_formula_tuple_list:
   | f=fof_logic_formula
     { [ f ] }
-  | f=fof_logic_formula COMMA l=fof_tuple_list
+  | f=fof_logic_formula COMMA l=fof_formula_tuple_list
     { f :: l }
 
+
+/* ************ */
+/* CNF Formulas */
+
 cnf_formula:
-  | LEFT_PAREN f=disjunction RIGHT_PAREN | f=disjunction
+  | f=cnf_disjunction
+  | LEFT_PAREN f=cnf_formula RIGHT_PAREN
     { f }
 
-disjunction:
-  | x=literal
+cnf_disjunction:
+  | x=cnf_literal
     { x }
-  | f=disjunction VLINE x=literal
+  | f=cnf_disjunction VLINE x=cnf_literal
     { let op = let loc = L.mk_pos $startpos($2) $endpos($2) in T.or_t ~loc () in
       let loc = L.mk_pos $startpos $endpos in T.apply ~loc op [f; x] }
 
-literal:
-  | f=atomic_formula
+cnf_literal:
+  | f=fof_atomic_formula
     { f }
-  | c=unary_negation f=atomic_formula
+  | c=unary_negation f=fof_atomic_formula
+  | c=unary_negation LEFT_PAREN f=fof_atomic_formula RIGHT_PAREN
     { let loc = L.mk_pos $startpos $endpos in T.apply ~loc c [f] }
-  | f=fol_infix_unary
+  | f=fof_infix_unary
     { f }
 
 
-/* Special formulas */
-
-thf_conn_term:
-  | t=thf_pair_connective
-  | t=assoc_connective
-  | t=thf_unary_connective
-    { t }
-
-fol_infix_unary:
-  | t=term f=infix_inequality u=term
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [t; u] }
-
-
-/* THF connective */
+/* *********** */
+/* Connectives */
 
 thf_quantifier:
-  | q=fol_quantifier
+  | q=fof_quantifier
+  | q=th0_quantifier
+  | q=th1_quantifier
     { q }
-  | LAMBDA
-    { T.lambda }
+
+the_unary_connective:
+  | c=unary_connective
+  | c=ntf_short_connective
+    { c }
+
+th1_quantifier:
   | FORALL_TY
     { T.forall }
   | EXISTS_TY
     { T.exists }
-  | DEFINITE_DESCRIPTION
-    { T.description }
+
+th0_quantifier:
+  | LAMBDA
+    { T.lambda }
   | INDEFINITE_DESCRIPTION
     { T.choice }
-
-thf_pair_connective:
-  | t=infix_equality
-  | t=infix_inequality
-  | t=binary_connective
-    { t }
-
-thf_unary_connective:
-  | c=unary_connective
-    { c }
-  /* These two quantifiers have been removed from THF0, and will come back in THF1
-  when it is released, so it doesn't really matter how we handle them right now*/
-  | PI
-    { let loc = L.mk_pos $startpos $endpos in T.pi_t ~loc () }
-  | SIGMA
-    { let loc = L.mk_pos $startpos $endpos in T.sigma_t ~loc () }
+  | DEFINITE_DESCRIPTION
+    { T.description }
 
 subtype_sign:
-  | LESS LESS { () }
+  | LESS LESS
+    { () }
 
-fol_quantifier:
-  | FORALL
-    { T.forall }
+tff_unary_connective:
+  | c=unary_connective
+  | c=ntf_short_connective
+    { c }
+
+fof_quantifier:
   | EXISTS
     { T.exists }
+  | FORALL
+    { T.forall }
 
-binary_connective:
+nonassoc_connective:
   | EQUIV
     { let loc = L.mk_pos $startpos $endpos in T.equiv_t ~loc () }
   | IMPLY
@@ -848,16 +989,98 @@ assoc_connective:
     { let loc = L.mk_pos $startpos $endpos in T.and_t ~loc () }
 
 unary_connective:
-  | c=unary_negation
-    { c }
-
-unary_negation:
   | NOT
     { let loc = L.mk_pos $startpos $endpos in T.not_t ~loc () }
 
-defined_type:
-  | t=atomic_defined_word
+gentzen_arrow:
+  | GENTZEN_ARROW
+    { () }
+
+assignment:
+  | ASSIGNMENT
+    { let loc = L.mk_pos $startpos $endpos in T.eq_t ~loc () }
+
+identical:
+  | IDENTICAL
+    { let loc = L.mk_pos $startpos $endpos in T.neq_t ~loc () }
+
+
+/* ********************* */
+/* Types for THF and TFF */
+
+type_constant:
+  | t=type_functor
     { t }
+
+type_functor:
+  | a=atomic_word
+    { a }
+
+defined_type:
+  | a=atomic_defined_word
+    { a }
+
+
+/* ****************** */
+/* Common definitions */
+
+atom:
+  | c=untyped_atom
+  | c=defined_constant
+    { c }
+
+untyped_atom:
+  | c=constant
+  | c=system_constant
+    { c }
+
+defined_infix_pred:
+  | f=infix_equality
+    { f }
+
+infix_equality:
+  | EQUAL
+    { let loc = L.mk_pos $startpos $endpos in T.eq_t ~loc () }
+
+infix_inequality:
+  | NOT_EQUAL
+    { let loc = L.mk_pos $startpos $endpos in T.neq_t ~loc () }
+
+constant:
+  | f=functor
+    { f }
+
+functor:
+  | a=atomic_word
+    { a }
+
+defined_constant:
+  | f=defined_functor
+    { f }
+
+defined_functor:
+  | a=atomic_defined_word
+    { a }
+
+system_constant:
+  | f=system_functor
+    { f }
+
+system_functor:
+  | a=atomic_system_word
+    { a }
+
+def_or_sys_constant:
+  | c=defined_constant
+  | c=system_constant
+    { c }
+
+th1_defined_term:
+  | PI
+  | SIGMA
+  | 
+
+
 
 /* First order atoms */
 

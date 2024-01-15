@@ -45,6 +45,7 @@ module type Term = sig
   val implied_t : ?loc:location -> unit -> t
   val pi_t      : ?loc:location -> unit -> t
   val sigma_t   : ?loc:location -> unit -> t
+  val subtype_t : ?loc:location -> unit -> t
   val data_t    : ?loc:location -> unit -> t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {!implied_t} is reverse implication, and
@@ -90,6 +91,8 @@ module type Term = sig
 
   val pi     : ?loc:location -> t list -> t -> t
   (** Dependant type constructor, used for polymorphic function types. *)
+
+  val sigma
 
   val letin  : ?loc:location -> t list -> t -> t
   (** Local binding for terms. *)

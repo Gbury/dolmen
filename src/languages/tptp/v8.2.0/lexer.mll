@@ -182,9 +182,14 @@ rule token newline = parse
 
   | "!!"  { PI }
   | "??"  { SIGMA }
+  | "@@+"
+  | "@@-"
+  | "@="
 
   | '<'   { LESS }
   | '>'   { ARROW }
+
+  | '#'   { HASH }
 
   | '*'   { STAR }
   | '+'   { PLUS }

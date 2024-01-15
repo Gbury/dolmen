@@ -40,6 +40,8 @@
 %token LESS
 %token ARROW
 
+%token HASH
+
 %token STAR
 %token PLUS
 
