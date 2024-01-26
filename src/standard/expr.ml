@@ -77,8 +77,9 @@ and term_descr =
   | Match of term * (pattern * term) list
 
 and binder =
-  | Let_seq  of (term_var * term) list
+  | Let_seq of (term_var * term) list
   | Let_par of (term_var * term) list
+  | Let_match of term list * (term * term) list
   | Lambda of ty_var list * term_var list
   | Exists of ty_var list * term_var list
   | Forall of ty_var list * term_var list

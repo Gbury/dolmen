@@ -68,6 +68,8 @@ type builtin =
   | Geq
   (** Arithmetic "greater or equal" comparison. *)
 
+  | Tuple
+  (** Tuples *)
   | Subtype
   (** Subtyping relation *)
   | Product
@@ -78,7 +80,11 @@ type builtin =
   | Pi
   (** Pi: higher-order encoding of the forall quantifier as a constant. *)
   | Sigma
-  (** Sigma: higher-order envoding of the exists quantifier of a constant. *)
+  (** Sigma: higher-order encoding of the exists quantifier as a constant. *)
+  | Choice
+  (** Choice: higher-order encoding of the indefinite description binding as a constant. *)
+  | Description
+  (** Choice: higher-order encoding of the definite description binding as a constant. *)
 
   | Not
   (** Propositional negation *)

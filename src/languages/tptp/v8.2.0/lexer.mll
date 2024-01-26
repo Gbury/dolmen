@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   let descr t : T.descr =
     match (t: token) with
     | EOF -> T.descr ~kind:"end of file token" ""
+    | DASH -> reserved "-"
     | DOT -> reserved "."
     | COMMA -> reserved ","
     | COLON -> reserved ":"
@@ -48,16 +49,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     | RIGHT_PAREN -> reserved ")"
     | LEFT_BRACKET -> reserved "["
     | RIGHT_BRACKET -> reserved "]"
+    | LEFT_CURLY -> reserved "{"
+    | RIGHT_CURLY -> reserved "-"
     | CNF -> reserved "cnf"
     | FOF -> reserved "fof"
     | TFF -> reserved "tff"
+    | TCF -> reserved "tcf"
     | THF -> reserved "thf"
     | TPI -> reserved "tpi"
     | INCLUDE -> reserved "include"
     | LAMBDA -> reserved "^"
     | APPLY -> reserved "@"
-    | DEFINITE_DESCRIPTION -> reserved "@-"
-    | INDEFINITE_DESCRIPTION -> reserved "@+"
+    | DEFINITE_DESCRIPTION_OP -> reserved "@-"
+    | INDEFINITE_DESCRIPTION_OP -> reserved "@+"
+    | DEFINITE_DESCRIPTION_TERM -> reserved "@@-"
+    | INDEFINITE_DESCRIPTION_TERM -> reserved "@@+"
+    | EQUAL_TERM -> reserved "@="
     | FORALL_TY -> reserved "!>"
     | FORALL -> reserved "!"
     | EXISTS_TY -> reserved "?*"
@@ -68,6 +75,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     | LESS -> reserved "<"
     | ARROW -> reserved ">"
+    | SUBTYPE -> reserved "<<"
+
+    | HASH -> reserved "#"
 
     | STAR -> reserved "*"
     | PLUS -> reserved "+"
@@ -85,6 +95,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     | EQUAL -> reserved "="
     | NOT_EQUAL -> reserved "!="
+    | ASSIGNMENT -> reserved ":="
+    | IDENTICAL -> reserved "=="
     | GENTZEN_ARROW -> reserved "-->"
 
     | LET -> reserved "$let"
@@ -173,8 +185,11 @@ rule token newline = parse
 
   | '^'   { LAMBDA }
   | '@'   { APPLY }
-  | "@+"  { INDEFINITE_DESCRIPTION }
-  | "@-"  { DEFINITE_DESCRIPTION }
+  | "@+"  { INDEFINITE_DESCRIPTION_OP }
+  | "@@+" { INDEFINITE_DESCRIPTION_TERM }
+  | "@-"  { DEFINITE_DESCRIPTION_OP }
+  | "@@-" { DEFINITE_DESCRIPTION_TERM }
+  | "@=" { EQUAL_TERM }
   | "!>"  { FORALL_TY }
   | '!'   { FORALL }
   | "?*"  { EXISTS_TY }
@@ -182,12 +197,10 @@ rule token newline = parse
 
   | "!!"  { PI }
   | "??"  { SIGMA }
-  | "@@+"
-  | "@@-"
-  | "@="
 
   | '<'   { LESS }
   | '>'   { ARROW }
+  | "<<"  { SUBTYPE }
 
   | '#'   { HASH }
 
@@ -230,7 +243,6 @@ rule token newline = parse
     | "$tff" -> DOLLAR_TFF
     | "$thf" -> DOLLAR_THF
     | "$fot" -> DOLLAR_FOT
-    | "$ite" -> ITE
     | "$let" -> LET
     | s -> DOLLAR_WORD(s)
   }

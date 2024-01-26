@@ -1599,6 +1599,46 @@ module Typer(State : State.S) = struct
             ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly
             ~warnings ~file builtins
+        | Some "tcf" when (match v with
+            | `Latest | `V8_2_0 -> true
+            | `V6_3_0 -> false
+          ) ->
+          let var_infer = T.{
+              var_hook = ignore;
+              infer_unbound_vars = No_inference;
+              infer_type_vars_in_binding_pos = true;
+              infer_term_vars_in_binding_pos =
+                Wildcard (Any_base {
+                    allowed = [Dolmen.Std.Expr.Ty.base];
+                    preferred = Dolmen.Std.Expr.Ty.base;
+                  });
+            } in
+          let sym_infer = T.{
+              sym_hook = ignore;
+              infer_type_csts = true;
+              infer_term_csts = Wildcard (Arrow {
+                  arg_shape = Any_base {
+                      allowed = [Dolmen.Std.Expr.Ty.base];
+                      preferred = Dolmen.Std.Expr.Ty.base;
+                    };
+                  ret_shape = Any_base {
+                      allowed = [
+                        Dolmen.Std.Expr.Ty.base;
+                        Dolmen.Std.Expr.Ty.prop;
+                      ];
+                      preferred = Dolmen.Std.Expr.Ty.base;
+                    };
+                });
+            } in
+          let builtins = Dolmen_type.Base.merge [
+              additional_builtins;
+              Tptp_Core.parse v;
+              Tptp_Arith.parse v;
+            ] in
+          T.empty_env ~order:First_order
+            ~st:(State.get ty_state st).typer
+            ~var_infer ~sym_infer ~poly
+            ~warnings ~file builtins
         | bad_kind ->
           let builtins = Dolmen_type.Base.noop in
           let env =
@@ -2043,7 +2083,7 @@ module Make
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Other of Dolmen.Std.Id.t * Dolmen.Std.Statement.term list
+    | `Other of Dolmen.Std.Statement.term * Dolmen.Std.Statement.term list
   ]
 
   type set_info = [
@@ -2147,7 +2187,7 @@ module Make
       Format.fprintf fmt "@[<hov 2>echo: %s@]" s
     | `Other (name, args) ->
       Format.fprintf fmt "@[<hov 2>other/%a: %a@]"
-        Dolmen.Std.Id.print name
+        Dolmen.Std.Term.print name
         (Format.pp_print_list Dolmen.Std.Term.print) args
     | `Set_logic (s, logic) ->
       Format.fprintf fmt

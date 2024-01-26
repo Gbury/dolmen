@@ -248,14 +248,15 @@ module type Logic = sig
 
   (** {2 TPTP Statements} *)
 
-  val tpi : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val thf : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val tff : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val fof : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val cnf : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tpi : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val thf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val tff : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val tcf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val fof : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val cnf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   (** TPTP directives. [tptp name role t] instructs the prover to register
       a new directive with the given name, role and term. Current tptp roles are:
-      - ["axiom", "hypothesis", "definition", "lemma", "theorem"] acts
+      - ["axiom", "hypothesis", "definition", "lemma", "theorem", "corollary"] acts
         as new assertions/declartions
       - ["assumption", "conjecture"] are proposition that need to be proved,
         and then can be used to prove other propositions. They are equivalent
@@ -272,7 +273,7 @@ module type Logic = sig
       - ["type"] declares a new symbol and its type
       - ["plain", "unknown", "fi_domain", "fi_functors", "fi_predicates"] are valid
         roles with no specified semantics
-      - any other role is an error
+      - any other role is translated as an `Other` statement.
   *)
 
   (** {2 Zipperposition statements} *)

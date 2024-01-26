@@ -27,8 +27,11 @@
 
 %token LAMBDA
 %token APPLY
-%token DEFINITE_DESCRIPTION
-%token INDEFINITE_DESCRIPTION
+%token DEFINITE_DESCRIPTION_OP
+%token DEFINITE_DESCRIPTION_TERM
+%token INDEFINITE_DESCRIPTION_OP
+%token INDEFINITE_DESCRIPTION_TERM
+%token EQUAL_TERM
 %token FORALL_TY
 %token FORALL
 %token EXISTS_TY
@@ -39,6 +42,7 @@
 
 %token LESS
 %token ARROW
+%token SUBTYPE
 
 %token HASH
 
@@ -62,7 +66,6 @@
 %token IDENTICAL
 %token GENTZEN_ARROW
 
-%token ITE
 %token LET
 
 %token DOLLAR_THF
@@ -81,18 +84,15 @@
 %token <string> RATIONAL
 %token <string> INTEGER
 
-/*
 
-%left VLINE
-%left AND
-%nonassoc EQUIV
-%nonassoc XOR
-%nonassoc IMPLY
-%nonassoc LEFT_IMPLY
-%nonassoc NOTVLINE
-%nonassoc NOTAND
-
+/* priority to solve shift/reduce conflcits, and ensure that
+   "! [X] X = a"
+   is parsed as
+   "! [X] (X = a)"
 */
+%nonassoc quantifier_prec
+%nonassoc EQUAL
+
 
 %%
 

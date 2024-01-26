@@ -249,7 +249,7 @@ module type S = sig
     | `Get_assignment
     | `Get_assertions
     | `Echo of string
-    | `Other of Dolmen.Std.Id.t * Dolmen.Std.Statement.term list
+    | `Other of Dolmen.Std.Statement.term * Dolmen.Std.Statement.term list
   ]
   (** Various info getters *)
 

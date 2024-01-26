@@ -16,6 +16,9 @@ module type Id = sig
   (** Names used to refer to tptp phrases. These are used
       in declarations and include statement. *)
 
+  val attr : namespace
+  (** Namespace for attributes, such as formula roles. *)
+
   val mk : namespace -> string -> t
   (** Make an identifier *)
 
@@ -135,11 +138,11 @@ module type Statement = sig
   (** Include directive. Given the filename, and a list of
       names to import (an empty list means import everything). *)
 
-  val tpi : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val thf : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val tff : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val fof : ?loc:location -> ?annot:term -> id -> string -> term -> t
-  val cnf : ?loc:location -> ?annot:term -> id -> string -> term -> t
+  val tpi : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val thf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val tff : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val fof : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val cnf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   (** TPTP statements, used for instance as [tff ~loc ~annot name role t].
       Instructs the prover to register a new directive with the given name,
       role and term. Current tptp roles are:

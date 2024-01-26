@@ -12,7 +12,7 @@
 )
 
 (menhir
- (flags (--explain --exn-carries-state --external-tokens Tokens))
+ (flags (--explain --strict --exn-carries-state --external-tokens Tokens))
  (modules tokens parser)
  (merge_into parser)
 )
@@ -23,7 +23,7 @@
           (:parser parser.mly)
           (:msg syntax.messages))
   (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens %{tokens}
+          (run menhir --external-tokens Tokens %{tokens} --strict
                       %{parser} --base %{parser} --compile-errors %{msg})))
 )
 
@@ -34,7 +34,7 @@
   (deps   (:tokens tokens.mly)
           (:parser parser.mly))
   (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens %{tokens}
+          (run menhir --external-tokens Tokens %{tokens} --strict
                       %{parser} --base %{parser} --list-errors)))
 )
 
@@ -44,7 +44,7 @@
           (:parser parser.mly)
           (:msg syntax.messages))
   (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens %{tokens}
+          (run menhir --external-tokens Tokens %{tokens} --strict
                       %{parser} --base %{parser} --update-errors %{msg})))
 )
 
@@ -56,7 +56,7 @@
           (:updated updated.messages)
   )
   (action (with-stdout-to %{target}
-          (run menhir --external-tokens Tokens %{tokens}
+          (run menhir --external-tokens Tokens %{tokens} --strict
                       %{parser} --base %{parser} --merge-errors %{new} --merge-errors %{updated})))
 )
 

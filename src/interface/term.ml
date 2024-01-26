@@ -93,6 +93,9 @@ module type Logic = sig
   val implies_t : ?loc:location -> unit -> t
   val pi_t      : ?loc:location -> unit -> t
   val sigma_t   : ?loc:location -> unit -> t
+  val subtype_t : ?loc:location -> unit -> t
+  val choice_t  : ?loc:location -> unit -> t
+  val description_t : ?loc:location -> unit -> t
   (** Standard logical connectives viewed as terms. [implies_t] is usual
       right implication, i.e [apply implies_t \[p; q\] ] is "p implies q",
       while [apply implied_t \[p; q \]] means "p is implied by q" or
@@ -162,6 +165,9 @@ module type Logic = sig
   (** Proposition construction functions. The conjunction and disjunction
       are n-ary instead of binary mostly because they are in smtlib (and
       that is subsumes the binary case). *)
+
+  val tuple : ?loc:location -> t list -> t
+  (** Create a tuple of terms. *)
 
   val apply : ?loc:location -> t -> t list -> t
   (** Application constructor, seen as higher order application

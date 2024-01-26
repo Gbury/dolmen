@@ -16,6 +16,9 @@ module type Id = sig
   (** Names used to refer to tptp phrases. These are used
       in declarations and include statement. *)
 
+  val attr : namespace
+  (** Namespace for attributes, such as formula roles. *)
+
   val mk : namespace -> string -> t
   (** Make an identifier *)
 
@@ -47,6 +50,8 @@ module type Term = sig
   val sigma_t   : ?loc:location -> unit -> t
   val subtype_t : ?loc:location -> unit -> t
   val data_t    : ?loc:location -> unit -> t
+  val choice_t  : ?loc:location -> unit -> t
+  val description_t : ?loc:location -> unit -> t
   (** Predefined symbols in tptp. Symbols as standalone terms are necessary
       for parsing tptp's THF. {!implied_t} is reverse implication, and
       {!data_t} is used in tptp's annotations. {!pi_t} and {!sigma_t} are
@@ -74,8 +79,8 @@ module type Term = sig
   val apply : ?loc:location -> t -> t list -> t
   (** Application. *)
 
-  val ite   : ?loc:location -> t -> t -> t -> t
-  (** Conditional, of the form [ite condition then_branch els_branch]. *)
+  val tuple : ?loc:location -> t list -> t
+  (** Tuple of terms. *)
 
   val union   : ?loc:location -> t -> t -> t
   (** Union of types. *)
@@ -91,8 +96,6 @@ module type Term = sig
 
   val pi     : ?loc:location -> t list -> t -> t
   (** Dependant type constructor, used for polymorphic function types. *)
-
-  val sigma
 
   val letin  : ?loc:location -> t list -> t -> t
   (** Local binding for terms. *)
@@ -141,6 +144,7 @@ module type Statement = sig
   val tpi : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   val thf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   val tff : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
+  val tcf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   val fof : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   val cnf : ?loc:location -> ?annot:term -> id -> role:term -> term -> t
   (** TPTP statements, used for instance as [tff ~loc ~annot name role t].

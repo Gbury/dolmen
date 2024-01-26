@@ -82,7 +82,7 @@ type local = { hyps: term list; goals: term list }
 (** Local hypothesis and consequents used by [Prove]. *)
 
 type other = {
-  name : Id.t;
+  name : term;
   (** The name of the statement, used to determine its semantics. For instance,
       it might be `plain` or `minimize`. *)
   args : term list;
@@ -185,7 +185,7 @@ include Dolmen_intf.Stmt.Logic
 
 (** {2 Additional functions} *)
 
-val other : ?id:Id.t -> ?loc:location -> ?attrs:term list -> Id.t -> term list -> t
+val other : ?id:Id.t -> ?loc:location -> ?attrs:term list -> term -> term list -> t
 (** Create an 'Other' statement. *)
 
 val add_attrs : term list -> t -> t
