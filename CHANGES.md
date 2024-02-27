@@ -39,6 +39,9 @@ next
   typechecking (PR#199)
 - Treat smtlib `:named` annotations as implicit definitions as
   required by the spec (PR#199)
+- Add a warning for unknown attributes in smtlib2. This replaces
+  the `unbound id` error that some files could raise before when
+  using non-standard attribtues (PR#207)
 
 ### Loop
 
