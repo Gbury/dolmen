@@ -77,6 +77,9 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
+    type _ Type.warn +=
+      | Unknown_attribute : Dolmen.Std.Id.t -> Dolmen.Std.Term.t Type.warn
+
     type _ Type.err +=
       | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
       | Non_closed_named_term : Type.Ty.Var.t list * Type.T.Var.t list -> Dolmen.Std.Term.t Type.err

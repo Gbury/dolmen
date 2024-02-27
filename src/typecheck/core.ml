@@ -499,6 +499,9 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type cstr := Type.T.Cstr.t) = struct
 
+    type _ Type.warn +=
+      | Unknown_attribute : Dolmen.Std.Id.t -> Dolmen.Std.Term.t Type.warn
+
     type _ Type.err +=
       | Incorrect_sexpression : Dolmen.Intf.Msg.t -> Dolmen.Std.Term.t Type.err
       | Non_closed_named_term : Type.Ty.Var.t list * Type.T.Var.t list -> Dolmen.Std.Term.t Type.err
@@ -640,6 +643,14 @@ module Smtlib2 = struct
             let t = T.multi_trigger l in
             [Type.Add (Tag.triggers, t)]
           ))
+
+      (* Unknown attributes *)
+      | Type.Id ({ name = Simple annot; ns = Attr } as id)
+        when String.length annot > 0 && annot.[0] = ':' ->
+        Type.builtin_tags (fun ast _args ->
+            Type._warn env (Ast ast) (Unknown_attribute id);
+            []
+          )
 
       (* Rewrite rules *)
       | Type.Id id when Id.equal id Id.rwrt_rule ->

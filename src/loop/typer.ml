@@ -361,13 +361,12 @@ let unused_term_variable =
           print_var_kind kind Dolmen.Std.Expr.Print.id v)
     ~name:"Unused bound term variable" ()
 
-let error_in_attribute =
-  Report.Warning.mk ~code ~mnemonic:"error-in-attr"
-    ~message:(fun fmt exn ->
-        Format.fprintf fmt
-          "Exception while typing attribute:@ %s"
-          (Printexc.to_string exn))
-    ~name:"Exception while typing an attribute" ()
+let unknown_attribute =
+  Report.Warning.mk ~code ~mnemonic:"unknown-attribute"
+    ~message:(fun fmt id ->
+        Format.fprintf fmt "Unknown attribute (the attribtue was ignored): %a"
+          (pp_wrap Dolmen.Std.Id.print) id)
+    ~name:"Unknown attribute" ()
 
 let superfluous_destructor =
   Report.Warning.mk ~code:Code.bug ~mnemonic:"extra-dstr"
@@ -1228,20 +1227,24 @@ module Typer(State : State.S) = struct
       else warn ~input ~loc st unused_term_variable (kind, v)
 
     (* *)
-    | T.Error_in_attribute exn ->
-      warn ~input ~loc st error_in_attribute exn
     | T.Superfluous_destructor _ ->
       warn ~input ~loc st superfluous_destructor ()
     | T.Shadowing (id, old, _cur) ->
       warn ~input ~loc st shadowing (id, old)
     | T.Redundant_pattern pattern ->
       warn ~input ~loc st redundant_pattern pattern
+
+    (* smtlib2 *)
+    | Smtlib2_Core.Unknown_attribute id ->
+      warn ~input ~loc st unknown_attribute id
     | Smtlib2_Arrays.Extension id ->
       warn ~input ~loc st array_extension id
     | Smtlib2_Ints.Restriction (config, msg)
     | Smtlib2_Reals.Restriction (config, msg)
     | Smtlib2_Reals_Ints.Restriction (config, msg) ->
       warn ~input ~loc st bad_arith_expr (config, msg)
+
+    (* catch-all *)
     | _ ->
       warn ~input ~loc st unknown_warning
         (Obj.Extension_constructor.(name (of_val w)))
