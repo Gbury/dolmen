@@ -3,6 +3,7 @@ module Id = Dolmen.Std.Id
 
 (* Ae Bitvector *)
 (* ************************************************************************ *)
+
 module Ae = struct
 
   module Tff
@@ -347,5 +348,19 @@ module Smtlib2 = struct
       | _ -> `Not_found
 
   end
+
+  module Bv2nat
+      (Type : Tff_intf.S)
+      (Ty : Dolmen_intf.Ty.Smtlib_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Bv2nat with type t := Type.T.t) = struct
+
+    let parse _version env s =
+      match s with
+      | Type.Id { ns = Term; name = Simple "bv2nat"; } ->
+        Type.builtin_term (Base.term_app1 (module Type) env s T.to_nat)
+      | _ -> `Not_found
+
+  end
+
 end
 

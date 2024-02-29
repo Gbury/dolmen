@@ -2228,6 +2228,11 @@ module Term = struct
         mk' ~builtin:(Builtin.Bitvec s)
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
+      let to_nat =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_to_nat { n }) "bitv2nat"
+              [] [Ty.bitv n] Ty.int)
+
       let concat =
         with_cache (fun (n, m) ->
             mk' ~builtin:(Builtin.Bitv_concat{n;m}) "bitv_concat"
@@ -3348,6 +3353,10 @@ module Term = struct
       | _ -> raise (Wrong_type (t, Ty.bitv 0))
 
     let mk s = apply_cst (Const.Bitv.bitv s) [] []
+
+    let to_nat b =
+      let n = match_bitv_type b in
+      apply_cst (Const.Bitv.to_nat n) [] [b]
 
     let concat u v =
       let i = match_bitv_type u in

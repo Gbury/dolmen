@@ -55,6 +55,9 @@ module Smtlib2_Arrays =
 module Smtlib2_Bitv =
   Dolmen_type.Bitv.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
+module Smtlib2_Bv2nat =
+  Dolmen_type.Bitv.Smtlib2.Bv2nat(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 module Smtlib2_Float =
   Dolmen_type.Float.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
@@ -1079,6 +1082,31 @@ module Typer(State : State.S) = struct
     | `Response of Response.language
   ]
 
+  (* Extensions builtins *)
+  (* ************************************************************************ *)
+
+  module Ext = struct
+
+    type t = {
+      name : string;
+      builtins : lang -> T.builtin_symbols;
+    }
+
+    let all = ref []
+    let list () = !all
+    let name { name; _ } = name
+    let builtins { builtins; _ } = builtins
+
+    let create ~name ~builtins =
+      let t = { name; builtins; } in
+      all := t :: !all;
+      t
+
+  end
+
+  (* State setup *)
+  (* ************************************************************************ *)
+
   let pipe = "Typer"
   let ty_state : ty_state State.key =
     State.create_key ~pipe "ty_state"
@@ -1086,18 +1114,23 @@ module Typer(State : State.S) = struct
     State.create_key ~pipe:"Model" "check_model"
   let smtlib2_forced_logic : string option State.key =
     State.create_key ~pipe "smtlib2_forced_logic"
+  let extension_builtins : Ext.t list State.key =
+    State.create_key ~pipe "extensions_builtins"
   let additional_builtins : (state -> lang -> T.builtin_symbols) State.key =
     State.create_key ~pipe "additional_builtins"
 
   let init
       ?ty_state:(ty_state_value=new_state ())
       ?smtlib2_forced_logic:(smtlib2_forced_logic_value=None)
+      ?extension_builtins:(extension_builtins_value=[])
       ?additional_builtins:(additional_builtins_value=fun _ _ _ _ -> `Not_found)
       st =
     st
     |> State.set ty_state ty_state_value
     |> State.set smtlib2_forced_logic smtlib2_forced_logic_value
+    |> State.set extension_builtins extension_builtins_value
     |> State.set additional_builtins additional_builtins_value
+
 
   (* Input helpers *)
   (* ************************************************************************ *)
@@ -1450,7 +1483,13 @@ module Typer(State : State.S) = struct
         in
         raise (State.Error st)
     in
-    let additional_builtins = State.get additional_builtins st st lang in
+    let user_builtins =
+      let additional_builtins = State.get additional_builtins st st lang in
+      let extension_builtins =
+        List.map (fun ext -> Ext.builtins ext lang) (State.get extension_builtins st)
+      in
+      additional_builtins :: extension_builtins
+    in
     match lang with
     (* Dimacs & iCNF
        - these infer the declarations of their constants
@@ -1473,7 +1512,10 @@ module Typer(State : State.S) = struct
               preferred = Dolmen.Std.Expr.Ty.prop;
             });
         } in
-      let builtins = Dimacs.parse in
+      let builtins = Dolmen_type.Base.merge (
+          user_builtins @ [
+          Dimacs.parse
+        ]) in
       T.empty_env ~order:First_order
         ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
@@ -1494,13 +1536,13 @@ module Typer(State : State.S) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      let builtins = Dolmen_type.Base.merge [
-          additional_builtins;
+      let builtins = Dolmen_type.Base.merge (
+          user_builtins @ [
           Ae_Core.parse;
           Ae_Arith.parse;
           Ae_Arrays.parse;
           Ae_Bitv.parse;
-        ] in
+        ]) in
       T.empty_env ~order:First_order
         ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
@@ -1524,11 +1566,11 @@ module Typer(State : State.S) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
-      let builtins = Dolmen_type.Base.merge [
-          additional_builtins;
+      let builtins = Dolmen_type.Base.merge (
+          user_builtins @ [
           Zf_Core.parse;
           Zf_arith.parse
-        ] in
+        ]) in
       T.empty_env ~order:Higher_order
         ~st:(State.get ty_state st).typer
         ~var_infer ~sym_infer ~poly
@@ -1553,11 +1595,11 @@ module Typer(State : State.S) = struct
               infer_type_csts = false;
               infer_term_csts = No_inference;
             } in
-          let builtins = Dolmen_type.Base.merge [
-              additional_builtins;
+          let builtins = Dolmen_type.Base.merge (
+              user_builtins @ [
               Tptp_Core_Ho.parse v;
               Tptp_Arith.parse v;
-            ] in
+            ]) in
           T.empty_env ~order:Higher_order
             ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly
@@ -1590,11 +1632,11 @@ module Typer(State : State.S) = struct
                     };
                 });
             } in
-          let builtins = Dolmen_type.Base.merge [
-              additional_builtins;
+          let builtins = Dolmen_type.Base.merge (
+              user_builtins @ [
               Tptp_Core.parse v;
               Tptp_Arith.parse v;
-            ] in
+            ]) in
           T.empty_env ~order:First_order
             ~st:(State.get ty_state st).typer
             ~var_infer ~sym_infer ~poly
@@ -1640,7 +1682,7 @@ module Typer(State : State.S) = struct
           T._error env (Located loc) Missing_smtlib_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
-              additional_builtins ::
+              user_builtins @
               builtins_of_smtlib2_logic (`Script v) logic
             ) in
           let quants = logic.features.quantifiers in
@@ -1674,7 +1716,7 @@ module Typer(State : State.S) = struct
           T._error env (Located loc) Missing_smtlib_logic
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
-              additional_builtins ::
+              user_builtins @
               builtins_of_smtlib2_logic (`Response v) logic
             ) in
           let quants = logic.features.quantifiers in

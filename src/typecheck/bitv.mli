@@ -43,4 +43,12 @@ module Smtlib2 : sig
 
   end
 
+  module Bv2nat
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Bv2nat with type t := Type.T.t) : sig
+
+    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
+
+  end
 end

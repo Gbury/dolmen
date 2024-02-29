@@ -1368,6 +1368,16 @@ module type Smtlib_Array = sig
 
 end
 
+module type Smtlib_Bv2nat = sig
+
+  type t
+  (** The type of terms *)
+
+  val to_nat : t -> t
+  (** Application of the bv2nat conversion function. *)
+
+end
+
 module type Smtlib_Bitv = sig
 
   type t

@@ -350,6 +350,9 @@ type _ t +=
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
       ['0'], and ['1'] (lsb last) *)
+  | Bitv_to_nat of { n : int; }
+  (** [Bitv_to_nat(n,m): Bitv(n) -> Int]:
+      conversion from bitvectors to integers. *)
   | Bitv_concat of { n : int; m : int }
   (** [Bitv_concat(n,m): Bitv(n) -> Bitv(m) -> Bitv(n+m)]:
       concatenation operator on bitvectors. *)
