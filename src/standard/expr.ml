@@ -2230,8 +2230,13 @@ module Term = struct
 
       let to_nat =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_to_nat { n }) "bitv2nat"
+            mk' ~builtin:(Builtin.Bitv_to_nat { n }) "bv2nat"
               [] [Ty.bitv n] Ty.int)
+
+      let of_int =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_of_int { n }) "int2bv"
+              [] [Ty.int] (Ty.bitv n))
 
       let concat =
         with_cache (fun (n, m) ->
@@ -3357,6 +3362,9 @@ module Term = struct
     let to_nat b =
       let n = match_bitv_type b in
       apply_cst (Const.Bitv.to_nat n) [] [b]
+
+    let of_int n i =
+      apply_cst (Const.Bitv.of_int n) [] [i]
 
     let concat u v =
       let i = match_bitv_type u in

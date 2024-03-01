@@ -55,8 +55,8 @@ module Smtlib2_Arrays =
 module Smtlib2_Bitv =
   Dolmen_type.Bitv.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
-module Smtlib2_Bv2nat =
-  Dolmen_type.Bitv.Smtlib2.Bv2nat(T)
+module Smtlib2_Bvconv =
+  Dolmen_type.Bitv.Smtlib2.Bvconv(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 module Smtlib2_Float =
   Dolmen_type.Float.Smtlib2.Tff(T)
@@ -1101,6 +1101,13 @@ module Typer(State : State.S) = struct
       let t = { name; builtins; } in
       all := t :: !all;
       t
+
+    let bv2nat =
+      create ~name:"bvconv"
+        ~builtins:(function
+            | `Logic Logic.Smtlib2 version ->
+              Smtlib2_Bvconv.parse (`Script version)
+            | _ -> Dolmen_type.Base.noop)
 
   end
 

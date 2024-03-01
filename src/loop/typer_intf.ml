@@ -166,6 +166,9 @@ module type Typer_Full = sig
     val list : unit -> t list
     (** The list of all extensions. *)
 
+    val bv2nat : t
+    (** Typing extension to add the `bv2nat` function. *)
+
   end
 
   val ty_state : ty_state key
