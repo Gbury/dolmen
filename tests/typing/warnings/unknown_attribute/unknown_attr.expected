@@ -1,0 +1,8 @@
+File "tests/typing/warnings/unknown_attribute/unknown_attr.smt2", line 5, character 6-32:
+5 |       :qid |somefile.ext.161:23|
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning Unknown attribute (the attribtue was ignored): `:qid`
+File "tests/typing/warnings/unknown_attribute/unknown_attr.smt2", line 6, character 6-19:
+6 |       :skolemid |0|
+          ^^^^^^^^^^^^^
+Warning Unknown attribute (the attribtue was ignored): `:skolemid`

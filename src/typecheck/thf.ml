@@ -333,8 +333,6 @@ module Make
     (* Unused bound type variable *)
     | Unused_term_variable : var_kind * T.Var.t -> Ast.t warn
     (* Unused bound term variable *)
-    | Error_in_attribute : exn -> Ast.t warn
-    (* An error occurred wile parsing an attribute *)
     | Superfluous_destructor : Id.t * Id.t * T.Const.t -> Ast.t warn
     (* The user implementation of typed terms returned a destructor where
        was asked for. This warning can very safely be ignored. *)
@@ -674,6 +672,9 @@ module Make
   (* Convenience functions *)
   (* ************************************************************************ *)
 
+  let _redundant_pattern env ast pat =
+    _warn env (Ast ast) (Redundant_pattern pat)
+
   let _expected env s t res =
     _error env (Ast t) (Expected (s, res))
 
@@ -691,9 +692,6 @@ module Make
 
   let _bad_poly_arity env ast ty_vars tys =
     _error env (Ast ast) (Bad_poly_arity (ty_vars, tys))
-
-  let _redundant_pattern env ast pat =
-    _warn env (Ast ast) (Redundant_pattern pat)
 
   let _partial_pattern_match env ast missing =
     _error env (Ast ast) (Partial_pattern_match missing)
@@ -1571,15 +1569,15 @@ module Make
         | Hook f -> f ast res
       ) res (parse_attrs env [] l)
 
-  and parse_attr env ast =
-    match parse_expr (expect_anything env) ast with
-    | Tags l -> List.map (fun tag -> ast, tag) l
-    | res -> _expected env "tag" ast (Some res)
-
   and parse_attrs env acc = function
     | [] -> acc
     | a :: r ->
       parse_attrs env (parse_attr env a @ acc) r
+
+  and parse_attr env ast =
+    match parse_expr (expect_anything env) ast with
+    | Tags l -> List.map (fun tag -> ast, tag) l
+    | res -> _expected env "tag" ast (Some res)
 
   and parse_var_in_binding_pos env = function
     | { Ast.term = Ast.Symbol s; _ } as t ->
@@ -1622,10 +1620,7 @@ module Make
     List.rev ttype_vars, List.rev typed_vars, env'
 
   and parse_binder parse_inner mk b env ast ttype_acc ty_acc body_ast =
-    let [@inline] aux t =
-      parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc t
-    in
-    (wrap_attr[@inlined]) apply_attr env body_ast aux
+    parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc body_ast
 
   and parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->

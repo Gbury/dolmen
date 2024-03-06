@@ -275,8 +275,6 @@ module type Formulas = sig
     (** Unused quantified type variable *)
     | Unused_term_variable : var_kind * term_var -> Dolmen.Std.Term.t warn
     (** Unused quantified term variable *)
-    | Error_in_attribute : exn -> Dolmen.Std.Term.t warn
-    (** An error occurred wile parsing an attribute *)
     | Superfluous_destructor :
         Dolmen.Std.Id.t * Dolmen.Std.Id.t * term_cst -> Dolmen.Std.Term.t warn
     (** The user implementation of typed terms returned a destructor where
