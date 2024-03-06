@@ -3,6 +3,7 @@ module Id = Dolmen.Std.Id
 
 (* Ae Bitvector *)
 (* ************************************************************************ *)
+
 module Ae = struct
 
   module Tff
@@ -347,5 +348,44 @@ module Smtlib2 = struct
       | _ -> `Not_found
 
   end
+
+  module Bvconv
+      (Type : Tff_intf.S)
+      (Ty : Dolmen_intf.Ty.Smtlib_Bitv with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Smtlib_Bvconv with type t := Type.T.t) = struct
+
+    (* TODO: factorize these definitions with those from the Tff functor *)
+    let parse_int env ast s =
+      try int_of_string s
+      with Failure _ ->
+        Type._error env (Ast ast)
+          (Type.Expected ("an index that is an integer", None))
+
+    let parse_positive_int env ast s =
+      let i = parse_int env ast s in
+      if i > 0 then i
+      else Type._error env (Ast ast)
+          (Type.Expected ("an index that is a positive integer", None))
+
+    let indexed_positive env mk i_s ast =
+      let i = parse_positive_int env ast i_s in
+      mk i
+
+    let parse _version env s =
+      match s with
+      | Type.Id { ns = Term; name = Simple "bv2nat"; } ->
+        Type.builtin_term (Base.term_app1 (module Type) env s T.to_nat)
+      | Type.Id { ns = Term; name = Indexed { basename; indexes; } } as symbol ->
+        Base.parse_indexed basename indexes (function
+            | "int2bv" -> `Unary (fun i_s ->
+                Type.builtin_term (Base.term_app1_ast (module Type) env symbol
+                                     (indexed_positive env T.of_int i_s)))
+            | _ -> `Not_indexed)
+          ~err:(Base.bad_term_index_arity (module Type) env)
+          ~k:(function () -> `Not_found)
+      | _ -> `Not_found
+
+  end
+
 end
 

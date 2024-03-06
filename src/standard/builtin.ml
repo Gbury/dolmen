@@ -89,6 +89,8 @@ type _ t +=
 type _ t +=
   | Bitv of int
   | Bitvec of string
+  | Bitv_to_nat of { n : int; }
+  | Bitv_of_int of { n : int; }
   | Bitv_concat of { n : int; m : int }
   | Bitv_extract of { n : int; i : int; j : int }
   | Bitv_repeat of { n : int; k : int }

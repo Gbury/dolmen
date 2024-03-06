@@ -129,16 +129,6 @@ module type Typer_Full = sig
   type builtin_symbols
   (** The type of builin symbols for the type-checker. *)
 
-  val ty_state : ty_state key
-  (** Key to store the local typechecking state in the global pipeline state. *)
-
-  val check_model : bool key
-  (** The typechecker needs to know whether we are checking models or not. *)
-
-  val smtlib2_forced_logic : string option key
-  (** Force the typechecker to use the given logic (instead of using the one declared
-      in the `set-logic` statement). *)
-
   include Typer
     with type env := env
      and type state := state
@@ -153,11 +143,48 @@ module type Typer_Full = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
-  val init :
-    ?ty_state:ty_state ->
-    ?smtlib2_forced_logic:string option ->
-    ?additional_builtins:(state -> lang -> builtin_symbols) ->
-    state -> state
+  module Ext : sig
+    (** Define typing extensions.
+
+        These extensions are typically extensions used by some community,
+        but not yet part of the standard.
+
+        @since 0.10 *)
+
+    type t
+    (** The type of typing extensions. *)
+
+    val name : t -> string
+    (** Extension name, sould be suitable for cli options. *)
+
+    val builtins : t -> lang -> builtin_symbols
+    (** Reutnrs the typing builtins from an extension. *)
+
+    val create : name:string -> builtins:(lang -> builtin_symbols) -> t
+    (** Create a new extension. *)
+
+    val list : unit -> t list
+    (** The list of all extensions. *)
+
+    val bv2nat : t
+    (** Typing extension to add the `bv2nat` function. *)
+
+  end
+
+  val ty_state : ty_state key
+  (** Key to store the local typechecking state in the global pipeline state. *)
+
+  val check_model : bool key
+  (** The typechecker needs to know whether we are checking models or not. *)
+
+  val smtlib2_forced_logic : string option key
+  (** Force the typechecker to use the given logic (instead of using the one declared
+      in the `set-logic` statement). *)
+
+  val extension_builtins : Ext.t list key
+  (** Use typing extensions defined by the typechecker.
+
+      @since 0.10 *)
 
   val additional_builtins : (state -> lang -> builtin_symbols) key
   (** Add new builtin symbols to the typechecker, depending on the current
@@ -166,6 +193,13 @@ module type Typer_Full = sig
       {b Note.} The additional builtins are never used for Dimacs and iCNF.
 
       @before 0.9 [additional_builtins] had type [builtin_symbols ref]. *)
+
+  val init :
+    ?ty_state:ty_state ->
+    ?smtlib2_forced_logic:string option ->
+    ?extension_builtins:(Ext.t list) ->
+    ?additional_builtins:(state -> lang -> builtin_symbols) ->
+    state -> state
 
   val report_error : input:input -> state -> error -> state
   (** Report a typing error by calling the appropriate state function. *)

@@ -1158,6 +1158,12 @@ module Term : sig
       val bitv : string -> t
       (** Bitvetor literals. *)
 
+      val to_nat : int -> t
+      (** Conversion to integers. *)
+
+      val of_int : int -> t
+      (** Conversion from integers. *)
+
       val concat : int * int -> t
       (** Bitvector concatenation. *)
 
@@ -1870,6 +1876,9 @@ module Term : sig
 
     include Dolmen_intf.Term.Smtlib_Bitv with type t := t
     (** Satisfy the required interface for typing smtlib bitvectors. *)
+
+    include Dolmen_intf.Term.Smtlib_Bvconv with type t := t
+    (** Satisfy the required interface for typing smtlib bv2nat. *)
 
     include Dolmen_intf.Term.Smtlib_Float_Bitv with type t := t
     (** Satisfy the required interface for typing smtlib floats. *)

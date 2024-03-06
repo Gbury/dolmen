@@ -268,6 +268,18 @@ let report_style =
   ]
 
 
+(* Typing extensions *)
+(* ************************************************************************ *)
+
+let typing_extension_list =
+  List.map
+    (fun ext -> Loop.Typer.Ext.name ext, ext)
+    (Loop.Typer.Ext.list ())
+
+let typing_ext =
+  Arg.enum typing_extension_list
+
+
 (* Smtlib2 logic and extensions *)
 (* ************************************************************************ *)
 
@@ -352,10 +364,10 @@ let mk_run_state
     time_limit size_limit
     response_file
     flow_check
-    header_check header_licenses
-    header_lang_version
+    header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
-    type_check check_model (* check_model_mode *)
+    type_check extension_builtins
+    check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
   =
   (* Side-effects *)
@@ -380,7 +392,9 @@ let mk_run_state
   |> Loop.Parser.init
     ~syntax_error_ref
     ~interactive_prompt:Loop.Parser.interactive_prompt_lang
-  |> Loop.Typer.init ~smtlib2_forced_logic
+  |> Loop.Typer.init
+    ~smtlib2_forced_logic
+    ~extension_builtins
   |> Loop.Typer_Pipe.init ~type_check
   |> Loop.Check.init
     ~check_model
@@ -613,6 +627,14 @@ let state =
     Arg.(value & opt_all smtlib2_ext [] &
          info ["internal-smtlib2-extension"] ~docs:internal_section ~doc)
   in
+  let typing_ext =
+    let doc = Format.asprintf
+        "Enable typing extensions.
+         $(docv) must be %s" (Arg.doc_alts_enum typing_extension_list)
+    in
+    Arg.(value & opt_all typing_ext [] &
+         info ["ext"] ~docs ~doc)
+  in
   let debug =
     let doc = Format.asprintf
         "Activate debug mode. Among other things, this will make dolmen \
@@ -673,10 +695,10 @@ let state =
         time $ size $
         response_file $
         flow_check $
-        header_check $ header_licenses $
-        header_lang_version $
+        header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $
-        typing $ check_model $ (* check_model_mode $ *)
+        typing $ typing_ext $
+        check_model $ (* check_model_mode $ *)
         debug $ report_style $ max_warn $ reports $ syntax_error_ref)
 
 
