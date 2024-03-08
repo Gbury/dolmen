@@ -1619,14 +1619,21 @@ module Make
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
-  and parse_binder parse_inner mk b env ast ttype_acc ty_acc body_ast =
-    parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc body_ast
-
-  and parse_binder_aux parse_inner mk b env ast ttype_acc ty_acc = function
+  and parse_binder parse_inner mk b env ast ttype_acc ty_acc = function
     | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
-      let ttype_vars, ty_vars, env' = parse_binder_vars env vars in
-      parse_binder parse_inner mk b env' ast (ttype_acc @ ttype_vars) (ty_acc @ ty_vars) f
+      let ttype_vars, ty_vars, env = parse_binder_vars env vars in
+      let ttype_acc = ttype_acc @ ttype_vars in
+      let ty_acc = ty_acc @ ty_vars in
+      (* if there are any attributes, do **not** try and collapse successive
+         binders into a single one. *)
+      begin match f.attr with
+        | [] -> parse_binder parse_inner mk b env ast ttype_acc ty_acc f
+        | _ :: _ -> parse_binder_end parse_inner mk b env ast ttype_acc ty_acc f
+      end
     | body_ast ->
+      parse_binder_end parse_inner mk b env ast ttype_acc ty_acc body_ast
+
+  and parse_binder_end parse_inner mk b env ast ttype_acc ty_acc body_ast =
       let body = parse_inner env body_ast in
       let f = mk_binder env b ast mk (ttype_acc, ty_acc) body in
       Term f
@@ -1698,21 +1705,26 @@ module Make
     in
     List.rev l, env
 
-  and parse_let_seq_end env ast acc = function
+  and parse_let_seq_collapse env ast acc = function
     | ({ Ast.term = Ast.Binder (Ast.Let_seq, vars, f'); _ } as f)
     | ({ Ast.term = Ast.Binder (Ast.Let_par, ([_] as vars), f'); _ } as f)->
       parse_let_seq env f acc f' vars
     | f ->
-      let l = List.rev acc in
-      begin match parse_expr env f with
-        | Term t -> Term (mk_let env ast T.letin l t)
-        | res -> _expected env "term of formula" f (Some res)
-      end
+      parse_let_seq_end env ast acc f
+
+  and parse_let_seq_end env ast acc f =
+    let l = List.rev acc in
+    begin match parse_expr env f with
+      | Term t -> Term (mk_let env ast T.letin l t)
+      | res -> _expected env "term of formula" f (Some res)
+    end
 
   and parse_let_seq env ast acc f = function
     | [] ->
-      let[@inline] aux t = parse_let_seq_end env ast acc t in
-      (wrap_attr[@inlined]) apply_attr env f aux
+      begin match f.attr with
+        | [] -> parse_let_seq_collapse env ast acc f
+        | _ :: _ -> parse_let_seq_end env ast acc f
+      end
     | x :: r ->
       begin match x with
         | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ } as w, e); _ }

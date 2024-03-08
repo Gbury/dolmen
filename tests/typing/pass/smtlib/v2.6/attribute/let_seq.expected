@@ -1,0 +1,20 @@
+[logic][parsed][0-15] set-logic: ALL
+[logic][typed][0-15] other_1[0-15]:
+                       set-logic: ALL =
+                         { theories: core, arrays, bitv, floats, string,
+                                     int+real;
+                           features: { free_sorts : true;
+                                       free_functions : true;
+                                       datatypes : true;
+                                       quantifiers : true;
+                                       arithmetic : regular;
+                                       arrays : all; }; }]}
+                     
+[logic][parsed][16-79] antecedent: (let (x : 5) in (= x x){(:foo bar)})
+File "tests/typing/pass/smtlib/v2.6/attribute/let_seq.smt2", line 5, character 5-13:
+5 |      :foo bar
+         ^^^^^^^^
+Warning Unknown attribute (the attribtue was ignored): `:foo`
+[logic][typed][16-79] hyp_1[16-79]:
+                        hyp: let x/160 = 5/159 in x/160 = x/160
+

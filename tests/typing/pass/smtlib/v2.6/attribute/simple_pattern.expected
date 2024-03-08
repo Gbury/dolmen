@@ -1,0 +1,20 @@
+[logic][parsed][0-15] set-logic: ALL
+[logic][typed][0-15] other_1[0-15]:
+                       set-logic: ALL =
+                         { theories: core, arrays, bitv, floats, string,
+                                     int+real;
+                           features: { free_sorts : true;
+                                       free_functions : true;
+                                       datatypes : true;
+                                       quantifiers : true;
+                                       arithmetic : regular;
+                                       arrays : all; }; }]}
+                     
+[logic][parsed][16-88] antecedent:
+                         (∀ (x : Int) . (= x x){(:pattern (sexpr x))})
+[logic][typed][16-88] hyp_1[16-88]:
+                        hyp:
+                          ∀ x/159 : int/4.
+                            { multi-trigger int/4 x/159; }
+                            (x/159 = x/159)
+
