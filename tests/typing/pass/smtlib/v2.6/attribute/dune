@@ -65,6 +65,38 @@
   (action (diff nest_pattern.expected nest_pattern.full)))
 
 
+; Test for nested_quant.smt2
+; Incremental test
+
+(rule
+   (target  nested_quant.incremental)
+   (deps    (:input nested_quant.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff nested_quant.expected nested_quant.incremental)))
+
+; Full mode test
+
+(rule
+   (target  nested_quant.full)
+   (deps    (:input nested_quant.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff nested_quant.expected nested_quant.full)))
+
+
 ; Test for simple_pattern.smt2
 ; Incremental test
 
