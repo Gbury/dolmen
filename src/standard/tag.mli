@@ -11,17 +11,47 @@ type map
 type 'a t
 (** A tag containing values of type ['a]. *)
 
-val equal : _ t -> _ t -> bool
-(** Are two tag keys equal ? *)
+type 'a info = {
+  print : 'a Pretty.print;
+}
+(** The type for information carried by each tag. *)
 
 
-(** {2 Creating and accessing tags} *)
+(** {2 Creating tags} *)
+
+val create :
+  ?print:'a Pretty.print ->
+  unit -> 'a t
+(** Create a new tag. *)
+
+val info : 'a t -> 'a info
+(** Access the info of a tag. *)
+
+
+(** {2 Creating maps} *)
 
 val empty : map
 (** The empty map. *)
 
-val create : unit -> 'a t
-(** Create a new tag. *)
+val is_empty : map -> bool
+(** Is the map empty ? *)
+
+
+(** {2 Iterators} *)
+
+
+type binding = B : 'a t * 'a -> binding (**)
+(** Existencial type to wrap a binding. *)
+
+val iter : map -> (binding -> unit) -> unit
+(** [iter f m] applies [f] to all bindings of [m]. *)
+
+val fold : map -> 'a -> (binding -> 'a -> 'a) -> 'a
+(** [fold f m acc] folds over the bindings of [m] with [f], starting with
+    [acc] *)
+
+
+(** {2 Getters} *)
 
 val get : map -> 'a t -> 'a option
 (** Get the value associated to a tag. *)
@@ -33,6 +63,9 @@ val get_list : map -> 'a list t -> 'a list
 val get_last : map -> 'a list t -> 'a option
 (** Return the last value associated to a list tag (i.e. the head of the
     list returned by {get_list} if it exists). *)
+
+
+(** {2 Setters} *)
 
 val set : map -> 'a t -> 'a -> map
 (** Set the value bound to a tag. *)

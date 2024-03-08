@@ -192,6 +192,9 @@ module Print : sig
   type 'a t = Format.formatter -> 'a -> unit
   (** Alias for the type printing functions. *)
 
+  val print_tags : bool ref
+  (** Determine whether to print the map of tags for each id/type/term or not. *)
+
   val print_index : bool ref
   (** Determines whether to print the unique index of each identifier or not. *)
 

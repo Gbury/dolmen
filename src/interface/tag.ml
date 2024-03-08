@@ -10,7 +10,9 @@ module type S = sig
   type 'a t
   (** Polymorphic tags *)
 
-  val create : unit -> 'a t
+  val create :
+    ?print:('a Pretty.print) ->
+    unit -> 'a t
   (** Create a new tag. *)
 
 end

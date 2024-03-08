@@ -38,6 +38,7 @@ let finally st e =
 
 let run st preludes logic_file =
   if Loop.State.get Loop.State.debug st then begin
+    Dolmen.Std.Expr.Print.print_tags := true;
     Dolmen.Std.Expr.Print.print_index := true;
     ()
   end;

@@ -11,19 +11,19 @@
 (* Pretty types *)
 (* ************************************************************************ *)
 
-type name = Dolmen_intf.Pretty.name =
+type name =
   | Exact of string
   | Renamed of string
 
-type pos = Dolmen_intf.Pretty.pos =
+type pos =
   | Infix
   | Prefix
 
-type assoc = Dolmen_intf.Pretty.assoc =
+type assoc =
   | Left
   | Right
 
-type 'a print = 'a Dolmen_intf.Pretty.print =
+type 'a print =
   | Ignore : _ print
   | P : (Format.formatter -> 'a -> unit) -> 'a print
 

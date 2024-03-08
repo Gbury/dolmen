@@ -4,19 +4,15 @@
 (* Type definition *)
 (* ************************************************************************* *)
 
-module M = Dolmen.Std.Hmap.Make(struct
-    type t = int
-    let compare (a: int) (b: int) = compare a b
-  end)
-
-type t = M.t
-
-type 'a key = {
-  id : int;
+type 'a info = {
   name : string;
   pipe : string;
-  inj : 'a Dolmen.Std.Hmap.injection;
 }
+
+module M = Hmap.Make(struct type 'a t = 'a info end)
+
+type t = M.t
+type 'a key = 'a M.key
 
 type report_style =
   | Minimal
@@ -146,34 +142,38 @@ end
 
 let empty : t = M.empty
 
-let key_counter = ref 0
 let create_key ~pipe name =
-  incr key_counter;
-  { id = !key_counter; pipe; name;
-    inj = Dolmen.Std.Hmap.create_inj ();}
+  let info = { name; pipe; } in
+  M.Key.create info
 
 let get k t =
-  match M.get ~inj:k.inj k.id t with
+  match M.find k t with
   | Some v -> v
-  | None -> raise (Key_not_found (t, k.name, k.pipe))
+  | None ->
+    let info = M.Key.info k in
+    raise (Key_not_found (t, info.name, info.pipe))
 
 let get_or ~default k t =
-  match M.get ~inj:k.inj k.id t with
+  match M.find k t with
   | Some v -> v
   | None -> default
 
 let set k v t =
-  M.add ~inj:k.inj k.id v t
+  M.add k v t
 
 let update_opt k f t =
-  M.update ~inj:k.inj k.id f t
+  let old_value = M.find k t in
+  match f old_value with
+  | Some new_value -> M.add k new_value t
+  | None -> M.rem k t
 
 let update k f t =
   update_opt k (function
-    | None -> raise (Key_not_found (t, k.name, k.pipe))
-    | Some v -> Some (f v)) t
-
-let key_name { name; _ } = name
+    | Some v -> Some (f v)
+    | None ->
+      let info = M.Key.info k in
+      raise (Key_not_found (t, info.name, info.pipe))
+    ) t
 
 (* Some common keys *)
 (* ************************************************************************* *)
