@@ -26,6 +26,8 @@ next
 ### Printing
 
 - Add printers for smtlib identifiers (PR#198)
+- Printing of typed expressions (i.e. the Std.Expr module)
+  can now print the tags (PR#210)
 
 ### Typing
 
@@ -42,10 +44,10 @@ next
 - Add a warning for unknown attributes in smtlib2. This replaces
   the `unbound id` error that some files could raise before when
   using non-standard attribtues (PR#207)
-- Only type annotations on quantified formulas once. Previously,
-  these were typed twice so that they can be attached to both the
-  body of the quantified formula and the quantified formula itself.
-  (PR#207)
+- Only type annotations on quantified formulas and binders once.
+  Previously, these were typed twice so that they can be attached to
+  both the body of the bound formula and the quantified formula itself.
+  (PR#207, PR#210)
 
 ### Loop
 
