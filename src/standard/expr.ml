@@ -119,34 +119,6 @@ exception Record_type_expected of ty_cst
 exception Wildcard_already_set of ty_var
 
 
-(* Tags *)
-(* ************************************************************************* *)
-
-module Tags = struct
-
-  type 'a t = 'a tag
-  type pos = Pretty.pos
-  type name = Pretty.name
-
-  let pos = Tag.create ()
-  let name = Tag.create ()
-  let rwrt = Tag.create ()
-  let ac = Tag.create ()
-  let predicate = Tag.create ()
-
-  let exact s = Pretty.Exact s
-  let infix = Pretty.Infix
-  let prefix = Pretty.Prefix
-
-  let named = Tag.create ()
-  let triggers = Tag.create ()
-  let filters = Tag.create ()
-
-  let bound = Tag.create ()
-
-end
-
-
 (* Printing *)
 (* ************************************************************************* *)
 
@@ -154,12 +126,48 @@ module Print = struct
 
   type 'a t = Format.formatter -> 'a -> unit
 
+  let print_tags = ref false
   let print_index = ref false
 
-  let pos : Pretty.pos tag = Tags.pos
-  let name : Pretty.name tag = Tags.name
+  let pos : Pretty.pos tag = Tag.create ()
+  let name : Pretty.name tag = Tag.create ()
 
   let return fmt_str out () = Format.fprintf out "%(%)" fmt_str
+
+  (* Tag printing *)
+
+  let pp_tags_aux k fmt map =
+    if not !print_tags then
+      k false
+    else begin
+      let l = Tag.fold map [] (fun (Tag.B (k, v)) acc ->
+          let info = Tag.info k in
+          match info.print with
+          | Pretty.Ignore -> acc
+          | Pretty.P pp ->
+            let msg = Format.dprintf "%a" pp v in
+            msg :: acc)
+      in
+      match l with
+      | [] -> k false
+      | _ :: _ ->
+        Format.fprintf fmt "@[<hov>{ ";
+        List.iter (fun msg ->
+            Format.fprintf fmt "%t;@ " msg
+          ) l;
+        Format.fprintf fmt "}@]";
+        k true
+    end
+
+  let pp_tags =
+    pp_tags_aux (fun _ -> ())
+
+  let wrap_tags tags pp fmt t =
+    let k = function
+      | false -> pp fmt t
+      | true -> Format.fprintf fmt "@,(%a)" pp t
+    in
+    pp_tags_aux k fmt tags
 
 
   (* Id printing *)
@@ -171,12 +179,12 @@ module Print = struct
   let id fmt (v : _ id) =
     match Tag.get v.tags name with
     | Some (Pretty.Exact s | Pretty.Renamed s) ->
-      Format.fprintf fmt "%s" s
+      Format.fprintf fmt "%s%a" s pp_tags v.tags
     | None ->
       if !print_index then
-        Format.fprintf fmt "%a%a" Path.print v.path pp_index v
+        Format.fprintf fmt "%a%a%a" Path.print v.path pp_index v pp_tags v.tags
       else
-        Format.fprintf fmt "%a" Path.print v.path
+        Format.fprintf fmt "%a%a" Path.print v.path pp_tags v.tags
 
   let id_pretty fmt (v : _ id) =
     match Tag.get v.tags pos with
@@ -234,7 +242,7 @@ module Print = struct
     | _ -> Format.fprintf fmt "( %a )" ty t
 
   and ty fmt t =
-    ty_descr fmt t.ty_descr
+    wrap_tags t.ty_tags ty_descr fmt t.ty_descr
 
   let term_var fmt var = id_type ty fmt var
   let term_cst fmt cst = id_type ty fmt cst
@@ -279,9 +287,9 @@ module Print = struct
         (Format.pp_print_list ~pp_sep:(return "@ ") subterm) args
 
   and binder_sep fmt = function
-    | Lambda _ -> Format.fprintf fmt "=>"
+    | Lambda _ -> Format.fprintf fmt " =>"
     | Let_seq _
-    | Let_par _ -> Format.fprintf fmt "in"
+    | Let_par _ -> Format.fprintf fmt " in"
     | Exists _
     | Forall _ -> Format.fprintf fmt "."
 
@@ -334,7 +342,7 @@ module Print = struct
     | _ -> Format.fprintf fmt "(%a)" term t
 
   and term fmt t =
-    term_descr fmt t.term_descr
+    wrap_tags t.term_tags term_descr fmt t.term_descr
 
   let formula = term
 
@@ -361,6 +369,41 @@ module Print = struct
         pp fmt x
       )
 end
+
+(* Tags *)
+(* ************************************************************************* *)
+
+module Tags = struct
+
+  type 'a t = 'a tag
+  type pos = Pretty.pos
+  type name = Pretty.name
+
+  let exact s = Pretty.Exact s
+  let infix = Pretty.Infix
+  let prefix = Pretty.Prefix
+
+  let pos = Print.pos
+  let name = Print.name
+
+  let rwrt = Tag.create ()
+  let ac = Tag.create ()
+  let predicate = Tag.create ()
+
+  let named = Tag.create ()
+  let filters = Tag.create ()
+
+  let triggers =
+    Tag.create ()
+      ~print:(Pretty.P (fun fmt triggers ->
+          let pp_sep fmt () = Format.fprintf fmt "@ | " in
+          Format.fprintf fmt "%a"
+            (Format.pp_print_list ~pp_sep Print.term) triggers))
+
+  let bound = Tag.create ()
+
+end
+
 
 
 (* Helpers *)

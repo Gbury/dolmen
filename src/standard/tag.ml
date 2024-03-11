@@ -7,32 +7,56 @@
 (* Functor instantiation *)
 (* ************************************************************************ *)
 
-module M = Hmap.Make(struct
-    type t = int
-    let compare (a: int) (b: int) = compare a b
-  end)
-
-type map = M.t
-
-type 'a t = {
-  id : int;
-  inj : 'a Hmap.injection;
+(* Key info *)
+type 'a info = {
+  print : 'a Pretty.print;
 }
 
-let equal k k' = k.id = k'.id
+module M = Hmap.Make(struct type 'a t = 'a info end)
 
-let mk_key id = { id; inj = Hmap.create_inj (); }
+(* Types and key creation *)
+(* ************************************************************************ *)
 
-let max_id = ref 0
+type map = M.t
+type 'a t = 'a M.key
 
-let create () =
-  incr max_id;
-  mk_key !max_id
+let info k =
+  M.Key.info k
+
+let create ?(print=Pretty.Ignore) () =
+  let info = { print; } in
+  M.Key.create info
+
+
+(* Iteration *)
+(* ************************************************************************ *)
+
+type binding = M.binding = B : 'a t * 'a -> binding
+
+let iter m f = M.iter f m
+
+let fold m acc f = M.fold f m acc
+
+
+(* small wrappers *)
+(* ************************************************************************ *)
 
 let empty = M.empty
 
+let is_empty = M.is_empty
+
 let get m k =
-  M.get ~inj:k.inj k.id m
+  M.find k m
+
+let unset m k =
+  M.rem k m
+
+let set m k l =
+  M.add k l m
+
+
+(* convenient wrappers for advanced tags *)
+(* ************************************************************************ *)
 
 let get_list m k =
   match get m k with
@@ -44,12 +68,6 @@ let get_last m k =
   | None -> None
   | Some [] -> None
   | Some (x :: _) -> Some x
-
-let unset m k =
-  M.remove k.id m
-
-let set m k l =
-  M.add ~inj:k.inj k.id l m
 
 let set_opt m k = function
   | None -> m

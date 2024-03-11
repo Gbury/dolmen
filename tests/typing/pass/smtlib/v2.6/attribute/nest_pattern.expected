@@ -1,0 +1,4 @@
+File "tests/typing/pass/smtlib/v2.6/attribute/nest_pattern.smt2", line 9, character 5-13:
+9 |      :foo bar
+         ^^^^^^^^
+Warning Unknown attribute (the attribtue was ignored): `:foo`
