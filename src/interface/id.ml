@@ -32,7 +32,10 @@ module type Logic = sig
   (** The usual namespace for terms. *)
 
   val attr : namespace
-  (** Namespace used for attributes (also called annotations) in smtlib. *)
+  (** Namespace used for attributes, such as:
+      - annotations in smtlib
+      - formula roles in tptp
+  *)
 
   val decl : namespace
   (** Namespace used for declaration identifiers (for instance used

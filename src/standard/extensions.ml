@@ -35,7 +35,9 @@ module Smtlib2 = struct
 
   let statement s =
     let mk ?loc sexprs =
-      Statement.other ?loc Id.(mk Decl s) sexprs
+      let id = Id.(mk Decl s) in
+      let name = Term.const id in
+        Statement.other ?loc name sexprs
     in
     if List.exists (fun { active; stmts; name = _; } ->
         active && List.mem s stmts) (exts ())
