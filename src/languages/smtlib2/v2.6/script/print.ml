@@ -117,7 +117,15 @@ let id fmt name =
 (* Printing of terms and statements *)
 (* ************************************************************************* *)
 
-module Make(V : Dolmen_intf.View.FO.S)
+module Make
+    (V : Dolmen_intf.View.FO.S)
+    (S : Dolmen_intf.Scope.S
+     with type id = <
+         ty_var : V.Ty.Var.t;
+         ty_cst : V.Ty.Cst.t;
+         term_var : V.Term.Var.t;
+         term_cst : V.Term.Cst.t;
+       > Dolmen_intf.Scope.id)
 = struct
 
   (* Terms *)
@@ -131,10 +139,14 @@ module Make(V : Dolmen_intf.View.FO.S)
     Format.fprintf fmt "(set-logic %a)" id_aux s
 
   let pop fmt n =
-    Format.fprintf fmt "(pop %d)" n
+    if n <= 0
+    then raise (Cannot_print "pop with non-positive level")
+    else Format.fprintf fmt "(pop %d)" n
 
   let push fmt n =
-    Format.fprintf fmt "(push %d)" n
+    if n <= 0
+    then raise (Cannot_print "push with non-positive level")
+    else Format.fprintf fmt "(push %d)" n
 
   let unit_stmt s fmt () =
     Format.fprintf fmt "(%s)" s

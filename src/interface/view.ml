@@ -28,10 +28,10 @@ module FO = struct
     type _ t =
       | Var : 'ty_var ->
           < ty_var : 'ty_var; .. > t
-      (**)
+        (**)
       | App : ('blt, 'ty_cst) head * 'ty list ->
           < ty_cst : 'ty_cst; builtin : 'blt; .. > t
-      (**)
+        (**)
       (** View of types in first-order. In first-order, types, which include basically
           variables and application of type constructors to types, are differentiated
           from type signatures, which include function types. *)

@@ -11,8 +11,8 @@
     Loc Name Namespace Id Term Statement Answer Normalize Extensions
     ; Typing & Loop stuff
     Tag Pretty Path Builtin Expr
-    ; Printing helpers
-    Escape Scope Renaming
+    ; Printing stuff
+    Scope
     ; Helpers
     Msg Tok Vec Misc Transformer)
 )

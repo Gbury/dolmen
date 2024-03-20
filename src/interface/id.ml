@@ -66,9 +66,6 @@ module type Scope = sig
   type name
   (** Names for identifiers. *)
 
-  val hash : t -> int
-  (** Hash function *)
-
   val equal : t -> t -> bool
   (** Equality function *)
 

@@ -70,12 +70,44 @@ module Smtlib2_6
 
   let print ({ fmt; } as acc) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
     begin match stmt.contents with
+      (* info setters *)
       | `Set_logic (s, _) ->
         begin match Dolmen_type.Logic.Smtlib2.parse s with
           | Some _ -> Format.fprintf fmt "%a@." P.set_logic s
           | None -> assert false (* TODO: proper error *)
         end
-      | _ -> Format.fprintf acc.fmt "statement@."
+      | `Set_info _ -> assert false
+      | `Set_option _ -> assert false
+      (* Info getters *)
+      | `Get_info _ -> assert false
+      | `Get_option _ -> assert false
+      | `Get_proof -> P.get_proof fmt ()
+      | `Get_unsat_core -> P.get_unsat_core fmt ()
+      | `Get_unsat_assumptions -> P.get_unsat_assumptions fmt ()
+      | `Get_model -> P.get_model fmt ()
+      | `Get_value _ -> assert false
+      | `Get_assignment -> P.get_assignment fmt ()
+      | `Get_assertions -> P.get_assertions fmt ()
+      | `Echo _ -> assert false
+      (* Stack management *)
+      | `Pop n -> P.pop fmt n
+      | `Push n -> P.push fmt n
+      | `Reset -> P.reset fmt ()
+      | `Reset_assertions -> P.reset_assertions fmt ()
+      (* Decls *)
+      | `Decls _ -> assert false
+      (* Defs *)
+      | `Defs _ -> assert false
+      (* Assume *)
+      | `Hyp _
+      | `Goal _
+      | `Clause _ -> assert false
+      (* Solve *)
+      | `Solve _ -> assert false
+      (* Exit *)
+      | `Exit -> P.exit fmt ()
+      (* Other *)
+      | `Other _ -> assert false
     end;
     acc
 
