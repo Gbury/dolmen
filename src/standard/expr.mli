@@ -517,6 +517,9 @@ module Ty : sig
     type t = ty_var
     (** The type of variables the can occur in types *)
 
+    val path : t -> Path.t
+    (** Return the path of a type variable. *)
+
     val print : Format.formatter -> t -> unit
     (** Printer. *)
 
@@ -563,6 +566,9 @@ module Ty : sig
     val unset_tag : t -> _ Tag.t -> unit
     (** Remove the binding to the given tag. *)
 
+    module Map : Maps.S with type key = t
+    (** Maps of type variables. *)
+
   end
 
   (** A module for constant symbols the occur in types. *)
@@ -570,6 +576,9 @@ module Ty : sig
 
     type t = ty_cst
     (** The type of constant symbols the can occur in types *)
+
+    val path : t -> Path.t
+    (** Return the path of type constant. *)
 
     val print : Format.formatter -> t -> unit
     (** Printer. *)
@@ -582,6 +591,9 @@ module Ty : sig
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)
+
+    module Map : Maps.S with type key = t
+    (** Maps of type constants. *)
 
     val arity : t -> int
     (** Return the arity of the given symbol. *)
@@ -820,6 +832,9 @@ module Term : sig
     type t = term_var
     (** The type of variables the can occur in terms *)
 
+    val path : t -> Path.t
+    (** Return the path of a given term variable. *)
+
     val print : Format.formatter -> t -> unit
     (** Printer. *)
 
@@ -863,6 +878,9 @@ module Term : sig
     val unset_tag : t -> _ Tag.t -> unit
     (** Remove the binding to the given tag. *)
 
+    module Map : Maps.S with type key = t
+    (** Maps of term variables. *)
+
   end
 
   (** A module for constant symbols that occur in terms. *)
@@ -870,6 +888,9 @@ module Term : sig
 
     type t = term_cst
     (** The type of constant symbols that can occur in terms *)
+
+    val path : t -> Path.t
+    (** Return the path of a given term constant. *)
 
     val print : Format.formatter -> t -> unit
     (** Printer. *)
@@ -882,6 +903,9 @@ module Term : sig
 
     val compare : t -> t -> int
     (** Comparison function on variables. *)
+
+    module Map : Maps.S with type key = t
+    (** Maps of term constants. *)
 
     val ty : t -> ty
     (** Returns the type of a term constant. *)

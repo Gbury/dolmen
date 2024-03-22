@@ -30,7 +30,7 @@ module type Types = sig
   (** The type of top-level type declarations. *)
 
   type decls = [
-    | `Decls of decl list
+    | `Decls of bool * decl list
   ]
   (** A list of type declarations. *)
 
@@ -42,7 +42,7 @@ module type Types = sig
   (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
 
   type defs = [
-    | `Defs of def list
+    | `Defs of bool * def list
   ]
   (** A list of definitions *)
 
@@ -137,6 +137,7 @@ module type Typer = sig
   type 'a ret = {
     implicit_decls : decl list;
     implicit_defs : def list;
+    recursive : bool;
     ret : 'a;
   }
 

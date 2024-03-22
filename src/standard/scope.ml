@@ -5,7 +5,7 @@
 (* ************************************************************************ *)
 
 module type S = Dolmen_intf.Scope.S with type name := Name.t
-module type Arg = Dolmen_intf.Id.Scope with type name := Name.t
+module type Arg = Dolmen_intf.Id.Scope with type path := Path.t
 
 (* Wrapping type/terms vars/consts into ids *)
 (* ************************************************************************ *)
@@ -43,11 +43,11 @@ module Wrap
     | Term_cst c, Term_cst c' -> Term_cst.equal c c'
     | _ -> false
 
-  let name = function
-    | Ty_var v -> Ty_var.name v
-    | Ty_cst c -> Ty_cst.name c
-    | Term_var v -> Term_var.name v
-    | Term_cst c -> Term_cst.name c
+  let path = function
+    | Ty_var v -> Ty_var.path v
+    | Ty_cst c -> Ty_cst.path c
+    | Term_var v -> Term_var.path v
+    | Term_cst c -> Term_cst.path c
 
   module Map = struct
 
@@ -133,7 +133,7 @@ module Make(Id : Arg) : S with type id := Id.t = struct
 
   type conf = {
     rename : rename;
-    sanitize : Name.t -> Name.t;
+    sanitize : Id.t -> Name.t -> Name.t;
     on_conflict :
       prev_id:Id.t ->
       new_id:Id.t ->
@@ -182,17 +182,23 @@ module Make(Id : Arg) : S with type id := Id.t = struct
       in_scope = Name.Map.add name id t.in_scope;
       bindings = Id.Map.add id binding t.bindings; }
     in
-    t, binding
+    t
 
   let rec find_name t name acc rename =
     let new_acc, new_name = rename acc name in
     match Name.Map.find_opt new_name t.in_scope with
     | None -> new_name
-    | Some _other_name -> find_name t new_name new_acc rename
+    | Some _other_name -> find_name t name new_acc rename
 
   let bind t id =
-    let original = Id.name id in
-    let name = t.conf.sanitize original in
+    let original =
+      match Id.path id with
+      | Local { name; } | Absolute { name; path = []; } ->
+        Name.simple name
+      | Absolute { name; path; } ->
+        Name.qualified path name
+    in
+    let name = t.conf.sanitize id original in
     match Name.Map.find_opt name t.in_scope with
     | None ->
       (* no name conflict *)
@@ -206,7 +212,7 @@ module Make(Id : Arg) : S with type id := Id.t = struct
         | Some prev_binding ->
           if Id.equal id prev_id then
             (* we may want to emit a warning, but this is harmless *)
-            t, prev_binding
+            t
           else begin
             match t.conf.on_conflict ~prev_id ~new_id:id ~name with
             | Error ->
@@ -217,6 +223,8 @@ module Make(Id : Arg) : S with type id := Id.t = struct
             | Rename ->
               let Rename { acc; rename; } = t.conf.rename in
               let name = find_name t name acc rename in
+              (* sanity check *)
+              assert (Name.equal name (t.conf.sanitize id name));
               unsafe_add t id name (binding original name)
           end
       end
@@ -224,15 +232,17 @@ module Make(Id : Arg) : S with type id := Id.t = struct
   (* Printing *)
   (* ************************************************************************ *)
 
-  let print t fmt id =
+  let name t id =
     match Id.Map.find_opt id t.bindings with
-    | None -> assert false
+    | None ->
+      (* TODO: proper error, missing id. *)
+      assert false
     | Some binding ->
       let name = name binding in
       begin match Name.Map.find_opt name t.in_scope with
         | Some id' ->
           if Id.equal id id'
-          then Name.print fmt name
+          then name
           else assert false (* TODO: proper error; id had been shadowed by id' *)
         | None ->
           (* internal invariant error: [bindings] and [in_scope]

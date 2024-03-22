@@ -1,7 +1,7 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information. *)
 
-(* Strings *)
+(* Strings & unicode *)
 (* ************************************************************************* *)
 
 let string_for_all pred s =
@@ -11,6 +11,41 @@ let string_for_all pred s =
     else false
   in
   aux pred s (String.length s - 1)
+
+let encode e c =
+  match Uutf.encode e c with
+  | `Ok -> ()
+  | `Partial ->
+    (* should only happen with manual sources according to the doc,
+       so it is safe to assume it doesn't happen *)
+    assert false
+
+let encode_char e c = encode e (`Uchar c)
+
+let string_unicode_map ?(encoding_from=`UTF_8) ?(encoding_to=`UTF_8) f s =
+  let b = Buffer.create (String.length s) in
+  let d = Uutf.decoder ~encoding:encoding_from (`String s) in
+  let e = Uutf.encoder encoding_to (`Buffer b) in
+  let rec aux () =
+    match Uutf.decode d with
+    | `End ->
+      let () = encode e `End in
+      let ret = Buffer.contents b in
+      if String.equal s ret then s else ret
+    | `Await ->
+      (* should only happen with manual sources according to the doc,
+         so it is safe to assume it doesn't happen *)
+      assert false
+    | `Uchar c ->
+      let pos = Uutf.decoder_count d in
+      let () = List.iter (encode_char e) (f pos (Some c)) in
+      aux ()
+    | `Malformed _ ->
+      let pos = Uutf.decoder_count d in
+      let () = List.iter (encode_char e) (f pos None) in
+      aux ()
+  in
+  aux ()
 
 (* File extensions *)
 (* ************************************************************************* *)
@@ -188,6 +223,10 @@ let list_concat_map f l =
        let xs = f x in
        aux f (List.rev_append xs acc) l
   in aux f [] l
+
+let list_map_sharing f l =
+  let l' = List.map f l in
+  if List.for_all2 (==) l l' then l else l'
 
 
 (* Iteration *)

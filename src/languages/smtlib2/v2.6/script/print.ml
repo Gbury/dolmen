@@ -83,7 +83,7 @@ let categorize_symbol s =
   | "set-info"
   | "set-logic"
   | "set-option" -> Quoted
-  | _  ->
+  | _ ->
     (* we are guaranteed that `s` is not the empty string *)
     if not (is_digit s.[0]) &&
        (Dolmen_std.Misc.string_for_all is_simple_symbol_char s) then
@@ -103,7 +103,8 @@ let id_aux fmt s =
 
 let id fmt name =
   match (name : Dolmen_std.Name.t) with
-  | Simple s -> id_aux fmt s
+  | Simple s ->
+    id_aux fmt s
   | Indexed { basename = _; indexes = [] } ->
     _cannot_print "indexed id with no indexes: %a" Dolmen_std.Name.print name
   | Indexed { basename; indexes; } ->
@@ -114,19 +115,90 @@ let id fmt name =
     _cannot_print "qualified identifier: %a" Dolmen_std.Name.print name
 
 
+(* sanitization *)
+
+let sanitize_aux _idx = function
+  (* smtlib identifiers can be quoted, and quotable symbols are a strict
+     superset of non-quoted symbols, so we only need to make sure that
+     all characters are quotable *)
+  | None -> [Uchar.of_char '_']
+  | Some c ->
+    if Uchar.is_char c &&
+       is_quoted_symbol_char (Uchar.to_char c) then
+      [c]
+    else
+      [Uchar.of_char '_']
+
+let sanitize _id name =
+  match (name : Dolmen_std.Name.t) with
+  | Simple "" ->
+    Dolmen_std.Name.simple "_"
+  | Simple s ->
+    let s' = Dolmen_std.Misc.string_unicode_map sanitize_aux s in
+    (* avoid an allocation if the name has not changed *)
+    if s' == s then name else Dolmen_std.Name.simple s'
+  | Indexed { basename = basename; indexes; } ->
+    let basename' = Dolmen_std.Misc.string_unicode_map sanitize_aux basename in
+    let indexes' =
+      Dolmen_std.Misc.list_map_sharing
+      (Dolmen_std.Misc.string_unicode_map sanitize_aux) indexes
+    in
+    if basename == basename' && indexes = indexes'
+    then name
+    else Dolmen_std.Name.indexed basename' indexes'
+  | Qualified _ ->
+    (* TODO: proper error ? Related to how dolmen will handle translation
+       between languages with multiple files / qualified includes... *)
+    assert false
+
+
+
 (* Printing of terms and statements *)
 (* ************************************************************************* *)
 
 module Make
     (V : Dolmen_intf.View.FO.S)
-    (S : Dolmen_intf.Scope.S
-     with type id = <
-         ty_var : V.Ty.Var.t;
-         ty_cst : V.Ty.Cst.t;
-         term_var : V.Term.Var.t;
-         term_cst : V.Term.Cst.t;
-       > Dolmen_intf.Scope.id)
+    (Env : Dolmen_intf.Env.Print
+     with type name := Dolmen_std.Name.t
+      and type ty_var := V.Ty.Var.t
+      and type ty_cst := V.Ty.Cst.t
+      and type term_var := V.Term.Var.t
+      and type term_cst := V.Term.Cst.t)
 = struct
+
+  (* Ids *)
+  (* *** *)
+
+  let id _env fmt name = id fmt name
+
+  (* Types *)
+  (* ***** *)
+
+  let ty_head_name env head =
+    match (head : _ Dolmen_intf.View.FO.head) with
+    | Cst c -> Env.Ty_cst.name env c
+    | Builtin _ -> assert false
+
+  let rec ty env fmt t =
+    match V.Ty.view t with
+    | Var v ->
+      let name = Env.Ty_var.name env v in
+      (* TODO: setup a cache from names to category in one of the env's keys *)
+      id env fmt name
+    | App (head, args) ->
+      let f = ty_head_name env head in
+      begin match args with
+        | [] ->
+          id env fmt f
+        | _ :: _ ->
+          Format.fprintf fmt "(%a %a)"
+            (id env) f (ty_args env) args
+      end
+
+  and ty_args env fmt l =
+    let pp_sep fmt () = Format.fprintf fmt " " in
+    Format.pp_print_list ~pp_sep (ty env) fmt l
+
 
   (* Terms *)
   (* ***** *)
@@ -135,20 +207,20 @@ module Make
   (* Statements *)
   (* ********** *)
 
-  let set_logic fmt s =
+  let set_logic _env fmt s =
     Format.fprintf fmt "(set-logic %a)" id_aux s
 
-  let pop fmt n =
+  let pop _env fmt n =
     if n <= 0
     then raise (Cannot_print "pop with non-positive level")
     else Format.fprintf fmt "(pop %d)" n
 
-  let push fmt n =
+  let push _env fmt n =
     if n <= 0
     then raise (Cannot_print "push with non-positive level")
     else Format.fprintf fmt "(push %d)" n
 
-  let unit_stmt s fmt () =
+  let unit_stmt s (_env : Env.t) fmt () =
     Format.fprintf fmt "(%s)" s
 
   let reset = unit_stmt "reset"
@@ -164,6 +236,25 @@ module Make
   let get_assignment = unit_stmt "get-assignment"
 
   let exit = unit_stmt "exit"
+
+  let declare_sort env fmt c =
+    let n = V.Ty.Cst.arity c in
+    let name = Env.Ty_cst.name env c in
+    Format.fprintf fmt "(declare-sort %a %d)" (id env) name n
+
+  let declare_fun env fmt c =
+    let name = Env.Term_cst.name env c in
+    let c_sig = V.Term.Cst.ty c in
+    match V.Sig.view c_sig with
+    | Signature ([], [], c_ty) ->
+      Format.fprintf fmt "(declare-const %a %a)"
+        (id env) name (ty env) c_ty
+    | Signature ([], params, ret) ->
+      Format.fprintf fmt "(declare-fun %a (%a) %a)"
+        (id env) name (ty_args env) params (ty env) ret
+    | Signature (_ :: _, _, _) ->
+      (* TODO: proper error, polymorphic functions are not supported in smtlib v2.6 *)
+      assert false
 
 end
 

@@ -23,6 +23,85 @@ type file = {
 
 let enum = Logic.enum
 
+(* Renaming *)
+(* ************************************************************************ *)
+
+let rename_num_postfix n name =
+  match (name : Dolmen_std.Name.t) with
+  | Simple s ->
+    let s' = Format.asprintf "%s_%d" s n in
+    let name' = Dolmen_std.Name.simple s' in
+    n + 1, name'
+  | Indexed _
+  | Qualified _ ->
+    (* TODO: proper error *)
+    assert false
+
+
+(* Scope and printing environment *)
+(* ************************************************************************ *)
+
+(* TODO: functorize over the vars/csts so that it is compatible with
+   abstract types later in the `Smtlib2_6` module *)
+module Env = struct
+
+  module Id = Dolmen_std.Scope.Wrap
+      (Dolmen_std.Expr.Ty.Var)(Dolmen_std.Expr.Ty.Const)
+      (Dolmen_std.Expr.Term.Var)(Dolmen_std.Expr.Term.Const)
+
+  module Scope = Dolmen_std.Scope.Make(Id)
+
+  type 'a info = {
+    unit: unit;
+  }
+
+  module H = Hmap.Make(struct type 'a t = 'a info end)
+
+  type 'a key = 'a H.key
+
+  type t = {
+    scope : Scope.t;
+    hmap : H.t;
+  }
+
+  let empty scope = {
+    scope;
+    hmap = H.empty;
+  }
+
+  let get { hmap; _ } k =
+    H.find k hmap
+
+  let set ({ hmap; _ } as t) k v =
+    { t with hmap = H.add k v hmap; }
+
+  module Ty_var = struct
+    let bind env v =
+      { env with scope = Scope.bind env.scope (Ty_var v); }
+    let name env v =
+      Scope.name env.scope (Ty_var v)
+  end
+  module Ty_cst = struct
+    let bind env c =
+      { env with scope = Scope.bind env.scope (Ty_cst c); }
+    let name env c =
+      Scope.name env.scope (Ty_cst c)
+  end
+  module Term_var = struct
+    let bind env v =
+      { env with scope = Scope.bind env.scope (Term_var v); }
+    let name env v =
+      Scope.name env.scope (Term_var v)
+  end
+  module Term_cst = struct
+    let bind env c =
+      { env with scope = Scope.bind env.scope (Term_cst c); }
+    let name env c =
+      Scope.name env.scope (Term_cst c)
+  end
+
+end
+
 (* Printing errors *)
 (* ************************************************************************ *)
 
@@ -60,42 +139,78 @@ module Smtlib2_6
 
   include Typer_Types
 
-  module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Dolmen.Std.Expr.View.FO)
+  module P =
+    Dolmen.Smtlib2.Script.V2_6.Print.Make
+      (Dolmen.Std.Expr.View.FO)(Env)
 
   type acc = {
+    env : Env.t;
     fmt : Format.formatter;
   }
 
-  let init fmt = { fmt; }
+  let init fmt =
+    let rename = Env.Scope.mk_rename 0 rename_num_postfix in
+    let sanitize = Dolmen.Smtlib2.Script.V2_6.Print.sanitize in
+    let on_conflict ~prev_id:_ ~new_id:_ ~name:_ = Env.Scope.Rename in
+    let scope = Env.Scope.empty ~rename ~sanitize ~on_conflict in
+    let env = Env.empty scope in
+    { env; fmt; }
 
-  let print ({ fmt; } as acc) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
-    begin match stmt.contents with
+  let register_decl ({ env; fmt = _; } as acc) = function
+    | `Type_decl (c, None) ->
+      let env = Env.Ty_cst.bind env c in
+      { acc with env }
+    | `Type_decl (_c, Some _) ->
+      (* TODO: handle datatypes, and constructors *)
+      assert false
+    | `Term_decl c ->
+      let env = Env.Term_cst.bind env c in
+      { acc with env }
+
+  let print_decl { env; fmt; } = function
+    | `Type_decl (c, None) ->
+      P.declare_sort env fmt c
+    | `Type_decl (_c, Some _) ->
+      (* TODO: handle datatypes *)
+      assert false
+    | `Term_decl c ->
+      P.declare_fun env fmt c
+
+  let print ({ env; fmt; } as acc) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
+    match stmt.contents with
       (* info setters *)
       | `Set_logic (s, _) ->
         begin match Dolmen_type.Logic.Smtlib2.parse s with
-          | Some _ -> Format.fprintf fmt "%a@." P.set_logic s
-          | None -> assert false (* TODO: proper error *)
+          | Some _ ->
+            Format.fprintf fmt "%a@." (P.set_logic env) s;
+            acc
+          | None ->
+            assert false (* TODO: proper error *)
         end
       | `Set_info _ -> assert false
       | `Set_option _ -> assert false
       (* Info getters *)
       | `Get_info _ -> assert false
       | `Get_option _ -> assert false
-      | `Get_proof -> P.get_proof fmt ()
-      | `Get_unsat_core -> P.get_unsat_core fmt ()
-      | `Get_unsat_assumptions -> P.get_unsat_assumptions fmt ()
-      | `Get_model -> P.get_model fmt ()
+      | `Get_proof -> P.get_proof env fmt (); acc
+      | `Get_unsat_core -> P.get_unsat_core env fmt (); acc
+      | `Get_unsat_assumptions -> P.get_unsat_assumptions env fmt (); acc
+      | `Get_model -> P.get_model env fmt (); acc
       | `Get_value _ -> assert false
-      | `Get_assignment -> P.get_assignment fmt ()
-      | `Get_assertions -> P.get_assertions fmt ()
+      | `Get_assignment -> P.get_assignment env fmt (); acc
+      | `Get_assertions -> P.get_assertions env fmt (); acc
       | `Echo _ -> assert false
       (* Stack management *)
-      | `Pop n -> P.pop fmt n
-      | `Push n -> P.push fmt n
-      | `Reset -> P.reset fmt ()
-      | `Reset_assertions -> P.reset_assertions fmt ()
+      | `Pop n -> P.pop env fmt n; acc
+      | `Push n -> P.push env fmt n; acc
+      | `Reset -> P.reset env fmt (); acc
+      | `Reset_assertions -> P.reset_assertions env fmt (); acc
       (* Decls *)
-      | `Decls _ -> assert false
+      | `Decls (_recursive, l) ->
+        (* TODO: use the `recursive` part *)
+        let acc = List.fold_left register_decl acc l in
+        List.iter (print_decl acc) l;
+        acc
       (* Defs *)
       | `Defs _ -> assert false
       (* Assume *)
@@ -105,11 +220,9 @@ module Smtlib2_6
       (* Solve *)
       | `Solve _ -> assert false
       (* Exit *)
-      | `Exit -> P.exit fmt ()
+      | `Exit -> P.exit env fmt (); acc
       (* Other *)
       | `Other _ -> assert false
-    end;
-    acc
 
   let finalise _acc = ()
 

@@ -464,6 +464,12 @@ let with_cache ?(size=16) f =
        res)
 
 
+(* Maps from integers *)
+(* ************************************************************************* *)
+
+module M = Map.Make(Int)
+
+
 (* Ids *)
 (* ************************************************************************* *)
 
@@ -472,6 +478,8 @@ module Id = struct
   type 'a t = 'a id
 
   let print = Print.id
+
+  let path id = id.path
 
   (* Usual functions *)
   let hash (v : _ t) = v.index
@@ -507,12 +515,40 @@ module Id = struct
     in
     { path = id_path; id_ty; builtin; tags; index = !id_counter; }
 
+  (* Maps of ids *)
+  module Make_map(P : sig type ty end)
+    : Dolmen_intf.Map.S with type key = P.ty id
+  = struct
+    type key = P.ty id
+    type 'a t = (key * 'a) M.t
+
+    let empty = M.empty
+
+    let find_exn k t =
+      snd @@ M.find k.index t
+
+    let find_opt k t =
+      try Some (find_exn k t)
+      with Not_found -> None
+
+    let add k v t =
+      M.add k.index (k, v) t
+
+    let find_add k f t =
+      M.update k.index (function
+          | None -> Some (k, f None)
+          | Some (_, v) -> Some (k, f (Some v))
+        ) t
+
+    let iter f t =
+      M.iter (fun _ (k, v) -> f k v) t
+
+    let fold f t acc =
+      M.fold (fun _ (k, v) acc -> f k v acc) t acc
+
+  end
+
 end
-
-(* Maps from integers *)
-(* ************************************************************************* *)
-
-module M = Map.Make(Int)
 
 
 (* Sets of variables *)
@@ -934,6 +970,7 @@ module Ty = struct
   (* Module for namespacing *)
   module Var = struct
     type t = ty_var
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -946,6 +983,8 @@ module Ty = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type ty = type_ end)
 
     let mk name = Id.mk (Path.local name) Type
     let wildcard () = wildcard_var ()
@@ -959,6 +998,7 @@ module Ty = struct
 
   module Const = struct
     type t = ty_cst
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -971,6 +1011,8 @@ module Ty = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type ty = type_fun end)
 
     let arity (c : t) = c.id_ty.arity
     let mk path n =
@@ -1794,6 +1836,7 @@ module Term = struct
   (* Variables *)
   module Var = struct
     type t = term_var
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -1806,6 +1849,8 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type nonrec ty = ty end)
 
     let ty ({ id_ty; _ } : t) = id_ty
     let create path ty = Id.mk path ty
@@ -1815,6 +1860,7 @@ module Term = struct
   (* Constants *)
   module Const = struct
     type t = term_cst
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -1827,6 +1873,8 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type nonrec ty = ty end)
 
     let ty ({ id_ty; _ } : t) = id_ty
 

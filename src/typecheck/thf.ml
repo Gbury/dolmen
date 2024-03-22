@@ -2219,10 +2219,11 @@ module Make
   type 'a ret = {
     implicit_decls : decl list;
     implicit_defs : def list;
+    recursive : bool;
     result : 'a;
   }
 
-  let mk_ret env result =
+  let mk_ret ~recursive env result =
     let implicits = env.st.implicits in
     env.st.implicits <- [];
     let implicit_decls, implicit_defs =
@@ -2232,7 +2233,7 @@ module Make
           | #def as d -> decls, d :: defs
         ) ([], []) implicits
     in
-    { implicit_decls; implicit_defs; result; }
+    { implicit_decls; implicit_defs; recursive; result; }
 
 
   (* Typechecking mutually recursive datatypes *)
@@ -2431,7 +2432,7 @@ module Make
           ) d.contents
       end
     in
-    mk_ret env decls
+    mk_ret ~recursive:d.recursive env decls
 
   (* Definitions *)
   (* ************************************************************************ *)
@@ -2614,7 +2615,7 @@ module Make
         ) d.contents
     end
     in
-    mk_ret env defs
+    mk_ret ~recursive:d.recursive env defs
 
   (* High-level parsing function *)
   (* ************************************************************************ *)
@@ -2622,11 +2623,11 @@ module Make
   let term env ast : _ ret =
     let res = parse_term env ast in
     let env, res = finalize_wildcards_prop (`Term ast) env ast res in
-    mk_ret env res
+    mk_ret ~recursive:false env res
 
   let formula env ast : _ ret =
     let res = parse_prop env ast in
     let env, res = finalize_wildcards_prop (`Term ast) env ast res in
-    mk_ret env res
+    mk_ret ~recursive:false env res
 
 end

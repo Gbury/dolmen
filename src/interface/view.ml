@@ -16,21 +16,21 @@ module FO = struct
 
   module Sig = struct
 
-    type _ t =
+    type _ view =
       | Signature : 'ty_var list * 'ty list * 'ty ->
-          < ty_var : 'ty_var; ty : 'ty; .. > t (** Function signature *)
+          < ty_var : 'ty_var; ty : 'ty; .. > view (** Function signature *)
       (** View of type signatures. *)
 
   end
 
   module Ty = struct
 
-    type _ t =
+    type _ view =
       | Var : 'ty_var ->
-          < ty_var : 'ty_var; .. > t
+          < ty_var : 'ty_var; .. > view
         (**)
-      | App : ('blt, 'ty_cst) head * 'ty list ->
-          < ty_cst : 'ty_cst; builtin : 'blt; .. > t
+      | App : ('ty_cst, 'blt) head * 'ty list ->
+          < ty_cst : 'ty_cst; builtin : 'blt; ty : 'ty; .. > view
         (**)
       (** View of types in first-order. In first-order, types, which include basically
           variables and application of type constructors to types, are differentiated
@@ -59,20 +59,20 @@ module FO = struct
           < term_var : 'term_var; term_cst : 'term_cst; .. > pattern (**)
     (** First-order patterns. *)
 
-    type _ t =
+    type _ view =
       | Var : 'term_var ->
-          < term_var : 'term_var; .. > t
+          < term_var : 'term_var; .. > view
         (** Term Variables*)
-      | App : ('blt, 'term_cst) head * 'ty list * 'term list ->
-          < ty : 'ty; term : 'term; term_cst : 'term_cst; builtin : 'blt; .. > t
+      | App : ('term_cst, 'blt) head * 'ty list * 'term list ->
+          < ty : 'ty; term : 'term; term_cst : 'term_cst; builtin : 'blt; .. > view
         (** Polymorphic application of a function symbol, with explicit type arguments *)
       | Match :
           'term * (< term_var : 'term_var; term_cst : 'term_cst; .. > pattern * 'term) list ->
-          < term_var : 'term_var; term_cst : 'term_cst; term : 'term; .. > t
+          < term_var : 'term_var; term_cst : 'term_cst; term : 'term; .. > view
         (** Pattern matching. *)
       | Binder :
           < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > binder * 'term ->
-          < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > t
+          < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > view
         (** Binders over a body term. *)
       (** View of terms in first-order. *)
 
@@ -109,7 +109,7 @@ module FO = struct
           represented as first-order. *)
 
       val view : t ->
-        < ty_var : Var.t; ty_cst : Cst.t; builtin : builtin; ty : t; .. > Ty.t
+        < ty_var : Var.t; ty_cst : Cst.t; builtin : builtin; ty : t; .. > Ty.view
       (** View function for types.
           @raise Not_first_order_ty if the type cannot be viewed as first-order. *)
 
@@ -120,7 +120,7 @@ module FO = struct
       type t
 
       val view : t ->
-        < ty_var : Ty.Var.t; ty : Ty.t; .. > Sig.t
+        < ty_var : Ty.Var.t; ty : Ty.t; .. > Sig.view
 
     end
 
@@ -150,7 +150,7 @@ module FO = struct
 
       val view : t ->
         < ty_var: Ty.Var.t; term_var: Var.t; term_cst : Cst.t;
-          builtin : builtin; ty : Ty.t; term : t; .. > Term.t
+          builtin : builtin; ty : Ty.t; term : t; .. > Term.view
       (** View function for terms.
           @raise Not_first_order_term if the term cannot be viewed as first-order. *)
 

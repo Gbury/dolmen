@@ -388,7 +388,7 @@ module Make
         Dolmen.Std.Statement.(print_group print_def) parsed_defs;
     (* We explicitly ignore the implicit decls, as they happen regularly
        because of abstract symbols. *)
-    let st, ({ implicit_decls = _; implicit_defs; ret = defs } : _ Typer.ret) =
+    let st, ({ implicit_decls = _; implicit_defs; recursive = _; ret = defs } : _ Typer.ret) =
       Typer.defs ~mode:`Use_declared_id st ~input ?attrs parsed_defs
     in
     (* TODO: proper error for implicit defs *)
@@ -714,7 +714,7 @@ module Make
             | #Typer_Pipe.set_info -> st
             | #Typer_Pipe.stack_control ->
               State.error ~file ~loc st assertion_stack_not_supported ()
-            | `Defs defs ->
+            | `Defs (_recursive, defs) ->
               check_defs ~file ~loc st defs
             | `Hyp contents ->
               check_hyps ~file ~loc st contents

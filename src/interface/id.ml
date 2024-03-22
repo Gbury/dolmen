@@ -63,13 +63,13 @@ module type Scope = sig
   type t
   (** The type of identifiers. *)
 
-  type name
+  type path
   (** Names for identifiers. *)
 
   val equal : t -> t -> bool
   (** Equality function *)
 
-  val name : t -> name
+  val path : t -> path
   (** Identifier name. *)
 
   module Map : Map.S with type key = t

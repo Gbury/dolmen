@@ -12,60 +12,75 @@ exception Cannot_print of string
 val id : Format.formatter -> Dolmen_std.Name.t -> unit
 (** Print an identifier, quoting it if necessary. *)
 
+val sanitize : _ Dolmen_intf.Scope.id -> Dolmen_std.Name.t -> Dolmen_std.Name.t
+(** Sanitization function to ensure that a name can be printed. *)
+
 
 (* Printing of Terms and statements *)
 (* ************************************************************************* *)
 
 module Make
     (V : Dolmen_intf.View.FO.S)
-    (S : Dolmen_intf.Scope.S
-     with type id = <
-         ty_var : V.Ty.Var.t;
-         ty_cst : V.Ty.Cst.t;
-         term_var : V.Term.Var.t;
-         term_cst : V.Term.Cst.t;
-       > Dolmen_intf.Scope.id)
+    (Env : Dolmen_intf.Env.Print
+     with type name := Dolmen_std.Name.t
+      and type ty_var := V.Ty.Var.t
+      and type ty_cst := V.Ty.Cst.t
+      and type term_var := V.Term.Var.t
+      and type term_cst := V.Term.Cst.t)
   : sig
+
+  (** {2 Types and terms} *)
+
+  val ty : Env.t -> Format.formatter -> V.Ty.t -> unit
+  (** Printer for types *)
 
 
   (** {2 Statements} *)
 
-  val set_logic : Format.formatter -> string -> unit
+  val set_logic : Env.t -> Format.formatter -> string -> unit
   (** Print a set-logic statement. *)
 
-  val pop : Format.formatter -> int -> unit
+  val pop : Env.t -> Format.formatter -> int -> unit
   (** [pop fmt n] prints a statement that pops `n` levels.
       @raise Cannot_print if the provided level is non-positive *)
 
-  val push : Format.formatter -> int -> unit
+  val push : Env.t -> Format.formatter -> int -> unit
   (** [push fmt n] prints a statement that pushes `n` levels.
       @raise Cannot_print if the provided level is non-positive *)
 
-  val reset : Format.formatter -> unit -> unit
+  val declare_sort : Env.t -> Format.formatter -> V.Ty.Cst.t -> unit
+  (** Declare a sort, i.e. a type constant. *)
+
+  val declare_fun : Env.t -> Format.formatter -> V.Term.Cst.t -> unit
+  (** Declare a function, i.e. a term constant. This will use
+      either the `declare-fun` or the `declare-const` statement
+      depending on the actualy type of the function. *)
+
+  val reset : Env.t -> Format.formatter -> unit -> unit
   (** Print a `reset` statement. *)
 
-  val reset_assertions : Format.formatter -> unit -> unit
+  val reset_assertions : Env.t -> Format.formatter -> unit -> unit
   (** Print a `reset-assertion` statement. *)
 
-  val get_unsat_core : Format.formatter -> unit -> unit
+  val get_unsat_core : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-unsat-core` statement. *)
 
-  val get_unsat_assumptions : Format.formatter -> unit -> unit
+  val get_unsat_assumptions : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-unsat-assumptions` statement. *)
 
-  val get_proof : Format.formatter -> unit -> unit
+  val get_proof : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-proof` statement. *)
 
-  val get_model : Format.formatter -> unit -> unit
+  val get_model : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-model` statement. *)
 
-  val get_assertions : Format.formatter -> unit -> unit
+  val get_assertions : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-assertions` statement. *)
 
-  val get_assignment : Format.formatter -> unit -> unit
+  val get_assignment : Env.t -> Format.formatter -> unit -> unit
   (** Print a `get-assignment` statement. *)
 
-  val exit : Format.formatter -> unit -> unit
+  val exit : Env.t -> Format.formatter -> unit -> unit
   (** Print an `exit` statement. *)
 
 end

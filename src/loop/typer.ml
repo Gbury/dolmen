@@ -1867,6 +1867,7 @@ module Typer(State : State.S) = struct
   type 'a ret = {
     implicit_decls : decl list;
     implicit_defs : def list;
+    recursive : bool;
     ret : 'a;
   }
 
@@ -1926,6 +1927,7 @@ module Typer(State : State.S) = struct
   let empty_ret ret =
     { implicit_decls = [];
       implicit_defs = [];
+      recursive = false;
       ret; }
 
   let mk_ret env ~f (ret : _ T.ret) =
@@ -1933,8 +1935,9 @@ module Typer(State : State.S) = struct
     let implicit_defs =
       List.map (tr_def env ~implicit:true ~recursive:false) ret.implicit_defs
     in
+    let recursive = ret.recursive in
     let ret = f ret.result in
-    { implicit_decls; implicit_defs; ret; }
+    { implicit_decls; implicit_defs; recursive; ret; }
 
   let merge_rets l =
     let implicit_decls =
@@ -1943,8 +1946,9 @@ module Typer(State : State.S) = struct
     let implicit_defs =
       Dolmen_std.Misc.list_concat_map (fun r -> r.implicit_defs) l
     in
+    let recursive = List.exists (fun r -> r.recursive) l in
     let ret = List.map (fun r -> r.ret) l in
-    { implicit_decls; implicit_defs; ret; }
+    { implicit_decls; implicit_defs; recursive; ret; }
 
   (* Declarations *)
   (* ************************************************************************ *)
@@ -2032,7 +2036,7 @@ module Types(Expr : Expr_intf.S) = struct
   ]
 
   type defs = [
-    | `Defs of def list
+    | `Defs of bool * def list
   ]
 
   type decl = [
@@ -2041,7 +2045,7 @@ module Types(Expr : Expr_intf.S) = struct
   ]
 
   type decls = [
-    | `Decls of decl list
+    | `Decls of bool * decl list
   ]
 
   type assume = [
@@ -2174,11 +2178,13 @@ module Make
 
   let print_typechecked fmt t =
     match (t : typechecked) with
-    | `Defs l ->
-      Format.fprintf fmt "@[<v 2>defs:@ %a@]"
+    | `Defs (recursive, l) ->
+      Format.fprintf fmt "@[<v 2>%sdefs:@ %a@]"
+        (if recursive then "rec " else "")
         (Format.pp_print_list print_def) l
-    | `Decls l ->
-      Format.fprintf fmt "@[<v 2>decls:@ %a@]"
+    | `Decls (recursive, l) ->
+      Format.fprintf fmt "@[<v 2>%sdecls:@ %a@]"
+        (if recursive then "rec " else "")
         (Format.pp_print_list print_decl) l
     | `Hyp f ->
       Format.fprintf fmt "@[<hov 2>hyp:@ %a@]" Print.formula f
@@ -2278,15 +2284,16 @@ module Make
   let implicit_decl_name = new_stmt_id "implicit_decl"
   let implicit_def_name = new_stmt_id "implicit_def"
 
-  let implicits loc attrs ({ implicit_decls; implicit_defs; ret = _; } : _ Typer.ret) =
+  let implicits loc attrs ({ implicit_decls; implicit_defs;
+                             recursive = _; ret = _; } : _ Typer.ret) =
     let decls =
       List.map (fun d ->
-          mk_stmt ~implicit:true (implicit_decl_name ()) loc attrs (`Decls [d])
+          mk_stmt ~implicit:true (implicit_decl_name ()) loc attrs (`Decls (false, [d]))
         ) implicit_decls
     in
     let defs =
       List.map (fun d ->
-          mk_stmt ~implicit:true (implicit_def_name ()) loc attrs (`Defs [d])
+          mk_stmt ~implicit:true (implicit_def_name ()) loc attrs (`Defs (false, [d]))
         ) implicit_defs
     in
     decls @ defs
@@ -2391,11 +2398,15 @@ module Make
     (* Declarations and definitions *)
     | { S.descr = S.Decls l; loc; attrs; _ } ->
       let st, res = Typer.decls st ~input ~loc ~attrs l in
-      let decls : typechecked stmt = mk_stmt (decl_id c) loc attrs (`Decls res.ret) in
+      let decls : typechecked stmt =
+        mk_stmt (decl_id c) loc attrs (`Decls (res.recursive, res.ret))
+      in
       st, (implicits loc attrs res @ [decls])
     | { S.descr = S.Defs d; loc; attrs; _ } ->
       let st, res = Typer.defs ~mode:`Create_id st ~input ~loc ~attrs d in
-      let defs : typechecked stmt = mk_stmt (def_id c) loc attrs (`Defs res.ret) in
+      let defs : typechecked stmt =
+        mk_stmt (def_id c) loc attrs (`Defs (res.recursive, res.ret))
+      in
       st, (implicits loc attrs res @ [defs])
 
     (* Smtlib's proof/model instructions *)

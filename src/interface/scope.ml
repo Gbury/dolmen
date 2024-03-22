@@ -23,12 +23,6 @@ module type S = sig
   type rename
   (** The type of renaming scheme that is used. *)
 
-  type binding =
-    | Same of name
-    | Renamed of { original : name; renamed : name; } (**)
-  (** The bindings in the scoep keep track of whether the name assigned to
-      an identifier has been renamed or not (primarily for debugging purposes). *)
-
   type on_conflict =
     | Error
     | Shadow
@@ -36,15 +30,12 @@ module type S = sig
   (** The different behaviours that are available upon encountering a conflict
       beetween names for identifiers. *)
 
-  val name : binding -> name
-  (** Returns the name for a binding. *)
-
   val mk_rename : 'acc -> ('acc -> name -> 'acc * name) -> rename
   (** Create a renaming scheme. *)
 
   val empty :
     rename:rename ->
-    sanitize:(name -> name) ->
+    sanitize:(id -> name -> name) ->
     on_conflict:(prev_id:id -> new_id:id -> name:name -> on_conflict) ->
     t
   (** Create an escaper from scratch. The name function is called to determine
@@ -53,10 +44,10 @@ module type S = sig
       name should map to themselves) whereas the renaming function should
       have absolutely no fixpoint (i.e. for all strings [rename s <> s]) *)
 
-  val bind : t -> id -> t * binding
+  val bind : t -> id -> t
   (** Bind a new id in the scope. *)
 
-  val print : t -> Format.formatter -> id -> unit
-  (** Print a previously bound identifier. *)
+  val name : t -> id -> name
+  (** Return the name bound to an id. *)
 
 end
