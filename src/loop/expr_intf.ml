@@ -36,3 +36,29 @@ module type Print = sig
   val formula : Format.formatter -> formula -> unit
 
 end
+
+module type Export = sig
+
+  include S
+
+  module Ty : sig
+    type t
+    module Var : Dolmen_intf.Id.Scope
+      with type t = ty_var
+       and type path := Dolmen_std.Path.t
+    module Const : Dolmen_intf.Id.Scope
+      with type t = ty_cst
+       and type path := Dolmen_std.Path.t
+  end
+
+  module Term : sig
+    type t
+    module Var : Dolmen_intf.Id.Scope
+      with type t = term_var
+       and type path := Dolmen_std.Path.t
+    module Const : Dolmen_intf.Id.Scope
+      with type t = term_cst
+       and type path := Dolmen_std.Path.t
+  end
+end
+

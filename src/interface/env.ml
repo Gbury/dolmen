@@ -16,8 +16,10 @@ module type Print = sig
 
   type name
 
+  type ty
   type ty_var
   type ty_cst
+  type term
   type term_var
   type term_cst
 

@@ -49,7 +49,10 @@ module FO = struct
       (** Universal quantification *)
       | Letin : ('term_var * 'term) list ->
           < term_var : 'term_var; term : 'term; .. > binder
-      (** Let bindings *)
+      (** Sequential Let bindings *)
+      | Letand : ('term_var * 'term) list ->
+          < term_var : 'term_var; term : 'term; .. > binder
+      (** Parallel Let bindings *)
     (** First-order binders that can occur in terms. *)
 
     type _ pattern =
@@ -83,22 +86,36 @@ module FO = struct
       types. *)
   module type S = sig
 
-    type builtin
+    type ty
+    type ty_var
+    type ty_cst
+    type term
+    type term_var
+    type term_cst
+
+    type builtin = <
+      ty : ty;
+      ty_var : ty_var;
+      ty_cst : ty_cst;
+      term : term;
+      term_var : term_var;
+      term_cst : term_cst;
+    > Builtin.t
     (** builtin symbols *)
 
     module Ty : sig
 
-      type t
+      type t = ty
 
       module Var : sig
 
-        type t
+        type t = ty_var
 
       end
 
       module Cst : sig
 
-        type t
+        type t = ty_cst
 
         val arity : t -> int
 
@@ -126,11 +143,11 @@ module FO = struct
 
     module Term : sig
 
-      type t
+      type t = term
 
       module Var : sig
 
-        type t
+        type t = term_var
 
         val ty : t -> Ty.t
 
@@ -138,7 +155,7 @@ module FO = struct
 
       module Cst : sig
 
-        type t
+        type t = term_cst
 
         val ty : t -> Sig.t
 

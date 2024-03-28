@@ -41,13 +41,39 @@ let rename_num_postfix n name =
 (* Scope and printing environment *)
 (* ************************************************************************ *)
 
-(* TODO: functorize over the vars/csts so that it is compatible with
-   abstract types later in the `Smtlib2_6` module *)
-module Env = struct
+module type NS = sig
+  val ty_var : Dolmen_std.Namespace.t
+  val ty_cst : Dolmen_std.Namespace.t
+  val term_var : Dolmen_std.Namespace.t
+  val term_cst : Dolmen_std.Namespace.t
+end
+
+module Env(E : Expr_intf.Export)(N : NS) = struct
+
+  type ty = E.Ty.t
+  type ty_var = E.Ty.Var.t
+  type ty_cst = E.Ty.Const.t
+  type term = E.Term.t
+  type term_var = E.Term.Var.t
+  type term_cst = E.Term.Const.t
 
   module Id = Dolmen_std.Scope.Wrap
-      (Dolmen_std.Expr.Ty.Var)(Dolmen_std.Expr.Ty.Const)
-      (Dolmen_std.Expr.Term.Var)(Dolmen_std.Expr.Term.Const)
+      (struct
+        include E.Ty.Var
+        let namespace _ = N.ty_var
+      end)
+      (struct
+        include E.Ty.Const
+        let namespace _ = N.ty_cst
+      end)
+      (struct
+        include E.Term.Var
+        let namespace _ = N.term_var
+      end)
+      (struct
+        include E.Term.Const
+        let namespace _ = N.term_cst
+      end)
 
   module Scope = Dolmen_std.Scope.Make(Id)
 
@@ -125,7 +151,14 @@ end
 (* ************************************************************************ *)
 
 module Smtlib2_6
-    (Expr : Expr_intf.S)
+    (Expr : Expr_intf.Export)
+    (View : Dolmen_intf.View.FO.S
+     with type ty := Expr.Ty.t
+      and type ty_var := Expr.Ty.Var.t
+      and type ty_cst := Expr.Ty.Const.t
+      and type term := Expr.Term.t
+      and type term_var := Expr.Term.Var.t
+      and type term_cst := Expr.Term.Const.t)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
       and type ty_var = Expr.ty_var
@@ -137,11 +170,14 @@ module Smtlib2_6
       and type formula = Expr.formula)
 = struct
 
-  include Typer_Types
+  module Env = Env(Expr)(struct
+      let ty_var = Dolmen_std.Namespace.sort
+      let ty_cst = Dolmen_std.Namespace.sort
+      let term_var = Dolmen_std.Namespace.term
+      let term_cst = Dolmen_std.Namespace.term
+      end)
 
-  module P =
-    Dolmen.Smtlib2.Script.V2_6.Print.Make
-      (Dolmen.Std.Expr.View.FO)(Env)
+  module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Env)(View)
 
   type acc = {
     env : Env.t;
@@ -187,7 +223,7 @@ module Smtlib2_6
           | None ->
             assert false (* TODO: proper error *)
         end
-      | `Set_info _ -> assert false
+      | `Set_info _ -> assert false (* TODO: add a view and printer for untyped terms *)
       | `Set_option _ -> assert false
       (* Info getters *)
       | `Get_info _ -> assert false
@@ -196,10 +232,10 @@ module Smtlib2_6
       | `Get_unsat_core -> P.get_unsat_core env fmt (); acc
       | `Get_unsat_assumptions -> P.get_unsat_assumptions env fmt (); acc
       | `Get_model -> P.get_model env fmt (); acc
-      | `Get_value _ -> assert false
+      | `Get_value l -> P.get_value env fmt l; acc
       | `Get_assignment -> P.get_assignment env fmt (); acc
       | `Get_assertions -> P.get_assertions env fmt (); acc
-      | `Echo _ -> assert false
+      | `Echo s -> P.echo env fmt s; acc
       (* Stack management *)
       | `Pop n -> P.pop env fmt n; acc
       | `Push n -> P.push env fmt n; acc
@@ -214,7 +250,7 @@ module Smtlib2_6
       (* Defs *)
       | `Defs _ -> assert false
       (* Assume *)
-      | `Hyp _
+      | `Hyp t -> P.assert_ env fmt t; acc
       | `Goal _
       | `Clause _ -> assert false
       (* Solve *)
@@ -222,7 +258,9 @@ module Smtlib2_6
       (* Exit *)
       | `Exit -> P.exit env fmt (); acc
       (* Other *)
-      | `Other _ -> assert false
+      | `Other _ ->
+        (* TODO: proper error / or allow extensions ? *)
+        assert false
 
   let finalise _acc = ()
 
@@ -263,7 +301,14 @@ end
 (* ************************************************************************ *)
 
 module Make
-    (Expr : Expr_intf.S)
+    (Expr : Expr_intf.Export)
+    (View : Dolmen_intf.View.FO.S
+     with type ty := Expr.Ty.t
+      and type ty_var := Expr.Ty.Var.t
+      and type ty_cst := Expr.Ty.Const.t
+      and type term := Expr.Term.t
+      and type term_var := Expr.Term.Var.t
+      and type term_cst := Expr.Term.Const.t)
     (State : State.S)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
@@ -300,7 +345,7 @@ module Make
   (* available printers *)
 
   module Dummy = Dummy(Expr)(Typer_Types)
-  module Smtlib2_6 = Smtlib2_6(Expr)(Typer_Types)
+  module Smtlib2_6 = Smtlib2_6(Expr)(View)(Typer_Types)
 
   (* setup *)
 

@@ -76,3 +76,16 @@ module type Scope = sig
   (** A module for Maps on ids. *)
 
 end
+
+module type Scope_Full = sig
+
+  include Scope
+  (** We extend the regular `Scope` module. *)
+
+  type namespace
+  (** Namespaces for identifiers. *)
+
+  val namespace : t -> namespace
+  (** Return the namespace of an identifier. *)
+
+end

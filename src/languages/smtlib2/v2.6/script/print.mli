@@ -20,13 +20,15 @@ val sanitize : _ Dolmen_intf.Scope.id -> Dolmen_std.Name.t -> Dolmen_std.Name.t
 (* ************************************************************************* *)
 
 module Make
-    (V : Dolmen_intf.View.FO.S)
     (Env : Dolmen_intf.Env.Print
-     with type name := Dolmen_std.Name.t
-      and type ty_var := V.Ty.Var.t
-      and type ty_cst := V.Ty.Cst.t
-      and type term_var := V.Term.Var.t
-      and type term_cst := V.Term.Cst.t)
+     with type name := Dolmen_std.Name.t)
+    (V : Dolmen_intf.View.FO.S
+     with type ty := Env.ty
+      and type ty_var := Env.ty_var
+      and type ty_cst := Env.ty_cst
+      and type term := Env.term
+      and type term_var := Env.term_var
+      and type term_cst := Env.term_cst)
   : sig
 
   (** {2 Types and terms} *)
@@ -37,8 +39,26 @@ module Make
 
   (** {2 Statements} *)
 
+  val echo : Env.t -> Format.formatter -> string -> unit
+  (** *)
+
   val set_logic : Env.t -> Format.formatter -> string -> unit
   (** Print a set-logic statement. *)
+
+  val set_info : Env.t -> Format.formatter -> V.Term.t -> unit
+  (** *)
+
+  val set_option : Env.t -> Format.formatter-> V.Term.t -> unit
+  (** *)
+
+  val get_info : Env.t -> Format.formatter -> V.Term.t -> unit
+  (** *)
+
+  val get_option : Env.t -> Format.formatter -> V.Term.t -> unit
+  (** *)
+
+  val get_value : Env.t -> Format.formatter -> V.Term.t list -> unit
+  (** *)
 
   val pop : Env.t -> Format.formatter -> int -> unit
   (** [pop fmt n] prints a statement that pops `n` levels.
@@ -55,6 +75,35 @@ module Make
   (** Declare a function, i.e. a term constant. This will use
       either the `declare-fun` or the `declare-const` statement
       depending on the actualy type of the function. *)
+
+  val define_sort :
+    Env.t -> Format.formatter ->
+    (V.Ty.Cst.t * V.Ty.Var.t list * V.Ty.t) -> unit
+  (** *)
+
+  val define_fun :
+    Env.t -> Format.formatter ->
+    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) -> unit
+  (** *)
+
+  val define_fun_rec :
+    Env.t -> Format.formatter ->
+    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) -> unit
+  (** *)
+
+  val define_funs_rec :
+    Env.t -> Format.formatter ->
+    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) list -> unit
+  (** *)
+
+  val assert_ : Env.t -> Format.formatter -> V.Term.t -> unit
+  (** *)
+
+  val check_sat : Env.t -> Format.formatter -> unit -> unit
+  (** *)
+
+  val check_sat_assuming : Env.t -> Format.formatter -> V.Term.t list -> unit
+  (** *)
 
   val reset : Env.t -> Format.formatter -> unit -> unit
   (** Print a `reset` statement. *)

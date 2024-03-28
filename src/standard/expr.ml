@@ -3787,17 +3787,25 @@ end
 
 module View = struct
 
+  module V = Dolmen_intf.View.FO
+
   (* First-order views *)
   module FO = struct
 
     type nonrec builtin = builtin
 
+    let head c =
+      match c.builtin with
+      | Builtin.Base -> V.Cst c
+      | b -> V.Builtin b
+
     module Sig = struct
 
       type t = ty
 
-      let view _ =
-        assert false
+      let view ty =
+        let vars, params, ret = Ty.poly_sig ty in
+        V.Sig.Signature (vars, params, ret)
 
     end
 
@@ -3816,8 +3824,13 @@ module View = struct
 
       exception Not_first_order of t
 
-      let view _t =
-        assert false
+      let view ty =
+        match Ty.descr ty with
+        | TyVar v -> V.Ty.Var v
+        | TyApp (c, args) -> V.Ty.App (head c, args)
+        (* error case *)
+        | Arrow _ | Pi _ -> raise (Not_first_order ty)
+
     end
 
     module Term = struct
@@ -3825,25 +3838,57 @@ module View = struct
       type t = term
 
       module Var = struct
-
         type t = term_var
-
-        let ty _ = assert false
-
+        let ty v = v.id_ty
       end
 
       module Cst = struct
-
         type t = term_cst
-
-        let ty _ = assert false
-
+        let ty c = c.id_ty
       end
 
       exception Not_first_order of t
 
-      let view _t =
-        assert false
+      let rec view t =
+        match t.term_descr with
+        | Var v -> V.Term.Var v
+        | Cst c -> V.Term.App (head c, [], [])
+        | App (f, ty_args, t_args) ->
+          begin match f.term_descr with
+            | Cst c -> V.Term.App (head c, ty_args, t_args)
+            | _ -> raise (Not_first_order t)
+          end
+        | Binder (b, body) ->
+          let binder =
+            match b with
+            | Let_seq l -> V.Term.Letin l
+            | Let_par l -> V.Term.Letand l
+            | Exists (tys, ts) -> V.Term.Exists (tys, ts)
+            | Forall (tys, ts) -> V.Term.Forall (tys, ts)
+            | Lambda _ -> raise (Not_first_order t)
+          in
+          V.Term.Binder (binder, body)
+        | Match (scrutinee, cases) ->
+          let cases' = List.map (fun (pat, arm) -> view_pattern pat, arm) cases in
+          V.Term.Match (scrutinee, cases')
+
+      and view_pattern t : _ V.Term.pattern =
+        match t.term_descr with
+        | Var v -> V.Term.Var v
+        | Cst c -> V.Term.Constructor (c, [])
+        | App (f, _tys_args, t_args) ->
+          begin match f.term_descr with
+            | Cst c ->
+              V.Term.Constructor (c, List.map view_pattern_arg t_args)
+            | _ ->
+              raise (Not_first_order t)
+          end
+        | _ -> raise (Not_first_order t)
+
+      and view_pattern_arg t =
+        match t.term_descr with
+        | Var v -> v
+        | _ -> raise (Not_first_order t)
 
     end
 

@@ -24,8 +24,11 @@ type 'a id = 'a Dolmen_intf.Scope.id =
   | Term_var : 'term_var -> < term_var : 'term_var; .. > id
   | Term_cst : 'term_cst -> < term_cst : 'term_cst; .. > id
 
-module type S = Dolmen_intf.Scope.S with type name := Name.t
-module type Arg = Dolmen_intf.Id.Scope with type path := Path.t
+module type S = Dolmen_intf.Scope.S
+  with type name := Name.t
+module type Arg = Dolmen_intf.Id.Scope_Full
+  with type path := Path.t
+   and type namespace := Namespace.t
 
 module Wrap
     (Ty_var : Arg)(Ty_cst : Arg)

@@ -4,8 +4,7 @@
 (* Main Typedef *)
 (* ************************************************************************* *)
 
-type 'a t = ..
-constraint 'a = < .. >
+type 'a t = 'a Dolmen_intf.Builtin.t = .. constraint 'a = < .. >
 (* Extensible variant type for builtin operations.
    Parameterized over the type of variables, constants, and terms. *)
 
