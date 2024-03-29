@@ -28,7 +28,8 @@ module Make
       and type ty_cst := Env.ty_cst
       and type term := Env.term
       and type term_var := Env.term_var
-      and type term_cst := Env.term_cst)
+      and type term_cst := Env.term_cst
+      and type formula := Env.formula)
   : sig
 
   (** {2 Types and terms} *)
@@ -96,13 +97,13 @@ module Make
     (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) list -> unit
   (** *)
 
-  val assert_ : Env.t -> Format.formatter -> V.Term.t -> unit
+  val assert_ : Env.t -> Format.formatter -> V.Formula.t -> unit
   (** *)
 
   val check_sat : Env.t -> Format.formatter -> unit -> unit
   (** *)
 
-  val check_sat_assuming : Env.t -> Format.formatter -> V.Term.t list -> unit
+  val check_sat_assuming : Env.t -> Format.formatter -> V.Formula.t list -> unit
   (** *)
 
   val reset : Env.t -> Format.formatter -> unit -> unit

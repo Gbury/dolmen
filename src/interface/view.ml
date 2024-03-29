@@ -70,8 +70,8 @@ module FO = struct
           < ty : 'ty; term : 'term; term_cst : 'term_cst; builtin : 'blt; .. > view
         (** Polymorphic application of a function symbol, with explicit type arguments *)
       | Match :
-          'term * (< term_var : 'term_var; term_cst : 'term_cst; .. > pattern * 'term) list ->
-          < term_var : 'term_var; term_cst : 'term_cst; term : 'term; .. > view
+          'term * ('t pattern * 'term) list ->
+          (< term_var : 'term_var; term_cst : 'term_cst; term : 'term; .. > as 't) view
         (** Pattern matching. *)
       | Binder :
           < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > binder * 'term ->
@@ -81,6 +81,9 @@ module FO = struct
 
   end
 
+  (* Aliases to avoid shadowing in the module type S below *)
+  module Vty = Ty
+  module VT = Term
 
   (** The signature for a module that provides a first-order view of terms and
       types. *)
@@ -92,6 +95,7 @@ module FO = struct
     type term
     type term_var
     type term_cst
+    type formula
 
     type builtin = <
       ty : ty;
@@ -165,9 +169,27 @@ module FO = struct
       (** exceptions raised by view functions on terms that cannot be
           represented as first-order. *)
 
+      val ty : t -> Ty.t
+      (** Return the type of a term. *)
+
       val view : t ->
         < ty_var: Ty.Var.t; term_var: Var.t; term_cst : Cst.t;
           builtin : builtin; ty : Ty.t; term : t; .. > Term.view
+      (** View function for terms.
+          @raise Not_first_order_term if the term cannot be viewed as first-order. *)
+
+    end
+
+    module Formula : sig
+
+      type t = formula
+
+      val ty : t -> Ty.t
+      (** Return the type of a formula. *)
+
+      val view : t ->
+        < ty_var: Ty.Var.t; term_var: Term.Var.t; term_cst : Term.Cst.t;
+          builtin : builtin; ty : Ty.t; term : Term.t; .. > VT.view
       (** View function for terms.
           @raise Not_first_order_term if the term cannot be viewed as first-order. *)
 

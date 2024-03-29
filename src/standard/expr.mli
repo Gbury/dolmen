@@ -257,6 +257,7 @@ module View : sig
      and type term := term
      and type term_var := term_var
      and type term_cst := term_cst
+     and type formula := term
 
 end
 

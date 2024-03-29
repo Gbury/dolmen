@@ -22,6 +22,7 @@ module type Print = sig
   type term
   type term_var
   type term_cst
+  type formula
 
   type t
 

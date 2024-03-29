@@ -3849,6 +3849,8 @@ module View = struct
 
       exception Not_first_order of t
 
+      let ty = Term.ty
+
       let rec view t =
         match t.term_descr with
         | Var v -> V.Term.Var v
@@ -3889,6 +3891,16 @@ module View = struct
         match t.term_descr with
         | Var v -> v
         | _ -> raise (Not_first_order t)
+
+    end
+
+    module Formula = struct
+
+      type t = term
+
+      let ty = Term.ty
+
+      let view = Term.view
 
     end
 

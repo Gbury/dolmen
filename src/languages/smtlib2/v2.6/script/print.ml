@@ -182,7 +182,8 @@ module Make
       and type ty_cst := Env.ty_cst
       and type term := Env.term
       and type term_var := Env.term_var
-      and type term_cst := Env.term_cst)
+      and type term_cst := Env.term_cst
+      and type formula := Env.formula)
 = struct
 
   module N = Dolmen_std.Name
@@ -205,11 +206,35 @@ module Make
   (* Types *)
   (* ***** *)
 
+  let ty_var env fmt v =
+    let name = Env.Ty_var.name env v in
+    (* TODO: setup a cache from names to category in one of the env's keys *)
+    id env fmt name
+
+  let ty_cst env fmt c =
+    let name = Env.Ty_cst.name env c in
+    (* TODO: setup a cache from names to category in one of the env's keys *)
+    id env fmt name
+
   let ty_head_name env head =
+    (* TODO: add reservations for the builtin names in the env *)
+    let int = string_of_int in
     match (head : _ Dolmen_intf.View.FO.head) with
     | Cst c -> Env.Ty_cst.name env c
     | Builtin B.Prop -> N.simple "Bool"
-    | Builtin _ -> assert false
+    | Builtin B.Int -> N.simple "Int"
+    | Builtin B.Real -> N.simple "Real"
+    | Builtin B.Array -> N.simple "Array"
+    | Builtin B.Bitv n -> N.indexed "Bitvec" [int n]
+    | Builtin B.Float (5, 11) -> N.simple "Float16"
+    | Builtin B.Float (8, 24) -> N.simple "Float32"
+    | Builtin B.Float (11,53) -> N.simple "Float64"
+    | Builtin B.Float (15,113) -> N.simple "Float128"
+    | Builtin B.Float (e, s) -> N.indexed "FloatingPoint" [int e; int s]
+    | Builtin B.RoundingMode -> N.simple "RoundingMode"
+    | Builtin B.String -> N.simple "String"
+    | Builtin B.String_RegLan -> N.simple "RegLan"
+    | Builtin _ -> _cannot_print "unknown type builtin"
 
   let rec ty env fmt t =
     match V.Ty.view t with
@@ -221,30 +246,120 @@ module Make
           id env fmt f
         | _ :: _ ->
           Format.fprintf fmt "(%a %a)"
-            (id env) f (ty_args env) args
+            (id env) f (list ty env) args
       end
-
-  and ty_var env fmt v =
-      let name = Env.Ty_var.name env v in
-      (* TODO: setup a cache from names to category in one of the env's keys *)
-      id env fmt name
-
-  and ty_cst env fmt c =
-    let name = Env.Ty_cst.name env c in
-    id env fmt name
-
-  and ty_args env fmt l =
-    list ty env fmt l
 
 
   (* Terms *)
   (* ***** *)
 
-  let term _env _fmt (_t : Env.term) = assert false
+  let term_var env fmt v =
+    let name = Env.Term_var.name env v in
+    (* TODO: setup a cache from names to category in one of the env's keys *)
+    id env fmt name
 
-  and term_var _env _fmt _v = assert false
+  let term_cst env fmt c =
+    let name = Env.Term_cst.name env c in
+    (* TODO: setup a cache from names to category in one of the env's keys *)
+    id env fmt name
 
-  and term_cst _env _fmt (_c : Env.term_cst) = assert false
+  let sorted_var env fmt v =
+    Format.fprintf fmt "(%a %a)" (term_var env) v (ty env) (V.Term.Var.ty v)
+
+  let add_binding_to_env env (v, _) =
+    Env.Term_var.bind env v
+
+  let term_head_name env head =
+    match (head : _ Dolmen_intf.View.FO.head) with
+    | Cst c ->
+      let name = Env.Term_cst.name env c in
+      let poly =
+        match V.Sig.view (V.Term.Cst.ty c) with
+        | Signature (_ :: _, _, _) -> true
+        | _ -> false
+      in
+      name, poly
+    | Builtin _ -> assert false
+
+  (* Note: unfortunately, most of the smtlib term constructions end with a
+     paranthesis, and therefore their printers are currently not tail-rec.
+     This is particularly true for sequential let-bindings.
+
+     This means that the current printers are likely to produce a stack
+     overflow if used on extremely big/deep terms (or with a lot of sequential
+     let bindings). We might want to consider ocaml 5 and lifting the stack
+     limit for these cases. *)
+  let rec term env fmt t =
+    term_view env fmt (V.Term.ty t) (V.Term.view t)
+
+  and term_view env fmt t_ty view =
+    match (view : _ Dolmen_intf.View.FO.Term.view) with
+    | Var v -> term_var env fmt v
+    | App (head, _, args) -> term_app env fmt (t_ty, head, args)
+    | Match (scrutinee, cases) -> term_match env fmt (scrutinee, cases)
+    | Binder (Exists (tys, ts), body) -> quant "exists" env fmt (tys, ts, body)
+    | Binder (Forall (tys, ts), body) -> quant "forall" env fmt (tys, ts, body)
+    | Binder (Letand l, body) -> letand env fmt (l, body)
+    | Binder (Letin l, body) -> letin env fmt (l, body)
+
+  and term_app env fmt (t_ty, head, args) =
+    let name, poly = term_head_name env head in
+    (* smtlib has implicit type arguments, i.e. the type args are not printed.
+       Therefore, whenever a polymorphic symbol is used, its type arguments
+       need to be inferable from its term arguments. Hence, when a symbol is
+       polymorphic and there are no term arguments, we need to print an
+       explicit type annotation to disambiguate things. In the other cases,
+       we suppose that a symbol's type arguments can be deduced from the term
+       arguments. *)
+    match poly, args with
+    | true, [] ->
+      Format.fprintf fmt "(as %a %a)"
+        (id env) name (ty env) t_ty
+    | false, [] ->
+      Format.fprintf fmt "%a" (id env) name
+    | _, _ :: _ ->
+      Format.fprintf fmt "(%a %a)" (id env) name (list term env) args
+
+  and letin env fmt (l, body) =
+    match l with
+    | [] -> term env fmt body
+    | binding :: r ->
+      let env' = add_binding_to_env env binding in
+      Format.fprintf fmt "(let (%a) %a)"
+        (var_binding env' env) binding (letin env') (r, body)
+
+  and letand env fmt (l, body) =
+    let env' = List.fold_left add_binding_to_env env l in
+    Format.fprintf fmt "(let (%a) %a)"
+      (list (var_binding env') env) l (term env) body
+
+  and var_binding var_env t_env fmt (v, t) =
+    Format.fprintf fmt "(%a %a)" (term_var var_env) v (term t_env) t
+
+  and term_match env fmt (scrutinee, cases) =
+    Format.fprintf fmt "(match %a (%a))"
+      (term env) scrutinee
+      (list match_case env) cases
+
+  and match_case env fmt (pat, arm) =
+    Format.fprintf fmt "(%a %a)" (pattern env) pat (term env) arm
+
+  and pattern env fmt pat =
+    match (pat : _ Dolmen_intf.View.FO.Term.pattern) with
+    | Var v -> term_var env fmt v
+    | Constructor (c, []) -> term_cst env fmt c
+    | Constructor (c, args) ->
+      Format.fprintf fmt "(%a %a)"
+        (term_cst env) c (list term_var env) args
+
+  and quant q env fmt (tys, ts, body) =
+    match tys, ts with
+    | _ :: _, _ -> _cannot_print "type quantification"
+    | [], [] -> term env fmt body
+    | [], _ :: _ ->
+      Format.fprintf fmt "(%s (%a) %a)" q
+        (list sorted_var env) ts
+        (term env) body
 
   and attribute _env _fmt _t =
     (* same as `term` but check that it is the application of a keyword,
@@ -254,10 +369,12 @@ module Make
   and keyword _env _fmt _t =
     assert false
 
-  and prop_literal _env _fmt _t =
+  and prop_literal _env _fmt (_t : Env.formula) =
     (* either 'c' or 'not c' with 'c' a constant *)
     assert false
 
+  and formula env fmt t =
+    term_view env fmt (V.Formula.ty t) (V.Formula.view t)
 
 
   (* Statements *)
@@ -332,7 +449,7 @@ module Make
         (id env) name (ty env) c_ty
     | Signature ([], params, ret) ->
       Format.fprintf fmt "(declare-fun %a (%a) %a)"
-        (id env) name (ty_args env) params (ty env) ret
+        (id env) name (list ty env) params (ty env) ret
     | Signature (_ :: _, _, _) ->
       (* TODO: proper error, polymorphic functions are not supported in smtlib v2.6 *)
       assert false
@@ -370,7 +487,7 @@ module Make
       (list fun_body env) l
 
   let assert_ env fmt t =
-    Format.fprintf fmt "(assert %a)" (term env) t
+    Format.fprintf fmt "(assert %a)" (formula env) t
 
   let check_sat_assuming env fmt = function
     | [] -> check_sat env fmt ()

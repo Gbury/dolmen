@@ -42,7 +42,7 @@ module type Export = sig
   include S
 
   module Ty : sig
-    type t
+    type t = ty
     module Var : Dolmen_intf.Id.Scope
       with type t = ty_var
        and type path := Dolmen_std.Path.t
@@ -52,7 +52,7 @@ module type Export = sig
   end
 
   module Term : sig
-    type t
+    type t = term
     module Var : Dolmen_intf.Id.Scope
       with type t = term_var
        and type path := Dolmen_std.Path.t

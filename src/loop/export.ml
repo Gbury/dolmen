@@ -56,6 +56,7 @@ module Env(E : Expr_intf.Export)(N : NS) = struct
   type term = E.Term.t
   type term_var = E.Term.Var.t
   type term_cst = E.Term.Const.t
+  type formula = E.formula
 
   module Id = Dolmen_std.Scope.Wrap
       (struct
@@ -158,7 +159,8 @@ module Smtlib2_6
       and type ty_cst := Expr.Ty.Const.t
       and type term := Expr.Term.t
       and type term_var := Expr.Term.Var.t
-      and type term_cst := Expr.Term.Const.t)
+      and type term_cst := Expr.Term.Const.t
+      and type formula := Expr.formula)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
       and type ty_var = Expr.ty_var
@@ -170,12 +172,14 @@ module Smtlib2_6
       and type formula = Expr.formula)
 = struct
 
+  include Typer_Types
+
   module Env = Env(Expr)(struct
       let ty_var = Dolmen_std.Namespace.sort
       let ty_cst = Dolmen_std.Namespace.sort
       let term_var = Dolmen_std.Namespace.term
       let term_cst = Dolmen_std.Namespace.term
-      end)
+    end)
 
   module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Env)(View)
 
@@ -183,6 +187,8 @@ module Smtlib2_6
     env : Env.t;
     fmt : Format.formatter;
   }
+
+  let f (x : Env.ty) : Typer_Types.ty = x
 
   let init fmt =
     let rename = Env.Scope.mk_rename 0 rename_num_postfix in
@@ -205,42 +211,43 @@ module Smtlib2_6
 
   let print_decl { env; fmt; } = function
     | `Type_decl (c, None) ->
-      P.declare_sort env fmt c
+      Format.fprintf fmt "%a@." (P.declare_sort env) c
     | `Type_decl (_c, Some _) ->
       (* TODO: handle datatypes *)
       assert false
     | `Term_decl c ->
-      P.declare_fun env fmt c
+      Format.fprintf fmt "%a@." (P.declare_fun env) c
 
-  let print ({ env; fmt; } as acc) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
+  let pp_stmt ({ env; fmt; } as acc) pp x =
+    Format.fprintf fmt "%a@." (pp env) x;
+    acc
+
+  let print acc (stmt : Typer_Types.typechecked Typer_Types.stmt) =
     match stmt.contents with
       (* info setters *)
       | `Set_logic (s, _) ->
         begin match Dolmen_type.Logic.Smtlib2.parse s with
-          | Some _ ->
-            Format.fprintf fmt "%a@." (P.set_logic env) s;
-            acc
-          | None ->
-            assert false (* TODO: proper error *)
+          | Some _ -> pp_stmt acc P.set_logic s
+          | None -> assert false (* TODO: proper error *)
         end
       | `Set_info _ -> assert false (* TODO: add a view and printer for untyped terms *)
       | `Set_option _ -> assert false
       (* Info getters *)
       | `Get_info _ -> assert false
       | `Get_option _ -> assert false
-      | `Get_proof -> P.get_proof env fmt (); acc
-      | `Get_unsat_core -> P.get_unsat_core env fmt (); acc
-      | `Get_unsat_assumptions -> P.get_unsat_assumptions env fmt (); acc
-      | `Get_model -> P.get_model env fmt (); acc
-      | `Get_value l -> P.get_value env fmt l; acc
-      | `Get_assignment -> P.get_assignment env fmt (); acc
-      | `Get_assertions -> P.get_assertions env fmt (); acc
-      | `Echo s -> P.echo env fmt s; acc
+      | `Get_proof -> pp_stmt acc P.get_proof ()
+      | `Get_unsat_core -> pp_stmt acc P.get_unsat_core ()
+      | `Get_unsat_assumptions -> pp_stmt acc P.get_unsat_assumptions ()
+      | `Get_model -> pp_stmt acc P.get_model ()
+      | `Get_value l -> pp_stmt acc P.get_value l
+      | `Get_assignment -> pp_stmt acc P.get_assignment ()
+      | `Get_assertions -> pp_stmt acc P.get_assertions ()
+      | `Echo s -> pp_stmt acc P.echo s
       (* Stack management *)
-      | `Pop n -> P.pop env fmt n; acc
-      | `Push n -> P.push env fmt n; acc
-      | `Reset -> P.reset env fmt (); acc
-      | `Reset_assertions -> P.reset_assertions env fmt (); acc
+      | `Pop n -> pp_stmt acc P.pop n
+      | `Push n -> pp_stmt acc P.push n
+      | `Reset -> pp_stmt acc P.reset ()
+      | `Reset_assertions -> pp_stmt acc P.reset_assertions ()
       (* Decls *)
       | `Decls (_recursive, l) ->
         (* TODO: use the `recursive` part *)
@@ -250,13 +257,20 @@ module Smtlib2_6
       (* Defs *)
       | `Defs _ -> assert false
       (* Assume *)
-      | `Hyp t -> P.assert_ env fmt t; acc
+      | `Hyp t -> pp_stmt acc P.assert_ t
       | `Goal _
-      | `Clause _ -> assert false
+      | `Clause _ ->
+        (* TODO: need access to the `not` and `or` functions to create
+           terms/formulas that can be viewed and printed *)
+        assert false
       (* Solve *)
-      | `Solve _ -> assert false
+      | `Solve (hyps, goals) ->
+        (* TODO: relax these restrictions *)
+        assert (goals = []);
+        assert (hyps = []);
+        pp_stmt acc P.check_sat ()
       (* Exit *)
-      | `Exit -> P.exit env fmt (); acc
+      | `Exit -> pp_stmt acc P.exit ()
       (* Other *)
       | `Other _ ->
         (* TODO: proper error / or allow extensions ? *)
@@ -308,7 +322,8 @@ module Make
       and type ty_cst := Expr.Ty.Const.t
       and type term := Expr.Term.t
       and type term_var := Expr.Term.Var.t
-      and type term_cst := Expr.Term.Const.t)
+      and type term_cst := Expr.Term.Const.t
+      and type formula := Expr.formula)
     (State : State.S)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
@@ -323,14 +338,14 @@ module Make
 
   (* Type definitions *)
   module type S' = S
-    with type ty = Expr.ty
-     and type ty_var = Expr.ty_var
-     and type ty_cst = Expr.ty_cst
-     and type ty_def = Expr.ty_def
-     and type term = Expr.term
-     and type term_var = Expr.term_var
-     and type term_cst = Expr.term_cst
-     and type formula = Expr.formula
+    with type ty := Expr.ty
+     and type ty_var := Expr.ty_var
+     and type ty_cst := Expr.ty_cst
+     and type ty_def := Expr.ty_def
+     and type term := Expr.term
+     and type term_var := Expr.term_var
+     and type term_cst := Expr.term_cst
+     and type formula := Expr.formula
 
   type 'acc printer = (module S' with type acc = 'acc)
 
