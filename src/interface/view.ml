@@ -149,6 +149,8 @@ module FO = struct
 
       type t = term
 
+      val equal : t -> t -> bool
+
       module Var : sig
 
         type t = term_var

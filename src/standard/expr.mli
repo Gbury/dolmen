@@ -250,14 +250,14 @@ end
 module View : sig
 
   module FO : Dolmen_intf.View.FO.S
-    with type ty := ty
-     and type ty_var := ty_var
-     and type ty_cst := ty_cst
+    with type ty = ty
+     and type ty_var = ty_var
+     and type ty_cst = ty_cst
      and type Sig.t = ty
-     and type term := term
-     and type term_var := term_var
-     and type term_cst := term_cst
-     and type formula := term
+     and type term = term
+     and type term_var = term_var
+     and type term_cst = term_cst
+     and type formula = term
 
 end
 

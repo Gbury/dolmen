@@ -177,17 +177,19 @@ module Make
     (Env : Dolmen_intf.Env.Print
      with type name := Dolmen_std.Name.t)
     (V : Dolmen_intf.View.FO.S
-     with type ty := Env.ty
-      and type ty_var := Env.ty_var
-      and type ty_cst := Env.ty_cst
-      and type term := Env.term
-      and type term_var := Env.term_var
-      and type term_cst := Env.term_cst
-      and type formula := Env.formula)
+     with type ty = Env.ty
+      and type ty_var = Env.ty_var
+      and type ty_cst = Env.ty_cst
+      and type term = Env.term
+      and type term_var = Env.term_var
+      and type term_cst = Env.term_cst
+      and type formula = Env.formula)
 = struct
 
   module N = Dolmen_std.Name
   module B = Dolmen_std.Builtin
+  module F = Dolmen_intf.View.FO
+  module E = Dolmen_std.View.Extended(V)
 
   (* Helpers *)
   (* ******* *)
@@ -269,20 +271,46 @@ module Make
   let add_binding_to_env env (v, _) =
     Env.Term_var.bind env v
 
+  let term_head_chainable _env head =
+    match (head : _ F.head) with
+    | Cst _ -> `Nope
+    | Builtin B.Equal ->
+      `Chainable (function F.Builtin B.Equal -> true | _ -> false)
+    | Builtin _ -> `Nope
+
+  let term_head_assoc _env head =
+    match (head : _ F.head) with
+    | Cst _ -> `None
+    | Builtin B.And ->
+      `Left_assoc (function F.Builtin B.And -> true | _ -> false)
+    | Builtin _ -> `None
+
   let term_head_name env head =
-    match (head : _ Dolmen_intf.View.FO.head) with
+    match (head : _ F.head) with
+    | Cst c -> Env.Term_cst.name env c
+    | Builtin B.True -> N.simple "true"
+    | Builtin B.False -> N.simple "false"
+    | Builtin B.Neg -> N.simple "not"
+    | Builtin B.And -> N.simple "and"
+    | Builtin B.Or -> N.simple "or"
+    | Builtin B.Xor -> N.simple "xor"
+    | Builtin B.Imply -> N.simple "=>"
+    | Builtin B.Ite -> N.simple "ite"
+    | Builtin B.Equal -> N.simple "="
+    | Builtin B.Distinct -> N.simple "distinct"
+    | Builtin _ -> _cannot_print "unknown term builtin"
+
+  let term_head_poly _env head =
+    match (head : _  F.head) with
     | Cst c ->
-      let name = Env.Term_cst.name env c in
-      let poly =
-        match V.Sig.view (V.Term.Cst.ty c) with
+      begin match V.Sig.view (V.Term.Cst.ty c) with
         | Signature (_ :: _, _, _) -> true
         | _ -> false
-      in
-      name, poly
-    | Builtin _ -> assert false
+      end
+    | Builtin _ -> false
 
   (* Note: unfortunately, most of the smtlib term constructions end with a
-     paranthesis, and therefore their printers are currently not tail-rec.
+     parenthesis, and therefore their printers are currently not tail-rec.
      This is particularly true for sequential let-bindings.
 
      This means that the current printers are likely to produce a stack
@@ -293,7 +321,7 @@ module Make
     term_view env fmt (V.Term.ty t) (V.Term.view t)
 
   and term_view env fmt t_ty view =
-    match (view : _ Dolmen_intf.View.FO.Term.view) with
+    match (view : _ F.Term.view) with
     | Var v -> term_var env fmt v
     | App (head, _, args) -> term_app env fmt (t_ty, head, args)
     | Match (scrutinee, cases) -> term_match env fmt (scrutinee, cases)
@@ -303,7 +331,31 @@ module Make
     | Binder (Letin l, body) -> letin env fmt (l, body)
 
   and term_app env fmt (t_ty, head, args) =
-    let name, poly = term_head_name env head in
+    (* first, we need to undo any left/right associativity/chainability that
+       may have been expanded by the typechecker or other mechanism. *)
+    let head, args =
+      let args =
+        match term_head_assoc env head with
+        | `Left_assoc top_head -> E.left_assoc top_head args
+        | `Right_assoc top_head -> E.right_assoc top_head args
+        | `None -> args
+      in
+      match head, args with
+      | Builtin B.And, t :: _ ->
+        begin match V.Term.view t with
+          | App (h, _, _) ->
+            begin match term_head_chainable env h with
+              | `Chainable top_head ->
+                begin match E.chainable top_head args with
+                  | Some new_args -> h, new_args
+                  | None -> head, args
+                end
+              | `Nope -> head, args
+            end
+          | _ -> head, args
+        end
+      | _ -> head, args
+    in
     (* smtlib has implicit type arguments, i.e. the type args are not printed.
        Therefore, whenever a polymorphic symbol is used, its type arguments
        need to be inferable from its term arguments. Hence, when a symbol is
@@ -311,41 +363,43 @@ module Make
        explicit type annotation to disambiguate things. In the other cases,
        we suppose that a symbol's type arguments can be deduced from the term
        arguments. *)
-    match poly, args with
-    | true, [] ->
-      Format.fprintf fmt "(as %a %a)"
-        (id env) name (ty env) t_ty
-    | false, [] ->
-      Format.fprintf fmt "%a" (id env) name
-    | _, _ :: _ ->
-      Format.fprintf fmt "(%a %a)" (id env) name (list term env) args
+    let name = term_head_name env head in
+    match args with
+    | [] ->
+      if term_head_poly env head then
+        Format.fprintf fmt "(as@ %a@ %a)"
+          (id env) name (ty env) t_ty
+      else
+        Format.fprintf fmt "%a" (id env) name
+    | _ :: _ ->
+      Format.fprintf fmt "(%a@ %a)" (id env) name (list term env) args
 
   and letin env fmt (l, body) =
     match l with
     | [] -> term env fmt body
     | binding :: r ->
       let env' = add_binding_to_env env binding in
-      Format.fprintf fmt "(let (%a) %a)"
+      Format.fprintf fmt "@[<hv>(let (%a)@ %a)@]"
         (var_binding env' env) binding (letin env') (r, body)
 
   and letand env fmt (l, body) =
     let env' = List.fold_left add_binding_to_env env l in
-    Format.fprintf fmt "(let (%a) %a)"
+    Format.fprintf fmt "@[<hv>(let @[<hv>(%a)@]@ %a)@]"
       (list (var_binding env') env) l (term env) body
 
   and var_binding var_env t_env fmt (v, t) =
-    Format.fprintf fmt "(%a %a)" (term_var var_env) v (term t_env) t
+    Format.fprintf fmt "@[<hov 2>(%a@ %a)@]" (term_var var_env) v (term t_env) t
 
   and term_match env fmt (scrutinee, cases) =
-    Format.fprintf fmt "(match %a (%a))"
+    Format.fprintf fmt "@[<hv 2>(match@ @[<hov>%a@]@ (%a))"
       (term env) scrutinee
       (list match_case env) cases
 
   and match_case env fmt (pat, arm) =
-    Format.fprintf fmt "(%a %a)" (pattern env) pat (term env) arm
+    Format.fprintf fmt "(@[<h>%a@] @[<hov>%a@])" (pattern env) pat (term env) arm
 
   and pattern env fmt pat =
-    match (pat : _ Dolmen_intf.View.FO.Term.pattern) with
+    match (pat : _ F.Term.pattern) with
     | Var v -> term_var env fmt v
     | Constructor (c, []) -> term_cst env fmt c
     | Constructor (c, args) ->
@@ -357,7 +411,7 @@ module Make
     | _ :: _, _ -> _cannot_print "type quantification"
     | [], [] -> term env fmt body
     | [], _ :: _ ->
-      Format.fprintf fmt "(%s (%a) %a)" q
+      Format.fprintf fmt "(%s@ (%a)@ %a)" q
         (list sorted_var env) ts
         (term env) body
 
@@ -487,12 +541,12 @@ module Make
       (list fun_body env) l
 
   let assert_ env fmt t =
-    Format.fprintf fmt "(assert %a)" (formula env) t
+    Format.fprintf fmt "@[<hov 2>(assert %a)@]" (formula env) t
 
   let check_sat_assuming env fmt = function
     | [] -> check_sat env fmt ()
     | _ :: _ as l ->
-      Format.fprintf fmt "(check-sat-assuming (%a))"
+      Format.fprintf fmt "@[<hov >(check-sat-assuming (%a))"
         (list prop_literal env) l
 
 end

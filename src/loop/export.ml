@@ -154,13 +154,13 @@ end
 module Smtlib2_6
     (Expr : Expr_intf.Export)
     (View : Dolmen_intf.View.FO.S
-     with type ty := Expr.Ty.t
-      and type ty_var := Expr.Ty.Var.t
-      and type ty_cst := Expr.Ty.Const.t
-      and type term := Expr.Term.t
-      and type term_var := Expr.Term.Var.t
-      and type term_cst := Expr.Term.Const.t
-      and type formula := Expr.formula)
+     with type ty = Expr.Ty.t
+      and type ty_var = Expr.Ty.Var.t
+      and type ty_cst = Expr.Ty.Const.t
+      and type term = Expr.Term.t
+      and type term_var = Expr.Term.Var.t
+      and type term_cst = Expr.Term.Const.t
+      and type formula = Expr.formula)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
       and type ty_var = Expr.ty_var
@@ -317,13 +317,13 @@ end
 module Make
     (Expr : Expr_intf.Export)
     (View : Dolmen_intf.View.FO.S
-     with type ty := Expr.Ty.t
-      and type ty_var := Expr.Ty.Var.t
-      and type ty_cst := Expr.Ty.Const.t
-      and type term := Expr.Term.t
-      and type term_var := Expr.Term.Var.t
-      and type term_cst := Expr.Term.Const.t
-      and type formula := Expr.formula)
+     with type ty = Expr.Ty.t
+      and type ty_var = Expr.Ty.Var.t
+      and type ty_cst = Expr.Ty.Const.t
+      and type term = Expr.Term.t
+      and type term_var = Expr.Term.Var.t
+      and type term_cst = Expr.Term.Const.t
+      and type formula = Expr.formula)
     (State : State.S)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty

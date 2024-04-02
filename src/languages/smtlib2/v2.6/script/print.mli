@@ -23,13 +23,13 @@ module Make
     (Env : Dolmen_intf.Env.Print
      with type name := Dolmen_std.Name.t)
     (V : Dolmen_intf.View.FO.S
-     with type ty := Env.ty
-      and type ty_var := Env.ty_var
-      and type ty_cst := Env.ty_cst
-      and type term := Env.term
-      and type term_var := Env.term_var
-      and type term_cst := Env.term_cst
-      and type formula := Env.formula)
+     with type ty = Env.ty
+      and type ty_var = Env.ty_var
+      and type ty_cst = Env.ty_cst
+      and type term = Env.term
+      and type term_var = Env.term_var
+      and type term_cst = Env.term_cst
+      and type formula = Env.formula)
   : sig
 
   (** {2 Types and terms} *)

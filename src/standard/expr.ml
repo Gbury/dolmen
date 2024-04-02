@@ -3792,6 +3792,13 @@ module View = struct
   (* First-order views *)
   module FO = struct
 
+    type nonrec ty = ty
+    type nonrec ty_var = ty_var
+    type nonrec ty_cst = ty_cst
+    type nonrec term = term
+    type nonrec term_var = term_var
+    type nonrec term_cst = term_cst
+    type nonrec formula = term
     type nonrec builtin = builtin
 
     let head c =
@@ -3836,6 +3843,8 @@ module View = struct
     module Term = struct
 
       type t = term
+
+      let equal = Term.equal
 
       module Var = struct
         type t = term_var

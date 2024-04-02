@@ -12,7 +12,7 @@
     ; Typing & Loop stuff
     Tag Pretty Path Builtin Expr
     ; Printing stuff
-    Scope
+    View Scope
     ; Helpers
     Msg Tok Vec Misc Transformer)
 )
