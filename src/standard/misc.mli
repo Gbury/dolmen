@@ -39,7 +39,7 @@ val opt_map : 'a option -> ('a -> 'b) -> 'b option
 val opt_bind : 'a option -> ('a -> 'b option) -> 'b option
 (** Bind on option. *)
 
-val string_for_all : (char -> bool) -> string -> bool
+val string_for_all : ?start:int -> (char -> bool) -> string -> bool
 (** Equivalent to [String.for_all] (which is only available on ocaml >= 4.10) *)
 
 val string_unicode_map :
@@ -106,4 +106,8 @@ val mk_lexbuf :
     The [`Contents] constructor expect first a name for the input
     stream (to report errors), and then a string with the actual
     contents to be parsed. *)
+
+val lex_string :
+  (Lexing.lexbuf -> 'a) -> string -> 'a
+(** Tries and parse the string with the given lexer rule. *)
 

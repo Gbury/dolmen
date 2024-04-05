@@ -4,13 +4,13 @@
 (* Strings & unicode *)
 (* ************************************************************************* *)
 
-let string_for_all pred s =
-  let rec aux p s i =
-    if i < 0 then true
-    else if p (String.unsafe_get s i) then aux p s (i - 1)
+let string_for_all ?(start=0) pred s =
+  let rec aux start p s i =
+    if i < start then true
+    else if p (String.unsafe_get s i) then aux start p s (i - 1)
     else false
   in
-  aux pred s (String.length s - 1)
+  aux start pred s (String.length s - 1)
 
 let encode e c =
   match Uutf.encode e c with
@@ -272,4 +272,7 @@ let mk_lexbuf i =
     let buf = Lexing.from_channel ch in
     set_file buf filename;
     buf, cl
+
+let lex_string rule s =
+  rule (Lexing.from_string s)
 

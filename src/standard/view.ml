@@ -4,7 +4,7 @@
 (* Extended views *)
 (* ************************************************************************* *)
 
-module Extended(V : Dolmen_intf.View.FO.S) = struct
+module Assoc(V : Dolmen_intf.View.TFF.S) = struct
 
   let rec left_assoc top_head = function
     | [] -> []

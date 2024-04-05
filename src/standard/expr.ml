@@ -3787,24 +3787,20 @@ end
 
 module View = struct
 
-  module V = Dolmen_intf.View.FO
+  module V = Dolmen_intf.View.TFF
 
   (* First-order views *)
-  module FO = struct
+  module TFF = struct
 
     type nonrec ty = ty
     type nonrec ty_var = ty_var
     type nonrec ty_cst = ty_cst
+    type nonrec ty_def = ty_def
     type nonrec term = term
     type nonrec term_var = term_var
     type nonrec term_cst = term_cst
     type nonrec formula = term
     type nonrec builtin = builtin
-
-    let head c =
-      match c.builtin with
-      | Builtin.Base -> V.Cst c
-      | b -> V.Builtin b
 
     module Sig = struct
 
@@ -3827,6 +3823,50 @@ module View = struct
       module Cst = struct
         type t = ty_cst
         let arity = Ty.Const.arity
+        let builtin c = c.builtin
+      end
+
+      module Def = struct
+        type t = ty_def
+
+        let adt_vars ty cases =
+          if Array.length cases = 0 then begin
+            let n = Cst.arity ty in
+            init_list n (fun i ->
+                let c = Char.chr (i + Char.code 'a') in
+                Ty.Var.mk (Format.asprintf "'%c" c)
+              )
+          end else begin
+            let { cstr; _ } = cases.(0) in
+            let vars, _, _ = Ty.poly_sig cstr.id_ty in
+            vars
+          end
+
+        let view = function
+          | Abstract -> V.TypeDef.Abstract
+          | Adt { ty; cases; _ } ->
+            let vars = adt_vars ty cases in
+            let cases = List.map (fun { cstr; dstrs; _ } ->
+                let c_vars, c_params_ty, _ = Ty.poly_sig cstr.id_ty in
+                let subst = List.fold_left2 (fun acc def_var c_var ->
+                    Subst.Var.bind acc c_var (Ty.of_var def_var)
+                  ) Subst.empty vars c_vars
+                in
+                let params =
+                  List.map2 (fun param_ty o ->
+                    let dstr =
+                      match o with
+                      | Some dstr -> dstr
+                      | None -> assert false (* TODO: create a fresh constant *)
+                    in
+                    Ty.subst ~fix:false subst param_ty, dstr
+                    ) c_params_ty (Array.to_list dstrs)
+                in
+                V.TypeDef.Case {
+                  constructor = cstr; params }
+              ) (Array.to_list cases)
+            in
+            V.TypeDef.Algebraic { vars; cases; }
       end
 
       exception Not_first_order of t
@@ -3834,7 +3874,7 @@ module View = struct
       let view ty =
         match Ty.descr ty with
         | TyVar v -> V.Ty.Var v
-        | TyApp (c, args) -> V.Ty.App (head c, args)
+        | TyApp (c, args) -> V.Ty.App (c, args)
         (* error case *)
         | Arrow _ | Pi _ -> raise (Not_first_order ty)
 
@@ -3854,6 +3894,7 @@ module View = struct
       module Cst = struct
         type t = term_cst
         let ty c = c.id_ty
+        let builtin c = c.builtin
       end
 
       exception Not_first_order of t
@@ -3863,10 +3904,10 @@ module View = struct
       let rec view t =
         match t.term_descr with
         | Var v -> V.Term.Var v
-        | Cst c -> V.Term.App (head c, [], [])
+        | Cst c -> V.Term.App (c, [], [])
         | App (f, ty_args, t_args) ->
           begin match f.term_descr with
-            | Cst c -> V.Term.App (head c, ty_args, t_args)
+            | Cst c -> V.Term.App (c, ty_args, t_args)
             | _ -> raise (Not_first_order t)
           end
         | Binder (b, body) ->

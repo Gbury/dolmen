@@ -262,7 +262,7 @@ module Make(Tid : Arg) : S with type id := Tid.t = struct
     match Tid.Map.find_opt id t.bindings with
     | None ->
       (* TODO: proper error, missing id. *)
-      assert false
+      failwith "cannot find binding for id"
     | Some binding ->
       let pid = pid binding in
       begin match Pid.Map.find_opt pid t.in_scope with

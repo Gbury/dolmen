@@ -3,16 +3,34 @@
 
 (** {2 First-order View} *)
 
-module FO = struct
+module Sexpr = struct
+  (** This explicits a view of untyped terms as first-order terms/formulas *)
+
+  type _ view =
+    | Symbol : 'id -> < id : 'id; .. > view
+    | App : 'term list -> < term : 'term; .. > view
+
+  module type S = sig
+
+    type t
+    type id
+
+    exception Not_an_sexpr of t
+
+    val view : t -> < id : id; term : t; > view
+
+  end
+
+end
+
+
+(** {2 First-order View} *)
+
+module TFF = struct
   (** This explicits a view of terms as polymorphic first-order
       types and terms. In strict first-order, the distinction between
       types and terms is clear and useful enough that the view
       distinguishes the two. *)
-
-  type ('cst, 'blt) head =
-    | Cst of 'cst
-    | Builtin of 'blt (**)
-  (** The type of application heads. *)
 
   module Sig = struct
 
@@ -29,12 +47,29 @@ module FO = struct
       | Var : 'ty_var ->
           < ty_var : 'ty_var; .. > view
         (**)
-      | App : ('ty_cst, 'blt) head * 'ty list ->
+      | App : 'ty_cst * 'ty list ->
           < ty_cst : 'ty_cst; builtin : 'blt; ty : 'ty; .. > view
         (**)
       (** View of types in first-order. In first-order, types, which include basically
           variables and application of type constructors to types, are differentiated
           from type signatures, which include function types. *)
+
+  end
+
+  module TypeDef = struct
+
+    type _ algebraic_case =
+      | Case : {
+          constructor : 'term_cst;
+          params : ('ty * 'term_cst) list;
+        } -> < ty : 'ty; term_cst : 'term_cst > algebraic_case
+
+    type _ view =
+      | Abstract : _ view
+      | Algebraic : {
+          vars : 'ty_var list;
+          cases : < term_cst : 'term_cst; ty : 'ty; > algebraic_case list;
+        } -> < ty : 'ty; ty_var : 'ty_var; term_cst : 'term_cst; > view
 
   end
 
@@ -66,7 +101,7 @@ module FO = struct
       | Var : 'term_var ->
           < term_var : 'term_var; .. > view
         (** Term Variables*)
-      | App : ('term_cst, 'blt) head * 'ty list * 'term list ->
+      | App : 'term_cst * 'ty list * 'term list ->
           < ty : 'ty; term : 'term; term_cst : 'term_cst; builtin : 'blt; .. > view
         (** Polymorphic application of a function symbol, with explicit type arguments *)
       | Match :
@@ -92,6 +127,7 @@ module FO = struct
     type ty
     type ty_var
     type ty_cst
+    type ty_def
     type term
     type term_var
     type term_cst
@@ -122,6 +158,16 @@ module FO = struct
         type t = ty_cst
 
         val arity : t -> int
+
+        val builtin : t -> builtin
+
+      end
+
+      module Def : sig
+
+          type t = ty_def
+
+          val view : t -> < ty : ty; ty_var : ty_var; term_cst : term_cst > TypeDef.view
 
       end
 
@@ -164,6 +210,8 @@ module FO = struct
         type t = term_cst
 
         val ty : t -> Sig.t
+
+        val builtin : t -> builtin
 
       end
 

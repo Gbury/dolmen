@@ -176,11 +176,11 @@ module type Logic = sig
   val set_logic   : ?loc:location -> string -> t
   (** Set the logic to be used for solving. *)
 
-  val get_info    : ?loc:location -> string -> t
+  val get_info    : ?loc:location -> term -> t
   val set_info    : ?loc:location -> term -> t
   (** Getter and setter for various informations (see smtlib manual). *)
 
-  val get_option  : ?loc:location -> string -> t
+  val get_option  : ?loc:location -> term -> t
   val set_option  : ?loc:location -> term -> t
   (** Getter and setter for prover options (see smtlib manual). *)
 

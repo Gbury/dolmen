@@ -61,8 +61,8 @@ module type Types = sig
   (** Top-level solve instruction *)
 
   type get_info = [
-    | `Get_info of string
-    | `Get_option of string
+    | `Get_info of Dolmen.Std.Statement.term
+    | `Get_option of Dolmen.Std.Statement.term
     | `Get_proof
     | `Get_unsat_core
     | `Get_unsat_assumptions

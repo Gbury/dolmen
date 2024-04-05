@@ -2059,8 +2059,8 @@ module Types(Expr : Expr_intf.S) = struct
   ]
 
   type get_info = [
-    | `Get_info of string
-    | `Get_option of string
+    | `Get_info of Dolmen.Std.Statement.term
+    | `Get_option of Dolmen.Std.Statement.term
     | `Get_proof
     | `Get_unsat_core
     | `Get_unsat_assumptions
@@ -2197,10 +2197,12 @@ module Make
       Format.fprintf fmt "@[<hov 2>solve: %a@ assuming: %a@]"
         (Format.pp_print_list Print.formula) goals
         (Format.pp_print_list Print.formula) hyps
-    | `Get_info s ->
-      Format.fprintf fmt "@[<hov 2>get-info: %s@]" s
-    | `Get_option s ->
-      Format.fprintf fmt "@[<hov 2>get-option: %s@]" s
+    | `Get_info t ->
+      Format.fprintf fmt "@[<hov 2>get-info: %a@]"
+        Dolmen.Std.Term.print t
+    | `Get_option t ->
+      Format.fprintf fmt "@[<hov 2>get-option: %a@]"
+        Dolmen.Std.Term.print t
     | `Get_proof ->
       Format.fprintf fmt "@[<hov 2>get-proof@]"
     | `Get_unsat_core ->

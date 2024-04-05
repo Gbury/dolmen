@@ -123,12 +123,12 @@ type descr =
   | Set_logic of string
   (** Set the logic to use for proving. *)
 
-  | Get_info of string
+  | Get_info of term
   (** Get required information. *)
   | Set_info of term
   (** Set the information value. *)
 
-  | Get_option of string
+  | Get_option of term
   (** Get the required option value. *)
   | Set_option of term
   (** Set the option value. *)

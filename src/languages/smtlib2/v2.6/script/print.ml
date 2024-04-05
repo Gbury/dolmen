@@ -4,8 +4,11 @@
 (* Printing of identifiers *)
 (* ************************************************************************* *)
 
+module Misc = Dolmen_std.Misc
+
 exception Cannot_print of string
 
+(* TODO: structured errors *)
 let _cannot_print format =
   Format.kasprintf (fun msg -> raise (Cannot_print msg)) format
 
@@ -20,25 +23,9 @@ let[@inline] is_printable c =
   let c = Char.code c in
   (32 <= c && c <= 126) || 128 <= c
 
-let is_quoted_symbol_char c =
+let[@inline] is_quoted_symbol_char c =
   (is_whitespace c || is_printable c) &&
   (c <> '|' && c <> '\\')
-
-let[@inline] is_letter = function
-  | 'a'..'z' | 'A'..'Z' -> true
-  | _ -> false
-
-let[@inline] is_digit = function
-  | '0'..'9' -> true
-  | _ -> false
-
-let[@inline] is_other_simple_symbol_chars = function
-  | '~' | '!' | '@' | '$' | '%' | '^' | '&' | '*' | '_'
-  | '-' | '+' | '=' | '<' | '>' | '.' | '?' | '/' -> true
-  | _ -> false
-
-let is_simple_symbol_char c =
-  is_letter c || is_digit c || is_other_simple_symbol_chars c
 
 (* symbol categorization *)
 
@@ -48,52 +35,21 @@ type symbol =
   | Unprintable
 
 let categorize_symbol s =
-  match s with
-  | "" -> Unprintable
-  | "_" | "!" | "as" | "let"
-  | "exists" | "forall"
-  | "match" | "par"
-  | "assert"
-  | "check-sat"
-  | "check-sat-assuming"
-  | "declare-const"
-  | "declare-datatype"
-  | "declare-datatypes"
-  | "declare-fun"
-  | "declare-sort"
-  | "define-fun"
-  | "define-fun-rec"
-  | "define-funs-rec"
-  | "define-sort"
-  | "echo"
-  | "exit"
-  | "get-assertions"
-  | "get-assignment"
-  | "get-info"
-  | "get-model"
-  | "get-option"
-  | "get-proof"
-  | "get-unsat-assumptions"
-  | "get-unsat-core"
-  | "get-value"
-  | "pop"
-  | "push"
-  | "reset"
-  | "reset-assertions"
-  | "set-info"
-  | "set-logic"
-  | "set-option" -> Quoted
-  | _ ->
-    (* we are guaranteed that `s` is not the empty string *)
-    if not (is_digit s.[0]) &&
-       (Dolmen_std.Misc.string_for_all is_simple_symbol_char s) then
-      Simple
-    else if Dolmen_std.Misc.string_for_all is_quoted_symbol_char s then
-      Quoted
-    else
-      Unprintable
+  if String.length s = 0 (* s = "" *) then
+    Unprintable
+  else begin
+    match Lexer.M.find_opt s Lexer.reserved_words with
+    | Some _ -> Quoted
+    | None ->
+      if Misc.lex_string Lexer.check_simple_symbol s then
+        Simple
+      else if Misc.lex_string Lexer.check_quoted_symbol s then
+        Quoted
+      else
+        Unprintable
+  end
 
-let id_aux fmt s =
+let symbol_aux fmt s =
   (* TODO: expose/add a cache to not redo the `categorize_symbol` computation each time *)
   match categorize_symbol s with
   | Simple -> Format.pp_print_string fmt s
@@ -101,26 +57,75 @@ let id_aux fmt s =
   | Unprintable ->
     _cannot_print "symbol \"%s\" cannot be printed due to lexical constraints" s
 
-let id fmt name =
+let symbol fmt name =
   match (name : Dolmen_std.Name.t) with
   | Simple s ->
-    id_aux fmt s
+    symbol_aux fmt s
   | Indexed { basename = _; indexes = [] } ->
     _cannot_print "indexed id with no indexes: %a" Dolmen_std.Name.print name
   | Indexed { basename; indexes; } ->
     let pp_sep fmt () = Format.fprintf fmt " " in
     Format.fprintf fmt "(_ %a %a)"
-      id_aux basename (Format.pp_print_list ~pp_sep id_aux) indexes
+      symbol_aux basename (Format.pp_print_list ~pp_sep symbol_aux) indexes
   | Qualified _ ->
     _cannot_print "qualified identifier: %a" Dolmen_std.Name.print name
 
+let keyword fmt name =
+  match (name : Dolmen_std.Name.t) with
+  | Simple s when Misc.lex_string Lexer.check_keyword s ->
+    Format.pp_print_string fmt s
+  | _ -> _cannot_print "not a keyword"
+
+let num fmt s =
+  if Misc.lex_string Lexer.check_num s then
+    Format.pp_print_string fmt s
+  else
+    _cannot_print "num"
+
+let dec fmt s =
+  if Misc.lex_string Lexer.check_dec s then
+    Format.pp_print_string fmt s
+  else
+    _cannot_print "dec"
+
+let hex fmt s =
+  if Misc.lex_string Lexer.check_hex s then
+    Format.pp_print_string fmt s
+  else
+    _cannot_print "hex"
+
+let bin fmt s =
+  if Misc.lex_string Lexer.check_bin s then
+    Format.pp_print_string fmt s
+  else
+    _cannot_print "bin"
+
+let string fmt s =
+  let can_print = ref true in
+  let quotation = ref 0 in
+  String.iter (fun c ->
+      if c = '"' then quotation := !quotation + 1;
+      if not (is_whitespace c || is_printable c) then can_print := false
+    ) s;
+  if not !can_print then
+    _cannot_print "string: \"%s\"" s
+  else if !quotation = 0 then
+    Format.fprintf fmt {|"%s"|} s
+  else begin
+    Format.pp_print_char fmt '"';
+    String.iter (function
+        | '"' -> Format.fprintf fmt {|""|}
+        | c -> Format.fprintf fmt "%c" c) s;
+    Format.pp_print_char fmt '"'
+  end
 
 (* sanitization *)
 
-let sanitize_aux _idx = function
+let sanitize_aux _idx o =
   (* smtlib identifiers can be quoted, and quotable symbols are a strict
      superset of non-quoted symbols, so we only need to make sure that
      all characters are quotable *)
+  match o with
   | None -> [Uchar.of_char '_']
   | Some c ->
     if Uchar.is_char c &&
@@ -147,27 +152,7 @@ let sanitize _id name =
     then name
     else Dolmen_std.Name.indexed basename' indexes'
   | Qualified _ ->
-    (* TODO: proper error ? Related to how dolmen will handle translation
-       between languages with multiple files / qualified includes... *)
-    assert false
-
-let string fmt s =
-  let can_print = ref true in
-  let quotation = ref 0 in
-  String.iter (fun c ->
-      if c = '"' then quotation := !quotation + 1;
-      if not (is_whitespace c || is_printable c) then can_print := false
-    ) s;
-  if not !can_print then
-    _cannot_print "string: \"%s\"" s
-  else if !quotation = 0 then
-    Format.pp_print_string fmt s
-  else begin
-    String.iter (function
-        | '"' -> Format.fprintf fmt {|""|}
-        | c -> Format.fprintf fmt "%c" c) s
-  end
-
+    _cannot_print "qualified names in smtlib2"
 
 
 (* Printing of terms and statements *)
@@ -176,7 +161,9 @@ let string fmt s =
 module Make
     (Env : Dolmen_intf.Env.Print
      with type name := Dolmen_std.Name.t)
-    (V : Dolmen_intf.View.FO.S
+    (S : Dolmen_intf.View.Sexpr.S
+     with type id := Dolmen_std.Id.t)
+    (V : Dolmen_intf.View.TFF.S
      with type ty = Env.ty
       and type ty_var = Env.ty_var
       and type ty_cst = Env.ty_cst
@@ -188,8 +175,8 @@ module Make
 
   module N = Dolmen_std.Name
   module B = Dolmen_std.Builtin
-  module F = Dolmen_intf.View.FO
-  module E = Dolmen_std.View.Extended(V)
+  module F = Dolmen_intf.View.TFF
+  module E = Dolmen_std.View.Assoc(V)
 
   (* Helpers *)
   (* ******* *)
@@ -202,7 +189,27 @@ module Make
   (* Ids *)
   (* *** *)
 
-  let id _env fmt name = id fmt name
+  let symbol _env fmt name = symbol fmt name
+
+  let id ~allow_keyword env fmt id =
+    match (id : Dolmen_std.Id.t) with
+    | { ns = Value String; name = Simple s; } -> string fmt s
+    | { ns = Value Integer; name = Simple s; } -> num fmt s
+    | { ns = Value Real; name = Simple s; } -> dec fmt s
+    | { ns = Value Hexadecimal; name = Simple s; } -> hex fmt s
+    | { ns = Value Binary; name = Simple s; } -> bin fmt s
+    | { ns = (Attr | Term); name = Simple s; } ->
+      if (allow_keyword && Misc.lex_string Lexer.check_keyword s)
+         || Misc.lex_string Lexer.check_simple_symbol s then
+        Format.pp_print_string fmt s
+      else if Misc.lex_string Lexer.check_quoted_symbol s then
+        Format.fprintf fmt "|%s|" s
+      else
+        _cannot_print "unprintable symbol"
+    | { ns = Term; name; } ->
+      symbol env fmt name
+    | _ ->
+      _cannot_print "unprintable id"
 
 
   (* Types *)
@@ -211,32 +218,32 @@ module Make
   let ty_var env fmt v =
     let name = Env.Ty_var.name env v in
     (* TODO: setup a cache from names to category in one of the env's keys *)
-    id env fmt name
+    symbol env fmt name
 
   let ty_cst env fmt c =
     let name = Env.Ty_cst.name env c in
     (* TODO: setup a cache from names to category in one of the env's keys *)
-    id env fmt name
+    symbol env fmt name
 
-  let ty_head_name env head =
+  let ty_head_name env c =
     (* TODO: add reservations for the builtin names in the env *)
     let int = string_of_int in
-    match (head : _ Dolmen_intf.View.FO.head) with
-    | Cst c -> Env.Ty_cst.name env c
-    | Builtin B.Prop -> N.simple "Bool"
-    | Builtin B.Int -> N.simple "Int"
-    | Builtin B.Real -> N.simple "Real"
-    | Builtin B.Array -> N.simple "Array"
-    | Builtin B.Bitv n -> N.indexed "Bitvec" [int n]
-    | Builtin B.Float (5, 11) -> N.simple "Float16"
-    | Builtin B.Float (8, 24) -> N.simple "Float32"
-    | Builtin B.Float (11,53) -> N.simple "Float64"
-    | Builtin B.Float (15,113) -> N.simple "Float128"
-    | Builtin B.Float (e, s) -> N.indexed "FloatingPoint" [int e; int s]
-    | Builtin B.RoundingMode -> N.simple "RoundingMode"
-    | Builtin B.String -> N.simple "String"
-    | Builtin B.String_RegLan -> N.simple "RegLan"
-    | Builtin _ -> _cannot_print "unknown type builtin"
+    match V.Ty.Cst.builtin c with
+    | B.Base -> Env.Ty_cst.name env c
+    | B.Prop -> N.simple "Bool"
+    | B.Int -> N.simple "Int"
+    | B.Real -> N.simple "Real"
+    | B.Array -> N.simple "Array"
+    | B.Bitv n -> N.indexed "Bitvec" [int n]
+    | B.Float (5, 11) -> N.simple "Float16"
+    | B.Float (8, 24) -> N.simple "Float32"
+    | B.Float (11,53) -> N.simple "Float64"
+    | B.Float (15,113) -> N.simple "Float128"
+    | B.Float (e, s) -> N.indexed "FloatingPoint" [int e; int s]
+    | B.RoundingMode -> N.simple "RoundingMode"
+    | B.String -> N.simple "String"
+    | B.String_RegLan -> N.simple "RegLan"
+    | _ -> _cannot_print "unknown type builtin"
 
   let rec ty env fmt t =
     match V.Ty.view t with
@@ -245,10 +252,10 @@ module Make
       let f = ty_head_name env head in
       begin match args with
         | [] ->
-          id env fmt f
+          symbol env fmt f
         | _ :: _ ->
           Format.fprintf fmt "(%a %a)"
-            (id env) f (list ty env) args
+            (symbol env) f (list ty env) args
       end
 
 
@@ -258,12 +265,12 @@ module Make
   let term_var env fmt v =
     let name = Env.Term_var.name env v in
     (* TODO: setup a cache from names to category in one of the env's keys *)
-    id env fmt name
+    symbol env fmt name
 
   let term_cst env fmt c =
     let name = Env.Term_cst.name env c in
     (* TODO: setup a cache from names to category in one of the env's keys *)
-    id env fmt name
+    symbol env fmt name
 
   let sorted_var env fmt v =
     Format.fprintf fmt "(%a %a)" (term_var env) v (ty env) (V.Term.Var.ty v)
@@ -271,43 +278,35 @@ module Make
   let add_binding_to_env env (v, _) =
     Env.Term_var.bind env v
 
-  let term_head_chainable _env head =
-    match (head : _ F.head) with
-    | Cst _ -> `Nope
-    | Builtin B.Equal ->
-      `Chainable (function F.Builtin B.Equal -> true | _ -> false)
-    | Builtin _ -> `Nope
+  let add_pattern_to_env env pat =
+    match (pat : _ F.Term.pattern) with
+    | Var v -> Env.Term_var.bind env v
+    | Constructor (_, l) -> List.fold_left Env.Term_var.bind env l
 
-  let term_head_assoc _env head =
-    match (head : _ F.head) with
-    | Cst _ -> `None
-    | Builtin B.And ->
-      `Left_assoc (function F.Builtin B.And -> true | _ -> false)
-    | Builtin _ -> `None
+  let term_cst_chainable _env c =
+    match V.Term.Cst.builtin c with
+    | B.Base -> `Nope
+    | B.Equal -> `Chainable (fun c ->
+        match V.Term.Cst.builtin c with B.Equal -> true | _ -> false)
+    | _ -> `Nope
 
-  let term_head_name env head =
-    match (head : _ F.head) with
-    | Cst c -> Env.Term_cst.name env c
-    | Builtin B.True -> N.simple "true"
-    | Builtin B.False -> N.simple "false"
-    | Builtin B.Neg -> N.simple "not"
-    | Builtin B.And -> N.simple "and"
-    | Builtin B.Or -> N.simple "or"
-    | Builtin B.Xor -> N.simple "xor"
-    | Builtin B.Imply -> N.simple "=>"
-    | Builtin B.Ite -> N.simple "ite"
-    | Builtin B.Equal -> N.simple "="
-    | Builtin B.Distinct -> N.simple "distinct"
-    | Builtin _ -> _cannot_print "unknown term builtin"
+  let term_cst_assoc _env c =
+    match V.Term.Cst.builtin c with
+    | B.Base -> `None
+    | B.Or -> `Left_assoc (fun c ->
+        match V.Term.Cst.builtin c with B.Or -> true | _ -> false)
+    | B.And -> `Left_assoc (fun c ->
+        match V.Term.Cst.builtin c with B.And -> true | _ -> false)
+    | B.Xor -> `Left_assoc (fun c ->
+        match V.Term.Cst.builtin c with B.Xor -> true | _ -> false)
+    | B.Imply -> `Right_assoc (fun c ->
+        match V.Term.Cst.builtin c with B.Imply -> true | _ -> false)
+    | _ -> `None
 
-  let term_head_poly _env head =
-    match (head : _  F.head) with
-    | Cst c ->
-      begin match V.Sig.view (V.Term.Cst.ty c) with
-        | Signature (_ :: _, _, _) -> true
-        | _ -> false
-      end
-    | Builtin _ -> false
+  let term_cst_poly _env c =
+    match V.Sig.view (V.Term.Cst.ty c) with
+    | Signature (_ :: _, _, _) -> true
+    | _ -> false
 
   (* Note: unfortunately, most of the smtlib term constructions end with a
      parenthesis, and therefore their printers are currently not tail-rec.
@@ -335,16 +334,16 @@ module Make
        may have been expanded by the typechecker or other mechanism. *)
     let head, args =
       let args =
-        match term_head_assoc env head with
+        match term_cst_assoc env head with
         | `Left_assoc top_head -> E.left_assoc top_head args
         | `Right_assoc top_head -> E.right_assoc top_head args
         | `None -> args
       in
-      match head, args with
-      | Builtin B.And, t :: _ ->
+      match V.Term.Cst.builtin head, args with
+      | B.And, t :: _ ->
         begin match V.Term.view t with
           | App (h, _, _) ->
-            begin match term_head_chainable env h with
+            begin match term_cst_chainable env h with
               | `Chainable top_head ->
                 begin match E.chainable top_head args with
                   | Some new_args -> h, new_args
@@ -363,16 +362,44 @@ module Make
        explicit type annotation to disambiguate things. In the other cases,
        we suppose that a symbol's type arguments can be deduced from the term
        arguments. *)
-    let name = term_head_name env head in
-    match args with
-    | [] ->
-      if term_head_poly env head then
-        Format.fprintf fmt "(as@ %a@ %a)"
-          (id env) name (ty env) t_ty
-      else
-        Format.fprintf fmt "%a" (id env) name
-    | _ :: _ ->
-      Format.fprintf fmt "(%a@ %a)" (id env) name (list term env) args
+    let aux h args =
+      match args with
+      | [] ->
+        if term_cst_poly env head then
+          Format.fprintf fmt "(as@ %a@ %a)"
+            (id ~allow_keyword:false env) h (ty env) t_ty
+        else
+          Format.fprintf fmt "%a" (id ~allow_keyword:false env) h
+      | _ :: _ ->
+        Format.fprintf fmt "(%a@ %a)" (id ~allow_keyword:false env) h (list term env) args
+    in
+    (* small shorthand *)
+    let p ns name = aux (Dolmen_std.Id.create ns name) args in
+    let simple s = p Term (N.simple s) in
+    match V.Term.Cst.builtin head with
+    (* Base + Algebraic datatypes *)
+    | B.Base | B.Constructor _ | B.Destructor _ ->
+      p Term (Env.Term_cst.name env head)
+    | B.Tester { cstr; _ } ->
+      begin match Env.Term_cst.name env cstr with
+        | Simple s -> p Term (N.indexed "is" [s])
+        | _ -> _cannot_print "expected a simple for a constructor name"
+      end
+    (* Boolean core *)
+    | B.True -> simple "true"
+    | B.False -> simple "false"
+    | B.Neg -> simple "not"
+    | B.And -> simple "and"
+    | B.Or -> simple "or"
+    | B.Xor -> simple "xor"
+    | B.Imply -> simple "=>"
+    | B.Ite -> simple "ite"
+    | B.Equal -> simple "="
+    | B.Distinct -> simple "distinct"
+    (* TODO: complete support for all builtins *)
+    | B.Integer s -> p (Value Integer) (N.simple s)
+    | B.Add (`Int | `Real) -> simple "+"
+    | _ -> _cannot_print "unknown term builtin"
 
   and letin env fmt (l, body) =
     match l with
@@ -396,6 +423,7 @@ module Make
       (list match_case env) cases
 
   and match_case env fmt (pat, arm) =
+    let env = add_pattern_to_env env pat in
     Format.fprintf fmt "(@[<h>%a@] @[<hov>%a@])" (pattern env) pat (term env) arm
 
   and pattern env fmt pat =
@@ -407,6 +435,7 @@ module Make
         (term_cst env) c (list term_var env) args
 
   and quant q env fmt (tys, ts, body) =
+    (* TODO: patterns/triggers *)
     match tys, ts with
     | _ :: _, _ -> _cannot_print "type quantification"
     | [], [] -> term env fmt body
@@ -415,20 +444,73 @@ module Make
         (list sorted_var env) ts
         (term env) body
 
-  and attribute _env _fmt _t =
-    (* same as `term` but check that it is the application of a keyword,
-       i.e. a symbol that starts with ':' *)
-    assert false
-
-  and keyword _env _fmt _t =
-    assert false
-
-  and prop_literal _env _fmt (_t : Env.formula) =
+  and prop_literal env fmt t =
     (* either 'c' or 'not c' with 'c' a constant *)
-    assert false
+    match V.Formula.view t with
+    | App (f, [], [arg]) when (match V.Term.Cst.builtin f with B.Neg -> true | _ -> false) ->
+      begin match V.Term.view arg with
+        | App (c, [], []) ->
+          let name = Env.Term_cst.name env c in
+          Format.fprintf fmt "(not %a)" (symbol env) name
+        | _ -> _cannot_print "not a prop literal"
+      end
+    | App (c, [], []) ->
+      let name = Env.Term_cst.name env c in
+      symbol env fmt name
+    | _ -> _cannot_print "not a prop literal"
 
   and formula env fmt t =
     term_view env fmt (V.Formula.ty t) (V.Formula.view t)
+
+  (* Datatypes *)
+  (* ********* *)
+
+  let constructor_dec env fmt (cstr, params) =
+    match params with
+    | [] ->
+      Format.fprintf fmt "(%a)" (term_cst env) cstr
+    | _ ->
+      let aux env fmt (tty, dstr) =
+        Format.fprintf fmt "@[<h>(%a %a)@]"
+          (term_cst env) dstr (ty env) tty
+      in
+      Format.fprintf fmt "@[<hv 1>(%a@ %a)@]"
+        (term_cst env) cstr
+        (list aux env) params
+
+  let datatype_dec env fmt (_, vars, cases) =
+    match vars with
+    | [] ->
+      Format.fprintf fmt "@[<v 1>(%a)@]" (list constructor_dec env) cases
+    | _ ->
+      let env = List.fold_left Env.Ty_var.bind env vars in
+      Format.fprintf fmt "(par (%a)@ @[<v 1>(%a))@]"
+        (list ty_var env) vars (list constructor_dec env) cases
+
+
+  (* Attributes *)
+  (* ********** *)
+
+  let rec sexpr env fmt t =
+    match S.view t with
+    | Symbol s -> id ~allow_keyword:true env fmt s
+    | App l -> list sexpr env fmt l
+
+  let is_keyword t =
+    match S.view t with
+    | Symbol { ns = Attr; name = Simple s; }
+      when Misc.lex_string Lexer.check_keyword s -> true
+    | _ -> false
+
+  let attribute env fmt t =
+    match S.view t with
+    | App ([k; _]) when is_keyword k -> sexpr env fmt t
+    | _ -> _cannot_print "not an attribtue"
+
+  let keyword env fmt t =
+    if is_keyword t
+    then sexpr env fmt t
+    else _cannot_print "not a keyword"
 
 
   (* Statements *)
@@ -461,19 +543,19 @@ module Make
     Format.fprintf fmt "(echo \"%a\")" string s
 
   let set_logic _env fmt s =
-    Format.fprintf fmt "(set-logic %a)" id_aux s
+    Format.fprintf fmt "@[<h>(set-logic %a)@]" symbol_aux s
 
   let set_info env fmt t =
-    Format.fprintf fmt "(set-info %a)" (attribute env) t
+    Format.fprintf fmt "@[<h>(set-info %a)@]" (attribute env) t
 
   let set_option env fmt t =
-    Format.fprintf fmt "(set-option %a)" (attribute env) t
+    Format.fprintf fmt "@[<h>(set-option %a)@]" (attribute env) t
 
   let get_info env fmt t =
-    Format.fprintf fmt "(get-info %a)" (keyword env) t
+    Format.fprintf fmt "@[<h>(get-info %a)@]" (keyword env) t
 
   let get_option env fmt t =
-    Format.fprintf fmt "(get-option %a)" (keyword env) t
+    Format.fprintf fmt "@[<h>(get-option %a)@]" (keyword env) t
 
   let get_value env fmt l =
     Format.fprintf fmt "@[<hv 2>(get-value (@,@[<hv>%a@]@,))"
@@ -492,7 +574,24 @@ module Make
   let declare_sort env fmt c =
     let n = V.Ty.Cst.arity c in
     let name = Env.Ty_cst.name env c in
-    Format.fprintf fmt "(declare-sort %a %d)" (id env) name n
+    Format.fprintf fmt "(declare-sort %a %d)" (symbol env) name n
+
+  let declare_datatype env fmt ((c, _, _) as dec) =
+    Format.fprintf fmt "@[<hov 2>(declare-datatype %a@ %a)@]"
+      (ty_cst env) c
+      (datatype_dec env) dec
+
+  let declare_datatypes env fmt l =
+    let sort_dec env fmt (c, _, _) =
+      let n = V.Ty.Cst.arity c in
+      Format.fprintf fmt "@[<h>(%a %d)@]" (ty_cst env) c n
+    in
+    match l with
+    | [decl] -> declare_datatype env fmt decl
+    | _ ->
+      Format.fprintf fmt "@[<v 2>(declare-datatypes@ @[<v 1>(%a)@]@ (%a))@]"
+        (list sort_dec env) l
+        (list datatype_dec env) l
 
   let declare_fun env fmt c =
     let name = Env.Term_cst.name env c in
@@ -500,13 +599,12 @@ module Make
     match V.Sig.view c_sig with
     | Signature ([], [], c_ty) ->
       Format.fprintf fmt "(declare-const %a %a)"
-        (id env) name (ty env) c_ty
+        (symbol env) name (ty env) c_ty
     | Signature ([], params, ret) ->
       Format.fprintf fmt "(declare-fun %a (%a) %a)"
-        (id env) name (list ty env) params (ty env) ret
+        (symbol env) name (list ty env) params (ty env) ret
     | Signature (_ :: _, _, _) ->
-      (* TODO: proper error, polymorphic functions are not supported in smtlib v2.6 *)
-      assert false
+      _cannot_print "polymorphic function declaration"
 
   let define_sort env fmt (c, params, body) =
     let env = List.fold_left Env.Ty_var.bind env params in
@@ -515,25 +613,26 @@ module Make
       (list ty_var env) params
       (ty env) body
 
-  let define_fun_aux ~recursive env fmt (f, params, ret_ty, body) =
+  let define_fun_aux ~recursive env fmt (f, params, body) =
     let env = List.fold_left Env.Term_var.bind env params in
-    Format.fprintf fmt "(%s %a (%a) %a %a)"
+    Format.fprintf fmt "@[<hv 2>(@[<hov 1>%s %a@ (%a) %a@]@ %a)@]"
       (if recursive then "define-fun-rec" else "define-fun")
       (term_cst env) f
-      (list term_var env) params
-      (ty env) ret_ty
+      (list sorted_var env) params
+      (ty env) (V.Term.ty body)
       (term env) body
 
   let define_fun = define_fun_aux ~recursive:false
   let define_fun_rec = define_fun_aux ~recursive:true
 
   let define_funs_rec env fmt l =
-    let fun_body env fmt (_, _, _, body) = term env fmt body in
-    let fun_decl env fmt (f, params, ret_ty, _) =
+    let fun_body env fmt (_, _, body) = term env fmt body in
+    let fun_decl env fmt (f, params, body) =
+      let env = List.fold_left Env.Term_var.bind env params in
       Format.fprintf fmt "(%a (%a) %a)"
         (term_cst env) f
-        (list term_var env) params
-        (ty env) ret_ty
+        (list sorted_var env) params
+        (ty env) (V.Term.ty body)
     in
     Format.fprintf fmt
       "@[<v 2>(define-funs-rec@ @[<v 2>(%a)@]@ @[<v 2>(%a)@])@]"

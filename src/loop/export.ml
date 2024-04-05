@@ -153,10 +153,14 @@ end
 
 module Smtlib2_6
     (Expr : Expr_intf.Export)
-    (View : Dolmen_intf.View.FO.S
+    (Sexpr : Dolmen_intf.View.Sexpr.S
+      with type t = Dolmen_std.Term.t
+       and type id := Dolmen_std.Id.t)
+    (View : Dolmen_intf.View.TFF.S
      with type ty = Expr.Ty.t
       and type ty_var = Expr.Ty.Var.t
       and type ty_cst = Expr.Ty.Const.t
+      and type ty_def = Expr.ty_def
       and type term = Expr.Term.t
       and type term_var = Expr.Term.Var.t
       and type term_cst = Expr.Term.Const.t
@@ -181,7 +185,7 @@ module Smtlib2_6
       let term_cst = Dolmen_std.Namespace.term
     end)
 
-  module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Env)(View)
+  module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Env)(Sexpr)(View)
 
   type acc = {
     env : Env.t;
@@ -198,25 +202,54 @@ module Smtlib2_6
     let env = Env.empty scope in
     { env; fmt; }
 
-  let register_decl ({ env; fmt = _; } as acc) = function
-    | `Type_decl (c, None) ->
-      let env = Env.Ty_cst.bind env c in
-      { acc with env }
-    | `Type_decl (_c, Some _) ->
-      (* TODO: handle datatypes, and constructors *)
-      assert false
-    | `Term_decl c ->
-      let env = Env.Term_cst.bind env c in
-      { acc with env }
+  (* declarations *)
 
-  let print_decl { env; fmt; } = function
+  let map_decl = function
     | `Type_decl (c, None) ->
+      Either.Left (`Type_decl c)
+    | `Term_decl c ->
+      Either.Left (`Term_decl c)
+    | `Type_decl (c, Some def) ->
+      begin match View.Ty.Def.view def with
+        | Abstract -> Either.Left (`Type_decl c)
+        | Algebraic { vars; cases; } ->
+          let cases =
+            List.map (function
+                  Dolmen_intf.View.TFF.TypeDef.Case { constructor; params; } ->
+                  constructor, params
+              ) cases
+          in
+          Either.Right (c, vars, cases)
+      end
+
+  let register_simple_decl env = function
+    | `Type_decl c -> Env.Ty_cst.bind env c
+    | `Term_decl c -> Env.Term_cst.bind env c
+
+  let register_adt_decl env (c, _vars, cases) =
+    let env = Env.Ty_cst.bind env c in
+    List.fold_left (fun env (cstr, params) ->
+        let env = Env.Term_cst.bind env cstr in
+        List.fold_left (fun env (_ty, dstr) ->
+            Env.Term_cst.bind env dstr
+          ) env params
+      ) env cases
+
+  let print_simple_decl { env; fmt; } = function
+    | `Type_decl c ->
       Format.fprintf fmt "%a@." (P.declare_sort env) c
-    | `Type_decl (_c, Some _) ->
-      (* TODO: handle datatypes *)
-      assert false
     | `Term_decl c ->
       Format.fprintf fmt "%a@." (P.declare_fun env) c
+
+  (* defintions *)
+
+  let map_def = function
+    | `Type_alias (_, c, vars, body) -> Either.Left (c, vars, body)
+    | `Term_def (_, c, [], params, body) -> Either.Right (c, params, body)
+    | `Term_def (_, _, _ :: _, _, _) -> assert false (* TODO: proper error, poly fun in smt2 not allowed *)
+    | `Instanceof _ -> assert false (* TODO: proper error, cannot print *)
+
+  (* statement printing *)
 
   let pp_stmt ({ env; fmt; } as acc) pp x =
     Format.fprintf fmt "%a@." (pp env) x;
@@ -230,11 +263,11 @@ module Smtlib2_6
           | Some _ -> pp_stmt acc P.set_logic s
           | None -> assert false (* TODO: proper error *)
         end
-      | `Set_info _ -> assert false (* TODO: add a view and printer for untyped terms *)
-      | `Set_option _ -> assert false
+      | `Set_info s -> pp_stmt acc P.set_info s
+      | `Set_option s -> pp_stmt acc P.set_option s
       (* Info getters *)
-      | `Get_info _ -> assert false
-      | `Get_option _ -> assert false
+      | `Get_info s -> pp_stmt acc P.get_info s
+      | `Get_option s -> pp_stmt acc P.get_option s
       | `Get_proof -> pp_stmt acc P.get_proof ()
       | `Get_unsat_core -> pp_stmt acc P.get_unsat_core ()
       | `Get_unsat_assumptions -> pp_stmt acc P.get_unsat_assumptions ()
@@ -249,13 +282,55 @@ module Smtlib2_6
       | `Reset -> pp_stmt acc P.reset ()
       | `Reset_assertions -> pp_stmt acc P.reset_assertions ()
       (* Decls *)
-      | `Decls (_recursive, l) ->
-        (* TODO: use the `recursive` part *)
-        let acc = List.fold_left register_decl acc l in
-        List.iter (print_decl acc) l;
-        acc
+      | `Decls (recursive, l) ->
+        let { env; fmt; } = acc in
+        let simples, adts = List.partition_map map_decl l in
+        let env =
+          match simples, adts, recursive with
+          | [], l, true ->
+            let env = List.fold_left register_adt_decl env l in
+            Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
+            env
+          | l, [], false ->
+            List.iter (print_simple_decl acc) l;
+            let env = List.fold_left register_simple_decl env l in
+            env
+          | _ ->
+            assert false (* TODO: better error / can this happen ? *)
+        in
+        { acc with env }
       (* Defs *)
-      | `Defs _ -> assert false
+      | `Defs (recursive, l) ->
+        let { env; fmt; } = acc in
+        let typedefs, fundefs = List.partition_map map_def l in
+        let env =
+          match typedefs, fundefs, recursive with
+          | [], [], _ -> assert false (* internal invariant: should not happen *)
+          | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
+          | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
+          | l, [], false ->
+            List.fold_left (fun env ((c, _, _) as def) ->
+                Format.fprintf fmt "%a@." (P.define_sort env) def;
+                Env.Ty_cst.bind env c
+              ) env l
+          | [], l, false ->
+            List.fold_left (fun env ((c, _, _) as def) ->
+                Format.fprintf fmt "%a@." (P.define_fun env) def;
+                Env.Term_cst.bind env c
+              ) env l
+          | [], [(c, _, _) as def], true ->
+            let env = Env.Term_cst.bind env c in
+            Format.fprintf fmt "%a@." (P.define_fun_rec env) def;
+            env
+          | [], l, true ->
+            let env = List.fold_left (fun env (c, _, _) ->
+                Env.Term_cst.bind env c
+              ) env l
+            in
+            Format.fprintf fmt "%a@." (P.define_funs_rec env) l;
+            env
+        in
+        { acc with env }
       (* Assume *)
       | `Hyp t -> pp_stmt acc P.assert_ t
       | `Goal _
@@ -316,10 +391,14 @@ end
 
 module Make
     (Expr : Expr_intf.Export)
-    (View : Dolmen_intf.View.FO.S
+    (Sexpr : Dolmen_intf.View.Sexpr.S
+     with type t = Dolmen_std.Term.t
+      and type id := Dolmen_std.Id.t)
+    (View : Dolmen_intf.View.TFF.S
      with type ty = Expr.Ty.t
       and type ty_var = Expr.Ty.Var.t
       and type ty_cst = Expr.Ty.Const.t
+      and type ty_def = Expr.ty_def
       and type term = Expr.Term.t
       and type term_var = Expr.Term.Var.t
       and type term_cst = Expr.Term.Const.t
@@ -360,7 +439,7 @@ module Make
   (* available printers *)
 
   module Dummy = Dummy(Expr)(Typer_Types)
-  module Smtlib2_6 = Smtlib2_6(Expr)(View)(Typer_Types)
+  module Smtlib2_6 = Smtlib2_6(Expr)(Sexpr)(View)(Typer_Types)
 
   (* setup *)
 

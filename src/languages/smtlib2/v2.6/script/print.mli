@@ -9,8 +9,11 @@ exception Cannot_print of string
     conventions. In that case, the string contains a message explaining
     why the printing failed. *)
 
-val id : Format.formatter -> Dolmen_std.Name.t -> unit
+val symbol : Format.formatter -> Dolmen_std.Name.t -> unit
 (** Print an identifier, quoting it if necessary. *)
+
+val keyword : Format.formatter -> Dolmen_std.Name.t -> unit
+(** Print a keyword. *)
 
 val sanitize : _ Dolmen_intf.Scope.id -> Dolmen_std.Name.t -> Dolmen_std.Name.t
 (** Sanitization function to ensure that a name can be printed. *)
@@ -22,7 +25,9 @@ val sanitize : _ Dolmen_intf.Scope.id -> Dolmen_std.Name.t -> Dolmen_std.Name.t
 module Make
     (Env : Dolmen_intf.Env.Print
      with type name := Dolmen_std.Name.t)
-    (V : Dolmen_intf.View.FO.S
+    (S : Dolmen_intf.View.Sexpr.S
+     with type id := Dolmen_std.Id.t)
+    (V : Dolmen_intf.View.TFF.S
      with type ty = Env.ty
       and type ty_var = Env.ty_var
       and type ty_cst = Env.ty_cst
@@ -46,16 +51,16 @@ module Make
   val set_logic : Env.t -> Format.formatter -> string -> unit
   (** Print a set-logic statement. *)
 
-  val set_info : Env.t -> Format.formatter -> V.Term.t -> unit
+  val set_info : Env.t -> Format.formatter -> S.t -> unit
   (** *)
 
-  val set_option : Env.t -> Format.formatter-> V.Term.t -> unit
+  val set_option : Env.t -> Format.formatter-> S.t -> unit
   (** *)
 
-  val get_info : Env.t -> Format.formatter -> V.Term.t -> unit
+  val get_info : Env.t -> Format.formatter -> S.t -> unit
   (** *)
 
-  val get_option : Env.t -> Format.formatter -> V.Term.t -> unit
+  val get_option : Env.t -> Format.formatter -> S.t -> unit
   (** *)
 
   val get_value : Env.t -> Format.formatter -> V.Term.t list -> unit
@@ -72,6 +77,19 @@ module Make
   val declare_sort : Env.t -> Format.formatter -> V.Ty.Cst.t -> unit
   (** Declare a sort, i.e. a type constant. *)
 
+  val declare_datatype :
+    Env.t -> Format.formatter ->
+    V.Ty.Cst.t * V.Ty.Var.t list *
+    (V.Term.Cst.t * (V.Ty.t * V.Term.Cst.t) list) list ->
+    unit
+  (** Declare a single datatype. *)
+
+  val declare_datatypes :
+    Env.t -> Format.formatter ->
+    (V.Ty.Cst.t * V.Ty.Var.t list * (V.Term.Cst.t * (V.Ty.t * V.Term.Cst.t) list) list) list ->
+    unit
+  (** Declare multiple mutually recursive datatypes. *)
+
   val declare_fun : Env.t -> Format.formatter -> V.Term.Cst.t -> unit
   (** Declare a function, i.e. a term constant. This will use
       either the `declare-fun` or the `declare-const` statement
@@ -84,17 +102,17 @@ module Make
 
   val define_fun :
     Env.t -> Format.formatter ->
-    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) -> unit
+    (V.Term.Cst.t * V.Term.Var.t list * V.Term.t) -> unit
   (** *)
 
   val define_fun_rec :
     Env.t -> Format.formatter ->
-    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) -> unit
+    (V.Term.Cst.t * V.Term.Var.t list * V.Term.t) -> unit
   (** *)
 
   val define_funs_rec :
     Env.t -> Format.formatter ->
-    (V.Term.Cst.t * V.Term.Var.t list * V.Ty.t * V.Term.t) list -> unit
+    (V.Term.Cst.t * V.Term.Var.t list * V.Term.t) list -> unit
   (** *)
 
   val assert_ : Env.t -> Format.formatter -> V.Formula.t -> unit

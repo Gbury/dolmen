@@ -249,10 +249,11 @@ end
 
 module View : sig
 
-  module FO : Dolmen_intf.View.FO.S
+  module TFF : Dolmen_intf.View.TFF.S
     with type ty = ty
      and type ty_var = ty_var
      and type ty_cst = ty_cst
+     and type ty_def = ty_def
      and type Sig.t = ty
      and type term = term
      and type term_var = term_var
