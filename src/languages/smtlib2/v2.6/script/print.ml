@@ -178,6 +178,23 @@ module Make
   module F = Dolmen_intf.View.TFF
   module E = Dolmen_std.View.Assoc(V)
 
+  (* Env suff *)
+  (* ******** *)
+
+  (* Applications of `to_real` that are **directly** under an arithmetic
+     operator (such as '+'), can omit to print applications of `to_real`,
+     since these will be added back when parsing/typing. *)
+  let can_omit_to_real_key : bool Env.key = Env.key ()
+  let set_omit_to_real env b =
+    match Env.get env can_omit_to_real_key with
+    | Some b' when b = b' -> env
+    | _ -> Env.set env can_omit_to_real_key b
+  let can_omit_to_real env =
+    match Env.get env can_omit_to_real_key with
+    | Some true -> true
+    | _ -> false
+
+
   (* Helpers *)
   (* ******* *)
 
@@ -284,23 +301,39 @@ module Make
     | Constructor (_, l) -> List.fold_left Env.Term_var.bind env l
 
   let term_cst_chainable _env c =
-    match V.Term.Cst.builtin c with
-    | B.Base -> `Nope
-    | B.Equal -> `Chainable (fun c ->
-        match V.Term.Cst.builtin c with B.Equal -> true | _ -> false)
+    (* WARNING: this `blt` function should only be called with builtins that
+       do not have payload (such as terms), since the polymorphic comparison
+       will not work adequately in these cases. *)
+    let blt b = fun c -> V.Term.Cst.builtin c = b in
+    let b = V.Term.Cst.builtin c in
+    let yup () = `Chainable (blt b) in
+    match b with
+    | B.Equal
+    | B.Lt (`Int | `Real) | B.Leq (`Int | `Real)
+    | B.Gt (`Int | `Real) | B.Geq (`Int | `Real)
+      -> yup ()
     | _ -> `Nope
 
   let term_cst_assoc _env c =
-    match V.Term.Cst.builtin c with
-    | B.Base -> `None
-    | B.Or -> `Left_assoc (fun c ->
-        match V.Term.Cst.builtin c with B.Or -> true | _ -> false)
-    | B.And -> `Left_assoc (fun c ->
-        match V.Term.Cst.builtin c with B.And -> true | _ -> false)
-    | B.Xor -> `Left_assoc (fun c ->
-        match V.Term.Cst.builtin c with B.Xor -> true | _ -> false)
-    | B.Imply -> `Right_assoc (fun c ->
-        match V.Term.Cst.builtin c with B.Imply -> true | _ -> false)
+    (* WARNING: this `blt` function should only be called with builtins that
+       do not have payload (such as terms), since the polymorphic comparison
+       will not work adequately in these cases. *)
+    let blt b = fun c -> V.Term.Cst.builtin c = b in
+    let b = V.Term.Cst.builtin c in
+    let left () = `Left_assoc (blt b) in
+    let right () = `Right_assoc (blt b) in
+    match b with
+    (* left associative builtins *)
+    | B.Or | B.And | B.Xor
+    | B.Add (`Int | `Real)
+    | B.Sub (`Int | `Real)
+    | B.Mul (`Int | `Real)
+    | B.Div `Real
+      -> left ()
+    (* Right associative builtins *)
+    | B.Imply
+      -> right ()
+    (* all others are non-associative *)
     | _ -> `None
 
   let term_cst_poly _env c =
@@ -322,22 +355,22 @@ module Make
   and term_view env fmt t_ty view =
     match (view : _ F.Term.view) with
     | Var v -> term_var env fmt v
-    | App (head, _, args) -> term_app env fmt (t_ty, head, args)
+    | App (head, ty_args, args) -> term_app env fmt (t_ty, head, ty_args, args)
     | Match (scrutinee, cases) -> term_match env fmt (scrutinee, cases)
     | Binder (Exists (tys, ts), body) -> quant "exists" env fmt (tys, ts, body)
     | Binder (Forall (tys, ts), body) -> quant "forall" env fmt (tys, ts, body)
     | Binder (Letand l, body) -> letand env fmt (l, body)
     | Binder (Letin l, body) -> letin env fmt (l, body)
 
-  and term_app env fmt (t_ty, head, args) =
+  and term_app env fmt (t_ty, head, ty_args, args) =
     (* first, we need to undo any left/right associativity/chainability that
        may have been expanded by the typechecker or other mechanism. *)
-    let head, args =
-      let args =
+    let head, ty_args, args =
+      let ty_args, args =
         match term_cst_assoc env head with
-        | `Left_assoc top_head -> E.left_assoc top_head args
-        | `Right_assoc top_head -> E.right_assoc top_head args
-        | `None -> args
+        | `Left_assoc top_head -> None, E.left_assoc top_head args
+        | `Right_assoc top_head -> None, E.right_assoc top_head args
+        | `None -> Some ty_args, args
       in
       match V.Term.Cst.builtin head, args with
       | B.And, t :: _ ->
@@ -346,15 +379,16 @@ module Make
             begin match term_cst_chainable env h with
               | `Chainable top_head ->
                 begin match E.chainable top_head args with
-                  | Some new_args -> h, new_args
-                  | None -> head, args
+                  | Some new_args -> h, None, new_args
+                  | None -> head, ty_args, args
                 end
-              | `Nope -> head, args
+              | `Nope -> head, ty_args, args
             end
-          | _ -> head, args
+          | _ -> head, ty_args, args
         end
-      | _ -> head, args
+      | _ -> head, ty_args, args
     in
+
     (* smtlib has implicit type arguments, i.e. the type args are not printed.
        Therefore, whenever a polymorphic symbol is used, its type arguments
        need to be inferable from its term arguments. Hence, when a symbol is
@@ -362,7 +396,8 @@ module Make
        explicit type annotation to disambiguate things. In the other cases,
        we suppose that a symbol's type arguments can be deduced from the term
        arguments. *)
-    let aux h args =
+    let aux ?(omit_to_real=false) h args =
+      let env = set_omit_to_real env omit_to_real in
       match args with
       | [] ->
         if term_cst_poly env head then
@@ -373,10 +408,18 @@ module Make
       | _ :: _ ->
         Format.fprintf fmt "(%a@ %a)" (id ~allow_keyword:false env) h (list term env) args
     in
+
     (* small shorthand *)
-    let p ns name = aux (Dolmen_std.Id.create ns name) args in
-    let simple s = p Term (N.simple s) in
+    let p ?omit_to_real ns name =
+      aux ?omit_to_real (Dolmen_std.Id.create ns name) args
+    in
+    let simple ?omit_to_real s =
+      p ?omit_to_real Term (N.simple s)
+    in
+
+    (* Matching *)
     match V.Term.Cst.builtin head with
+
     (* Base + Algebraic datatypes *)
     | B.Base | B.Constructor _ | B.Destructor _ ->
       p Term (Env.Term_cst.name env head)
@@ -385,6 +428,32 @@ module Make
         | Simple s -> p Term (N.indexed "is" [s])
         | _ -> _cannot_print "expected a simple for a constructor name"
       end
+
+    (* Cast *)
+    | B.Coercion ->
+      begin match ty_args with
+        | None -> assert false (* coercions should not be chainable/associative *)
+        | Some [a; b] ->
+          begin match V.Ty.view a, V.Ty.view b with
+
+            (* Int-> Real conversion *)
+            | App (ah, []), App (bh, [])
+              when (match V.Ty.Cst.builtin ah with B.Int -> true | _ -> false) &&
+                   (match V.Ty.Cst.builtin bh with B.Real -> true | _ -> false) ->
+              if can_omit_to_real env then
+                match args with
+                | [t] ->
+                  term env fmt t
+                | _ -> _cannot_print "bad applicaiton of coercion"
+              else
+                simple "to_real"
+
+            (* fallback *)
+            | _ -> _cannot_print "unhandled builtin"
+          end
+        | Some _ -> _cannot_print "bad coercion application"
+      end
+
     (* Boolean core *)
     | B.True -> simple "true"
     | B.False -> simple "false"
@@ -396,12 +465,77 @@ module Make
     | B.Ite -> simple "ite"
     | B.Equal -> simple "="
     | B.Distinct -> simple "distinct"
-    (* TODO: complete support for all builtins *)
+
+    (* Arrays *)
+    | B.Store -> simple "store"
+    | B.Select -> simple "select"
+
+    (* Arithmetic *)
     | B.Integer s -> p (Value Integer) (N.simple s)
-    | B.Add (`Int | `Real) -> simple "+"
+    | B.Decimal s -> p (Value Real) (N.simple s)
+    | B.Lt (`Int | `Real) -> simple ~omit_to_real:true "<"
+    | B.Leq (`Int | `Real) -> simple ~omit_to_real:true "<="
+    | B.Gt (`Int | `Real) -> simple ~omit_to_real:true ">"
+    | B.Geq (`Int | `Real) -> simple ~omit_to_real:true ">="
+    | B.Minus ( `Int | `Real) -> simple "-"
+    | B.Add (`Int | `Real) -> simple ~omit_to_real:true "+"
+    | B.Sub (`Int | `Real) -> simple ~omit_to_real:true "-"
+    | B.Mul (`Int | `Real) -> simple ~omit_to_real:true "*"
+    | B.Div `Real -> simple ~omit_to_real:true "/"
+    | B.Div_e `Int -> simple "div"
+    | B.Modulo_e `Int -> simple "mod"
+    | B.Abs -> simple "abs"
+    | B.Is_int `Real -> simple "is_int"
+    | B.Floor_to_int `Real -> simple "to_int"
+    | B.Divisible ->
+      begin match args with
+        | [x; y] ->
+          begin match V.Term.view y with
+            | App (f, [], []) ->
+              begin match V.Term.Cst.builtin f with
+                | B.Integer s ->
+                  let id = Dolmen_std.Id.create Term (N.indexed "divisible" [s]) in
+                  aux id [x]
+                | _ -> _cannot_print "bad divisible application"
+              end
+            | _ -> _cannot_print "bad divisible application"
+          end
+        | _ -> _cannot_print "bad divisible application"
+      end
+
+    (* Bitvectors *)
+    | B.Bitvec s -> p (Value Binary) (N.simple s) (* TODO: see if we can recover hex form ? *)
+    | B.Bitv_not _ -> simple "bvnot"
+    | B.Bitv_and _ -> simple "bvand"
+    | B.Bitv_or _ -> simple "bvor"
+    | B.Bitv_nand _ -> simple "bvnand"
+    | B.Bitv_nor _ -> simple "bvnor"
+    | B.Bitv_xor _ -> simple "bvxor"
+    | B.Bitv_xnor _ -> simple "bvxnor"
+    | B.Bitv_comp _ -> simple "bvcomp"
+    | B.Bitv_neg _ -> simple "bvneg"
+    | B.Bitv_add _ -> simple "bvadd"
+    | B.Bitv_sub _ -> simple "bvsub"
+    | B.Bitv_mul _ -> simple "bvsub"
+    | B.Bitv_udiv _ -> simple "bvudiv"
+    | B.Bitv_srem _ -> simple "bvsrem"
+    | B.Bitv_smod _ -> simple "bvsmod"
+    | B.Bitv_shl _ -> simple "bvshl"
+    | B.Bitv_lshr _ -> simple "bvlshr"
+    | B.Bitv_ashr _ -> simple "bvashr"
+    | B.Bitv_ult _ -> simple "bvult"
+    | B.Bitv_ule _ -> simple "bvule"
+    | B.Bitv_ugt _ -> simple "bvugt"
+    | B.Bitv_uge _ -> simple "bvuge"
+    | B.Bitv_slt _ -> simple "bvslt"
+
+    (* fallback *)
     | _ -> _cannot_print "unknown term builtin"
 
   and letin env fmt (l, body) =
+    (* reset some env state *)
+    let env = set_omit_to_real env false in
+    (* actual printing *)
     match l with
     | [] -> term env fmt body
     | binding :: r ->
@@ -410,6 +544,9 @@ module Make
         (var_binding env' env) binding (letin env') (r, body)
 
   and letand env fmt (l, body) =
+    (* reset some env state *)
+    let env = set_omit_to_real env false in
+    (* actual printing *)
     let env' = List.fold_left add_binding_to_env env l in
     Format.fprintf fmt "@[<hv>(let @[<hv>(%a)@]@ %a)@]"
       (list (var_binding env') env) l (term env) body
@@ -418,6 +555,9 @@ module Make
     Format.fprintf fmt "@[<hov 2>(%a@ %a)@]" (term_var var_env) v (term t_env) t
 
   and term_match env fmt (scrutinee, cases) =
+    (* reset some env state *)
+    let env = set_omit_to_real env false in
+    (* actual printing *)
     Format.fprintf fmt "@[<hv 2>(match@ @[<hov>%a@]@ (%a))"
       (term env) scrutinee
       (list match_case env) cases
@@ -435,6 +575,9 @@ module Make
         (term_cst env) c (list term_var env) args
 
   and quant q env fmt (tys, ts, body) =
+    (* reset some env state *)
+    let env = set_omit_to_real env false in
+    (* actual printing *)
     (* TODO: patterns/triggers *)
     match tys, ts with
     | _ :: _, _ -> _cannot_print "type quantification"

@@ -96,6 +96,9 @@ module Env(E : Expr_intf.Export)(N : NS) = struct
     hmap = H.empty;
   }
 
+  let key () =
+    H.Key.create { unit = (); }
+
   let get { hmap; _ } k =
     H.find k hmap
 
@@ -235,7 +238,7 @@ module Smtlib2_6
           ) env params
       ) env cases
 
-  let print_simple_decl { env; fmt; } = function
+  let print_simple_decl env fmt = function
     | `Type_decl c ->
       Format.fprintf fmt "%a@." (P.declare_sort env) c
     | `Term_decl c ->
@@ -292,8 +295,8 @@ module Smtlib2_6
             Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
             env
           | l, [], false ->
-            List.iter (print_simple_decl acc) l;
             let env = List.fold_left register_simple_decl env l in
+            List.iter (print_simple_decl env fmt) l;
             env
           | _ ->
             assert false (* TODO: better error / can this happen ? *)
@@ -308,15 +311,21 @@ module Smtlib2_6
           | [], [], _ -> assert false (* internal invariant: should not happen *)
           | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
           | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
+          (* Note: we might want to have the body of a definition printed with
+             an env that does not contain said definition, if only for shadowing
+             purposes, but that would not change much for the smt2 since shadowing
+             of constants is not allowed. *)
           | l, [], false ->
             List.fold_left (fun env ((c, _, _) as def) ->
+                let env = Env.Ty_cst.bind env c in
                 Format.fprintf fmt "%a@." (P.define_sort env) def;
-                Env.Ty_cst.bind env c
+                env
               ) env l
           | [], l, false ->
             List.fold_left (fun env ((c, _, _) as def) ->
+                let env = Env.Term_cst.bind env c in
                 Format.fprintf fmt "%a@." (P.define_fun env) def;
-                Env.Term_cst.bind env c
+                env
               ) env l
           | [], [(c, _, _) as def], true ->
             let env = Env.Term_cst.bind env c in

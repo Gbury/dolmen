@@ -3272,8 +3272,7 @@ module Term = struct
       raise (Wrong_type (t, ty))
 
   (* coercion *)
-  let coerce dst_ty t =
-    let src_ty = ty t in
+  let coerce src_ty dst_ty t =
     apply_cst Const.coerce [src_ty; dst_ty] [t]
 
   (* Common constructions *)
@@ -3345,9 +3344,9 @@ module Term = struct
     let round a = apply_cst Const.Int.round [] [a]
     let is_int a = apply_cst Const.Int.is_int [] [a]
     let is_rat a = apply_cst Const.Int.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.int Ty.int t
+    let to_rat t = coerce Ty.int Ty.rat t
+    let to_real t = coerce Ty.int Ty.real t
     let divisible s t = apply_cst Const.Int.divisible [] [int s; t]
   end
 
@@ -3374,9 +3373,9 @@ module Term = struct
     let round a = apply_cst Const.Rat.round [] [a]
     let is_int a = apply_cst Const.Rat.is_int [] [a]
     let is_rat a = apply_cst Const.Rat.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.rat Ty.int t
+    let to_rat t = coerce Ty.rat Ty.rat t
+    let to_real t = coerce Ty.rat Ty.real t
   end
 
   module Real = struct
@@ -3405,9 +3404,9 @@ module Term = struct
     let round a = apply_cst Const.Real.round [] [a]
     let is_int a = apply_cst Const.Real.is_int [] [a]
     let is_rat a = apply_cst Const.Real.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.real Ty.int t
+    let to_rat t = coerce Ty.real Ty.rat t
+    let to_real t = coerce Ty.real Ty.real t
   end
 
   (* Arrays *)

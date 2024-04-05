@@ -28,6 +28,7 @@ module type Print = sig
 
   type 'a key
 
+  val key : unit -> 'a key
   val get : t -> 'a key -> 'a option
   val set : t -> 'a key -> 'a -> t
 
