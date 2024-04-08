@@ -43,22 +43,45 @@ module type Export = sig
 
   module Ty : sig
     type t = ty
-    module Var : Dolmen_intf.Id.Scope
+    module Var : sig
+      include Dolmen_intf.Id.Scope
       with type t = ty_var
        and type path := Dolmen_std.Path.t
-    module Const : Dolmen_intf.Id.Scope
+    end
+    module Const : sig
+      include Dolmen_intf.Id.Scope
       with type t = ty_cst
        and type path := Dolmen_std.Path.t
+    end
   end
 
   module Term : sig
     type t = term
-    module Var : Dolmen_intf.Id.Scope
+
+    val neg : t -> t
+    (** Logical negation. *)
+
+    val _or : t list -> t
+    (** Disjunction. *)
+
+    val of_cst : term_cst -> t
+    (** Create a formula out of a constant. *)
+
+    module Var : sig
+      include Dolmen_intf.Id.Scope
       with type t = term_var
        and type path := Dolmen_std.Path.t
-    module Const : Dolmen_intf.Id.Scope
+    end
+
+    module Const : sig
+      include Dolmen_intf.Id.Scope
       with type t = term_cst
        and type path := Dolmen_std.Path.t
+
+      val mk : Dolmen_std.Path.t -> ty -> t
+      (** Create a constant symbol *)
+    end
   end
+
 end
 

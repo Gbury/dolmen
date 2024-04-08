@@ -33,14 +33,25 @@ module Make
       and type ty_cst = Env.ty_cst
       and type term = Env.term
       and type term_var = Env.term_var
-      and type term_cst = Env.term_cst
-      and type formula = Env.formula)
+      and type term_cst = Env.term_cst)
   : sig
+
+  (** {2 Helpers} *)
+
+    val match_prop_literal : V.Term.t -> [
+        | `Cst of V.Term.Cst.t
+        | `Neg of V.Term.Cst.t
+        | `Not_a_prop_literal ]
+  (** Match against prop literals. *)
+
 
   (** {2 Types and terms} *)
 
   val ty : Env.t -> Format.formatter -> V.Ty.t -> unit
   (** Printer for types *)
+
+  val term : Env.t -> Format.formatter -> V.Term.t -> unit
+  (** Printer for terms *)
 
 
   (** {2 Statements} *)
@@ -115,13 +126,13 @@ module Make
     (V.Term.Cst.t * V.Term.Var.t list * V.Term.t) list -> unit
   (** *)
 
-  val assert_ : Env.t -> Format.formatter -> V.Formula.t -> unit
+  val assert_ : Env.t -> Format.formatter -> V.Term.t -> unit
   (** *)
 
   val check_sat : Env.t -> Format.formatter -> unit -> unit
   (** *)
 
-  val check_sat_assuming : Env.t -> Format.formatter -> V.Formula.t list -> unit
+  val check_sat_assuming : Env.t -> Format.formatter -> V.Term.t list -> unit
   (** *)
 
   val reset : Env.t -> Format.formatter -> unit -> unit

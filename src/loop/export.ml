@@ -166,8 +166,7 @@ module Smtlib2_6
       and type ty_def = Expr.ty_def
       and type term = Expr.Term.t
       and type term_var = Expr.Term.Var.t
-      and type term_cst = Expr.Term.Const.t
-      and type formula = Expr.formula)
+      and type term_cst = Expr.Term.Const.t)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
       and type ty_var = Expr.ty_var
@@ -176,8 +175,11 @@ module Smtlib2_6
       and type term = Expr.term
       and type term_var = Expr.term_var
       and type term_cst = Expr.term_cst
-      and type formula = Expr.formula)
+      and type formula = Expr.term)
 = struct
+
+  (* modules and init *)
+  (* **************** *)
 
   include Typer_Types
 
@@ -195,8 +197,6 @@ module Smtlib2_6
     fmt : Format.formatter;
   }
 
-  let f (x : Env.ty) : Typer_Types.ty = x
-
   let init fmt =
     let rename = Env.Scope.mk_rename 0 rename_num_postfix in
     let sanitize = Dolmen.Smtlib2.Script.V2_6.Print.sanitize in
@@ -205,7 +205,13 @@ module Smtlib2_6
     let env = Env.empty scope in
     { env; fmt; }
 
+  let pp_stmt ({ env; fmt; } as acc) pp x =
+    Format.fprintf fmt "%a@." (pp env) x;
+    acc
+
+
   (* declarations *)
+  (* ************ *)
 
   let map_decl = function
     | `Type_decl (c, None) ->
@@ -244,7 +250,34 @@ module Smtlib2_6
     | `Term_decl c ->
       Format.fprintf fmt "%a@." (P.declare_fun env) c
 
+  let print_decls acc decls recursive =
+    let { env; fmt; } = acc in
+    let simples, adts = List.partition_map map_decl decls in
+    let env =
+      match simples, adts, recursive with
+      | [], l, _ ->
+        (* slight over-approximation: we always treat all adts as recursive *)
+        let env = List.fold_left register_adt_decl env l in
+        Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
+        env
+      | l, [], _ ->
+        (* declarations for smtlib cannot be recursive:
+           - type declarations's bodies are just integers
+           - term declarations's bodies are types (and thus the term
+             constant begin declared cannot appear in them).
+             Therefore, it should be fine to ignore the recursive flag.
+             For the future, it might be better to adjust the flag to
+             represent whether things are actually recursive. *)
+        let env = List.fold_left register_simple_decl env l in
+        List.iter (print_simple_decl env fmt) l;
+        env
+      | _ ->
+        assert false (* TODO: better error / can this happen ? *)
+    in
+    { acc with env }
+
   (* defintions *)
+  (* ********** *)
 
   let map_def = function
     | `Type_alias (_, c, vars, body) -> Either.Left (c, vars, body)
@@ -252,11 +285,87 @@ module Smtlib2_6
     | `Term_def (_, _, _ :: _, _, _) -> assert false (* TODO: proper error, poly fun in smt2 not allowed *)
     | `Instanceof _ -> assert false (* TODO: proper error, cannot print *)
 
-  (* statement printing *)
+  let print_defs acc defs recursive =
+    let { env; fmt; } = acc in
+    let typedefs, fundefs = List.partition_map map_def defs in
+    let env =
+      match typedefs, fundefs, recursive with
+      | [], [], _ -> assert false (* internal invariant: should not happen *)
+      | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
+      | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
+      (* Note: we might want to have the body of a definition printed with
+         an env that does not contain said definition, if only for shadowing
+         purposes, but that would not change much for the smt2 since shadowing
+         of constants is not allowed. *)
+      | l, [], false ->
+        List.fold_left (fun env ((c, _, _) as def) ->
+            let env = Env.Ty_cst.bind env c in
+            Format.fprintf fmt "%a@." (P.define_sort env) def;
+            env
+          ) env l
+      | [], l, false ->
+        List.fold_left (fun env ((c, _, _) as def) ->
+            let env = Env.Term_cst.bind env c in
+            Format.fprintf fmt "%a@." (P.define_fun env) def;
+            env
+          ) env l
+      | [], [(c, _, _) as def], true ->
+        let env = Env.Term_cst.bind env c in
+        Format.fprintf fmt "%a@." (P.define_fun_rec env) def;
+        env
+      | [], l, true ->
+        let env = List.fold_left (fun env (c, _, _) ->
+            Env.Term_cst.bind env c
+          ) env l
+        in
+        Format.fprintf fmt "%a@." (P.define_funs_rec env) l;
+        env
+    in
+    { acc with env }
 
-  let pp_stmt ({ env; fmt; } as acc) pp x =
-    Format.fprintf fmt "%a@." (pp env) x;
-    acc
+
+    (* solve/check-sat *)
+    (* *************** *)
+
+    let is_not_trivially_false t =
+      match View.Term.view t with
+      | App (c, [], []) when (match View.Term.Cst.builtin c with
+          | Dolmen_std.Builtin.False -> true
+          | _ -> false) -> false
+      | _ -> true
+
+    let print_solve_aux acc ~hyps =
+      let acc, local_hyps_rev =
+        List.fold_left (fun (acc, local_hyps) hyp ->
+            match P.match_prop_literal hyp with
+            | `Cst _ | `Neg _ -> acc, hyp :: local_hyps
+            | `Not_a_prop_literal ->
+              let prop = View.Term.ty hyp in
+              let path = Dolmen_std.Path.global "local_hyp" in
+              let c = Expr.Term.Const.mk path prop in
+              let acc = pp_stmt acc P.define_fun (c, [], hyp) in
+              acc, (Expr.Term.of_cst c :: local_hyps)
+          ) (acc, []) hyps
+      in
+      pp_stmt acc P.check_sat_assuming (List.rev local_hyps_rev)
+
+    let print_solve acc ~hyps ~goals =
+      let goals = List.filter is_not_trivially_false goals in
+      match goals with
+      | [] -> print_solve_aux acc ~hyps
+      | _ :: _ ->
+        let acc = pp_stmt acc P.push 1 in
+        let acc = List.fold_left (fun acc goal ->
+            pp_stmt acc P.assert_ (Expr.Term.neg goal)
+          ) acc goals
+        in
+        let acc = print_solve_aux acc ~hyps in
+        let acc = pp_stmt acc P.pop 1 in
+        acc
+
+
+  (* statement printing *)
+  (* ****************** *)
 
   let print acc (stmt : Typer_Types.typechecked Typer_Types.stmt) =
     match stmt.contents with
@@ -284,89 +393,19 @@ module Smtlib2_6
       | `Push n -> pp_stmt acc P.push n
       | `Reset -> pp_stmt acc P.reset ()
       | `Reset_assertions -> pp_stmt acc P.reset_assertions ()
-      (* Decls *)
-      | `Decls (recursive, l) ->
-        let { env; fmt; } = acc in
-        let simples, adts = List.partition_map map_decl l in
-        let env =
-          match simples, adts, recursive with
-          | [], l, _ ->
-            (* slight over-approximation: we always treat all adts as recursive *)
-            let env = List.fold_left register_adt_decl env l in
-            Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
-            env
-          | l, [], _ ->
-            (* declarations for smtlib cannot be recursive:
-               - type declarations's bodies are just integers
-               - term declarations's bodies are types (and thus the term
-                 constant begin declared cannot appear in them).
-               Therefore, it should be fine to ignore the recursive flag.
-               For the future, it might be better to adjust the flag to
-               represent whether things are actually recursive. *)
-            let env = List.fold_left register_simple_decl env l in
-            List.iter (print_simple_decl env fmt) l;
-            env
-          | _ ->
-            assert false (* TODO: better error / can this happen ? *)
-        in
-        { acc with env }
-      (* Defs *)
-      | `Defs (recursive, l) ->
-        let { env; fmt; } = acc in
-        let typedefs, fundefs = List.partition_map map_def l in
-        let env =
-          match typedefs, fundefs, recursive with
-          | [], [], _ -> assert false (* internal invariant: should not happen *)
-          | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
-          | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
-          (* Note: we might want to have the body of a definition printed with
-             an env that does not contain said definition, if only for shadowing
-             purposes, but that would not change much for the smt2 since shadowing
-             of constants is not allowed. *)
-          | l, [], false ->
-            List.fold_left (fun env ((c, _, _) as def) ->
-                let env = Env.Ty_cst.bind env c in
-                Format.fprintf fmt "%a@." (P.define_sort env) def;
-                env
-              ) env l
-          | [], l, false ->
-            List.fold_left (fun env ((c, _, _) as def) ->
-                let env = Env.Term_cst.bind env c in
-                Format.fprintf fmt "%a@." (P.define_fun env) def;
-                env
-              ) env l
-          | [], [(c, _, _) as def], true ->
-            let env = Env.Term_cst.bind env c in
-            Format.fprintf fmt "%a@." (P.define_fun_rec env) def;
-            env
-          | [], l, true ->
-            let env = List.fold_left (fun env (c, _, _) ->
-                Env.Term_cst.bind env c
-              ) env l
-            in
-            Format.fprintf fmt "%a@." (P.define_funs_rec env) l;
-            env
-        in
-        { acc with env }
+      (* Decls & defs *)
+      | `Decls (recursive, decls) -> print_decls acc decls recursive
+      | `Defs (recursive, defs) -> print_defs acc defs recursive
       (* Assume *)
       | `Hyp t -> pp_stmt acc P.assert_ t
-      | `Goal _
-      | `Clause _ ->
-        (* TODO: need access to the `not` and `or` functions to create
-           terms/formulas that can be viewed and printed *)
-        assert false
+      | `Goal g -> pp_stmt acc P.assert_ (Expr.Term.neg g)
+      | `Clause l ->  pp_stmt acc P.assert_ (Expr.Term._or l)
       (* Solve *)
-      | `Solve (hyps, goals) ->
-        (* TODO: relax these restrictions *)
-        assert (goals = []);
-        assert (hyps = []);
-        pp_stmt acc P.check_sat ()
+      | `Solve (hyps, goals) -> print_solve acc ~hyps ~goals
       (* Exit *)
       | `Exit -> pp_stmt acc P.exit ()
       (* Other *)
-      | `Other _ ->
-        (* TODO: proper error / or allow extensions ? *)
-        assert false
+      | `Other _ -> assert false (* TODO: proper error / or allow extensions ? *)
 
   let finalise _acc = ()
 
@@ -386,7 +425,7 @@ module Dummy
       and type term = Expr.term
       and type term_var = Expr.term_var
       and type term_cst = Expr.term_cst
-      and type formula = Expr.formula)
+      and type formula = Expr.term)
 = struct
 
   include Typer_Types
@@ -418,8 +457,7 @@ module Make
       and type ty_def = Expr.ty_def
       and type term = Expr.Term.t
       and type term_var = Expr.Term.Var.t
-      and type term_cst = Expr.Term.Const.t
-      and type formula = Expr.formula)
+      and type term_cst = Expr.Term.Const.t)
     (State : State.S)
     (Typer_Types : Typer.Types
      with type ty = Expr.ty
@@ -429,7 +467,7 @@ module Make
       and type term = Expr.term
       and type term_var = Expr.term_var
       and type term_cst = Expr.term_cst
-      and type formula = Expr.formula)
+      and type formula = Expr.term)
 = struct
 
   (* Type definitions *)
@@ -441,7 +479,7 @@ module Make
      and type term := Expr.term
      and type term_var := Expr.term_var
      and type term_cst := Expr.term_cst
-     and type formula := Expr.formula
+     and type formula := Expr.term
 
   type 'acc printer = (module S' with type acc = 'acc)
 

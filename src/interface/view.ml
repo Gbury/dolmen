@@ -76,11 +76,17 @@ module TFF = struct
   module Term = struct
 
     type _ binder =
-      | Exists : 'ty_var list * 'term_var list ->
-          < ty_var : 'ty_var; term_var : 'term_var; .. > binder
+      | Exists : {
+          type_vars : 'ty_var list;
+          term_vars : 'term_var list;
+          triggers : 'term list;
+        } -> < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > binder
       (** Existancial quantification *)
-      | Forall : 'ty_var list * 'term_var list ->
-          < ty_var : 'ty_var; term_var : 'term_var; .. > binder
+      | Forall : {
+          type_vars : 'ty_var list;
+          term_vars : 'term_var list;
+          triggers : 'term list;
+        } -> < ty_var : 'ty_var; term_var : 'term_var; term : 'term; .. > binder
       (** Universal quantification *)
       | Letin : ('term_var * 'term) list ->
           < term_var : 'term_var; term : 'term; .. > binder
@@ -131,7 +137,6 @@ module TFF = struct
     type term
     type term_var
     type term_cst
-    type formula
 
     type builtin = <
       ty : ty;
@@ -225,21 +230,6 @@ module TFF = struct
       val view : t ->
         < ty_var: Ty.Var.t; term_var: Var.t; term_cst : Cst.t;
           builtin : builtin; ty : Ty.t; term : t; .. > Term.view
-      (** View function for terms.
-          @raise Not_first_order_term if the term cannot be viewed as first-order. *)
-
-    end
-
-    module Formula : sig
-
-      type t = formula
-
-      val ty : t -> Ty.t
-      (** Return the type of a formula. *)
-
-      val view : t ->
-        < ty_var: Ty.Var.t; term_var: Term.Var.t; term_cst : Term.Cst.t;
-          builtin : builtin; ty : Ty.t; term : Term.t; .. > VT.view
       (** View function for terms.
           @raise Not_first_order_term if the term cannot be viewed as first-order. *)
 

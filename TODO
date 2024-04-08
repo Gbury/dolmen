@@ -1,0 +1,19 @@
+
+# Printing
+
+- Add comments
+- generate headers when printing to smtlib ?
+
+# Normalisation / transformation
+
+- add implicit base type decl (tptp's $i)
+- expand some unavailable builtins (i.e. pow/exponentiation is not available in smtlib)
+- scan terms and create and insert a set-logic
+- renaming of unused variables ? (insert a `_` at the start of the name)
+- simplify corner case of some translations (e.g. ae's `goal` is translated as push/assert-not/check-sat/pop,
+  but when there is only one in a problem, the pushs/pops are not needed)
+
+
+# Misc
+
+- maintain stack of locations for included files for error messages

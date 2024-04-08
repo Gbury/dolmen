@@ -3780,6 +3780,8 @@ module Term = struct
 
 end
 
+module Formula = Term
+
 
 (* Views *)
 (* ************************************************************************* *)
@@ -3798,7 +3800,6 @@ module View = struct
     type nonrec term = term
     type nonrec term_var = term_var
     type nonrec term_cst = term_cst
-    type nonrec formula = term
     type nonrec builtin = builtin
 
     module Sig = struct
@@ -3914,8 +3915,12 @@ module View = struct
             match b with
             | Let_seq l -> V.Term.Letin l
             | Let_par l -> V.Term.Letand l
-            | Exists (tys, ts) -> V.Term.Exists (tys, ts)
-            | Forall (tys, ts) -> V.Term.Forall (tys, ts)
+            | Exists (type_vars, term_vars) ->
+              let triggers = Term.get_tag_list body Tags.triggers in
+              V.Term.Exists { type_vars; term_vars; triggers; }
+            | Forall (type_vars, term_vars) ->
+              let triggers = Term.get_tag_list body Tags.triggers in
+              V.Term.Forall { type_vars; term_vars; triggers; }
             | Lambda _ -> raise (Not_first_order t)
           in
           V.Term.Binder (binder, body)
@@ -3940,16 +3945,6 @@ module View = struct
         match t.term_descr with
         | Var v -> v
         | _ -> raise (Not_first_order t)
-
-    end
-
-    module Formula = struct
-
-      type t = term
-
-      let ty = Term.ty
-
-      let view = Term.view
 
     end
 

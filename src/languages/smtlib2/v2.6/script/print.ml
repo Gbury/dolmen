@@ -55,7 +55,7 @@ let symbol_aux fmt s =
   | Simple -> Format.pp_print_string fmt s
   | Quoted -> Format.fprintf fmt "|%s|" s
   | Unprintable ->
-    _cannot_print "symbol \"%s\" cannot be printed due to lexical constraints" s
+    _cannot_print {|symbol "%s" cannot be printed due to lexical constraints|} s
 
 let index fmt s =
   if Misc.lex_string Lexer.check_num s then
@@ -90,6 +90,17 @@ let num fmt s =
     _cannot_print "num"
 
 let dec fmt s =
+  (* smtlib requires at least one digit before or after a `.` *)
+  let s =
+    if String.length s >= 2 then
+      if s.[0] = '.'
+      then "0" ^ s
+      else if s.[String.length s - 1] = '.'
+      then s ^ "0"
+      else s
+    else
+      s
+  in
   if Misc.lex_string Lexer.check_dec s then
     Format.pp_print_string fmt s
   else
@@ -176,14 +187,16 @@ module Make
       and type ty_cst = Env.ty_cst
       and type term = Env.term
       and type term_var = Env.term_var
-      and type term_cst = Env.term_cst
-      and type formula = Env.formula)
+      and type term_cst = Env.term_cst)
 = struct
 
+  module I = Dolmen_std.Id
   module N = Dolmen_std.Name
   module B = Dolmen_std.Builtin
   module F = Dolmen_intf.View.TFF
   module E = Dolmen_std.View.Assoc(V)
+
+
 
   (* Env suff *)
   (* ******** *)
@@ -209,10 +222,6 @@ module Make
     let pp_sep fmt () = Format.fprintf fmt "@ " in
     Format.pp_print_list ~pp_sep (pp env) fmt l
 
-
-  (* Ids *)
-  (* *** *)
-
   let symbol _env fmt name = symbol fmt name
 
   let id ~allow_keyword env fmt id =
@@ -234,6 +243,21 @@ module Make
       symbol env fmt name
     | _ ->
       _cannot_print "unprintable id"
+
+  let app ?(allow_keyword=false) ~pp env fmt (f, args) =
+    match args with
+    | [] -> Format.fprintf fmt "%a" (id ~allow_keyword env) f
+    | _ :: _ ->
+      Format.fprintf fmt "@[<hov 1>(%a@ %a)@]"
+        (id ~allow_keyword:false env) f
+        (list pp env) args
+
+    let rec app_deep ?allow_keyword ~pp env fmt = function
+      | `Term t -> pp env fmt t
+      | `App_term (f, args) ->
+        app ?allow_keyword ~pp env fmt (f, args)
+      | `App (f, args) ->
+        app ?allow_keyword ~pp:(app_deep ?allow_keyword ~pp) env fmt (f, args)
 
 
   (* Types *)
@@ -348,6 +372,24 @@ module Make
     | Signature (_ :: _, _, _) -> true
     | _ -> false
 
+  (* smtlib has implicit type arguments, i.e. the type args are not printed.
+     Therefore, whenever a polymorphic symbol is used, its type arguments
+     need to be inferable from its term arguments. Hence, when a symbol is
+     polymorphic and there are no term arguments, we need to print an
+     explicit type annotation to disambiguate things. In the other cases,
+     we suppose that a symbol's type arguments can be deduced from the term
+     arguments. *)
+  let term_app_aux ~poly ~pp ~env fmt (head, args) =
+    match args with
+    | [] ->
+      begin match poly () with
+        | Some t_ty ->
+          Format.fprintf fmt "@[<hov 1>(as@ %a@ %a)@]"
+            (id ~allow_keyword:false env) head (ty env) t_ty
+        | None -> app ~pp env fmt (head, args)
+      end
+    | _ :: _ -> app ~pp env fmt (head, args)
+
   (* Note: unfortunately, most of the smtlib term constructions end with a
      parenthesis, and therefore their printers are currently not tail-rec.
      This is particularly true for sequential let-bindings.
@@ -361,13 +403,20 @@ module Make
 
   and term_view env fmt t_ty view =
     match (view : _ F.Term.view) with
-    | Var v -> term_var env fmt v
-    | App (head, ty_args, args) -> term_app env fmt (t_ty, head, ty_args, args)
-    | Match (scrutinee, cases) -> term_match env fmt (scrutinee, cases)
-    | Binder (Exists (tys, ts), body) -> quant "exists" env fmt (tys, ts, body)
-    | Binder (Forall (tys, ts), body) -> quant "forall" env fmt (tys, ts, body)
-    | Binder (Letand l, body) -> letand env fmt (l, body)
-    | Binder (Letin l, body) -> letin env fmt (l, body)
+    | Var v ->
+      term_var env fmt v
+    | App (head, ty_args, args) ->
+      term_app env fmt (t_ty, head, ty_args, args)
+    | Match (scrutinee, cases) ->
+      term_match env fmt (scrutinee, cases)
+    | Binder (Exists { type_vars; term_vars; triggers; }, body) ->
+      quant "exists" env fmt (type_vars, term_vars, triggers, body)
+    | Binder (Forall { type_vars; term_vars; triggers; }, body) ->
+      quant "forall" env fmt (type_vars, term_vars, triggers, body)
+    | Binder (Letand l, body) ->
+      letand env fmt (l, body)
+    | Binder (Letin l, body) ->
+      letin env fmt (l, body)
 
   and term_app env fmt (t_ty, head, ty_args, args) =
     (* first, we need to undo any left/right associativity/chainability that
@@ -396,33 +445,17 @@ module Make
       | _ -> head, ty_args, args
     in
 
-    (* smtlib has implicit type arguments, i.e. the type args are not printed.
-       Therefore, whenever a polymorphic symbol is used, its type arguments
-       need to be inferable from its term arguments. Hence, when a symbol is
-       polymorphic and there are no term arguments, we need to print an
-       explicit type annotation to disambiguate things. In the other cases,
-       we suppose that a symbol's type arguments can be deduced from the term
-       arguments. *)
-    let aux ?(omit_to_real=false) h args =
-      let env = set_omit_to_real env omit_to_real in
-      match args with
-      | [] ->
-        if term_cst_poly env head then
-          Format.fprintf fmt "(as@ %a@ %a)"
-            (id ~allow_keyword:false env) h (ty env) t_ty
-        else
-          Format.fprintf fmt "%a" (id ~allow_keyword:false env) h
-      | _ :: _ ->
-        Format.fprintf fmt "(%a@ %a)" (id ~allow_keyword:false env) h (list term env) args
-    in
-
-    (* small shorthand *)
+    (* small helpers *)
     let int = string_of_int in
-    let p ?omit_to_real ns name =
-      aux ?omit_to_real (Dolmen_std.Id.create ns name) args
+    let aux ?(poly=fun _ -> None) ?(omit_to_real=false) head args =
+      let env = set_omit_to_real env omit_to_real in
+      term_app_aux ~poly ~pp:term ~env fmt (head, args)
     in
-    let simple ?omit_to_real s =
-      p ?omit_to_real Term (N.simple s)
+    let p ?poly ?omit_to_real ns name =
+      aux ?poly ?omit_to_real (Dolmen_std.Id.create ns name) args
+    in
+    let simple ?poly ?omit_to_real s =
+      p ?poly ?omit_to_real Term (N.simple s)
     in
 
     (* Matching *)
@@ -430,7 +463,8 @@ module Make
 
     (* Base + Algebraic datatypes *)
     | B.Base | B.Constructor _ | B.Destructor _ ->
-      p Term (Env.Term_cst.name env head)
+      let poly () = if term_cst_poly env head then Some t_ty else None in
+      p ~poly Term (Env.Term_cst.name env head)
     | B.Tester { cstr; _ } ->
       begin match Env.Term_cst.name env cstr with
         | Simple s -> p Term (N.indexed "is" [s])
@@ -452,7 +486,7 @@ module Make
                 match args with
                 | [t] ->
                   term env fmt t
-                | _ -> _cannot_print "bad applicaiton of coercion"
+                | _ -> _cannot_print "bad application of coercion"
               else
                 simple "to_real"
 
@@ -468,10 +502,17 @@ module Make
     | B.Neg -> simple "not"
     | B.And -> simple "and"
     | B.Or -> simple "or"
+    | B.Nor ->
+      app_deep ~pp:term env fmt
+        (`App (I.create Term (N.simple "not"), [
+             `App_term (I.create Term (N.simple "or"), args)]))
     | B.Xor -> simple "xor"
     | B.Imply -> simple "=>"
+    | B.Implied ->
+      (* just swap the arguments *)
+      aux (Dolmen_std.Id.create Term (Dolmen_std.Name.simple "=>")) (List.rev args)
     | B.Ite -> simple "ite"
-    | B.Equal -> simple "="
+    | B.Equiv | B.Equal -> simple "="
     | B.Distinct -> simple "distinct"
 
     (* Arrays *)
@@ -524,8 +565,10 @@ module Make
     | B.Bitv_neg _ -> simple "bvneg"
     | B.Bitv_add _ -> simple "bvadd"
     | B.Bitv_sub _ -> simple "bvsub"
-    | B.Bitv_mul _ -> simple "bvsub"
+    | B.Bitv_mul _ -> simple "bvmul"
     | B.Bitv_udiv _ -> simple "bvudiv"
+    | B.Bitv_urem _ -> simple "bvurem"
+    | B.Bitv_sdiv _ -> simple "bvsdiv"
     | B.Bitv_srem _ -> simple "bvsrem"
     | B.Bitv_smod _ -> simple "bvsmod"
     | B.Bitv_shl _ -> simple "bvshl"
@@ -642,36 +685,65 @@ module Make
       Format.fprintf fmt "(%a %a)"
         (term_cst env) c (list term_var env) args
 
-  and quant q env fmt (tys, ts, body) =
+  and quant q env fmt (tys, ts, triggers, body) =
     (* reset some env state *)
     let env = set_omit_to_real env false in
     (* actual printing *)
     (* TODO: patterns/triggers *)
-    match tys, ts with
-    | _ :: _, _ -> _cannot_print "type quantification"
-    | [], [] -> term env fmt body
-    | [], _ :: _ ->
-      Format.fprintf fmt "(%s@ (%a)@ %a)" q
+    match tys, ts, triggers with
+    | _ :: _, _, _ -> _cannot_print "type quantification"
+    | [], [], _ :: _ -> _cannot_print "triggers without quantified variables"
+    | [], [], [] -> term env fmt body
+    | [], _ :: _, [] ->
+      let env = List.fold_left Env.Term_var.bind env ts in
+      Format.fprintf fmt "@[<hov 1>(%s@ (%a)@ %a)@]" q
         (list sorted_var env) ts
         (term env) body
+    | [], _ :: _, _ :: _ ->
+      let env = List.fold_left Env.Term_var.bind env ts in
+      Format.fprintf fmt "@[<hv 1>(%s (%a)@ (! %a@ %a))@]" q
+        (list sorted_var env) ts
+        (term env) body
+        (list pattern_attr env) triggers
 
-  and prop_literal env fmt t =
+  and pattern_attr env fmt trigger =
+    match V.Term.view trigger with
+    (* Multi trigggers *)
+    | App (c, _, l) when (match V.Term.Cst.builtin c with
+        | B.Multi_trigger -> true | _ -> false) ->
+      Format.fprintf fmt ":pattern @[<hov 1>(%a)@]" (list term env) l
+    (* semantic triggers are ignored for now, might change later *)
+    | App (c, _, _) when (match V.Term.Cst.builtin c with
+        | B.Semantic_trigger -> true | _ -> false) ->
+      ()
+    (* *)
+    | _ ->
+      Format.fprintf fmt ":pattern @[<hov 1>(%a)@]" (term env) trigger
+
+  and match_prop_literal t =
     (* either 'c' or 'not c' with 'c' a constant *)
-    match V.Formula.view t with
+    match V.Term.view t with
     | App (f, [], [arg]) when (match V.Term.Cst.builtin f with B.Neg -> true | _ -> false) ->
       begin match V.Term.view arg with
-        | App (c, [], []) ->
-          let name = Env.Term_cst.name env c in
-          Format.fprintf fmt "(not %a)" (symbol env) name
-        | _ -> _cannot_print "not a prop literal"
+        | App (c, [], []) -> `Neg c
+        | _ -> `Not_a_prop_literal
       end
-    | App (c, [], []) ->
+    | App (c, [], []) -> `Cst c
+    | _ -> `Not_a_prop_literal
+
+  and prop_literal env fmt t =
+    match match_prop_literal t with
+    | `Cst c ->
       let name = Env.Term_cst.name env c in
       symbol env fmt name
-    | _ -> _cannot_print "not a prop literal"
+    | `Neg c ->
+      let name = Env.Term_cst.name env c in
+      Format.fprintf fmt "(not %a)" (symbol env) name
+    | `Not_a_prop_literal ->
+      _cannot_print "not a prop literal"
 
   and formula env fmt t =
-    term_view env fmt (V.Formula.ty t) (V.Formula.view t)
+    term_view env fmt (V.Term.ty t) (V.Term.view t)
 
   (* Datatypes *)
   (* ********* *)
@@ -695,7 +767,7 @@ module Make
       Format.fprintf fmt "@[<hv 1>(%a)@]" (list constructor_dec env) cases
     | _ ->
       let env = List.fold_left Env.Ty_var.bind env vars in
-      Format.fprintf fmt "(par (%a)@ @[<v 1>(%a))@]"
+      Format.fprintf fmt "(par (%a)@ @[<hv 1>(%a))@]"
         (list ty_var env) vars (list constructor_dec env) cases
 
 
@@ -775,20 +847,20 @@ module Make
   let pop _env fmt n =
     if n <= 0
     then raise (Cannot_print "pop with non-positive level")
-    else Format.fprintf fmt "(pop %d)" n
+    else Format.fprintf fmt "@[<h>(pop %d)@]" n
 
   let push _env fmt n =
     if n <= 0
     then raise (Cannot_print "push with non-positive level")
-    else Format.fprintf fmt "(push %d)" n
+    else Format.fprintf fmt "@[<h>(push %d)@]" n
 
   let declare_sort env fmt c =
     let n = V.Ty.Cst.arity c in
     let name = Env.Ty_cst.name env c in
-    Format.fprintf fmt "(declare-sort %a %d)" (symbol env) name n
+    Format.fprintf fmt "@[<h>(declare-sort %a %d)@]" (symbol env) name n
 
   let declare_datatype env fmt ((c, _, _) as dec) =
-    Format.fprintf fmt "@[<hv 2>(declare-datatype %a@ %a)@]"
+    Format.fprintf fmt "@[<hov 2>(declare-datatype %a@ %a)@]"
       (ty_cst env) c
       (datatype_dec env) dec
 
@@ -809,17 +881,17 @@ module Make
     let c_sig = V.Term.Cst.ty c in
     match V.Sig.view c_sig with
     | Signature ([], [], c_ty) ->
-      Format.fprintf fmt "(declare-const %a %a)"
+      Format.fprintf fmt "@[<hov 2>(declare-const %a@ %a)@]"
         (symbol env) name (ty env) c_ty
     | Signature ([], params, ret) ->
-      Format.fprintf fmt "(declare-fun %a (%a) %a)"
+      Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (%a)@ %a)@]"
         (symbol env) name (list ty env) params (ty env) ret
     | Signature (_ :: _, _, _) ->
       _cannot_print "polymorphic function declaration"
 
   let define_sort env fmt (c, params, body) =
     let env = List.fold_left Env.Ty_var.bind env params in
-    Format.fprintf fmt "(define-sort %a (%a) %a)"
+    Format.fprintf fmt "@[<hov 2>(define-sort %a@ (%a)@ %a)@]"
       (ty_cst env) c
       (list ty_var env) params
       (ty env) body
