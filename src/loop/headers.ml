@@ -118,7 +118,8 @@ module Field = struct
       | { Id.ns = Attr; Id.name = Simple ":source"; } ->
         begin match args with
           | [ { Ast.term = Ast.Symbol {
-              Id.ns = Attr; Id.name = Simple descr }; _ } ] ->
+              Id.ns = (Attr | Term | Value String);
+              Id.name = Simple descr }; _ } ] ->
             Ok (Problem_source, descr)
           | [] -> Error (loc, "empty value for :source")
           | { Ast.loc; _ } :: _ -> Error (loc, "Expected a single symbol as description")

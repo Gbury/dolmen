@@ -29,7 +29,7 @@ let equal id id' =
 let print fmt { name; ns; } =
   match ns with
   | Value String -> Format.fprintf fmt {|"%a"|} Name.print name
-  | Attr -> Format.fprintf fmt "a:%a" Name.print name
+  | Attr -> Format.fprintf fmt "%a" Name.print name
   | _ -> Name.print fmt name
 
 

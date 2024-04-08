@@ -57,6 +57,13 @@ let symbol_aux fmt s =
   | Unprintable ->
     _cannot_print "symbol \"%s\" cannot be printed due to lexical constraints" s
 
+let index fmt s =
+  if Misc.lex_string Lexer.check_num s then
+    Format.pp_print_string fmt s
+  else
+    symbol_aux fmt s
+
+
 let symbol fmt name =
   match (name : Dolmen_std.Name.t) with
   | Simple s ->
@@ -66,7 +73,7 @@ let symbol fmt name =
   | Indexed { basename; indexes; } ->
     let pp_sep fmt () = Format.fprintf fmt " " in
     Format.fprintf fmt "(_ %a %a)"
-      symbol_aux basename (Format.pp_print_list ~pp_sep symbol_aux) indexes
+      symbol_aux basename (Format.pp_print_list ~pp_sep index) indexes
   | Qualified _ ->
     _cannot_print "qualified identifier: %a" Dolmen_std.Name.print name
 
@@ -410,6 +417,7 @@ module Make
     in
 
     (* small shorthand *)
+    let int = string_of_int in
     let p ?omit_to_real ns name =
       aux ?omit_to_real (Dolmen_std.Id.create ns name) args
     in
@@ -504,7 +512,7 @@ module Make
       end
 
     (* Bitvectors *)
-    | B.Bitvec s -> p (Value Binary) (N.simple s) (* TODO: see if we can recover hex form ? *)
+    | B.Bitvec s -> p (Value Binary) (N.simple ("#b" ^ s)) (* TODO: see if we can recover hex form ? *)
     | B.Bitv_not _ -> simple "bvnot"
     | B.Bitv_and _ -> simple "bvand"
     | B.Bitv_or _ -> simple "bvor"
@@ -528,6 +536,66 @@ module Make
     | B.Bitv_ugt _ -> simple "bvugt"
     | B.Bitv_uge _ -> simple "bvuge"
     | B.Bitv_slt _ -> simple "bvslt"
+    | B.Bitv_sle _ -> simple "bvsle"
+    | B.Bitv_sgt _ -> simple "bvsgt"
+    | B.Bitv_sge _ -> simple "bvsge"
+    | B.Bitv_concat _ -> simple "concat"
+    | B.Bitv_repeat { n = _; k; } -> p Term (N.indexed "repeat" [int k])
+    | B.Bitv_zero_extend { n = _; k; } -> p Term (N.indexed "zero_extend" [int k])
+    | B.Bitv_sign_extend { n = _; k; } -> p Term (N.indexed "sign_extend" [int k])
+    | B.Bitv_rotate_right { n = _; i; } -> p Term (N.indexed "rotate_right" [int i])
+    | B.Bitv_rotate_left { n = _; i; } -> p Term (N.indexed "rotate_left" [int i])
+    | B.Bitv_extract { n = _; i; j; } -> p Term (N.indexed "extract" [int i; int j])
+
+    (* bvconv extension
+       TODO: use a flag to enable extensions such as this one ? *)
+    | B.Bitv_to_nat { n = _; } -> simple "bv2nat"
+    | B.Bitv_of_int { n } -> p Term (N.indexed "int2bv" [int n])
+
+    (* Floats *)
+    | B.Fp _ -> simple "fp"
+    | B.RoundNearestTiesToEven -> simple "RNE"
+    | B.RoundNearestTiesToAway -> simple "RNA"
+    | B.RoundTowardPositive -> simple "RTP"
+    | B.RoundTowardNegative -> simple "RTN"
+    | B.RoundTowardZero -> simple "RTZ"
+    | B.Fp_abs _ -> simple "fp.abs"
+    | B.Fp_neg _ -> simple "fp.neg"
+    | B.Fp_add _ -> simple "fp.add"
+    | B.Fp_sub _ -> simple "fp.sub"
+    | B.Fp_mul _ -> simple "fp.mul"
+    | B.Fp_div _ -> simple "fp.div"
+    | B.Fp_fma _ -> simple "fp.fma"
+    | B.Fp_sqrt _ -> simple "fp.sqrt"
+    | B.Fp_rem _ -> simple "fp.rem"
+    | B.Fp_roundToIntegral _ -> simple "fp.roundToInegral"
+    | B.Fp_min _ -> simple "fp.min"
+    | B.Fp_max _ -> simple "fp.max"
+    | B.Fp_leq _ -> simple "fp.leq"
+    | B.Fp_lt _ -> simple "fp.lt"
+    | B.Fp_geq _ -> simple "fp.geq"
+    | B.Fp_gt _ -> simple "fp.gt"
+    | B.Fp_eq _ -> simple "fp.eq"
+    | B.Fp_isNormal _ -> simple "fp.isNormal"
+    | B.Fp_isSubnormal _ -> simple "fp.isSubnormal"
+    | B.Fp_isZero _ -> simple "fp.isZero"
+    | B.Fp_isInfinite _ -> simple "fp.isInfinite"
+    | B.Fp_isNaN _ -> simple "fp.isNan"
+    | B.Fp_isNegative _ -> simple "fp.isNegative"
+    | B.Fp_isPositive _ -> simple "fp.isPositive"
+    | B.To_real _ -> simple "fp.to_real"
+    | B.Plus_infinity (e, s) -> p Term (N.indexed "+oo" [int e; int s])
+    | B.Minus_infinity (e, s) -> p Term (N.indexed "-oo" [int e; int s])
+    | B.Plus_zero (e, s) -> p Term (N.indexed "+zero" [int e; int s])
+    | B.Minus_zero (e, s) -> p Term (N.indexed "-zero" [int e; int s])
+    | B.NaN (e, s) -> p Term (N.indexed "NaN" [int e; int s])
+    | B.Ieee_format_to_fp (e, s) -> p Term (N.indexed "to_fp" [int e; int s])
+    | B.Fp_to_fp (_, _, e, s) -> p Term (N.indexed "to_fp" [int e; int s])
+    | B.Real_to_fp (e, s) -> p Term (N.indexed "to_fp" [int e; int s])
+    | B.Sbv_to_fp (_, e, s) -> p Term (N.indexed "to_fp" [int e; int s])
+    | B.Ubv_to_fp (_, e, s) -> p Term (N.indexed "to_fp_unsigned" [int e; int s])
+    | B.To_ubv (_, _, m) -> p Term (N.indexed "fp.to_ubv" [int m])
+    | B.To_sbv (_, _, m) -> p Term (N.indexed "fp.to_sbv" [int m])
 
     (* fallback *)
     | _ -> _cannot_print "unknown term builtin"
@@ -624,7 +692,7 @@ module Make
   let datatype_dec env fmt (_, vars, cases) =
     match vars with
     | [] ->
-      Format.fprintf fmt "@[<v 1>(%a)@]" (list constructor_dec env) cases
+      Format.fprintf fmt "@[<hv 1>(%a)@]" (list constructor_dec env) cases
     | _ ->
       let env = List.fold_left Env.Ty_var.bind env vars in
       Format.fprintf fmt "(par (%a)@ @[<v 1>(%a))@]"
@@ -720,7 +788,7 @@ module Make
     Format.fprintf fmt "(declare-sort %a %d)" (symbol env) name n
 
   let declare_datatype env fmt ((c, _, _) as dec) =
-    Format.fprintf fmt "@[<hov 2>(declare-datatype %a@ %a)@]"
+    Format.fprintf fmt "@[<hv 2>(declare-datatype %a@ %a)@]"
       (ty_cst env) c
       (datatype_dec env) dec
 
@@ -758,7 +826,7 @@ module Make
 
   let define_fun_aux ~recursive env fmt (f, params, body) =
     let env = List.fold_left Env.Term_var.bind env params in
-    Format.fprintf fmt "@[<hv 2>(@[<hov 1>%s %a@ (%a) %a@]@ %a)@]"
+    Format.fprintf fmt "@[<hv 2>(@[<hov 1>%s %a@ (%a) %a@]@ @[<hov>%a@])@]"
       (if recursive then "define-fun-rec" else "define-fun")
       (term_cst env) f
       (list sorted_var env) params

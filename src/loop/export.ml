@@ -290,11 +290,19 @@ module Smtlib2_6
         let simples, adts = List.partition_map map_decl l in
         let env =
           match simples, adts, recursive with
-          | [], l, true ->
+          | [], l, _ ->
+            (* slight over-approximation: we always treat all adts as recursive *)
             let env = List.fold_left register_adt_decl env l in
             Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
             env
-          | l, [], false ->
+          | l, [], _ ->
+            (* declarations for smtlib cannot be recursive:
+               - type declarations's bodies are just integers
+               - term declarations's bodies are types (and thus the term
+                 constant begin declared cannot appear in them).
+               Therefore, it should be fine to ignore the recursive flag.
+               For the future, it might be better to adjust the flag to
+               represent whether things are actually recursive. *)
             let env = List.fold_left register_simple_decl env l in
             List.iter (print_simple_decl env fmt) l;
             env

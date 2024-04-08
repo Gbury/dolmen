@@ -329,7 +329,7 @@ let rec print_descr fmt = function
 
 and print_id_opt fmt = function
   | None -> ()
-  | Some id -> Format.fprintf fmt "%a@," Id.print id
+  | Some id -> Format.fprintf fmt "%a :@ " Id.print id
 
 and print fmt = function { id; descr; attrs; _ } ->
   Format.fprintf fmt "@[<hv>%a%a%a@]" print_id_opt id print_attrs attrs print_descr descr
