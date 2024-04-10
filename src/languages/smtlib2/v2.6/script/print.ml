@@ -1,6 +1,9 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+(* Note: most/any change to this file should also be mirrored
+   in src/languages/smtlib2/poly/print.ml *)
+
 (* Printing of identifiers *)
 (* ************************************************************************* *)
 
@@ -175,6 +178,8 @@ let sanitize _id name =
 
 (* Printing of terms and statements *)
 (* ************************************************************************* *)
+
+module type S = Dolmen_intf.Print.Smtlib2
 
 module Make
     (Env : Dolmen_intf.Env.Print
@@ -896,26 +901,34 @@ module Make
       (list ty_var env) params
       (ty env) body
 
-  let define_fun_aux ~recursive env fmt (f, params, body) =
-    let env = List.fold_left Env.Term_var.bind env params in
-    Format.fprintf fmt "@[<hv 2>(@[<hov 1>%s %a@ (%a) %a@]@ @[<hov>%a@])@]"
-      (if recursive then "define-fun-rec" else "define-fun")
-      (term_cst env) f
-      (list sorted_var env) params
-      (ty env) (V.Term.ty body)
-      (term env) body
+  let define_fun_aux ~recursive env fmt (f, vars, params, body) =
+    match (vars : V.Ty.Var.t list) with
+    | [] ->
+      let env = List.fold_left Env.Term_var.bind env params in
+      Format.fprintf fmt "@[<hv 2>(@[<hov 1>%s %a@ (%a) %a@]@ @[<hov>%a@])@]"
+        (if recursive then "define-fun-rec" else "define-fun")
+        (term_cst env) f
+        (list sorted_var env) params
+        (ty env) (V.Term.ty body)
+        (term env) body
+    | _ :: _ ->
+      _cannot_print "polymorphic function definition"
 
   let define_fun = define_fun_aux ~recursive:false
   let define_fun_rec = define_fun_aux ~recursive:true
 
   let define_funs_rec env fmt l =
-    let fun_body env fmt (_, _, body) = term env fmt body in
-    let fun_decl env fmt (f, params, body) =
+    let fun_body env fmt (_, _, _, body) = term env fmt body in
+    let fun_decl env fmt (f, vars, params, body) =
       let env = List.fold_left Env.Term_var.bind env params in
-      Format.fprintf fmt "(%a (%a) %a)"
-        (term_cst env) f
-        (list sorted_var env) params
-        (ty env) (V.Term.ty body)
+      match (vars : V.Ty.Var.t list) with
+      | [] ->
+        Format.fprintf fmt "@[<hov 1>(%a@ (%a)@ %a)@]"
+          (term_cst env) f
+          (list sorted_var env) params
+          (ty env) (V.Term.ty body)
+      | _ :: _ ->
+        _cannot_print "polymorphic function definition"
     in
     Format.fprintf fmt
       "@[<v 2>(define-funs-rec@ @[<v 2>(%a)@]@ @[<v 2>(%a)@])@]"

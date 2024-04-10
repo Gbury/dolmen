@@ -135,6 +135,19 @@ end
 (* Printing errors *)
 (* ************************************************************************ *)
 
+let code = Code.create
+    ~category:"export"
+    ~descr:"on export errors"
+
+let unsupported_language =
+  Report.Error.mk ~code ~mnemonic:"export-unsupported-lang"
+    ~message:(fun fmt lang ->
+        Format.fprintf fmt
+          "The following format is not (yet) supported for export: %s"
+          (Logic.string_of_language lang)
+      )
+    ~name:"Unsupported Export Language" ()
+
 
 (* Printer interface *)
 (* ************************************************************************ *)
@@ -154,7 +167,30 @@ end
 (* Smtlib2 Printer *)
 (* ************************************************************************ *)
 
-module Smtlib2_6
+module type Make_smt2_printer = functor
+  (Env : Dolmen_intf.Env.Print
+   with type name := Dolmen_std.Name.t)
+  (S : Dolmen_intf.View.Sexpr.S
+   with type id := Dolmen_std.Id.t)
+  (V : Dolmen_intf.View.TFF.S
+   with type ty = Env.ty
+    and type ty_var = Env.ty_var
+    and type ty_cst = Env.ty_cst
+    and type term = Env.term
+    and type term_var = Env.term_var
+    and type term_cst = Env.term_cst)
+  -> Dolmen_intf.Print.Smtlib2
+  with type env := Env.t
+   and type sexpr := S.t
+   and type ty := Env.ty
+   and type ty_var := Env.ty_var
+   and type ty_cst := Env.ty_cst
+   and type term := Env.term
+   and type term_var := Env.term_var
+   and type term_cst := Env.term_cst
+
+module Smtlib2
+    (Printer : Make_smt2_printer)
     (Expr : Expr_intf.Export)
     (Sexpr : Dolmen_intf.View.Sexpr.S
       with type t = Dolmen_std.Term.t
@@ -190,7 +226,7 @@ module Smtlib2_6
       let term_cst = Dolmen_std.Namespace.term
     end)
 
-  module P = Dolmen.Smtlib2.Script.V2_6.Print.Make(Env)(Sexpr)(View)
+  module P = Printer(Env)(Sexpr)(View)
 
   type acc = {
     env : Env.t;
@@ -281,8 +317,7 @@ module Smtlib2_6
 
   let map_def = function
     | `Type_alias (_, c, vars, body) -> Either.Left (c, vars, body)
-    | `Term_def (_, c, [], params, body) -> Either.Right (c, params, body)
-    | `Term_def (_, _, _ :: _, _, _) -> assert false (* TODO: proper error, poly fun in smt2 not allowed *)
+    | `Term_def (_, c, vars, params, body) -> Either.Right (c, vars, params, body)
     | `Instanceof _ -> assert false (* TODO: proper error, cannot print *)
 
   let print_defs acc defs recursive =
@@ -304,17 +339,17 @@ module Smtlib2_6
             env
           ) env l
       | [], l, false ->
-        List.fold_left (fun env ((c, _, _) as def) ->
+        List.fold_left (fun env ((c, _, _, _) as def) ->
             let env = Env.Term_cst.bind env c in
             Format.fprintf fmt "%a@." (P.define_fun env) def;
             env
           ) env l
-      | [], [(c, _, _) as def], true ->
+      | [], [(c, _, _, _) as def], true ->
         let env = Env.Term_cst.bind env c in
         Format.fprintf fmt "%a@." (P.define_fun_rec env) def;
         env
       | [], l, true ->
-        let env = List.fold_left (fun env (c, _, _) ->
+        let env = List.fold_left (fun env (c, _, _, _) ->
             Env.Term_cst.bind env c
           ) env l
         in
@@ -343,7 +378,7 @@ module Smtlib2_6
               let prop = View.Term.ty hyp in
               let path = Dolmen_std.Path.global "local_hyp" in
               let c = Expr.Term.Const.mk path prop in
-              let acc = pp_stmt acc P.define_fun (c, [], hyp) in
+              let acc = pp_stmt acc P.define_fun (c, [], [], hyp) in
               acc, (Expr.Term.of_cst c :: local_hyps)
           ) (acc, []) hyps
       in
@@ -494,7 +529,8 @@ module Make
   (* available printers *)
 
   module Dummy = Dummy(Expr)(Typer_Types)
-  module Smtlib2_6 = Smtlib2_6(Expr)(Sexpr)(View)(Typer_Types)
+  module Smtlib2_6 = Smtlib2(Dolmen.Smtlib2.Script.V2_6.Print.Make)(Expr)(Sexpr)(View)(Typer_Types)
+  module Smtlib2_Poly = Smtlib2(Dolmen.Smtlib2.Script.Poly.Print.Make)(Expr)(Sexpr)(View)(Typer_Types)
 
   (* setup *)
 
@@ -507,7 +543,7 @@ module Make
     let mk (type acc) close (acc : acc) (printer : acc printer) =
       Export { acc; printer; close; }
     in
-    let mk lang output =
+    let mk st lang output =
       let fmt, close =
         match output with
         | `Stdout ->
@@ -521,22 +557,26 @@ module Make
       match (lang : language) with
       | Smtlib2 (`V2_6 | `Latest) ->
         let acc = Smtlib2_6.init fmt in
-        mk close acc (module Smtlib2_6)
-      | _ ->
+        st, mk close acc (module Smtlib2_6)
+      | Smtlib2 `Poly ->
+        let acc = Smtlib2_Poly.init fmt in
+        st, mk close acc (module Smtlib2_Poly)
+      | lang ->
+        let st = State.error st unsupported_language lang in
         let acc = Dummy.init fmt in
-        mk close acc (module Dummy)
+        st, mk close acc (module Dummy)
     in
-    let state_value =
+    let st, state_value =
       match output_file with
-      | None -> No_export
+      | None -> st, No_export
       | Some { lang = Some lang; output; } ->
-        mk lang output
+        mk st lang output
       | Some { lang = None; output = `Stdout; } ->
         (* TODO: proper error *)
         assert false
       | Some { lang = None; output = (`File filename) as output; } ->
         begin match Logic.of_filename filename with
-          | lang, _, _ -> mk lang output
+          | lang, _, _ -> mk st lang output
           | exception Logic.Extension_not_found _ext ->
             assert false (* TODO: proper error *)
         end

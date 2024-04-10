@@ -4,6 +4,7 @@
 - Add comments
 - generate headers when printing to smtlib ?
 
+
 # Normalisation / transformation
 
 - add implicit base type decl (tptp's $i)

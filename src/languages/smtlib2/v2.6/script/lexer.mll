@@ -171,6 +171,9 @@ let ss_char = ss_first_char | digit
 let simple_symbol = ss_first_char ss_char*
 
 let quoted_symbol_char = (white_space_or_printable # ['|' '\\'])
+let quoted_symbol = ['|'] quoted_symbol_char* ['|']
+
+let symbol = simple_symbol | quoted_symbol
 
 let keyword = ':' simple_symbol
 

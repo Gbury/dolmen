@@ -28,6 +28,7 @@ let () =
     Dolmen_loop.Headers.code, 5;
     Dolmen_model.Loop.code, 6;
     Dolmen_loop.Flow.code, 7;
+    Dolmen_loop.Export.code, 8;
   ]
 
 (* Main commands *)

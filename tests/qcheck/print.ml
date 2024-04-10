@@ -78,7 +78,7 @@ let smtlib2_id_printable =
 let poly_smtlib2_id =
   identifier
     ~language:(Smtlib2 `Poly)
-    ~print:Dolmen.Smtlib2.Script.Poly.Print.id
+    ~print:Dolmen.Smtlib2.Script.Poly.Print.symbol
     ~gen:(Generators.name ~printable:false
          ~simple:true ~indexed:true ~qualified:true)
     ~template:{|(assert %a)|}
@@ -93,7 +93,7 @@ let poly_smtlib2_id =
 let poly_smtlib2_id_printable =
   identifier
     ~language:(Smtlib2 `V2_6)
-    ~print:Dolmen.Smtlib2.Script.Poly.Print.id
+    ~print:Dolmen.Smtlib2.Script.Poly.Print.symbol
     ~gen:(Generators.name ~printable:true
             ~simple:true ~indexed:true ~qualified:false)
     ~template:{|(assert %a)|}

@@ -4,5 +4,5 @@
   (instrumentation (backend bisect_ppx))
   (libraries      menhirLib)
   (modules        Map Msg Tok Lex Parse Location
-                  Pretty Tag Builtin Id Ty Term Stmt View Scope Env Ext Language)
+                  Pretty Print Tag Builtin Id Ty Term Stmt View Scope Env Ext Language)
 )
