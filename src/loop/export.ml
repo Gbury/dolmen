@@ -280,37 +280,33 @@ module Smtlib2
           ) env params
       ) env cases
 
-  let print_simple_decl env fmt = function
-    | `Type_decl c ->
-      Format.fprintf fmt "%a@." (P.declare_sort env) c
-    | `Term_decl c ->
-      Format.fprintf fmt "%a@." (P.declare_fun env) c
+  let print_simple_decl acc = function
+    | `Type_decl c -> pp_stmt acc P.declare_sort c
+    | `Term_decl c -> pp_stmt acc P.declare_fun c
 
   let print_decls acc decls recursive =
-    let { env; fmt; } = acc in
     let simples, adts = List.partition_map map_decl decls in
-    let env =
-      match simples, adts, recursive with
-      | [], l, _ ->
-        (* slight over-approximation: we always treat all adts as recursive *)
-        let env = List.fold_left register_adt_decl env l in
-        Format.fprintf fmt "%a@." (P.declare_datatypes env) l;
-        env
-      | l, [], _ ->
-        (* declarations for smtlib cannot be recursive:
-           - type declarations's bodies are just integers
-           - term declarations's bodies are types (and thus the term
-             constant begin declared cannot appear in them).
-             Therefore, it should be fine to ignore the recursive flag.
-             For the future, it might be better to adjust the flag to
-             represent whether things are actually recursive. *)
-        let env = List.fold_left register_simple_decl env l in
-        List.iter (print_simple_decl env fmt) l;
-        env
-      | _ ->
-        assert false (* TODO: better error / can this happen ? *)
-    in
-    { acc with env }
+    match simples, adts, recursive with
+    | [], l, _ ->
+      (* slight over-approximation: we always treat all adts as recursive *)
+      let acc =
+        { acc with env = List.fold_left register_adt_decl acc.env l }
+      in
+      pp_stmt acc P.declare_datatypes l
+    | l, [], _ ->
+      (* declarations for smtlib cannot be recursive:
+         - type declarations's bodies are just integers
+         - term declarations's bodies are types (and thus the term
+           constant begin declared cannot appear in them).
+         Therefore, it should be fine to ignore the recursive flag.
+         For the future, it might be better to adjust the flag to
+         represent whether things are actually recursive. *)
+      let acc =
+        { acc with env = List.fold_left register_simple_decl acc.env l; }
+      in
+      List.fold_left print_simple_decl acc l
+    | _ ->
+      assert false (* TODO: better error / can this happen ? *)
 
   (* defintions *)
   (* ********** *)
@@ -321,50 +317,45 @@ module Smtlib2
     | `Instanceof _ -> assert false (* TODO: proper error, cannot print *)
 
   let print_defs acc defs recursive =
-    let { env; fmt; } = acc in
     let typedefs, fundefs = List.partition_map map_def defs in
-    let env =
-      match typedefs, fundefs, recursive with
-      | [], [], _ -> assert false (* internal invariant: should not happen *)
-      | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
-      | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
-      (* Note: we might want to have the body of a definition printed with
-         an env that does not contain said definition, if only for shadowing
-         purposes, but that would not change much for the smt2 since shadowing
-         of constants is not allowed. *)
-      | l, [], false ->
-        List.fold_left (fun env ((c, _, _) as def) ->
-            let env = Env.Ty_cst.bind env c in
-            Format.fprintf fmt "%a@." (P.define_sort env) def;
-            env
-          ) env l
-      | [], l, false ->
-        List.fold_left (fun env ((c, _, _, _) as def) ->
-            let env = Env.Term_cst.bind env c in
-            Format.fprintf fmt "%a@." (P.define_fun env) def;
-            env
-          ) env l
-      | [], [(c, _, _, _) as def], true ->
-        let env = Env.Term_cst.bind env c in
-        Format.fprintf fmt "%a@." (P.define_fun_rec env) def;
-        env
-      | [], l, true ->
-        let env = List.fold_left (fun env (c, _, _, _) ->
-            Env.Term_cst.bind env c
-          ) env l
-        in
-        Format.fprintf fmt "%a@." (P.define_funs_rec env) l;
-        env
-    in
-    { acc with env }
+    match typedefs, fundefs, recursive with
+    | [], [], _ -> assert false (* internal invariant: should not happen *)
+    | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
+    | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
+    (* Note: we might want to have the body of a definition printed with
+       an env that does not contain said definition, if only for shadowing
+       purposes, but that would not change much for the smt2 since shadowing
+       of constants is not allowed. *)
+    | l, [], false ->
+      List.fold_left (fun acc ((c, _, _) as def) ->
+          let acc = { acc with env = Env.Ty_cst.bind acc.env c; } in
+          pp_stmt acc P.define_sort def
+        ) acc l
+    | [], l, false ->
+      List.fold_left (fun acc ((c, _, _, _) as def) ->
+          let acc = { acc with env = Env.Term_cst.bind acc.env c; } in
+          pp_stmt acc P.define_fun def
+        ) acc l
+    | [], [(c, _, _, _) as def], true ->
+      let acc = { acc with env = Env.Term_cst.bind acc.env c; } in
+      pp_stmt acc P.define_fun_rec def
+    | [], l, true ->
+      let acc = {
+        acc with
+        env =
+          List.fold_left (fun env (c, _, _, _) ->
+              Env.Term_cst.bind env c
+            ) acc.env l}
+      in
+      pp_stmt acc P.define_funs_rec l
 
 
-    (* solve/check-sat *)
-    (* *************** *)
+  (* solve/check-sat *)
+  (* *************** *)
 
-    let is_not_trivially_false t =
-      match View.Term.view t with
-      | App (c, [], []) when (match View.Term.Cst.builtin c with
+  let is_not_trivially_false t =
+    match View.Term.view t with
+    | App (c, [], []) when (match View.Term.Cst.builtin c with
           | Dolmen_std.Builtin.False -> true
           | _ -> false) -> false
       | _ -> true
