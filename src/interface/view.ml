@@ -208,6 +208,8 @@ module TFF = struct
 
         val ty : t -> Ty.t
 
+        val equal : t -> t -> bool
+
       end
 
       module Cst : sig
@@ -218,6 +220,7 @@ module TFF = struct
 
         val builtin : t -> builtin
 
+        val equal : t -> t -> bool
       end
 
       exception Not_first_order of t

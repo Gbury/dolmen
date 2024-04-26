@@ -645,6 +645,44 @@ module Make
     | B.To_ubv (_, _, m) -> p Term (N.indexed "fp.to_ubv" [int m])
     | B.To_sbv (_, _, m) -> p Term (N.indexed "fp.to_sbv" [int m])
 
+    (* Strings *)
+    | B.Str s -> p (Value String) (N.simple s)
+    | B.Str_length -> simple "str.len"
+    | B.Str_at -> simple "str.at"
+    | B.Str_to_code -> simple "str.to_code"
+    | B.Str_of_code -> simple "str.from_code"
+    | B.Str_is_digit -> simple "str.is_digit"
+    | B.Str_to_int -> simple "str.to_int"
+    | B.Str_of_int -> simple "str.from_int"
+    | B.Str_concat -> simple "str.++"
+    | B.Str_sub -> simple "str.substr"
+    | B.Str_index_of -> simple "str.indexof"
+    | B.Str_replace -> simple "str.replace"
+    | B.Str_replace_all -> simple "str.replace_all"
+    | B.Str_replace_re -> simple "str.replace_re"
+    | B.Str_replace_re_all -> simple "str.replace_re_all"
+    | B.Str_is_prefix -> simple "str.prefixof"
+    | B.Str_is_suffix -> simple "str.suffixof"
+    | B.Str_contains -> simple "str.contains"
+    | B.Str_lexicographic_strict -> simple "str.<"
+    | B.Str_lexicographic_large -> simple "str.<="
+    | B.Str_in_re -> simple "str.in_re"
+    | B.Re_empty -> simple "re.none"
+    | B.Re_all -> simple "re.all"
+    | B.Re_allchar -> simple "r.allchar"
+    | B.Re_of_string -> simple "str.to_re"
+    | B.Re_range -> simple "re.range"
+    | B.Re_concat -> simple "re.++"
+    | B.Re_union -> simple "re.union"
+    | B.Re_inter -> simple "re.inter"
+    | B.Re_star -> simple "re.*"
+    | B.Re_cross -> simple "re.+"
+    | B.Re_complement -> simple "re.comp"
+    | B.Re_diff -> simple "re.diff"
+    | B.Re_option -> simple "re.opt"
+    | B.Re_power n -> p Term (N.indexed "re.^" [int n])
+    | B.Re_loop (n1, n2) -> p Term (N.indexed "re.loop" [int n1; int n2])
+
     (* fallback *)
     | _ -> _cannot_print "unknown term builtin"
 

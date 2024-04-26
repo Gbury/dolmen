@@ -58,8 +58,9 @@ let run st preludes logic_file =
           @>>> (op ~name:"headers" Loop.Header.inspect)
           @>>> (op ~name:"typecheck" Loop.Typer_Pipe.typecheck)
           @>|> (op ~name:"debug-typed" debug_typed_pipe)
-          @>>> (op ~name:"export" Loop.Export.export)
           @>>> (op ~name:"check" Loop.Check.check)
+          @>>> (op ~name:"transform" Loop.Transform.transform)
+          @>>> (op ~name:"export" Loop.Export.export)
           @>>> (op (fun st _ -> st, ())) @>>> _end
         )
       )

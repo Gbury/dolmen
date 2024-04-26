@@ -227,17 +227,33 @@ module Make(State : State.S) = struct
       end
     | `File f ->
       let s = Dolmen.Std.Statement.include_ f [] in
-      (* Formats Dimacs and Tptp are descriptive and lack the emission
-          of formal solve/prove instructions, so we need to add them. *)
+      (* - Formats Dimacs and Tptp are descriptive and lack the emission
+           of formal solve/prove instructions, so we need to add them.
+         - Additionally, we also need to ensure that there is an 'exit'
+           statement at the end of the statements generator, so that some
+           algorithms now when things end, and can finish their computation
+           and start outputting things (e.g. the logic calculus); *)
       let s' =
         match lang with
         | Logic.Zf
         | Logic.ICNF
-        | Logic.Smtlib2 _
-        | Logic.Alt_ergo -> s
+        | Logic.Alt_ergo ->
+          Dolmen.Std.Statement.pack [
+            s;
+            Dolmen.Std.Statement.exit ()
+          ]
+
+        | Logic.Smtlib2 _ ->
+          (* TODO: check that there is an exit statement at the end /
+             add one if missing ? or auto-enable the flow check *)
+          s
         | Logic.Dimacs
         | Logic.Tptp _ ->
-          Dolmen.Std.Statement.pack [s; Dolmen.Std.Statement.prove ()]
+          Dolmen.Std.Statement.pack [
+            s;
+            Dolmen.Std.Statement.prove ();
+            Dolmen.Std.Statement.exit ()
+          ]
       in
       let file = { file with lang = Some lang; } in
       st, file, (Gen.singleton s')

@@ -384,7 +384,7 @@ let mk_run_state
     abort_on_bug
     time_limit size_limit
     response_file output_file
-    flow_check
+    flow_check compute_logic
     header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
     type_check extension_builtins
@@ -404,6 +404,13 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   let () = Hints.model ~check_model (* ~check_model_mode *) in
+  (* compute logic by default, but only do so if we are also exporting.
+     TODO: more control over this. (e.g. compute logic and emit warning/error
+     even without exporting, and also enable exporting without computing the logic). *)
+  let compute_logic =
+    compute_logic ||
+    (match output_file with Some _ -> true | None -> false)
+  in
   (* State creation *)
   Loop.State.empty
   |> Loop.State.init
@@ -422,6 +429,7 @@ let mk_run_state
     (* ~check_model_mode *)
   |> Loop.Flow.init ~flow_check
   |> Loop.Export.init ?output_file
+  |> Loop.Transform.init ~compute_logic
   |> Loop.Header.init
     ~header_check
     ~header_licenses
@@ -627,6 +635,11 @@ let state =
                This is mainly useful for the smtlib language." in
     Arg.(value & opt bool false & info ["check-flow"] ~doc ~docs:flow_section)
   in
+  let compute_logic =
+    let doc = "if true, then the logic for the exported statements will be
+               recomputed" in
+    Arg.(value & opt bool false & info ["compute-logic"] ~doc) (* TODO: new doc section *)
+  in
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
                input file (and errors raised if they are not present)." in
@@ -731,7 +744,7 @@ let state =
         abort_on_bug $
         time $ size $
         response_file $ output_file $
-        flow_check $
+        flow_check $ compute_logic $
         header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $
         typing $ typing_ext $

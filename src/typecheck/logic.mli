@@ -46,8 +46,49 @@ module Smtlib2 : sig
   val parse : string -> t option
   (** Parses an smtlib logic string and returns its structured version. *)
 
+  val to_string : t -> string
+  (** Returns a string that should parse back to the given logic. *)
+
   val all: t
   (** All the smtlib2 logic parsable *)
+
+  (** This functor/module is there to help detect logic by
+      scanning/inspecting types and terms *)
+  module Scan(V : Dolmen_intf.View.TFF.S) : sig
+
+    type acc
+    (** accumulator for computing minimal logics *)
+
+    val nothing : acc
+    (** The empty accumulator. *)
+
+    val to_logic : acc -> t
+    (** Tansform an accumulator into a logic *)
+
+    val scan_ty : acc -> V.Ty.t -> acc
+    (** Returns the minimal logic needed to typecheck a type. *)
+
+    val scan_term_decl : acc -> V.Term.Cst.t -> acc
+    (** Returns the minimal logic needed to declare a term constant
+        (i.e. including its type). *)
+
+    val scan_term : acc -> V.Term.t -> acc
+    (** Returns the minimal logic needed to typecheck a term. *)
+
+    val add_datatypes : acc -> acc
+    (** Add to the accumualtor the need to declare and use datatypes. *)
+
+    val add_free_sort : acc -> acc
+    (** Add to the accumualtor the need to declare new sorts/types. *)
+
+    val add_free_funs : acc -> acc
+    (** Add to the accumualtor the need to declare new functions.
+        NOTE: declaring enw constants (i.e. functions with arity 0) is
+        always allowed in all logics. This setting refers specifically
+        to functions with an arity of at least 1. *)
+
+  end
+
 end
 
 (** {2 All logics} *)

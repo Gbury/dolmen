@@ -122,6 +122,10 @@ type ty_def =
   | Adt of {
       ty : ty_cst;
       record : bool;
+      (** This field if set to [true] when the type is meant to be a record.
+          If this field its [true], then the type is guaranteed to have a single
+          constructor. However, note that the converse is not valid: there can
+          be ADTs with a single constructors, but that are not records. *)
       cases : ty_def_adt_case array;
     }
   (** Algebraic datatypes, including records (which are seen as a 1-case adt). *)
@@ -448,6 +452,9 @@ module Ty : sig
 
   val expand_head : t -> t
   (** Expand head aliases. *)
+
+  val descr : t -> ty_descr
+  (** Type description (after expansion). *)
 
 
   (** {4 View} *)

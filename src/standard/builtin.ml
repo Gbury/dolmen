@@ -80,11 +80,17 @@ type _ t +=
   | Floor of int_rat_real | Floor_to_int of rat_real
   | Ceiling of int_rat_real | Truncate of int_rat_real | Round of int_rat_real
 
-(* arrays *)
+
+(* Arrays *)
+(* ************************************************************************* *)
+
 type _ t +=
   | Array | Const | Store | Select
 
+
 (* Bitvectors *)
+(* ************************************************************************* *)
+
 type _ t +=
   | Bitv of int
   | Bitvec of string
@@ -126,7 +132,10 @@ type _ t +=
   | Bitv_sgt of int
   | Bitv_sge of int
 
+
 (* Floats *)
+(* ************************************************************************* *)
+
 type _ t +=
   | Float of int * int
   | RoundingMode
@@ -174,7 +183,10 @@ type _ t +=
   | To_sbv of int * int * int
   | To_real of int * int
 
+
 (* Strings *)
+(* ************************************************************************* *)
+
 type _ t +=
   | String
   | Str of string

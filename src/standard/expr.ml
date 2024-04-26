@@ -3889,12 +3889,14 @@ module View = struct
       module Var = struct
         type t = term_var
         let ty v = v.id_ty
+        let equal = Term.Var.equal
       end
 
       module Cst = struct
         type t = term_cst
         let ty c = c.id_ty
         let builtin c = c.builtin
+        let equal = Term.Const.equal
       end
 
       exception Not_first_order of t
