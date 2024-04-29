@@ -3872,7 +3872,7 @@ module View = struct
       exception Not_first_order of t
 
       let view ty =
-        match Ty.descr ty with
+        match ty.ty_descr with
         | TyVar v -> V.Ty.Var v
         | TyApp (c, args) -> V.Ty.App (c, args)
         (* error case *)
@@ -3896,6 +3896,7 @@ module View = struct
         type t = term_cst
         let ty c = c.id_ty
         let builtin c = c.builtin
+        let hash = Term.Const.hash
         let equal = Term.Const.equal
       end
 

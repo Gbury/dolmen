@@ -382,7 +382,7 @@ module Smtlib2 = struct
       | Non_linear | Linear (`Strict | `Large) -> acc
       | _ -> { acc with arith = Linear `Strict; }
 
-    let _add_linear_arith_large kind acc =
+    let add_linear_arith_large kind acc =
       let acc = add_arith kind acc in
       match acc.arith with
       | Non_linear | Linear `Large -> acc
@@ -493,6 +493,17 @@ module Smtlib2 = struct
           | B.Add #arith, [], l -> `Addition l
           | B.Sub #arith, [], l -> `Substraction l
           | B.Div `Real, [], [x; y] -> `Division (x, y)
+          | B.Lt #arith, _, _ | B.Leq #arith, _, _
+          | B.Gt #arith, _, _ | B.Geq #arith, _, _
+          | B.Mul #arith, _, _ | B.Pow #arith, _, _
+          | B.Div_e #arith, _, _ | B.Div_t #arith, _, _ | B.Div_f #arith, _, _
+          | B.Modulo_e #arith, _, _ | B.Modulo_t #arith, _, _ | B.Modulo_f #arith, _, _
+          | B.Abs, _, _ | B.Divisible, _, _
+          | B.Is_int #arith, _, _ | B.Is_rat #arith, _, _
+          | B.Floor #arith, _, _ | B.Floor_to_int `Real, _, _
+          | B.Ceiling #arith, _, _ | B.Truncate #arith, _, _
+          | B.Round #arith, _, _
+            -> `Complex_arith
           | _ -> `Top_symbol_not_in_arith
         end
       | _ -> `Top_symbol_not_in_arith
@@ -515,6 +526,7 @@ module Smtlib2 = struct
           | _ -> `Complex_arith
         end
       | `Variable _ | `Constant _ -> `Var_or_cst
+      | `Complex_arith -> `Complex_arith
       | `Top_symbol_not_in_arith -> `Top_symbol_not_in_arith
 
     let rec term_arith_difference_count t =
@@ -667,17 +679,38 @@ module Smtlib2 = struct
         end
 
       | B.Div (`Real as k)
-      | B.Div_e (`Int as k) | B.Modulo_e (`Int as k)
-        -> aux (add_non_linear_arith k acc)
+      | B.Div_e (`Int as k)
+      | B.Modulo_e (`Int as k)->
+        begin match t_args with
+          | [a; b] ->
+            begin match term_arith_classify a, term_arith_view b with
+              | `Int_coef, `Numeral s when s <> "0" -> add_linear_arith_strict k acc
+              | _ -> aux (add_non_linear_arith k acc)
+            end
+          | _ -> assert false (* incorrect use of B.Div/B.Div_e/B.Modulo_e *)
+        end
 
-      | B.Divisible
-        -> aux (add_non_linear_arith `Int acc)
+      | B.Divisible -> aux (add_non_linear_arith `Int acc)
 
-      | B.Mul (#arith as k)
-        ->
-        (* TODO: implement more refined criterion for linearity *)
-        let acc = add_non_linear_arith k acc in
-        aux acc
+      | B.Mul (#arith as k) ->
+        begin match t_args with
+          | [a; b] ->
+            begin match term_arith_classify a, term_arith_classify b with
+              | (`Int_coef | `Rat_coef), `Var_or_cst
+              | `Var_or_cst, (`Int_coef | `Rat_coef)
+                -> aux (add_linear_arith_strict k acc)
+              | (`Int_coef | `Rat_coef), `Top_symbol_not_in_arith
+              | `Top_symbol_not_in_arith, (`Int_coef | `Rat_coef)
+                -> aux (add_linear_arith_large k acc)
+              | (`Int_coef | `Rat_coef), (`Int_coef | `Rat_coef)
+              | (`Int_coef | `Rat_coef), `Complex_arith
+              | `Complex_arith, (`Int_coef | `Rat_coef)
+                -> (* NOTE: this is annoying, but it is the spec... *)
+                aux (add_non_linear_arith k acc)
+              | _ -> aux (add_non_linear_arith k acc)
+            end
+          | _ -> assert false (* Incorrect use of B.Mul *)
+        end
 
       (* Bitvectors *)
       | B.Bitvec _

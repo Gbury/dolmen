@@ -220,6 +220,8 @@ module TFF = struct
 
         val builtin : t -> builtin
 
+        val hash : t -> int
+
         val equal : t -> t -> bool
       end
 

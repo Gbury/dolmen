@@ -200,8 +200,38 @@ module Make
   module B = Dolmen_std.Builtin
   module F = Dolmen_intf.View.TFF
   module E = Dolmen_std.View.Assoc(V)
+  module H = Hashtbl.Make(V.Term.Cst)
 
 
+  (* Env suff *)
+  (* ******** *)
+
+  (* ":named" stuff *)
+  let named_csts_key : V.Term.t H.t Env.key = Env.key ()
+
+  let add_named env cst defining_expr =
+    let env, h =
+      match Env.get env named_csts_key with
+      | Some h -> env, h
+      | None ->
+        let h = H.create 13 in
+        let env = Env.set env named_csts_key h in
+        env, h
+    in
+    assert (not (H.mem h cst));
+    H.add h cst defining_expr;
+    env
+
+  let find_named env cst =
+    match Env.get env named_csts_key with
+    | None -> None
+    | Some h ->
+      begin match H.find h cst with
+        | x ->
+          H.remove h cst;
+          Some x
+        | exception Not_found -> None
+      end
 
   (* Env suff *)
   (* ******** *)
@@ -467,7 +497,18 @@ module Make
     match V.Term.Cst.builtin head with
 
     (* Base + Algebraic datatypes *)
-    | B.Base | B.Constructor _ | B.Destructor _ ->
+    | B.Base ->
+      begin match find_named env head with
+        | None ->
+          let poly () = if term_cst_poly env head then Some t_ty else None in
+          p ~poly Term (Env.Term_cst.name env head)
+        | Some expr ->
+          assert (args = []);
+          let f_id = Dolmen_std.Id.create Term (Env.Term_cst.name env head) in
+          Format.fprintf fmt "(! %a@ :named %a)"
+            (term env) expr (id ~allow_keyword:false env) f_id
+      end
+    | B.Constructor _ | B.Destructor _ ->
       let poly () = if term_cst_poly env head then Some t_ty else None in
       p ~poly Term (Env.Term_cst.name env head)
     | B.Tester { cstr; _ } ->
@@ -702,8 +743,8 @@ module Make
     let env = set_omit_to_real env false in
     (* actual printing *)
     let env' = List.fold_left add_binding_to_env env l in
-    Format.fprintf fmt "@[<hv>(let @[<hv>(%a)@]@ %a)@]"
-      (list (var_binding env') env) l (term env) body
+    Format.fprintf fmt "@[<hv>(let (@[<hv>%a@])@ %a)@]"
+      (list (var_binding env') env) l (term env') body
 
   and var_binding var_env t_env fmt (v, t) =
     Format.fprintf fmt "@[<hov 2>(%a@ %a)@]" (term_var var_env) v (term t_env) t

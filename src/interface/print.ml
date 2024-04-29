@@ -15,12 +15,19 @@ module type Smtlib2 = sig
   type term_var
   type term_cst
 
+
+  (** {2 Env} *)
+
+  val add_named : env -> term_cst -> term -> env
+  (** Add a `:named` definition to the env. *)
+
+
   (** {2 Helpers} *)
 
-    val match_prop_literal : term -> [
-        | `Cst of term_cst
-        | `Neg of term_cst
-        | `Not_a_prop_literal ]
+  val match_prop_literal : term -> [
+      | `Cst of term_cst
+      | `Neg of term_cst
+      | `Not_a_prop_literal ]
   (** Match against prop literals. *)
 
 
