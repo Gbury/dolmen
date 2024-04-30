@@ -95,7 +95,11 @@ module type Types = sig
   ]
   (** Exit statement *)
 
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+  type end_ = [
+    | `End
+  ]
+
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit | end_ ]
   (** The type of statements after typechecking *)
 
 end

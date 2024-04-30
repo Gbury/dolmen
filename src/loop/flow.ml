@@ -18,7 +18,6 @@ module type Automaton = sig
 
   val init : node
   val step : st -> node -> statement -> st * node
-  val finalise : st -> node -> st
 end
 
 (* Dummy automaton *)
@@ -28,7 +27,6 @@ module Dummy = struct
   type node = unit
   let init = ()
   let step st () _ = st, ()
-  let finalise st () = st
 end
 
 (* Smtlib automaton *)
@@ -206,21 +204,23 @@ module Smtlib2(State : State.S)
 
   let init = Start_mode
 
-  let finalise st mode =
-    match mode with
-    | Exited -> st
-    | Start_mode ->
-      let file = State.get State.logic_file st in
-      State.error st ~file missing_exit ()
-    | Assert_mode stack
-    | Sat_or_unsat_mode stack ->
-      (* check for "lost" statements or unclosed "pushs" *)
-      let st, _stack = reset_assertions ~explicit:false st stack in
-      let file = State.get State.logic_file st in
-      State.error st ~file missing_exit ()
-
   let step st mode (stmt : Dolmen.Std.Statement.t) =
     match stmt.descr with
+
+    (* this *)
+    | End ->
+      begin match mode with
+        | Exited -> st, mode
+        | Start_mode ->
+          let file = State.get State.logic_file st in
+          State.error st ~file missing_exit (), mode
+        | Assert_mode stack
+        | Sat_or_unsat_mode stack ->
+          (* check for "lost" statements or unclosed "pushs" *)
+          let st, _stack = reset_assertions ~explicit:false st stack in
+          let file = State.get State.logic_file st in
+          State.error st ~file missing_exit (), mode
+      end
 
     (* these should not happen, just ignore them (TODO: emit warning ?) *)
     | Pack _ | Include _ ->
@@ -439,9 +439,6 @@ module Make(State : State.S) = struct
     let st, node = Automaton.step st node c in
     State.set state_key (Check (node, (module Automaton))) st
 
-  let finalise_aux (type node) st ((node,(module Automaton)) : node automaton) =
-    Automaton.finalise st node
-
   let inspect st c =
     let st =
       with_automaton st ~check:{
@@ -449,9 +446,6 @@ module Make(State : State.S) = struct
       }
     in
     st, c
-
-  let finalise st =
-    with_automaton st ~check:{ f = finalise_aux }
 
 end
 

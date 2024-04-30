@@ -2089,8 +2089,12 @@ module Types(Expr : Expr_intf.S) = struct
     | `Exit
   ]
 
+  type end_ = [
+    | `End
+  ]
+
   (* Agregate types *)
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit | end_ ]
 
 end
 
@@ -2244,6 +2248,8 @@ module Make
       Format.fprintf fmt "@[<hov 2>reset@]"
     | `Exit ->
       Format.fprintf fmt "@[<hov 2>exit@]"
+    | `End ->
+      Format.fprintf fmt "@[<hov 2>end@]"
 
   let print_attr fmt t =
     Format.fprintf fmt "{%a}@," Dolmen.Std.Term.print t
@@ -2433,6 +2439,8 @@ module Make
       st, [mk_stmt (other_id c) loc attrs (`Echo s)]
     | { S.descr = S.Exit; loc; attrs; _ } ->
       st, [mk_stmt (other_id c) loc attrs `Exit]
+    | { S.descr = S.End; loc; attrs; _ } ->
+      st, [mk_stmt (other_id c) loc attrs `End]
 
     (* packs and includes *)
     | { S.descr = S.Include _; _ } -> assert false

@@ -3,7 +3,7 @@
 (** Expressions
 
     This modules defines the smallest signatures for expressions that allow
-    to isntantiates the {Pipes.Make} functor. *)
+    to instantiates the {Pipes.Make} functor. *)
 
 module type S = sig
 
@@ -40,6 +40,14 @@ end
 module type Export = sig
 
   include S
+
+  type 'a tag
+
+  module Tags : sig
+
+    val named : string tag
+
+  end
 
   module Ty : sig
     type t = ty
@@ -80,6 +88,9 @@ module type Export = sig
 
       val mk : Dolmen_std.Path.t -> ty -> t
       (** Create a constant symbol *)
+
+      val get_tag : t -> 'a tag -> 'a option
+      (** Return the value bound to a tag (if any). *)
     end
   end
 

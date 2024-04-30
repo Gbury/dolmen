@@ -32,6 +32,7 @@ module Make
     | Logic of string option
 
   type logic_acc = {
+    seen_exit : bool;
     scan_acc : S.acc;
     old_logic : old_logic;
     pre_logic_stmts : Typer_Types.typechecked Typer_Types.stmt list;
@@ -52,11 +53,12 @@ module Make
       if not compute_logic then No_transform
       else begin
         let logic_acc = Some {
-          scan_acc = S.nothing;
-          old_logic = Not_seen_yet;
-          pre_logic_stmts = [];
-          post_logic_stmts = [];
-        } in
+            seen_exit = false;
+            scan_acc = S.nothing;
+            old_logic = Not_seen_yet;
+            pre_logic_stmts = [];
+            post_logic_stmts = [];
+          } in
         Transform { logic_acc; }
       end
     in
@@ -66,6 +68,26 @@ module Make
   let need_logic = function
     | Not_seen_yet -> Logic None
     | Logic _ as l -> l
+
+  let compute_logic acc : Typer_Types.typechecked Typer_Types.stmt =
+    let logic = S.to_logic acc.scan_acc in
+    let logic_name = Dolmen_type.Logic.Smtlib2.to_string logic in
+    (* TODO: expose a function to create stmts in Typer_Types *)
+    {
+      id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "set_logic");
+      loc = Dolmen.Std.Loc.no_loc;
+      contents = `Set_logic (logic_name, Smtlib2 logic);
+      attrs = [];
+      implicit = false;
+    }
+
+  let flush acc res set_logic tail =
+    let res = res @
+              List.rev_append acc.pre_logic_stmts (
+                set_logic :: List.rev_append acc.post_logic_stmts tail)
+    in
+    let acc = { acc with pre_logic_stmts = []; post_logic_stmts = []; } in
+    acc, res
 
   let accumulate_logic (acc, res) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
     match stmt.contents with
@@ -104,14 +126,14 @@ module Make
       let scan_acc =
         List.fold_left (fun scan_acc decl ->
             match decl with
-            | `Term_decl c -> S.scan_term_decl scan_acc c
+            | `Term_decl c -> S.scan_term_decl ~in_adt:false scan_acc c
             | `Type_decl (_, ty_def) ->
               begin match (ty_def : Dolmen.Std.Expr.ty_def option) with
                 | None | Some Abstract -> S.add_free_sort scan_acc
                 | Some Adt { ty = _; record = _; cases; } ->
                   let scan_acc = S.add_datatypes scan_acc in
                   Array.fold_left (fun scan_acc (case : Dolmen.Std.Expr.ty_def_adt_case)->
-                      S.scan_term_decl scan_acc case.cstr
+                      S.scan_term_decl ~in_adt:true scan_acc case.cstr
                     ) scan_acc cases
               end
           ) acc.scan_acc l
@@ -141,26 +163,32 @@ module Make
       let acc = { acc with old_logic; scan_acc; post_logic_stmts; } in
       acc, res
 
-    (* Exit and Reset trigger a flush of the statements and logic computed. *)
-    | `Exit | `Reset ->
-      let set_logic : Typer_Types.typechecked Typer_Types.stmt =
-        let logic = S.to_logic acc.scan_acc in
-        let logic_name = Dolmen_type.Logic.Smtlib2.to_string logic in
-        (* TODO: expose a function to create stmts in Typer_Types *)
-        {
-          id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "set_logic");
+    (* Exit, Reset and End trigger a flush of the statements and logic computed. *)
+    | `Exit ->
+      let set_logic = compute_logic acc in
+      let acc, res = flush acc res set_logic [stmt] in
+      let acc = { acc with seen_exit = true; } in
+      acc, res
+    | `Reset ->
+      let set_logic = compute_logic acc in
+      flush acc res set_logic [stmt]
+    | `End ->
+      if acc.seen_exit then begin
+        assert (acc.pre_logic_stmts = [] &&
+                acc.post_logic_stmts = []);
+        acc, [stmt]
+      end else begin
+        let set_logic = compute_logic acc in
+        let exit : _ Typer_Types.stmt = {
+          id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "exit");
           loc = Dolmen.Std.Loc.no_loc;
-          contents = `Set_logic (logic_name, Smtlib2 logic);
+          contents = `Exit;
           attrs = [];
           implicit = false;
-        }
-      in
-      let res = res @
-        List.rev_append acc.pre_logic_stmts (
-          set_logic :: List.rev_append acc.post_logic_stmts [stmt])
-      in
-      let acc = { acc with pre_logic_stmts = []; post_logic_stmts = []; } in
-      acc, res
+        } in
+        flush acc res set_logic ([exit ; stmt])
+      end
+
 
   let transform st (l : Typer_Types.typechecked Typer_Types.stmt list) =
     match State.get state st with

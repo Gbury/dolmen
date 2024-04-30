@@ -329,7 +329,10 @@ module Make
     | _ -> _cannot_print "unknown type builtin"
 
   let rec ty env fmt t =
-    match V.Ty.view t with
+    (* Here, since we want to print things, we do not expand types,
+       as we prefer the abstract presentation (which is closer to
+       the source input). *)
+    match V.Ty.view ~expand:false t with
     | Var v -> ty_var env fmt v
     | App (head, args) ->
       let f = ty_head_name env head in
@@ -403,7 +406,10 @@ module Make
     | _ -> `None
 
   let term_cst_poly _env c =
-    match V.Sig.view (V.Term.Cst.ty c) with
+    (* Here, we want the actual concrete type, since this matters for
+       actual typing afterwards, that begin said, expansion of type aliases
+       should not introduce polymorphism in principle. *)
+    match V.Sig.view ~expand:true (V.Term.Cst.ty c) with
     | Signature (_ :: _, _, _) -> true
     | _ -> false
 
@@ -522,7 +528,7 @@ module Make
       begin match ty_args with
         | None -> assert false (* coercions should not be chainable/associative *)
         | Some [a; b] ->
-          begin match V.Ty.view a, V.Ty.view b with
+          begin match V.Ty.view ~expand:true a, V.Ty.view ~expand:true b with
 
             (* Int-> Real conversion *)
             | App (ah, []), App (bh, [])
@@ -657,7 +663,7 @@ module Make
     | B.Fp_fma _ -> simple "fp.fma"
     | B.Fp_sqrt _ -> simple "fp.sqrt"
     | B.Fp_rem _ -> simple "fp.rem"
-    | B.Fp_roundToIntegral _ -> simple "fp.roundToInegral"
+    | B.Fp_roundToIntegral _ -> simple "fp.roundToIntegral"
     | B.Fp_min _ -> simple "fp.min"
     | B.Fp_max _ -> simple "fp.max"
     | B.Fp_leq _ -> simple "fp.leq"
@@ -963,7 +969,7 @@ module Make
   let declare_fun env fmt c =
     let name = Env.Term_cst.name env c in
     let c_sig = V.Term.Cst.ty c in
-    match V.Sig.view c_sig with
+    match V.Sig.view ~expand:false c_sig with
     | Signature ([], [], c_ty) ->
       Format.fprintf fmt "@[<hov 2>(declare-const %a@ %a)@]"
         (symbol env) name (ty env) c_ty

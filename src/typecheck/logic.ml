@@ -3,6 +3,7 @@
 
 module B = Dolmen_std.Builtin
 
+
 (* Smtlib2 logics *)
 (* ************************************************************************ *)
 
@@ -250,7 +251,7 @@ module Smtlib2 = struct
       then Buffer.add_string b "A"
       else Buffer.add_string b "AX";
     (* UF *)
-    if l.features.free_sorts && l.features.free_functions
+    if l.features.free_sorts || l.features.free_functions
     then Buffer.add_string b "UF";
     (* Bitvectors *)
     if bitvs
@@ -311,7 +312,6 @@ module Smtlib2 = struct
 
   module Scan(V : Dolmen_intf.View.TFF.S) = struct
 
-
     (* Accumulator and helpers *)
 
     type arith_config =
@@ -326,10 +326,12 @@ module Smtlib2 = struct
       quantifiers : bool;
       datatypes   : bool;
       bitvectors  : bool;
+      bitv_lits   : bool;
       floats      : bool;
       strings     : bool;
       arrays      : Arrays.Smtlib2.config option;
       ints        : bool;
+      int_lits    : bool;
       reals       : bool;
       arith       : arith_config;
     }
@@ -346,6 +348,8 @@ module Smtlib2 = struct
       if acc.datatypes then acc else { acc with datatypes = true; }
     let add_bitvs acc =
       if acc.bitvectors then acc else { acc with bitvectors = true; }
+    let add_bitv_lits acc =
+      if acc.bitv_lits then acc else { acc with bitv_lits = true; }
     let add_floats acc =
       if acc.floats then acc else { acc with floats = true; }
     let add_string acc =
@@ -354,6 +358,9 @@ module Smtlib2 = struct
     (* arithmetic helpers *)
 
     type arith = [ `Int | `Real ]
+
+    let add_int_lits acc =
+      if acc.int_lits then acc else { acc with int_lits = true; }
 
     let add_arith kind acc =
       match kind with
@@ -422,10 +429,12 @@ module Smtlib2 = struct
       | Some (Only_int_int | Only_ints_real) ->
         { acc with arrays = Some All; }
 
-    (* Type scanning *)
+    (* Type scanning
+       Here, we are interested in the actual concrete types, hence
+       we expand the types when viewing them. *)
 
     let rec ty_array_view ty =
-      match V.Ty.view ty with
+      match V.Ty.view ~expand:true ty with
       | Var _ -> `Other
       | App (f, args) ->
         begin match V.Ty.Cst.builtin f with
@@ -441,7 +450,7 @@ module Smtlib2 = struct
         end
 
     let rec scan_ty acc ty =
-      match V.Ty.view ty with
+      match V.Ty.view ~expand:true ty with
       | Var _ -> acc
       | App (f, args) ->
         let aux acc = List.fold_left scan_ty acc args in
@@ -470,18 +479,18 @@ module Smtlib2 = struct
 
     (* term decl *)
 
-    let scan_term_decl acc c =
-      let Signature (_, params_ty, ret) = V.Sig.view (V.Term.Cst.ty c) in
+    let scan_term_decl ~in_adt acc c =
+      let Signature (_, params_ty, ret) = V.Sig.view ~expand:true (V.Term.Cst.ty c) in
       let acc = List.fold_left scan_ty (scan_ty acc ret) params_ty in
       match params_ty with
-      | _ :: _ -> add_free_funs acc
-      | [] -> acc
+      | _ :: _ when not in_adt -> add_free_funs acc
+      | _ -> acc
 
     (* term scanning
        TODO: correctly handle let-bound variables by storing them in the env,
        and examining the defining expr instead of the let-bound variable. *)
 
-    let term_arith_view t =
+    let rec term_arith_view t =
       match V.Term.view t with
       | Var v -> `Variable v
       | App (head, ty_args, t_args) ->
@@ -504,6 +513,11 @@ module Smtlib2 = struct
           | B.Ceiling #arith, _, _ | B.Truncate #arith, _, _
           | B.Round #arith, _, _
             -> `Complex_arith
+          | B.Coercion, [src; dst], [t] ->
+            begin match ty_array_view src, ty_array_view dst with
+              | `Int, `Real -> term_arith_view t
+              | _ -> `Top_symbol_not_in_arith
+            end
           | _ -> `Top_symbol_not_in_arith
         end
       | _ -> `Top_symbol_not_in_arith
@@ -599,10 +613,20 @@ module Smtlib2 = struct
           (List.fold_left scan_ty acc ty_args)
           t_args
       in
-      match V.Term.Cst.builtin f with
+      match (V.Term.Cst.builtin f) with
 
-      | B.Base -> aux (add_free_funs acc)
-      | B.Coercion -> aux acc
+      | B.Base -> aux acc
+
+      (* int->real conversions on literals/coefs do not bring in the Int theory *)
+      | B.Coercion ->
+        begin match List.map ty_array_view ty_args with
+          | [`Int; `Real] ->
+            begin match List.map term_arith_view t_args with
+              | [`Numeral _] -> add_int_lits acc
+              | _ -> aux acc
+            end
+          | _ -> aux acc
+        end
 
       (* Datatypes *)
       | B.Constructor _ | B.Destructor _ | B.Tester _ ->
@@ -632,9 +656,11 @@ module Smtlib2 = struct
          We have to try and track smtlib2's insane list of specifications.
          To do this, we replicate most of the logic that is present in the [Arith]
          module for typechecking. *)
-      | B.Integer _
-      | B.Abs
-        -> aux (add_arith `Int acc)
+      | B.Integer _ -> aux (add_int_lits acc)
+      | B.Decimal _ -> aux (add_arith `Real acc)
+
+      | B.Abs -> aux (add_arith `Int acc)
+
       | B.Is_int (`Real as k)
       | B.Floor_to_int (`Real as k)
       | B.Lt (#arith as k) | B.Leq (#arith as k)
@@ -713,7 +739,7 @@ module Smtlib2 = struct
         end
 
       (* Bitvectors *)
-      | B.Bitvec _
+      | B.Bitvec _ -> aux (add_bitv_lits acc)
       | B.Bitv_not _ | B.Bitv_and _ | B.Bitv_or _
       | B.Bitv_nand _ | B.Bitv_nor _
       | B.Bitv_xor _ | B.Bitv_xnor _
@@ -784,7 +810,10 @@ module Smtlib2 = struct
       | B.Re_power _ | B.Re_loop _
         -> aux (add_string acc)
 
-      | _ -> assert false (* non-smtlib builtin *)
+      | b ->
+        (* non-smtlib builtin *)
+        let name = Obj.Extension_constructor.(name (of_val b)) in
+        failwith (Format.asprintf "unknown_builtin : %s" name)
 
 
     (* Acc <-> logic conversion *)
@@ -797,7 +826,10 @@ module Smtlib2 = struct
         quantifiers = acc.quantifiers;
         arithmetic =
           begin match acc.arith with
-            | No_constraint | Non_linear -> Regular
+            | No_constraint ->
+              (* by default, we prefer linear arith (over DL) if there is no constraint *)
+              Linear `Strict
+            | Non_linear -> Regular
             | Linear k -> Linear k
             | Difference `Normal ->
               if acc.ints && not acc.reals then
@@ -820,11 +852,11 @@ module Smtlib2 = struct
       let add b (th : theory) l = if b then th :: l else l in
       let theories =
         [ `Core ]
-        |> add acc.bitvectors `Bitvectors
+        |> add (acc.bitvectors || (acc.bitv_lits && not acc.floats)) `Bitvectors
         |> add acc.floats `Floats
         |> add acc.strings `String
         |> add (match acc.arrays with None -> false | Some _ -> true) `Arrays
-        |> add (acc.ints && not acc.reals) `Ints
+        |> add ((acc.int_lits || acc.ints) && not acc.reals) `Ints
         |> add (acc.reals && not acc.ints) `Reals
         |> add (acc.ints && acc.reals) `Reals_Ints
       in
@@ -836,10 +868,12 @@ module Smtlib2 = struct
       quantifiers = false;
       datatypes = false;
       bitvectors = false;
+      bitv_lits = false;
       floats = false;
       strings = false;
       arrays = None;
       ints = false;
+      int_lits = false;
       reals = false;
       arith = No_constraint;
     }

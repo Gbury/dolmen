@@ -1060,9 +1060,9 @@ module Ty = struct
   let bool = prop
 
   (* *)
-  let split_pi t =
+  let split_pi_aux ~expand t =
     let rec aux acc ty =
-      let ty' = expand_head ty in
+      let ty' = if expand then expand_head ty else ty in
       match ty'.ty_descr with
       | Pi (vars, body) -> aux (vars :: acc) body
       | _ ->
@@ -1071,9 +1071,9 @@ module Ty = struct
     in
     aux [] t
 
-  let split_arrow t =
+  let split_arrow_aux ~expand t =
     let rec aux acc t =
-      let t' = expand_head t in
+      let t' = if expand then expand_head t else t in
       match t'.ty_descr with
       | Arrow (args, ret) -> aux (args :: acc) ret
       | TyVar _ | TyApp _ ->
@@ -1083,17 +1083,21 @@ module Ty = struct
     in
     aux [] t
 
-  let poly_sig t =
-    let vars, t = split_pi t in
-    let args, ret = split_arrow t in
+  let poly_sig_aux ~expand t =
+    let vars, t = split_pi_aux ~expand t in
+    let args, ret = split_arrow_aux ~expand t in
     vars, args, ret
+
+  let split_pi t = split_pi_aux ~expand:true t
+  let split_arrow t = split_arrow_aux ~expand:true t
+  let poly_sig t = poly_sig_aux ~expand:true t
 
   let pi_arity t =
     let l, _ = split_pi t in
     List.length l
 
   let t_arity t =
-    let _, l, _ = poly_sig t in
+    let _, l, _ = poly_sig_aux ~expand:true t in
     List.length l
 
   (* Matching *)
@@ -3806,8 +3810,8 @@ module View = struct
 
       type t = ty
 
-      let view ty =
-        let vars, params, ret = Ty.poly_sig ty in
+      let view ~expand ty =
+        let vars, params, ret = Ty.poly_sig_aux ~expand ty in
         V.Sig.Signature (vars, params, ret)
 
     end
@@ -3842,12 +3846,12 @@ module View = struct
             vars
           end
 
-        let view = function
+        let view ~expand = function
           | Abstract -> V.TypeDef.Abstract
           | Adt { ty; cases; _ } ->
             let vars = adt_vars ty cases in
             let cases = List.map (fun { cstr; dstrs; _ } ->
-                let c_vars, c_params_ty, _ = Ty.poly_sig cstr.id_ty in
+                let c_vars, c_params_ty, _ = Ty.poly_sig_aux ~expand cstr.id_ty in
                 let subst = List.fold_left2 (fun acc def_var c_var ->
                     Subst.Var.bind acc c_var (Ty.of_var def_var)
                   ) Subst.empty vars c_vars
@@ -3871,7 +3875,8 @@ module View = struct
 
       exception Not_first_order of t
 
-      let view ty =
+      let view ~expand ty =
+        let ty = if expand then Ty.expand_head ty else ty in
         match ty.ty_descr with
         | TyVar v -> V.Ty.Var v
         | TyApp (c, args) -> V.Ty.App (c, args)

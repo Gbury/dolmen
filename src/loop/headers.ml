@@ -313,15 +313,6 @@ module Make(State : State.S) = struct
     | [] -> st
     | missing -> State.error st missing_header_error (lang, missing)
 
-  let check st =
-    if not (State.get header_check st) then st
-    else begin
-      let h = State.get header_state st in
-      let st = check_wanted st h in
-      let st = check_required st h in
-      st
-    end
-
 
   (* Incremental checks and construction of the header set *)
 
@@ -376,6 +367,10 @@ module Make(State : State.S) = struct
             State.set header_state (remove h Problem_status) st
           else
             error st loc missing_header_error (lang, [Problem_status])
+        | { descr = End; _ } ->
+          let st = check_wanted st h in
+          let st = check_required st h in
+          st
         | _ -> st
       in
       st, c

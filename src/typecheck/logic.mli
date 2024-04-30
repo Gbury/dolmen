@@ -68,7 +68,7 @@ module Smtlib2 : sig
     val scan_ty : acc -> V.Ty.t -> acc
     (** Returns the minimal logic needed to typecheck a type. *)
 
-    val scan_term_decl : acc -> V.Term.Cst.t -> acc
+    val scan_term_decl : in_adt:bool -> acc -> V.Term.Cst.t -> acc
     (** Returns the minimal logic needed to declare a term constant
         (i.e. including its type). *)
 

@@ -66,9 +66,6 @@ let run st preludes logic_file =
       )
     )
   in
-  let st = Loop.Flow.finalise st in
-  let st = Loop.Header.check st in
-  let st = Loop.Export.finalise st in
   let st = Dolmen_loop.State.flush st () in
   ignore st
 

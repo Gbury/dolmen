@@ -256,7 +256,7 @@ module Make(State : State.S) = struct
           ]
       in
       let file = { file with lang = Some lang; } in
-      st, file, (Gen.singleton s')
+      st, file, (Gen.of_list [s'; Dolmen.Std.Statement.end_ ()])
 
   (* This is a ['a Gen.t] with a threaded state. *)
   type 'a gen' = {g: State.t -> State.t * 'a option} [@@unboxed]

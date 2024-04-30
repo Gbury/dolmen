@@ -101,6 +101,8 @@ type descr =
   | Reset
   | Exit
 
+  | End
+
 (* Statements are wrapped in a record to have a location. *)
 and t = {
   id : Id.t option;
@@ -326,6 +328,7 @@ let rec print_descr fmt = function
   | Echo s -> Format.fprintf fmt "echo: %s" s
   | Reset -> Format.fprintf fmt "reset"
   | Exit -> Format.fprintf fmt "exit"
+  | End -> Format.fprintf fmt "end"
 
 and print_id_opt fmt = function
   | None -> ()
@@ -388,6 +391,7 @@ let get_assertions ?loc () = mk ?loc Get_assertions
 let echo ?loc s = mk ?loc (Echo s)
 let reset ?loc () = mk ?loc Reset
 let exit ?loc () = mk ?loc Exit
+let end_ () = mk End
 
 (* decl/def *)
 let group ~recursive contents =

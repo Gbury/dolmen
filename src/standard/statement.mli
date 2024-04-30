@@ -165,6 +165,9 @@ type descr =
   | Exit
   (** Exit the interactive loop. *)
 
+  | End
+  (** End of statements, useful for stream processing. *)
+
 and t = {
   id : Id.t option;
   descr : descr;
@@ -212,6 +215,9 @@ val prove : ?loc:location -> unit -> t
 
 val pack : ?id:Id.t -> ?loc:location -> ?attrs:term list -> t list -> t
 (** Pack a list of statements into a single one. *)
+
+val end_ : unit -> t
+(** Create an [End] statement. *)
 
 
 (** {2 Printing functions} *)

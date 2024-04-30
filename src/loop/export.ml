@@ -160,8 +160,6 @@ module type S = sig
 
   val print : acc -> typechecked stmt -> acc
 
-  val finalise : acc -> unit
-
 end
 
 (* Smtlib2 Printer *)
@@ -231,17 +229,18 @@ module Smtlib2
   type acc = {
     env : Env.t;
     fmt : Format.formatter;
+    close : unit -> unit;
   }
 
-  let init fmt =
+  let init ~close fmt =
     let rename = Env.Scope.mk_rename 0 rename_num_postfix in
     let sanitize = Dolmen.Smtlib2.Script.V2_6.Print.sanitize in
     let on_conflict ~prev_id:_ ~new_id:_ ~name:_ = Env.Scope.Rename in
     let scope = Env.Scope.empty ~rename ~sanitize ~on_conflict in
     let env = Env.empty scope in
-    { env; fmt; }
+    { env; fmt; close; }
 
-  let pp_stmt ({ env; fmt; } as acc) pp x =
+  let pp_stmt ({ env; fmt; close = _; } as acc) pp x =
     Format.fprintf fmt "%a@." (pp env) x;
     acc
 
@@ -255,7 +254,7 @@ module Smtlib2
     | `Term_decl c ->
       Either.Left (`Term_decl c)
     | `Type_decl (c, Some def) ->
-      begin match View.Ty.Def.view def with
+      begin match View.Ty.Def.view ~expand:false def with
         | Abstract -> Either.Left (`Type_decl c)
         | Algebraic { vars; cases; } ->
           let cases =
@@ -308,42 +307,64 @@ module Smtlib2
     | _ ->
       assert false (* TODO: better error / can this happen ? *)
 
-  (* defintions *)
-  (* ********** *)
+  (* definitions *)
+  (* *********** *)
 
   let map_def = function
     | `Type_alias (_, c, vars, body) -> Either.Left (c, vars, body)
     | `Term_def (_, c, vars, params, body) -> Either.Right (c, vars, params, body)
     | `Instanceof _ -> assert false (* TODO: proper error, cannot print *)
 
+  let assert_not_named c =
+    match Expr.Term.Const.get_tag c Expr.Tags.named with
+    | Some _ -> assert false (* TODO: better error *)
+    | None -> ()
+
   let print_defs acc defs recursive =
     let typedefs, fundefs = List.partition_map map_def defs in
     match typedefs, fundefs, recursive with
+
     | [], [], _ -> assert false (* internal invariant: should not happen *)
     | _ :: _, _ :: _, _ -> assert false (* can this happen ? *)
     | _ :: _, [], true -> assert false (* TODO: proper error / cannot print *)
+
     (* Note: we might want to have the body of a definition printed with
        an env that does not contain said definition, if only for shadowing
        purposes, but that would not change much for the smt2 since shadowing
        of constants is not allowed. *)
+
+    (* Type Defs *)
     | l, [], false ->
       List.fold_left (fun acc ((c, _, _) as def) ->
           let acc = { acc with env = Env.Ty_cst.bind acc.env c; } in
           pp_stmt acc P.define_sort def
         ) acc l
+
+    (* Term Defs (regular) *)
     | [], l, false ->
-      List.fold_left (fun acc ((c, _, _, _) as def) ->
-          let acc = { acc with env = Env.Term_cst.bind acc.env c; } in
-          pp_stmt acc P.define_fun def
+      List.fold_left (fun acc ((c, vars, params, body) as def) ->
+          let env = Env.Term_cst.bind acc.env c in
+          match Expr.Term.Const.get_tag c Expr.Tags.named with
+          | None ->
+            let acc = { acc with env = Env.Term_cst.bind acc.env c; } in
+            pp_stmt acc P.define_fun def
+          | Some _ ->
+            assert (vars = [] && params = []);
+            let env = P.add_named env c body in
+            { acc with env }
         ) acc l
+
+    (* Term Defs (recursive) *)
     | [], [(c, _, _, _) as def], true ->
       let acc = { acc with env = Env.Term_cst.bind acc.env c; } in
+      assert_not_named c;
       pp_stmt acc P.define_fun_rec def
     | [], l, true ->
       let acc = {
         acc with
         env =
           List.fold_left (fun env (c, _, _, _) ->
+              assert_not_named c;
               Env.Term_cst.bind env c
             ) acc.env l}
       in
@@ -430,10 +451,9 @@ module Smtlib2
       | `Solve (hyps, goals) -> print_solve acc ~hyps ~goals
       (* Exit *)
       | `Exit -> pp_stmt acc P.exit ()
+      | `End -> acc.close (); acc
       (* Other *)
       | `Other _ -> assert false (* TODO: proper error / or allow extensions ? *)
-
-  let finalise _acc = ()
 
 end
 
@@ -514,7 +534,6 @@ module Make
     | Export : {
         acc : 'acc;
         printer : 'acc printer;
-        close : unit -> unit;
       } -> state
 
   (* available printers *)
@@ -531,8 +550,8 @@ module Make
     State.create_key ~pipe "export_state"
 
   let init ?output_file st =
-    let mk (type acc) close (acc : acc) (printer : acc printer) =
-      Export { acc; printer; close; }
+    let mk (type acc) (acc : acc) (printer : acc printer) =
+      Export { acc; printer; }
     in
     let mk st lang output =
       let fmt, close =
@@ -547,15 +566,16 @@ module Make
       in
       match (lang : language) with
       | Smtlib2 (`V2_6 | `Latest) ->
-        let acc = Smtlib2_6.init fmt in
-        st, mk close acc (module Smtlib2_6)
+        let acc = Smtlib2_6.init ~close fmt in
+        st, mk acc (module Smtlib2_6)
       | Smtlib2 `Poly ->
-        let acc = Smtlib2_Poly.init fmt in
-        st, mk close acc (module Smtlib2_Poly)
+        let acc = Smtlib2_Poly.init ~close fmt in
+        st, mk acc (module Smtlib2_Poly)
       | lang ->
+        let () = close () in
         let st = State.error st unsupported_language lang in
         let acc = Dummy.init fmt in
-        st, mk close acc (module Dummy)
+        st, mk acc (module Dummy)
     in
     let st, state_value =
       match output_file with
@@ -577,22 +597,13 @@ module Make
 
   (* interface *)
 
-  let export st (c : Typer_Types.typechecked Typer_Types.stmt list) =
+  let export st (l : Typer_Types.typechecked Typer_Types.stmt list) =
     match State.get state st with
-    | No_export -> st, c
-    | Export { acc; printer; close; } ->
+    | No_export -> st, l
+    | Export { acc; printer; } ->
       let (module P) = printer in
-      let acc = List.fold_left P.print acc c in
-      let st = State.set state (Export { acc; printer; close; }) st in
-      st, c
-
-  let finalise st =
-    match State.get state st with
-    | No_export -> st
-    | Export { acc; printer; close; } ->
-      let (module P) = printer in
-      let () = P.finalise acc in
-      let () = close () in
-      State.set state No_export st
+      let acc = List.fold_left P.print acc l in
+      let st = State.set state (Export { acc; printer; }) st in
+      st, l
 
 end

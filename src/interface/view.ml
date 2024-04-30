@@ -172,7 +172,8 @@ module TFF = struct
 
           type t = ty_def
 
-          val view : t -> < ty : ty; ty_var : ty_var; term_cst : term_cst > TypeDef.view
+          val view : expand:bool -> t ->
+            < ty : ty; ty_var : ty_var; term_cst : term_cst > TypeDef.view
 
       end
 
@@ -180,7 +181,7 @@ module TFF = struct
       (** exceptions raised by view functions on types that cannot be
           represented as first-order. *)
 
-      val view : t ->
+      val view : expand:bool -> t ->
         < ty_var : Var.t; ty_cst : Cst.t; builtin : builtin; ty : t; .. > Ty.view
       (** View function for types.
           @raise Not_first_order_ty if the type cannot be viewed as first-order. *)
@@ -191,7 +192,7 @@ module TFF = struct
 
       type t
 
-      val view : t ->
+      val view : expand:bool -> t ->
         < ty_var : Ty.Var.t; ty : Ty.t; .. > Sig.view
 
     end

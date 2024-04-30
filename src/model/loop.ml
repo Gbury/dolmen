@@ -708,6 +708,7 @@ module Make
             let file = State.get State.logic_file st in
             let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
             match c.contents with
+            | #Typer_Pipe.end_
             | #Typer_Pipe.exit
             | #Typer_Pipe.decls
             | #Typer_Pipe.get_info

@@ -100,7 +100,7 @@ let read_all ch =
 
 (* grep a string in a file *)
 let contains pattern file =
-  let cmd = Format.asprintf {|grep -q "%s" %s|} pattern file in
+  let cmd = Format.asprintf {|grep -q -e "%s" %s|} pattern file in
   let ch = Unix.open_process_in cmd in
   let _ = read_all ch in
   let res = Unix.close_process_in ch in
@@ -210,7 +210,15 @@ let test_stanza ?deps fmt (exit_codes, pb_file, response_file) =
 (* Print/Export stanza *)
 (* ************************************************************************* *)
 
-let format_stanza ?(deps=[]) fmt (pb_file, out_file) =
+let typechecks dir =
+  let file = Filename.concat dir "flags.dune" in
+  not (contains "--type=false" file)
+
+let already_has_flow_check dir =
+  let file = Filename.concat dir "flags.dune" in
+  contains "--check-flow" file
+
+let format_stanza ?(deps=[]) fmt (pb_file, out_file, need_flow) =
   Format.fprintf fmt "
 @[<v 2>(rule@ \
   (target  %s)@ \
@@ -218,7 +226,7 @@ let format_stanza ?(deps=[]) fmt (pb_file, out_file) =
   (package dolmen_bin)@ \
   (action @[<hov 1>(chdir %%{workspace_root}@ \
             @[<hov 1>(with-accepted-exit-codes 0@ \
-             @[<hov 1>(run dolmen --check-flow=true %%{input} %%{target} %%{read-lines:flags.dune})@]\
+             @[<hov 1>(run dolmen %s %%{input} %%{target} %%{read-lines:flags.dune})@]\
              )@]\
              )@]\
              ))@]@\n\
@@ -228,6 +236,7 @@ let format_stanza ?(deps=[]) fmt (pb_file, out_file) =
   (action (diff %s %s))@])@\n"
     out_file
     pp_deps (pb_file, None, deps)
+    (if need_flow then "--check-flow=true" else "")
     pb_file out_file
 
 
@@ -239,7 +248,7 @@ let check_expect_file path =
   let default_expect_contents = "run 'make promote' to update this file" in
   if touch path default_expect_contents then
     if is_empty path then Success
-    else if contains "Error" path then Error
+    else if contains {|Fatal\|Error|} path then Error
     else Success (* success includes warnings *)
   else
     Success
@@ -270,9 +279,13 @@ let gen_test fmt path pb =
   (* test stanza *)
   test_stanza ~deps fmt (exit_codes, pb, response_file);
   (* Format stanza *)
-  if (exit_codes = Success) && (supports_formatting pb) then begin
+  if (exit_codes = Success) &&
+     (supports_formatting pb) &&
+     (typechecks path) &&
+     not (already_has_flow_check path)
+  then begin
     let out_f = formatted_of_problem pb in
-    format_stanza ~deps fmt (pb, out_f)
+    format_stanza ~deps fmt (pb, out_f, true)
   end;
   ()
 
