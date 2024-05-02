@@ -675,7 +675,7 @@ module Make
     | B.Fp_isSubnormal _ -> simple "fp.isSubnormal"
     | B.Fp_isZero _ -> simple "fp.isZero"
     | B.Fp_isInfinite _ -> simple "fp.isInfinite"
-    | B.Fp_isNaN _ -> simple "fp.isNan"
+    | B.Fp_isNaN _ -> simple "fp.isNaN"
     | B.Fp_isNegative _ -> simple "fp.isNegative"
     | B.Fp_isPositive _ -> simple "fp.isPositive"
     | B.To_real _ -> simple "fp.to_real"
@@ -759,7 +759,7 @@ module Make
     (* reset some env state *)
     let env = set_omit_to_real env false in
     (* actual printing *)
-    Format.fprintf fmt "@[<hv 2>(match@ @[<hov>%a@]@ (%a))"
+    Format.fprintf fmt "@[<hv 2>(match@ @[<hov>%a@]@ (%a))@]"
       (term env) scrutinee
       (list match_case env) cases
 
@@ -1003,20 +1003,27 @@ module Make
   let define_fun_rec = define_fun_aux ~recursive:true
 
   let define_funs_rec env fmt l =
-    let fun_body env fmt (_, _, _, body) = term env fmt body in
-    let fun_decl env fmt (f, vars, params, body) =
-      let env = List.fold_left Env.Term_var.bind env params in
-      match (vars : V.Ty.Var.t list) with
-      | [] ->
-        Format.fprintf fmt "@[<hov 1>(%a@ (%a)@ %a)@]"
-          (term_cst env) f
-          (list sorted_var env) params
-          (ty env) (V.Term.ty body)
-      | _ :: _ ->
-        _cannot_print "polymorphic function definition"
+    let l =
+      List.map (fun (f, vars, params, body) ->
+          match vars with
+          | [] ->
+            let env = List.fold_left Env.Term_var.bind env params in
+            (env, f, params, body)
+          | _ :: _ ->
+            _cannot_print "polymorphic function definition"
+        ) l
+    in
+    let fun_body _env fmt (env, _, _, body) =
+      term env fmt body
+    in
+    let fun_decl _env fmt (env, f, params, body) =
+      Format.fprintf fmt "@[<hov 1>(%a@ (%a)@ %a)@]"
+        (term_cst env) f
+        (list sorted_var env) params
+        (ty env) (V.Term.ty body)
     in
     Format.fprintf fmt
-      "@[<v 2>(define-funs-rec@ @[<v 2>(%a)@]@ @[<v 2>(%a)@])@]"
+      "@[<v 2>(define-funs-rec@ @[<v 1>(%a)@]@ @[<v 1>(%a)@])@]"
       (list fun_decl env) l
       (list fun_body env) l
 

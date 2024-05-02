@@ -214,11 +214,11 @@ let typechecks dir =
   let file = Filename.concat dir "flags.dune" in
   not (contains "--type=false" file)
 
-let already_has_flow_check dir =
+let has_flow_check dir =
   let file = Filename.concat dir "flags.dune" in
   contains "--check-flow" file
 
-let format_stanza ?(deps=[]) fmt (pb_file, out_file, need_flow) =
+let format_stanza ?(deps=[]) fmt (pb_file, out_file) =
   Format.fprintf fmt "
 @[<v 2>(rule@ \
   (target  %s)@ \
@@ -226,7 +226,7 @@ let format_stanza ?(deps=[]) fmt (pb_file, out_file, need_flow) =
   (package dolmen_bin)@ \
   (action @[<hov 1>(chdir %%{workspace_root}@ \
             @[<hov 1>(with-accepted-exit-codes 0@ \
-             @[<hov 1>(run dolmen %s %%{input} %%{target} %%{read-lines:flags.dune})@]\
+             @[<hov 1>(run dolmen %%{input} %%{target} %%{read-lines:flags.dune})@]\
              )@]\
              )@]\
              ))@]@\n\
@@ -236,7 +236,6 @@ let format_stanza ?(deps=[]) fmt (pb_file, out_file, need_flow) =
   (action (diff %s %s))@])@\n"
     out_file
     pp_deps (pb_file, None, deps)
-    (if need_flow then "--check-flow=true" else "")
     pb_file out_file
 
 
@@ -282,10 +281,10 @@ let gen_test fmt path pb =
   if (exit_codes = Success) &&
      (supports_formatting pb) &&
      (typechecks path) &&
-     not (already_has_flow_check path)
+     not (has_flow_check path)
   then begin
     let out_f = formatted_of_problem pb in
-    format_stanza ~deps fmt (pb, out_f, true)
+    format_stanza ~deps fmt (pb, out_f)
   end;
   ()
 

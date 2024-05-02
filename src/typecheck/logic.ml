@@ -608,10 +608,11 @@ module Smtlib2 = struct
       scan_term acc body
 
     and scan_app acc f ty_args t_args =
+      let aux_terms acc =
+        List.fold_left scan_term acc t_args
+      in
       let aux acc =
-        List.fold_left scan_term
-          (List.fold_left scan_ty acc ty_args)
-          t_args
+        aux_terms (List.fold_left scan_ty acc ty_args)
       in
       match (V.Term.Cst.builtin f) with
 
@@ -634,10 +635,16 @@ module Smtlib2 = struct
 
       (* Core *)
       | B.True | B.False
-      | B.Neg | B.And | B.Or | B.Nor
-      | B.Xor | B.Imply | B.Implied | B.Ite
-      | B.Equiv | B.Equal | B.Distinct
+      | B.Neg | B.And | B.Or | B.Nor | B.Xor
+      | B.Imply | B.Implied | B.Ite | B.Equiv
         -> aux acc
+
+      | B.Equal | B.Distinct
+        (* In this case, we don't really want the type of the values being
+           compared to influence the logics. In particular, the FP theory
+           can create and compare values of bitvector type without the
+           BV theory. *)
+        -> aux_terms acc
 
       (* Arrays
          for these, we try and accurately track exactly what kind

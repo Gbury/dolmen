@@ -82,9 +82,10 @@ module Make
     }
 
   let flush acc res set_logic tail =
-    let res = res @
-              List.rev_append acc.pre_logic_stmts (
-                set_logic :: List.rev_append acc.post_logic_stmts tail)
+    let res =
+      res @
+      List.rev_append acc.pre_logic_stmts (
+        set_logic :: List.rev_append acc.post_logic_stmts tail)
     in
     let acc = { acc with pre_logic_stmts = []; post_logic_stmts = []; } in
     acc, res
