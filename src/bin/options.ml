@@ -46,6 +46,7 @@ type cmd =
       report : Dolmen_loop.Report.T.t;
       conf : Dolmen_loop.Report.Conf.t;
     }
+  | List_extensions
 
 (* Color options *)
 (* ************************************************************************* *)
@@ -268,16 +269,195 @@ let report_style =
   ]
 
 
-(* Typing extensions *)
+(* Extensions *)
 (* ************************************************************************ *)
 
-let typing_extension_list =
-  List.map
-    (fun ext -> Loop.Typer.Ext.name ext, ext)
-    (Loop.Typer.Ext.list ())
+type extension_info = {
+  extension_name : string ;
+  (** Name of the extension (without dot). *)
+  typing_plugin : string option ;
+  (** Name of the Dune plugin that provide typing extensions. *)
+  model_plugin : string option ;
+  (** Name of the Dune plugin that provide model extensions. *)
+}
 
-let typing_ext =
-  Arg.enum typing_extension_list
+let parse_ext_opt s =
+  match String.rindex s '.' with
+  | exception Not_found -> Some (s, None)
+  | pos ->
+    let extension_name = String.sub s 0 pos in
+    let plugin_kind = String.sub s (pos + 1) (String.length s - pos - 1) in
+    match plugin_kind with
+    | "typing" -> Some (extension_name, Some `Typing)
+    | "model" -> Some (extension_name, Some `Model)
+    | _ -> None
+
+let parse_plugin_opt s =
+  match String.rindex s '.' with
+  | exception Not_found ->
+    Some
+      { extension_name = s
+      ; typing_plugin = Some s
+      ; model_plugin = Some s }
+  | pos ->
+    let extension_name = String.sub s 0 pos in
+    let plugin_kind = String.sub s (pos + 1) (String.length s - pos - 1) in
+    match plugin_kind with
+    | "typing" ->
+      Some
+        { extension_name
+        ; typing_plugin = Some s
+        ; model_plugin = None }
+    | "model" ->
+      Some
+        { extension_name
+        ; typing_plugin = None
+        ; model_plugin = Some s }
+    | _ ->
+      (* Ignore plugins that do not conform to naming conventions *)
+      None
+
+let list_extensions () =
+  let tbl = Hashtbl.create 17 in
+  let err = ref [] in
+  let merge_plugins p1 p2 =
+    assert (p1.extension_name = p2.extension_name);
+    let typing_plugin =
+      match p1.typing_plugin, p2.typing_plugin with
+      | Some e, _ | _, Some e -> Some e
+      | None, None -> None
+    and model_plugin =
+      match p1.model_plugin, p2.model_plugin with
+      | Some e, _ | _, Some e -> Some e
+      | None, None -> None
+    in
+    { extension_name = p1.extension_name
+    ; typing_plugin
+    ; model_plugin }
+  in
+  let add_plugin n = function
+    | None -> err := (n, None) :: !err
+    | Some p ->
+      match Hashtbl.find tbl p.extension_name with
+      | p' -> Hashtbl.replace tbl p.extension_name (merge_plugins p p')
+      | exception Not_found -> Hashtbl.replace tbl p.extension_name p
+  in
+  List.iter (fun e ->
+    add_plugin e @@ parse_plugin_opt e
+  ) (Sites.Plugins.Plugins.list ());
+  let all = Hashtbl.fold (fun n p all -> (n, Some p) :: all) tbl !err in
+  List.fast_sort (fun (n1, _) (n2, _) -> String.compare n1 n2) all
+
+let pp_plugin ppf (n, p) =
+  match p with
+  | None ->
+    Fmt.pf ppf "%s@ %a" n
+      (Fmt.styled `Bold @@ Fmt.styled (`Fg (`Hi `Magenta)) @@ Fmt.string)
+        "IGNORED"
+  | Some p ->
+    let has_typing = Option.is_some p.typing_plugin in
+    let has_model = Option.is_some p.model_plugin in
+    let variants =
+      (if has_typing then ["typing"] else []) @
+      (if has_model then ["model"] else [])
+    in
+    Fmt.pf ppf "%s@ %a" p.extension_name
+      Fmt.(parens @@ list ~sep:comma string) variants
+
+let pp_kind ppf = function
+  | `Typing -> Fmt.pf ppf "typing"
+  | `Model -> Fmt.pf ppf "model"
+
+(* Find the plugin implementing extension kind [kind] for extension [name],
+   e.g. ["bvconv.typing"] for [name = "bvconv"] and [kind = `Typing]. *)
+let find_ext name kind =
+  try
+    Ok (
+      List.find (fun pname ->
+        match parse_ext_opt pname with
+        | None -> false
+        | Some (name', kind') ->
+          if String.equal name name' then
+            match kind' with
+            | Some k' when k' = kind -> true
+            | None -> true
+            | _ -> false
+          else
+            false
+      ) (Sites.Plugins.Plugins.list ())
+    )
+  with Not_found ->
+    Fmt.error_msg
+      "@[<v>Could not find %a extension '%s'@ \
+      Available extensions:@;<1 2>@[<v>%a@]@]"
+      pp_kind kind name
+      Fmt.(list (box pp_plugin)) (list_extensions ())
+
+type _ extension_kind =
+  | Typing : Dolmen_loop.Typer.Ext.t extension_kind
+  | Model : Dolmen_model.Env.Ext.t extension_kind
+
+let erase_kind (type a) : a extension_kind -> _ = function
+  | Typing -> `Typing
+  | Model -> `Model
+
+let find_and_load_ext (type a) : string -> a extension_kind -> (a, _) result =
+  fun name kind ->
+    match find_ext name (erase_kind kind) with
+    | Error _ as e -> e
+    | Ok plugin ->
+      Sites.Plugins.Plugins.load plugin;
+      match kind with
+      | Typing -> (
+          try
+            Ok (List.find
+              (fun e -> Dolmen_loop.Typer.Ext.name e = name)
+              (Dolmen_loop.Typer.Ext.list ())
+            )
+          with Not_found ->
+            Fmt.error_msg
+              "Plugin '%s' did not register a typing extension for '%s'"
+              plugin name
+      )
+      | Model -> (
+          try
+            Ok (List.find
+              (fun e -> Dolmen_model.Env.Ext.name e = name)
+              (Dolmen_model.Env.Ext.list ())
+            )
+          with Not_found ->
+            Fmt.error_msg
+              "Plugin '%s' did not register a model extension for '%s'"
+              plugin name
+      )
+
+type extension =
+  { typing_extension :
+      (Dolmen_loop.Typer.Ext.t option, [ `Msg of string ]) result
+  ; model_extension :
+      (Dolmen_model.Env.Ext.t option, [ `Msg of string ]) result
+  }
+
+let extension =
+  let parse s =
+    match parse_ext_opt s with
+    | None -> Fmt.error_msg "Invalid extension name '%s'" s
+    | Some (name, kind) ->
+      let typing_extension =
+        match kind with
+        | None | Some `Typing ->
+          Result.map Option.some (find_and_load_ext name Typing)
+        | _ -> Ok None
+      and model_extension =
+        match kind with
+        | None | Some `Model ->
+          Result.map Option.some (find_and_load_ext name Model)
+        | _ -> Ok None
+      in
+      Ok { typing_extension ; model_extension }
+  in
+  let print ppf _p = Fmt.pf ppf "" in
+  Arg.conv (parse, print)
 
 
 (* Smtlib2 logic and extensions *)
@@ -366,7 +546,7 @@ let mk_run_state
     flow_check
     header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
-    type_check extension_builtins
+    type_check extensions
     check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
   =
@@ -383,27 +563,55 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   let () = Hints.model ~check_model (* ~check_model_mode *) in
+  (* Extensions *)
+  let typing_exts =
+    List.fold_left (fun typing_exts p ->
+      Result.bind typing_exts @@ fun typing_exts ->
+      match p.typing_extension with
+      | Ok None -> Ok typing_exts
+      | Ok (Some ext) ->
+        Ok (ext :: typing_exts)
+      | Error _ as e -> e
+    ) (Ok []) extensions
+  in
+  Result.bind typing_exts @@ fun typing_extension_builtins ->
+  let model_exts =
+    if check_model then
+      List.fold_left (fun model_exts p ->
+        Result.bind model_exts @@ fun model_exts ->
+        match p.model_extension with
+        | Ok None -> Ok model_exts
+        | Ok (Some ext) ->
+          Ok (ext :: model_exts)
+        | Error _ as e -> e
+      ) (Ok []) extensions
+    else
+      Ok []
+  in
+  Result.bind model_exts @@ fun model_extension_builtins ->
   (* State creation *)
-  Loop.State.empty
-  |> Loop.State.init
-    ~bt ~debug ~report_style ~reports
-    ~max_warn ~time_limit ~size_limit
-    ~response_file
-  |> Loop.Parser.init
-    ~syntax_error_ref
-    ~interactive_prompt:Loop.Parser.interactive_prompt_lang
-  |> Loop.Typer.init
-    ~smtlib2_forced_logic
-    ~extension_builtins
-  |> Loop.Typer_Pipe.init ~type_check
-  |> Loop.Check.init
-    ~check_model
-    (* ~check_model_mode *)
-  |> Loop.Flow.init ~flow_check
-  |> Loop.Header.init
-    ~header_check
-    ~header_licenses
-    ~header_lang_version
+  Ok (
+    Loop.State.empty
+    |> Loop.State.init
+      ~bt ~debug ~report_style ~reports
+      ~max_warn ~time_limit ~size_limit
+      ~response_file
+    |> Loop.Parser.init
+      ~syntax_error_ref
+      ~interactive_prompt:Loop.Parser.interactive_prompt_lang
+    |> Loop.Typer.init
+      ~smtlib2_forced_logic
+      ~extension_builtins:typing_extension_builtins
+    |> Loop.Typer_Pipe.init ~type_check
+    |> Loop.Check.init
+      ~check_model ~extension_builtins:model_extension_builtins
+      (* ~check_model_mode *)
+    |> Loop.Flow.init ~flow_check
+    |> Loop.Header.init
+      ~header_check
+      ~header_licenses
+      ~header_lang_version
+  )
 
 (* Profiling *)
 (* ************************************************************************* *)
@@ -628,12 +836,12 @@ let state =
     Arg.(value & opt_all smtlib2_ext [] &
          info ["internal-smtlib2-extension"] ~docs:internal_section ~doc)
   in
-  let typing_ext =
+  let ext =
     let doc = Format.asprintf
-        "Enable typing extensions.
-         $(docv) must be %s" (Arg.doc_alts_enum typing_extension_list)
+        "Enable extensions. Use $(b,--list-extensions) to list available \
+        extensions."
     in
-    Arg.(value & opt_all typing_ext [] &
+    Arg.(value & opt_all extension [] &
          info ["ext"] ~docs ~doc)
   in
   let debug =
@@ -690,7 +898,8 @@ let state =
       in
       Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
     in
-  Term.(const mk_run_state $ profiling_t $
+  Term.(term_result (
+    const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
@@ -698,9 +907,9 @@ let state =
         flow_check $
         header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $
-        typing $ typing_ext $
+        typing $ ext $
         check_model $ (* check_model_mode $ *)
-        debug $ report_style $ max_warn $ reports $ syntax_error_ref)
+        debug $ report_style $ max_warn $ reports $ syntax_error_ref))
 
 
 (* List command term *)
@@ -708,19 +917,21 @@ let state =
 
 let cli =
   let docs = option_section in
-  let aux state preludes logic_file list doc =
-    match list, doc with
-    | false, None ->
+  let aux state preludes logic_file list doc list_extensions =
+    match list, doc, list_extensions with
+    | false, None, false ->
       `Ok (Run { state; logic_file; preludes })
-    | false, Some report ->
+    | false, Some report, false ->
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (Doc { report; conf; })
-    | true, None ->
+    | true, None, false ->
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (List_reports { conf; })
-    | true, Some _ ->
+    | false, None, true ->
+      `Ok List_extensions
+    | _ ->
       `Error (false,
-              "at most one of --list and --doc might be \
+              "at most one of --list, --doc and --list-extensions might be \
                present on the command line")
   in
   let list =
@@ -732,4 +943,11 @@ let cli =
     let doc = "The warning or error of which to show the documentation." in
     Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic" ~docs)
   in
-  Term.(ret (const aux $ state $ preludes $ logic_file $ list $ doc))
+  let list_extensions =
+    let doc = "List all available extensions." in
+    Arg.(value & flag & info ["list-extensions"] ~doc ~docs)
+  in
+  Term.(ret (
+    const aux $ state $ preludes $ logic_file $ list $ doc
+    $ list_extensions
+  ))

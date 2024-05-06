@@ -1,0 +1,8 @@
+(lang dune 3.0)
+(using dune_site 0.1)
+
+(generate_opam_files false)
+
+(package
+  (name dolmen-extensions-abs-real-split)
+  (depopts dolmen_type dolmen_loop dolmen_model))

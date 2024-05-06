@@ -1,0 +1,27 @@
+(library
+  (name abs_real_split)
+  (modules builtin)
+  (libraries dolmen)
+  (package dolmen-extensions-abs-real-split))
+
+(library
+  (public_name dolmen-extensions-abs-real-split.typing)
+  (name typing)
+  (modules typing)
+  (libraries dolmen_loop abs_real_split))
+
+(library
+  (public_name dolmen-extensions-abs-real-split.model)
+  (name model)
+  (modules model)
+  (libraries dolmen_model abs_real_split))
+
+(plugin
+  (name abs_real_split.typing)
+  (libraries dolmen-extensions-abs-real-split.typing)
+  (site (dolmen plugins)))
+
+(plugin
+  (name abs_real_split.model)
+  (libraries dolmen-extensions-abs-real-split.model)
+  (site (dolmen plugins)))

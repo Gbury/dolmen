@@ -40,6 +40,30 @@ val bad_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Warning.
 val unknown_logic : string Report.Warning.t
 (** Unknown logic warning *)
 
+module Ext : sig
+  (** Define typing extensions.
+
+      These extensions are typically extensions used by some community,
+      but not yet part of the standard.
+
+      @since 0.10 *)
+
+  type t
+  (** The type of typing extensions. *)
+
+  val name : t -> string
+  (** Extension name, sould be suitable for cli options. *)
+
+  val builtins : t -> Typer_intf.lang -> T.builtin_symbols
+  (** Reutnrs the typing builtins from an extension. *)
+
+  val create :
+    name:string -> builtins:(Typer_intf.lang -> T.builtin_symbols) -> t
+  (** Create a new extension. *)
+
+  val list : unit -> t list
+  (** The list of all extensions. *)
+end
 
 (** {2 Typechecker Functor} *)
 
@@ -54,6 +78,7 @@ module Typer(State : State.S)
                 and type error = T.error
                 and type warning = T.warning
                 and type builtin_symbols = T.builtin_symbols
+                and type extension = Ext.t
 
 (** {2 Typechecker Pipe} *)
 

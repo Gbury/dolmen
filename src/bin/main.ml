@@ -118,6 +118,13 @@ let doc conf t =
     pp_status t
     (Report.T.doc t)
 
+(* Extensions list *)
+(* *************** *)
+
+let list_extensions () =
+  let all = Options.list_extensions () in
+  Format.printf "%a@." Fmt.(vbox @@ list (box Options.pp_plugin)) all
+
 
 (* Main code *)
 (* ********* *)
@@ -146,3 +153,5 @@ let () =
     doc conf report
   | Ok (`Ok List_reports { conf; }) ->
     list conf
+  | Ok (`Ok List_extensions) ->
+    list_extensions ()

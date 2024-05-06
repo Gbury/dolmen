@@ -1,0 +1,11 @@
+(library
+  (public_name dolmen_loop.bvconv)
+  (name bvconv_typing)
+  (modules bvconv)
+  (libraries dolmen_type dolmen_loop))
+
+(plugin
+  (name bvconv.typing)
+  (package dolmen_loop)
+  (libraries dolmen_loop.bvconv)
+  (site (dolmen plugins)))

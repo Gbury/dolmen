@@ -265,22 +265,7 @@ module Make
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
-  let pipe = "Model"
-  let check_model = Typer.check_model
-  let check_state = State.create_key ~pipe "check_state"
-
-  let init
-      ~check_model:check_model_value
-      st =
-    st
-    |> State.set check_model check_model_value
-    |> State.set check_state empty
-
-
-  (* Evaluation and errors *)
-  (* ************************************************************************ *)
-
-  let builtins =
+  let core_builtins =
     Eval.builtins [
       Adt.builtins;
       Bool.builtins;
@@ -294,11 +279,31 @@ module Make
       Coercion.builtins;
     ]
 
+  let pipe = "Model"
+  let check_model = Typer.check_model
+  let check_state = State.create_key ~pipe "check_state"
+  let builtins = State.create_key ~pipe "builtins"
+
+  let init
+      ~check_model:check_model_value
+      ?(extension_builtins=[])
+      st =
+    let extension_builtins = List.map Env.Ext.builtins extension_builtins in
+    st
+    |> State.set check_model check_model_value
+    |> State.set check_state empty
+    |> State.set builtins
+      (Eval.builtins (core_builtins :: extension_builtins))
+
+
+  (* Evaluation and errors *)
+  (* ************************************************************************ *)
+
   let eval ~reraise_for_delayed_eval ~file ~loc st model term =
     let _err err args =
       raise (State.Error (State.error st ~file ~loc err args))
     in
-    let env = Env.mk model ~builtins in
+    let env = Env.mk model ~builtins:(State.get builtins st) in
     try
       Eval.eval env term
     with

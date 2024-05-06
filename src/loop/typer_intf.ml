@@ -1,4 +1,9 @@
-(* This file is free software, part of Archsat. See file "LICENSE" for more details. *)
+(* This file is free software, part of dolmen. See file "LICENSE" for more details. *)
+
+type lang = [
+  | `Logic of Logic.language
+  | `Response of Response.language
+]
 
 (* Small signature to define a number of types. *)
 module type Types = sig
@@ -29,11 +34,6 @@ module type Typer = sig
   type input = [
     | `Logic of Logic.language State.file
     | `Response of Response.language State.file
-  ]
-
-  type lang = [
-    | `Logic of Logic.language
-    | `Response of Response.language
   ]
 
   type decl = [
@@ -129,6 +129,9 @@ module type Typer_Full = sig
   type builtin_symbols
   (** The type of builin symbols for the type-checker. *)
 
+  type extension
+  (** The type of extensions for the type-checker. *)
+
   include Typer
     with type env := env
      and type state := state
@@ -143,34 +146,6 @@ module type Typer_Full = sig
   (** This signature includes the requirements to instantiate the {Pipes.Make:
       functor*)
 
-  module Ext : sig
-    (** Define typing extensions.
-
-        These extensions are typically extensions used by some community,
-        but not yet part of the standard.
-
-        @since 0.10 *)
-
-    type t
-    (** The type of typing extensions. *)
-
-    val name : t -> string
-    (** Extension name, sould be suitable for cli options. *)
-
-    val builtins : t -> lang -> builtin_symbols
-    (** Reutnrs the typing builtins from an extension. *)
-
-    val create : name:string -> builtins:(lang -> builtin_symbols) -> t
-    (** Create a new extension. *)
-
-    val list : unit -> t list
-    (** The list of all extensions. *)
-
-    val bv2nat : t
-    (** Typing extension to add the `bv2nat` function. *)
-
-  end
-
   val ty_state : ty_state key
   (** Key to store the local typechecking state in the global pipeline state. *)
 
@@ -181,7 +156,7 @@ module type Typer_Full = sig
   (** Force the typechecker to use the given logic (instead of using the one declared
       in the `set-logic` statement). *)
 
-  val extension_builtins : Ext.t list key
+  val extension_builtins : extension list key
   (** Use typing extensions defined by the typechecker.
 
       @since 0.10 *)
@@ -197,7 +172,7 @@ module type Typer_Full = sig
   val init :
     ?ty_state:ty_state ->
     ?smtlib2_forced_logic:string option ->
-    ?extension_builtins:(Ext.t list) ->
+    ?extension_builtins:(extension list) ->
     ?additional_builtins:(state -> lang -> builtin_symbols) ->
     state -> state
 

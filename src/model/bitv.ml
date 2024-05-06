@@ -29,8 +29,6 @@ let ops = Value.ops ~print ~compare ()
 (* Value helpers *)
 (* ************************************************************************* *)
 
-
-
 let is_unsigned_integer size z =
   Z.sign z >= 0 && Z.numbits z <= size
 
@@ -198,4 +196,3 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_sgt n -> cmp ~cst (fun a b -> Z.gt (sbitv n a) (sbitv n b))
   | B.Bitv_sge n -> cmp ~cst (fun a b -> Z.geq (sbitv n a) (sbitv n b))
   | _ -> None
-

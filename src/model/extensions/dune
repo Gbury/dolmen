@@ -1,0 +1,11 @@
+(library
+  (public_name dolmen_model.bvconv)
+  (name bvconv_model)
+  (modules bvconv)
+  (libraries dolmen dolmen_model))
+
+(plugin
+  (name bvconv.model)
+  (package dolmen_model)
+  (libraries dolmen_model.bvconv)
+  (site (dolmen plugins)))
