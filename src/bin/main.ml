@@ -123,7 +123,14 @@ let doc conf t =
 
 let list_extensions () =
   Format.printf "%a@."
-    Fmt.(vbox @@ list (box Options.pp_extension)) Options.all_extensions
+    Fmt.(vbox @@ list (box Options.pp_extension)) Options.all_extensions;
+  match Options.invalid_extensions with
+  | [] -> ()
+  | invalid ->
+    Format.printf "@[<v 2>%a@ %a@]@."
+      (Fmt.styled `Bold @@ Fmt.styled (`Fg (`Hi `Magenta)) @@ Fmt.string)
+      "The following plugins were found but are invalid:"
+      Fmt.(list string) invalid
 
 
 (* Main code *)

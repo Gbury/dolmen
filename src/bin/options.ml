@@ -323,31 +323,6 @@ let find_model_plugin plugin name =
     )
   with Not_found -> Dune_plugin plugin
 
-let parse_plugin_opt s =
-  match String.rindex s '.' with
-  | exception Not_found ->
-    Some
-      { extension_name = s
-      ; typing_plugin = Dune_plugin s
-      ; model_plugin = Dune_plugin s }
-  | pos ->
-    let extension_name = String.sub s 0 pos in
-    let plugin_kind = String.sub s (pos + 1) (String.length s - pos - 1) in
-    match plugin_kind with
-    | "typing" ->
-      Some
-        { extension_name
-        ; typing_plugin = find_typing_plugin s extension_name
-        ; model_plugin = Unavailable }
-    | "model" ->
-      Some
-        { extension_name
-        ; typing_plugin = Unavailable
-        ; model_plugin = find_model_plugin s extension_name }
-    | _ ->
-      (* Ignore plugins that do not conform to naming conventions *)
-      None
-
 let merge_extension e1 e2 =
   assert (e1.extension_name = e2.extension_name);
   let typing_plugin = merge_plugin e1.typing_plugin e2.typing_plugin
@@ -388,13 +363,23 @@ let builtin_extensions =
     (List.rev_append builtin_typing_extensions builtin_model_extensions)
 
 let all_extensions, invalid_extensions =
-  let add_plugin ok err n = function
-    | None -> ok, n :: err
-    | Some p -> p :: ok, err
+  let add_plugin ok err plugin = function
+    | None -> ok, plugin :: err
+    | Some (extension_name, k) ->
+      let typing_plugin =
+        match k with
+        | None | Some `Typing -> Dune_plugin plugin
+        | Some _ -> Unavailable
+      and model_plugin =
+        match k with
+        | None | Some `Model -> Dune_plugin plugin
+        | Some _ -> Unavailable
+      in
+      { extension_name ; typing_plugin ; model_plugin } :: ok, err
   in
   let ok, err =
     List.fold_left (fun (ok, err) e ->
-      add_plugin ok err e @@ parse_plugin_opt e
+      add_plugin ok err e @@ parse_ext_opt e
     ) (builtin_extensions, []) (Dolmen.Sites.Plugins.Plugins.list ())
   in
   merge_extensions ok, List.fast_sort String.compare err
@@ -408,18 +393,6 @@ let pp_extension ppf e =
   in
   Fmt.pf ppf "%s@ %a" e.extension_name
     Fmt.(parens @@ list ~sep:comma string) variants
-
-let pp_plugin ppf (n, p) =
-  match p with
-  | None ->
-    Fmt.pf ppf "%s@ %a" n
-      (Fmt.styled `Bold @@ Fmt.styled (`Fg (`Hi `Magenta)) @@ Fmt.string)
-        "IGNORED"
-  | Some p -> pp_extension ppf p
-
-let pp_kind ppf = function
-  | `Typing -> Fmt.pf ppf "typing"
-  | `Model -> Fmt.pf ppf "model"
 
 let find_ext name =
   try Ok (List.find (fun e -> e.extension_name = name) all_extensions)
