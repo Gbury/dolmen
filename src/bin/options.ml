@@ -344,7 +344,7 @@ let list_extensions () =
   in
   List.iter (fun e ->
     add_plugin e @@ parse_plugin_opt e
-  ) (Sites.Plugins.Plugins.list ());
+  ) (Dolmen.Sites.Plugins.Plugins.list ());
   let all = Hashtbl.fold (fun n p all -> (n, Some p) :: all) tbl !err in
   List.fast_sort (fun (n1, _) (n2, _) -> String.compare n1 n2) all
 
@@ -384,7 +384,7 @@ let find_ext name kind =
             | _ -> false
           else
             false
-      ) (Sites.Plugins.Plugins.list ())
+      ) (Dolmen.Sites.Plugins.Plugins.list ())
     )
   with Not_found ->
     Fmt.error_msg
@@ -406,7 +406,7 @@ let find_and_load_ext (type a) : string -> a extension_kind -> (a, _) result =
     match find_ext name (erase_kind kind) with
     | Error _ as e -> e
     | Ok plugin ->
-      Sites.Plugins.Plugins.load plugin;
+      Dolmen.Sites.Plugins.Plugins.load plugin;
       match kind with
       | Typing -> (
           try

@@ -5,3 +5,4 @@
   (release (ocamlopt_flags :standard -O3))
 )
 
+(data_only_dirs examples)

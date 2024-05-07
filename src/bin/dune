@@ -5,8 +5,6 @@
   (libraries
     ; external deps
     cmdliner fmt gen
-    ; extension support
-    dune-site dune-site.plugins
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop dolmen_model
@@ -30,7 +28,3 @@
  (files    dolmen.1)
  (package  dolmen_bin)
 )
-
-(generate_sites_module
-  (module Sites)
-  (plugins (dolmen plugins)))
