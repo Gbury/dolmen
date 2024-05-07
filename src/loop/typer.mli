@@ -61,6 +61,9 @@ module Ext : sig
     name:string -> builtins:(Typer_intf.lang -> T.builtin_symbols) -> t
   (** Create a new extension. *)
 
+  val bvconv : t
+  (** Typing extension to add `bv2nat` and `int2bv`. *)
+
   val list : unit -> t list
   (** The list of all extensions. *)
 end
@@ -119,4 +122,3 @@ module Make
        and type term_var := Expr.term_var
        and type term_cst := Expr.term_cst
        and type formula := Expr.formula
-

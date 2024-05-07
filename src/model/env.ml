@@ -27,23 +27,3 @@ let builtins t = t.builtins
 let model { model; _ } = model
 
 let update_model t f = { t with model = f t.model; }
-
-(* Extensions builtins *)
-(* ************************************************************************ *)
-
-module Ext = struct
-  type t = {
-    name : string;
-    builtins : builtins;
-  }
-
-  let all = ref []
-  let list () = !all
-  let name { name; _ } = name
-  let builtins { builtins; _ } = builtins
-
-  let create ~name ~builtins =
-    let t = { name; builtins; } in
-    all := t :: !all;
-    t
-end

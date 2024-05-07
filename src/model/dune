@@ -20,7 +20,7 @@
   )
   (modules
     ; Model checking
-    Value Model Env Eval
+    Value Model Env Eval Ext
     ; Builtins
     Adt Array Bool Core Fun Int Rat Real Bitv Fp Coercion
     ; Loop Pipe

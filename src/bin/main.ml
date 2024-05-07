@@ -122,8 +122,8 @@ let doc conf t =
 (* *************** *)
 
 let list_extensions () =
-  let all = Options.list_extensions () in
-  Format.printf "%a@." Fmt.(vbox @@ list (box Options.pp_plugin)) all
+  Format.printf "%a@."
+    Fmt.(vbox @@ list (box Options.pp_extension)) Options.all_extensions
 
 
 (* Main code *)

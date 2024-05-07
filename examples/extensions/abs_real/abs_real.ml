@@ -46,4 +46,4 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | _ -> None
 
 let model_ext =
-  Dolmen_model.Env.Ext.create ~name:"abs_real" ~builtins
+  Dolmen_model.Ext.create ~name:"abs_real" ~builtins

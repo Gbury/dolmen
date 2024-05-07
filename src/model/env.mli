@@ -20,21 +20,3 @@ val builtins : t -> builtins
 val model : t -> Model.t
 
 val update_model : t -> (Model.t -> Model.t) -> t
-
-module Ext : sig
-  type t
-  (** The type of evaluation extensions. *)
-
-  val name : t -> string
-  (** Extension name, should be suitable for cli options. *)
-
-  val builtins : t -> builtins
-  (** Returns the evaluation builtins from an extension. *)
-
-  val create :
-    name:string -> builtins:builtins -> t
-  (** Create a new extension. *)
-
-  val list : unit -> t list
-  (** The list of all extensions. *)
-end

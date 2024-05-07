@@ -272,16 +272,31 @@ let report_style =
 (* Extensions *)
 (* ************************************************************************ *)
 
+type 'a plugin =
+  | Builtin of 'a
+  | Unavailable
+  | Dune_plugin of string
+
+let plugin_is_available = function
+  | Unavailable -> false
+  | Builtin _ | Dune_plugin _ -> true
+
+let merge_plugin p1 p2 =
+  match p1, p2 with
+  | Builtin _ as p, _ | _, (Builtin _ as p) -> p
+  | Dune_plugin _ as p, _ | _, (Dune_plugin _ as p) -> p
+  | Unavailable, Unavailable -> Unavailable
+
 type extension_info = {
   extension_name : string ;
   (** Name of the extension (without dot). *)
-  typing_plugin : string option ;
+  typing_plugin : Dolmen_loop.Typer.Ext.t plugin ;
   (** Name of the Dune plugin that provide typing extensions. *)
-  model_plugin : string option ;
+  model_plugin : Dolmen_model.Ext.t plugin ;
   (** Name of the Dune plugin that provide model extensions. *)
 }
 
-let parse_ext_opt s =
+let parse_ext_opt s : (string * [ `Typing | `Model ] option) option =
   match String.rindex s '.' with
   | exception Not_found -> Some (s, None)
   | pos ->
@@ -292,13 +307,29 @@ let parse_ext_opt s =
     | "model" -> Some (extension_name, Some `Model)
     | _ -> None
 
+let find_typing_plugin s name =
+  try
+    Builtin (
+      List.find (fun ext -> Dolmen_loop.Typer.Ext.name ext = name)
+        (Dolmen_loop.Typer.Ext.list ())
+    )
+  with Not_found -> Dune_plugin s
+
+let find_model_plugin plugin name =
+  try
+    Builtin (
+      List.find (fun ext -> Dolmen_model.Ext.name ext = name)
+        (Dolmen_model.Ext.list ())
+    )
+  with Not_found -> Dune_plugin plugin
+
 let parse_plugin_opt s =
   match String.rindex s '.' with
   | exception Not_found ->
     Some
       { extension_name = s
-      ; typing_plugin = Some s
-      ; model_plugin = Some s }
+      ; typing_plugin = Dune_plugin s
+      ; model_plugin = Dune_plugin s }
   | pos ->
     let extension_name = String.sub s 0 pos in
     let plugin_kind = String.sub s (pos + 1) (String.length s - pos - 1) in
@@ -306,47 +337,77 @@ let parse_plugin_opt s =
     | "typing" ->
       Some
         { extension_name
-        ; typing_plugin = Some s
-        ; model_plugin = None }
+        ; typing_plugin = find_typing_plugin s extension_name
+        ; model_plugin = Unavailable }
     | "model" ->
       Some
         { extension_name
-        ; typing_plugin = None
-        ; model_plugin = Some s }
+        ; typing_plugin = Unavailable
+        ; model_plugin = find_model_plugin s extension_name }
     | _ ->
       (* Ignore plugins that do not conform to naming conventions *)
       None
 
-let list_extensions () =
+let merge_extension e1 e2 =
+  assert (e1.extension_name = e2.extension_name);
+  let typing_plugin = merge_plugin e1.typing_plugin e2.typing_plugin
+  and model_plugin = merge_plugin e1.model_plugin e2.model_plugin in
+  { extension_name = e1.extension_name
+  ; typing_plugin
+  ; model_plugin }
+
+let merge_extensions extensions =
   let tbl = Hashtbl.create 17 in
-  let err = ref [] in
-  let merge_plugins p1 p2 =
-    assert (p1.extension_name = p2.extension_name);
-    let typing_plugin =
-      match p1.typing_plugin, p2.typing_plugin with
-      | Some e, _ | _, Some e -> Some e
-      | None, None -> None
-    and model_plugin =
-      match p1.model_plugin, p2.model_plugin with
-      | Some e, _ | _, Some e -> Some e
-      | None, None -> None
-    in
-    { extension_name = p1.extension_name
-    ; typing_plugin
-    ; model_plugin }
+  List.iter (fun ext ->
+    match Hashtbl.find tbl ext.extension_name with
+    | ext' ->
+      Hashtbl.replace tbl ext.extension_name (merge_extension ext ext')
+    | exception Not_found ->
+      Hashtbl.replace tbl ext.extension_name ext
+  ) extensions;
+  List.fast_sort (fun e1 e2 ->
+    String.compare e1.extension_name e2.extension_name
+  ) @@ Hashtbl.fold (fun _ e all -> e :: all) tbl []
+
+let builtin_typing_extensions =
+  List.map (fun ext ->
+    { extension_name = Dolmen_loop.Typer.Ext.name ext
+    ; typing_plugin = Builtin ext
+    ; model_plugin = Unavailable }
+  ) (Dolmen_loop.Typer.Ext.list ())
+
+let builtin_model_extensions =
+  List.map (fun ext ->
+    { extension_name = Dolmen_model.Ext.name ext
+    ; typing_plugin = Unavailable
+    ; model_plugin = Builtin ext }
+  ) (Dolmen_model.Ext.list ())
+
+let builtin_extensions =
+  merge_extensions
+    (List.rev_append builtin_typing_extensions builtin_model_extensions)
+
+let all_extensions, invalid_extensions =
+  let add_plugin ok err n = function
+    | None -> ok, n :: err
+    | Some p -> p :: ok, err
   in
-  let add_plugin n = function
-    | None -> err := (n, None) :: !err
-    | Some p ->
-      match Hashtbl.find tbl p.extension_name with
-      | p' -> Hashtbl.replace tbl p.extension_name (merge_plugins p p')
-      | exception Not_found -> Hashtbl.replace tbl p.extension_name p
+  let ok, err =
+    List.fold_left (fun (ok, err) e ->
+      add_plugin ok err e @@ parse_plugin_opt e
+    ) (builtin_extensions, []) (Dolmen.Sites.Plugins.Plugins.list ())
   in
-  List.iter (fun e ->
-    add_plugin e @@ parse_plugin_opt e
-  ) (Dolmen.Sites.Plugins.Plugins.list ());
-  let all = Hashtbl.fold (fun n p all -> (n, Some p) :: all) tbl !err in
-  List.fast_sort (fun (n1, _) (n2, _) -> String.compare n1 n2) all
+  merge_extensions ok, List.fast_sort String.compare err
+
+let pp_extension ppf e =
+  let has_typing = plugin_is_available e.typing_plugin in
+  let has_model = plugin_is_available e.model_plugin in
+  let variants =
+    (if has_typing then ["typing"] else []) @
+    (if has_model then ["model"] else [])
+  in
+  Fmt.pf ppf "%s@ %a" e.extension_name
+    Fmt.(parens @@ list ~sep:comma string) variants
 
 let pp_plugin ppf (n, p) =
   match p with
@@ -354,107 +415,61 @@ let pp_plugin ppf (n, p) =
     Fmt.pf ppf "%s@ %a" n
       (Fmt.styled `Bold @@ Fmt.styled (`Fg (`Hi `Magenta)) @@ Fmt.string)
         "IGNORED"
-  | Some p ->
-    let has_typing = Option.is_some p.typing_plugin in
-    let has_model = Option.is_some p.model_plugin in
-    let variants =
-      (if has_typing then ["typing"] else []) @
-      (if has_model then ["model"] else [])
-    in
-    Fmt.pf ppf "%s@ %a" p.extension_name
-      Fmt.(parens @@ list ~sep:comma string) variants
+  | Some p -> pp_extension ppf p
 
 let pp_kind ppf = function
   | `Typing -> Fmt.pf ppf "typing"
   | `Model -> Fmt.pf ppf "model"
 
-(* Find the plugin implementing extension kind [kind] for extension [name],
-   e.g. ["bvconv.typing"] for [name = "bvconv"] and [kind = `Typing]. *)
-let find_ext name kind =
-  try
-    Ok (
-      List.find (fun pname ->
-        match parse_ext_opt pname with
-        | None -> false
-        | Some (name', kind') ->
-          if String.equal name name' then
-            match kind' with
-            | Some k' when k' = kind -> true
-            | None -> true
-            | _ -> false
-          else
-            false
-      ) (Dolmen.Sites.Plugins.Plugins.list ())
-    )
+let find_ext name =
+  try Ok (List.find (fun e -> e.extension_name = name) all_extensions)
   with Not_found ->
     Fmt.error_msg
-      "@[<v>Could not find %a extension '%s'@ \
+      "@[<v>Could not find extension '%s'@ \
       Available extensions:@;<1 2>@[<v>%a@]@]"
-      pp_kind kind name
-      Fmt.(list (box pp_plugin)) (list_extensions ())
+      name
+      Fmt.(list (box pp_extension)) all_extensions
 
-type _ extension_kind =
-  | Typing : Dolmen_loop.Typer.Ext.t extension_kind
-  | Model : Dolmen_model.Env.Ext.t extension_kind
-
-let erase_kind (type a) : a extension_kind -> _ = function
-  | Typing -> `Typing
-  | Model -> `Model
-
-let find_and_load_ext (type a) : string -> a extension_kind -> (a, _) result =
-  fun name kind ->
-    match find_ext name (erase_kind kind) with
-    | Error _ as e -> e
-    | Ok plugin ->
+let load_typing_extension ext =
+    match ext.typing_plugin with
+    | Unavailable ->
+      Fmt.error_msg "No typing extension '%s'" ext.extension_name
+    | Builtin e ->  Ok e
+    | Dune_plugin plugin ->
       Dolmen.Sites.Plugins.Plugins.load plugin;
-      match kind with
-      | Typing -> (
-          try
-            Ok (List.find
-              (fun e -> Dolmen_loop.Typer.Ext.name e = name)
-              (Dolmen_loop.Typer.Ext.list ())
-            )
-          with Not_found ->
-            Fmt.error_msg
-              "Plugin '%s' did not register a typing extension for '%s'"
-              plugin name
-      )
-      | Model -> (
-          try
-            Ok (List.find
-              (fun e -> Dolmen_model.Env.Ext.name e = name)
-              (Dolmen_model.Env.Ext.list ())
-            )
-          with Not_found ->
-            Fmt.error_msg
-              "Plugin '%s' did not register a model extension for '%s'"
-              plugin name
-      )
+      try
+        Ok (List.find
+          (fun e -> Dolmen_loop.Typer.Ext.name e = ext.extension_name)
+          (Dolmen_loop.Typer.Ext.list ())
+        )
+      with Not_found ->
+        Fmt.error_msg
+          "Plugin '%s' did not register a typing extension for '%s'"
+          plugin ext.extension_name
 
-type extension =
-  { typing_extension :
-      (Dolmen_loop.Typer.Ext.t option, [ `Msg of string ]) result
-  ; model_extension :
-      (Dolmen_model.Env.Ext.t option, [ `Msg of string ]) result
-  }
+let load_model_extension ext =
+    match ext.model_plugin with
+    | Unavailable ->
+      Fmt.error_msg "No model extension '%s'" ext.extension_name
+    | Builtin e ->  Ok e
+    | Dune_plugin plugin ->
+      Dolmen.Sites.Plugins.Plugins.load plugin;
+      try
+        Ok (List.find
+          (fun e -> Dolmen_model.Ext.name e = ext.extension_name)
+          (Dolmen_model.Ext.list ())
+        )
+      with Not_found ->
+        Fmt.error_msg
+          "Plugin '%s' did not register a model extension for '%s'"
+          plugin ext.extension_name
 
 let extension =
   let parse s =
     match parse_ext_opt s with
     | None -> Fmt.error_msg "Invalid extension name '%s'" s
     | Some (name, kind) ->
-      let typing_extension =
-        match kind with
-        | None | Some `Typing ->
-          Result.map Option.some (find_and_load_ext name Typing)
-        | _ -> Ok None
-      and model_extension =
-        match kind with
-        | None | Some `Model ->
-          Result.map Option.some (find_and_load_ext name Model)
-        | _ -> Ok None
-      in
-      Ok { typing_extension ; model_extension }
+      Result.map (fun ext -> (ext, kind)) (find_ext name)
   in
   let print ppf _p = Fmt.pf ppf "" in
   Arg.conv (parse, print)
@@ -565,25 +580,23 @@ let mk_run_state
   let () = Hints.model ~check_model (* ~check_model_mode *) in
   (* Extensions *)
   let typing_exts =
-    List.fold_left (fun typing_exts p ->
+    List.fold_left (fun typing_exts (ext, kind) ->
       Result.bind typing_exts @@ fun typing_exts ->
-      match p.typing_extension with
-      | Ok None -> Ok typing_exts
-      | Ok (Some ext) ->
-        Ok (ext :: typing_exts)
-      | Error _ as e -> e
+      match kind with
+      | None | Some `Typing ->
+        Result.map (fun e -> e :: typing_exts) (load_typing_extension ext)
+      | Some _ -> Ok typing_exts
     ) (Ok []) extensions
   in
   Result.bind typing_exts @@ fun typing_extension_builtins ->
   let model_exts =
     if check_model then
-      List.fold_left (fun model_exts p ->
+      List.fold_left (fun model_exts (ext, kind) ->
         Result.bind model_exts @@ fun model_exts ->
-        match p.model_extension with
-        | Ok None -> Ok model_exts
-        | Ok (Some ext) ->
-          Ok (ext :: model_exts)
-        | Error _ as e -> e
+        match kind with
+        | None | Some `Model ->
+          Result.map (fun e -> e :: model_exts) (load_model_extension ext)
+        | Some _ -> Ok model_exts
       ) (Ok []) extensions
     else
       Ok []

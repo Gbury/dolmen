@@ -8,7 +8,6 @@
     ; dolmen deps
     dolmen dolmen.intf dolmen.std
     dolmen_type dolmen_loop dolmen_model
-    dolmen_loop.bvconv dolmen_model.bvconv
     ; Memtrace dependency
     (select memory_profiler.ml from
             (memtrace -> memory_profiler.memtrace.ml)

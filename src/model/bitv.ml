@@ -196,3 +196,16 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_sgt n -> cmp ~cst (fun a b -> Z.gt (sbitv n a) (sbitv n b))
   | B.Bitv_sge n -> cmp ~cst (fun a b -> Z.geq (sbitv n a) (sbitv n b))
   | _ -> None
+
+let bv2nat ~cst ~size =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> Int.mk (ubitv size x)))
+
+let int2bv ~cst ~size =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
+    mk size (Z.extract (Value.extract_exn ~ops:Int.ops x) 0 size)))
+
+let bvconv_builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+  match cst.builtin with
+  | B.Bitv_of_int { n } -> int2bv ~cst ~size:n
+  | B.Bitv_to_nat { n } -> bv2nat ~cst ~size:n
+  | _ -> None

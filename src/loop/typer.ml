@@ -64,6 +64,9 @@ module Smtlib2_Float =
 module Smtlib2_String =
   Dolmen_type.Strings.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Smtlib2_Bvconv =
+  Dolmen_type.Bitv.Smtlib2.Bvconv(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 
 (* Zf *)
 module Zf_Core =
@@ -92,6 +95,13 @@ module Ext = struct
     let t = { name; builtins; } in
     all := t :: !all;
     t
+
+  let bvconv =
+    create ~name:"bvconv"
+      ~builtins:(function
+        | `Logic Logic.Smtlib2 version ->
+          Smtlib2_Bvconv.parse (`Script version)
+        | _ -> Dolmen_type.Base.noop)
 end
 
 

@@ -288,7 +288,7 @@ module Make
       ~check_model:check_model_value
       ?(extension_builtins=[])
       st =
-    let extension_builtins = List.map Env.Ext.builtins extension_builtins in
+    let extension_builtins = List.map Ext.builtins extension_builtins in
     st
     |> State.set check_model check_model_value
     |> State.set check_state empty
