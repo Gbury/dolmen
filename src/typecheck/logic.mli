@@ -62,6 +62,9 @@ module Smtlib2 : sig
     val nothing : acc
     (** The empty accumulator. *)
 
+    val need_univ : acc -> bool
+    (** Whether the univ type is used. *)
+
     val to_logic : acc -> t
     (** Tansform an accumulator into a logic *)
 

@@ -177,14 +177,19 @@ module Print = struct
     Fmt.styled (`Fg (`Hi `Black)) aux fmt v
 
   let id fmt (v : _ id) =
+    let wild =
+      match v.builtin with
+      | Builtin.Wildcard _ when !print_index -> "*"
+      | _ -> ""
+    in
     match Tag.get v.tags name with
     | Some (Pretty.Exact s | Pretty.Renamed s) ->
-      Format.fprintf fmt "%s%a" s pp_tags v.tags
+      Format.fprintf fmt "%s%s%a" wild s pp_tags v.tags
     | None ->
       if !print_index then
-        Format.fprintf fmt "%a%a%a" Path.print v.path pp_index v pp_tags v.tags
+        Format.fprintf fmt "%s%a%a%a" wild Path.print v.path pp_index v pp_tags v.tags
       else
-        Format.fprintf fmt "%a%a" Path.print v.path pp_tags v.tags
+        Format.fprintf fmt "%s%a%a" wild Path.print v.path pp_tags v.tags
 
   let id_pretty fmt (v : _ id) =
     match Tag.get v.tags pos with

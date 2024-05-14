@@ -312,7 +312,7 @@ module Make
     (* TODO: add reservations for the builtin names in the env *)
     let int = string_of_int in
     match V.Ty.Cst.builtin c with
-    | B.Base -> Env.Ty_cst.name env c
+    | B.Base | B.Univ -> Env.Ty_cst.name env c
     | B.Prop -> N.simple "Bool"
     | B.Int -> N.simple "Int"
     | B.Real -> N.simple "Real"

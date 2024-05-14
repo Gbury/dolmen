@@ -69,23 +69,38 @@ module Make
     | Not_seen_yet -> Logic None
     | Logic _ as l -> l
 
-  let compute_logic acc : Typer_Types.typechecked Typer_Types.stmt =
+  let compute_logic acc =
     let logic = S.to_logic acc.scan_acc in
     let logic_name = Dolmen_type.Logic.Smtlib2.to_string logic in
     (* TODO: expose a function to create stmts in Typer_Types *)
-    {
+    let set_logic : Typer_Types.typechecked Typer_Types.stmt = {
       id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "set_logic");
       loc = Dolmen.Std.Loc.no_loc;
       contents = `Set_logic (logic_name, Smtlib2 logic);
       attrs = [];
       implicit = false;
-    }
+    } in
+    let univ =
+      if not (S.need_univ acc.scan_acc) then []
+      else begin
+        let declare_univ : Typer_Types.typechecked Typer_Types.stmt = {
+          id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "declare_univ");
+          loc = Dolmen.Std.Loc.no_loc;
+          contents = `Decls (false, [`Type_decl (Dolmen.Std.Expr.Ty.Const.base, None)]);
+          attrs = [];
+          implicit = false;
+        } in
+        [ declare_univ ]
+      end
+    in
+    set_logic :: univ
 
-  let flush acc res set_logic tail =
+  let flush acc res tail =
+    let logic_stmts = compute_logic acc in
     let res =
       res @
       List.rev_append acc.pre_logic_stmts (
-        set_logic :: List.rev_append acc.post_logic_stmts tail)
+        logic_stmts @ List.rev_append acc.post_logic_stmts tail)
     in
     let acc = { acc with pre_logic_stmts = []; post_logic_stmts = []; } in
     acc, res
@@ -166,20 +181,17 @@ module Make
 
     (* Exit, Reset and End trigger a flush of the statements and logic computed. *)
     | `Exit ->
-      let set_logic = compute_logic acc in
-      let acc, res = flush acc res set_logic [stmt] in
+      let acc, res = flush acc res [stmt] in
       let acc = { acc with seen_exit = true; } in
       acc, res
     | `Reset ->
-      let set_logic = compute_logic acc in
-      flush acc res set_logic [stmt]
+      flush acc res [stmt]
     | `End ->
       if acc.seen_exit then begin
         assert (acc.pre_logic_stmts = [] &&
                 acc.post_logic_stmts = []);
         acc, [stmt]
       end else begin
-        let set_logic = compute_logic acc in
         let exit : _ Typer_Types.stmt = {
           id = Dolmen.Std.Id.create Attr (Dolmen.Std.Name.simple "exit");
           loc = Dolmen.Std.Loc.no_loc;
@@ -187,7 +199,7 @@ module Make
           attrs = [];
           implicit = false;
         } in
-        flush acc res set_logic ([exit ; stmt])
+        flush acc res ([exit ; stmt])
       end
 
 

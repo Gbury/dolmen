@@ -321,6 +321,7 @@ module Smtlib2 = struct
       | Difference of [ `Normal | `UFIDL ]
 
     type acc = {
+      need_univ       : bool;
       free_sorts      : bool;
       free_functions  : bool;
       quantifiers : bool;
@@ -338,6 +339,8 @@ module Smtlib2 = struct
 
     (* simple helpers *)
 
+    let add_univ acc =
+      if acc.need_univ then acc else { acc with need_univ = true; }
     let add_free_sort acc =
       if acc.free_sorts then acc else { acc with free_sorts = true; }
     let add_free_funs acc =
@@ -456,6 +459,7 @@ module Smtlib2 = struct
         let aux acc = List.fold_left scan_ty acc args in
         begin match V.Ty.Cst.builtin f with
           | B.Base -> aux (add_free_sort acc)
+          | B.Univ -> aux (add_univ acc)
           | B.Prop -> aux acc
           | B.Int -> aux (add_arith `Int acc)
           | B.Real -> aux (add_arith `Real acc)
@@ -869,7 +873,10 @@ module Smtlib2 = struct
       in
       { theories; features; }
 
+    let need_univ acc = acc.need_univ
+
     let nothing = {
+      need_univ = false;
       free_sorts = false;
       free_functions = false;
       quantifiers = false;

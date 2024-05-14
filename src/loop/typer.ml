@@ -532,6 +532,15 @@ let partial_pattern_match =
       )
     ~name:"Missing cases in pattern matching" ()
 
+let mismatch_sum_type =
+  Report.Error.mk ~code ~mnemonic:"mismatch-sum-type"
+    ~message:(fun fmt (cstr, ty) ->
+        Format.fprintf fmt
+          "The constructor %a does not belong to type %a"
+          Dolmen.Std.Expr.Print.term_cst cstr
+          Dolmen.Std.Expr.Print.ty ty
+      ) ~name:"Wrong sum type" ()
+
 let repeated_record_field =
   Report.Error.mk ~code ~mnemonic:"repeated-field"
     ~message:(fun fmt f ->
@@ -1279,6 +1288,8 @@ module Typer(State : State.S) = struct
     (* Pattern matching errors *)
     | T.Partial_pattern_match missing ->
       error ~input ~loc st partial_pattern_match missing
+    | T.Mismatch_sum_type (cstr, ty) ->
+      error ~input ~loc st mismatch_sum_type (cstr, ty)
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
       error ~input ~loc st repeated_record_field f
