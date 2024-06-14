@@ -123,7 +123,7 @@ let doc conf t =
 (* ********* *)
 
 let () =
-  let version = "0.9" in
+  let version = "0.10" in
   let exits =
     List.map (fun code ->
         let retcode, doc = Dolmen_loop.Code.descr code in
