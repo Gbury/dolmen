@@ -32,19 +32,19 @@ jobs:
             dolmen_asset: dolmen-linux-amd64
             dolmenls_artifact: dolmenls
             dolmenls_asset: dolmenls-linux-amd64
-            ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
           - os: macos-latest
             dolmen_artifact: dolmen
             dolmen_asset: dolmen-macos-amd64
             dolmenls_artifact: dolmenls
             dolmenls_asset: dolmenls-macos-amd64
-            ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
+            ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
           - os: windows-latest
             dolmen_artifact: dolmen.exe
             dolmen_asset: dolmen-windows-amd64.exe
             dolmenls_artifact: dolmenls.exe
             dolmenls_asset: dolmenls-windows-amd64.exe
-            ocaml-version: ocaml-variants.4.14.0+flambda+mingw64c
+            ocaml-version: ocaml-variants.4.14.2+flambda+mingw64c
 
     # Build ENV
     # ---------

@@ -36,7 +36,7 @@ jobs:
 
         # Ocaml versions to use
         ocaml-version:
-          - ocaml-base-compiler.4.14.0
+          - ocaml-base-compiler.5.2.0
 
     # Build ENV
     # ---------
