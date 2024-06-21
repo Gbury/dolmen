@@ -253,7 +253,6 @@ module Make
       and type env = Dolmen_loop.Typer.T.env)
     (Typer_Pipe : Dolmen_loop.Typer.S
      with type state := State.t
-      and type env = Typer.env
       and type 'a key := 'a State.key
       and type ty := Dolmen.Std.Expr.ty
       and type ty_var := Dolmen.Std.Expr.ty_var
@@ -389,7 +388,7 @@ module Make
         Dolmen.Std.Statement.(print_group print_def) parsed_defs;
     (* We explicitly ignore the implicit decls, as they happen regularly
        because of abstract symbols. *)
-    let st, ({ implicit_decls = _; implicit_defs; ret = defs } : _ Typer.ret) =
+    let st, ({ implicit_decls = _; implicit_defs; recursive = _; ret = defs } : _ Typer.ret) =
       Typer.defs ~mode:`Use_declared_id st ~input ?attrs parsed_defs
     in
     (* TODO: proper error for implicit defs *)
@@ -709,13 +708,14 @@ module Make
             let file = State.get State.logic_file st in
             let loc = Dolmen.Std.Loc.{ file = file.loc; loc = c.loc; } in
             match c.contents with
+            | #Typer_Pipe.end_
             | #Typer_Pipe.exit
             | #Typer_Pipe.decls
             | #Typer_Pipe.get_info
             | #Typer_Pipe.set_info -> st
             | #Typer_Pipe.stack_control ->
               State.error ~file ~loc st assertion_stack_not_supported ()
-            | `Defs defs ->
+            | `Defs (_recursive, defs) ->
               check_defs ~file ~loc st defs
             | `Hyp contents ->
               check_hyps ~file ~loc st contents

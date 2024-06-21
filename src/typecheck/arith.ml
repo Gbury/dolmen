@@ -995,6 +995,8 @@ module Smtlib2 = struct
       let promote_int_to_real _env mk_real _ast a b =
         match Ty.view @@ T.ty a, Ty.view @@ T.ty b with
         | `Int, `Int -> mk_real (T.Int.to_real a) (T.Int.to_real b)
+        | `Int, `Real -> mk_real (T.Int.to_real a) b
+        | `Real, `Int -> mk_real a (T.Int.to_real b)
         | _ -> mk_real a b
 
       let rec parse ~config version env s =

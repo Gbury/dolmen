@@ -685,3 +685,23 @@ let unit_mapper = {
       List.iter (fun (pat, body) -> map m pat; map m body) l);
 }
 
+
+module View = struct
+
+  module Sexpr = struct
+
+    type id = Id.t
+    type nonrec t = t
+
+    exception Not_an_sexpr of t
+
+    let view t =
+      match t.term with
+      | Symbol id -> Dolmen_intf.View.Sexpr.Symbol id
+      | App ( { term = Builtin Sexpr; _ }, l ) -> Dolmen_intf.View.Sexpr.App l
+      | App (f, l) -> Dolmen_intf.View.Sexpr.App (f :: l)
+      | _ -> raise (Not_an_sexpr t)
+
+  end
+
+end

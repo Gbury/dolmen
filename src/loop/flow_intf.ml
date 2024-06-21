@@ -17,7 +17,4 @@ module type S = sig
     state -> Dolmen.Std.Statement.t -> state * Dolmen.Std.Statement.t
   (** Inspect statements *)
 
-  val finalise : state -> state
-  (** Finalise the flow check *)
-
 end

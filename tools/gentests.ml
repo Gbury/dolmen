@@ -14,6 +14,10 @@ let full_output_of_problem file =
 let expected_of_problem file =
   Filename.chop_extension file ^ ".expected"
 
+let formatted_of_problem file =
+  let ext = Filename.extension file in
+  Filename.chop_extension file ^ ".formatted" ^ ext
+
 let response_of_problem file =
   match Filename.extension file with
   | ".smt2" -> Some (Filename.chop_extension file ^ ".rsmt2")
@@ -23,6 +27,11 @@ let supports_incremental file =
   match Filename.extension file with
   | ".ae" -> false
   | _ -> true
+
+let supports_formatting file =
+  match Filename.extension file with
+  | ".smt2" -> true
+  | _ -> false
 
 let is_a_pb file =
   match Filename.extension file with
@@ -91,7 +100,7 @@ let read_all ch =
 
 (* grep a string in a file *)
 let contains pattern file =
-  let cmd = Format.asprintf {|grep -q "%s" %s|} pattern file in
+  let cmd = Format.asprintf {|grep -q -e "%s" %s|} pattern file in
   let ch = Unix.open_process_in cmd in
   let _ = read_all ch in
   let res = Unix.close_process_in ch in
@@ -127,17 +136,17 @@ let scan_folder path =
 (* ************************************************************************* *)
 
 type exit_code =
-  | Any     (* Any exit code *)
+  (* | Any     (* Any exit code *) *)
   | Error   (* Any non-zero exit code *)
   | Success (* Zero exit code *)
 
 let pp_exit_codes fmt = function
   | Success -> Format.fprintf fmt "0"
   | Error -> Format.fprintf fmt "(not 0)"
-  | Any -> Format.fprintf fmt "(or 0 (not 0))"
+  (* | Any -> Format.fprintf fmt "(or 0 (not 0))" *)
 
 
-(* Base stanza *)
+(* Base Test stanza *)
 (* ************************************************************************* *)
 
 let pp_deps fmt (pb_file, response_file, additional) =
@@ -198,6 +207,38 @@ let test_stanza ?deps fmt (exit_codes, pb_file, response_file) =
     (test_stanza_full ?deps) (full_file, pb_file, response_file, exit_codes, expected_file)
 
 
+(* Print/Export stanza *)
+(* ************************************************************************* *)
+
+let typechecks dir =
+  let file = Filename.concat dir "flags.dune" in
+  not (contains "--type=false" file)
+
+let has_flow_check dir =
+  let file = Filename.concat dir "flags.dune" in
+  contains "--check-flow" file
+
+let format_stanza ?(deps=[]) fmt (pb_file, out_file) =
+  Format.fprintf fmt "
+@[<v 2>(rule@ \
+  (target  %s)@ \
+  (deps    @[<hov>%a@])@ \
+  (package dolmen_bin)@ \
+  (action @[<hov 1>(chdir %%{workspace_root}@ \
+            @[<hov 1>(with-accepted-exit-codes 0@ \
+             @[<hov 1>(run dolmen %%{input} %%{target} %%{read-lines:flags.dune})@]\
+             )@]\
+             )@]\
+             ))@]@\n\
+@[<v 2>(rule@ \
+  (alias runtest)@ \
+  (package dolmen_bin)@ \
+  (action (diff %s %s))@])@\n"
+    out_file
+    pp_deps (pb_file, None, deps)
+    pb_file out_file
+
+
 
 (* Generating a test case *)
 (* ************************************************************************* *)
@@ -206,8 +247,8 @@ let check_expect_file path =
   let default_expect_contents = "run 'make promote' to update this file" in
   if touch path default_expect_contents then
     if is_empty path then Success
-    else if contains "Error" path then Error
-    else Any
+    else if contains {|Fatal\|Error|} path then Error
+    else Success (* success includes warnings *)
   else
     Success
 
@@ -223,7 +264,7 @@ let test_deps path pb =
 let gen_test fmt path pb =
   (* check exit codes and the expected output *)
   let expected_file = Filename.concat path (expected_of_problem pb) in
-  let exit_codes = ignore (check_expect_file expected_file); Any in
+  let exit_codes = check_expect_file expected_file in
   (* see whether a response file exists *)
   let response_file =
     match response_of_problem pb with
@@ -234,7 +275,18 @@ let gen_test fmt path pb =
   in
   (* check for deps *)
   let deps = test_deps path pb in
-  test_stanza ~deps fmt (exit_codes, pb, response_file)
+  (* test stanza *)
+  test_stanza ~deps fmt (exit_codes, pb, response_file);
+  (* Format stanza *)
+  if (exit_codes = Success) &&
+     (supports_formatting pb) &&
+     (typechecks path) &&
+     not (has_flow_check path)
+  then begin
+    let out_f = formatted_of_problem pb in
+    format_stanza ~deps fmt (pb, out_f)
+  end;
+  ()
 
 
 (* Generating tests for a folder and its files *)
