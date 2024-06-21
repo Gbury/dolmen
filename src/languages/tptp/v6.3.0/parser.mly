@@ -44,27 +44,32 @@ annotated_formula:
 tpi_annotated:
   | TPI LEFT_PAREN s=name COMMA r=formula_role COMMA
     f=tpi_formula annot=annotations RIGHT_PAREN DOT
-    { let loc = L.mk_pos $startpos $endpos in S.tpi ~loc ?annot s r f }
+    { let role = let loc = L.mk_pos $startpos(r) $endpos(r) in T.const ~loc (I.mk I.attr r) in
+      let loc = L.mk_pos $startpos $endpos in S.tpi ~loc ?annot s ~role f }
 
 thf_annotated:
   | THF LEFT_PAREN s=name COMMA r=formula_role COMMA
     f=thf_formula annot=annotations RIGHT_PAREN DOT
-    { let loc = L.mk_pos $startpos $endpos in S.thf ~loc ?annot s r f }
+    { let role = let loc = L.mk_pos $startpos(r) $endpos(r) in T.const ~loc (I.mk I.attr r) in
+      let loc = L.mk_pos $startpos $endpos in S.thf ~loc ?annot s ~role f }
 
 tff_annotated:
   | TFF LEFT_PAREN s=name COMMA r=formula_role COMMA
     f=tff_formula annot=annotations RIGHT_PAREN DOT
-    { let loc = L.mk_pos $startpos $endpos in S.tff ~loc ?annot s r f }
+    { let role = let loc = L.mk_pos $startpos(r) $endpos(r) in T.const ~loc (I.mk I.attr r) in
+      let loc = L.mk_pos $startpos $endpos in S.tff ~loc ?annot s ~role f }
 
 fof_annotated:
   | FOF LEFT_PAREN s=name COMMA r=formula_role COMMA
     f=fof_formula annot=annotations RIGHT_PAREN DOT
-    { let loc = L.mk_pos $startpos $endpos in S.fof ~loc ?annot s r f }
+    { let role = let loc = L.mk_pos $startpos(r) $endpos(r) in T.const ~loc (I.mk I.attr r) in
+      let loc = L.mk_pos $startpos $endpos in S.fof ~loc ?annot s ~role f }
 
 cnf_annotated:
   | CNF LEFT_PAREN s=name COMMA r=formula_role COMMA
     f=cnf_formula annot=annotations RIGHT_PAREN DOT
-    { let loc = L.mk_pos $startpos $endpos in S.cnf ~loc ?annot s r f }
+    { let role = let loc = L.mk_pos $startpos(r) $endpos(r) in T.const ~loc (I.mk I.attr r) in
+      let loc = L.mk_pos $startpos $endpos in S.cnf ~loc ?annot s ~role f }
 
 annotations:
   | COMMA s=source i=optional_info
