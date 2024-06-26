@@ -118,6 +118,20 @@ let doc conf t =
     pp_status t
     (Report.T.doc t)
 
+(* Extensions list *)
+(* *************** *)
+
+let list_extensions () =
+  Format.printf "%a@."
+    Fmt.(vbox @@ list (box Extensions.pp)) (Extensions.list ());
+  match Extensions.invalid () with
+  | [] -> ()
+  | invalid ->
+    Format.printf "@[<v 2>%a@ %a@]@."
+      (Fmt.styled `Bold @@ Fmt.styled (`Fg (`Hi `Magenta)) @@ Fmt.string)
+      "The following plugins were found but are invalid:"
+      Fmt.(list string) invalid
+
 
 (* Main code *)
 (* ********* *)
@@ -146,3 +160,5 @@ let () =
     doc conf report
   | Ok (`Ok List_reports { conf; }) ->
     list conf
+  | Ok (`Ok List_extensions) ->
+    list_extensions ()

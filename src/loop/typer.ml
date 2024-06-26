@@ -55,15 +55,15 @@ module Smtlib2_Arrays =
 module Smtlib2_Bitv =
   Dolmen_type.Bitv.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
-module Smtlib2_Bvconv =
-  Dolmen_type.Bitv.Smtlib2.Bvconv(T)
-    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 module Smtlib2_Float =
   Dolmen_type.Float.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Smtlib2_String =
   Dolmen_type.Strings.Smtlib2.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Smtlib2_Bvconv =
+  Dolmen_type.Bitv.Smtlib2.Bvconv(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
 
 (* Zf *)
 module Zf_Core =
@@ -72,6 +72,43 @@ module Zf_Core =
 module Zf_arith =
   Dolmen_type.Arith.Zf.Thf(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+
+(* Extensions builtins *)
+(* ************************************************************************ *)
+
+module Ext = struct
+
+  type t = {
+    name : string;
+    builtins : Typer_intf.lang -> T.builtin_symbols;
+  }
+
+  let name { name; _ } = name
+  let builtins { builtins; _ } = builtins
+
+  let registry = Hashtbl.create 17
+
+  let register ({ name; _ } as ext)  =
+    match Hashtbl.find registry name with
+    | exception Not_found -> Hashtbl.replace registry name [ ext ]
+    | exts -> Hashtbl.replace registry name (ext :: exts)
+
+  let find_all name =
+    try Hashtbl.find registry name with Not_found -> []
+
+  let create ~name ~builtins =
+    let t = { name ; builtins } in
+    register t;
+    t
+
+  let bvconv =
+    create ~name:"bvconv"
+      ~builtins:(function
+        | `Logic Logic.Smtlib2 version ->
+          Smtlib2_Bvconv.parse (`Script version)
+        | _ -> Dolmen_type.Base.noop)
+end
+
 
 (* Printing helpers *)
 (* ************************************************************************ *)
@@ -1075,40 +1112,7 @@ module Typer(State : State.S) = struct
   type error = T.error
   type warning = T.warning
   type builtin_symbols = T.builtin_symbols
-
-  type lang = [
-    | `Logic of Logic.language
-    | `Response of Response.language
-  ]
-
-  (* Extensions builtins *)
-  (* ************************************************************************ *)
-
-  module Ext = struct
-
-    type t = {
-      name : string;
-      builtins : lang -> T.builtin_symbols;
-    }
-
-    let all = ref []
-    let list () = !all
-    let name { name; _ } = name
-    let builtins { builtins; _ } = builtins
-
-    let create ~name ~builtins =
-      let t = { name; builtins; } in
-      all := t :: !all;
-      t
-
-    let bv2nat =
-      create ~name:"bvconv"
-        ~builtins:(function
-            | `Logic Logic.Smtlib2 version ->
-              Smtlib2_Bvconv.parse (`Script version)
-            | _ -> Dolmen_type.Base.noop)
-
-  end
+  type extension = Ext.t
 
   (* State setup *)
   (* ************************************************************************ *)
@@ -1122,7 +1126,8 @@ module Typer(State : State.S) = struct
     State.create_key ~pipe "smtlib2_forced_logic"
   let extension_builtins : Ext.t list State.key =
     State.create_key ~pipe "extensions_builtins"
-  let additional_builtins : (state -> lang -> T.builtin_symbols) State.key =
+  let additional_builtins :
+    (state -> Typer_intf.lang -> T.builtin_symbols) State.key =
     State.create_key ~pipe "additional_builtins"
 
   let init
@@ -1161,7 +1166,7 @@ module Typer(State : State.S) = struct
     | `Logic f -> f.loc
     | `Response f -> f.loc
 
-  let lang_of_input (input : input) : [ lang | `Missing ]=
+  let lang_of_input (input : input) : [ Typer_intf.lang | `Missing ] =
     match input with
     | `Logic f ->
       begin match f.lang with
@@ -1484,7 +1489,7 @@ module Typer(State : State.S) = struct
     (* Match the language to determine bultins and other options *)
     let lang =
       match lang_of_input input with
-      | #lang as lang -> lang
+      | #Typer_intf.lang as lang -> lang
       | `Missing ->
         let st =
           error st ~input ~loc:{ file; loc; } Report.Error.internal_error

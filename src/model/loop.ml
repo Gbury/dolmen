@@ -141,6 +141,36 @@ let parsed_model =
                     "This is an internal error, plean report upstream, ^^")]
     ~name:"Parsed model" ()
 
+let missing_model_extension =
+  Dolmen_loop.Report.Warning.mk ~code ~mnemonic:"missing-model-extension"
+    ~message:(fun ppf name ->
+      Format.fprintf ppf "There is no model extension named '%s'." name)
+    ~hints:[fun name ->
+      Some (Format.dprintf
+        "This is likely due to the plugin for '%s' being broken." name)]
+    ~name:"Missing model extension" ()
+
+let duplicate_model_extension =
+  Dolmen_loop.Report.Warning.mk ~code ~mnemonic:"duplicate-model-extension"
+    ~message:(fun ppf name ->
+      Format.fprintf ppf
+        "Model extension '%s' was registered multiple times." name)
+    ~hints:[
+      (fun name ->
+        Some (
+          Format.dprintf "%a@ '%s'@ %a@ '%s'."
+            Fmt.words "This is likely caused by a plugin other than"
+            name
+            Fmt.words "trying to register the model extension"
+            name));
+      (fun _ ->
+        Some (
+          Format.dprintf "%a"
+            Fmt.words
+            "Plugins should not define model extensions with a name other than \
+             the name of the plugin itself. "))]
+    ~name:"Duplicate model extension" ()
+
 let error_in_response =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"response-error"
     ~message:(fun fmt () ->
@@ -265,22 +295,7 @@ module Make
       and type formula := Dolmen.Std.Expr.formula)
 = struct
 
-  let pipe = "Model"
-  let check_model = Typer.check_model
-  let check_state = State.create_key ~pipe "check_state"
-
-  let init
-      ~check_model:check_model_value
-      st =
-    st
-    |> State.set check_model check_model_value
-    |> State.set check_state empty
-
-
-  (* Evaluation and errors *)
-  (* ************************************************************************ *)
-
-  let builtins =
+  let core_builtins =
     Eval.builtins [
       Adt.builtins;
       Bool.builtins;
@@ -294,11 +309,32 @@ module Make
       Coercion.builtins;
     ]
 
+  let pipe = "Model"
+  let check_model = Typer.check_model
+  let check_state = State.create_key ~pipe "check_state"
+  let builtins = State.create_key ~pipe "builtins"
+
+  let init
+      ~check_model:check_model_value
+      ?(extension_builtins=[])
+      st =
+    let rev_extension_builtins = List.rev_map Ext.builtins extension_builtins in
+    st
+    |> State.set check_model check_model_value
+    |> State.set check_state empty
+    |> State.set builtins
+        (Eval.builtins @@
+          List.rev_append rev_extension_builtins [core_builtins])
+
+
+  (* Evaluation and errors *)
+  (* ************************************************************************ *)
+
   let eval ~reraise_for_delayed_eval ~file ~loc st model term =
     let _err err args =
       raise (State.Error (State.error st ~file ~loc err args))
     in
-    let env = Env.mk model ~builtins in
+    let env = Env.mk model ~builtins:(State.get builtins st) in
     try
       Eval.eval env term
     with

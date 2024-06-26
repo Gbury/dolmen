@@ -42,4 +42,3 @@ module Smtlib2 = struct
     then Some mk else None
 
 end
-

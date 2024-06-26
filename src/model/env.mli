@@ -20,5 +20,3 @@ val builtins : t -> builtins
 val model : t -> Model.t
 
 val update_model : t -> (Model.t -> Model.t) -> t
-
-

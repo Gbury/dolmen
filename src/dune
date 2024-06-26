@@ -12,7 +12,12 @@
     dolmen_tptp dolmen_smtlib2 dolmen_zf
     ; Dolmen classes
     dolmen_class
+    ; extension support
+    dune-site dune-site.plugins
   )
-  (modules        Dolmen)
+  (modules        Dolmen Sites)
 )
 
+(generate_sites_module
+  (module Sites)
+  (plugins (dolmen plugins)))

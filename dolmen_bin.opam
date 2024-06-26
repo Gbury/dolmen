@@ -15,6 +15,7 @@ depends: [
   "dolmen_loop" {= version }
   "dolmen_model" {= version }
   "dune" { >= "3.0" }
+  "dune-site" { >= "3.0" }
   "fmt"
   "cmdliner" { >= "1.1.0" }
   "odoc" { with-doc }
