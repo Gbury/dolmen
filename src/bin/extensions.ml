@@ -119,7 +119,7 @@ let infos =
 
 let invalid () = snd @@ Lazy.force infos
 
-let all () =
+let list () =
   List.fast_sort
     (fun e1 e2 -> String.compare (name e1) (name e2))
     (Hashtbl.fold (fun _ e exts -> e :: exts) (fst @@ Lazy.force infos) [])
@@ -132,7 +132,7 @@ let find_ext name =
       "@[<v>Could not find extension '%s'@ \
       Available extensions:@;<1 2>@[<v>%a@]@]"
       name
-      Fmt.(list (box pp)) (all ())
+      Fmt.(list (box pp)) (list ())
 
 let load_typing_extension ext =
     match ext.typing_plugin with

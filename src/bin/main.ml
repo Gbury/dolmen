@@ -123,7 +123,7 @@ let doc conf t =
 
 let list_extensions () =
   Format.printf "%a@."
-    Fmt.(vbox @@ list (box Extensions.pp)) (Extensions.all ());
+    Fmt.(vbox @@ list (box Extensions.pp)) (Extensions.list ());
   match Extensions.invalid () with
   | [] -> ()
   | invalid ->

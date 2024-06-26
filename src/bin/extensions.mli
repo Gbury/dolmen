@@ -21,7 +21,7 @@ val load_model_extension :
     Fails if [e] has no model extension, or an error occurs during loading of an
     external model extension. *)
 
-val all : unit -> t list
+val list : unit -> t list
 (** Lists the available extensions. *)
 
 val invalid : unit -> string list
