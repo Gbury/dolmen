@@ -14,10 +14,10 @@ The `dolmen` command-line tool looks up user-defined extensions using the Dune
 plugin mechanism. A plugin named `plugin.typing` will be picked up when
 `--ext plugin` or `--ext plugin.typing` is provided on the command-line, and
 the plugin must register a typing extension named `"plugin"` using
-`Dolmen_loop.Typer.Ext.register`. A plugin named `plugin.model` will be picked up
+`Dolmen_loop.Typer.Ext.create`. A plugin named `plugin.model` will be picked up
 when `--ext plugin` or `--ext plugin.model` is provided on the command-line and
 the plugin must register a model extension named `"plugin"` using
-`Dolmen_model.Ext.register`. A plugin named `plugin` (without dots) will be
+`Dolmen_model.Ext.create`. A plugin named `plugin` (without dots) will be
 picked up when either of the above command line flags is provided, and must
 provide both a typing and model extension.
 
