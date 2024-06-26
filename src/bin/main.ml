@@ -123,8 +123,8 @@ let doc conf t =
 
 let list_extensions () =
   Format.printf "%a@."
-    Fmt.(vbox @@ list (box Options.pp_extension)) Options.all_extensions;
-  match Options.invalid_extensions with
+    Fmt.(vbox @@ list (box Extensions.pp)) (Extensions.all ());
+  match Extensions.invalid () with
   | [] -> ()
   | invalid ->
     Format.printf "@[<v 2>%a@ %a@]@."

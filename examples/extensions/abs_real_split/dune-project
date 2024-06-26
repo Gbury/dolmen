@@ -4,5 +4,9 @@
 (generate_opam_files false)
 
 (package
-  (name dolmen-extensions-abs-real-split)
-  (depopts dolmen_type dolmen_loop dolmen_model))
+  (name dolmen-typing-extension-abs-real-split)
+  (depends dolmen_type dolmen_loop))
+
+(package
+  (name dolmen-model-extension-abs-real-split)
+  (depends dolmen-typing-extension-abs-real-split dolmen_model))

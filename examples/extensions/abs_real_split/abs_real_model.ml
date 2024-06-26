@@ -9,7 +9,7 @@ let abs_real ~cst =
 
 let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
-  | Abs_real_split.Builtin.Abs_real -> abs_real ~cst
+  | Abs_real_typing.Abs_real -> abs_real ~cst
   | _ -> None
 
 let model_ext =

@@ -4,5 +4,5 @@
 (generate_opam_files false)
 
 (package
-  (name dolmen-extensions-abs-real)
-  (depopts dolmen_type dolmen_loop dolmen_model))
+  (name dolmen-extension-abs-real)
+  (depends dolmen_type dolmen_loop dolmen_model))

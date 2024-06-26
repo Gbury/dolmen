@@ -4,6 +4,8 @@ module Term = Dolmen.Std.Expr.Term
 module Builtin = Dolmen.Std.Builtin
 module Base = Dolmen_type.Base
 
+type _ Builtin.t += Abs_real
+
 module Const = struct
   let mk' ?pos ?name ?builtin ?tags cname vars args ret =
     let ty = Ty.pi vars (Ty.arrow args ret) in
@@ -13,7 +15,7 @@ module Const = struct
   module Real = struct
     (* NB: Use [Dolmen.Std.Expr.with_cache] for parameterized builtins. *)
     let abs =
-      mk' ~builtin:Abs_real_split.Builtin.Abs_real "abs_real"
+      mk' ~builtin:Abs_real "abs_real"
         [] [Ty.real] Ty.real
   end
 end

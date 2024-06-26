@@ -1,10 +1,10 @@
 (library
-  (public_name dolmen-extensions-abs-real.plugin)
+  (public_name dolmen-extension-abs-real)
   (name abs_real)
   (modules abs_real)
   (libraries dolmen_model))
 
 (plugin
   (name abs_real)
-  (libraries dolmen-extensions-abs-real.plugin)
+  (libraries dolmen-extension-abs-real)
   (site (dolmen plugins)))

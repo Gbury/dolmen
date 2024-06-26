@@ -1,10 +1,10 @@
-type _ Dolmen.Std.Builtin.t += Abs_real
-
 module Type = Dolmen_loop.Typer.T
 module Ty = Dolmen.Std.Expr.Ty
 module Term = Dolmen.Std.Expr.Term
 module Builtin = Dolmen.Std.Builtin
 module Base = Dolmen_type.Base
+
+type _ Builtin.t += Abs_real
 
 module Const = struct
   let mk' ?pos ?name ?builtin ?tags cname vars args ret =
