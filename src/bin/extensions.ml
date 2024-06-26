@@ -15,12 +15,11 @@ let is_available = function
   | Unavailable -> false
   | Builtin _ | Dune_plugin _ -> true
 
-(* Merge two possible locations for the same plugin. Prefer builtin plugins over
-   external plugins. *)
+(* Merge two possible locations for the same plugin. Prefer builtin plugins. *)
 let merge_location p1 p2 =
   match p1, p2 with
-  | Dune_plugin _ as p, _ | _, (Dune_plugin _ as p) -> p
   | Builtin _ as p, _ | _, (Builtin _ as p) -> p
+  | Dune_plugin _ as p, _ | _, (Dune_plugin _ as p) -> p
   | Unavailable, Unavailable -> Unavailable
 
 type t = {
@@ -169,13 +168,6 @@ let duplicate_extension =
             plugin kind))]
     ~name:"Duplicate extension" ()
 
-let cannot_override_builtin_extension =
-  Dolmen_loop.Report.Warning.mk ~mnemonic:"cannot-override-builtin-extension"
-    ~message:(fun ppf (kind, name) ->
-      Format.fprintf ppf "Cannot override builtin %s extension '%s'."
-        kind name)
-    ~name:"Cannot override builtin extension" ()
-
 let add_typing_extension ext st =
   Loop.State.update Loop.Typer.extension_builtins (List.cons ext) st
 
@@ -184,18 +176,8 @@ let load_typing_extension ext st =
     | Unavailable ->
       Fmt.error_msg
         "No plugin provides the typing extension '%s'" ext.extension_name
-    | Builtin e -> (
-      match Dolmen_loop.Typer.Ext.find_all (Dolmen_loop.Typer.Ext.name e) with
-      | [] ->
-        Ok (add_typing_extension e st)
-      | _ ->
-        let st =
-          Loop.State.warn st
-            cannot_override_builtin_extension
-            ("typing", Dolmen_loop.Typer.Ext.name e)
-        in
-        Ok (add_typing_extension e st)
-    )
+    | Builtin e ->
+      Ok (add_typing_extension e st)
     | Dune_plugin plugin ->
       Result.bind (load_plugin_or_fail plugin) @@ fun () ->
       match Dolmen_loop.Typer.Ext.find_all ext.extension_name with
@@ -225,18 +207,8 @@ let load_model_extension ext st =
     | Unavailable ->
       Fmt.error_msg
         "No plugin provides the model extension '%s'" ext.extension_name
-    | Builtin e -> (
-      match Dolmen_model.Ext.find_all (Dolmen_model.Ext.name e) with
-      | [] ->
-        Ok (add_model_extension e st)
-      | _ ->
-        let st =
-          Loop.State.warn st
-            cannot_override_builtin_extension
-            ("model", Dolmen_model.Ext.name e)
-        in
-        Ok (add_model_extension e st)
-    )
+    | Builtin e ->
+      Ok (add_model_extension e st)
     | Dune_plugin plugin ->
       Result.bind (load_plugin_or_fail plugin) @@ fun () ->
       match Dolmen_model.Ext.find_all ext.extension_name with
