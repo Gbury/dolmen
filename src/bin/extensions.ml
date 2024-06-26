@@ -142,10 +142,7 @@ let load_typing_extension ext =
     | Dune_plugin plugin ->
       Dolmen.Sites.Plugins.Plugins.load plugin;
       try
-        Ok (List.find
-          (fun e -> Dolmen_loop.Typer.Ext.name e = ext.extension_name)
-          (Dolmen_loop.Typer.Ext.list ())
-        )
+        Ok (Dolmen_loop.Typer.Ext.find_exn ext.extension_name)
       with Not_found ->
         Fmt.error_msg
           "Plugin '%s' did not register a typing extension for '%s'"
@@ -159,10 +156,7 @@ let load_model_extension ext =
     | Dune_plugin plugin ->
       Dolmen.Sites.Plugins.Plugins.load plugin;
       try
-        Ok (List.find
-          (fun e -> Dolmen_model.Ext.name e = ext.extension_name)
-          (Dolmen_model.Ext.list ())
-        )
+        Ok (Dolmen_model.Ext.find_exn ext.extension_name)
       with Not_found ->
         Fmt.error_msg
           "Plugin '%s' did not register a model extension for '%s'"

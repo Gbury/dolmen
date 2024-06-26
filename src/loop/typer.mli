@@ -66,6 +66,12 @@ module Ext : sig
 
   val list : unit -> t list
   (** The list of all extensions. *)
+
+  val find_exn : string -> t
+  (** Returns the typing extension with the given name.
+
+     @raise Not_found if no such extension exists.
+     @since 0.11 *)
 end
 
 (** {2 Typechecker Functor} *)
