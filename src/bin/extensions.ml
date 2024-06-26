@@ -15,8 +15,8 @@ let is_available = function
   | Unavailable -> false
   | Builtin _ | Dune_plugin _ -> true
 
-(* Merge two possible locations for the same plugin. Prefer external plugins
-   over built-in plugins to allow overrides. *)
+(* Merge two possible locations for the same plugin. Prefer builtin plugins over
+   external plugins. *)
 let merge_location p1 p2 =
   match p1, p2 with
   | Dune_plugin _ as p, _ | _, (Dune_plugin _ as p) -> p
@@ -82,7 +82,7 @@ let infos =
         { extension_name = Dolmen_loop.Typer.Ext.name ext
         ; typing_plugin = Builtin ext
         ; model_plugin = Unavailable }
-    ) (Dolmen_loop.Typer.Ext.list ());
+    ) [ Dolmen_loop.Typer.Ext.bvconv ];
 
     (* Add builtin model extensions. *)
     List.iter (fun ext ->
@@ -90,7 +90,7 @@ let infos =
         { extension_name = Dolmen_model.Ext.name ext
         ; typing_plugin = Unavailable
         ; model_plugin = Builtin ext }
-    ) (Dolmen_model.Ext.list ());
+    ) [ Dolmen_model.Ext.bvconv ];
 
     (* Add extensions from plugins. *)
     let add_plugin invalid plugin = function
@@ -134,33 +134,127 @@ let find_ext name =
       name
       Fmt.(list (box pp)) (list ())
 
-let load_typing_extension ext =
+let load_plugin_or_fail plugin =
+  try Ok (Dolmen.Sites.Plugins.Plugins.load plugin)
+  with Dynlink.Error err ->
+    Fmt.error_msg "while loading plugin %s: %s"
+      plugin (Dynlink.error_message err)
+
+let missing_extension =
+  Dolmen_loop.Report.Warning.mk ~mnemonic:"missing-extension"
+    ~message:(fun ppf (kind, ext, _) ->
+      Format.fprintf ppf "There is no %s extension named '%s'." kind ext)
+    ~hints:[fun (kind, _, plugin) ->
+      Some (Format.dprintf
+        "Expected plugin '%s' to register this %s extension." plugin kind)]
+    ~name:"Missing extension" ()
+
+let duplicate_extension =
+  Dolmen_loop.Report.Warning.mk ~mnemonic:"duplicate-extension"
+    ~message:(fun ppf (kind, name, _) ->
+      Format.fprintf ppf
+        "%s extension '%s' was registered multiple times."
+          (String.capitalize_ascii kind)
+          name)
+    ~hints:[
+      (fun (kind, name, _) ->
+        Some (
+          Format.dprintf "%a@ %s@ extension@ '%s'."
+            Fmt.words
+            "This is likely caused by multiple plugins trying to register the"
+            kind name));
+      (fun (kind, _, plugin) ->
+        Some (
+          Format.dprintf "Expected plugin '%s' to register this %s extension."
+            plugin kind))]
+    ~name:"Duplicate extension" ()
+
+let cannot_override_builtin_extension =
+  Dolmen_loop.Report.Warning.mk ~mnemonic:"cannot-override-builtin-extension"
+    ~message:(fun ppf (kind, name) ->
+      Format.fprintf ppf "Cannot override builtin %s extension '%s'."
+        kind name)
+    ~name:"Cannot override builtin extension" ()
+
+let add_typing_extension ext st =
+  Loop.State.update Loop.Typer.extension_builtins (List.cons ext) st
+
+let load_typing_extension ext st =
     match ext.typing_plugin with
     | Unavailable ->
-      Fmt.error_msg "No typing extension '%s'" ext.extension_name
-    | Builtin e ->  Ok e
+      Fmt.error_msg
+        "No plugin provides the typing extension '%s'" ext.extension_name
+    | Builtin e -> (
+      match Dolmen_loop.Typer.Ext.find_all (Dolmen_loop.Typer.Ext.name e) with
+      | [] ->
+        Ok (add_typing_extension e st)
+      | _ ->
+        let st =
+          Loop.State.warn st
+            cannot_override_builtin_extension
+            ("typing", Dolmen_loop.Typer.Ext.name e)
+        in
+        Ok (add_typing_extension e st)
+    )
     | Dune_plugin plugin ->
-      Dolmen.Sites.Plugins.Plugins.load plugin;
-      try
-        Ok (Dolmen_loop.Typer.Ext.find_exn ext.extension_name)
-      with Not_found ->
-        Fmt.error_msg
-          "Plugin '%s' did not register a typing extension for '%s'"
-          plugin ext.extension_name
+      Result.bind (load_plugin_or_fail plugin) @@ fun () ->
+      match Dolmen_loop.Typer.Ext.find_all ext.extension_name with
+      | [] ->
+        Ok (
+          Loop.State.warn st
+            missing_extension
+            ("typing", ext.extension_name, plugin)
+        )
+      | [ e ] ->
+        Ok (add_typing_extension e st)
+      | e :: _ ->
+        let st =
+          Loop.State.warn st
+            duplicate_extension
+            ("typing", ext.extension_name, plugin)
+        in
+        Ok (add_typing_extension e st)
 
-let load_model_extension ext =
+let add_model_extension b st =
+  Loop.State.update Loop.Check.builtins
+   (fun bs -> Dolmen_model.Eval.builtins [ Dolmen_model.Ext.builtins b ; bs ])
+   st
+
+let load_model_extension ext st =
     match ext.model_plugin with
     | Unavailable ->
-      Fmt.error_msg "No model extension '%s'" ext.extension_name
-    | Builtin e ->  Ok e
+      Fmt.error_msg
+        "No plugin provides the model extension '%s'" ext.extension_name
+    | Builtin e -> (
+      match Dolmen_model.Ext.find_all (Dolmen_model.Ext.name e) with
+      | [] ->
+        Ok (add_model_extension e st)
+      | _ ->
+        let st =
+          Loop.State.warn st
+            cannot_override_builtin_extension
+            ("model", Dolmen_model.Ext.name e)
+        in
+        Ok (add_model_extension e st)
+    )
     | Dune_plugin plugin ->
-      Dolmen.Sites.Plugins.Plugins.load plugin;
-      try
-        Ok (Dolmen_model.Ext.find_exn ext.extension_name)
-      with Not_found ->
-        Fmt.error_msg
-          "Plugin '%s' did not register a model extension for '%s'"
-          plugin ext.extension_name
+      Result.bind (load_plugin_or_fail plugin) @@ fun () ->
+      match Dolmen_model.Ext.find_all ext.extension_name with
+      | [] ->
+        Ok (
+          Loop.State.warn st
+            missing_extension
+            ("model", ext.extension_name, plugin)
+        )
+      | [ e ] ->
+        Ok (add_model_extension e st)
+      | e :: _ ->
+        let st =
+          Loop.State.warn st
+            duplicate_extension
+            ("model", ext.extension_name, plugin)
+        in
+        Ok (add_model_extension e st)
 
 let parse s =
   match parse_ext_opt s with

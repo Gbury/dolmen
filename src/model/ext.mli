@@ -20,11 +20,7 @@ val create :
 (** Create a new extension. *)
 
 val bvconv : t
-(** Builtin-in extension for conversion between bit-vectors and integers *)
+(** Built-in extension for conversion between bit-vectors and integers *)
 
-val list : unit -> t list
-(** The list of all extensions. *)
-
-val find_exn : string -> t
-(** Returns the last created extension with the given name. Raises [Not_found]
-    if no such extension exists. *)
+val find_all : string -> t list
+(** Returns the extensions that have been registered with the given name. *)

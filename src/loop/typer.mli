@@ -64,14 +64,10 @@ module Ext : sig
   val bvconv : t
   (** Typing extension to add `bv2nat` and `int2bv`. *)
 
-  val list : unit -> t list
-  (** The list of all extensions. *)
+  val find_all : string -> t list
+  (** Returns the extensions that have been registered with the given name.
 
-  val find_exn : string -> t
-  (** Returns the typing extension with the given name.
-
-     @raise Not_found if no such extension exists.
-     @since 0.11 *)
+      @since 0.11 *)
 end
 
 (** {2 Typechecker Functor} *)

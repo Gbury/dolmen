@@ -8,17 +8,22 @@ type t = {
   builtins : Env.builtins;
 }
 
-let all = Hashtbl.create 17
-let list () =
-  List.fast_sort (fun e e' -> String.compare e.name e'.name) @@
-  Hashtbl.fold (fun _ e acc -> e :: acc) all []
-let find_exn = Hashtbl.find all
 let name { name; _ } = name
 let builtins { builtins; _ } = builtins
 
+let registry = Hashtbl.create 17
+
+let register ({ name; _ } as ext)  =
+  match Hashtbl.find registry name with
+  | exception Not_found -> Hashtbl.replace registry name [ ext ]
+  | exts -> Hashtbl.replace registry name (ext :: exts)
+
+let find_all name =
+  try Hashtbl.find registry name with Not_found -> []
+
 let create ~name ~builtins =
-  let t = { name; builtins; } in
-  Hashtbl.replace all name t;
+  let t = { name ; builtins } in
+  register t;
   t
 
 let bvconv =

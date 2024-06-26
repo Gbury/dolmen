@@ -378,36 +378,8 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   let () = Hints.model ~check_model (* ~check_model_mode *) in
-  (* Extensions *)
-  let typing_exts =
-    List.fold_left (fun typing_exts (ext, kind) ->
-      Result.bind typing_exts @@ fun typing_exts ->
-      match kind with
-      | None | Some Extensions.Typing ->
-        Result.map
-          (fun e -> e :: typing_exts)
-          (Extensions.load_typing_extension ext)
-      | Some _ -> Ok typing_exts
-    ) (Ok []) extensions
-  in
-  Result.bind typing_exts @@ fun typing_extension_builtins ->
-  let model_exts =
-    if check_model then
-      List.fold_left (fun model_exts (ext, kind) ->
-        Result.bind model_exts @@ fun model_exts ->
-        match kind with
-        | None | Some Extensions.Model ->
-          Result.map
-            (fun e -> e :: model_exts)
-            (Extensions.load_model_extension ext)
-        | Some _ -> Ok model_exts
-      ) (Ok []) extensions
-    else
-      Ok []
-  in
-  Result.bind model_exts @@ fun model_extension_builtins ->
   (* State creation *)
-  Ok (
+  let st =
     Loop.State.empty
     |> Loop.State.init
       ~bt ~debug ~report_style ~reports
@@ -418,17 +390,34 @@ let mk_run_state
       ~interactive_prompt:Loop.Parser.interactive_prompt_lang
     |> Loop.Typer.init
       ~smtlib2_forced_logic
-      ~extension_builtins:typing_extension_builtins
     |> Loop.Typer_Pipe.init ~type_check
     |> Loop.Check.init
-      ~check_model ~extension_builtins:model_extension_builtins
+      ~check_model
       (* ~check_model_mode *)
     |> Loop.Flow.init ~flow_check
     |> Loop.Header.init
       ~header_check
       ~header_licenses
       ~header_lang_version
-  )
+  in
+  (* Extensions *)
+  let st =
+    List.fold_left (fun st (ext, kind) ->
+      match kind with
+      | None | Some Extensions.Typing ->
+        Result.bind st (Extensions.load_typing_extension ext)
+      | Some _ -> st
+    ) (Ok st) extensions
+  in
+  if check_model then
+    List.fold_left (fun st (ext, kind) ->
+      match kind with
+      | None | Some Extensions.Model ->
+        Result.bind st (Extensions.load_model_extension ext)
+      | Some _ -> st
+    ) st extensions
+  else
+    st
 
 (* Profiling *)
 (* ************************************************************************* *)

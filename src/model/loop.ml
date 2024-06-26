@@ -141,6 +141,36 @@ let parsed_model =
                     "This is an internal error, plean report upstream, ^^")]
     ~name:"Parsed model" ()
 
+let missing_model_extension =
+  Dolmen_loop.Report.Warning.mk ~code ~mnemonic:"missing-model-extension"
+    ~message:(fun ppf name ->
+      Format.fprintf ppf "There is no model extension named '%s'." name)
+    ~hints:[fun name ->
+      Some (Format.dprintf
+        "This is likely due to the plugin for '%s' being broken." name)]
+    ~name:"Missing model extension" ()
+
+let duplicate_model_extension =
+  Dolmen_loop.Report.Warning.mk ~code ~mnemonic:"duplicate-model-extension"
+    ~message:(fun ppf name ->
+      Format.fprintf ppf
+        "Model extension '%s' was registered multiple times." name)
+    ~hints:[
+      (fun name ->
+        Some (
+          Format.dprintf "%a@ '%s'@ %a@ '%s'."
+            Fmt.words "This is likely caused by a plugin other than"
+            name
+            Fmt.words "trying to register the model extension"
+            name));
+      (fun _ ->
+        Some (
+          Format.dprintf "%a"
+            Fmt.words
+            "Plugins should not define model extensions with a name other than \
+             the name of the plugin itself. "))]
+    ~name:"Duplicate model extension" ()
+
 let error_in_response =
   Dolmen_loop.Report.Error.mk ~code ~mnemonic:"response-error"
     ~message:(fun fmt () ->
@@ -288,12 +318,13 @@ module Make
       ~check_model:check_model_value
       ?(extension_builtins=[])
       st =
-    let extension_builtins = List.map Ext.builtins extension_builtins in
+    let rev_extension_builtins = List.rev_map Ext.builtins extension_builtins in
     st
     |> State.set check_model check_model_value
     |> State.set check_state empty
     |> State.set builtins
-      (Eval.builtins (core_builtins :: extension_builtins))
+        (Eval.builtins @@
+          List.rev_append rev_extension_builtins [core_builtins])
 
 
   (* Evaluation and errors *)
