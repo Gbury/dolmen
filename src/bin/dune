@@ -1,8 +1,15 @@
 
+; Rule to generate link flags, especially for static linking
+(rule
+ (with-stdout-to link_flags.dune
+  (run ./gen-link-flags.sh %{env:LINK_MODE=dynamic} %{ocaml-config:system})))
+
+; Executable main rule
 (executable
   (name           main)
   (public_name    dolmen)
   (package        dolmen_bin)
+  (link_flags     (:standard (:include link_flags.dune)))
   (libraries
     ; external deps
     cmdliner fmt gen

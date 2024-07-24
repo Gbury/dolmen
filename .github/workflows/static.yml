@@ -15,28 +15,69 @@ on:
       - master
 
 jobs:
-  # Build & upload  release binaries
-  # ================================
-  static:
-
+  # MacOS static binaries
+  # =====================
+  static-linux:
+    name: Static MacOS binary
     runs-on: ${{ matrix.os }}
 
-    # Build Matrix
-    # --------------
+    # Build binaries for both x86 macOS and recent MX MacOS
     strategy:
-
-      # Do not cancel other jobs when one fails
-      fail-fast: false
-
       matrix:
-        # Specify bin/artefact names and ocaml versions for each OS
         include:
-          - os: ubuntu-latest
-            dolmen_artifact: dolmen
-            dolmen_asset: dolmen-linux-amd64
-            dolmenls_artifact: dolmenls
-            dolmenls_asset: dolmenls-linux-amd64
-            ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,ocaml-option-musl,ocaml-option-static
+          - arch: amd64
+            os: macos-12
+          - arch: arm
+            os: macos-14
+
+    # We definitely need write permissions
+    permissions:
+      contents: write
+
+    # Build/test steps
+    # ----------------
+    steps:
+      # checkout the repo
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+      # Setup ocaml/opam
+      - name: Setup ocaml/opam
+        uses: avsm/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.14.2
+      # Run opam udpate to get an up-to-date repo
+      - name: Update opam repo
+        run: opam update
+      # Install deps
+      - name: Install deps
+        run: opam install . --deps-only --with-test --with-doc
+      # Build the package
+      - name: Build the package
+        run: opam exec -- dune build --profile=release @install
+        env:
+          LINK_MODE: mixed
+    # Upload artefact for testing
+    - name: Upload test
+      uses: actions/upload-artifact@v4
+      with:
+        name: dolmen-macos-${{ matrix.arch }}
+        path: _build/install/default/bin/dolmen
+
+
+  # Linux static binaries
+  # =====================
+  static-linux:
+    name: Static Linux binary
+    runs-on: ubuntu-latest
+
+    # Retrieve and use a light docker container on which ocaml 4.14 is installed
+    # as a system compiler. This container also contains opam 2.1.
+    container:
+      image: ocamlpro/ocaml:4.14-flambda
+      options: --user root
+
+    permissions:
+      contents: write
 
     # Build ENV
     # ---------
@@ -50,11 +91,23 @@ jobs:
     # checkout the repo
     - name: Checkout the repo
       uses: actions/checkout@v3
-    # Setup ocaml/opam
-    - name: Setup ocaml/opam
-      uses: avsm/setup-ocaml@v2
-      with:
-        ocaml-compiler: ${{ matrix.ocaml-version }}
+    # switch to correct user
+    - name: Switch to ocaml user
+      run: su ocaml
+    # This line is needed to acces and use opam. We are unable to set the user
+    # to `ocaml` with the container parameters
+    - name: Adjust permissions
+      run: sudo chmod a+wx .
+    # This line is needed to allow the working directory to be used even though
+    # the ocaml user do not have rights on it.
+    - name: Setup working directory
+      run: CURRENTDIR=$(basename $(pwd)); git config --global --add safe.directory /__w/$CURRENTDIR/$CURRENTDIR
+    # Setup opam switch
+    - name: Setup OPAM switch
+      run: opam switch create . ocaml-system --locked --deps-only --ignore-constraints-on dolmen,dolmen_type,dolmen_loop,dolmen_bin,dolmen_lsp
+    # Run Dune subst
+    # todo: why though ?
+    - run: opam exec -- dune subst
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
@@ -64,11 +117,12 @@ jobs:
     # Build the package
     - name: Build the package
       run: opam exec -- dune build --profile=release @install
-
+      env:
+        LINK_MODE: static
     # Upload artefact for testing
     - name: Upload test
       uses: actions/upload-artifact@v4
       with:
-        name: dolmen
+        name: dolmen-linux-amd64
         path: _build/install/default/bin/dolmen
 
