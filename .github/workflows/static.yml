@@ -17,7 +17,7 @@ on:
 jobs:
   # MacOS static binaries
   # =====================
-  static-linux:
+  static-macos:
     name: Static MacOS binary
     runs-on: ${{ matrix.os }}
 
