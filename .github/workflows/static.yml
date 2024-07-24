@@ -74,7 +74,7 @@ jobs:
     # as a system compiler. This container also contains opam 2.1.
     container:
       image: ocamlpro/ocaml:4.14-flambda
-      options: --user root
+      options: --user ocaml
 
     permissions:
       contents: write
@@ -91,23 +91,17 @@ jobs:
     # checkout the repo
     - name: Checkout the repo
       uses: actions/checkout@v3
-    # switch to correct user
-    - name: Switch to ocaml user
-      run: su ocaml
     # This line is needed to acces and use opam. We are unable to set the user
     # to `ocaml` with the container parameters
-    - name: Adjust permissions
-      run: sudo chmod a+wx .
+    #- name: Adjust permissions
+    #  run: sudo chmod a+wx .
     # This line is needed to allow the working directory to be used even though
     # the ocaml user do not have rights on it.
-    - name: Setup working directory
-      run: CURRENTDIR=$(basename $(pwd)); git config --global --add safe.directory /__w/$CURRENTDIR/$CURRENTDIR
+    #- name: Setup working directory
+    #  run: CURRENTDIR=$(basename $(pwd)); git config --global --add safe.directory /__w/$CURRENTDIR/$CURRENTDIR
     # Setup opam switch
     - name: Setup OPAM switch
       run: opam switch create . ocaml-system --locked --deps-only --ignore-constraints-on dolmen,dolmen_type,dolmen_loop,dolmen_bin,dolmen_lsp
-    # Run Dune subst
-    # todo: why though ?
-    - run: opam exec -- dune subst
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
