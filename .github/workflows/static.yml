@@ -76,9 +76,6 @@ jobs:
       image: ocamlpro/ocaml:4.14-flambda
       options: --user ocaml
 
-    permissions:
-      contents: write
-
     # Build ENV
     # ---------
     env:
