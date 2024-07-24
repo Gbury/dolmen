@@ -85,13 +85,12 @@ jobs:
     # Build/test steps
     # ----------------
     steps:
+    # This line is needed to acces and use opam
+    - name: Adjust permissions
+      run: sudo chmod a+wx .
     # checkout the repo
     - name: Checkout the repo
       uses: actions/checkout@v3
-    # This line is needed to acces and use opam. We are unable to set the user
-    # to `ocaml` with the container parameters
-    #- name: Adjust permissions
-    #  run: sudo chmod a+wx .
     # This line is needed to allow the working directory to be used even though
     # the ocaml user do not have rights on it.
     #- name: Setup working directory
