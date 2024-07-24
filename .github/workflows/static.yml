@@ -23,6 +23,7 @@ jobs:
 
     # Build binaries for both x86 macOS and recent MX MacOS
     strategy:
+      fail-fast: false
       matrix:
         include:
           - arch: amd64
