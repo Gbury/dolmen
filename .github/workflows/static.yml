@@ -37,25 +37,25 @@ jobs:
     # Build/test steps
     # ----------------
     steps:
-      # checkout the repo
-      - name: Checkout the repo
-        uses: actions/checkout@v3
-      # Setup ocaml/opam
-      - name: Setup ocaml/opam
-        uses: avsm/setup-ocaml@v2
-        with:
-          ocaml-compiler: 4.14.2
-      # Run opam udpate to get an up-to-date repo
-      - name: Update opam repo
-        run: opam update
-      # Install deps
-      - name: Install deps
-        run: opam install . --deps-only --with-test --with-doc
-      # Build the package
-      - name: Build the package
-        run: opam exec -- dune build --profile=release @install
-        env:
-          LINK_MODE: mixed
+    # checkout the repo
+    - name: Checkout the repo
+      uses: actions/checkout@v3
+    # Setup ocaml/opam
+    - name: Setup ocaml/opam
+      uses: avsm/setup-ocaml@v2
+      with:
+        ocaml-compiler: 4.14.2
+    # Run opam udpate to get an up-to-date repo
+    - name: Update opam repo
+      run: opam update
+    # Install deps
+    - name: Install deps
+      run: opam install . --deps-only --with-test --with-doc
+    # Build the package
+    - name: Build the package
+      run: opam exec -- dune build --profile=release @install
+      env:
+        LINK_MODE: mixed
     # Upload artefact for testing
     - name: Upload test
       uses: actions/upload-artifact@v4
