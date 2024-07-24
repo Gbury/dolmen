@@ -1,7 +1,7 @@
 # Buildability check
 # ==================
 # Build dolmen using various version of the OCaml compiler
-name: build
+name: static
 
 # Configure when to run the workflows. Currently only when
 # it affects the `master` branch (either pushes to the branch,
@@ -15,28 +15,28 @@ on:
       - master
 
 jobs:
-  # Build workflow
-  # ==============
-  # Goal: Ensure the packages builds across all supported
-  # versions of the ocaml compiler.
-  build:
+  # Build & upload  release binaries
+  # ================================
+  static:
 
     runs-on: ${{ matrix.os }}
 
     # Build Matrix
     # --------------
     strategy:
+
       # Do not cancel other jobs when one fails
       fail-fast: false
 
       matrix:
-        # Operating system to run tests on.
-        os:
-          - ubuntu-latest
-
-        # Ocaml versions to use
-        ocaml-version:
-          - ocaml-base-compiler.5.2.0
+        # Specify bin/artefact names and ocaml versions for each OS
+        include:
+          - os: ubuntu-latest
+            dolmen_artifact: dolmen
+            dolmen_asset: dolmen-linux-amd64
+            dolmenls_artifact: dolmenls
+            dolmenls_asset: dolmenls-linux-amd64
+            ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,ocaml-option-musl,ocaml-option-static
 
     # Build ENV
     # ---------
@@ -44,11 +44,10 @@ jobs:
       # Ensure opam will not stop because it waits on some user input
       OPAMYES: "true"
 
-
     # Build/test steps
     # ----------------
     steps:
-    # checkout the repo (full clone, necessary for push later)
+    # checkout the repo
     - name: Checkout the repo
       uses: actions/checkout@v3
     # Setup ocaml/opam
@@ -59,26 +58,17 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
-    # Install ocaml deps
-    - name: Install Ocaml deps
+    # Install deps
+    - name: Install deps
       run: opam install . --deps-only --with-test --with-doc
     # Build the package
     - name: Build the package
-      run: opam exec -- make
-    # Check the tests
-    - name: Build the examples
-      run: opam exec -- make test
-    # Check the doc builds
-    - name: Build the doc
-      run: opam exec -- make doc
+      run: opam exec -- dune build --profile=release @install
 
-    # Update the doc
-    # --------------
-    - name: Deploy the dev documentation
-      uses: JamesIves/github-pages-deploy-action@4.1.1
-      if: github.ref == 'refs/heads/master'
+    # Upload artefact for testing
+    - name: Upload test
+      uses: actions/upload-artifact@v4
       with:
-        branch: gh-pages
-        folder: _build/default/_doc/_html
-        target-folder: dev
+        name: dolmen
+        path: _build/install/default/bin/dolmen
 
