@@ -20,6 +20,9 @@ module Ae_Arrays =
 module Ae_Bitv =
   Dolmen_type.Bitv.Ae.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Bitv)
+module Ae_Float =
+  Dolmen_type.Float.Ae.Tff(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 
 (* Dimacs builtin *)
 module Dimacs =
@@ -1552,6 +1555,7 @@ module Typer(State : State.S) = struct
           Ae_Arith.parse;
           Ae_Arrays.parse;
           Ae_Bitv.parse;
+          Ae_Float.parse;
         ]) in
       T.empty_env ~order:First_order
         ~st:(State.get ty_state st).typer

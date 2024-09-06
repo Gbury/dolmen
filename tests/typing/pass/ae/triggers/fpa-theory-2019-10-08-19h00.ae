@@ -9,23 +9,6 @@
 (*                                                                            *)
 (******************************************************************************)
 
-type fpa_rounding_mode =
-  (* five standard/why3 fpa rounding modes *)
-    NearestTiesToEven (*ne in Gappa: to nearest, tie breaking to even mantissas*)
-  | ToZero (* zr in Gappa: toward zero *)
-  | Up (* up in Gappa: toward plus infinity *)
-  | Down (* dn in Gappa: toward minus infinity *)
-  | NearestTiesToAway (* na : to nearest, tie breaking away from zero *)
-
-  (* additional Gappa rounding modes *)
-  | Aw (* aw in Gappa: away from zero **)
-  | Od (* od in Gappa: to odd mantissas *)
-  | No (* no in Gappa: to nearest, tie breaking to odd mantissas *)
-  | Nz (* nz in Gappa: to nearest, tie breaking toward zero *)
-  | Nd (* nd in Gappa: to nearest, tie breaking toward minus infinity *)
-  | Nu (* nu in Gappa: to nearest, tie breaking toward plus infinity *)
-
-
 (* the first argument is mantissas' size (including the implicit bit),
    the second one is the exp of the min representable normalized number,
    the third one is the rounding mode, and the last one is the real to
@@ -51,9 +34,6 @@ logic float64d: real -> real
 (* rounds to nearest integer depending on rounding mode *)
 logic integer_round: fpa_rounding_mode, real -> int
 
-(* type cast: from int to real *)
-logic real_of_int : int -> real
-
 (* abs value of a real *)
 logic abs_real : real -> real
 
@@ -65,12 +45,6 @@ logic sqrt_real_default : real -> real
 
 (* sqrt value of a real by excess *)
 logic sqrt_real_excess : real -> real
-
-(* abs value of an int *)
-logic abs_int : int -> int
-
-(* (integer) floor of a rational *)
-logic int_floor : real -> int
 
 (* (integer) ceiling of a rational *)
 logic int_ceil : real -> int

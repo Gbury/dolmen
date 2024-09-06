@@ -761,6 +761,9 @@ module type Ae_Arith = sig
     val to_real : t -> t
     (** Conversion from an integer term to a real term. *)
 
+    val abs : t -> t
+    (** Arithmetic absolute value. *)
+
   end
 
   module Real : sig
@@ -768,6 +771,12 @@ module type Ae_Arith = sig
 
     val div : t -> t -> t
     (** Exact division on reals. *)
+
+    val is_int : t -> t
+    (** Integer testing *)
+
+    val floor_to_int : t -> t
+    (** Greatest integer smaller than the given real *)
 
   end
 
@@ -928,6 +937,46 @@ module type Ae_Bitv = sig
 
   val sge : t -> t -> t
   (** Boolean signed arithmetic comparison (greater or equal than). *)
+
+end
+
+module type Ae_Float_Float = sig
+
+  type t
+  (** the type of terms *)
+
+  val roundNearestTiesToEven: t
+  (** constant for rounding mode RNE *)
+
+  val roundNearestTiesToAway: t
+  (** constant for rounding mode RNA *)
+
+  val roundTowardPositive: t
+  (** constant for rounding mode RTP *)
+
+  val roundTowardNegative: t
+  (** constant for rounding mode RTN *)
+
+  val roundTowardZero: t
+  (** constant for rounding mode RTZ *)
+
+end
+
+(* Minimum required to type Ae floats *)
+module type Ae_Float = sig
+
+  type t
+  (** The type of terms *)
+
+  type ty
+  (** The type of types. *)
+
+  val ty : t -> ty
+  (** Type of a term. *)
+
+  module Float : Ae_Float_Float with type t := t
+  (** Sub-module used for namespacing the floating number part
+      of the theory requirements *)
 
 end
 

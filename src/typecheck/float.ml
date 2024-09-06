@@ -2,6 +2,46 @@
 module Id = Dolmen.Std.Id
 module Ast = Dolmen.Std.Term
 
+(* Ae floating point *)
+(* ************************************************************************ *)
+
+module Ae = struct
+
+  module Tff
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Ae_Float with type t := Type.Ty.t)
+      (T : Dolmen.Intf.Term.Ae_Float with type t := Type.T.t
+                                      and type ty := Type.Ty.t) = struct
+
+    module F = T.Float
+
+    let parse env s =
+      match s with
+
+      (* sorts *)
+      | Type.Id { ns = Sort; name = Simple "fpa_rounding_mode"; } ->
+        Type.builtin_ty (Base.app0 (module Type) env s Ty.roundingMode)
+
+      (* terms *)
+      | Type.Id { ns = Term; name = Simple name; } ->
+        begin match name with
+          | "NearestTiesToEven" ->
+            Type.builtin_term (Base.app0 (module Type) env s F.roundNearestTiesToEven)
+          | "NearestTiesToAway" ->
+            Type.builtin_term (Base.app0 (module Type) env s F.roundNearestTiesToAway)
+          | "Up" ->
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardPositive)
+          | "Down" ->
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardNegative)
+          | "ToZero" ->
+            Type.builtin_term (Base.app0 (module Type) env s F.roundTowardZero)
+          | _ -> `Not_found
+        end
+
+      | _ -> `Not_found
+  end
+end
+
 (* Smtlib Floating Point *)
 (* ************************************************************************ *)
 

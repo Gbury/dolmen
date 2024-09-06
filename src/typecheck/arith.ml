@@ -91,6 +91,19 @@ module Ae = struct
         | Type.Id { Id.ns = Value Hexadecimal; name = Simple name; } ->
           Type.builtin_term (Base.app0 (module Type) env s (T.real name))
 
+        | Type.Id { Id.ns = Term; name = Simple name; } ->
+          begin match name with
+          | "real_of_int" ->
+            Type.builtin_term (Base.term_app1 (module Type) env s T.Int.to_real)
+          | "int_floor" ->
+            Type.builtin_term (Base.term_app1 (module Type) env s T.Real.floor_to_int)
+          | "real_is_int" ->
+            Type.builtin_term (Base.term_app1 (module Type) env s T.Real.is_int)
+          | "abs_int" ->
+            Type.builtin_term (Base.term_app1 (module Type) env s T.Int.abs)
+          | _ -> `Not_found
+          end
+
         (* Arithmetic *)
         | Type.Builtin Term.Minus ->
           Type.builtin_term (Base.term_app1_ast (module Type) env s
@@ -186,8 +199,8 @@ module Ae = struct
             (parse_in_interval env ~strict_lower ~strict_upper)
         )
 
-        (* Catch-all *)
-        | _ -> `Not_found
+      (* Catch-all *)
+      | _ -> `Not_found
 
   end
 end
@@ -1288,4 +1301,3 @@ module Zf = struct
 
   end
 end
-
