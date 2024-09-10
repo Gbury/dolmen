@@ -16,7 +16,7 @@ let expected_of_problem file =
 
 let response_of_problem file =
   match Filename.extension file with
-  | ".smt2" -> Some (Filename.chop_extension file ^ ".rsmt2")
+  | ".smt2" | ".ae" -> Some (Filename.chop_extension file ^ ".rsmt2")
   | _ -> None
 
 let supports_incremental file =

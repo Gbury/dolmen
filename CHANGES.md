@@ -1,4 +1,14 @@
 
+next
+----
+
+### Models
+
+- Fix a bug where the condition on evaluated goals was incorrect.
+  This should not affect any current use, since only SMT-LIB2 model
+  verification is supported and it does not have goals.
+
+
 v0.10
 -----
 

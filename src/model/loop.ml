@@ -112,10 +112,10 @@ let bad_model =
         match kind with
         | `Hyp ->
           Format.fprintf fmt "This hypothesis/assertion evaluates to false"
-        | `Goals evaluated_goals ->
+        | `Goal true_goal ->
           Format.fprintf fmt
-            "@[<v>All of the goals at the following locations evaluated to false:@ %a@]"
-            Fmt.(list pp_located) evaluated_goals
+            "@[<v>The goal at the following location evaluated to true:@ %a@]"
+            pp_located true_goal
         | `Clause ->
           Format.fprintf fmt "This assumed clause evaluates to false")
     ~name:"Incorrect model" ()
@@ -686,11 +686,10 @@ module Make
             let _ = eval_acc_direct ~reraise:false st model delayed evaluated_goals acc in
             assert false
         end else begin
-          (* **3** Lastly check that at least one goal evaluated to "true" *)
-          match evaluated_goals with
-          | [] -> st
-          | l when List.exists (fun { contents; _ } -> contents) l -> st
-          | l -> State.error ~file ~loc st bad_model (`Goals l)
+          (* **3** Lastly check that all goals evaluated to "false" *)
+          match List.find_opt (fun { contents; _ } -> contents) evaluated_goals with
+          | None -> st
+          | Some g -> State.error ~file ~loc st bad_model (`Goal g)
         end
       | _ -> st
     in

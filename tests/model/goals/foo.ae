@@ -1,0 +1,7 @@
+
+logic x : int
+
+goal g : false
+
+
+
