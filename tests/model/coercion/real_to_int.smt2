@@ -1,0 +1,6 @@
+(set-option :produce-models)
+(set-logic QF_LIRA)
+(declare-const x Real)
+(assert (= (to_int x) 2))
+(check-sat)
+(get-model)

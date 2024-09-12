@@ -92,6 +92,7 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Modulo_f `Real -> op2 ~cst mod_f
   | B.Is_rat `Real -> Some (Bool.mk true)
   | B.Floor `Real -> op1 ~cst floor
+  | B.Floor_to_int `Real -> Some (fun1 ~cst (fun x -> Int.mk (Int.floor x)))
   | B.Ceiling `Real -> op1 ~cst ceil
   | B.Truncate `Real -> op1 ~cst truncate
   | B.Round `Real -> op1 ~cst round
