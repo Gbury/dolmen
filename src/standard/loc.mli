@@ -76,11 +76,12 @@ val loc : file -> t -> loc
 val full_loc : full -> loc
 (** Return a complete location from a compact location and meta-data. *)
 
-val compact : loc -> file * t
+val compact : file -> loc -> t
 (** Compactify a full location into a compact representation. *)
 
 val lexing_positions : loc -> Lexing.position * Lexing.position
 (** Return the pair of lexing positions corresponding to a location. *)
+
 
 (** {2 Printing locations} *)
 
