@@ -44,7 +44,7 @@ jobs:
             dolmen_asset: dolmen-windows-amd64.exe
             dolmenls_artifact: dolmenls.exe
             dolmenls_asset: dolmenls-windows-amd64.exe
-            ocaml-version: ocaml-variants.4.14.2+flambda+mingw64c
+            ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,system-mingw
 
     # Build ENV
     # ---------
@@ -60,7 +60,7 @@ jobs:
       uses: actions/checkout@v3
     # Setup ocaml/opam
     - name: Setup ocaml/opam
-      uses: avsm/setup-ocaml@v2
+      uses: avsm/setup-ocaml@v3
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}
     # Run opam udpate to get an up-to-date repo
