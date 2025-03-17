@@ -93,7 +93,7 @@ jobs:
       uses: actions/checkout@v3
     # Setup ocaml/opam
     - name: Setup ocaml/opam
-      uses: avsm/setup-ocaml@v2
+      uses: avsm/setup-ocaml@v3
       with:
         ocaml-compiler: ${{ matrix.ocaml-version }}
     # Debug
