@@ -74,8 +74,6 @@ jobs:
             os: macos-latest
 
           # Windows
-          - ocaml-version: ocaml-variants.4.12.1+options,system-mingw
-            os: windows-latest
           - ocaml-version: ocaml-variants.4.13.1+options,system-mingw
             os: windows-latest
           - ocaml-version: ocaml-variants.4.14.2+options,system-mingw
