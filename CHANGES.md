@@ -8,6 +8,12 @@ next
   This should not affect any current use, since only SMT-LIB2 model
   verification is supported and it does not have goals.
 
+### API
+
+- Fix the implementation of `Loc.compact` which was broken and useless
+  in practice. The new version takes a file (metadata) and a full loc
+  and returns a compact loc. (PR#229)
+
 
 v0.10
 -----
