@@ -36,50 +36,72 @@ jobs:
         # Also test flambda to make sure the installation time is reasonable
         # Note that because on windows, switches have different names, we
         # must do a bit of work manually to get a correct ocaml-version
+        #
+        # Note: dolmen_lsp needs ocaml >= 4.14 (because of linol >= 0.8)
+        # so we do not test it on older versions of ocaml
         include:
           # linux
+          - ocaml-version: ocaml-base-compiler.4.08.1
+            os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.12.1
             os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.13.1
             os: ubuntu-latest
-          - ocaml-version: ocaml-base-compiler.4.14.2
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
+          - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
             os: ubuntu-latest
-          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
-            os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.0.0
             os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.1.1
             os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.2.1
             os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.3.0
             os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # macos
+          - ocaml-version: ocaml-base-compiler.4.08.1
+            os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.12.1
             os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.13.1
             os: macos-latest
-          - ocaml-version: ocaml-base-compiler.4.14.0
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
+          - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
             os: macos-latest
-          - ocaml-version: ocaml-variants.4.14.0+options,ocaml-option-flambda
-            os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.0.0
             os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.1.1
             os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.2.1
             os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.3.0
             os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # Windows
+          - ocaml-version: ocaml-variants.4.08.1+options,system-mingw
+            os: windows-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-variants.4.13.1+options,system-mingw
             os: windows-latest
-          - ocaml-version: ocaml-variants.4.14.2+options,system-mingw
-            os: windows-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,system-mingw
             os: windows-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
     # Build ENV
     # ---------
@@ -114,12 +136,16 @@ jobs:
     - name: Pin ocamlbuild (windows-only)
       run: opam pin add ocamlbuild https://github.com/Gbury/ocamlbuild.git#win32
       if: matrix.os == 'windows-latest'
+
+    # Pin the local dolmen pkgs
+    - name: Pin Dolmen packages
+      run: opam pin . -n
     # Install dependencies
     - name: Install dependencies
-      run: opam install . --deps-only --with-test --with-doc
+      run: opam install ${{ matrix.pkgs }} --deps-only --with-test --with-doc
     # Install each package
     - name: Install dolmen
-      run: opam install . --with-test --with-doc
+      run: opam install ${{ matrix.pkgs }} --with-test --with-doc
       timeout-minutes: 20
       # Ensure that installation does not take too long
       # (particularly with regards to flambda)
