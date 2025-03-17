@@ -208,7 +208,7 @@ let parse_time arg =
   let l = String.length arg in
   let multiplier m =
     let arg1 = String.sub arg 0 (l-1) in
-    `Ok (m *. (float_of_string arg1))
+    Ok (m *. (float_of_string arg1))
   in
   assert (l > 0);
   try
@@ -217,9 +217,9 @@ let parse_time arg =
     | 'm' -> multiplier 60.
     | 'h' -> multiplier 3600.
     | 'd' -> multiplier 86400.
-    | '0'..'9' -> `Ok (float_of_string arg)
-    | _ -> `Error "bad numeric argument"
-  with Failure _ -> `Error "bad numeric argument"
+    | '0'..'9' -> Ok (float_of_string arg)
+    | _ -> Error (`Msg "bad numeric argument")
+  with Failure _ -> Error (`Msg "bad numeric argument")
 
 let size_string f =
   let n = int_of_float f in
@@ -240,7 +240,7 @@ let parse_size arg =
   let l = String.length arg in
   let multiplier m =
     let arg1 = String.sub arg 0 (l-1) in
-    `Ok (m *. (float_of_string arg1))
+    Ok (m *. (float_of_string arg1))
   in
   assert (l > 0);
   try
@@ -249,12 +249,12 @@ let parse_size arg =
     | 'M' -> multiplier 1e6
     | 'G' -> multiplier 1e9
     | 'T' -> multiplier 1e12
-    | '0'..'9' -> `Ok (float_of_string arg)
-    | _ -> `Error "bad numeric argument"
-  with Failure _ -> `Error "bad numeric argument"
+    | '0'..'9' -> Ok (float_of_string arg)
+    | _ -> Error (`Msg "bad numeric argument")
+  with Failure _ -> Error (`Msg "bad numeric argument")
 
-let c_time = parse_time, print_time
-let c_size = parse_size, print_size
+let c_time = Arg.conv (parse_time, print_time)
+let c_size = Arg.conv (parse_size, print_size)
 
 
 (* Location styles *)
