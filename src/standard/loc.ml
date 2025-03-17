@@ -244,19 +244,18 @@ let loc file c : loc =
 
 let full_loc { file; loc = l; } = loc file l
 
-let compact (t : loc) =
-  let file = mk_file t.file in
+let compact file t : t =
   let start_line_offset = Vec.get file.table t.start_line in
   let start_offset = start_line_offset + t.start_column + 1 in
   let stop_line_offset = Vec.get file.table t.stop_line in
   let stop_offset = stop_line_offset + t.stop_column + 1 in
   let length = stop_offset - start_offset in
-  file, mk_compact start_offset length
+  mk_compact start_offset length
 
 (* File path normalization *)
 (* ************************************************************************* *)
 
-(** It turns out that in most cases, using forward slashes in patsh actually
+(** It turns out that in most cases, using forward slashes in paths actually
     work on Windows, see
     https://learn.microsoft.com/en-us/archive/blogs/larryosterman/why-is-the-dos-path-character
 
