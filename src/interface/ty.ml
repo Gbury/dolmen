@@ -232,6 +232,17 @@ module type Ae_Bitv = sig
 
 end
 
+(** Signature required by types for typing ae's floats *)
+module type Ae_Float = sig
+
+  type t
+  (** The type of types *)
+
+  val roundingMode: t
+  (** Type of the rounding modes *)
+
+end
+
 (** Signature required by types for typing tptp *)
 module type Tptp_Base = sig
 
@@ -432,6 +443,3 @@ module type Zf_Arith = sig
     (** The type of integers *)
 
 end
-
-
-
