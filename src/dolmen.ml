@@ -14,6 +14,3 @@ module Zf = Dolmen_zf
 
 (* Classes *)
 module Class = Dolmen_class
-
-(* Extensions *)
-module Sites = Sites

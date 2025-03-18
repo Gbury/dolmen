@@ -12,7 +12,8 @@
     (select memory_profiler.ml from
             (memtrace -> memory_profiler.memtrace.ml)
             (         -> memory_profiler.missing.ml))
-    )
+    ; extension support
+    dune-site dune-site.plugins)
 )
 
 ; Rule to generate a man page for dolmen
@@ -27,3 +28,8 @@
  (files    dolmen.1)
  (package  dolmen_bin)
 )
+
+; Extensions
+(generate_sites_module
+  (module Sites)
+  (plugins (dolmen plugins)))
