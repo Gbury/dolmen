@@ -9,7 +9,8 @@ build: [
   ["dune" "build" "-p" name "-j" jobs "@install" "@runtest" {with-test} "@doc" {with-doc}]
 ]
 depends: [
-  "ocaml" {>= "4.02.3"}
+  # linol~0.8 -> ocaml >= 4.14
+  "ocaml" {>= "4.14.2"}
   "dolmen" {= version }
   "dolmen_type" {= version }
   "dolmen_loop" { = version }
@@ -18,8 +19,8 @@ depends: [
   "odoc" { with-doc }
   "logs"
   "lsp"
-  "linol" { >= "0.4" & < "0.5" }
-  "linol-lwt" { >= "0.4" & < "0.5" }
+  "linol" { >= "0.8" & < "0.9" }
+  "linol-lwt" { >= "0.8" & < "0.9" }
 ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"

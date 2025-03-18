@@ -44,6 +44,8 @@ class dolmen_lsp_server =
   object(self)
     inherit Linol_lwt.Jsonrpc2.server
 
+    method spawn_query_handler f = Linol_lwt.spawn f
+
     (* one env per document *)
     val buffers: (Lsp.Types.DocumentUri.t, State.t) Hashtbl.t = Hashtbl.create 32
 
@@ -55,14 +57,15 @@ class dolmen_lsp_server =
       let change = Lsp.Types.TextDocumentSyncKind.Incremental in
       (* Lsp.Types.TextDocumentSyncKind.Full *)
       Lsp.Types.TextDocumentSyncOptions.create ~openClose:true ~change
-        ~save:(Lsp.Types.SaveOptions.create ~includeText:false ())
+        ~save:(`SaveOptions (Lsp.Types.SaveOptions.create ~includeText:false ()))
         ()
 
     method private _on_doc
         ~(notify_back:Linol_lwt.Jsonrpc2.notify_back)
         (uri:Lsp.Types.DocumentUri.t) (contents:string) =
       (* TODO: unescape uri/translate it to a correct path ? *)
-      match Loop.process prelude (preprocess_uri uri) (Some contents) with
+      let uri_path = Lsp.Uri.to_path uri in
+      match Loop.process prelude (preprocess_uri uri_path) (Some contents) with
       | Ok state ->
         let diags = State.get State.diagnostics state in
         Hashtbl.replace buffers uri state;

@@ -9,7 +9,8 @@ build: [
   ["dune" "build" "-p" name "-j" jobs "@install" "@runtest" {with-test} "@doc" {with-doc}]
 ]
 depends: [
-  "ocaml" {>= "4.02.3"}
+  # farith -> ocaml >= 4.10
+  "ocaml" {>= "4.10.1"}
   "dolmen" {= version }
   "dolmen_loop" {= version }
   "dune" { >= "3.0" }
