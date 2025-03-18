@@ -24,17 +24,6 @@ val load_model_extension :
 val list : unit -> t list
 (** Lists the available extensions. *)
 
-val invalid : unit -> string list
-(** Lists the name of dune plugins registered as extensions but with an invalid
-    name. *)
-
-type kind = Typing | Model
-
 val parse :
-  string -> (t * kind option, [> `Msg of string ]) result
-(** Parses an extension name, with optional restriction prefix.
-
-    Returns a pair [(ext, kind)] where [kind] is [None] if both model and typing
-    extensions should be loaded, [Some Typing] if only the typing extension
-    should be loaded, and [Some Model] if only the model extension should be
-    loaded. *)
+  string -> (t, [> `Msg of string ]) result
+(** Parses an extension name. *)

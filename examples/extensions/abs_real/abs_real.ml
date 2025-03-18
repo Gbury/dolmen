@@ -13,7 +13,9 @@ module Const = struct
       (Dolmen.Std.Path.global cname) ty
 
   module Real = struct
-    (* NB: Use [Dolmen.Std.Expr.with_cache] for parameterized builtins. *)
+    (* Parameterized builtins that are not constant constructors (e.g.
+       bit-vector constructors that depend on the size of the bit-vector) must
+       use [Dolmen.Std.Expr.with_cache]. *)
     let abs =
       mk' ~builtin:Abs_real "abs_real"
         [] [Ty.real] Ty.real

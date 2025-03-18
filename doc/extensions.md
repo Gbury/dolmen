@@ -1,25 +1,17 @@
 # User-defined builtins
 
-Dolmen supports extensions through the form of user-defined builtins; see the
-`abs_real` and `abs_real_split` plugins.
+Dolmen supports user-defined builtins through extensions.
 
-User-defined builtins can be added to the extensible `Builtin` type in
-`Dolmen.Std.Builtin.t`.
+When using Dolmen as a library, extensions can be registered programmatically
+using `Dolmen_loop.Typer.Ext.create` and `Dolmen_model.Ext.create`. They can
+then be activated using the `extension_builtins` in `Dolmen_loop.Typer.init`
+and `Dolmen_model.Loop.init` , or by adding to the
+`Dolmen_loop.Typer.extension_builtins` and `Dolmen_model.Loop.builtins` state
+keys.
 
-Builtins need to be registered with the typer using `Dolmen_loop.Typer.Ext`,
-and they optionally need to be registered with the model evaluation mechanism
-(if they are to be used with model verification) using `Dolmen_model.Env.Ext`.
+When using Dolmen as a binary, extensions are loaded through Dune's plugin
+mechanism; see the `abs_real` example plugin.  Plugins only need to register
+the extension; the Dolmen binary will take care of activating them.
 
-The `dolmen` command-line tool looks up user-defined extensions using the Dune
-plugin mechanism. A plugin named `plugin.typing` will be picked up when
-`--ext plugin` or `--ext plugin.typing` is provided on the command-line, and
-the plugin must register a typing extension named `"plugin"` using
-`Dolmen_loop.Typer.Ext.create`. A plugin named `plugin.model` will be picked up
-when `--ext plugin` or `--ext plugin.model` is provided on the command-line and
-the plugin must register a model extension named `"plugin"` using
-`Dolmen_model.Ext.create`. A plugin named `plugin` (without dots) will be
-picked up when either of the above command line flags is provided, and must
-provide both a typing and model extension.
-
-*Note*: Model extensions are only used (and their existence checked) if the
-user provides the `--check-model` flag.
+**Plugins must use their name (defined in the `plugin` stanza) to register
+extensions, otherwise Dolmen will not activate the extensions.**

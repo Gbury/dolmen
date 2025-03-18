@@ -272,8 +272,7 @@ let report_style =
 (* ************************************************************************ *)
 
 let extension =
-  let print ppf (t, _) = Extensions.pp ppf t in
-  Cmdliner.Arg.conv (Extensions.parse, print)
+  Cmdliner.Arg.conv (Extensions.parse, Extensions.pp)
 
 (* Smtlib2 logic and extensions *)
 (* ************************************************************************ *)
@@ -402,19 +401,13 @@ let mk_run_state
   in
   (* Extensions *)
   let st =
-    List.fold_left (fun st (ext, kind) ->
-      match kind with
-      | None | Some Extensions.Typing ->
-        Result.bind st (Extensions.load_typing_extension ext)
-      | Some _ -> st
+    List.fold_left (fun st ext ->
+      Result.bind st (Extensions.load_typing_extension ext)
     ) (Ok st) extensions
   in
   if check_model then
-    List.fold_left (fun st (ext, kind) ->
-      match kind with
-      | None | Some Extensions.Model ->
-        Result.bind st (Extensions.load_model_extension ext)
-      | Some _ -> st
+    List.fold_left (fun st ext ->
+      Result.bind st (Extensions.load_model_extension ext)
     ) st extensions
   else
     st

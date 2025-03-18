@@ -2,7 +2,7 @@
   (public_name dolmen-extension-abs-real)
   (name abs_real)
   (modules abs_real)
-  (libraries dolmen_model))
+  (libraries dolmen dolmen_type dolmen_loop dolmen_model))
 
 (plugin
   (name abs_real)

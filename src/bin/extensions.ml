@@ -1,235 +1,136 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-type 'a location =
-  | Builtin of 'a
+type location =
+  | Builtin
     (** A built-in extension. *)
-  | Unavailable
-    (** An unavailable extension. Cannot be loaded. *)
   | Dune_plugin of string
-    (** An external extension to be loaded dune's plugin mechanism. Loading the
-        plugin should register an extension in the appropriate registry. *)
+    (** An external extension to be loaded using dune's plugin mechanism.
+        Loading the plugin should register an extension in the appropriate
+        registry. *)
 (** The ['a location] type represents the location of an extension (either
     built-in, or to be loaded from a specific dune plugin). *)
 
-let is_available = function
-  | Unavailable -> false
-  | Builtin _ | Dune_plugin _ -> true
-
-(* Merge two possible locations for the same plugin. Prefer builtin plugins. *)
-let merge_location p1 p2 =
-  match p1, p2 with
-  | Builtin _ as p, _ | _, (Builtin _ as p) -> p
-  | Dune_plugin _ as p, _ | _, (Dune_plugin _ as p) -> p
-  | Unavailable, Unavailable -> Unavailable
-
 type t = {
   extension_name : string ;
-  (** Name of the extension (without dot). *)
-  typing_plugin : Dolmen_loop.Typer.Ext.t location ;
-  (** Name of the Dune plugin that provide typing extensions. *)
-  model_plugin : Dolmen_model.Ext.t location ;
-  (** Name of the Dune plugin that provide model extensions. *)
+  (** Name of the extension. *)
+  extension_location : location ;
 }
 
-let has_typing_extension { typing_plugin; _ } = is_available typing_plugin
-
-let has_model_extension { model_plugin; _ } = is_available model_plugin
-
-let pp ppf e =
-  let variants =
-    (if has_typing_extension e then ["typing"] else []) @
-    (if has_model_extension e then ["model"] else [])
+let pp ppf { extension_name; extension_location } =
+  let pp_location ppf = function
+    | Builtin -> Fmt.pf ppf "@ (builtin)"
+    | Dune_plugin _ -> ()
   in
-  Fmt.pf ppf "%s@ %a" e.extension_name
-    Fmt.(parens @@ list ~sep:comma string) variants
+  Fmt.pf ppf "@[%s%a@]" extension_name pp_location extension_location
 
 let name { extension_name ; _ } = extension_name
 
-type kind = Typing | Model
+let builtin_extensions =
+  let builtin_extensions = Hashtbl.create 17 in
 
-let parse_ext_opt s : (string * kind option) option =
-  match String.rindex s '.' with
-  | exception Not_found -> Some (s, None)
-  | pos ->
-    let extension_name = String.sub s 0 pos in
-    let plugin_kind = String.sub s (pos + 1) (String.length s - pos - 1) in
-    match plugin_kind with
-    | "typing" -> Some (extension_name, Some Typing)
-    | "model" -> Some (extension_name, Some Model)
-    | _ -> None
+  (* Add builtin typing extensions. *)
+  List.iter (fun ext ->
+    Hashtbl.replace builtin_extensions (Dolmen_loop.Typer.Ext.name ext) ()
+  ) [ Dolmen_loop.Typer.Ext.bvconv ];
 
-let merge_ext e1 e2 =
-  assert (e1.extension_name = e2.extension_name);
-  let typing_plugin = merge_location e1.typing_plugin e2.typing_plugin
-  and model_plugin = merge_location e1.model_plugin e2.model_plugin in
-  { extension_name = e1.extension_name
-  ; typing_plugin
-  ; model_plugin }
+  (* Add builtin model extensions (note: these may share name with typing
+     extensions). *)
+  List.iter (fun ext ->
+    Hashtbl.replace builtin_extensions (Dolmen_model.Ext.name ext) ()
+  ) [ Dolmen_model.Ext.bvconv ];
 
-let add_ext tbl ext =
-  let name = ext.extension_name in
-  match Hashtbl.find tbl name with
-  | ext' -> Hashtbl.replace tbl name (merge_ext ext ext')
-  | exception Not_found -> Hashtbl.replace tbl name ext
+  builtin_extensions
 
-let infos =
+let dune_extensions =
   lazy (
     let extensions = Hashtbl.create 17 in
-    (* Add builtin typing extensions. *)
-    List.iter (fun ext ->
-      add_ext extensions
-        { extension_name = Dolmen_loop.Typer.Ext.name ext
-        ; typing_plugin = Builtin ext
-        ; model_plugin = Unavailable }
-    ) [ Dolmen_loop.Typer.Ext.bvconv ];
 
-    (* Add builtin model extensions. *)
-    List.iter (fun ext ->
-      add_ext extensions
-        { extension_name = Dolmen_model.Ext.name ext
-        ; typing_plugin = Unavailable
-        ; model_plugin = Builtin ext }
-    ) [ Dolmen_model.Ext.bvconv ];
+    List.iter (fun plugin ->
+      if Hashtbl.mem builtin_extensions plugin then
+        Format.eprintf
+          "@[<v>Warning: @[<hov>%a@ '%s'@ %a@]@]@."
+          Fmt.text "Ignoring external extension"
+          plugin
+          Fmt.text "as it would override a builtin extension of the same name."
+      else
+        Hashtbl.replace extensions plugin (Dune_plugin plugin)
+    ) (Dolmen.Sites.Plugins.Plugins.list ());
 
-    (* Add extensions from plugins. *)
-    let add_plugin invalid plugin = function
-      | None -> plugin :: invalid
-      | Some (extension_name, k) ->
-        let typing_plugin =
-          match k with
-          | None | Some Typing -> Dune_plugin plugin
-          | Some _ -> Unavailable
-        and model_plugin =
-          match k with
-          | None | Some Model -> Dune_plugin plugin
-          | Some _ -> Unavailable
-        in
-        add_ext extensions
-          { extension_name ; typing_plugin ; model_plugin };
-        invalid
-    in
-    let invalid =
-      List.fold_left (fun invalid e ->
-        add_plugin invalid e @@ parse_ext_opt e
-      ) [] (Dolmen.Sites.Plugins.Plugins.list ())
-    in
-    extensions, List.fast_sort String.compare invalid
+    extensions
   )
 
-let invalid () = snd @@ Lazy.force infos
-
 let list () =
+  let all_extensions =
+    Hashtbl.fold
+      (fun extension_name () exts ->
+        { extension_name ; extension_location = Builtin } :: exts)
+      builtin_extensions
+      []
+  in
+  let all_extensions =
+    Hashtbl.fold
+      (fun extension_name extension_location exts ->
+        { extension_name ; extension_location } :: exts)
+      (Lazy.force dune_extensions)
+      all_extensions
+  in
   List.fast_sort
     (fun e1 e2 -> String.compare (name e1) (name e2))
-    (Hashtbl.fold (fun _ e exts -> e :: exts) (fst @@ Lazy.force infos) [])
+    all_extensions
 
-let find_ext name =
-  let exts, _ = Lazy.force infos in
-  try Ok (Hashtbl.find exts name)
-  with Not_found ->
-    Fmt.error_msg
-      "@[<v>Could not find extension '%s'@ \
-      Available extensions:@;<1 2>@[<v>%a@]@]"
-      name
-      Fmt.(list (box pp)) (list ())
+let loaded_plugins =
+  Hashtbl.create 17
 
-let load_plugin_or_fail plugin =
-  try Ok (Dolmen.Sites.Plugins.Plugins.load plugin)
-  with Dynlink.Error err ->
-    Fmt.error_msg "while loading plugin %s: %s"
-      plugin (Dynlink.error_message err)
+let load_plugin_or_fail location =
+  match location with
+  | Builtin -> Ok ()
+  | Dune_plugin plugin ->
+    if Hashtbl.mem loaded_plugins plugin then Ok ()
+    else
+      match Dolmen.Sites.Plugins.Plugins.load plugin with
+      | () ->
+        Hashtbl.replace loaded_plugins plugin ();
+        Ok ()
+      | exception Dynlink.Error err ->
+        Fmt.error_msg "while loading plugin %s: %s"
+          plugin (Dynlink.error_message err)
 
-let missing_extension =
-  Dolmen_loop.Report.Warning.mk ~mnemonic:"missing-extension"
-    ~message:(fun ppf (kind, ext, _) ->
-      Format.fprintf ppf "There is no %s extension named '%s'." kind ext)
-    ~hints:[fun (kind, _, plugin) ->
-      Some (Format.dprintf
-        "Expected plugin '%s' to register this %s extension." plugin kind)]
-    ~name:"Missing extension" ()
+let add_typing_extensions exts st =
+  Loop.State.update Loop.Typer.extension_builtins (List.append exts) st
 
-let duplicate_extension =
-  Dolmen_loop.Report.Warning.mk ~mnemonic:"duplicate-extension"
-    ~message:(fun ppf (kind, name, _) ->
-      Format.fprintf ppf
-        "%s extension '%s' was registered multiple times."
-          (String.capitalize_ascii kind)
-          name)
-    ~hints:[
-      (fun (kind, name, _) ->
-        Some (
-          Format.dprintf "%a@ %s@ extension@ '%s'."
-            Fmt.words
-            "This is likely caused by multiple plugins trying to register the"
-            kind name));
-      (fun (kind, _, plugin) ->
-        Some (
-          Format.dprintf "Expected plugin '%s' to register this %s extension."
-            plugin kind))]
-    ~name:"Duplicate extension" ()
+let load_typing_extension { extension_name ; extension_location } st =
+  Result.bind (load_plugin_or_fail extension_location) @@ fun ()  ->
+  match Dolmen_loop.Typer.Ext.find_all extension_name with
+  | [] -> Ok st
+  | exts  -> Ok (add_typing_extensions exts st)
 
-let add_typing_extension ext st =
-  Loop.State.update Loop.Typer.extension_builtins (List.cons ext) st
-
-let load_typing_extension ext st =
-    match ext.typing_plugin with
-    | Unavailable ->
-      Fmt.error_msg
-        "No plugin provides the typing extension '%s'" ext.extension_name
-    | Builtin e ->
-      Ok (add_typing_extension e st)
-    | Dune_plugin plugin ->
-      Result.bind (load_plugin_or_fail plugin) @@ fun () ->
-      match Dolmen_loop.Typer.Ext.find_all ext.extension_name with
-      | [] ->
-        Ok (
-          Loop.State.warn st
-            missing_extension
-            ("typing", ext.extension_name, plugin)
-        )
-      | [ e ] ->
-        Ok (add_typing_extension e st)
-      | e :: _ ->
-        let st =
-          Loop.State.warn st
-            duplicate_extension
-            ("typing", ext.extension_name, plugin)
-        in
-        Ok (add_typing_extension e st)
-
-let add_model_extension b st =
+let add_model_extensions exts st =
   Loop.State.update Loop.Check.builtins
-   (fun bs -> Dolmen_model.Eval.builtins [ Dolmen_model.Ext.builtins b ; bs ])
+   (fun bs ->
+     Dolmen_model.Eval.builtins
+       (List.append (List.map Dolmen_model.Ext.builtins exts) [ bs ]))
    st
 
-let load_model_extension ext st =
-    match ext.model_plugin with
-    | Unavailable ->
-      Fmt.error_msg
-        "No plugin provides the model extension '%s'" ext.extension_name
-    | Builtin e ->
-      Ok (add_model_extension e st)
-    | Dune_plugin plugin ->
-      Result.bind (load_plugin_or_fail plugin) @@ fun () ->
-      match Dolmen_model.Ext.find_all ext.extension_name with
-      | [] ->
-        Ok (
-          Loop.State.warn st
-            missing_extension
-            ("model", ext.extension_name, plugin)
-        )
-      | [ e ] ->
-        Ok (add_model_extension e st)
-      | e :: _ ->
-        let st =
-          Loop.State.warn st
-            duplicate_extension
-            ("model", ext.extension_name, plugin)
-        in
-        Ok (add_model_extension e st)
+let load_model_extension { extension_name; extension_location } st =
+  Result.bind (load_plugin_or_fail extension_location) @@ fun ()  ->
+  match Dolmen_model.Ext.find_all extension_name with
+  | [] -> Ok st
+  | exts  -> Ok (add_model_extensions exts st)
 
-let parse s =
-  match parse_ext_opt s with
-  | None -> Fmt.error_msg "Invalid extension name '%s'" s
-  | Some (name, kind) ->
-    Result.map (fun ext -> (ext, kind)) (find_ext name)
+let parse extension_name =
+  let extension_location =
+    if Hashtbl.mem builtin_extensions extension_name
+    then Ok Builtin
+    else
+      (* Dune doesn't provide a way to check if a plugin with a given name is
+         available, so list all plugins to check. *)
+      try Ok (Hashtbl.find (Lazy.force dune_extensions) extension_name)
+      with Not_found ->
+        Fmt.error_msg
+          "@[<v>Could not find extension '%s'@ \
+          Available extensions:@;<1 2>@[<v>%a@]@]"
+          extension_name
+          Fmt.(list (box pp)) (list ())
+  in
+  Result.bind extension_location (fun extension_location ->
+    Ok { extension_name ; extension_location })
