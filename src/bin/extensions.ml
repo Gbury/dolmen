@@ -7,7 +7,7 @@ type location =
     (** An external extension to be loaded using dune's plugin mechanism.
         Loading the plugin should register an extension in the appropriate
         registry. *)
-(** The ['a location] type represents the location of an extension (either
+(** The [location] type represents the location of an extension (either
     built-in, or to be loaded from a specific dune plugin). *)
 
 type t = {
