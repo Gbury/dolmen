@@ -32,4 +32,4 @@
 ; Extensions
 (generate_sites_module
   (module Sites)
-  (plugins (dolmen plugins)))
+  (plugins (dolmen_bin plugins)))
