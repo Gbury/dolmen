@@ -5,12 +5,14 @@
   (libraries
     ; External deps
     gen unix fmt pp_loc
-    ; main dolmen deps , with versioned languages deps
+    ; main dolmen deps, with versioned languages deps
     dolmen
     dolmen.intf dolmen.std dolmen.class
     dolmen.smtlib2 dolmen.tptp
     ; typechecker
     dolmen_type
+    ; TODO: remove and split export into its own lib
+    zarith
     )
   (modules
     ; Useful utilities
@@ -20,5 +22,5 @@
     ; Implementations
     Logic Response Code State
     ; Pipeline & Pipes
-    Pipeline Parser Typer Flow Headers)
+    Pipeline Parser Typer Flow Headers Transform Export)
 )

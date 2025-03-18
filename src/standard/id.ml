@@ -26,8 +26,11 @@ let compare { ns; name; } { ns = ns'; name = name'; } =
 let equal id id' =
   id == id' || compare id id' = 0
 
-let print fmt { name; ns = _; } =
-  Name.print fmt name
+let print fmt { name; ns; } =
+  match ns with
+  | Value String -> Format.fprintf fmt {|"%a"|} Name.print name
+  | Attr -> Format.fprintf fmt "%a" Name.print name
+  | _ -> Name.print fmt name
 
 
 (* Namespaces *)

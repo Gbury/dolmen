@@ -1,0 +1,6 @@
+Warning The logic used to typecheck the problem (ALL) is not minimal. The minimal logic actually is: QF_UFLRA
+(set-logic QF_UFLRA)
+(declare-fun p (Real) Bool)
+(assert (p 42.0))
+(check-sat)
+(exit)

@@ -50,14 +50,14 @@ let process preludes path opt_contents =
     in
     aux preludes
   in
-  let l_file : _ State.file = {
+  let l_file : _ State.input_file = {
     lang = None; mode = None; dir;
     loc = Dolmen.Std.Loc.mk_file "";
-    source =match opt_contents with
+    source = match opt_contents with
       | None -> `File file
       | Some contents -> `Raw (file, contents);
   } in
-  let r_file : _ State.file = {
+  let r_file : _ State.input_file = {
     lang = None; mode = None; dir;
     loc = Dolmen.Std.Loc.mk_file "";
     source = `Raw ("", "");

@@ -33,7 +33,7 @@ module type S = sig
   *)
 
   val parse_logic :
-    ?preludes:Logic.language State.file list -> Logic.language State.file ->
+    ?preludes:Logic.language State.input_file list -> Logic.language State.input_file ->
     (state -> state * Dolmen.Std.Statement.t option)
   (** Parsing function. Builds a statement generator from a file.
 
@@ -46,7 +46,7 @@ module type S = sig
       did not exist. *)
 
   val parse_response :
-    Dolmen.Std.Answer.t list -> state -> Response.language State.file ->
+    Dolmen.Std.Answer.t list -> state -> Response.language State.input_file ->
     state * (state -> state * Dolmen.Std.Answer.t option)
   (** Parsing function. Reads a list of prelude statements, and the state and
       returns a tuple of the new state (including the detected input language),

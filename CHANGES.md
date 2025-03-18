@@ -2,6 +2,18 @@
 next
 ----
 
+### UI
+
+- Add the export feature to the `dolmen` binary (PR#211)
+
+### Typing
+
+- Add a logic detection mechanism (PR#211)
+
+### Printing
+
+- Add printers for the SMT-LIB format (PR#211)
+
 ### Models
 
 - Fix a bug where the condition on evaluated goals was incorrect.

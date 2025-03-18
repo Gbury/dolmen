@@ -147,6 +147,7 @@
     done;
     (* Quoted symbols allow to use reserved words as symbols *)
     SYMBOL s
+
 }
 
 let white_space_char = ['\t' '\n' '\r' ' ']
@@ -205,4 +206,34 @@ and string newline b = parse
     { if c = '\n' then newline lexbuf;
       Buffer.add_char b c; string newline b lexbuf }
   | _                   { raise Error }
+
+(* these are there to simplify the task of printers, by allowing to
+   check strings against some lexical categories *)
+and check_simple_symbol = parse
+  | simple_symbol eof { true }
+  | _ | eof           { false }
+
+and check_quoted_symbol = parse
+  | quoted_symbol_char* eof { true }
+  | _ | eof                 { false }
+
+and check_keyword = parse
+  | keyword eof { true }
+  | _ | eof     { false }
+
+and check_num = parse
+  | numeral eof { true }
+  | _ | eof     { false }
+
+and check_dec = parse
+  | decimal eof { true }
+  | _ | eof     { false }
+
+and check_hex = parse
+  | hexadecimal eof   { true }
+  | _ | eof           { false }
+
+and check_bin = parse
+  | binary eof  { true }
+  | _ | eof     { false }
 
