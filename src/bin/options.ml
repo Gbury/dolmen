@@ -637,7 +637,7 @@ let state =
   in
   let ext =
     let doc = Format.asprintf
-        "Enable extensions. Use $(b,--list-extensions) to list available \
+        "Enable extensions. Use $(b,--ext-list) to list available \
         extensions."
     in
     Arg.(value & opt_all extension [] &
@@ -730,7 +730,7 @@ let cli =
       `Ok List_extensions
     | _ ->
       `Error (false,
-              "at most one of --list, --doc and --list-extensions might be \
+              "at most one of --list, --doc and --ext-list might be \
                present on the command line")
   in
   let list =
@@ -744,7 +744,7 @@ let cli =
   in
   let list_extensions =
     let doc = "List all available extensions." in
-    Arg.(value & flag & info ["list-extensions"] ~doc ~docs)
+    Arg.(value & flag & info ["ext-list"] ~doc ~docs)
   in
   Term.(ret (
     const aux $ state $ preludes $ logic_file $ list $ doc

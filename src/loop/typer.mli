@@ -46,7 +46,7 @@ module Ext : sig
       These extensions are typically extensions used by some community,
       but not yet part of the standard.
 
-      @since 0.10 *)
+      @since 0.11 *)
 
   type t
   (** The type of typing extensions. *)

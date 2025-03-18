@@ -44,24 +44,6 @@ let builtin_extensions =
 
   builtin_extensions
 
-let dune_extensions =
-  lazy (
-    let extensions = Hashtbl.create 17 in
-
-    List.iter (fun plugin ->
-      if Hashtbl.mem builtin_extensions plugin then
-        Format.eprintf
-          "@[<v>Warning: @[<hov>%a@ '%s'@ %a@]@]@."
-          Fmt.text "Ignoring external extension"
-          plugin
-          Fmt.text "as it would override a builtin extension of the same name."
-      else
-        Hashtbl.replace extensions plugin (Dune_plugin plugin)
-    ) (Dolmen.Sites.Plugins.Plugins.list ());
-
-    extensions
-  )
-
 let list () =
   let all_extensions =
     Hashtbl.fold
@@ -71,11 +53,12 @@ let list () =
       []
   in
   let all_extensions =
-    Hashtbl.fold
-      (fun extension_name extension_location exts ->
-        { extension_name ; extension_location } :: exts)
-      (Lazy.force dune_extensions)
-      all_extensions
+    List.fold_left (fun all_extensions plugin ->
+      if Hashtbl.mem builtin_extensions plugin then all_extensions
+      else
+        { extension_name = plugin ; extension_location = Dune_plugin plugin }
+        :: all_extensions
+    ) all_extensions (Dolmen.Sites.Plugins.Plugins.list ())
   in
   List.fast_sort
     (fun e1 e2 -> String.compare (name e1) (name e2))
@@ -84,25 +67,53 @@ let list () =
 let loaded_plugins =
   Hashtbl.create 17
 
-let load_plugin_or_fail location =
+let dynlink_error =
+  let open Dolmen_loop in
+  Report.Warning.mk ~mnemonic:"dynlink-plugin-error"
+    ~message:(fun ppf (plugin, err) ->
+      Fmt.pf ppf "Unable to load plugin library '%s':@ %s"
+        plugin (Dynlink.error_message err))
+    ~name:"Dynlink error" ()
+
+let list_available_extensions (_plugin, _exn) =
+  Some (
+    Format.dprintf
+      "Available extensions are:@ %a"
+      Fmt.(list ~sep:Fmt.comma (box pp)) (list ())
+  )
+
+let dune_plugin_error =
+  Dolmen_loop.Report.Error.mk ~mnemonic:"dune-plugin-error"
+    ~hints:[list_available_extensions]
+    ~message:(fun ppf (plugin, exn) ->
+      Fmt.pf ppf "Unknown error while loading plugin '%s':@ %s"
+        plugin (Printexc.to_string exn))
+    ~name:"Dune plugin error" ()
+
+let load_plugin_or_fail location st =
   match location with
-  | Builtin -> Ok ()
+  | Builtin -> st
   | Dune_plugin plugin ->
-    if Hashtbl.mem loaded_plugins plugin then Ok ()
+    if Hashtbl.mem loaded_plugins plugin then st
     else
       match Dolmen.Sites.Plugins.Plugins.load plugin with
       | () ->
         Hashtbl.replace loaded_plugins plugin ();
-        Ok ()
+        st
       | exception Dynlink.Error err ->
-        Fmt.error_msg "while loading plugin %s: %s"
-          plugin (Dynlink.error_message err)
+        Loop.State.warn st dynlink_error (plugin, err)
+      | exception exn ->
+        (* Use an error rather than a warning here because, while it is
+           likely that the plugin simply doesn't exist, but this could also be
+           caused by a buggy plugin that might leave things in a partially
+           initialized state. *)
+        Loop.State.error st dune_plugin_error (plugin, exn)
 
 let add_typing_extensions exts st =
   Loop.State.update Loop.Typer.extension_builtins (List.append exts) st
 
 let load_typing_extension { extension_name ; extension_location } st =
-  Result.bind (load_plugin_or_fail extension_location) @@ fun ()  ->
+  let st = load_plugin_or_fail extension_location st in
   match Dolmen_loop.Typer.Ext.find_all extension_name with
   | [] -> Ok st
   | exts  -> Ok (add_typing_extensions exts st)
@@ -115,7 +126,7 @@ let add_model_extensions exts st =
    st
 
 let load_model_extension { extension_name; extension_location } st =
-  Result.bind (load_plugin_or_fail extension_location) @@ fun ()  ->
+  let st = load_plugin_or_fail extension_location st in
   match Dolmen_model.Ext.find_all extension_name with
   | [] -> Ok st
   | exts  -> Ok (add_model_extensions exts st)
@@ -124,16 +135,7 @@ let parse extension_name =
   let extension_location =
     if Hashtbl.mem builtin_extensions extension_name
     then Ok Builtin
-    else
-      (* Dune doesn't provide a way to check if a plugin with a given name is
-         available, so list all plugins to check. *)
-      try Ok (Hashtbl.find (Lazy.force dune_extensions) extension_name)
-      with Not_found ->
-        Fmt.error_msg
-          "@[<v>Could not find extension '%s'@ \
-          Available extensions:@;<1 2>@[<v>%a@]@]"
-          extension_name
-          Fmt.(list (box pp)) (list ())
+    else Ok (Dune_plugin extension_name)
   in
   Result.bind extension_location (fun extension_location ->
     Ok { extension_name ; extension_location })

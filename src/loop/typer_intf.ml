@@ -4,6 +4,7 @@ type lang = [
   | `Logic of Logic.language
   | `Response of Response.language
 ]
+(** Languages for files parsed (and typed) by dolmen *)
 
 (* Small signature to define a number of types. *)
 module type Types = sig
@@ -302,4 +303,3 @@ module type S = sig
   (** Typechecks a statement. *)
 
 end
-
