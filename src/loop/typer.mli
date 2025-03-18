@@ -55,7 +55,7 @@ module Ext : sig
   (** Extension name, sould be suitable for cli options. *)
 
   val builtins : t -> Typer_intf.lang -> T.builtin_symbols
-  (** Reutnrs the typing builtins from an extension. *)
+  (** Returns the typing builtins from an extension. *)
 
   val create :
     name:string -> builtins:(Typer_intf.lang -> T.builtin_symbols) -> t
