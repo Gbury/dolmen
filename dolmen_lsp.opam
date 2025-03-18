@@ -9,6 +9,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs "@install" "@runtest" {with-test} "@doc" {with-doc}]
 ]
 depends: [
+  # linol~0.8 -> ocaml >= 4.14
   "ocaml" {>= "4.14.2"}
   "dolmen" {= version }
   "dolmen_type" {= version }

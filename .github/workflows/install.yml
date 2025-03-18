@@ -37,11 +37,15 @@ jobs:
         # Note that because on windows, switches have different names, we
         # must do a bit of work manually to get a correct ocaml-version
         #
-        # Note: dolmen_lsp needs ocaml >= 4.14 (because of linol >= 0.8)
-        # so we do not test it on older versions of ocaml
+        # Note on deps and available packages:
+        # - dolmen_model -> farith -> ocaml >= 4.10
+        # - dolmen_lsp -> linol~0.8 -> ocaml >= 4.14
         include:
           # linux
           - ocaml-version: ocaml-base-compiler.4.08.1
+            os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop
+          - ocaml-version: ocaml-base-compiler.4.10.2
             os: ubuntu-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.12.1
@@ -67,7 +71,7 @@ jobs:
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # macos
-          - ocaml-version: ocaml-base-compiler.4.08.1
+          - ocaml-version: ocaml-base-compiler.4.10.2
             os: macos-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-base-compiler.4.12.1
@@ -93,12 +97,9 @@ jobs:
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # Windows
-          - ocaml-version: ocaml-variants.4.08.1+options,system-mingw
-            os: windows-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-variants.4.13.1+options,system-mingw
             os: windows-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
           - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,system-mingw
             os: windows-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
