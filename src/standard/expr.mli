@@ -1895,6 +1895,9 @@ module Term : sig
                                                  and type cst := term_cst
     (** Satisfy the required interface for typing smtlib floating points. *)
 
+    include Dolmen_intf.Term.Ae_Float_Float with type t := t
+    (** Satisfy the required interface for typing alt-ergo floating points. *)
+
   end
 
   (** Integer operations. *)
