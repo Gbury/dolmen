@@ -14,17 +14,18 @@ let builtins { builtins; _ } = builtins
 let registry = Hashtbl.create 17
 
 let register ({ name; _ } as ext)  =
-  match Hashtbl.find registry name with
-  | exception Not_found -> Hashtbl.replace registry name [ ext ]
-  | exts -> Hashtbl.replace registry name (ext :: exts)
+  Hashtbl.add registry name ext
 
 let find_all name =
-  try Hashtbl.find registry name with Not_found -> []
+  Hashtbl.find_all registry name
 
 let create ~name ~builtins =
   let t = { name ; builtins } in
   register t;
   t
+
+let iter f =
+  Hashtbl.iter (fun _ ext -> f ext) registry
 
 let bvconv =
   create ~name:"bvconv" ~builtins:Bitv.bvconv_builtins

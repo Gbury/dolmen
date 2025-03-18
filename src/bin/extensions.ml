@@ -26,18 +26,21 @@ let pp ppf { extension_name; extension_location } =
 let name { extension_name ; _ } = extension_name
 
 let builtin_extensions =
+  (* Note: this must be computed at toplevel in order to make sure we don't
+     pick up extensions loaded from plugins as builtin. *)
+
   let builtin_extensions = Hashtbl.create 17 in
 
   (* Add builtin typing extensions. *)
-  List.iter (fun ext ->
+  Dolmen_loop.Typer.Ext.iter (fun ext ->
     Hashtbl.replace builtin_extensions (Dolmen_loop.Typer.Ext.name ext) ()
-  ) [ Dolmen_loop.Typer.Ext.bvconv ];
+  );
 
   (* Add builtin model extensions (note: these may share name with typing
      extensions). *)
-  List.iter (fun ext ->
+  Dolmen_model.Ext.iter (fun ext ->
     Hashtbl.replace builtin_extensions (Dolmen_model.Ext.name ext) ()
-  ) [ Dolmen_model.Ext.bvconv ];
+  );
 
   builtin_extensions
 

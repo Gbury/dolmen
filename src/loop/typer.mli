@@ -61,13 +61,16 @@ module Ext : sig
     name:string -> builtins:(Typer_intf.lang -> T.builtin_symbols) -> t
   (** Create a new extension. *)
 
-  val bvconv : t
-  (** Typing extension to add `bv2nat` and `int2bv`. *)
+  val iter : (t -> unit) -> unit
+  (** Iterate over all the registered extensions. *)
 
   val find_all : string -> t list
   (** Returns the extensions that have been registered with the given name.
 
       @since 0.11 *)
+
+  val bvconv : t
+    (** Typing extension to add `bv2nat` and `int2bv`. *)
 end
 
 (** {2 Typechecker Functor} *)

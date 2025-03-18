@@ -19,8 +19,11 @@ val create :
   name:string -> builtins:Env.builtins -> t
 (** Create a new extension. *)
 
-val bvconv : t
-(** Built-in extension for conversion between bit-vectors and integers *)
+val iter : (t -> unit) -> unit
+(** Iterate over all the registered extensions. *)
 
 val find_all : string -> t list
 (** Returns the extensions that have been registered with the given name. *)
+
+val bvconv : t
+(** Built-in extension for conversion between bit-vectors and integers *)
