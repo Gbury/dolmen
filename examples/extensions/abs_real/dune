@@ -7,4 +7,4 @@
 (plugin
   (name abs_real)
   (libraries dolmen-extension-abs-real)
-  (site (dolmen_bin plugins)))
+  (site (dolmen plugins)))
