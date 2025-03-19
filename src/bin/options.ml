@@ -467,11 +467,12 @@ let reports =
   let docs = error_section in
   let warns =
     let doc = "Change the status of a warning. Accepts a list of      \
-               comma-separated modifiers of the form @mnemonic, where \
-               '@' is an (optional) modifier among '+' (default) to   \
-                enable a warning, '-' to disable a warning and '!' to \
-                make the warning fatal, and 'mnemonic' is the short   \
-               (mnemonic) name of the warning." in
+               comma-separated mnemonics (short name of the warning,  \
+               as listed by $(b,-list))), optionally prefixed by a    \
+               modifier among '+' (default) to enable the warning,    \
+               '-' to disable the warning, '=' to enable the warning  \
+               and make it non-fatal, and '@' to enable a warning and \
+               make it fatal." in
     Arg.(value  & opt_all c_warn_list [] & info ["w"; "warn"] ~docs ~doc)
   in
   let strict =
