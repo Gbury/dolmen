@@ -43,7 +43,7 @@ let list () =
         all_extensions
       else
         plugin :: all_extensions
-    ) all_extensions (Sites.Plugins.Plugins.list ())
+    ) all_extensions (Dolmen.Sites.Plugins.Plugins.list ())
   in
   List.fast_sort
     (fun e1 e2 -> String.compare (name e1) (name e2))
@@ -87,7 +87,7 @@ let load_plugin_or_fail plugin st =
       st
     )
     else
-      match Sites.Plugins.Plugins.load plugin with
+      match Dolmen.Sites.Plugins.Plugins.load plugin with
       | () ->
         Hashtbl.replace loaded_plugins plugin ();
         st
