@@ -54,7 +54,7 @@ let loaded_plugins =
 
 let dynlink_error =
   let open Dolmen_loop in
-  Report.Warning.mk ~mnemonic:"dynlink-plugin-error"
+  Report.Error.mk ~mnemonic:"dynlink-plugin-error"
     ~message:(fun ppf (plugin, err) ->
       Fmt.pf ppf "Unable to load plugin library '%s':@ %s"
         plugin (Dynlink.error_message err))
@@ -92,7 +92,7 @@ let load_plugin_or_fail plugin st =
         Hashtbl.replace loaded_plugins plugin ();
         st
       | exception Dynlink.Error err ->
-        Loop.State.warn st dynlink_error (plugin, err)
+        Loop.State.error st dynlink_error (plugin, err)
       | exception exn ->
         (* Use an error rather than a warning here because, while it is
             likely that the plugin simply doesn't exist, but this could also be
@@ -106,8 +106,8 @@ let add_typing_extensions exts st =
 let load_typing_extension plugin st =
   let st = load_plugin_or_fail plugin st in
   match Dolmen_loop.Typer.Ext.find_all plugin with
-  | [] -> Ok st
-  | exts  -> Ok (add_typing_extensions exts st)
+  | [] -> st
+  | exts  -> add_typing_extensions exts st
 
 let add_model_extensions exts st =
   Loop.State.update Loop.Check.builtins
@@ -119,7 +119,7 @@ let add_model_extensions exts st =
 let load_model_extension plugin st =
   let st = load_plugin_or_fail plugin st in
   match Dolmen_model.Ext.find_all plugin with
-  | [] -> Ok st
-  | exts  -> Ok (add_model_extensions exts st)
+  | [] -> st
+  | exts  -> add_model_extensions exts st
 
 let parse extension_name = Ok extension_name

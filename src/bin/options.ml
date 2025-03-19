@@ -402,15 +402,18 @@ let mk_run_state
   (* Extensions *)
   let st =
     List.fold_left (fun st ext ->
-      Result.bind st (Extensions.load_typing_extension ext)
-    ) (Ok st) extensions
-  in
-  if check_model then
-    List.fold_left (fun st ext ->
-      Result.bind st (Extensions.load_model_extension ext)
+      Extensions.load_typing_extension ext st
     ) st extensions
-  else
-    st
+  in
+  let st =
+    if check_model then
+      List.fold_left (fun st ext ->
+        Extensions.load_model_extension ext st
+      ) st extensions
+    else
+      st
+  in
+  Ok st
 
 (* Profiling *)
 (* ************************************************************************* *)
