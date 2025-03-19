@@ -18,6 +18,10 @@ val load_model_extension :
 val list : unit -> t list
 (** Lists the available extensions. *)
 
+val list_conflicts : unit -> string list
+(** Returns the name of external extensions that have the same name as an
+    internal extension and cannot be loaded. *)
+
 val parse :
   string -> (t, [> `Msg of string ]) result
 (** Parses an extension name. *)

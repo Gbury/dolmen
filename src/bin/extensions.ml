@@ -49,6 +49,11 @@ let list () =
     (fun e1 e2 -> String.compare (name e1) (name e2))
     all_extensions
 
+let list_conflicts () =
+  List.filter
+    (Hashtbl.mem builtin_extensions)
+    (Dolmen.Sites.Plugins.Plugins.list ())
+
 let loaded_plugins =
   Hashtbl.create 17
 

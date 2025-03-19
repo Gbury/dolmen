@@ -46,7 +46,7 @@ type cmd =
       report : Dolmen_loop.Report.T.t;
       conf : Dolmen_loop.Report.Conf.t;
     }
-  | List_extensions
+  | List_extensions of { state : Loop.State.t }
 
 (* Color options *)
 (* ************************************************************************* *)
@@ -730,7 +730,7 @@ let cli =
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (List_reports { conf; })
     | false, None, true ->
-      `Ok List_extensions
+      `Ok (List_extensions { state; })
     | _ ->
       `Error (false,
               "at most one of --list, --doc and --ext-list might be \
