@@ -14,6 +14,11 @@ next
   in practice. The new version takes a file (metadata) and a full loc
   and returns a compact loc. (PR#229)
 
+- Add support for user-defined builtins. This is available through both a
+  programmatic API in the Dolmen library, and through the installation of dune
+  plugins (using dune-site) for users of the Dolmen binary. See
+  doc/extensions.md for more details. (PR#214)
+
 
 v0.10
 -----
