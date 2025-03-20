@@ -46,6 +46,7 @@ type cmd =
       report : Dolmen_loop.Report.T.t;
       conf : Dolmen_loop.Report.Conf.t;
     }
+  | List_extensions of { state : Loop.State.t }
 
 (* Color options *)
 (* ************************************************************************* *)
@@ -267,18 +268,11 @@ let report_style =
     "contextual", Loop.State.Contextual;
   ]
 
-
-(* Typing extensions *)
+(* Dolmen extensions *)
 (* ************************************************************************ *)
 
-let typing_extension_list =
-  List.map
-    (fun ext -> Loop.Typer.Ext.name ext, ext)
-    (Loop.Typer.Ext.list ())
-
-let typing_ext =
-  Arg.enum typing_extension_list
-
+let extension =
+  Cmdliner.Arg.conv (Extensions.parse, Extensions.pp)
 
 (* Smtlib2 logic and extensions *)
 (* ************************************************************************ *)
@@ -366,7 +360,7 @@ let mk_run_state
     flow_check
     header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
-    type_check extension_builtins
+    type_check extensions
     check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
   =
@@ -384,26 +378,42 @@ let mk_run_state
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   let () = Hints.model ~check_model (* ~check_model_mode *) in
   (* State creation *)
-  Loop.State.empty
-  |> Loop.State.init
-    ~bt ~debug ~report_style ~reports
-    ~max_warn ~time_limit ~size_limit
-    ~response_file
-  |> Loop.Parser.init
-    ~syntax_error_ref
-    ~interactive_prompt:Loop.Parser.interactive_prompt_lang
-  |> Loop.Typer.init
-    ~smtlib2_forced_logic
-    ~extension_builtins
-  |> Loop.Typer_Pipe.init ~type_check
-  |> Loop.Check.init
-    ~check_model
-    (* ~check_model_mode *)
-  |> Loop.Flow.init ~flow_check
-  |> Loop.Header.init
-    ~header_check
-    ~header_licenses
-    ~header_lang_version
+  let st =
+    Loop.State.empty
+    |> Loop.State.init
+      ~bt ~debug ~report_style ~reports
+      ~max_warn ~time_limit ~size_limit
+      ~response_file
+    |> Loop.Parser.init
+      ~syntax_error_ref
+      ~interactive_prompt:Loop.Parser.interactive_prompt_lang
+    |> Loop.Typer.init
+      ~smtlib2_forced_logic
+    |> Loop.Typer_Pipe.init ~type_check
+    |> Loop.Check.init
+      ~check_model
+      (* ~check_model_mode *)
+    |> Loop.Flow.init ~flow_check
+    |> Loop.Header.init
+      ~header_check
+      ~header_licenses
+      ~header_lang_version
+  in
+  (* Extensions *)
+  let st =
+    List.fold_left (fun st ext ->
+      Extensions.load_typing_extension ext st
+    ) st extensions
+  in
+  let st =
+    if check_model then
+      List.fold_left (fun st ext ->
+        Extensions.load_model_extension ext st
+      ) st extensions
+    else
+      st
+  in
+  Ok st
 
 (* Profiling *)
 (* ************************************************************************* *)
@@ -628,12 +638,12 @@ let state =
     Arg.(value & opt_all smtlib2_ext [] &
          info ["internal-smtlib2-extension"] ~docs:internal_section ~doc)
   in
-  let typing_ext =
+  let ext =
     let doc = Format.asprintf
-        "Enable typing extensions.
-         $(docv) must be %s" (Arg.doc_alts_enum typing_extension_list)
+        "Enable extensions. Use $(b,--ext-list) to list available \
+        extensions."
     in
-    Arg.(value & opt_all typing_ext [] &
+    Arg.(value & opt_all extension [] &
          info ["ext"] ~docs ~doc)
   in
   let debug =
@@ -690,7 +700,8 @@ let state =
       in
       Arg.(value & opt bool false & info ["syntax-error-ref"] ~doc ~docs:error_section)
     in
-  Term.(const mk_run_state $ profiling_t $
+  Term.(term_result (
+    const mk_run_state $ profiling_t $
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
@@ -698,9 +709,9 @@ let state =
         flow_check $
         header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $
-        typing $ typing_ext $
+        typing $ ext $
         check_model $ (* check_model_mode $ *)
-        debug $ report_style $ max_warn $ reports $ syntax_error_ref)
+        debug $ report_style $ max_warn $ reports $ syntax_error_ref))
 
 
 (* List command term *)
@@ -708,19 +719,21 @@ let state =
 
 let cli =
   let docs = option_section in
-  let aux state preludes logic_file list doc =
-    match list, doc with
-    | false, None ->
+  let aux state preludes logic_file list doc list_extensions =
+    match list, doc, list_extensions with
+    | false, None, false ->
       `Ok (Run { state; logic_file; preludes })
-    | false, Some report ->
+    | false, Some report, false ->
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (Doc { report; conf; })
-    | true, None ->
+    | true, None, false ->
       let conf = Loop.State.get Loop.State.reports state in
       `Ok (List_reports { conf; })
-    | true, Some _ ->
+    | false, None, true ->
+      `Ok (List_extensions { state; })
+    | _ ->
       `Error (false,
-              "at most one of --list and --doc might be \
+              "at most one of --list, --doc and --ext-list might be \
                present on the command line")
   in
   let list =
@@ -732,4 +745,11 @@ let cli =
     let doc = "The warning or error of which to show the documentation." in
     Arg.(value & opt (some mnemonic_conv) None & info ["doc"] ~doc ~docv:"mnemonic" ~docs)
   in
-  Term.(ret (const aux $ state $ preludes $ logic_file $ list $ doc))
+  let list_extensions =
+    let doc = "List all available extensions." in
+    Arg.(value & flag & info ["ext-list"] ~doc ~docs)
+  in
+  Term.(ret (
+    const aux $ state $ preludes $ logic_file $ list $ doc
+    $ list_extensions
+  ))

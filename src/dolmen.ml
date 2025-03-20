@@ -15,3 +15,10 @@ module Zf = Dolmen_zf
 (* Classes *)
 module Class = Dolmen_class
 
+(* Extensions *)
+module Sites = Sites
+(** Dune-site module to access the sites of the [dolmen] package.
+
+    {b Note}: This is an auto-generated module using the dune-site's
+    [(generate_sites_module)]. Use with caution.
+*)

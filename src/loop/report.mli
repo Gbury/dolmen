@@ -43,7 +43,6 @@ module T : sig
 
   val doc : [< t ] -> (Format.formatter -> unit)
   (** documentation for a report. *)
-
 end
 
 

@@ -118,6 +118,29 @@ let doc conf t =
     pp_status t
     (Report.T.doc t)
 
+(* Extensions list *)
+(* *************** *)
+
+let conflicting_extensions =
+  Dolmen_loop.Report.Warning.mk ~mnemonic:"conflicting-extensions"
+    ~message:(fun ppf conflicts ->
+      let conflicts = List.init 2 (fun _ -> conflicts) in
+      let conflicts = List.concat conflicts in
+      Fmt.pf ppf "@[<hov 2>@[%a@]:@ %a@]" Fmt.words
+        "The following external extensions are shadowed by builtin extensions \
+        and will never be loaded"
+        Fmt.(hovbox @@ list ~sep:Fmt.comma (box string)) conflicts
+    )
+    ~name:"Conflicting extensions" ()
+
+let list_extensions st =
+  begin match Extensions.list_conflicts () with
+  | [] -> ()
+  | conflicts ->
+    ignore (Loop.State.warn st conflicting_extensions conflicts)
+  end;
+  Format.printf "%a@."
+    Fmt.(vbox @@ list (box Extensions.pp)) (Extensions.list ())
 
 (* Main code *)
 (* ********* *)
@@ -146,3 +169,5 @@ let () =
     doc conf report
   | Ok (`Ok List_reports { conf; }) ->
     list conf
+  | Ok (`Ok List_extensions { state }) ->
+    list_extensions state

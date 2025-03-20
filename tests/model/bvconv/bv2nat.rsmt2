@@ -1,0 +1,5 @@
+sat
+(
+  (define-fun b () (_ BitVec 5)
+    #b00101)
+)
