@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/049_assert_unclosed_1.smt2", line 2, character 13-14:
+2 | (assert true _)
+                 ^
+Error while parsing an assertion, read the reserved word '_',
+      but expected a closing parenthesis.

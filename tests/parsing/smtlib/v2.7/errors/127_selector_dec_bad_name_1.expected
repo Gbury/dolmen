@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/127_selector_dec_bad_name_1.smt2", line 2, character 27-28:
+2 | (declare-datatype foo ((A (_))))
+                               ^
+Error while parsing a selector declaration, read the reserved word '_',
+      but expected a symbol for the selector name.

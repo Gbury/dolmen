@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/039_identifier_with_open_paren_1.smt2", line 2, character 10-13:
+2 | (assert ((foo)))
+              ^^^
+Error while parsing an identifier in parentheses, read the symbol 'foo',
+      but expected either an indexed identifier (starting with an underscore)
+      or an 'as' type ascription; note that this is because of the preceding
+      opening parenthesis.

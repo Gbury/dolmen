@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/042_term_surprise_str_2.smt2", line 2, character 18-19:
+2 | (assert (foo ("bla")))
+                      ^
+Error while parsing a term, read the string 'bla',
+      but expected a term construction (identifier, let binding,
+      quantification, ...); note that this expectation if caused by the
+      preceding opening parenthesis.

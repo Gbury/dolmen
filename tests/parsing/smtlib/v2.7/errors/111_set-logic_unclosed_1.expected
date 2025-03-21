@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/111_set-logic_unclosed_1.smt2", line 1, character 15-16:
+1 | (set-logic ALL _)
+                   ^
+Error while parsing a set-logic command, read the reserved word '_',
+      but expected a closing parenthesis.

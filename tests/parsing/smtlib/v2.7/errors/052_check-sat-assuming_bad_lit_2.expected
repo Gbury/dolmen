@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/052_check-sat-assuming_bad_lit_2.smt2", line 2, character 21-22:
+2 | (check-sat-assuming (!))
+                         ^
+Error while parsing a list of propositional literals,
+      read the reserved word '!',
+      but expected a propositional literal, i.e. either a symbol or the
+      negation of a symbol.
