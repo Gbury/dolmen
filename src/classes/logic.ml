@@ -80,6 +80,7 @@ module Make
     "psmt2",      Smtlib2 `Poly;
     "tptp",       Tptp `Latest;
     "tptp-6.3.0", Tptp `V6_3_0;
+    "tptp-8.2.0", Tptp `V8_2_0;
     "zf",         Zf;
   ]
 
@@ -113,6 +114,8 @@ module Make
     (module Dolmen_tptp.Latest.Make(L)(I)(T)(S) : S);
     Tptp `V6_3_0, ".p",
     (module Dolmen_tptp.V6_3_0.Make(L)(I)(T)(S) : S);
+    Tptp `V8_2_0, ".p",
+    (module Dolmen_tptp.V8_2_0.Make(L)(I)(T)(S) : S);
 
     (* Zipperposition format *)
     Zf, ".zf",

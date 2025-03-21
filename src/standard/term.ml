@@ -23,10 +23,13 @@ type builtin =
   | Lt | Leq            (* arithmetic comparisons *)
   | Gt | Geq            (* arithmetic comparisons *)
 
+  | Tuple               (* Tuples *)
   | Subtype             (* Function type constructor and subtyping relation *)
   | Product | Union     (* Product and union of types (not set theory) *)
 
   | Pi | Sigma          (* Higher-order constant to encode forall and exists quantifiers *)
+  | Choice              (* Higher-order constant to encode choice/indefinite description binding *)
+  | Description         (* Higher-order constant to encode definite description binding *)
 
   | Not                 (* Propositional negation *)
   | And | Or            (* Conjunction and disjunction *)
@@ -87,6 +90,7 @@ let infix_builtin = function
   | Eq | And | Or
   | Nand | Xor | Nor
   | Imply | Implied | Equiv
+  | Tuple
   | Product | Union
   | Sequent | Subtype
   | Adt_check | Adt_project | Record_access
@@ -121,11 +125,14 @@ let builtin_to_string = function
   | Leq -> "≤"
   | Gt -> ">"
   | Geq -> "≥"
+  | Tuple -> ","
   | Subtype -> "⊂"
   | Product -> "*"
   | Union -> "∪"
   | Pi -> "Π"
   | Sigma -> "Σ"
+  | Choice -> "ε"
+  | Description -> "@"
   | Not -> "¬"
   | And -> "∧"
   | Or -> "∨"
@@ -380,6 +387,9 @@ let implied_t   = builtin Implied
 let pi_t        = builtin Pi
 let sigma_t     = builtin Sigma
 
+let choice_t    = builtin Choice
+let description_t = builtin Description
+
 let void        = builtin Void
 let true_       = builtin True
 let false_      = builtin False
@@ -388,6 +398,7 @@ let wildcard    = builtin Wildcard
 let ite_t       = builtin Ite
 let sequent_t   = builtin Sequent
 
+let tuple_t     = builtin Tuple
 let union_t     = builtin Union
 let product_t   = builtin Product
 let subtype_t   = builtin Subtype
@@ -438,6 +449,7 @@ let tertiary t = (fun ?loc x y z -> apply ?loc (t ?loc ()) [x; y; z])
 
 let eq = binary eq_t
 let neq = nary neq_t
+let tuple = nary tuple_t
 
 (* {2 Logical connectives} *)
 

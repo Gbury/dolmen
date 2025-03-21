@@ -57,7 +57,7 @@ type local = {
 }
 
 type other = {
-  name : Id.t;
+  name : term;
   args : term list;
 }
 
@@ -320,7 +320,7 @@ let rec print_descr fmt = function
 
   | Other { name; args; } ->
     Format.fprintf fmt "@[<hov 2>other/%a: %a@]"
-      Id.print name
+      Term.print name
       (Misc.print_list ~print_sep:Format.fprintf ~sep:"@ " ~print:Term.print) args
 
   | Echo s -> Format.fprintf fmt "echo: %s" s
@@ -594,9 +594,9 @@ let include_ ?loc s l =
   let attrs = List.map Term.const l in
   mk ?loc ~attrs (Include s)
 
-let tptp ?loc ?annot kind id role body =
+let tptp ?loc ?annot kind id ~role body =
   let attrs =
-    Term.apply (Term.const Id.tptp_role) [Term.const Id.(mk Attr role)] ::
+    Term.apply (Term.const Id.tptp_role) [role] ::
     Term.apply (Term.const Id.tptp_kind) [Term.const Id.(mk Attr kind)] ::
     match annot with
     | None -> [] | Some t -> [t]
@@ -604,41 +604,45 @@ let tptp ?loc ?annot kind id role body =
   let ok descr = mk ~id ?loc ~attrs descr in
   let other () =
     match body with
-    | `Term t -> other ~id ?loc ~attrs Id.(mk Decl role) [t]
-    | `Clause l -> other ~id ?loc ~attrs Id.(mk Decl role) l
+    | `Term t -> other ~id ?loc ~attrs role [t]
+    | `Clause l -> other ~id ?loc ~attrs role l
   in
-  match role with
-    | "axiom"
-    | "hypothesis"
-    | "definition"
-    | "lemma"
-    | "theorem"
-    | "assumption"
-    | "negated_conjecture" ->
-      begin match body with
-        | `Term t -> ok (Antecedent t)
-        | `Clause l -> ok (Clause l)
-      end
-    | "conjecture" ->
-      begin match body with
-        | `Term t -> ok (Consequent t)
-        | `Clause _ -> other ()
-      end
-    | "type" ->
-      begin match body with
-        | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
-          ok (Decls { recursive = false;
-                  contents = [abstract ?loc s ty]; })
-        | _ -> other ()
-      end
-    | _ -> other ()
+  match (role : Term.t) with
+  | { term = Symbol { ns = Attr; name = Simple "axiom" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "hypothesis" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "definition" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "lemma" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "theorem" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "corollary" }; _ }
+  | { term = Symbol { ns = Attr; name = Simple "assumption" }; _ }
+    (* assumptions can be treated as axioms, but should be discharged/proved before
+       being used in proofs. See later if we need a separate representation for these. *)
+  | { term = Symbol { ns = Attr; name = Simple "negated_conjecture" }; _ } ->
+    begin match body with
+      | `Term t -> ok (Antecedent t)
+      | `Clause l -> ok (Clause l)
+    end
+  | { term = Symbol { ns = Attr; name = Simple "conjecture" }; _ } ->
+    begin match body with
+      | `Term t -> ok (Consequent t)
+      | `Clause _ -> other ()
+    end
+  | { term = Symbol { ns = Attr; name = Simple "type" }; _ } ->
+    begin match body with
+      | `Term { Term.term = Term.Colon ({ Term.term = Term.Symbol s; _ }, ty ) ; _ } ->
+        ok (Decls { recursive = false;
+                    contents = [abstract ?loc s ty]; })
+      | _ -> other ()
+    end
+  | _ -> other ()
 
-let tpi ?loc ?annot id role t = tptp ?loc ?annot "tpi" id role (`Term t)
-let thf ?loc ?annot id role t = tptp ?loc ?annot "thf" id role (`Term t)
-let tff ?loc ?annot id role t = tptp ?loc ?annot "tff" id role (`Term t)
-let fof ?loc ?annot id role t = tptp ?loc ?annot "fof" id role (`Term t)
+let tpi ?loc ?annot id ~role t = tptp ?loc ?annot "tpi" id ~role (`Term t)
+let thf ?loc ?annot id ~role t = tptp ?loc ?annot "thf" id ~role (`Term t)
+let tff ?loc ?annot id ~role t = tptp ?loc ?annot "tff" id ~role (`Term t)
+let tcf ?loc ?annot id ~role t = tptp ?loc ?annot "tcf" id ~role (`Term t)
+let fof ?loc ?annot id ~role t = tptp ?loc ?annot "fof" id ~role (`Term t)
 
-let cnf ?loc ?annot id role t =
+let cnf ?loc ?annot id ~role t =
   let rec split_or t =
     match t with
     | { Term.term = Term.App
@@ -646,6 +650,6 @@ let cnf ?loc ?annot id role t =
       Misc.list_concat_map split_or l
     | _ -> [t]
   in
-  tptp ?loc ?annot "cnf" id role (`Clause (split_or t))
+  tptp ?loc ?annot "cnf" id ~role (`Clause (split_or t))
 
 
