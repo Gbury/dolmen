@@ -1161,7 +1161,7 @@ module Term : sig
       val bitv : string -> t
       (** Bitvetor literals. *)
 
-      val to_nat : int -> t
+      val to_int : int * bool -> t
       (** Conversion to integers. *)
 
       val of_int : int -> t

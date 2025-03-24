@@ -2271,9 +2271,9 @@ module Term = struct
         mk' ~builtin:(Builtin.Bitvec s)
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
-      let to_nat =
-        with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_to_nat { n }) "bv2nat"
+      let to_int =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_to_int { n; signed }) "bv2nat"
               [] [Ty.bitv n] Ty.int)
 
       let of_int =
@@ -2474,6 +2474,39 @@ module Term = struct
             mk' ~builtin:(Builtin.Bitv_sge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
+      let nego =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_overflow_neg { n })
+              "bvnego" [] [Ty.bitv n] Ty.prop
+          )
+
+      let addo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_add { n; signed; })
+              (Printf.sprintf "bv%caddo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let subo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_sub { n; signed; })
+              (Printf.sprintf "bv%csubo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let mulo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_mul { n; signed; })
+              (Printf.sprintf "bv%cmulo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let divo =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_overflow_div { n; })
+              (Printf.sprintf "bvsdivo")
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
     end
 
     module Float = struct
@@ -3402,9 +3435,9 @@ module Term = struct
 
     let mk s = apply_cst (Const.Bitv.bitv s) [] []
 
-    let to_nat b =
+    let to_int ~signed b =
       let n = match_bitv_type b in
-      apply_cst (Const.Bitv.to_nat n) [] [b]
+      apply_cst (Const.Bitv.to_int (n, signed)) [] [b]
 
     let of_int n i =
       apply_cst (Const.Bitv.of_int n) [] [i]
@@ -3550,6 +3583,26 @@ module Term = struct
     let sge u v =
       let n = match_bitv_type u in
       apply_cst (Const.Bitv.sge n) [] [u; v]
+
+    let nego t =
+      let n = match_bitv_type t in
+      apply_cst (Const.Bitv.nego n) [] [t]
+
+    let addo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.addo (n, signed)) [] [u; v]
+
+    let subo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.subo (n, signed)) [] [u; v]
+
+    let mulo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.mulo (n, signed)) [] [u; v]
+
+    let divo u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.divo n) [] [u; v]
 
   end
 

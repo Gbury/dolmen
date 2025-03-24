@@ -1422,7 +1422,7 @@ module type Smtlib_Bvconv = sig
   type t
   (** The type of terms *)
 
-  val to_nat : t -> t
+  val to_int : signed:bool -> t -> t
   (** Application of the bv2nat conversion function. *)
 
   val of_int : int -> t -> t
@@ -1569,6 +1569,27 @@ module type Smtlib_Bitv = sig
 
   val sge : t -> t -> t
   (** Boolean signed arithmetic comparison (greater or equal than). *)
+
+  val nego : t -> t
+  (** Boolean unary overflow predicate for unary minus. *)
+
+  val addo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned addition *)
+
+  val subo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned subtraction *)
+
+  val mulo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned multiplication *)
+
+  val divo : t -> t -> t
+  (** Boolean unary binary overflow predicate for signed division *)
+
+  val to_int : signed:bool -> t -> t
+  (** Application of the bv2nat conversion function. *)
+
+  val of_int : int -> t -> t
+  (** Application of the int2bv conversion function. *)
 
 end
 
