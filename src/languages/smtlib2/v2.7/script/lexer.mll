@@ -34,6 +34,7 @@
     | UNDERSCORE -> reserved_descr "_"
     | ATTRIBUTE -> reserved_descr "!"
     | AS -> reserved_descr "as"
+    | LAMBDA -> reserved_descr "lambda"
     | LET -> reserved_descr "let"
     | EXISTS -> reserved_descr "exists"
     | FORALL -> reserved_descr "forall"
@@ -89,6 +90,7 @@
     "_", UNDERSCORE;
     "!", ATTRIBUTE;
     "as", AS;
+    "lambda", LAMBDA;
     "let", LET;
     "exists", EXISTS;
     "forall", FORALL;

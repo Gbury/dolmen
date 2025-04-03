@@ -54,6 +54,7 @@ reserved:
   | UNDERSCORE { "_" }
   | ATTRIBUTE { "!" }
   | AS { "as" }
+  | LAMBDA { "lambda" }
   | LET { "let" }
   | EXISTS { "exists" }
   | FORALL { "forall" }
@@ -213,13 +214,20 @@ term:
     { match s with
       | `NoAs f -> f
       | `As (f, ty, loc) -> T.colon ~loc f ty }
+  | OPEN UNDERSCORE s=qual_identifier args=term+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in
+      match s with
+      | `NoAs f -> T.smt2_clusterfuck ~loc f args
+      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.smt2_clusterfuck ~loc f args) ty }
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
-      | `NoAs f -> T.apply ~loc f args
-      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.apply ~loc f args) ty }
+      | `NoAs f -> T.fake_apply ~loc f args
+      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.fake_apply ~loc f args) ty }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.letand ~loc l t }
+  | OPEN LAMBDA OPEN l=sorted_var+ CLOSE t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.map_lambda ~loc l t }
   | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
   | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE

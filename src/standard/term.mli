@@ -133,8 +133,23 @@ type builtin =
   (** Similar to cut, but does not introduce the proved term into the axioms. *)
   | Cut
   (** Insert a cut of the given term. *)
+
   | Sexpr
   (** Head symbol for s-exprs in smtlib. *)
+
+  | Map_lambda
+  (** Application operator for higher-order function encoding into first order *)
+  | SMT2_clusterfuck
+  (** Beware this eldricht horror ! This corresponds to the "_" in SMT-LIB v2.7,
+      which has semantics that will make you go insane. *)
+
+  | Fake_apply
+  (** Workaround for languages whose "function application" syntax
+      does not actually have the semantics of function application.
+
+      For instance, smtlib2.7 has extremely weird and unobvious
+      rules for how applications are typechecked due to mixing
+      it with their encoding of Higher-order. *)
 (** The type of builtins symbols for terms.
     Some languages have specific syntax for logical connectives
     (tptp's'&&' or '||' for isntance) whereas some (smtlib for instance)

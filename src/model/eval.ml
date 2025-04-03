@@ -96,6 +96,13 @@ and eval_binder env b body =
         ) env l'
     in
     eval env body
+  | Map params ->
+    (* We treat Maps (i.e. HO encoding in FO) as regular functions
+       for evaluation purposes. *)
+    begin match params with
+      | [] -> eval env body
+      | _ -> Fun.mk_clos @@ Fun.lambda [] params body
+    end
   | Lambda (tys, params) ->
     begin match params with
       | [] -> eval env body

@@ -93,6 +93,7 @@ and term_descr =
 and binder =
   | Let_seq of (term_var * term) list
   | Let_par of (term_var * term) list
+  | Map of term_var list
   | Lambda  of ty_var list * term_var list
   | Exists  of ty_var list * term_var list
   | Forall  of ty_var list * term_var list (**)
@@ -444,6 +445,8 @@ module Ty : sig
     (** Rationals *)
     | `Real
     (** Reals *)
+    | `Map of ty * ty
+    (** Maps, i.e. higher-order arrow type encoded in first-order. *)
     | `Array of ty * ty
     (** Function arrays, from source to destination type. *)
     | `Bitv of int
@@ -618,6 +621,9 @@ module Ty : sig
     val array : t
     (** The type constant for arrays *)
 
+    val map : t
+    (** The type constant for map (i.e. higher-order encoding in first-order). *)
+
     val bitv : int -> t
     (** Bitvectors of the given length. *)
 
@@ -670,6 +676,9 @@ module Ty : sig
 
   val array : t -> t -> t
   (** Build an array type from source to destination types. *)
+
+  val map : t -> t -> t
+  (** Build a map type from param to return types. *)
 
   val bitv : int -> t
   (** Bitvectors of a given length. *)
@@ -744,6 +753,7 @@ module Term : sig
       polymorphic terms. *)
 
   type t = term
+  type var = term_var
   (** The type of terms and term variables. *)
 
   type ty = Ty.t
@@ -1860,6 +1870,16 @@ module Term : sig
 
   val maps_to : Var.t -> t -> t
   (** Variable mapping to term. *)
+
+
+  (* Maps (i.e. HO/function encoding into First order) *)
+
+  val map_lambda : Var.t list -> t -> t
+  (** Embed a lambda/function with given params and body into first-order. *)
+
+  val map_app : t -> t -> t
+  (** Application for HO/functions encoding into first order. *)
+
 
   (* Array manipulation *)
   module Array : sig

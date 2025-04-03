@@ -588,6 +588,11 @@ module type Formulas = sig
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 
+  val find_symbol : env -> symbol -> [ bound | not_found ]
+  (** Try and find a bound symbol in the env, whether it be locally bound
+      (such as bound variables), constants bound at top-level, or builtin
+      symbols bound by the builtin theory. *)
+
   val find_reason : env -> bound -> reason option
   (** Return the reason (if any) for the given typed symbol. *)
 
@@ -662,6 +667,10 @@ module type Formulas = sig
 
   val parse_app_ho_term : (term -> Dolmen.Std.Term.t list -> res) typer
   (** Function used for parsing an higher-order application. *)
+
+  val parse_app_resolved :
+    (Dolmen.Std.Id.t -> Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> [ bound | not_found ] -> res) typer
+  (** Function for parsing an application once the function term has been resolved. *)
 
   val unwrap_ty : env -> Dolmen.Std.Term.t -> res -> ty
   val unwrap_term : env -> Dolmen.Std.Term.t -> res -> term

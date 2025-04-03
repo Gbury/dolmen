@@ -55,6 +55,15 @@ type builtin =
 
   | Sexpr               (* smtlib builtin for s-exprs *)
 
+  | Map_lambda          (* smtlib2.7 builtin for function encoding into first order *)
+  | SMT2_clusterfuck    (* this is the "_" is smt2.7 which has insane semantics *)
+
+  | Fake_apply          (* Workaround for languages who "function application" syntax
+                           does not actually have the semantics of function application.
+                           For instance, smtlib2.7 has extremely weird and unobvious
+                           rules for how applications are typechecked due to mixing
+                           it with their encoding of Higher-order. *)
+
 type binder =
   | All | Ex
   | Pi | Arrow
@@ -153,6 +162,9 @@ let builtin_to_string = function
   | Check -> "check"
   | Cut -> "cut"
   | Sexpr -> "sexpr"
+  | Map_lambda -> "smt-lambda"
+  | SMT2_clusterfuck -> "__"
+  | Fake_apply -> "@"
 
 let binder_to_string = function
   | All -> "∀"
@@ -428,6 +440,9 @@ let record_with_t       = builtin Record_with
 let record_access_t     = builtin Record_access
 
 let sexpr_t             = builtin Sexpr
+let map_lambda_t        = builtin Map_lambda
+let smt2_clusterfuck_t  = builtin SMT2_clusterfuck
+let fake_apply_t        = builtin Fake_apply
 
 let nary t = (fun ?loc l -> apply ?loc (t ?loc ()) l)
 let unary t = (fun ?loc x -> apply ?loc (t ?loc ()) [x])
@@ -609,6 +624,10 @@ let sexpr ?loc l = apply ?loc (sexpr_t ?loc ()) l
 let par ?loc vars t =
   let vars = List.map (fun v -> colon ?loc v (tType ?loc ())) vars in
   forall ?loc vars t
+
+let map_lambda ?loc vars t = nary map_lambda_t ?loc (vars @ [t])
+let fake_apply ?loc f args = nary fake_apply_t ?loc (f :: args)
+let smt2_clusterfuck ?loc f args = nary smt2_clusterfuck_t ?loc (f :: args)
 
 
 (* {2 Wrappers for tptp} *)

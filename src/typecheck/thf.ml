@@ -668,6 +668,14 @@ module Make
           (find_builtin env id :> [ bound | not_found ])
       end
 
+  let find_symbol env symbol : [ bound | not_found ] =
+    match symbol with
+    | Id id -> find_bound env id
+    | Builtin _ ->
+      begin match env.builtins env symbol with
+        | `Not_found -> `Not_found
+        | #builtin_res as res -> `Builtin res
+      end
 
   (* Convenience functions *)
   (* ************************************************************************ *)

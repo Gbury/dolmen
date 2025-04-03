@@ -401,7 +401,7 @@ module Smtlib2 = struct
       index
     | _ -> raise (Bad_index_in_sexpr ast)
 
-  let rec sexpr_as_term sexpr =
+  let rec sexpr_as_term (version : Dolmen.Smtlib2.version) sexpr =
     match (sexpr : Ast.t) with
 
     (* "as" type annotation *)
@@ -411,8 +411,8 @@ module Smtlib2 = struct
         loc = loc_as; attr = attr_as
       } :: args); loc = loc_out; attr = attr_out} ->
       let ty = sexpr_as_sort ty in
-      let f = sexpr_as_term f in
-      let args = List.map sexpr_as_term args in
+      let f = sexpr_as_term version f in
+      let args = List.map (sexpr_as_term version) args in
       let function_app =
         Ast.apply ~loc:loc_out f args
         |> Ast.add_attrs attr_out
@@ -423,7 +423,7 @@ module Smtlib2 = struct
     | { term = App ({ term = Builtin Sexpr; _ }, [
         { term = Symbol { name = Simple "as"; _ }; _}; f; ty])
       ; loc=loc_as; attr=attr_as } ->
-      let f = sexpr_as_term f in
+      let f = sexpr_as_term version f in
       let ty = sexpr_as_sort ty in
       Ast.colon ~loc:loc_as f ty
       |> Ast.add_attrs attr_as
@@ -431,16 +431,22 @@ module Smtlib2 = struct
     (* indexed identifiers *)
     | { term = App ({ term = Builtin Sexpr; _ }, {
         term = Symbol { ns; name = Simple "_"} ; _} ::
-        { term = Symbol {name = Simple s; _}; _ } :: args); loc; attr } ->
-      Ast.const ~loc (Id.indexed ns s (List.map index_of_sexpr args))
-      |> Ast.add_attrs attr
+        ({ term = Symbol {name = Simple s; _}; _ } as f) :: args); loc; attr } ->
+      begin match version with
+        | `Script (`V2_7 | `Latest)
+        | `Response (`V2_7 | `Latest) ->
+          Ast.smt2_clusterfuck ~loc f args
+        | _ ->
+          Ast.const ~loc (Id.indexed ns s (List.map index_of_sexpr args))
+          |> Ast.add_attrs attr
+      end
 
     (* regular function application *)
     | { term = App ({ term = Builtin Sexpr; _ }, []); _ }  ->
       raise (Empty_sexpr sexpr)
     | { term = App ({ term = Builtin Sexpr; _ }, f :: args); loc; attr } ->
-      let f = sexpr_as_term f in
-      let args = List.map sexpr_as_term args in
+      let f = sexpr_as_term version f in
+      let args = List.map (sexpr_as_term version) args in
       Ast.apply ~loc f args
       |> Ast.add_attrs attr
 
@@ -528,8 +534,8 @@ module Smtlib2 = struct
         Type._error env (Ast ast)
           (Type.Expected ("a list of terms in a sexpr", None))
 
-    let parse_sexpr env sexpr =
-      match sexpr_as_term sexpr with
+    let parse_sexpr version env sexpr =
+      match sexpr_as_term version sexpr with
       | term -> Type.parse_term env term
       | exception Empty_sexpr ast ->
         let msg = Format.dprintf "empty s-expression" in
@@ -595,6 +601,37 @@ module Smtlib2 = struct
       | Type.Id { name = Simple "="; ns = Term } ->
         Type.builtin_term (Base.term_app_chain (module Type) env s T.eq)
 
+      (* Application, Higher-order and indexed identifiers *)
+      | Type.Id { name = Simple "->"; ns = Sort } ->
+        Type.builtin_ty (Base.ty_app_right (module Type) env s Ty.map)
+
+      | Type.Builtin Ast.Fake_apply ->
+        Type.builtin_term (fun ast args ->
+            (* Try and determine which application should be done at this point. *)
+            let foo =
+              match args with
+              | [] -> assert false (* TODO: proper error message *)
+              | ({ term = Ast.Symbol id; _ } as s_ast) :: actual_args ->
+                begin match Type.find_symbol env (Type.Id id) with
+                  | (`Term_cst c) as f ->
+                    begin match Ty.view (Type.T.Const.ty c) with
+                      | `Map _ -> `HO_app ()
+                      | _ -> `Regular_apply (id, s_ast, actual_args, f)
+                    end
+                  | f -> `Regular_apply (id, s_ast, actual_args, f)
+                end
+              (* If the function applied is a complex term, it can only
+                 be a higher-order application. *)
+              | _ -> `HO_app ()
+            in
+            match foo with
+            | `HO_app () ->
+              Base.term_app_left (module Type) env s T.map_app ast args
+            | `Regular_apply (id, s_ast, args, f) ->
+              Type.parse_app_resolved env ast id s_ast args f
+              |> Type.unwrap_term env ast
+          )
+
       (* Named formulas *)
       | Type.Id { name = Simple ":named"; ns = Attr } ->
         begin match version with
@@ -639,7 +676,7 @@ module Smtlib2 = struct
       | Type.Id { name = Simple ":pattern"; ns = Attr } ->
         Type.builtin_tags (Base.make_op1 (module Type) env s (fun _ t ->
             let l = extract_sexpr_list_from_sexpr env t in
-            let l = List.map (parse_sexpr env) l in
+            let l = List.map (parse_sexpr version env) l in
             let t = T.multi_trigger l in
             [Type.Add (Tag.triggers, t)]
           ))

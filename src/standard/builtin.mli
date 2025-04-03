@@ -163,6 +163,19 @@ type _ t +=
       be [cstr]. *)
 
 
+(** {2 HOL encoding Builtins} *)
+(*  ************************************************************************* *)
+
+type _ t +=
+  | Map
+  (** [Map: ttype -> ttype -> ttype] is the type for encoding higher order
+      functions into first order. An [(arg, ret) Map] is a first-order type
+      for encodings of functions from [arg] to [ret]. *)
+  | Map_app
+  (** [Map_app: 'arg 'ret. ('arg, 'ret) Map -> 'arg -> 'ret]:
+      Application operation for encodings of higher-order functions. *)
+
+
 (** {2 Arithmetic Builtins} *)
 (*  ************************************************************************* *)
 

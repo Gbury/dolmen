@@ -80,6 +80,9 @@ module type Term = sig
   val apply   : ?loc:location -> t -> t list -> t
   (** Application. *)
 
+  val fake_apply : ?loc:location -> t -> t list -> t
+  (** Annoying and convoluted smt2.7 application operator. *)
+
   val letand   : ?loc:location -> t list -> t -> t
   (** Local parrallel bindings. The bindings are a list of terms built using
       the [colon] function. *)
@@ -102,6 +105,13 @@ module type Term = sig
   (** Attach a list of attributes (also called annotations) to a term. As written
       in the smtlib manual, "Term attributes have no logical meaning --
       semantically, [attr t l] is equivalent to [t]" *)
+
+  val smt2_clusterfuck : ?loc:location -> t -> t list -> t
+  (** Eldricht horror from SMT-LIB2.7. *)
+
+  val map_lambda : ?loc:location -> t list -> t -> t
+  (** "Fake" lambdas, i.e. encodings of higher-order functions in first-order,
+      as used by SMT-LIB2.7. *)
 
 end
 (** Implementation requirements for Smtlib terms. *)
