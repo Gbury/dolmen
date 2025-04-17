@@ -6,6 +6,7 @@ next
 
 - Fix error message about expected arity of a non-polymorphic
   function in first order language with flexible poly arguments
+  (PR#234)
 
 ### Models
 
