@@ -1,0 +1,5 @@
+File "tests/typing/errors/bad_term_arity/non_poly_flexible.ae", line 2, character 8-18:
+2 | goal g: u(0, 0, 0) = 0
+            ^^^^^^^^^^
+Error Bad arity: expected 2 but got 3 arguments for function
+      u : int -> int -> int

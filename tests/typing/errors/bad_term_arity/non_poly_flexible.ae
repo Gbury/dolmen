@@ -1,0 +1,2 @@
+logic ac u : int, int -> int
+goal g: u(0, 0, 0) = 0

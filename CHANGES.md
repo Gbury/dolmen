@@ -2,6 +2,11 @@
 next
 ----
 
+### Typing
+
+- Fix error message about expected arity of a non-polymorphic
+  function in first order language with flexible poly arguments
+
 ### Models
 
 - Fix a bug where the condition on evaluated goals was incorrect.
