@@ -49,6 +49,7 @@
     | DECLARE_FUN -> reserved_descr "declare-fun"
     | DECLARE_SORT -> reserved_descr "declare-sort"
     | DECLARE_SORT_PARAMETER -> reserved_descr "declare-sort-parameter"
+    | DEFINE_CONST -> reserved_descr "define-const"
     | DEFINE_FUN -> reserved_descr "define-fun"
     | DEFINE_FUN_REC -> reserved_descr "define-fun-rec"
     | DEFINE_FUNS_REC -> reserved_descr "define-funs-rec"
@@ -107,6 +108,7 @@
     "declare-fun", DECLARE_FUN;
     "declare-sort", DECLARE_SORT;
     "declare-sort-parameter", DECLARE_SORT_PARAMETER;
+    "define-const", DEFINE_CONST;
     "define-fun", DEFINE_FUN;
     "define-fun-rec", DEFINE_FUN_REC;
     "define-funs-rec", DEFINE_FUNS_REC;

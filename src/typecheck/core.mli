@@ -75,6 +75,7 @@ module Smtlib2 : sig
                                           and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
+                                         and type var := Type.T.Var.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
     type _ Type.warn +=

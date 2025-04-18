@@ -288,8 +288,8 @@ module Print = struct
         (Format.pp_print_list ~pp_sep:(return "@ ") subterm) args
 
   and binder_sep fmt = function
-    | Lambda _
-    | Map _ -> Format.fprintf fmt " =>"
+    | Lambda _ -> Format.fprintf fmt " =>"
+    | Map _ -> Format.fprintf fmt " ~>"
     | Let_seq _
     | Let_par _ -> Format.fprintf fmt " in"
     | Exists _
@@ -306,11 +306,11 @@ module Print = struct
 
     | Map (params) ->
       Format.fprintf fmt "[ λ @[<hov>%a@] ]"
-        (Format.pp_print_list ~pp_sep:(return "@ ") term_var) params
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) params
     | Lambda (vars, params) ->
       Format.fprintf fmt "λ @[<hov>%a .@ %a@]"
-        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) vars
-        (Format.pp_print_list ~pp_sep:(return "@ ") term_var) params
+        (Format.pp_print_list ~pp_sep:(return "@ ") ty_var) vars
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) params
 
     | Exists (l, []) ->
       Format.fprintf fmt "∃ @[<hov>%a@]"

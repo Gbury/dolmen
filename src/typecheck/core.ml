@@ -497,6 +497,7 @@ module Smtlib2 = struct
                                           and type term := Type.T.t)
       (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
+                                         and type var := Type.T.Var.t
                                          and type cstr := Type.T.Cstr.t) = struct
 
     type _ Type.warn +=
@@ -516,6 +517,14 @@ module Smtlib2 = struct
         | Some l -> l
       in
       Type.set_global_custom_state state inferred_model_constants (c :: l)
+
+    let split_map_lambda_args l =
+      let rec aux acc = function
+        | [] -> Error ()
+        | [body] -> Ok (List.rev acc, body)
+        | param :: ((_ :: _) as r) -> aux (param :: acc) r
+      in
+      aux [] l
 
     let parse_name env = function
       | { Ast.term = Ast.Symbol s; _ }
@@ -598,6 +607,26 @@ module Smtlib2 = struct
       (* Application, Higher-order and indexed identifiers *)
       | Type.Id { name = Simple "->"; ns = Sort } ->
         Type.builtin_ty (Base.ty_app_right (module Type) env s Ty.map)
+      | Type.Id { name = Simple "@"; ns = Term } ->
+        Type.builtin_term (Base.term_app_left (module Type) env s T.map_app)
+
+      | Type.Builtin Ast.Map_lambda ->
+        Type.builtin_term (fun _ast args ->
+            match split_map_lambda_args args with
+            | Error () -> assert false (* TODO: error message *)
+            | Ok (params, body) ->
+              let rev_params, env =
+                List.fold_left (fun (params, env) param_ast ->
+                    match Type.parse_var_in_binding_pos env param_ast with
+                    | `Ty _ -> assert false (* TODO: error message *)
+                    | `Term (id, var) ->
+                      let env = Type.add_term_var env id var param_ast in
+                      var :: params, env
+                  ) ([], env) params
+              in
+              let body = Type.parse_term env body in
+              T.map_lambda (List.rev rev_params) body
+          )
 
       | Type.Builtin Ast.Fake_apply ->
         Type.builtin_term (fun ast args ->

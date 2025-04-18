@@ -69,6 +69,7 @@ reserved:
   | DECLARE_FUN { "declare-fun" }
   | DECLARE_SORT { "declare-sort" }
   | DECLARE_SORT_PARAMETER { "declare-sort-parameter" }
+  | DEFINE_CONST { "define-const" }
   | DEFINE_FUN { "define-fun" }
   | DEFINE_FUN_REC { "define-fun-rec" }
   | DEFINE_FUNS_REC { "define-funs-rec" }
@@ -396,6 +397,10 @@ command:
     { let id = I.(mk sort s) in
       let loc = L.mk_pos $startpos $endpos in
       S.implicit_type_var ~loc id }
+  | OPEN DEFINE_CONST s=SYMBOL ty=sort body=term CLOSE
+    { let id = I.(mk term s) in
+      let loc = L.mk_pos $startpos $endpos in
+      S.fun_def ~loc id [] [] ty body }
   | OPEN DEFINE_FUN f=function_def CLOSE
     { let id, vars, args, ret, body = f in
       let loc = L.mk_pos $startpos $endpos in

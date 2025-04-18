@@ -602,6 +602,14 @@ module type Formulas = sig
   val find_reason : env -> bound -> reason option
   (** Return the reason (if any) for the given typed symbol. *)
 
+  val add_type_var :
+    env -> Dolmen.Std.Id.t -> ty_var -> Dolmen.Std.Term.t -> env
+  (** Add a local type variable to the env *)
+
+  val add_term_var :
+    env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
+  (** Add a local term variable to the env *)
+
   val decl_ty_const :
     env -> _ fragment -> Dolmen.Std.Id.t -> ty_cst -> reason -> unit
   (** Declare a new type constant in the global environment used by the
@@ -614,6 +622,7 @@ module type Formulas = sig
 
   val register_implicit : env -> implicit -> unit
   (** Register a new implicit declaration/definition *)
+
 
   (** {2 Custom global state} *)
 
@@ -677,6 +686,9 @@ module type Formulas = sig
   val parse_app_resolved :
     (Dolmen.Std.Id.t -> Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> [ bound | not_found ] -> res) typer
   (** Function for parsing an application once the function term has been resolved. *)
+
+  val parse_var_in_binding_pos : env -> Dolmen.Std.Term.t ->
+    [ `Ty of Dolmen.Std.Id.t * ty_var | `Term of Dolmen.Std.Id.t * term_var]
 
   val unwrap_ty : env -> Dolmen.Std.Term.t -> res -> ty
   val unwrap_term : env -> Dolmen.Std.Term.t -> res -> term
