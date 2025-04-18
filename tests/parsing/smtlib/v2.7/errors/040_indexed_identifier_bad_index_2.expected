@@ -1,0 +1,4 @@
+Error while parsing an indexed identifier, read the end of file token,
+      but expected an index, i.e. either a numeral, a symbol, or a
+      hexadecimal number; note that keywords and reserved words (such as '_',
+      'as', ...) are not symbols, and thus are not allowed here.

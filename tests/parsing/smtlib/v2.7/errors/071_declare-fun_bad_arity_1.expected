@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/071_declare-fun_bad_arity_1.smt2", line 2, character 18-19:
+2 | (declare-sort foo _)
+                      ^
+Error while parsing a sort declaration, read the reserved word '_',
+      but expected a numeral for the arity of the sort being declared.

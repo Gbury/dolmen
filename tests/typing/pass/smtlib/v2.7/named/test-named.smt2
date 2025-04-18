@@ -1,0 +1,25 @@
+(set-info :smt-lib-version 2.6)
+(set-logic UFNIA)
+(set-option :produce-unsat-cores true)
+(declare-const x Int)
+(declare-const y Int)
+(declare-const z Int)
+
+(assert (! (>= x 3) :named mx1 ))
+(assert (! (<= x 3) :named mx2 ))
+(assert (! (>= y 2) :named my1 ))
+(assert (! (<= y 2) :named my2 ))
+(assert (! (>= z 1) :named mz1 ))
+(assert (! (<= z 1) :named mz2 ))
+
+(assert
+         (or
+          (> 3 x)
+          (>= y 3)
+          (>= y x)
+          (>= 0 (+ z y))
+          )
+ )
+(check-sat)
+(get-unsat-core)
+(exit)

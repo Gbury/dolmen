@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/110_set-info_bad_attribute_1.smt2", line 1, character 10-11:
+1 | (set-info _)
+              ^
+Error while parsing a set-info command, read the reserved word '_',
+      but expected an attribute of the form "keyword value?".

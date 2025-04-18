@@ -1,0 +1,4 @@
+File "tests/typing/pass/smtlib/v2.7/reset/test.smt2", line 3, character 0-13:
+3 | (assert true)
+    ^^^^^^^^^^^^^
+Error Missing logic (aka set-logic for smtlib2).

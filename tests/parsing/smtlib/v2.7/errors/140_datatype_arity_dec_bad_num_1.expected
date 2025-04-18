@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/140_datatype_arity_dec_bad_num_1.smt2", line 2, character 25-26:
+2 | (declare-datatypes ((foo _)))
+                             ^
+Error while parsing a datatype arity declaration, read the reserved word '_',
+      but expected a numeral for the datatype arity.

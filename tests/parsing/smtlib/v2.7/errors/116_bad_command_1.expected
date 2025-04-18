@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/116_bad_command_1.smt2", line 2, character 0-1:
+2 | _
+    ^
+Error while parsing an input statement, read the reserved word '_',
+      but expected an opening parenthesis to start a command.

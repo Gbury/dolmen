@@ -20,6 +20,3 @@ val ubitv : int -> Value.t -> Z.t
 
 val sbitv : int -> Value.t -> Z.t
 (** Extract the value as a signed integer *)
-
-val bvconv_builtins : Env.builtins
-(** builtins for conversions between bitvectors and integers *)

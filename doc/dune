@@ -16,6 +16,7 @@
     ; smtlib2
     dolmen_smtlib2 dolmen_smtlib2_poly
     dolmen_smtlib2_v6 dolmen_smtlib2_v6_script dolmen_smtlib2_v6_response
+    dolmen_smtlib2_v7 dolmen_smtlib2_v7_script dolmen_smtlib2_v7_response
     ; Dolmen classes
     dolmen_class
    )

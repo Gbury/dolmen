@@ -1,0 +1,8 @@
+(set-logic ALL)
+(declare-sort Pair 2)
+(declare-sort-parameter A)
+(declare-sort-parameter B)
+(define-fun id ((x A)) A x)
+(declare-fun Pair (A B) (Pair A B))
+(declare-fun fst ((Pair A B)) A)
+(declare-fun snd ((Pair A B)) B)

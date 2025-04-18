@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/079_define-funs-rec_bad_fun_decl_list_1.smt2", line 2, character 17-18:
+2 | (define-funs-rec _)
+                     ^
+Error while parsing a recursive functions declaration,
+      read the reserved word '_',
+      but expected an opening parenthesis to start a list of function
+      declaration.

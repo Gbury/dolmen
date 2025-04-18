@@ -1,0 +1,4 @@
+File "tests/typing/pass/smtlib/v2.7/pushpop/test.smt2", line 8, character 14-15:
+8 | (assert (or a b))
+                  ^
+Error Unbound identifier: `b`

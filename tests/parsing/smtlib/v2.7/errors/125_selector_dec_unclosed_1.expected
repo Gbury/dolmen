@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/125_selector_dec_unclosed_1.smt2", line 2, character 33-34:
+2 | (declare-datatype foo ((A (x int _))))
+                                     ^
+Error while parsing a selector declaration, read the reserved word '_',
+      but expected a closing parenthesis.

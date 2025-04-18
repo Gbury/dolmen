@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/002_qual_identifier_unclosed.smt2", line 2, character 20-21:
+2 | (assert (as foo bar _))
+                        ^
+Error while parsing a qualified identifier, read the reserved word '_',
+      but expected a closing parenthesis.

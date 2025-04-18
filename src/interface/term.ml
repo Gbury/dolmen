@@ -169,6 +169,13 @@ module type Logic = sig
       being able to parse tptp's THF, having location attached
       to function symbols. *)
 
+  val fake_apply : ?loc:location -> t -> t list -> t
+  (** "Fake" application: this looks like an application, but different enough
+      semantics that treating it as an application would be problematic.
+      This is useful for languages that try and overload the application syntax
+      to mean different things, so that it can be treated specifically later
+      during typechecking. *)
+
   val ite   : ?loc:location -> t -> t -> t -> t
   (** Conditional constructor, both for first-order terms and propositions.
       Used in the following schema: [ite condition then_branch else_branch]. *)
@@ -349,6 +356,10 @@ module type Logic = sig
   val sexpr   : ?loc:location -> t list -> t
   (** S-expressions (for smtlib attributes), should probably be related
       to the [data_t] term. *)
+
+  val map_lambda : ?loc:location -> t list -> t -> t
+  (** "Fake" lambdas, i.e. encodings of higher-order functions in first-order,
+      as used by SMT-LIB2.7. *)
 
 end
 
@@ -1232,6 +1243,9 @@ module type Smtlib_Base = sig
   type t
   (** The type of terms. *)
 
+  type var
+  (** The type of term variables *)
+
   type cstr
   (** The type of ADT constructor *)
 
@@ -1273,6 +1287,12 @@ module type Smtlib_Base = sig
 
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
+
+  val map_app : t -> t -> t
+  (** Application operation for the encoding of higher-order terms into first-order. *)
+
+  val map_lambda : var list -> t -> t
+  (** Shallow embedding of lambdas/actual functions into the higher-order encoding. *)
 
   val multi_trigger : t list -> t
   (** Create a multi trigger from a list of arbtirary terms. *)
@@ -1422,7 +1442,7 @@ module type Smtlib_Bvconv = sig
   type t
   (** The type of terms *)
 
-  val to_nat : t -> t
+  val to_int : signed:bool -> t -> t
   (** Application of the bv2nat conversion function. *)
 
   val of_int : int -> t -> t
@@ -1569,6 +1589,27 @@ module type Smtlib_Bitv = sig
 
   val sge : t -> t -> t
   (** Boolean signed arithmetic comparison (greater or equal than). *)
+
+  val nego : t -> t
+  (** Boolean unary overflow predicate for unary minus. *)
+
+  val addo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned addition *)
+
+  val subo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned subtraction *)
+
+  val mulo : signed:bool -> t -> t -> t
+  (** Boolean unary binary overflow predicate for signed/unsigned multiplication *)
+
+  val divo : t -> t -> t
+  (** Boolean unary binary overflow predicate for signed division *)
+
+  val to_int : signed:bool -> t -> t
+  (** Application of the bv2nat conversion function. *)
+
+  val of_int : int -> t -> t
+  (** Application of the int2bv conversion function. *)
 
 end
 

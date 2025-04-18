@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/020_let_unclosed_2.smt2", line 2, character 30-36:
+2 | (assert (let ((x 42)) (= x 0) blabla))
+                                  ^^^^^^
+Error while parsing a term, read the symbol 'blabla',
+      but expected a closing parenthesis to end the let binding.

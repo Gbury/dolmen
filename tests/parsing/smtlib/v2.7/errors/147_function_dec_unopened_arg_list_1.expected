@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.7/errors/147_function_dec_unopened_arg_list_1.smt2", line 2, character 23-24:
+2 | (define-funs-rec ((foo _)))
+                           ^
+Error while parsing a function declaration, read the reserved word '_',
+      but expected an opening parenthesis to start the list of arguments
+      sorts.

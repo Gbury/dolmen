@@ -61,6 +61,7 @@ module Make
   let enum = [
     "smt2",       Smtlib2 `Latest;
     "smt2.6",     Smtlib2 `V2_6;
+    "smt2.7",     Smtlib2 `V2_7;
   ]
 
   let string_of_language l =
@@ -73,6 +74,8 @@ module Make
     (module Dolmen_smtlib2.Response.Latest.Make(L)(I)(T)(S) : S);
     Smtlib2 `V2_6, ".rsmt2",
     (module Dolmen_smtlib2.Response.V2_6.Make(L)(I)(T)(S) : S);
+    Smtlib2 `V2_7, ".rsmt2",
+    (module Dolmen_smtlib2.Response.V2_7.Make(L)(I)(T)(S) : S);
 
   ]
 

@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/085_define-sort_bad_arg_list_1.smt2", line 2, character 17-18:
+2 | (define-sort foo _)
+                     ^
+Error while parsing a sort definition, read the reserved word '_',
+      but expected an opening parenthesis to start a list of arguments.

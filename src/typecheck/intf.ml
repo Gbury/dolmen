@@ -175,6 +175,7 @@ module type Formulas = sig
         | `Tag
       ]
     | `Variable of [
+        | `Implicit_type_var of reason
         | `Ty of ty_var * reason option
         | `Term of term_var * reason option
       ]
@@ -243,6 +244,7 @@ module type Formulas = sig
   (** Wrapper around potential function symbols from the Dolmen AST. *)
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of ty_cst * ty_def option
     | `Term_decl of term_cst
   ]
@@ -554,6 +556,10 @@ module type Formulas = sig
   ]
   (** Variable bindings *)
 
+  type implicit_type_var = [
+    | `Implicit_type_var of reason
+  ]
+
   type cst = [
     | `Cstr of term_cstr
     | `Dstr of term_cst
@@ -568,16 +574,16 @@ module type Formulas = sig
   ]
   (** Builtin binding *)
 
-  type bound = [ var | cst | builtin ]
+  type bound = [ var | cst | builtin | implicit_type_var ]
   (* All internal bindings *)
 
   val find_var : env -> Dolmen.Std.Id.t -> [ var | not_found ]
   (** Try and find the given id in the set of locally bound variables. *)
 
-  val find_global : env -> Dolmen.Std.Id.t -> [ cst | not_found ]
+  val find_global : env -> Dolmen.Std.Id.t -> [ cst | implicit_type_var | not_found ]
   (** Try and find the given id in the set of globally bound constants. *)
 
-  val find_global_st : state -> Dolmen.Std.Id.t -> [ cst | not_found ]
+  val find_global_st : state -> Dolmen.Std.Id.t -> [ cst | implicit_type_var | not_found ]
   (** Try and find the given id in the set of globally bound constants. *)
 
   val find_builtin : env -> Dolmen.Std.Id.t -> [ builtin | not_found ]
@@ -588,8 +594,21 @@ module type Formulas = sig
       (such as bound variables), constants bound at top-level, or builtin
       symbols bound by the builtin theory. *)
 
+  val find_symbol : env -> symbol -> [ bound | not_found ]
+  (** Try and find a bound symbol in the env, whether it be locally bound
+      (such as bound variables), constants bound at top-level, or builtin
+      symbols bound by the builtin theory. *)
+
   val find_reason : env -> bound -> reason option
   (** Return the reason (if any) for the given typed symbol. *)
+
+  val add_type_var :
+    env -> Dolmen.Std.Id.t -> ty_var -> Dolmen.Std.Term.t -> env
+  (** Add a local type variable to the env *)
+
+  val add_term_var :
+    env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
+  (** Add a local term variable to the env *)
 
   val decl_ty_const :
     env -> _ fragment -> Dolmen.Std.Id.t -> ty_cst -> reason -> unit
@@ -603,6 +622,7 @@ module type Formulas = sig
 
   val register_implicit : env -> implicit -> unit
   (** Register a new implicit declaration/definition *)
+
 
   (** {2 Custom global state} *)
 
@@ -662,6 +682,13 @@ module type Formulas = sig
 
   val parse_app_ho_term : (term -> Dolmen.Std.Term.t list -> res) typer
   (** Function used for parsing an higher-order application. *)
+
+  val parse_app_resolved :
+    (Dolmen.Std.Id.t -> Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> [ bound | not_found ] -> res) typer
+  (** Function for parsing an application once the function term has been resolved. *)
+
+  val parse_var_in_binding_pos : env -> Dolmen.Std.Term.t ->
+    [ `Ty of Dolmen.Std.Id.t * ty_var | `Term of Dolmen.Std.Id.t * term_var]
 
   val unwrap_ty : env -> Dolmen.Std.Term.t -> res -> ty
   val unwrap_term : env -> Dolmen.Std.Term.t -> res -> term

@@ -350,6 +350,14 @@ let term_app_left_ast
 
 (* Right associative applications *)
 
+let ty_app_right
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
+      check ast l;
+      fold_right_assoc mk (List.map (Type.parse_ty env) l))
+
 let term_app_right
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)

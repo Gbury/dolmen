@@ -1,0 +1,7 @@
+(set-logic QF_UF)
+(declare-fun a () Bool)
+(declare-fun b () Bool)
+(declare-fun c () Bool)
+(declare-fun d () Bool)
+(assert (and (= a b) (or (= b c) (= b d)) (not (= a d)) (not (= a c))))
+(check-sat)

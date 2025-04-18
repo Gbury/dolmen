@@ -1,1 +1,2 @@
+--input=smt2.6
 --ext=bvconv
