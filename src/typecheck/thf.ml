@@ -115,6 +115,22 @@ module Make
     | Term  of T.t
     | Tags  of tag list
 
+  type reservation =
+    | Strict
+    | Model_completion
+
+  type reason =
+    | Builtin
+    | Reserved of reservation * string
+    | Bound of Loc.file * Ast.t
+    | Inferred of Loc.file * Ast.t
+    | Defined of Loc.file * Stmt.def
+    | Declared of Loc.file * Stmt.decl
+    | Implicit_in_def of Loc.file * Stmt.def
+    | Implicit_in_decl of Loc.file * Stmt.decl
+    | Implicit_in_term of Loc.file * Ast.t
+
+  (** The type of reasons for constant typing *)
   (* Wrapper around potential function symbols in Dolmen *)
   type symbol = Intf.symbol =
     | Id of Id.t
@@ -138,6 +154,11 @@ module Make
 
   type 'env bound_var = [
     | ty_var | term_var | 'env let_var
+  ]
+
+  (* implicit type vars*)
+  type implicit_type_var = [
+    | `Implicit_type_var of reason
   ]
 
   (* various contants *)
@@ -178,21 +199,6 @@ module Make
     sym_hook : [ ty_cst | term_cst ] -> unit;
   }
 
-  type reservation =
-    | Strict
-    | Model_completion
-
-  type reason =
-    | Builtin
-    | Reserved of reservation * string
-    | Bound of Loc.file * Ast.t
-    | Inferred of Loc.file * Ast.t
-    | Defined of Loc.file * Stmt.def
-    | Declared of Loc.file * Stmt.decl
-    | Implicit_in_def of Loc.file * Stmt.def
-    | Implicit_in_decl of Loc.file * Stmt.decl
-    | Implicit_in_term of Loc.file * Ast.t
-  (** The type of reasons for constant typing *)
 
   type binding = [
     | `Not_found
@@ -207,6 +213,7 @@ module Make
         | `Tag
       ]
     | `Variable of [
+        | `Implicit_type_var of reason
         | `Ty of Ty.Var.t * reason option
         | `Term of T.Var.t * reason option
       ]
@@ -275,6 +282,7 @@ module Make
   (** The type of kinds of variables *)
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of Ty.Const.t * Ty.def option
     | `Term_decl of T.Const.t
   ]
@@ -420,7 +428,7 @@ module Make
   (* Global, mutable state. *)
   type state = {
 
-    mutable csts : cst M.t;
+    mutable csts : [ cst | implicit_type_var ] M.t;
     (* association between dolmen ids and types/terms constants. *)
     mutable ttype_locs : reason R.t;
     (* stores reasons for typing of type constructors *)
@@ -455,9 +463,9 @@ module Make
     type_locs : reason E.t;
     term_locs : reason F.t;
 
-    (* inferred variables *)
-    inferred_vars : ty_var M.t ref;
-    inferred_ty_locs : reason E.t ref;
+    (* implicit (i.e. not explicitly bound to their scope) variables *)
+    implicit_vars : ty_var M.t ref;
+    implicit_ty_locs : reason E.t ref;
 
     (* wildcards *)
     wildcards     : wildcard_hook list E.t ref;
@@ -496,7 +504,7 @@ module Make
 
   (* Convenient aliases *)
   type var = env bound_var
-  type bound = [ var | cst | builtin ]
+  type bound = [ var | cst | implicit_type_var | builtin ]
 
 
   (* Exceptions *)
@@ -572,6 +580,38 @@ module Make
     | (ast, _) :: r, (t, _) :: r' ->
       if pat == t then ast else find_pattern_ast pat r r'
 
+  (* Var/Const creation *)
+  (* ************************************************************************ *)
+
+  let var_name _env name =
+    match (name : Dolmen.Std.Name.t) with
+    | Simple name -> name
+    (* TODO: proper errors *)
+    | Indexed _ -> assert false
+    | Qualified _ -> assert false
+
+  let cst_path _env name =
+    match (name : Dolmen.Std.Name.t) with
+    (* TODO; proper error *)
+    | Indexed _ -> assert false
+    | Simple name ->
+      Dolmen.Std.Path.global name
+    | Qualified { path; basename; } ->
+      Dolmen.Std.Path.absolute path basename
+
+  let mk_ty_var env name =
+    Ty.Var.mk (var_name env name)
+
+  let mk_term_var env name ty =
+    T.Var.mk (var_name env name) ty
+
+  let mk_ty_cst env name arity =
+    Ty.Const.mk (cst_path env name) arity
+
+  let mk_term_cst env name ty =
+    T.Const.mk (cst_path env name) ty
+
+
   (* Binding lookups *)
   (* ************************************************************************ *)
 
@@ -585,6 +625,7 @@ module Make
         | `Ty_var v -> E.find v env.type_locs
         | `Term_var v -> F.find v env.term_locs
         | `Letin (_, _, v, _) -> F.find v env.term_locs
+        | `Implicit_type_var reason -> reason
         | `Ty_cst c -> R.find c env.st.ttype_locs
         | `Term_cst c -> S.find c env.st.const_locs
         | `Cstr c -> U.find c env.st.cstrs_locs
@@ -607,6 +648,7 @@ module Make
     | `Ty_var v -> `Variable (`Ty (v, reason))
     | `Term_var v -> `Variable (`Term (v, reason))
     | `Letin (_, _, v, _) -> `Variable (`Term (v, reason))
+    | `Implicit_type_var reason -> `Variable (`Implicit_type_var reason)
     | `Ty_cst c -> `Constant (`Ty (c, reason))
     | `Term_cst c -> `Constant (`Term (c, reason))
     | `Cstr c -> `Constant (`Cstr (c, reason))
@@ -619,6 +661,7 @@ module Make
     | `Builtin _ -> Some Builtin
     | `Reserved `Solver reason -> Some (Reserved (Strict, reason))
     | `Reserved `Model reason -> Some (Reserved (Model_completion, reason))
+    | `Variable `Implicit_type_var reason -> Some reason
     | `Variable `Ty (_, reason)
     | `Variable `Term (_, reason)
     | `Constant `Ty (_, reason)
@@ -636,21 +679,32 @@ module Make
     let new_binding = with_reason (Some reason) (bound :> [bound | not_found]) in
     _warn env fragment (Shadowing (id, old_binding, new_binding))
 
+  let instantiate_implicit_type_var env id reason =
+    (* If there is an global implicit type var, instantiate it.
+       No need to emit a warning in case of a conflict: if there is
+       a conflict with some binding [b], then a wrning would have already
+       be emitted when [b] was created. *)
+    let v = mk_ty_var env (Id.name id) in
+    let res = `Ty_var v in
+    env.implicit_vars := M.add id res !(env.implicit_vars);
+    env.implicit_ty_locs := E.add v reason !(env.implicit_ty_locs);
+    res
+
   let find_var env name : [var | not_found] =
     match M.find_opt name env.vars with
     | Some (#var as res) -> res
     | None ->
-      begin match M.find_opt name !(env.inferred_vars) with
+      begin match M.find_opt name !(env.implicit_vars) with
         | Some (#ty_var as res) -> res
         | None -> `Not_found
       end
 
-  let find_global_st st id : [ cst | not_found ] =
+  let find_global_st st id : [ cst | implicit_type_var | not_found ] =
     match M.find_opt id st.csts with
-    | Some res -> (res :> [cst | not_found])
+    | Some res -> (res :> [cst | implicit_type_var | not_found])
     | None -> `Not_found
 
-  let find_global env id : [cst | not_found] =
+  let find_global env id : [cst | implicit_type_var | not_found] =
     find_global_st env.st id
 
   let find_builtin env id : [builtin | not_found] =
@@ -663,7 +717,10 @@ module Make
     | #var as res -> (res :> [ bound | not_found ])
     | `Not_found ->
       begin match find_global env id with
-        | #cst as res -> (res :> [ bound | not_found ])
+        | #cst as res ->
+          (res :> [ bound | not_found ])
+        | `Implicit_type_var reason ->
+          instantiate_implicit_type_var env id reason
         | `Not_found ->
           (find_builtin env id :> [ bound | not_found ])
       end
@@ -838,47 +895,20 @@ module Make
     implicits = st.implicits;
   }
 
-  (* Var/Const creation *)
-  let var_name _env name =
-    match (name : Dolmen.Std.Name.t) with
-    | Simple name -> name
-    (* TODO: proper errors *)
-    | Indexed _ -> assert false
-    | Qualified _ -> assert false
-
-  let cst_path _env name =
-    match (name : Dolmen.Std.Name.t) with
-    (* TODO; proper error *)
-    | Indexed _ -> assert false
-    | Simple name ->
-      Dolmen.Std.Path.global name
-    | Qualified { path; basename; } ->
-      Dolmen.Std.Path.absolute path basename
-
-  let mk_ty_var env name =
-    Ty.Var.mk (var_name env name)
-
-  let mk_term_var env name ty =
-    T.Var.mk (var_name env name) ty
-
-  let mk_ty_cst env name arity =
-    Ty.Const.mk (cst_path env name) arity
-
-  let mk_term_cst env name ty =
-    T.Const.mk (cst_path env name) ty
-
   let register_implicit env (implicit : implicit) =
     env.st.implicits <- implicit :: env.st.implicits
 
-
   (* Const declarations *)
-  let add_global env fragment id reason (v : cst) =
+  let add_global env fragment id reason (v : [ cst | implicit_type_var ] ) =
     begin match find_bound env id with
       | `Not_found -> ()
       | `Builtin `Infer _ -> () (* inferred builtins are meant to be shadowed/replaced *)
       | #bound as old -> _shadow env fragment id old reason v
     end;
     env.st.csts <- M.add id v env.st.csts
+
+  let decl_implicit_type_var env fg id reason =
+    add_global env fg id reason (`Implicit_type_var reason)
 
   let decl_ty_const env fg id c reason =
     add_global env fg id reason (`Ty_cst c);
@@ -937,8 +967,8 @@ module Make
       ?(free_wildcards=Forbidden)
       ~warnings ~file
       builtins =
-    let inferred_vars = ref M.empty in
-    let inferred_ty_locs = ref E.empty in
+    let implicit_vars = ref M.empty in
+    let implicit_ty_locs = ref E.empty in
     let wildcards = ref E.empty in
     {
       file; st; builtins; warnings;
@@ -947,7 +977,9 @@ module Make
       type_locs = E.empty;
       term_locs = F.empty;
 
-      inferred_vars; inferred_ty_locs; wildcards;
+      implicit_vars;
+      implicit_ty_locs;
+      wildcards;
 
       order; poly; quants;
       var_infer; sym_infer;
@@ -955,10 +987,10 @@ module Make
     }
 
   let split_env_for_def env =
-    let inferred_vars = ref M.empty in
-    let inferred_ty_locs = ref E.empty in
+    let implicit_vars = ref M.empty in
+    let implicit_ty_locs = ref E.empty in
     let wildcards = ref E.empty in
-    { env with inferred_vars; inferred_ty_locs; wildcards; }
+    { env with implicit_vars; implicit_ty_locs; wildcards; }
 
   (* add a global inferred var *)
   let add_inferred_type_var env id v ast =
@@ -968,8 +1000,8 @@ module Make
       | #bound as old ->
         _shadow env (Ast ast) id old reason (`Ty_var v)
     end;
-    env.inferred_vars := M.add id (`Ty_var v) !(env.inferred_vars);
-    env.inferred_ty_locs := E.add v reason !(env.inferred_ty_locs);
+    env.implicit_vars := M.add id (`Ty_var v) !(env.implicit_vars);
+    env.implicit_ty_locs := E.add v reason !(env.implicit_ty_locs);
     ()
 
   (* Add local variables to environment *)
@@ -1158,7 +1190,7 @@ module Make
 
   let find_ty_var_reason env v =
     try E.find v env.type_locs
-    with Not_found -> E.find v !(env.inferred_ty_locs)
+    with Not_found -> E.find v !(env.implicit_ty_locs)
 
   let _unused_type env kind v =
     if Ty.Var.is_wildcard v then ()
@@ -1928,6 +1960,9 @@ module Make
       _expected env "not a field name" s_ast None
     | `Builtin b ->
       builtin_apply_id env b ast s s_ast args
+    | `Implicit_type_var _ ->
+      (* should not be reachable if all gors well ? *)
+      assert false
     | `Not_found ->
       infer_sym env ast s args s_ast
 
@@ -2199,7 +2234,7 @@ module Make
             | exception Found (err, res) -> _expected env "type" err (Some res)
             | l -> `Fun_ty (List.map snd ttype_vars, List.rev l, ret)
           end
-        | res -> _expected env "Ttype of type" t (Some res)
+        | res -> _expected env "Ttype or type" t (Some res)
       end
 
   and parse_sig_args env l =
@@ -2211,7 +2246,12 @@ module Make
     | t ->
       [t, parse_expr env t]
 
-  let parse_sig = parse_sig_quant
+  let parse_sig env = function
+    | { Ast.term = Ast.Builtin Ast.Implicit_type_var; _ }
+    | { Ast.term = Ast.App (
+            { Ast.term = Ast.Builtin Ast.Implicit_type_var; _ }, []); _ } ->
+      `Implicit_type_var
+    | t -> parse_sig_quant env t
 
   let parse_inductive_arg env = function
     | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ }, e); _ } ->
@@ -2348,6 +2388,9 @@ module Make
 
   let define_decl env (_, cst) t =
     match cst, (t : Stmt.decl) with
+    (* Implicit type var *)
+    | `Implicit_type_var as res, Abstract _ -> res
+    | `Implicit_type_var, (Inductive _ | Record _) -> assert false
     (* Term decl *)
     | (`Term_decl _) as res, Abstract _ -> res
     (* Abstract type decl *)
@@ -2366,6 +2409,9 @@ module Make
     | Abstract { id; ty = ast; loc = _; attrs; } ->
       let tags = tags @ parse_attrs env [] attrs in
       begin match parse_sig env ast with
+        | `Implicit_type_var ->
+          check_no_free_wildcards env ast;
+          env, (id, `Implicit_type_var)
         | `Ty_cstr n ->
           check_no_free_wildcards env ast;
           let c = mk_ty_cst env (Id.name id) n in
@@ -2400,6 +2446,7 @@ module Make
 
   let record_decl env (id, tdecl) (t : Stmt.decl) =
     match tdecl with
+    | `Implicit_type_var -> decl_implicit_type_var env (Decl t) id (Declared (env.file, t))
     | `Type_decl c -> decl_ty_const env (Decl t) id c (Declared (env.file, t))
     | `Term_decl f -> decl_term_const env (Decl t) id f (Declared (env.file, t))
 

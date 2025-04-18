@@ -68,6 +68,7 @@ reserved:
   | DECLARE_DATATYPES { "declare-datatypes" }
   | DECLARE_FUN { "declare-fun" }
   | DECLARE_SORT { "declare-sort" }
+  | DECLARE_SORT_PARAMETER { "declare-sort-parameter" }
   | DEFINE_FUN { "define-fun" }
   | DEFINE_FUN_REC { "define-fun-rec" }
   | DEFINE_FUNS_REC { "define-funs-rec" }
@@ -214,11 +215,10 @@ term:
     { match s with
       | `NoAs f -> f
       | `As (f, ty, loc) -> T.colon ~loc f ty }
-  | OPEN UNDERSCORE s=qual_identifier args=term+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in
-      match s with
-      | `NoAs f -> T.smt2_clusterfuck ~loc f args
-      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.smt2_clusterfuck ~loc f args) ty }
+  /* TODO: uncomment this when we have a conflict-free grammar 
+  | OPEN UNDERSCORE s=term args=term+ CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.smt2_clusterfuck ~loc f args }
+  */
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
@@ -396,6 +396,10 @@ command:
     { let id = I.(mk sort s) in
       let loc = L.mk_pos $startpos $endpos in
       S.type_decl ~loc id (int_of_string n) }
+  | OPEN DECLARE_SORT_PARAMETER s=SYMBOL CLOSE
+    { let id = I.(mk sort s) in
+      let loc = L.mk_pos $startpos $endpos in
+      S.implicit_type_var ~loc id }
   | OPEN DEFINE_FUN f=function_def CLOSE
     { let id, vars, args, ret, body = f in
       let loc = L.mk_pos $startpos $endpos in

@@ -510,6 +510,10 @@ let assert_ ?loc t = antecedent ?loc t
 let check_sat ?loc hyps =
   mk ?loc (Prove { hyps; goals = []; })
 
+let implicit_type_var ?loc id =
+  let ty = Term.implicit_type_var_t ?loc () in
+  mk_decls ?loc ~recursive:false [abstract ?loc id ty]
+
 let type_decl ?loc id n =
   let ty = Term.fun_ty ?loc (Misc.replicate n @@ Term.tType ()) @@ Term.tType () in
   mk_decls ?loc ~recursive:false [abstract ?loc id ty]

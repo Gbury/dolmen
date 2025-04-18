@@ -159,6 +159,10 @@ module type Statement = sig
 
   (** Introducing new symbols *)
 
+  val implicit_type_var : ?loc:location -> id -> t
+  (** Declare an implicit global type variable (that should be implicitly
+      bound bound at top-level in each statement where it appears). *)
+
   val type_decl : ?loc:location -> id -> int -> t
   (** Declares a new type constructor with given arity. *)
 

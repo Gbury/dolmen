@@ -57,6 +57,7 @@ type builtin =
 
   | Map_lambda          (* smtlib2.7 builtin for function encoding into first order *)
   | SMT2_clusterfuck    (* this is the "_" is smt2.7 which has insane semantics *)
+  | Implicit_type_var   (* The "type"/sort of an implicit type variable. *)
 
   | Fake_apply          (* Workaround for languages who "function application" syntax
                            does not actually have the semantics of function application.
@@ -164,6 +165,7 @@ let builtin_to_string = function
   | Sexpr -> "sexpr"
   | Map_lambda -> "smt-lambda"
   | SMT2_clusterfuck -> "__"
+  | Implicit_type_var -> "TypeVar"
   | Fake_apply -> "@"
 
 let binder_to_string = function
@@ -442,6 +444,7 @@ let record_access_t     = builtin Record_access
 let sexpr_t             = builtin Sexpr
 let map_lambda_t        = builtin Map_lambda
 let smt2_clusterfuck_t  = builtin SMT2_clusterfuck
+let implicit_type_var_t = builtin Implicit_type_var
 let fake_apply_t        = builtin Fake_apply
 
 let nary t = (fun ?loc l -> apply ?loc (t ?loc ()) l)

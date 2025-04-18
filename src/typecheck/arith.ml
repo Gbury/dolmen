@@ -350,7 +350,7 @@ module Smtlib2 = struct
               | [] -> Constant id
               | _ -> Top_symbol_not_in_arith
             end
-          | #Type.not_found ->
+          | #Type.not_found | #Type.implicit_type_var ->
             begin match parse version env (Type.Id id) with
               | #Type.builtin_res -> Complex_arith
               | #Type.not_found -> Top_symbol_not_in_arith

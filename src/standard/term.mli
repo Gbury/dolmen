@@ -142,6 +142,9 @@ type builtin =
   | SMT2_clusterfuck
   (** Beware this eldricht horror ! This corresponds to the "_" in SMT-LIB v2.7,
       which has semantics that will make you go insane. *)
+  | Implicit_type_var
+  (** The "Type"/"Sort" of an implicit global type variable (e.g. from a
+      (declare-sort-parameter in SMT2.7). *)
 
   | Fake_apply
   (** Workaround for languages whose "function application" syntax
@@ -255,6 +258,10 @@ include Dolmen_intf.Term.Logic
 val ite_t : ?loc:location -> unit -> t
 (** The standalone term corresponding to the if-then-else builtin
     construction. *)
+
+val implicit_type_var_t : ?loc:location -> unit -> t
+(** The standalone term correpsonding to the "Type"/"Sort" of an implicit
+    type variable. *)
 
 
 (** {2 Term inspection} *)

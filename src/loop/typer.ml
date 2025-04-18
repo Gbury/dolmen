@@ -1853,6 +1853,7 @@ module Typer(State : State.S) = struct
   (* ************************************************************************ *)
 
   type decl = [
+    | `Implicit_type_var
     | `Term_decl of Dolmen_std.Expr.ty Dolmen_std.Expr.id
     | `Type_decl of
         Dolmen_std.Expr.type_fun Dolmen_std.Expr.id *
@@ -1897,6 +1898,7 @@ module Typer(State : State.S) = struct
     | Auto -> true
 
   let check_decl st env d = function
+    | `Implicit_type_var -> ()
     | `Type_decl (_, ty_def) ->
       begin match (ty_def : Dolmen.Std.Expr.Ty.def option) with
         | None | Some Abstract ->
@@ -2076,6 +2078,7 @@ module Make
   ]
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
   ]
@@ -2161,6 +2164,8 @@ module Make
       Format.fprintf fmt " =@ %a" Print.ty_def ty_def
 
   let print_decl fmt = function
+    | `Implicit_type_var ->
+      Format.fprintf fmt "implicit-type-var"
     | `Type_decl (c, ty_def) ->
       Format.fprintf fmt "@[<hov 2>type-def:@ %a%a@]"
         Print.ty_cst c print_ty_def ty_def

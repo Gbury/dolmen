@@ -184,6 +184,10 @@ module type Logic = sig
   val set_option  : ?loc:location -> term -> t
   (** Getter and setter for prover options (see smtlib manual). *)
 
+  val implicit_type_var : ?loc:location -> id -> t
+  (** Declare an implicit global type variable (that should be implicitly
+      bound bound at top-level in each statement where it appears). *)
+
   val type_decl   : ?loc:location -> id -> int -> t
   (** Type declaration. [type_decl s n] declare [s] as a type constructor with
       arity [n]. *)
