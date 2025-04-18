@@ -338,7 +338,7 @@ module Print = struct
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
 
   and branch fmt (pattern, body) =
-    Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a" term pattern term body
+    Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a@]" term pattern term body
 
   and subterm fmt t =
     match t.term_descr with

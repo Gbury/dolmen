@@ -58,6 +58,9 @@ module type Term = sig
   type location
   (** The type of locations. *)
 
+  val wildcard  : ?loc:location -> unit -> t
+  (** Wildcards in patterns. *)
+
   val const   : ?loc:location -> id -> t
   (** Constants, i.e non predefined symbols. This includes both constants
       defined by theories, defined locally in a problem, and also quantified variables. *)

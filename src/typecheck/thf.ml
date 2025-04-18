@@ -1026,6 +1026,12 @@ module Make
     let l' = List.map (fun (_, v, _) -> v) l in
     l', env
 
+  let register_term_var env v ast =
+    let reason = Bound (env.file, ast) in
+    { env with
+      term_locs = F.add v reason env.term_locs;
+    }
+
   let add_term_var env id v ast =
     let reason = Bound (env.file, ast) in
     begin match find_bound env id with
@@ -1695,6 +1701,10 @@ module Make
 
   and parse_pattern ty env t =
     match t with
+    | { Ast.term = Ast.Builtin Ast.Wildcard; _ } as ast_s ->
+      let v = mk_term_var env (Dolmen.Std.Name.simple "_") ty in
+      let env = register_term_var env v ast_s in
+      T.of_var v, env
     | { Ast.term = Ast.Symbol s; _ } as ast_s ->
       parse_pattern_app ty env t ast_s s []
     | { Ast.term = Ast.App (

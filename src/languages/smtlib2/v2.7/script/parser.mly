@@ -195,6 +195,8 @@ sorted_var:
 pattern_symbol:
   | s=SYMBOL
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | UNDERSCORE
+    { let loc = L.mk_pos $startpos $endpos in T.wildcard ~loc () }
 ;
 
 pattern:
@@ -327,45 +329,12 @@ function_def:
   | s=SYMBOL OPEN args=sorted_var* CLOSE ret=sort body=term
     { I.(mk term s), [], args, ret, body }
 
-/* Additional rule for prop_literals symbols, to have lighter
-   semantic actions in prop_literal reductions. */
-prop_symbol:
-  | s=pattern_symbol { s }
-;
-
-/* This is a ugly hack, but necessary because the syntax defines
-   this reduction using a `not` token which doesn't really exists,
-   since it is not a reserved word, thus forcing us to pattern
-   match on the string... */
-not_symbol:
-  | s=SYMBOL
-    { let loc = L.mk_pos $startpos $endpos in
-      match s with
-      | "not" ->
-        T.const ~loc I.(mk term s)
-      | _ ->
-        let msg = Format.dprintf "@[<v>@[<hov>%a@]@ Hint: @[<hov>%a@]@]"
-          Format.pp_print_text "expected the 'not' symbol at that point."
-          Format.pp_print_text
-           "check-sat-assuming only accepts a list of terms \
-            of the form 'p' or '(not p)', where p is a boolean literal."
-        in
-        raise (L.Syntax_error (loc, `Regular msg)) }
-;
-
-prop_literal:
-  | s=prop_symbol
-    { s }
-  | OPEN f=not_symbol s=prop_symbol CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.apply ~loc f [s] }
-;
-
 command:
   | OPEN ASSERT t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.assert_ ~loc t }
   | OPEN CHECK_SAT CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc [] }
-  | OPEN CHECK_SAT_ASSUMING OPEN l=prop_literal* CLOSE CLOSE
+  | OPEN CHECK_SAT_ASSUMING OPEN l=term* CLOSE CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.check_sat ~loc l }
   | OPEN DECLARE_CONST s=SYMBOL ty=sort CLOSE
     { let loc = L.mk_pos $startpos $endpos in S.fun_decl ~loc I.(mk term s) [] [] ty }
