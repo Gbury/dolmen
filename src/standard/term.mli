@@ -139,9 +139,6 @@ type builtin =
 
   | Map_lambda
   (** Application operator for higher-order function encoding into first order *)
-  | SMT2_clusterfuck
-  (** Beware this eldricht horror ! This corresponds to the "_" in SMT-LIB v2.7,
-      which has semantics that will make you go insane. *)
   | Implicit_type_var
   (** The "Type"/"Sort" of an implicit global type variable (e.g. from a
       (declare-sort-parameter in SMT2.7). *)

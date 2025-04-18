@@ -215,10 +215,6 @@ term:
     { match s with
       | `NoAs f -> f
       | `As (f, ty, loc) -> T.colon ~loc f ty }
-  /* TODO: uncomment this when we have a conflict-free grammar 
-  | OPEN UNDERSCORE s=term args=term+ CLOSE
-    { let loc = L.mk_pos $startpos $endpos in T.smt2_clusterfuck ~loc f args }
-  */
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with

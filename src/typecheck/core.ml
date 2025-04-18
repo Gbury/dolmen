@@ -431,15 +431,9 @@ module Smtlib2 = struct
     (* indexed identifiers *)
     | { term = App ({ term = Builtin Sexpr; _ }, {
         term = Symbol { ns; name = Simple "_"} ; _} ::
-        ({ term = Symbol {name = Simple s; _}; _ } as f) :: args); loc; attr } ->
-      begin match version with
-        | `Script (`V2_7 | `Latest)
-        | `Response (`V2_7 | `Latest) ->
-          Ast.smt2_clusterfuck ~loc f args
-        | _ ->
-          Ast.const ~loc (Id.indexed ns s (List.map index_of_sexpr args))
-          |> Ast.add_attrs attr
-      end
+        { term = Symbol {name = Simple s; _}; _ } :: args); loc; attr } ->
+      Ast.const ~loc (Id.indexed ns s (List.map index_of_sexpr args))
+      |> Ast.add_attrs attr
 
     (* regular function application *)
     | { term = App ({ term = Builtin Sexpr; _ }, []); _ }  ->

@@ -357,9 +357,6 @@ module type Logic = sig
   (** S-expressions (for smtlib attributes), should probably be related
       to the [data_t] term. *)
 
-  val smt2_clusterfuck : ?loc:location -> t -> t list -> t
-  (** Eldricht horror from SMT-LIB2.7. *)
-
   val map_lambda : ?loc:location -> t list -> t -> t
   (** "Fake" lambdas, i.e. encodings of higher-order functions in first-order,
       as used by SMT-LIB2.7. *)
