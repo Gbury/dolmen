@@ -1,0 +1,4 @@
+File "tests/typing/pass/smtlib/v2.7/reset_assertions/test.smt2", line 9, character 11-12:
+9 | (assert (= a a))
+               ^
+Error Unbound identifier: `a`
