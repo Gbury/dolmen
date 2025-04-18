@@ -1264,8 +1264,12 @@ module Make
             (fun _ -> wildcard env src Any_in_scope)
         in
         `Fixed (tys, args)
-      end else
-        `Bad_arity ([n_t; n_ty + n_t], n_args)
+      end else begin
+        let expected =
+          if n_ty = 0 then [n_t] else [n_t; n_ty + n_t]
+        in
+        `Bad_arity (expected, n_args)
+      end
 
   (* Split arguments for higher order application *)
   let split_ho_args env ast n_ty args =
