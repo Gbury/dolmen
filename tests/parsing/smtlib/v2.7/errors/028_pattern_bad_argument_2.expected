@@ -3,6 +3,6 @@ File "tests/parsing/smtlib/v2.7/errors/028_pattern_bad_argument_2.smt2", line 3,
                                                   ^
 Error while parsing arguments of a constructor in a pattern,
       read the reserved word '!',
-      but expected a closing parenthesis, or a symbol to bind the argument;
-      note that keywords and reserved words (such as '_', 'as', ...) are not
-      symbols, and thus are not allowed here.
+      but expected a closing parenthesis, or a symbol (or '_') to bind the
+      argument; note that keywords and reserved words (such as 'lambda',
+      'as', ...) are not symbols, and thus are not allowed here.

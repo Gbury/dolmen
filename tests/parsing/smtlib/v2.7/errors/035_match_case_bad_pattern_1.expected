@@ -1,8 +1,8 @@
-File "tests/parsing/smtlib/v2.7/errors/035_match_case_bad_pattern_1.smt2", line 3, character 41-42:
-3 | (define-fun f ((x t)) t (match x ((A B) (_ x))))
-                                             ^
-Error while parsing a match case, read the reserved word '_',
-      but expected a pattern, i.e. either a symbol or a datatype pattern of
-      the form "(symbol symbol+)"; note that keywords and reserved words
-      (such as '_', 'as', ...) are not symbols, and thus are not allowed
-      here.
+File "tests/parsing/smtlib/v2.7/errors/035_match_case_bad_pattern_1.smt2", line 3, character 41-47:
+3 | (define-fun f ((x t)) t (match x ((A B) (lambda x))))
+                                             ^^^^^^
+Error while parsing a match case, read the reserved word 'lambda',
+      but expected a pattern, i.e. either a symbol, '_',  or a datatype
+      pattern of the form "(symbol symbol_+)" (with '_' also allowed); note
+      that keywords and reserved words (such as 'lambda', 'as', ...) are not
+      symbols, and thus are not allowed here.

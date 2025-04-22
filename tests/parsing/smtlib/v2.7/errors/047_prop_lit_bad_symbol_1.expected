@@ -1,5 +1,6 @@
 File "tests/parsing/smtlib/v2.7/errors/047_prop_lit_bad_symbol_1.smt2", line 2, character 26-27:
 2 | (check-sat-assuming ((not _)))
                               ^
-Error while parsing a propositional literal, read the reserved word '_',
-      but expected a symbol.
+Error while parsing a function application, read the reserved word '_',
+      but expected a term as argument; note that keywords and reserved words
+      (such as '_', 'as', ...) are not terms, and thus are not allowed here.

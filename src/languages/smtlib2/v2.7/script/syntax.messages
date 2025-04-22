@@ -3653,7 +3653,12 @@ term: OPEN MATCH SYMBOL OPEN OPEN STR
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+035
+a match case
+a pattern, i.e. either a symbol, '_',  or a datatype pattern of
+the form "(symbol symbol_+)" (with '_' also allowed); note that
+keywords and reserved words (such as 'lambda', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN STR
 ##
@@ -3665,7 +3670,11 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN STR
 ## OPEN
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+030
+a pattern
+a symbol or '_' (either a variable or a datatype constructor);
+note that keywords and reserved words (such as 'lambda', 'as', ...) are not
+symbols, and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL STR
 ##
@@ -3677,7 +3686,11 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL STR
 ## OPEN pattern_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+029
+arguments of a constructor in a pattern
+a symbol or '_' to bind the first constructor argument; note that
+keywords and reserved words (such as 'lambda', 'as', ...) are not symbols,
+and thus are not allowed here
 
 term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL STR
 ##
@@ -3690,7 +3703,53 @@ term: OPEN MATCH SYMBOL OPEN OPEN OPEN SYMBOL SYMBOL STR
 ## pattern_symbol
 ##
 
-<YOUR SYNTAX ERROR MESSAGE HERE>
+028
+arguments of a constructor in a pattern
+a closing parenthesis, or a symbol (or '_') to bind the argument;
+note that keywords and reserved words (such as 'lambda', 'as', ...) are not
+symbols, and thus are not allowed here
+
+file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 322.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(term) CLOSE CLOSE [ OPEN EOF ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+052
+a list of terms
+a term or a closing parenthesis
+
+file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
+##
+## Ends in an error in state: 323.
+##
+## list(term) -> term . list(term) [ CLOSE ]
+##
+## The known suffix of the stack is as follows:
+## term
+##
+
+052
+a list of terms
+a term or a closing parenthesis
+
+input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
+##
+## Ends in an error in state: 447.
+##
+## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(term) CLOSE CLOSE [ # ]
+##
+## The known suffix of the stack is as follows:
+## OPEN CHECK_SAT_ASSUMING OPEN
+##
+
+052
+a list of terms
+a term
 
 file: OPEN ASSERT OPEN LAMBDA UNDERSCORE
 ##
@@ -3812,30 +3871,6 @@ file: OPEN DECLARE_SORT_PARAMETER SYMBOL UNDERSCORE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
-##
-## Ends in an error in state: 322.
-##
-## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(term) CLOSE CLOSE [ OPEN EOF ]
-##
-## The known suffix of the stack is as follows:
-## OPEN CHECK_SAT_ASSUMING OPEN
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-file: OPEN CHECK_SAT_ASSUMING OPEN SYMBOL UNDERSCORE
-##
-## Ends in an error in state: 323.
-##
-## list(term) -> term . list(term) [ CLOSE ]
-##
-## The known suffix of the stack is as follows:
-## term
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
 input: OPEN DEFINE_CONST UNDERSCORE
 ##
 ## Ends in an error in state: 411.
@@ -3904,18 +3939,6 @@ input: OPEN DECLARE_SORT_PARAMETER SYMBOL UNDERSCORE
 ##
 ## The known suffix of the stack is as follows:
 ## OPEN DECLARE_SORT_PARAMETER SYMBOL
-##
-
-<YOUR SYNTAX ERROR MESSAGE HERE>
-
-input: OPEN CHECK_SAT_ASSUMING OPEN UNDERSCORE
-##
-## Ends in an error in state: 447.
-##
-## command -> OPEN CHECK_SAT_ASSUMING OPEN . list(term) CLOSE CLOSE [ # ]
-##
-## The known suffix of the stack is as follows:
-## OPEN CHECK_SAT_ASSUMING OPEN
 ##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
