@@ -495,7 +495,8 @@ module Smtlib2 = struct
       (Type : Tff_intf.S)
       (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
                                           and type term := Type.T.t)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t
+                                        and type var := Type.Ty.Var.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
                                          and type var := Type.T.Var.t
                                          and type cstr := Type.T.Cstr.t) = struct
@@ -638,18 +639,38 @@ module Smtlib2 = struct
                 begin match Type.find_symbol env (Type.Id id) with
                   | (`Term_cst c) as f ->
                     begin match Ty.view (Type.T.Const.ty c) with
-                      | `Map _ -> `HO_app ()
+                      | `Map _ ->
+                        let f' = Type.T.apply_cst c [] [] in
+                        `HO_app (f', actual_args)
+                      | `Pi (ty_vars, ty_body) ->
+                        (* If the function symbol is polymorphic, then we may need to
+                           apply it to type argument sbefore doing the encoded HO-applications *)
+                        begin match Ty.view ty_body with
+                          | `Map _ ->
+                            let src = Type.Added_type_argument s_ast in
+                            let ty_args =
+                              List.map (fun _ ->
+                                  Type.wildcard env src Any_in_scope
+                                ) ty_vars
+                            in
+                            let f' = Type.T.apply_cst c ty_args []
+                            in
+                            `HO_app (f', actual_args)
+                          | _ -> `Regular_apply (id, s_ast, actual_args, f)
+                        end
                       | _ -> `Regular_apply (id, s_ast, actual_args, f)
                     end
                   | f -> `Regular_apply (id, s_ast, actual_args, f)
                 end
               (* If the function applied is a complex term, it can only
                  be a higher-order application. *)
-              | _ -> `HO_app ()
+              | f :: actual_args ->
+                let f' = Type.parse_term env f in
+                `HO_app (f', actual_args)
             in
             match foo with
-            | `HO_app () ->
-              Base.term_app_left (module Type) env s T.map_app ast args
+            | `HO_app (f, args) ->
+              Base.term_app_left' (module Type) env s T.map_app ast f args
             | `Regular_apply (id, s_ast, args, f) ->
               Type.parse_app_resolved env ast id s_ast args f
               |> Type.unwrap_term env ast

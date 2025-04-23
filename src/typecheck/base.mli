@@ -253,6 +253,11 @@ val term_app_left :
   'env -> Intf.symbol -> ('term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
+val term_app_left' :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> Intf.symbol -> ('term -> 'term -> 'term) ->
+  (Dolmen.Std.Term.t -> 'term -> Dolmen.Std.Term.t list -> 'term)
+
 val term_app_left_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
   ?check:(Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->

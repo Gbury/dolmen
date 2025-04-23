@@ -406,6 +406,8 @@ module Make
         Ty.Var.t * wildcard_source * Ty.Var.t * reason option -> Ast.t err
     | Unbound_type_wildcards :
         (Ty.Var.t * wildcard_source list) list -> Ast.t err
+    | Unbound_type_vars :
+        (Ty.Var.t * reason) list -> Ast.t err
     | Incoherent_type_redefinition :
         Id.t * Ty.Const.t * reason * int -> Stmt.def err
     | Incoherent_term_redefinition :
@@ -422,7 +424,8 @@ module Make
   type wildcard_hook = {
     src : wildcard_source;
     shape : wildcard_shape;
-    bound : reason E.t;
+    explicitly_bound : reason E.t;
+    implicitly_bound : reason E.t ref;
   }
 
   (* Global, mutable state. *)
@@ -466,6 +469,11 @@ module Make
     (* implicit (i.e. not explicitly bound to their scope) variables *)
     implicit_vars : ty_var M.t ref;
     implicit_ty_locs : reason E.t ref;
+
+    (* record which non-wildcard implicit vars have been introduced,
+       this is mainly used to avoid having to use functions such as `free_vars`
+       to compute the free_vars of a term. *)
+    implicit_vars_introduced : ty_var list ref;
 
     (* wildcards *)
     wildcards     : wildcard_hook list E.t ref;
@@ -622,7 +630,11 @@ module Make
         | `Builtin `Reserved `Solver reason -> Reserved (Strict, reason)
         | `Builtin `Reserved `Model (reason, _) -> Reserved (Model_completion, reason)
         | `Builtin _ -> Builtin
-        | `Ty_var v -> E.find v env.type_locs
+        | `Ty_var v ->
+          begin
+            try E.find v env.type_locs
+            with Not_found -> E.find v !(env.implicit_ty_locs)
+          end
         | `Term_var v -> F.find v env.term_locs
         | `Letin (_, _, v, _) -> F.find v env.term_locs
         | `Implicit_type_var reason -> reason
@@ -688,6 +700,7 @@ module Make
     let res = `Ty_var v in
     env.implicit_vars := M.add id res !(env.implicit_vars);
     env.implicit_ty_locs := E.add v reason !(env.implicit_ty_locs);
+    env.implicit_vars_introduced := res :: !(env.implicit_vars_introduced);
     res
 
   let find_var env name : [var | not_found] =
@@ -969,6 +982,7 @@ module Make
       builtins =
     let implicit_vars = ref M.empty in
     let implicit_ty_locs = ref E.empty in
+    let implicit_vars_introduced = ref [] in
     let wildcards = ref E.empty in
     {
       file; st; builtins; warnings;
@@ -979,6 +993,7 @@ module Make
 
       implicit_vars;
       implicit_ty_locs;
+      implicit_vars_introduced;
       wildcards;
 
       order; poly; quants;
@@ -989,11 +1004,12 @@ module Make
   let split_env_for_def env =
     let implicit_vars = ref M.empty in
     let implicit_ty_locs = ref E.empty in
+    let implicit_vars_introduced = ref [] in
     let wildcards = ref E.empty in
-    { env with implicit_vars; implicit_ty_locs; wildcards; }
+    { env with implicit_vars; implicit_ty_locs; implicit_vars_introduced; wildcards; }
 
-  (* add a global inferred var *)
-  let add_inferred_type_var env id v ast =
+  (* add a global inferred variable/wildcard *)
+  let add_inferred_type_wildcard env id v ast =
     let reason = Inferred (env.file, ast) in
     begin match find_bound env id with
       | `Not_found -> ()
@@ -1081,13 +1097,17 @@ module Make
     | shapes -> shapes
     | exception Not_found -> []
 
-  let is_shape_redundant shapes ({ shape; src = _; bound; } as mark) =
-    let subsumes_new ({ shape = shape'; src = _; bound = bound'; } as mark') =
+  let is_shape_redundant shapes
+      ({ shape; src = _; explicitly_bound; implicitly_bound = _; } as mark) =
+    let subsumes_new
+        ({ shape = shape'; src = _;
+           explicitly_bound = explicitly_bound';
+            implicitly_bound = _; } as mark') =
       mark == mark' ||
-      (shape == shape' && bound == bound') ||
+      (shape == shape' && explicitly_bound == explicitly_bound') ||
       match shape, shape' with
       | Forbidden, Forbidden -> true
-      | Any_in_scope, Any_in_scope -> bound == bound'
+      | Any_in_scope, Any_in_scope -> explicitly_bound == explicitly_bound'
       | Any_base { allowed = l; preferred = p; },
         Any_base { allowed = l'; preferred = p'; } ->
         Ty.equal p p' &&
@@ -1106,33 +1126,34 @@ module Make
     List.iter (check_shape w_map_ref fv w ty) shapes
 
   and check_shape w_map_ref fv w ty = function
-    | { shape = Forbidden; src; bound = _; } ->
+    | { shape = Forbidden; src; explicitly_bound = _; implicitly_bound = _; } ->
       raise (Wildcard_forbidden (w, src, ty))
-    | { shape = Any_in_scope; src; bound = bound_vars; } as mark ->
+    | { shape = Any_in_scope; src; explicitly_bound; implicitly_bound; } as mark ->
       List.iter (fun v ->
           if Ty.Var.is_wildcard v then begin
             transfer_hook w_map_ref mark v
-          end else if not (E.mem v bound_vars) then
+          end else if not (E.mem v explicitly_bound) &&
+                      not (E.mem v !implicitly_bound) then
             raise (Wildcard_bad_scope (w, src, v))
         ) (Lazy.force fv)
-    | { shape = Any_base { allowed; preferred = _; }; src; bound = _; } as mark ->
+    | { shape = Any_base { allowed; preferred = _; }; src; _ } as mark ->
       begin match Ty.view ty with
         | `Wildcard v -> transfer_hook w_map_ref mark v
         | _ ->
           if List.exists (Ty.equal ty) allowed then ()
           else raise (Wildcard_bad_base (w, src, ty, allowed))
       end
-    | { shape = Arrow { arg_shape; ret_shape; }; src; bound = bound_vars; } as mark ->
+    | { shape = Arrow { arg_shape; ret_shape; }; src; explicitly_bound; implicitly_bound; } as mark ->
       begin match Ty.view ty with
         | `Wildcard v -> transfer_hook w_map_ref mark v
         | `Arrow (ty_args, ty_ret) ->
-          List.iter (transfer_shape w_map_ref arg_shape (Arg_of src) bound_vars) ty_args;
-          transfer_shape w_map_ref ret_shape (Ret_of src) bound_vars ty_ret
-        | _ -> transfer_shape w_map_ref ret_shape src bound_vars ty
+          List.iter (transfer_shape w_map_ref arg_shape (Arg_of src) explicitly_bound implicitly_bound) ty_args;
+          transfer_shape w_map_ref ret_shape (Ret_of src) explicitly_bound implicitly_bound ty_ret
+        | _ -> transfer_shape w_map_ref ret_shape src explicitly_bound implicitly_bound ty
       end
 
-  and transfer_shape w_map_ref shape src bound ty =
-    let mark = { shape; src; bound; } in
+  and transfer_shape w_map_ref shape src explicitly_bound implicitly_bound ty =
+    let mark = { shape; src; explicitly_bound; implicitly_bound; } in
     match Ty.view ty with
     | `Wildcard w -> transfer_hook w_map_ref mark w
     | _ ->
@@ -1148,7 +1169,11 @@ module Make
   (* create a wildcard *)
   let wildcard_var env src shape =
     let w = Ty.Var.wildcard () in
-    let mark = { shape; src; bound = env.type_locs; } in
+    let mark = {
+      shape; src;
+      explicitly_bound = env.type_locs;
+      implicitly_bound = env.implicit_ty_locs;
+    } in
     env.wildcards := E.add w [mark] !(env.wildcards);
     Ty.add_wildcard_hook ~hook:(wildcard_hook env.wildcards) w;
     w
@@ -1173,18 +1198,27 @@ module Make
     env.wildcards := E.remove w !(env.wildcards);
     w, l
 
+  (* helper functions *)
+  let _shape { shape; src = _;
+               explicitly_bound = _;
+               implicitly_bound = _; } =
+    shape
+
+  let _src { src; shape = _;
+             explicitly_bound = _;
+             implicitly_bound = _; } =
+    src
+
   (* ensure all wildcards are set *)
   let rec set_wildcards_and_return_free_wildcards state acc =
     match pop_wildcard state with
     | exception Not_found -> acc
     | w, l ->
-      let shapes = List.map (fun { shape; src = _; bound = _; } -> shape) l in
+      let shapes = List.map _shape l in
       let acc =
         if try_set_wildcard_shape w shapes then acc
         else begin
-          let sources =
-            List.map (fun { src; shape = _; bound = _; } -> src) l
-          in
+          let sources = List.map _src l in
           ((w, sources) :: acc)
         end
       in
@@ -1414,72 +1448,101 @@ module Make
     List.iter (check_used_term_var ~kind:`Quantified env) t_vars;
     _wrap2 env ast mk (ty_vars, t_vars) body
 
+  (* Handling free and wildcards variables *)
 
-  let free_wildcards_to_quant_vars =
-    let wildcard_univ_counter = ref 0 in
-    (fun ctx env wildcards ->
-       Misc.Lists.fold_left_map (fun env (w, _) ->
-           incr wildcard_univ_counter;
-           let v =
-             Ty.Var.mk (Format.asprintf "w%d" !wildcard_univ_counter)
-           in
-           let env =
-             match ctx with
-             | None -> env
-             | Some ctx ->
-               let reason =
-                 match ctx with
-                 | `Def def -> Implicit_in_def (env.file, def)
-                 | `Decl decl -> Implicit_in_decl (env.file, decl)
-                 | `Term ast -> Implicit_in_term (env.file, ast)
-               in
-               { env with type_locs = E.add v reason env.type_locs; }
-           in
-           Ty.set_wildcard w (Ty.of_var v);
-           (* the wildcard was generated from the term being typechecked,
-              so it is at least used where it was generated. *)
-           mark_ty_var_as_used v;
-           env, v
-         ) env wildcards
-    )
+  let pop_implicit_vars env =
+    let l =
+      List.map (fun (`Ty_var v) ->
+          let reason = find_ty_var_reason env v in
+          (v, reason)
+        ) !(env.implicit_vars_introduced)
+    in
+    env.implicit_vars_introduced := [];
+    l
 
-  let finalize_wildcards ctx env ast =
+  let _reset_names, _new_name =
+    let counter = ref 0 in
+    let reset () = counter := 0 in
+    let new_name () =
+      incr counter;
+      let i = !counter in
+      if i <= 26 then
+        String.make 1 (Char.chr (96 + i))
+      else
+        Format.asprintf "w%d" (i - 26)
+    in
+    reset, new_name
+
+  let free_wildcards_to_quant_vars ctx env l =
+    let aux env (w, _) =
+        let v = Ty.Var.mk (_new_name ()) in
+        let env =
+          match ctx with
+          | None -> env
+          | Some ctx ->
+            let reason =
+              match ctx with
+              | `Def def -> Implicit_in_def (env.file, def)
+              | `Decl decl -> Implicit_in_decl (env.file, decl)
+              | `Term ast -> Implicit_in_term (env.file, ast)
+            in
+            { env with type_locs = E.add v reason env.type_locs; }
+        in
+        Ty.set_wildcard w (Ty.of_var v);
+        (* the wildcard was generated from the term being typechecked,
+           so it is at least used where it was generated. *)
+        mark_ty_var_as_used v;
+        env, v
+    in
+    Misc.Lists.fold_left_map aux env l
+
+  let finalize_free_vars_and_wildcards ctx env ast =
+    _reset_names ();
+    let implicit_vars = pop_implicit_vars env in
     let free_wildcards =
       _wrap2 env ast set_wildcards_and_return_free_wildcards env []
     in
-    begin match free_wildcards, env.free_wildcards with
-      | [], _ -> `No_free_wildcards
-      | tys, Implicitly_universally_quantified ->
-        (* Ensure that the wildcards are properly instantiated, so that
+    match free_wildcards, implicit_vars, env.free_wildcards with
+    | [], [], _ -> `No_free_wildcards
+    | wilds, implicits, Implicitly_universally_quantified ->
+      (* Ensure that the wildcards are properly instantiated, so that
            they cannot be instantiated after we have built the
            quantification *)
-        let env, vars = free_wildcards_to_quant_vars ctx env tys in
-        `Univ (env, tys, vars)
-      | free_wildcards, Forbidden ->
-        _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
-    end
+      let env, vars1 = free_wildcards_to_quant_vars ctx env wilds in
+      let vars2 = List.map fst implicits in
+      `Univ (env, wilds, implicits, vars1 @ vars2)
+    | ((_ :: _) as free_wildcards), _, Forbidden ->
+      _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
+    | _, ((_ :: _) as _free_implicits), Forbidden ->
+      assert false (* TODO: proper error message *)
 
-  let finalize_wildcards_prop ctx env ast prop =
-    match finalize_wildcards (Some ctx) env ast with
+  let finalize_free_vars_and_wildcards_prop ctx env ast prop =
+    match finalize_free_vars_and_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, prop
-    | `Univ (env, _, vars) ->
+    | `Univ (env, _, _, vars) ->
       let res = _wrap2 env ast T.all (vars, []) prop in
       env, res
 
-  let finalize_wildcards_ty ctx env ast ty =
-    match finalize_wildcards (Some ctx) env ast with
+  let finalize_free_vars_and_wildcards_ty ctx env ast ty =
+    match finalize_free_vars_and_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, ty
-    | `Univ (env, _, vars) -> env, Ty.pi vars ty
+    | `Univ (env, _, _, vars) -> env, Ty.pi vars ty
 
-  let finalize_wildcards_def ctx env ast =
-    match finalize_wildcards (Some ctx) env ast with
+  let finalize_free_vars_and_wildcards_def ctx env ast =
+    match finalize_free_vars_and_wildcards (Some ctx) env ast with
     | `No_free_wildcards -> env, []
-    | `Univ (env, _, vars) -> env, vars
+    | `Univ (env, _, _, vars) -> env, vars
 
-  let check_no_free_wildcards env ast =
-    match finalize_wildcards None env ast with
+  let check_no_free_vars_or_wildcards env ast =
+    match finalize_free_vars_and_wildcards None env ast with
     | `No_free_wildcards -> ()
-    | `Univ (env, free_wildcards, _) ->
+    | `Univ (_, [], [], _) ->
+      (* internal invariant: at least one of the two returned
+         lists is not empty *)
+      assert false
+    | `Univ (env, _, ((_ :: _) as free_implicits), _) ->
+      _error env (Ast ast) (Unbound_type_vars free_implicits)
+    | `Univ (env, ((_ :: _) as free_wildcards), _, _) ->
       _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
 
 
@@ -2106,7 +2169,11 @@ module Make
           _wrap2 env ast Ty.set_wildcard w ty;
           ty
         | _ ->
-          let mark = { shape; src; bound = env.type_locs; } in
+          let mark = {
+            shape; src;
+            explicitly_bound = env.type_locs;
+            implicitly_bound = env.implicit_ty_locs;
+          } in
           transfer_hook env.wildcards mark w;
           ty
       end
@@ -2149,7 +2216,7 @@ module Make
       | No_inference -> _cannot_find env s_ast s
       | Unification_type_variable ->
         let v = wildcard_var env (From_source s_ast) Any_in_scope in
-        add_inferred_type_var env s v s_ast;
+        add_inferred_type_wildcard env s v s_ast;
         var_infer.var_hook (`Ty_var v);
         parse_app_ty_var env ast v s_ast args
     end else
@@ -2350,7 +2417,7 @@ module Make
     let ty_vars, env = add_type_vars env ttype_vars in
     let l = List.map (fun (id, t) ->
         let ty = parse_ty env t in
-        check_no_free_wildcards env t;
+        check_no_free_vars_or_wildcards env t;
         cst_path env (Id.name id), ty
       ) fields in
     let def, field_list = T.define_record ty_cst ty_vars l in
@@ -2367,7 +2434,7 @@ module Make
     let cstrs_with_ids = List.map (fun (id, args) ->
         id, List.map (fun t ->
             let ty, dstr = parse_inductive_arg env t in
-            check_no_free_wildcards env t;
+            check_no_free_vars_or_wildcards env t;
             t, ty, dstr
           ) args
       ) cstrs in
@@ -2420,10 +2487,10 @@ module Make
       let tags = tags @ parse_attrs env [] attrs in
       begin match parse_sig env ast with
         | `Implicit_type_var ->
-          check_no_free_wildcards env ast;
+          check_no_free_vars_or_wildcards env ast;
           env, (id, `Implicit_type_var)
         | `Ty_cstr n ->
-          check_no_free_wildcards env ast;
+          check_no_free_vars_or_wildcards env ast;
           let c = mk_ty_cst env (Id.name id) n in
           List.iter (function
               | _, Set (tag, v) -> Ty.Const.set_tag c tag v
@@ -2433,7 +2500,7 @@ module Make
           env, (id, `Type_decl c)
         | `Fun_ty (vars, args, ret) ->
           let ty = Ty.pi vars (Ty.arrow args ret) in
-          let env, ty = finalize_wildcards_ty (`Decl t) env ast ty in
+          let env, ty = finalize_free_vars_and_wildcards_ty (`Decl t) env ast ty in
           let f = mk_term_cst env (Id.name id) ty in
           List.iter (function
               | _, Set (tag, v) -> T.Const.set_tag f tag v
@@ -2464,7 +2531,7 @@ module Make
     let tags =
       List.flatten @@ List.map (fun ast ->
           let l = parse_attr env ast in
-          check_no_free_wildcards env ast;
+          check_no_free_vars_or_wildcards env ast;
           l
         ) attrs
     in
@@ -2539,7 +2606,7 @@ module Make
       _expected env "ttype or a type" d.ret_ty (Some res)
 
   let close_wildcards_in_sig (env, vars, params, ssig) (d : Stmt.def) =
-    let env, l = finalize_wildcards_def (`Def d) env d.ret_ty in
+    let env, l = finalize_free_vars_and_wildcards_def (`Def d) env d.ret_ty in
     env, l @ vars, params, ssig
 
   let create_id_for_def ~freshen ~defs tags (env, vars, params, ssig) (d: Stmt.def) =
@@ -2638,7 +2705,7 @@ module Make
     | _ -> assert false
 
   let finalize_def (loc, id) (env, vars, params, _ssig) (ast, ret) =
-    check_no_free_wildcards env ast;
+    check_no_free_vars_or_wildcards env ast;
     match id, ret with
     (* type alias *)
     | `Ty (id, c), `Ty body ->
@@ -2686,12 +2753,12 @@ module Make
 
   let term env ast : _ ret =
     let res = parse_term env ast in
-    let env, res = finalize_wildcards_prop (`Term ast) env ast res in
+    let env, res = finalize_free_vars_and_wildcards_prop (`Term ast) env ast res in
     mk_ret env res
 
   let formula env ast : _ ret =
     let res = parse_prop env ast in
-    let env, res = finalize_wildcards_prop (`Term ast) env ast res in
+    let env, res = finalize_free_vars_and_wildcards_prop (`Term ast) env ast res in
     mk_ret env res
 
 end

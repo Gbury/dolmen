@@ -285,6 +285,9 @@ module type Smtlib_Base = sig
   type t
   (** The type of type constants (i.e. type constructors) *)
 
+  type var
+  (** The type for type variables *)
+
   val prop : t
   (** The type constructor of propositions. *)
 
@@ -293,6 +296,7 @@ module type Smtlib_Base = sig
 
   type view = private [>
     | `Map of t * t
+    | `Pi of var list * t
   ]
   (** Partial view for types. These are used by the HO-Core theory
       to perform type-based dispatch, and turn fake function applications

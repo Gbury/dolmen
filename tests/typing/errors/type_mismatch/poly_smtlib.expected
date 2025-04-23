@@ -1,0 +1,4 @@
+File "tests/typing/errors/type_mismatch/poly_smtlib.smt2", line 4, character 8-17:
+4 | (assert (f 0 0.0))
+            ^^^^^^^^^
+Error The term: `0.0` has type `real` but was expected to be of type `int`
