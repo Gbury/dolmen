@@ -136,6 +136,15 @@ let make_assoc
       (Type.Bad_op_arity (op, [2], List.length args))
   | _ -> ret ast args
 
+let make_assoc'
+    (type env) (module Type: Tff_intf.S with type env = env)
+    env op ret = fun ast f args ->
+  match args with
+  | [] ->
+    Type._error env (Ast ast)
+      (Type.Bad_op_arity (op, [2], List.length args))
+  | _ -> ret ast f args
+
 let fold_left_assoc mk = function
   | h :: r -> List.fold_left mk h r
   | _ -> raise (Invalid_argument "Base.fold_left_assoc")
@@ -339,6 +348,13 @@ let term_app_left
       check ast l;
       fold_left_assoc mk (List.map (Type.parse_term env) l))
 
+let term_app_left'
+    (type env) (type term)
+    (module Type : Tff_intf.S with type env = env and type T.t = term)
+    env symbol mk =
+  make_assoc' (module Type) env symbol (fun _ast f l ->
+      fold_left_assoc mk (f :: (List.map (Type.parse_term env) l)))
+
 let term_app_left_ast
     (type env) (type term)
     (module Type : Tff_intf.S with type env = env and type T.t = term)
@@ -349,6 +365,14 @@ let term_app_left_ast
 
 
 (* Right associative applications *)
+
+let ty_app_right
+    (type env) (type ty)
+    (module Type : Tff_intf.S with type env = env and type Ty.t = ty)
+    ?(check=(fun _ _ -> ())) env symbol mk =
+  make_assoc (module Type) env symbol (fun ast l ->
+      check ast l;
+      fold_right_assoc mk (List.map (Type.parse_ty env) l))
 
 let term_app_right
     (type env) (type term)

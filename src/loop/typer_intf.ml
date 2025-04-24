@@ -38,6 +38,7 @@ module type Typer = sig
   ]
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of ty_cst * ty_def option
     | `Term_decl of term_cst
   ]
@@ -212,6 +213,7 @@ module type S = sig
   (** Wrapper around statements. It records implicit type declarations. *)
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of ty_cst * ty_def option
     | `Term_decl of term_cst
   ]

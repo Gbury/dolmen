@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.7/errors/005_attribute_name_2.smt2", line 2, character 23-26:
+2 | (assert (! foo :bar 42 foo))
+                           ^^^
+Error while parsing an attribute list, read the symbol 'foo',
+      but expected either a closing parenthesis, or another attribute of the
+      form "keyword value".

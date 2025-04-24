@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.7/errors/098_get-unsat-assumptions_unclosed_1.smt2", line 1, character 23-24:
+1 | (get-unsat-assumptions _)
+                           ^
+Error while parsing a get-unsat-assumptions command,
+      read the reserved word '_',
+      but expected a closing parenthesis.

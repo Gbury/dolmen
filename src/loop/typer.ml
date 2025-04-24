@@ -1676,6 +1676,8 @@ module Typer(State : State.S) = struct
        - see the dedicated function for the builtins
        - restrictions come from the logic declaration
        - shadowing is forbidden
+       - in v2.7, implicit sort params are treated as (non-unifiable)
+         wildcards that are implicitly universally quantified
     *)
     | `Logic Smtlib2 v ->
       let poly = T.Implicit in
@@ -1690,13 +1692,20 @@ module Typer(State : State.S) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
+      let free_wildcards : T.free_wildcards =
+        match v with
+        | `V2_7 | `Latest ->
+          Implicitly_universally_quantified
+        | _ ->
+          Forbidden
+      in
       begin match (State.get ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env =
             T.empty_env ~order:First_order
               ~st:(State.get ty_state st).typer
-              ~var_infer ~sym_infer ~poly
+              ~var_infer ~sym_infer ~poly ~free_wildcards
               ~warnings ~file builtins
           in
           T._error env (Located loc) Missing_smtlib_logic
@@ -1708,7 +1717,7 @@ module Typer(State : State.S) = struct
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
             ~st:(State.get ty_state st).typer
-            ~var_infer ~sym_infer ~poly ~quants
+            ~var_infer ~sym_infer ~poly ~quants ~free_wildcards
             ~warnings ~file builtins
       end
     | `Response Smtlib2 v ->
@@ -1853,6 +1862,7 @@ module Typer(State : State.S) = struct
   (* ************************************************************************ *)
 
   type decl = [
+    | `Implicit_type_var
     | `Term_decl of Dolmen_std.Expr.ty Dolmen_std.Expr.id
     | `Type_decl of
         Dolmen_std.Expr.type_fun Dolmen_std.Expr.id *
@@ -1897,6 +1907,7 @@ module Typer(State : State.S) = struct
     | Auto -> true
 
   let check_decl st env d = function
+    | `Implicit_type_var -> ()
     | `Type_decl (_, ty_def) ->
       begin match (ty_def : Dolmen.Std.Expr.Ty.def option) with
         | None | Some Abstract ->
@@ -2076,6 +2087,7 @@ module Make
   ]
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of Expr.ty_cst * Expr.ty_def option
     | `Term_decl of Expr.term_cst
   ]
@@ -2161,6 +2173,8 @@ module Make
       Format.fprintf fmt " =@ %a" Print.ty_def ty_def
 
   let print_decl fmt = function
+    | `Implicit_type_var ->
+      Format.fprintf fmt "implicit-type-var"
     | `Type_decl (c, ty_def) ->
       Format.fprintf fmt "@[<hov 2>type-def:@ %a%a@]"
         Print.ty_cst c print_ty_def ty_def
@@ -2183,7 +2197,7 @@ module Make
       Format.fprintf fmt "@[<v 2>clause:@ %a@]"
         (Format.pp_print_list Print.formula) l
     | `Solve (hyps, goals) ->
-      Format.fprintf fmt "@[<hov 2>solve: %a@ assuming: %a@]"
+      Format.fprintf fmt "@[<hv 2>solve: @[<v>%a@]@ assuming: @[<v>%a@]@]"
         (Format.pp_print_list Print.formula) goals
         (Format.pp_print_list Print.formula) hyps
     | `Get_info s ->

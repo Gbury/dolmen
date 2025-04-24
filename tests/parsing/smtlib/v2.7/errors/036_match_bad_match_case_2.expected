@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/036_match_bad_match_case_2.smt2", line 3, character 34-37:
+3 | (define-fun f ((x t)) t (match x (foo)))
+                                      ^^^
+Error while parsing a list of match cases, read the symbol 'foo',
+      but expected a match case of the form "(pattern term)".

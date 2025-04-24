@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.7/errors/117_prop_lit_bad_not_1.smt2", line 2, character 23-24:
+2 | (check-sat-assuming ((_)))
+                           ^
+Error while parsing an indexed identifier, read a closing parenthesis,
+      but expected a symbol; note that keywords and reserved words (such as
+      '_', 'as', ...) are not symbols, and thus are not allowed here.

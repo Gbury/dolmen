@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/030_pattern_bad_symbol_1.smt2", line 4, character 4-10:
+4 |   ((lambda) 54)
+        ^^^^^^
+Error while parsing a pattern, read the reserved word 'lambda',
+      but expected a symbol or '_' (either a variable or a datatype
+      constructor); note that keywords and reserved words (such as 'lambda',
+      'as', ...) are not symbols, and thus are not allowed here.

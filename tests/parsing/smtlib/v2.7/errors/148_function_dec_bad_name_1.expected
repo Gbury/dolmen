@@ -1,0 +1,5 @@
+File "tests/parsing/smtlib/v2.7/errors/148_function_dec_bad_name_1.smt2", line 2, character 19-20:
+2 | (define-funs-rec ((_)))
+                       ^
+Error while parsing a function declaration, read the reserved word '_',
+      but expected a symbol for the function name.

@@ -172,6 +172,11 @@ val term_app2_ast :
   'env -> Intf.symbol -> (Dolmen.Std.Term.t -> 'term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
 
+val ty_app_right :
+  (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
+  ?check:(Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->
+  'env -> Intf.symbol -> ('ty -> 'ty -> 'ty) ->
+  (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'ty)
 
 val ty_app3 :
   (module Tff_intf.S with type env = 'env and type Ty.t = 'ty) ->
@@ -247,6 +252,11 @@ val term_app_left :
   ?check:(Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> unit) ->
   'env -> Intf.symbol -> ('term -> 'term -> 'term) ->
   (Dolmen.Std.Term.t -> Dolmen.Std.Term.t list -> 'term)
+
+val term_app_left' :
+  (module Tff_intf.S with type env = 'env and type T.t = 'term) ->
+  'env -> Intf.symbol -> ('term -> 'term -> 'term) ->
+  (Dolmen.Std.Term.t -> 'term -> Dolmen.Std.Term.t list -> 'term)
 
 val term_app_left_ast :
   (module Tff_intf.S with type env = 'env and type T.t = 'term) ->

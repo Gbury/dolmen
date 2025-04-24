@@ -65,6 +65,38 @@
   (action (diff division_by_zero.expected division_by_zero.full)))
 
 
+; Test for overflow.smt2
+; Incremental test
+
+(rule
+   (target  overflow.incremental)
+   (deps    (:response overflow.rsmt2) (:input overflow.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff overflow.expected overflow.incremental)))
+
+; Full mode test
+
+(rule
+   (target  overflow.full)
+   (deps    (:response overflow.rsmt2) (:input overflow.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --check-model=true -r %{response} --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff overflow.expected overflow.full)))
+
+
 ; Test for unit.smt2
 ; Incremental test
 

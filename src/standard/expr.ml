@@ -79,6 +79,7 @@ and term_descr =
 and binder =
   | Let_seq  of (term_var * term) list
   | Let_par of (term_var * term) list
+  | Map of term_var list
   | Lambda of ty_var list * term_var list
   | Exists of ty_var list * term_var list
   | Forall of ty_var list * term_var list
@@ -288,6 +289,7 @@ module Print = struct
 
   and binder_sep fmt = function
     | Lambda _ -> Format.fprintf fmt " =>"
+    | Map _ -> Format.fprintf fmt " ~>"
     | Let_seq _
     | Let_par _ -> Format.fprintf fmt " in"
     | Exists _
@@ -302,10 +304,13 @@ module Print = struct
       Format.fprintf fmt "let @[<hv>%a@]"
         (Format.pp_print_list ~pp_sep:(return " and@ ") binding) l
 
-    | Lambda (vars, args) ->
+    | Map (params) ->
+      Format.fprintf fmt "[ λ @[<hov>%a@] ]"
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) params
+    | Lambda (vars, params) ->
       Format.fprintf fmt "λ @[<hov>%a .@ %a@]"
-        (Format.pp_print_list ~pp_sep:(return ",@ ") ty_var) vars
-        (Format.pp_print_list ~pp_sep:(return "@ ") term_var) args
+        (Format.pp_print_list ~pp_sep:(return "@ ") ty_var) vars
+        (Format.pp_print_list ~pp_sep:(return ",@ ") term_var) params
 
     | Exists (l, []) ->
       Format.fprintf fmt "∃ @[<hov>%a@]"
@@ -333,7 +338,7 @@ module Print = struct
     Format.fprintf fmt "@[<hov 2>%a =@ %a@]" id v term t
 
   and branch fmt (pattern, body) =
-    Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a" term pattern term body
+    Format.fprintf fmt "@[<hov 2>| %a@ ->@ %a@]" term pattern term body
 
   and subterm fmt t =
     match t.term_descr with
@@ -976,8 +981,8 @@ module Ty = struct
     let arity (c : t) = c.id_ty.arity
     let mk path n =
       Id.mk path { arity = n; alias = No_alias; }
-    let mk' ~builtin name n =
-      Id.mk ~builtin (Path.global name) { arity = n; alias = No_alias; }
+    let mk' ?pos ?name ~builtin s n =
+      Id.mk ?pos ?name ~builtin (Path.global s) { arity = n; alias = No_alias; }
 
     let prop = mk' ~builtin:Builtin.Prop "Prop" 0
     let unit = mk' ~builtin:Builtin.Unit "unit" 0
@@ -988,6 +993,7 @@ module Ty = struct
     let string = mk' ~builtin:Builtin.String "string" 0
     let string_reg_lang = mk' ~builtin:Builtin.String_RegLan "string_reglang" 0
     let array = mk' ~builtin:Builtin.Array "array" 2
+    let map = mk' ~pos:Infix ~name:"~~>" ~builtin:Builtin.Map "map" 2
     let bitv =
       with_cache (fun i ->
           if i <= 0 then raise (Non_positive_bitvector_size i)
@@ -1010,6 +1016,7 @@ module Ty = struct
   let string = apply Const.string []
   let string_reg_lang = apply Const.string_reg_lang []
   let array src dst = apply Const.array [src; dst]
+  let map src dst = apply Const.map [src; dst]
   let bitv i = apply (Const.bitv i) []
   let float' es = apply (Const.float es) []
   let float e s = float' (e,s)
@@ -1246,6 +1253,7 @@ module Ty = struct
     | `Int
     | `Rat
     | `Real
+    | `Map of ty * ty
     | `Array of ty * ty
     | `Bitv of int
     | `Float of int * int
@@ -1283,6 +1291,10 @@ module Ty = struct
         | Builtin.Real -> `Real
         | Builtin.Bitv i -> `Bitv i
         | Builtin.Float (e, s) -> `Float (e, s)
+        | Builtin.Map -> begin match l with
+            | [param; ret] -> `Map (param, ret)
+            | _ -> assert false (* not possible *)
+          end
         | Builtin.Array -> begin match l with
             | [src; dst] -> `Array (src, dst)
             | _ -> assert false (* not possible *)
@@ -1301,6 +1313,7 @@ end
 module Term = struct
 
   type t = term
+  type var = term_var
   type ty = Ty.t
   type ty_var = Ty.Var.t
   type ty_const = Ty.Const.t
@@ -1384,6 +1397,8 @@ module Term = struct
       Misc.hash2 5 (Misc.hash_list aux l)
     | Lambda (tys, ts) ->
       Misc.hash3 7 (Misc.hash_list Id.hash tys) (Misc.hash_list Id.hash ts)
+    | Map ts ->
+      Misc.hash2 17 (Misc.hash_list Id.hash ts)
     | Exists (tys, ts) ->
       Misc.hash3 11 (Misc.hash_list Id.hash tys) (Misc.hash_list Id.hash ts)
     | Forall (tys, ts) ->
@@ -1408,8 +1423,9 @@ module Term = struct
     | Let_seq _ -> 1
     | Let_par _ -> 2
     | Lambda _ -> 3
-    | Exists _ -> 4
-    | Forall _ -> 5
+    | Map _ -> 4
+    | Exists _ -> 5
+    | Forall _ -> 6
 
   let rec compare u v =
     if u == v then 0 else begin
@@ -1461,18 +1477,27 @@ module Term = struct
   (* free variables *)
   let rec free_vars acc (t : t) =
     match t.term_descr with
-    | Var v -> FV.add (FV.Term v) (Ty.free_vars acc v.id_ty)
-    | Cst _ -> acc
+    | Cst _ ->
+      (* constants should have closed types *)
+      acc
+    | Var v ->
+      FV.add (FV.Term v) (Ty.free_vars acc v.id_ty)
     | App (f, tys, ts) ->
       List.fold_left free_vars (
         List.fold_left Ty.free_vars (
           free_vars acc f
         ) tys
       ) ts
+    | Binder (Map ts, body) ->
+      let fv = free_vars FV.empty body in
+      let fv = free_vars_params_tys fv ts in
+      let fv = FV.remove fv ts in
+      FV.merge fv acc
     | Binder ((Lambda (tys, ts) | Exists (tys, ts) | Forall (tys, ts)), body) ->
       let fv = free_vars FV.empty body in
-      let fv = FV.remove fv tys in
+      let fv = free_vars_params_tys fv ts in
       let fv = FV.remove fv ts in
+      let fv = FV.remove fv tys in
       FV.merge fv acc
     | Binder (Let_seq l, body) ->
       let fv = free_vars FV.empty body in
@@ -1502,6 +1527,10 @@ module Term = struct
           let bound = free_vars FV.empty pat in
           FV.merge fv (FV.diff free bound)
         ) acc branches
+
+  and free_vars_params_tys acc = function
+    | [] -> acc
+    | v :: r -> free_vars_params_tys (Ty.free_vars acc v.id_ty) r
 
   let fv t =
     let s = free_vars FV.empty t in
@@ -1916,6 +1945,15 @@ module Term = struct
         ~name:"ite" ~builtin:Builtin.Ite
         "Ite" [a] [Ty.prop; a_ty; a_ty] a_ty
 
+    let map_app =
+      let a = Ty.Var.mk "a" in
+      let b = Ty.Var.mk "b" in
+      let a_ty = Ty.of_var a in
+      let b_ty = Ty.of_var b in
+      mk'
+        ~pos:Infix ~name:"@" ~builtin:Builtin.Map_app
+        "map_app" [a; b] [Ty.map a_ty b_ty; a_ty] b_ty
+
     let pi =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
@@ -2271,9 +2309,9 @@ module Term = struct
         mk' ~builtin:(Builtin.Bitvec s)
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
-      let to_nat =
-        with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_to_nat { n }) "bv2nat"
+      let to_int =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_to_int { n; signed }) "bv2nat"
               [] [Ty.bitv n] Ty.int)
 
       let of_int =
@@ -2474,6 +2512,39 @@ module Term = struct
             mk' ~builtin:(Builtin.Bitv_sge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
+      let nego =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_overflow_neg { n })
+              "bvnego" [] [Ty.bitv n] Ty.prop
+          )
+
+      let addo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_add { n; signed; })
+              (Printf.sprintf "bv%caddo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let subo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_sub { n; signed; })
+              (Printf.sprintf "bv%csubo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let mulo =
+        with_cache (fun (n, signed) ->
+            mk' ~builtin:(Builtin.Bitv_overflow_mul { n; signed; })
+              (Printf.sprintf "bv%cmulo" (if signed then 's' else 'u'))
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
+
+      let divo =
+        with_cache (fun n ->
+            mk' ~builtin:(Builtin.Bitv_overflow_div { n; })
+              (Printf.sprintf "bvsdivo")
+              [] [Ty.bitv n; Ty.bitv n] Ty.prop
+          )
     end
 
     module Float = struct
@@ -2857,6 +2928,7 @@ module Term = struct
     match b with
     | Let_seq []
     | Let_par []
+    | Map []
     | Forall ([], [])
     | Exists ([], [])
     | Lambda ([], []) -> body
@@ -2877,12 +2949,18 @@ module Term = struct
           (Ty.arrow (List.map Var.ty ts) (ty body))
       in
       mk (Binder (b, body)) res_ty
+    | Map ts ->
+      let res_ty =
+        List.fold_right Ty.map (List.map Var.ty ts) (ty body)
+      in
+      mk (Binder (b, body)) res_ty
 
-  let lam (tys, ts) body = mk_bind (Lambda (tys, ts)) body
-  let all (tys, ts) body = mk_bind (Forall (tys, ts)) body
-  let ex (tys, ts) body = mk_bind (Exists (tys, ts)) body
   let letin l body = mk_bind (Let_seq l) body
   let letand l body = mk_bind (Let_par l) body
+  let all (tys, ts) body = mk_bind (Forall (tys, ts)) body
+  let ex (tys, ts) body = mk_bind (Exists (tys, ts)) body
+  let lam (tys, ts) body = mk_bind (Lambda (tys, ts)) body
+  let map_lambda ts body = mk_bind (Map ts) body
 
   (* Substitutions *)
   let rec ty_var_list_subst ty_var_map = function
@@ -2942,6 +3020,10 @@ module Term = struct
       let ty_var_map = ty_var_list_subst ty_var_map tys in
       let ts, t_var_map = term_var_list_subst ty_var_map t_var_map [] ts in
       Lambda (tys, ts), ty_var_map, t_var_map
+    | Map ts ->
+      (* term variables in ts may have their types changed by the subst *)
+      let ts, t_var_map = term_var_list_subst ty_var_map t_var_map [] ts in
+      Map ts, ty_var_map, t_var_map
     | Exists (tys, ts) ->
       (* term variables in ts may have their types changed by the subst *)
       let ty_var_map = ty_var_list_subst ty_var_map tys in
@@ -3269,6 +3351,18 @@ module Term = struct
   let rat s = apply_cst (Const.Rat.rat s) [] []
   let real s = apply_cst (Const.Real.real s) [] []
 
+  (* Maps, i.e. HO/functions encoded into First order *)
+
+  let match_map_type t =
+    match Ty.descr (ty t) with
+    | TyApp ({ builtin = Builtin.Map; _ }, [param; ret]) ->
+      param, ret
+    | _ -> raise (Wrong_type (t, Ty.map Ty.unit Ty.unit))
+
+  let map_app f x =
+    let param, ret = match_map_type f in
+    apply_cst Const.map_app [param; ret] [f; x]
+
   (* arithmetic *)
   module Int = struct
     let mk = int
@@ -3364,21 +3458,13 @@ module Term = struct
   end
 
   (* Arrays *)
-  let match_array_type =
-    let src = Ty.Var.mk "_" in
-    let dst = Ty.Var.mk "_" in
-    let pat = Ty.array (Ty.of_var src) (Ty.of_var dst) in
-    (fun t ->
-       match Ty.pmatch Subst.empty pat (ty t) with
-       | exception Ty.Impossible_matching _ -> raise (Wrong_type (t, pat))
-       | s -> begin match Subst.Var.get src s, Subst.Var.get dst s with
-           | res -> res
-           | exception Not_found -> assert false (* internal error *)
-         end
-    )
-
-  (* Arrays *)
   module Array = struct
+    (* Arrays *)
+    let match_array_type t =
+      match Ty.descr (ty t) with
+      | TyApp ({ builtin = Builtin.Array; _ }, [src; dst]) ->
+        src, dst
+      | _ -> raise (Wrong_type (t, Ty.array Ty.unit Ty.unit))
 
     let const index_ty base =
       apply_cst Const.Array.const [index_ty; ty base] [base]
@@ -3402,9 +3488,9 @@ module Term = struct
 
     let mk s = apply_cst (Const.Bitv.bitv s) [] []
 
-    let to_nat b =
+    let to_int ~signed b =
       let n = match_bitv_type b in
-      apply_cst (Const.Bitv.to_nat n) [] [b]
+      apply_cst (Const.Bitv.to_int (n, signed)) [] [b]
 
     let of_int n i =
       apply_cst (Const.Bitv.of_int n) [] [i]
@@ -3550,6 +3636,26 @@ module Term = struct
     let sge u v =
       let n = match_bitv_type u in
       apply_cst (Const.Bitv.sge n) [] [u; v]
+
+    let nego t =
+      let n = match_bitv_type t in
+      apply_cst (Const.Bitv.nego n) [] [t]
+
+    let addo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.addo (n, signed)) [] [u; v]
+
+    let subo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.subo (n, signed)) [] [u; v]
+
+    let mulo ~signed u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.mulo (n, signed)) [] [u; v]
+
+    let divo u v =
+      let n = match_bitv_type u in
+      apply_cst (Const.Bitv.divo n) [] [u; v]
 
   end
 

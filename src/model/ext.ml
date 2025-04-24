@@ -27,5 +27,3 @@ let create ~name ~builtins =
 let iter f =
   Hashtbl.iter (fun _ ext -> f ext) registry
 
-let bvconv =
-  create ~name:"bvconv" ~builtins:Bitv.bvconv_builtins

@@ -65,16 +65,18 @@ module Smtlib2 : sig
   exception Unexpected_structure_in_sexpr of Dolmen.Std.Term.t
   exception Uninterpreted_reserved_word_in_sexpr of Dolmen.Std.Id.t * Dolmen.Std.Term.t
 
-  val sexpr_as_term : Dolmen.Std.Term.t -> Dolmen.Std.Term.t
   val sexpr_as_sort : Dolmen.Std.Term.t -> Dolmen.Std.Term.t
+  val sexpr_as_term : Dolmen.Smtlib2.version -> Dolmen.Std.Term.t -> Dolmen.Std.Term.t
 
   (** Builtins for smtlib's core theory *)
   module Tff
       (Type : Tff_intf.S)
       (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
                                           and type term := Type.T.t)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t
+                                        and type var := Type.Ty.Var.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
+                                         and type var := Type.T.Var.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
     type _ Type.warn +=

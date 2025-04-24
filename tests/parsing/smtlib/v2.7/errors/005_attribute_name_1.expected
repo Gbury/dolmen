@@ -1,0 +1,6 @@
+File "tests/parsing/smtlib/v2.7/errors/005_attribute_name_1.smt2", line 2, character 23-24:
+2 | (assert (! foo :bar 42 _))
+                           ^
+Error while parsing an attribute list, read the reserved word '_',
+      but expected either a closing parenthesis, or another attribute of the
+      form "keyword value".

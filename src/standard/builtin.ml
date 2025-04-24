@@ -57,6 +57,14 @@ type _ t +=
       < ty_cst : 'ty_cst ; term_cst : 'term_cst; .. > t
 
 
+(* HO encoding into FO using Maps *)
+(* ************************************************************************* *)
+
+type _ t +=
+  | Map
+  | Map_app
+
+
 (* Arithmetic builtins *)
 (* ************************************************************************* *)
 
@@ -89,7 +97,7 @@ type _ t +=
 type _ t +=
   | Bitv of int
   | Bitvec of string
-  | Bitv_to_nat of { n : int; }
+  | Bitv_to_int of { n : int; signed : bool; }
   | Bitv_of_int of { n : int; }
   | Bitv_concat of { n : int; m : int }
   | Bitv_extract of { n : int; i : int; j : int }
@@ -126,6 +134,11 @@ type _ t +=
   | Bitv_sle of int
   | Bitv_sgt of int
   | Bitv_sge of int
+  | Bitv_overflow_neg of { n : int; }
+  | Bitv_overflow_add of { n : int; signed : bool; }
+  | Bitv_overflow_sub of { n : int; signed : bool; }
+  | Bitv_overflow_mul of { n : int; signed : bool; }
+  | Bitv_overflow_div of { n : int; }
 
 (* Floats *)
 type _ t +=

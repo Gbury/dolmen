@@ -163,6 +163,19 @@ type _ t +=
       be [cstr]. *)
 
 
+(** {2 HOL encoding Builtins} *)
+(*  ************************************************************************* *)
+
+type _ t +=
+  | Map
+  (** [Map: ttype -> ttype -> ttype] is the type for encoding higher order
+      functions into first order. An [(arg, ret) Map] is a first-order type
+      for encodings of functions from [arg] to [ret]. *)
+  | Map_app
+  (** [Map_app: 'arg 'ret. ('arg, 'ret) Map -> 'arg -> 'ret]:
+      Application operation for encodings of higher-order functions. *)
+
+
 (** {2 Arithmetic Builtins} *)
 (*  ************************************************************************* *)
 
@@ -350,9 +363,9 @@ type _ t +=
   (** [Bitvec s: Bitv]: bitvector litteral. The string [s] should
       be a binary representation of bitvectors using characters
       ['0'], and ['1'] (lsb last) *)
-  | Bitv_to_nat of { n : int; }
-  (** [Bitv_to_nat(n): Bitv(n) -> Int]:
-      conversion from bitvectors to integers. *)
+  | Bitv_to_int of { n : int; signed : bool; }
+  (** [Bitv_to_int(n,signed): Bitv(n) -> Int]:
+      conversion from bitvectors to signed integers. *)
   | Bitv_of_int of { n : int; }
   (** [Bitv_of_int(n): Int -> Bitv(n)]:
       conversion fromm (signed) integers to bitvectors. *)
@@ -477,6 +490,26 @@ type _ t +=
   | Bitv_sge of int
   (** [Bitv_sge(n): Bitv(n) -> Bitv(n) -> Prop]:
       binary predicate for signed greater than or equal. *)
+  | Bitv_overflow_neg of { n : int; }
+  (** [Bitv_overflow_neg(n) : Bitv(n) -> Prop]:
+      unary overflow predicate for signed unary minus
+      (i.e. returns [true] if the negation would overflow) *)
+  | Bitv_overflow_add of { n : int; signed : bool; }
+  (** [Bitv_overflow_add(n,signed) : Bitv(n) -> Bitv(n) -> Prop]:
+      binary overflow predicate for signed/unsigned addition
+      (i.e. returns [true] if the operation would overflow) *)
+  | Bitv_overflow_sub of { n : int; signed : bool; }
+  (** [Bitv_overflow_sub(n,signed): Bitv(n) -> Bitv(n) -> Prop
+      binary overflow predicate for signed/unsigned subtraction
+      (i.e. returns [true] if the operation would overflow) *)
+  | Bitv_overflow_mul of { n : int; signed : bool; }
+  (** [Bitv_overflow_mul(n,signed): Bitv(n) -> Bitv(n) -> Prop
+      binary overflow predicate for signed/unsigned multiplication
+      (i.e. returns [true] if the operation would overflow) *)
+  | Bitv_overflow_div of { n : int; }
+  (** [Bitv_overflow_mul(n,signed): Bitv(n) -> Bitv(n) -> Prop
+      binary overflow predicate for signed division
+      (i.e. returns [true] if the operation would overflow) *)
 
 
 (** {2 Floats Builtins} *)

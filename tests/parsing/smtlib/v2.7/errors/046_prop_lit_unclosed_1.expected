@@ -1,0 +1,7 @@
+File "tests/parsing/smtlib/v2.7/errors/046_prop_lit_unclosed_1.smt2", line 2, character 28-29:
+2 | (check-sat-assuming ((not p _)))
+                                ^
+Error while parsing a list of terms, read the reserved word '_',
+      but expected either a closing parenthesis, or another term; note that
+      keywords and reserved words (such as '_', 'as', ...) are not terms, and
+      thus are not allowed here.

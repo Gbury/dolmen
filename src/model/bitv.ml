@@ -32,6 +32,9 @@ let ops = Value.ops ~print ~compare ()
 let is_unsigned_integer size z =
   Z.sign z >= 0 && Z.numbits z <= size
 
+let is_signed_integer size z =
+  Z.equal z (Z.signed_extract z 0 size)
+
 let ubitv n t =
   let t = Value.extract_exn ~ops t in
   (* the typing of expressions should guarantee that this never happens *)
@@ -40,6 +43,8 @@ let ubitv n t =
       (Format.asprintf "%a is not an unsigned integer of size %i"
          Z.pp_print t n));
   t
+
+let sbitv n t = Z.signed_extract (ubitv n t) 0 n
 
 let from_bitv n t =
   (* TODO: proper error *)
@@ -74,6 +79,7 @@ let rotate_right n i a =
   extract n (Z.logor (Z.shift_left a (n - k)) (Z.shift_right a k))
 
 
+
 (* Builtins *)
 (* ************************************************************************* *)
 
@@ -89,13 +95,43 @@ let op2 ~cst ~size f =
 let op1 ~cst ~size f =
   Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> mk size @@ f x))
 
-let sbitv n t = Z.signed_extract (ubitv n t) 0 n
-let extract n t = Z.extract t 0 n
+let bitv ~signed n t = if signed then sbitv n t else ubitv n t
+
+let bv2int ~cst ~signed ~size =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> Int.mk (bitv ~signed size x)))
+
+let int2bv ~cst ~size =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
+      mk size (Z.extract (Value.extract_exn ~ops:Int.ops x) 0 size)))
+
+let neg_overflow ~cst ~size =
+  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
+      let x = sbitv size x in
+      let z = Z.neg x in
+      let b = is_signed_integer size z in
+      Bool.mk (not b)
+    ))
+
+let binary_overflow ~cst ~signed ~size op =
+  Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun x y ->
+      let x = bitv ~signed size x in
+      let y = bitv ~signed size y in
+      let z = op x y in
+      let b =
+        if signed
+        then is_signed_integer size z
+        else is_unsigned_integer size z
+      in
+      Bool.mk (not b)
+    ))
 
 let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
+  let extract n t = Z.extract t 0 n in
   match cst.builtin with
   | B.Bitvec s ->
     Some (mk (String.length s) (Z.of_string_base 2 s))
+  | B.Bitv_of_int { n } -> int2bv ~cst ~size:n
+  | B.Bitv_to_int { n; signed } -> bv2int ~cst ~signed ~size:n
   | B.Bitv_concat { n; m } ->
     op2 ~cst ~size:(n + m) (concat n m)
   | B.Bitv_extract { n; i; j } ->
@@ -195,17 +231,10 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   | B.Bitv_sle n -> cmp ~cst (fun a b -> Z.leq (sbitv n a) (sbitv n b))
   | B.Bitv_sgt n -> cmp ~cst (fun a b -> Z.gt (sbitv n a) (sbitv n b))
   | B.Bitv_sge n -> cmp ~cst (fun a b -> Z.geq (sbitv n a) (sbitv n b))
+  | B.Bitv_overflow_neg { n; } -> neg_overflow ~cst ~size:n
+  | B.Bitv_overflow_add { n; signed; } -> binary_overflow ~cst ~size:n ~signed Z.add
+  | B.Bitv_overflow_sub { n; signed; } -> binary_overflow ~cst ~size:n ~signed Z.sub
+  | B.Bitv_overflow_mul { n; signed; } -> binary_overflow ~cst ~size:n ~signed Z.mul
+  | B.Bitv_overflow_div { n; } -> binary_overflow ~cst ~size:n ~signed:true Z.div
   | _ -> None
 
-let bv2nat ~cst ~size =
-  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x -> Int.mk (ubitv size x)))
-
-let int2bv ~cst ~size =
-  Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun x ->
-    mk size (Z.extract (Value.extract_exn ~ops:Int.ops x) 0 size)))
-
-let bvconv_builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
-  match cst.builtin with
-  | B.Bitv_of_int { n } -> int2bv ~cst ~size:n
-  | B.Bitv_to_nat { n } -> bv2nat ~cst ~size:n
-  | _ -> None

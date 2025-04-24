@@ -77,6 +77,7 @@ module Make
     "iCNF",       ICNF;
     "smt2",       Smtlib2 `Latest;
     "smt2.6",     Smtlib2 `V2_6;
+    "smt2.7",     Smtlib2 `V2_7;
     "psmt2",      Smtlib2 `Poly;
     "tptp",       Tptp `Latest;
     "tptp-6.3.0", Tptp `V6_3_0;
@@ -105,6 +106,8 @@ module Make
     (module Dolmen_smtlib2.Script.Latest.Make(L)(I)(T)(S)(E.Smtlib2) : S);
     Smtlib2 `V2_6, ".smt2",
     (module Dolmen_smtlib2.Script.V2_6.Make(L)(I)(T)(S)(E.Smtlib2) : S);
+    Smtlib2 `V2_7, ".smt2",
+    (module Dolmen_smtlib2.Script.V2_7.Make(L)(I)(T)(S)(E.Smtlib2) : S);
     Smtlib2 `Poly, ".psmt2",
     (module Dolmen_smtlib2.Script.Poly.Make(L)(I)(T)(S)(E.Smtlib2) : S);
 

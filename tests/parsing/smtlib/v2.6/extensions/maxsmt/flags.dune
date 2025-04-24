@@ -1,1 +1,2 @@
+--input=smt2.6
 --internal-smtlib2-extension=maxsmt

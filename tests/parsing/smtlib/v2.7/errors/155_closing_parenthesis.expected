@@ -1,0 +1,4 @@
+Error while parsing an s-expression, read the end of file token,
+      but expected a closing parenthesis, or another s-expression, i.e. a
+      literal, symbol, reserved word, keyword, or an s-expression in
+      parentheses.

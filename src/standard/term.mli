@@ -133,8 +133,23 @@ type builtin =
   (** Similar to cut, but does not introduce the proved term into the axioms. *)
   | Cut
   (** Insert a cut of the given term. *)
+
   | Sexpr
   (** Head symbol for s-exprs in smtlib. *)
+
+  | Map_lambda
+  (** Application operator for higher-order function encoding into first order *)
+  | Implicit_type_var
+  (** The "Type"/"Sort" of an implicit global type variable (e.g. from a
+      (declare-sort-parameter in SMT2.7). *)
+
+  | Fake_apply
+  (** Workaround for languages whose "function application" syntax
+      does not actually have the semantics of function application.
+
+      For instance, smtlib2.7 has extremely weird and unobvious
+      rules for how applications are typechecked due to mixing
+      it with their encoding of Higher-order. *)
 (** The type of builtins symbols for terms.
     Some languages have specific syntax for logical connectives
     (tptp's'&&' or '||' for isntance) whereas some (smtlib for instance)
@@ -240,6 +255,10 @@ include Dolmen_intf.Term.Logic
 val ite_t : ?loc:location -> unit -> t
 (** The standalone term corresponding to the if-then-else builtin
     construction. *)
+
+val implicit_type_var_t : ?loc:location -> unit -> t
+(** The standalone term correpsonding to the "Type"/"Sort" of an implicit
+    type variable. *)
 
 
 (** {2 Term inspection} *)
