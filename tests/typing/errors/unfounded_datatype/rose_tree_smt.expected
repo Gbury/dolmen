@@ -1,0 +1,7 @@
+File "tests/typing/errors/unfounded_datatype/rose_tree_smt.smt2", line 10, character 0 to line 14, character 2:
+10 | (declare-datatypes ((tree 1)) (
+11 |   (par (alpha) (
+12 |     (node (elt alpha) (children (list (tree alpha))))
+13 |   ))
+14 | ))
+Error Not well founded datatype declaration

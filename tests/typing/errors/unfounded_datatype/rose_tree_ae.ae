@@ -1,0 +1,7 @@
+
+type 'a list =
+    Nil
+  | Cons of { head : 'a; tail : 'a list }
+
+type 'a tree =
+    Tree of { elt : 'a; children : 'a tree list }
