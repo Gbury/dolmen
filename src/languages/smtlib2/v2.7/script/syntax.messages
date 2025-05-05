@@ -3656,7 +3656,7 @@ term: OPEN MATCH SYMBOL OPEN OPEN STR
 035
 a match case
 a pattern, i.e. either a symbol, '_',  or a datatype pattern of
-the form "(symbol symbol_+)" (with '_' also allowed); note that
+the form "(symbol symbol+)" (with '_' also allowed); note that
 keywords and reserved words (such as 'lambda', 'as', ...) are not
 symbols, and thus are not allowed here
 

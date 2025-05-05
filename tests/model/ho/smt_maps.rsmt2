@@ -1,0 +1,5 @@
+sat
+(
+  (define-const id_ (-> A A) (lambda ((y A)) y))
+  (define-const add_ (-> Int Int Int) (lambda ((x Int) (y Int)) (+ x (@ id_ y))))
+)

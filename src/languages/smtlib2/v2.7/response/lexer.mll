@@ -34,6 +34,7 @@
     | UNDERSCORE -> reserved_descr "_"
     | ATTRIBUTE -> reserved_descr "!"
     | AS -> reserved_descr "as"
+    | LAMBDA -> reserved_descr "lambda"
     | LET -> reserved_descr "let"
     | EXISTS -> reserved_descr "exists"
     | FORALL -> reserved_descr "forall"
@@ -41,6 +42,7 @@
     (* | PAR -> reserved_descr "par" *)
     | SAT -> reserved_descr "sat"
     | UNSAT -> reserved_descr "unsat"
+    | DEFINE_CONST -> reserved_descr "define-const"
     | DEFINE_FUN -> reserved_descr "define-fun"
     | DEFINE_FUN_REC -> reserved_descr "define-fun-rec"
     | DEFINE_FUNS_REC -> reserved_descr "define-funs-rec"
@@ -65,6 +67,7 @@
     "_", UNDERSCORE;
     "!", ATTRIBUTE;
     "as", AS;
+    "lambda", LAMBDA;
     "let", LET;
     "exists", EXISTS;
     "forall", FORALL;
@@ -74,6 +77,7 @@
     "sat", SAT;
     "unsat", UNSAT;
     (* command names *)
+    "define-const", DEFINE_CONST;
     "define-fun", DEFINE_FUN;
     "define-fun-rec", DEFINE_FUN_REC;
     "define-funs-rec", DEFINE_FUNS_REC;

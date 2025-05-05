@@ -1733,13 +1733,20 @@ module Typer(State : State.S) = struct
           infer_type_csts = false;
           infer_term_csts = No_inference;
         } in
+      let free_wildcards : T.free_wildcards =
+        match v with
+        | `V2_7 | `Latest ->
+          Implicitly_universally_quantified
+        | _ ->
+          Forbidden
+      in
       begin match (State.get ty_state st).logic with
         | Auto ->
           let builtins = Dolmen_type.Base.noop in
           let env =
             T.empty_env ~order:First_order
               ~st:(State.get ty_state st).typer
-              ~var_infer ~sym_infer ~poly
+              ~var_infer ~sym_infer ~poly ~free_wildcards
               ~warnings ~file builtins
           in
           T._error env (Located loc) Missing_smtlib_logic
@@ -1751,7 +1758,7 @@ module Typer(State : State.S) = struct
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
             ~st:(State.get ty_state st).typer
-            ~var_infer ~sym_infer ~poly ~quants
+            ~var_infer ~sym_infer ~poly ~quants ~free_wildcards
             ~warnings ~file builtins
       end
 

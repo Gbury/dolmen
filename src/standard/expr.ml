@@ -880,8 +880,19 @@ module Ty = struct
   let rec compare (u : t) (v : t) =
     if u == v || u.ty_descr == v.ty_descr then 0 else begin
       let hu = hash u and hv = hash v in
-      if hu <> hv then hu - hv (* safe since both are positive *)
-      else match (expand_head u).ty_descr, (expand_head v).ty_descr with
+      match (expand_head u).ty_descr, (expand_head v).ty_descr with
+        (* First, deal with binders, note that these **must** be checked
+           before looking at the hash values, since we are interested in equality
+           modulo alpha-equivalence, and two alpha-equivalent terms can have
+           different hashes. However, since we only deal with prenex polymorphism,
+           if two types have different hashes and are alpha equivalent, it means
+           the head constructor **must** be a binder. *)
+        | Pi (vars, body), Pi (vars', body') ->
+          List.compare_lengths vars vars'
+          <?> (compare_bound, (vars, body), (vars', body'))
+        (* comapre the hash if we are not dealing with binders at top-level *)
+        | _, _ when hu <> hv -> hu - hv (* safe since both are positive *)
+        (* the actual usual pattern matching. *)
         | TyVar v, TyVar v' -> Id.compare v v'
         | TyApp (f, args), TyApp (f', args') ->
           Id.compare f f'
@@ -889,9 +900,6 @@ module Ty = struct
         | Arrow (args, ret), Arrow (args', ret') ->
           lexicographic compare args args'
           <?> (compare, ret, ret')
-        | Pi (vars, body), Pi (vars', body') ->
-          List.compare_lengths vars vars'
-          <?> (compare_bound, (vars, body), (vars', body'))
         | _, _ -> Stdlib.compare (discr u) (discr v)
     end
 

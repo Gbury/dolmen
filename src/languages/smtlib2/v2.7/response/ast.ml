@@ -41,6 +41,9 @@ module type Term = sig
   type location
   (** The type of locations. *)
 
+  val wildcard  : ?loc:location -> unit -> t
+  (** Wildcards in patterns. *)
+
   val const   : ?loc:location -> id -> t
   (** Constants, i.e non predefined symbols. This includes both constants
       defined by theories, defined locally in a problem, and also quantified variables. *)
@@ -62,6 +65,9 @@ module type Term = sig
 
   val apply   : ?loc:location -> t -> t list -> t
   (** Application. *)
+
+  val fake_apply : ?loc:location -> t -> t list -> t
+  (** Annoying and convoluted smt2.7 application operator. *)
 
   val letand   : ?loc:location -> t list -> t -> t
   (** Local parrallel bindings. The bindings are a list of terms built using
@@ -85,6 +91,10 @@ module type Term = sig
   (** Attach a list of attributes (also called annotations) to a term. As written
       in the smtlib manual, "Term attributes have no logical meaning --
       semantically, [attr t l] is equivalent to [t]" *)
+
+  val map_lambda : ?loc:location -> t list -> t -> t
+  (** "Fake" lambdas, i.e. encodings of higher-order functions in first-order,
+      as used by SMT-LIB2.7. *)
 
 end
 (** Implementation requirements for Smtlib terms. *)

@@ -52,6 +52,7 @@ reserved:
   | UNDERSCORE { "_" }
   | ATTRIBUTE { "!" }
   | AS { "as" }
+  | LAMBDA { "lambda" }
   | LET { "let" }
   | EXISTS { "exists" }
   | FORALL { "forall" }
@@ -59,6 +60,7 @@ reserved:
   | SAT { "sat" }
   | UNSAT { "unsat" }
   | MODEL { "model" }
+  | DEFINE_CONST { "define-const" }
   | DEFINE_FUN { "define-fun" }
   | DEFINE_FUN_REC { "define-fun-rec" }
   | DEFINE_FUNS_REC { "define-funs-rec" }
@@ -165,6 +167,8 @@ sorted_var:
 pattern_symbol:
   | s=SYMBOL
     { let loc = L.mk_pos $startpos $endpos in T.const ~loc I.(mk term s) }
+  | UNDERSCORE
+    { let loc = L.mk_pos $startpos $endpos in T.wildcard ~loc () }
 ;
 
 pattern:
@@ -189,10 +193,12 @@ term:
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
-      | `NoAs f -> T.apply ~loc f args
-      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.apply ~loc f args) ty }
+      | `NoAs f -> T.fake_apply ~loc f args
+      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.fake_apply ~loc f args) ty }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.letand ~loc l t }
+  | OPEN LAMBDA OPEN l=sorted_var+ CLOSE t=term CLOSE
+    { let loc = L.mk_pos $startpos $endpos in T.map_lambda ~loc l t }
   | OPEN FORALL OPEN l=sorted_var+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.forall ~loc l t }
   | OPEN EXISTS OPEN l=sorted_var+ CLOSE t=term CLOSE
@@ -212,6 +218,10 @@ function_def:
     { I.(mk term s), [], args, ret, body }
 
 definition:
+  | OPEN DEFINE_CONST s=SYMBOL ty=sort body=term CLOSE
+    { let id = I.(mk term s) in
+      let loc = L.mk_pos $startpos $endpos in
+      S.fun_def ~loc id [] [] ty body }
   | OPEN DEFINE_FUN f=function_def CLOSE
     { let id, vars, args, ret, body = f in
       let loc = L.mk_pos $startpos $endpos in

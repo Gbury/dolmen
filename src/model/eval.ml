@@ -64,6 +64,12 @@ and eval_cst env (c : Cst.t) =
       | Some value -> value
       | None -> raise (Undefined_constant c)
     end
+  | B.Map_app ->
+    Fun.(mk_clos @@ fun_lazy ~cst:c (fun env _eval args ->
+        match args with
+        | [f; x] -> eval_apply env f [] [x]
+        | _ -> assert false (* typing invariant *)
+      ))
   | _ ->
     begin match Env.builtins env ~eval env c with
       | Some res -> res
