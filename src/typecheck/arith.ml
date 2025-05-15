@@ -210,6 +210,15 @@ end
 
 module Smtlib2 = struct
 
+  (* Some helpers with version numbers *)
+  let version_semantics_2_7 version =
+    match (version : Dolmen.Smtlib2.version) with
+    | `Script (`V2_7 | `Latest)
+    | `Response (`V2_7 | `Latest) -> true
+    | `Script (`V2_6 | `Poly)
+    | `Response (`V2_6) -> false
+
+
   (* Classification of terms w.r.t. linearity, as per the specification
      of the SMTLIB. Note that there exists 2 "versions" of linearity in the
      SMTLIB: most of the linear arithmetic logics (e.g. AUFLIRA, LIA, LRA,
@@ -308,18 +317,44 @@ module Smtlib2 = struct
 
       | App ({ term = Symbol { Id.ns = Term; name = Simple "-"; }; _ }, [e])
         -> Negation e
+      | App ({ term = Builtin Fake_apply; _ },
+             [ { term = Symbol { Id.ns = Term; name = Simple "-"; }; _ }; e ])
+        when version_semantics_2_7 version ->
+        Negation e
 
       | App ({ term = Symbol { Id.ns = Term; name = Simple "+"; }; _ }, ((_ :: _) as args))
+        -> Addition args
+      | App ({ term = Builtin Fake_apply; _ },
+             ({ term = Symbol { Id.ns = Term; name = Simple "+"; }; _ } :: ((_ :: _) as args)))
+        when version_semantics_2_7 version
         -> Addition args
 
       | App ({ term = Symbol { Id.ns = Term; name = Simple "-"; }; _ }, ((_ :: _) as args))
         -> Subtraction args
+      | App ({ term = Builtin Fake_apply; _ },
+             ({ term = Symbol { Id.ns = Term; name = Simple "-"; }; _ } :: ((_ :: _) as args)))
+        when version_semantics_2_7 version
+        -> Subtraction args
 
       | App ({ term = Symbol { Id.ns = Term; name = Simple "/"; }; _ }, [a; b])
+        -> Division (a, b)
+      | App ({ term = Builtin Fake_apply; _ },
+             [{ term = Symbol { Id.ns = Term; name = Simple "/"; }; _ }; a; b])
+          when version_semantics_2_7 version
         -> Division (a, b)
 
       | Symbol id -> view_id ~parse version env id []
       | App ({ term = Symbol id; _}, args) -> view_id ~parse version env id args
+      | App ({ term = Builtin Fake_apply; _ }, ({ term = Symbol id; _ } :: args))
+        when version_semantics_2_7 version ->
+        view_id ~parse version env id args
+
+      | App ({ term = Builtin Fake_apply; _ }, { term = Builtin b; _ } :: _)
+        when version_semantics_2_7 version ->
+        begin match parse version env (Type.Builtin b) with
+          | #Type.builtin_res -> Complex_arith
+          | #Type.not_found -> Top_symbol_not_in_arith
+        end
 
       | Builtin b | App ({ term = Builtin b; _ }, _) ->
         begin match parse version env (Type.Builtin b) with

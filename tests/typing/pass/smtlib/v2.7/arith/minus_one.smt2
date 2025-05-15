@@ -1,0 +1,5 @@
+(set-logic QF_LIA)
+(declare-const a Int)
+(assert (= 0 (* (- 1) a)))
+(check-sat)
+(exit)
