@@ -22,7 +22,7 @@ let builtins ~eval:_ _ (cst : E.Term.Const.t) =
   match cst.builtin with
   | B.Equal -> Some (Fun.fun_n ~cst all_equals)
   | B.Distinct -> Some (Fun.fun_n ~cst distinct)
-  | B.Ite ->
+  | B.Prop Ite ->
     Some (Fun.mk_clos @@ Fun.fun_lazy ~cst (fun env eval args ->
         match args with
         | [cond; then_; else_] ->

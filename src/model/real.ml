@@ -21,22 +21,22 @@ let ops = Value.ops ~compare ~print ()
 (* Value helpers *)
 (* ************************************************************************* *)
 
-let ceil x = Q.of_bigint @@ Int.ceil x
-let floor x = Q.of_bigint @@ Int.floor x
-let truncate x = Q.of_bigint @@ Int.truncate x
+let raw_ceil x = Q.of_bigint @@ Int.raw_ceil x
+let raw_floor x = Q.of_bigint @@ Int.raw_floor x
+let raw_truncate x = Q.of_bigint @@ Int.raw_truncate x
 
 let half = { Q.num = Z.one; Q.den = Z.of_int 2 }
 
 let round x =
-  if Q.lt Q.zero x then ceil (Q.sub x half) else floor (Q.add x half)
+  if Q.lt Q.zero x then raw_ceil (Q.sub x half) else raw_floor (Q.add x half)
 
 let div_e a b =
   let s = Q.sign b in
   let d = Q.div a b in
-  if s > 0 then floor d else ceil d
+  if s > 0 then raw_floor d else raw_ceil d
 
-let div_t a b = truncate (Q.div a b)
-let div_f a b = floor (Q.div a b)
+let div_t a b = raw_truncate (Q.div a b)
+let div_f a b = raw_floor (Q.div a b)
 let mod_e a b = Q.sub a (Q.mul (div_e a b) b)
 let mod_t a b = Q.sub a (Q.mul (div_t a b) b)
 let mod_f a b = Q.sub a (Q.mul (div_f a b) b)
@@ -72,31 +72,29 @@ let op2_zero ~eval ~env ~cst f =
       else mk @@ f v_x v_y
     ))
 
-let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
-  match cst.builtin with
-  | B.Decimal i -> Some (mk (Q.of_string i))
-  | B.Lt `Real -> cmp ~cst Q.lt
-  | B.Gt `Real -> cmp ~cst Q.gt
-  | B.Geq `Real -> cmp ~cst Q.geq
-  | B.Leq `Real -> cmp ~cst Q.leq
-  | B.Minus `Real -> op1 ~cst (fun x -> Q.neg x)
-  | B.Add `Real -> op2 ~cst Q.add
-  | B.Sub `Real -> op2 ~cst Q.sub
-  | B.Mul `Real -> op2 ~cst Q.mul
-  | B.Div `Real -> op2_zero Q.div ~cst ~env ~eval
-  | B.Div_e `Real -> op2 ~cst div_e
-  | B.Div_t `Real -> op2 ~cst div_t
-  | B.Div_f `Real -> op2 ~cst div_f
-  | B.Modulo_e `Real -> op2 ~cst mod_e
-  | B.Modulo_t `Real -> op2 ~cst mod_t
-  | B.Modulo_f `Real -> op2 ~cst mod_f
-  | B.Is_rat `Real -> Some (Bool.mk true)
-  | B.Floor `Real -> op1 ~cst floor
-  | B.Floor_to_int `Real -> Some (fun1 ~cst (fun x -> Int.mk (Int.floor x)))
-  | B.Ceiling `Real -> op1 ~cst ceil
-  | B.Truncate `Real -> op1 ~cst truncate
-  | B.Round `Real -> op1 ~cst round
-  | B.Is_int `Real ->
-    Some (fun1 ~cst (fun x -> Bool.mk (Z.equal Z.one x.Q.den)))
-  | _ -> None
+let decimal i = Some (mk (Q.of_string i))
+let lt ~cst = cmp ~cst Q.lt
+let gt ~cst = cmp ~cst Q.gt
+let geq ~cst = cmp ~cst Q.geq
+let leq ~cst = cmp ~cst Q.leq
+let minus ~cst = op1 ~cst (fun x -> Q.neg x)
+let add ~cst = op2 ~cst Q.add
+let sub ~cst = op2 ~cst Q.sub
+let mul ~cst = op2 ~cst Q.mul
+let div ~cst ~eval ~env = op2_zero Q.div ~cst ~env ~eval
+let div_e ~cst = op2 ~cst div_e
+let div_t ~cst = op2 ~cst div_t
+let div_f ~cst = op2 ~cst div_f
+let mod_e ~cst = op2 ~cst mod_e
+let mod_t ~cst = op2 ~cst mod_t
+let mod_f ~cst = op2 ~cst mod_f
+(* TODO: fix this when we use algebraic numbers *)
+let is_rat ~cst = Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun _ -> Bool.mk true))
+let floor ~cst = op1 ~cst raw_floor
+let floor_to_int ~cst = Some (fun1 ~cst (fun x -> Int.mk (Int.raw_floor x)))
+let ceiling ~cst = op1 ~cst raw_ceil
+let truncate ~cst = op1 ~cst raw_truncate
+let round ~cst = op1 ~cst round
+let is_int ~cst = Some (fun1 ~cst (fun x -> Bool.mk (Z.equal Z.one x.Q.den)))
+let pow ~cst:_ = assert false (* not implemented yet *)
 

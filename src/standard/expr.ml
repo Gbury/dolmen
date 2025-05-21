@@ -992,26 +992,26 @@ module Ty = struct
     let mk' ?pos ?name ~builtin s n =
       Id.mk ?pos ?name ~builtin (Path.global s) { arity = n; alias = No_alias; }
 
-    let prop = mk' ~builtin:Builtin.Prop "Prop" 0
+    let prop = mk' ~builtin:(Builtin.Prop T) "Prop" 0
     let unit = mk' ~builtin:Builtin.Unit "unit" 0
     let base = mk' ~builtin:Builtin.Univ "$i" 0
-    let int =  mk' ~builtin:Builtin.Int "int" 0
-    let rat =  mk' ~builtin:Builtin.Rat "rat" 0
-    let real = mk' ~builtin:Builtin.Real "real" 0
-    let string = mk' ~builtin:Builtin.String "string" 0
-    let string_reg_lang = mk' ~builtin:Builtin.String_RegLan "string_reglang" 0
-    let array = mk' ~builtin:Builtin.Array "array" 2
-    let map = mk' ~pos:Infix ~name:"~~>" ~builtin:Builtin.Map "map" 2
+    let int =  mk' ~builtin:(Builtin.Arith Int) "int" 0
+    let rat =  mk' ~builtin:(Builtin.Arith Rat) "rat" 0
+    let real = mk' ~builtin:(Builtin.Arith Real) "real" 0
+    let string = mk' ~builtin:(Builtin.Str T) "string" 0
+    let string_reg_lang = mk' ~builtin:(Builtin.Regexp T) "string_reglang" 0
+    let array = mk' ~builtin:(Builtin.Array T) "array" 2
+    let map = mk' ~pos:Infix ~name:"~~>" ~builtin:(Builtin.Map T) "map" 2
     let bitv =
       with_cache (fun i ->
           if i <= 0 then raise (Non_positive_bitvector_size i)
-          else mk' ~builtin:(Builtin.Bitv i) (Format.asprintf "Bitv_%d" i) 0
+          else mk' ~builtin:(Builtin.Bitv (T i)) (Format.asprintf "Bitv_%d" i) 0
         )
     let float =
       with_cache (fun (e,s) ->
-          mk' ~builtin:(Builtin.Float(e,s)) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
+          mk' ~builtin:(Builtin.Float (T (e,s))) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
         )
-    let roundingMode = mk' ~builtin:Builtin.RoundingMode "RoundingMode" 0
+    let roundingMode = mk' ~builtin:(Builtin.Float RoundingMode) "RoundingMode" 0
   end
 
   (* Builtin types *)
@@ -1293,22 +1293,22 @@ module Ty = struct
       `Arrow (args, ret)
     | TyApp (({ builtin; _ } as c), l) ->
       begin match builtin with
-        | Builtin.Prop -> `Prop
-        | Builtin.Int -> `Int
-        | Builtin.Rat -> `Rat
-        | Builtin.Real -> `Real
-        | Builtin.Bitv i -> `Bitv i
-        | Builtin.Float (e, s) -> `Float (e, s)
-        | Builtin.Map -> begin match l with
+        | Builtin.Prop T -> `Prop
+        | Builtin.Arith Int -> `Int
+        | Builtin.Arith Rat -> `Rat
+        | Builtin.Arith Real -> `Real
+        | Builtin.Bitv T i -> `Bitv i
+        | Builtin.Float T (e, s) -> `Float (e, s)
+        | Builtin.Map T -> begin match l with
             | [param; ret] -> `Map (param, ret)
             | _ -> assert false (* not possible *)
           end
-        | Builtin.Array -> begin match l with
+        | Builtin.Array T -> begin match l with
             | [src; dst] -> `Array (src, dst)
             | _ -> assert false (* not possible *)
           end
-        | Builtin.String -> `String
-        | Builtin.String_RegLan -> `String_reg_lang
+        | Builtin.Str T -> `String
+        | Builtin.Regexp T -> `String_reg_lang
         | Builtin.Base -> `App (`Generic c, l)
         | _ -> `App (`Builtin builtin, l)
       end
@@ -1547,13 +1547,13 @@ module Term = struct
   (* Helpers for adt definition *)
   let mk_cstr ty_c path i vars args ret =
     let ty = Ty.pi vars (Ty.arrow args ret) in
-    Id.mk path ty ~builtin:(Builtin.Constructor { adt = ty_c; case = i; })
+    Id.mk path ty ~builtin:(Builtin.Adt (Constructor { adt = ty_c; case = i; }))
 
   let mk_cstr_tester ty_c cstr i =
     let path = Path.rename (fun s -> "is:" ^ s) cstr.path in
     let vars, _, ret = Ty.poly_sig cstr.id_ty in
     let ty = Ty.pi vars (Ty.arrow [ret] Ty.prop) in
-    Id.mk ~builtin:(Builtin.Tester { adt = ty_c; cstr; case = i; }) path ty
+    Id.mk ~builtin:(Builtin.Adt (Tester { adt = ty_c; cstr; case = i; })) path ty
 
   (* ADT definition *)
   let define_adt_aux ~record ty_const vars l =
@@ -1570,9 +1570,9 @@ module Term = struct
               let dstr_ty = Ty.pi vars (Ty.arrow [ty] arg_ty) in
               let dstr =
                 Id.mk name dstr_ty
-                  ~builtin:(Builtin.Destructor {
+                  ~builtin:(Builtin.Adt (Destructor {
                       adt = ty_const; cstr;
-                      case = i; field = j; })
+                      case = i; field = j; }))
               in
               dstrs.(j) <- Some dstr;
               (arg_ty, Some dstr)
@@ -1650,10 +1650,10 @@ module Term = struct
     let view_pat t =
       match t.term_descr with
       | Var _ -> Wildcard
-      | Cst ( { builtin = Builtin.Constructor { adt; case; }; _ } as cstr ) ->
+      | Cst ( { builtin = Builtin.Adt Constructor { adt; case; }; _ } as cstr ) ->
         Cstr { cstr; adt; case; args = []; }
       | App ({ term_descr = Cst ({
-          builtin = Builtin.Constructor { adt; case; }; _ } as cstr); _ }, _, args) ->
+          builtin = Builtin.Adt Constructor { adt; case; }; _ } as cstr); _ }, _, args) ->
         Cstr { cstr; adt; case; args; }
       | Cst _ | App _ | Binder _ | Match _ ->
         raise (Pattern_expected t)
@@ -1885,10 +1885,10 @@ module Term = struct
 
     (* Some constants *)
     let _true =
-      Id.mk ~name:"⊤" ~builtin:Builtin.True (Path.global "true") Ty.prop
+      Id.mk ~name:"⊤" ~builtin:(Builtin.Prop True) (Path.global "true") Ty.prop
 
     let _false =
-      Id.mk ~name:"⊥" ~builtin:Builtin.False (Path.global "false") Ty.prop
+      Id.mk ~name:"⊥" ~builtin:(Builtin.Prop False) (Path.global "false") Ty.prop
 
     let eqs =
       let a = Ty.Var.mk "alpha" in
@@ -1907,50 +1907,50 @@ module Term = struct
     let neq = distinct 2
 
     let neg = mk'
-        ~pos:Pretty.Prefix ~name:"¬" ~builtin:Builtin.Neg
+        ~pos:Pretty.Prefix ~name:"¬" ~builtin:(Builtin.Prop Neg)
         "Neg" [] [Ty.prop] Ty.prop
 
     let _and = indexed
-        ~pos:Pretty.Infix ~name:"∧" ~builtin:Builtin.And
+        ~pos:Pretty.Infix ~name:"∧" ~builtin:(Builtin.Prop And)
         "And" [] Ty.prop Ty.prop
 
     let and_ = _and 2
 
     let _or = indexed
-        ~pos:Pretty.Infix ~name:"∨" ~builtin:Builtin.Or
+        ~pos:Pretty.Infix ~name:"∨" ~builtin:(Builtin.Prop Or)
         "Or" [] Ty.prop Ty.prop
 
     let or_ = _or 2
 
     let nand = mk'
-        ~pos:Pretty.Infix ~name:"⊼" ~builtin:Builtin.Nand
+        ~pos:Pretty.Infix ~name:"⊼" ~builtin:(Builtin.Prop Nand)
         "Nand" [] [Ty.prop; Ty.prop] Ty.prop
 
     let nor = mk'
-        ~pos:Pretty.Infix ~name:"V" ~builtin:Builtin.Nor
+        ~pos:Pretty.Infix ~name:"V" ~builtin:(Builtin.Prop Nor)
         "or" [] [Ty.prop; Ty.prop] Ty.prop
 
     let xor = mk'
-        ~pos:Pretty.Infix ~name:"⊻" ~builtin:Builtin.Xor
+        ~pos:Pretty.Infix ~name:"⊻" ~builtin:(Builtin.Prop Xor)
         "Xor" [] [Ty.prop; Ty.prop] Ty.prop
 
     let imply = mk'
-        ~pos:Pretty.Infix ~name:"⇒" ~builtin:Builtin.Imply
+        ~pos:Pretty.Infix ~name:"⇒" ~builtin:(Builtin.Prop Imply)
         "Imply" [] [Ty.prop; Ty.prop] Ty.prop
 
     let implied = mk'
-        ~pos:Pretty.Infix ~name:"⇐" ~builtin:Builtin.Implied
+        ~pos:Pretty.Infix ~name:"⇐" ~builtin:(Builtin.Prop Implied)
         "Implied" [] [Ty.prop; Ty.prop] Ty.prop
 
     let equiv = mk'
-        ~pos:Pretty.Infix ~name:"⇔" ~builtin:Builtin.Equiv
+        ~pos:Pretty.Infix ~name:"⇔" ~builtin:(Builtin.Prop Equiv)
         "Equiv" [] [Ty.prop; Ty.prop] Ty.prop
 
     let ite =
       let a = Ty.Var.mk "alpha" in
       let a_ty = Ty.of_var a in
       mk'
-        ~name:"ite" ~builtin:Builtin.Ite
+        ~name:"ite" ~builtin:(Builtin.Prop Ite)
         "Ite" [a] [Ty.prop; a_ty; a_ty] a_ty
 
     let map_app =
@@ -1959,7 +1959,7 @@ module Term = struct
       let a_ty = Ty.of_var a in
       let b_ty = Ty.of_var b in
       mk'
-        ~pos:Infix ~name:"@" ~builtin:Builtin.Map_app
+        ~pos:Infix ~name:"@" ~builtin:(Builtin.Map App)
         "map_app" [a; b] [Ty.map a_ty b_ty; a_ty] b_ty
 
     let pi =
@@ -2003,95 +2003,95 @@ module Term = struct
 
       let int =
         with_cache (fun s ->
-            mk' ~builtin:(Builtin.Integer s) s [] [] Ty.int
+            mk' ~builtin:(Builtin.Arith (Integer s)) s [] [] Ty.int
           )
 
       let minus = mk'
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Int)
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Arith (Minus `Int))
           "Minus" [] [Ty.int] Ty.int
 
       let add = mk'
-          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Add `Int)
+          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Arith (Add `Int))
           "Add" [] [Ty.int; Ty.int] Ty.int
 
       let sub = mk'
-          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Int)
+          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Arith (Sub `Int))
            "Sub" [] [Ty.int; Ty.int] Ty.int
 
       let mul = mk'
-          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Int)
+          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Arith (Mul `Int))
            "Mul" [] [Ty.int; Ty.int] Ty.int
 
       let pow = mk'
-          ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Pow `Int)
+          ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Arith (Pow `Int))
            "Pow" [] [Ty.int; Ty.int] Ty.int
 
       let div_e = mk'
-          ~pos:Pretty.Prefix ~name:"div" ~builtin:(Builtin.Div_e `Int)
+          ~pos:Pretty.Prefix ~name:"div" ~builtin:(Builtin.Arith (Div_e `Int))
            "Div_e" [] [Ty.int; Ty.int] Ty.int
       let div_t = mk'
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Int)
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Arith (Div_t `Int))
           "Div_t" [] [Ty.int; Ty.int] Ty.int
       let div_f = mk'
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Int)
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Arith (Div_f `Int))
            "Div_f" [] [Ty.int; Ty.int] Ty.int
 
       let rem_e = mk'
-          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Int)
+          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Arith (Modulo_e `Int))
            "Modulo_e" [] [Ty.int; Ty.int] Ty.int
       let rem_t = mk'
-          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Int)
+          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Arith (Modulo_t `Int))
            "Modulo_t" [] [Ty.int; Ty.int] Ty.int
       let rem_f = mk'
-          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Int)
+          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Arith (Modulo_f `Int))
            "Modulo_f" [] [Ty.int; Ty.int] Ty.int
 
       let abs = mk'
-          ~name:"abs" ~builtin:Builtin.Abs
+          ~name:"abs" ~builtin:(Builtin.Arith Abs)
           "Abs" [] [Ty.int] Ty.int
 
       let lt = mk'
-          ~pos:Pretty.Infix ~name:"<" ~builtin:Builtin.(Lt `Int)
+          ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Arith (Lt `Int))
            "LessThan" [] [Ty.int; Ty.int] Ty.prop
 
       let le = mk'
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:Builtin.(Leq `Int)
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Arith (Leq `Int))
            "LessOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let gt = mk'
-          ~pos:Pretty.Infix ~name:">" ~builtin:Builtin.(Gt `Int)
+          ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Arith (Gt `Int))
            "GreaterThan" [] [Ty.int; Ty.int] Ty.prop
 
       let ge = mk'
-          ~pos:Pretty.Infix ~name:">=" ~builtin:Builtin.(Geq `Int)
+          ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Arith (Geq `Int))
            "GreaterOrEqual" [] [Ty.int; Ty.int] Ty.prop
 
       let floor = mk'
-          ~name:"floor" ~builtin:Builtin.(Floor `Int)
+          ~name:"floor" ~builtin:(Builtin.Arith (Floor `Int))
            "Floor" [] [Ty.int] Ty.int
 
       let ceiling = mk'
-          ~name:"ceiling" ~builtin:Builtin.(Ceiling `Int)
+          ~name:"ceiling" ~builtin:(Builtin.Arith (Ceiling `Int))
            "Ceiling" [] [Ty.int] Ty.int
 
       let truncate = mk'
-          ~name:"truncate" ~builtin:Builtin.(Truncate `Int)
+          ~name:"truncate" ~builtin:(Builtin.Arith (Truncate `Int))
            "Truncate" [] [Ty.int] Ty.int
 
       let round = mk'
-          ~name:"round" ~builtin:Builtin.(Round `Int)
+          ~name:"round" ~builtin:(Builtin.Arith (Round `Int))
            "Round" [] [Ty.int] Ty.int
 
       let is_int = mk'
-          ~name:"is_int" ~builtin:Builtin.(Is_int `Int)
+          ~name:"is_int" ~builtin:(Builtin.Arith (Is_int `Int))
            "Is_int" [] [Ty.int] Ty.prop
 
       let is_rat = mk'
-          ~name:"is_rat" ~builtin:Builtin.(Is_rat `Int)
+          ~name:"is_rat" ~builtin:(Builtin.Arith (Is_rat `Int))
            "Is_rat" [] [Ty.int] Ty.prop
 
       let divisible = mk'
-          ~builtin:Builtin.Divisible "Divisible"
+          ~builtin:(Builtin.Arith Divisible) "Divisible"
           [] [Ty.int; Ty.int] Ty.prop
 
     end
@@ -2100,86 +2100,86 @@ module Term = struct
 
       let rat =
         with_cache (fun s ->
-            mk' ~builtin:(Builtin.Rational s) s [] [] Ty.rat
+            mk' ~builtin:(Builtin.Arith (Rational s)) s [] [] Ty.rat
           )
 
       let minus = mk'
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Rat)
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Arith (Minus `Rat))
            "Minus" [] [Ty.rat] Ty.rat
 
       let add = mk'
-          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Add `Rat)
+          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Arith (Add `Rat))
            "Add" [] [Ty.rat; Ty.rat] Ty.rat
 
       let sub = mk'
-          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Rat)
+          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Arith (Sub `Rat))
            "Sub" [] [Ty.rat; Ty.rat] Ty.rat
 
       let mul = mk'
-          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Rat)
+          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Arith (Mul `Rat))
            "Mul" [] [Ty.rat; Ty.rat] Ty.rat
 
       let div = mk'
-          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div `Rat)
+          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Arith (Div `Rat))
            "Div" [] [Ty.rat; Ty.rat] Ty.rat
       let div_e = mk'
-          ~pos:Pretty.Infix ~name:"/e" ~builtin:(Builtin.Div_e `Rat)
+          ~pos:Pretty.Infix ~name:"/e" ~builtin:(Builtin.Arith (Div_e `Rat))
           "Div_e" [] [Ty.rat; Ty.rat] Ty.rat
       let div_t = mk'
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Rat)
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Arith (Div_t `Rat))
            "Div_t" [] [Ty.rat; Ty.rat] Ty.rat
       let div_f = mk'
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Rat)
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Arith (Div_f `Rat))
            "Div_f" [] [Ty.rat; Ty.rat] Ty.rat
 
       let rem_e = mk'
-          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Rat)
+          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Arith (Modulo_e `Rat))
            "Modulo" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_t = mk'
-          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Rat)
+          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Arith (Modulo_t `Rat))
            "Modulo_t" [] [Ty.rat; Ty.rat] Ty.rat
       let rem_f = mk'
-          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Rat)
+          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Arith (Modulo_f `Rat))
            "Modulo_f" [] [Ty.rat; Ty.rat] Ty.rat
 
       let lt = mk'
-          ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Rat)
+          ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Arith (Lt `Rat))
            "LessThan" [] [Ty.rat; Ty.rat] Ty.prop
 
       let le = mk'
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Leq `Rat)
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Arith (Leq `Rat))
            "LessOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
       let gt = mk'
-          ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Gt `Rat)
+          ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Arith (Gt `Rat))
            "GreaterThan" [] [Ty.rat; Ty.rat] Ty.prop
 
       let ge = mk'
-          ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Geq `Rat)
+          ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Arith (Geq `Rat))
            "GreaterOrEqual" [] [Ty.rat; Ty.rat] Ty.prop
 
       let floor = mk'
-          ~name:"floor" ~builtin:(Builtin.Floor `Rat)
+          ~name:"floor" ~builtin:(Builtin.Arith (Floor `Rat))
            "Floor" [] [Ty.rat] Ty.rat
 
       let ceiling = mk'
-          ~name:"ceiling" ~builtin:(Builtin.Ceiling `Rat)
+          ~name:"ceiling" ~builtin:(Builtin.Arith (Ceiling `Rat))
            "Ceiling" [] [Ty.rat] Ty.rat
 
       let truncate = mk'
-          ~name:"truncate" ~builtin:(Builtin.Truncate `Rat)
+          ~name:"truncate" ~builtin:(Builtin.Arith (Truncate `Rat))
            "Truncate" [] [Ty.rat] Ty.rat
 
       let round = mk'
-          ~name:"round" ~builtin:(Builtin.Round `Rat)
+          ~name:"round" ~builtin:(Builtin.Arith (Round `Rat))
            "Round" [] [Ty.rat] Ty.rat
 
       let is_int = mk'
-          ~name:"is_int" ~builtin:(Builtin.Is_int `Rat)
+          ~name:"is_int" ~builtin:(Builtin.Arith (Is_int `Rat))
            "Is_int" [] [Ty.rat] Ty.prop
 
       let is_rat = mk'
-          ~name:"is_rat" ~builtin:(Builtin.Is_rat `Rat)
+          ~name:"is_rat" ~builtin:(Builtin.Arith (Is_rat `Rat))
            "Is_rat" [] [Ty.rat] Ty.prop
     end
 
@@ -2187,95 +2187,95 @@ module Term = struct
 
       let real =
         with_cache (fun s ->
-            mk' ~builtin:(Builtin.Decimal s) s [] [] Ty.real
+            mk' ~builtin:(Builtin.Arith (Decimal s)) s [] [] Ty.real
           )
 
       let minus = mk'
-          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Minus `Real)
+          ~pos:Pretty.Prefix ~name:"-" ~builtin:(Builtin.Arith (Minus `Real))
            "Minus" [] [Ty.real] Ty.real
 
       let add = mk'
-          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Add `Real)
+          ~pos:Pretty.Infix ~name:"+" ~builtin:(Builtin.Arith (Add `Real))
            "Add" [] [Ty.real; Ty.real] Ty.real
 
       let sub = mk'
-          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Sub `Real)
+          ~pos:Pretty.Infix ~name:"-" ~builtin:(Builtin.Arith (Sub `Real))
            "Sub" [] [Ty.real; Ty.real] Ty.real
 
       let mul = mk'
-          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Mul `Real)
+          ~pos:Pretty.Infix ~name:"*" ~builtin:(Builtin.Arith (Mul `Real))
            "Mul" [] [Ty.real; Ty.real] Ty.real
 
       let pow = mk'
-          ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Pow `Real)
+          ~pos:Pretty.Infix ~name:"**" ~builtin:(Builtin.Arith (Pow `Real))
            "Pow" [] [Ty.real; Ty.real] Ty.real
 
       let div = mk'
-          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div `Real)
+          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Arith (Div `Real))
            "Div" [] [Ty.real; Ty.real] Ty.real
 
       let div_e = mk'
-          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Div_e `Real)
+          ~pos:Pretty.Infix ~name:"/" ~builtin:(Builtin.Arith (Div_e `Real))
            "Div_e" [] [Ty.real; Ty.real] Ty.real
       let div_t = mk'
-          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Div_t `Real)
+          ~pos:Pretty.Infix ~name:"/t" ~builtin:(Builtin.Arith (Div_t `Real))
           "Div_t" [] [Ty.real; Ty.real] Ty.real
       let div_f = mk'
-          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Div_f `Real)
+          ~pos:Pretty.Infix ~name:"/f" ~builtin:(Builtin.Arith (Div_f `Real))
            "Div_f" [] [Ty.real; Ty.real] Ty.real
 
       let rem_e = mk'
-          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Modulo_e `Real)
+          ~pos:Pretty.Infix ~name:"%" ~builtin:(Builtin.Arith (Modulo_e `Real))
            "Modulo" [] [Ty.real; Ty.real] Ty.real
       let rem_t = mk'
-          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Modulo_t `Real)
+          ~pos:Pretty.Infix ~name:"%t" ~builtin:(Builtin.Arith (Modulo_t `Real))
           "Modulo_t" [] [Ty.real; Ty.real] Ty.real
       let rem_f = mk'
-          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Modulo_f `Real)
+          ~pos:Pretty.Infix ~name:"%f" ~builtin:(Builtin.Arith (Modulo_f `Real))
            "Modulo_f" [] [Ty.real; Ty.real] Ty.real
 
       let lt = mk'
-          ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Lt `Real)
+          ~pos:Pretty.Infix ~name:"<" ~builtin:(Builtin.Arith (Lt `Real))
            "LessThan" [] [Ty.real; Ty.real] Ty.prop
 
       let le = mk'
-          ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Leq `Real)
+          ~pos:Pretty.Infix ~name:"<=" ~builtin:(Builtin.Arith (Leq `Real))
            "LessOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let gt = mk'
-          ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Gt `Real)
+          ~pos:Pretty.Infix ~name:">" ~builtin:(Builtin.Arith (Gt `Real))
            "GreaterThan" [] [Ty.real; Ty.real] Ty.prop
 
       let ge = mk'
-          ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Geq `Real)
+          ~pos:Pretty.Infix ~name:">=" ~builtin:(Builtin.Arith (Geq `Real))
            "GreaterOrEqual" [] [Ty.real; Ty.real] Ty.prop
 
       let floor = mk'
-          ~name:"floor" ~builtin:(Builtin.Floor `Real)
+          ~name:"floor" ~builtin:(Builtin.Arith (Floor `Real))
            "Floor" [] [Ty.real] Ty.real
 
       let floor_to_int = mk'
-          ~name:"floor_to_int" ~builtin:(Builtin.Floor_to_int `Real)
+          ~name:"floor_to_int" ~builtin:(Builtin.Arith (Floor_to_int `Real))
            "Floor" [] [Ty.real] Ty.int
 
       let ceiling = mk'
-          ~name:"ceiling" ~builtin:(Builtin.Ceiling `Real)
+          ~name:"ceiling" ~builtin:(Builtin.Arith (Ceiling `Real))
            "Ceiling" [] [Ty.real] Ty.real
 
       let truncate = mk'
-          ~name:"truncate" ~builtin:(Builtin.Truncate `Real)
+          ~name:"truncate" ~builtin:(Builtin.Arith (Truncate `Real))
            "Truncate" [] [Ty.real] Ty.real
 
       let round = mk'
-          ~name:"round" ~builtin:(Builtin.Round `Real)
+          ~name:"round" ~builtin:(Builtin.Arith (Round `Real))
            "Round" [] [Ty.real] Ty.real
 
       let is_int = mk'
-          ~name:"is_int" ~builtin:(Builtin.Is_int `Real)
+          ~name:"is_int" ~builtin:(Builtin.Arith (Is_int `Real))
            "Is_int" [] [Ty.real] Ty.prop
 
       let is_rat = mk'
-          ~name:"is_rat" ~builtin:(Builtin.Is_rat `Real)
+          ~name:"is_rat" ~builtin:(Builtin.Arith (Is_rat `Real))
            "Is_rat" [] [Ty.real] Ty.prop
     end
 
@@ -2287,7 +2287,7 @@ module Term = struct
         let b = Ty.Var.mk "beta" in
         let b_ty = Ty.of_var b in
         mk'
-          ~name:"const" ~builtin:Builtin.Const
+          ~name:"const" ~builtin:(Builtin.Array Const)
           "Const" [a; b] [b_ty] (Ty.array a_ty b_ty)
 
       let select =
@@ -2296,7 +2296,7 @@ module Term = struct
         let b = Ty.Var.mk "beta" in
         let b_ty = Ty.of_var b in
         mk'
-          ~name:"select" ~builtin:Builtin.Select
+          ~name:"select" ~builtin:(Builtin.Array Select)
           "Select" [a; b] [Ty.array a_ty b_ty; a_ty] b_ty
 
       let store =
@@ -2306,7 +2306,7 @@ module Term = struct
         let b_ty = Ty.of_var b in
         let arr = Ty.array a_ty b_ty in
         mk'
-          ~name:"store" ~builtin:Builtin.Store
+          ~name:"store" ~builtin:(Builtin.Array Store)
           "Store" [a; b] [arr; a_ty; b_ty] arr
 
     end
@@ -2314,29 +2314,29 @@ module Term = struct
     module Bitv = struct
 
       let bitv s =
-        mk' ~builtin:(Builtin.Bitvec s)
+        mk' ~builtin:(Builtin.Bitv (Binary_lit s))
           (Format.asprintf "bv#%s#" s) [] [] (Ty.bitv (String.length s))
 
       let to_int =
         with_cache (fun (n, signed) ->
-            mk' ~builtin:(Builtin.Bitv_to_int { n; signed }) "bv2nat"
+            mk' ~builtin:(Builtin.Bitv (To_int { n; signed })) "bv2nat"
               [] [Ty.bitv n] Ty.int)
 
       let of_int =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_of_int { n }) "int2bv"
+            mk' ~builtin:(Builtin.Bitv (Of_int { n })) "int2bv"
               [] [Ty.int] (Ty.bitv n))
 
       let concat =
         with_cache (fun (n, m) ->
-            mk' ~builtin:(Builtin.Bitv_concat{n;m}) "bitv_concat"
+            mk' ~builtin:(Builtin.Bitv (Concat { n; m })) "bitv_concat"
               [] [Ty.bitv n; Ty.bitv m] (Ty.bitv (n + m))
           )
 
       let extract =
         with_cache (fun (i, j, n) ->
             if 0 <= j && j <= i && i < n then
-              mk' ~builtin:(Builtin.Bitv_extract {n; i; j})
+              mk' ~builtin:(Builtin.Bitv (Extract {n; i; j}))
                 (Format.asprintf "bitv_extract_%d_%d" i j) []
                 [Ty.bitv n] (Ty.bitv (i - j + 1))
             else
@@ -2345,211 +2345,211 @@ module Term = struct
 
       let repeat =
         with_cache (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_repeat{n;k}) (Format.asprintf "bitv_repeat_%d" k)
+            mk' ~builtin:(Builtin.Bitv (Repeat{n;k})) (Format.asprintf "bitv_repeat_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n * k))
           )
 
       let zero_extend =
         with_cache (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_zero_extend{n;k}) (Format.asprintf "zero_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv (Zero_extend{n;k})) (Format.asprintf "zero_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let sign_extend =
         with_cache (fun (k, n) ->
-            mk' ~builtin:(Builtin.Bitv_sign_extend{n;k}) (Format.asprintf "sign_extend_%d" k)
+            mk' ~builtin:(Builtin.Bitv (Sign_extend{n;k})) (Format.asprintf "sign_extend_%d" k)
               [] [Ty.bitv n] (Ty.bitv (n + k))
           )
 
       let rotate_right =
         with_cache (fun (i, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_right{n;i})
+            mk' ~builtin:(Builtin.Bitv (Rotate_right{n;i}))
               (Format.asprintf "rotate_right_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let rotate_left =
         with_cache (fun (i, n) ->
-            mk' ~builtin:(Builtin.Bitv_rotate_left{n;i})
+            mk' ~builtin:(Builtin.Bitv (Rotate_left{n;i}))
               (Format.asprintf "rotate_left_%d" i) [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let not =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_not n) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Not n)) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let and_ =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_and n) "bvand" []
+            mk' ~builtin:(Builtin.Bitv (And n)) "bvand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_or n) "bvor" []
+            mk' ~builtin:(Builtin.Bitv (Or n)) "bvor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_nand n) "bvnand" []
+            mk' ~builtin:(Builtin.Bitv (Nand n)) "bvnand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_nor n) "bvnor" []
+            mk' ~builtin:(Builtin.Bitv (Nor n)) "bvnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_xor n) "bvxor" []
+            mk' ~builtin:(Builtin.Bitv (Xor n)) "bvxor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_xnor n) "bvxnor" []
+            mk' ~builtin:(Builtin.Bitv (Xnor n)) "bvxnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_comp n) "bvcomp" []
+            mk' ~builtin:(Builtin.Bitv (Comp n)) "bvcomp" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_neg n) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Neg n)) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let add =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_add n) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Add n)) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sub =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_sub n) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Sub n)) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let mul =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_mul n) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Mul n)) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let udiv =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_udiv n) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Udiv n)) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let urem =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_urem n) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Urem n)) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sdiv =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_sdiv n) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Sdiv n)) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let srem =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_srem n) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Srem n)) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let smod =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_smod n) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Smod n)) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let shl =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_shl n) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Shl n)) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let lshr =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_lshr n) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Lshr n)) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ashr =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_ashr n) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Ashr n)) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ult =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_ult n) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ult n)) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ule =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_ule n) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ule n)) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ugt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_ugt n) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ugt n)) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let uge =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_uge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Uge n)) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let slt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_slt n) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Slt n)) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sle =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_sle n) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sle n)) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sgt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_sgt n) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sgt n)) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sge =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_sge n) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sge n)) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let nego =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_overflow_neg { n })
+            mk' ~builtin:(Builtin.Bitv (Overflow_neg { n }))
               "bvnego" [] [Ty.bitv n] Ty.prop
           )
 
       let addo =
         with_cache (fun (n, signed) ->
-            mk' ~builtin:(Builtin.Bitv_overflow_add { n; signed; })
+            mk' ~builtin:(Builtin.Bitv (Overflow_add { n; signed; }))
               (Printf.sprintf "bv%caddo" (if signed then 's' else 'u'))
               [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let subo =
         with_cache (fun (n, signed) ->
-            mk' ~builtin:(Builtin.Bitv_overflow_sub { n; signed; })
+            mk' ~builtin:(Builtin.Bitv (Overflow_sub { n; signed; }))
               (Printf.sprintf "bv%csubo" (if signed then 's' else 'u'))
               [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let mulo =
         with_cache (fun (n, signed) ->
-            mk' ~builtin:(Builtin.Bitv_overflow_mul { n; signed; })
+            mk' ~builtin:(Builtin.Bitv (Overflow_mul { n; signed; }))
               (Printf.sprintf "bv%cmulo" (if signed then 's' else 'u'))
               [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let divo =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv_overflow_div { n; })
+            mk' ~builtin:(Builtin.Bitv (Overflow_div { n; }))
               (Printf.sprintf "bvsdivo")
               [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
@@ -2559,24 +2559,24 @@ module Term = struct
 
       let fp =
         with_cache (fun (e, s) ->
-            mk' ~builtin:(Builtin.Fp(e, s)) "fp" []
+            mk' ~builtin:(Builtin.Float (Fp (e, s))) "fp" []
               [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
 
       let roundNearestTiesToEven =
-        mk' ~builtin:Builtin.RoundNearestTiesToEven "RoundNearestTiesToEven" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float RoundNearestTiesToEven) "RoundNearestTiesToEven" [] [] Ty.roundingMode
 
       let roundNearestTiesToAway =
-        mk' ~builtin:Builtin.RoundNearestTiesToAway "RoundNearestTiesToAway" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float RoundNearestTiesToAway) "RoundNearestTiesToAway" [] [] Ty.roundingMode
 
       let roundTowardPositive =
-        mk' ~builtin:Builtin.RoundTowardPositive "RoundTowardPositive" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float RoundTowardPositive) "RoundTowardPositive" [] [] Ty.roundingMode
 
       let roundTowardNegative =
-        mk' ~builtin:Builtin.RoundTowardNegative "RoundTowardNegative" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float RoundTowardNegative) "RoundTowardNegative" [] [] Ty.roundingMode
 
       let roundTowardZero =
-        mk' ~builtin:Builtin.RoundTowardZero "RoundTowardZero" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float RoundTowardZero) "RoundTowardZero" [] [] Ty.roundingMode
 
       (** Generic function for creating functions primarily on the same floating
           point format with optionally a rounding mode and a particular result
@@ -2591,127 +2591,127 @@ module Term = struct
               | Some res -> res
               | None -> fp
             in
-            mk' ~builtin:(builtin es) name [] args res
+            mk' ~builtin:(Builtin.Float (builtin es)) name [] args res
           )
 
       let plus_infinity =
         fp_gen_fun ~args:0 "plus_infinity"
-          (fun (e,s) -> Builtin.Plus_infinity (e,s))
+          (fun (e,s) -> Plus_infinity (e,s))
       let minus_infinity =
         fp_gen_fun ~args:0 "minus_infinity"
-          (fun (e,s) -> Builtin.Minus_infinity (e,s))
+          (fun (e,s) -> Minus_infinity (e,s))
       let plus_zero =
         fp_gen_fun ~args:0 "plus_zero"
-          (fun (e,s) -> Builtin.Plus_zero (e,s))
+          (fun (e,s) -> Plus_zero (e,s))
       let minus_zero =
         fp_gen_fun ~args:0 "minus_zero"
-          (fun (e,s) -> Builtin.Minus_zero (e,s))
+          (fun (e,s) -> Minus_zero (e,s))
       let nan =
         fp_gen_fun ~args:0 "nan"
-          (fun (e,s) -> Builtin.NaN (e,s))
+          (fun (e,s) -> NaN (e,s))
       let abs =
         fp_gen_fun ~args:1 "fp.abs"
-          (fun (e,s) -> Builtin.Fp_abs (e,s))
+          (fun (e,s) -> Abs (e,s))
       let neg =
         fp_gen_fun ~args:1 "fp.neg"
-          (fun (e,s) -> Builtin.Fp_neg (e,s))
+          (fun (e,s) -> Neg (e,s))
       let add =
         fp_gen_fun ~args:2 ~rm:() "fp.add"
-          (fun (e,s) -> Builtin.Fp_add (e,s))
+          (fun (e,s) -> Add (e,s))
       let sub =
         fp_gen_fun ~args:2 ~rm:() "fp.sub"
-          (fun (e,s) -> Builtin.Fp_sub (e,s))
+          (fun (e,s) -> Sub (e,s))
       let mul =
         fp_gen_fun ~args:2 ~rm:() "fp.mul"
-          (fun (e,s) -> Builtin.Fp_mul (e,s))
+          (fun (e,s) -> Mul (e,s))
       let div =
         fp_gen_fun ~args:2 ~rm:() "fp.div"
-          (fun (e,s) -> Builtin.Fp_div (e,s))
+          (fun (e,s) -> Div (e,s))
       let fma =
         fp_gen_fun ~args:3 ~rm:() "fp.fma"
-          (fun (e,s) -> Builtin.Fp_fma (e,s))
+          (fun (e,s) -> Fma (e,s))
       let sqrt =
         fp_gen_fun ~args:1 ~rm:() "fp.sqrt"
-          (fun (e,s) -> Builtin.Fp_sqrt (e,s))
+          (fun (e,s) -> Sqrt (e,s))
       let rem =
         fp_gen_fun ~args:2 "fp.rem"
-          (fun (e,s) -> Builtin.Fp_rem (e,s))
+          (fun (e,s) -> Rem (e,s))
       let roundToIntegral =
         fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral"
-          (fun (e,s) -> Builtin.Fp_roundToIntegral (e,s))
+          (fun (e,s) -> RoundToIntegral (e,s))
       let min =
         fp_gen_fun ~args:2 "fp.min"
-          (fun (e,s) -> Builtin.Fp_min (e,s))
+          (fun (e,s) -> Min (e,s))
       let max =
         fp_gen_fun ~args:2 "fp.max"
-          (fun (e,s) -> Builtin.Fp_max (e,s))
+          (fun (e,s) -> Max (e,s))
       let leq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq"
-          (fun (e,s) -> Builtin.Fp_leq (e,s))
+          (fun (e,s) -> Leq (e,s))
       let lt =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt"
-          (fun (e,s) -> Builtin.Fp_lt (e,s))
+          (fun (e,s) -> Lt (e,s))
       let geq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq"
-          (fun (e,s) -> Builtin.Fp_geq (e,s))
+          (fun (e,s) -> Geq (e,s))
       let gt =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt"
-          (fun (e,s) -> Builtin.Fp_gt (e,s))
+          (fun (e,s) -> Gt (e,s))
       let eq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq"
-          (fun (e,s) -> Builtin.Fp_eq (e,s))
+          (fun (e,s) -> Eq (e,s))
       let isNormal =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal"
-          (fun (e,s) -> Builtin.Fp_isNormal (e,s))
+          (fun (e,s) -> IsNormal (e,s))
       let isSubnormal =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal"
-          (fun (e,s) -> Builtin.Fp_isSubnormal (e,s))
+          (fun (e,s) -> IsSubnormal (e,s))
       let isZero =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero"
-          (fun (e,s) -> Builtin.Fp_isZero (e,s))
+          (fun (e,s) -> IsZero (e,s))
       let isInfinite =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite"
-          (fun (e,s) -> Builtin.Fp_isInfinite (e,s))
+          (fun (e,s) -> IsInfinite (e,s))
       let isNaN =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan"
-          (fun (e,s) -> Builtin.Fp_isNaN (e,s))
+          (fun (e,s) -> IsNaN (e,s))
       let isNegative =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative"
-          (fun (e,s) -> Builtin.Fp_isNegative (e,s))
+          (fun (e,s) -> IsNegative (e,s))
       let isPositive =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive"
-          (fun (e,s) -> Builtin.Fp_isPositive (e,s))
+          (fun (e,s) -> IsPositive (e,s))
       let to_real =
         fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real"
-          (fun (e,s) -> Builtin.To_real (e,s))
+          (fun (e,s) -> To_real (e,s))
 
       let ieee_format_to_fp =
         with_cache (fun ((e,s) as es) ->
-            mk' ~builtin:(Builtin.Ieee_format_to_fp (e,s)) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
+            mk' ~builtin:(Builtin.Float (Ieee_format_to_fp (e,s))) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
           )
       let to_fp =
         with_cache (fun (e1,s1,e2,s2) ->
-            mk' ~builtin:(Builtin.Fp_to_fp (e1,s1,e2,s2)) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
+            mk' ~builtin:(Builtin.Float (To_fp (e1,s1,e2,s2))) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
           )
       let real_to_fp =
         with_cache (fun ((e,s) as es) ->
-            mk' ~builtin:(Builtin.Real_to_fp (e,s)) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
+            mk' ~builtin:(Builtin.Float (Of_real (e,s))) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
           )
       let sbv_to_fp =
         with_cache (fun (bv,e,s) ->
-            mk' ~builtin:(Builtin.Sbv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+            mk' ~builtin:(Builtin.Float (Of_sbv (bv,e,s))) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let ubv_to_fp =
         with_cache (fun (bv,e,s) ->
-            mk' ~builtin:(Builtin.Ubv_to_fp (bv,e,s)) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+            mk' ~builtin:(Builtin.Float (Of_ubv (bv,e,s))) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
           )
       let to_ubv =
         with_cache (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.To_ubv (e,s,bv)) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.Float (To_ubv (e,s,bv))) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
       let to_sbv =
         with_cache (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.To_sbv (e,s,bv)) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+            mk' ~builtin:(Builtin.Float (To_sbv (e,s,bv))) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
           )
 
     end
@@ -2720,121 +2720,121 @@ module Term = struct
 
       let string =
         with_cache (fun s ->
-            mk' ~builtin:(Builtin.Str s) (Format.asprintf {|"%s"|} s) [] [] Ty.string
+            mk' ~builtin:(Builtin.Str (Raw s)) (Format.asprintf {|"%s"|} s) [] [] Ty.string
           )
 
       let length =
-        mk' ~builtin:Builtin.Str_length "length"
+        mk' ~builtin:(Builtin.Str Length) "length"
           [] [Ty.string] Ty.int
       let at =
-        mk' ~builtin:Builtin.Str_at "at"
+        mk' ~builtin:(Builtin.Str At) "at"
           [] [Ty.string; Ty.int] Ty.string
       let to_code =
-        mk' ~builtin:Builtin.Str_to_code "to_code"
+        mk' ~builtin:(Builtin.Str To_code) "to_code"
           [] [Ty.string] Ty.int
       let of_code =
-        mk' ~builtin:Builtin.Str_of_code "of_code"
+        mk' ~builtin:(Builtin.Str Of_code) "of_code"
           [] [Ty.int] Ty.string
       let is_digit =
-        mk' ~builtin:Builtin.Str_is_digit "is_digit"
+        mk' ~builtin:(Builtin.Str Is_digit) "is_digit"
           [] [Ty.string] Ty.prop
       let to_int =
-        mk' ~builtin:Builtin.Str_to_int "to_int"
+        mk' ~builtin:(Builtin.Str To_int) "to_int"
           [] [Ty.string] Ty.int
       let of_int =
-        mk' ~builtin:Builtin.Str_of_int "of_int"
+        mk' ~builtin:(Builtin.Str Of_int) "of_int"
           [] [Ty.int] Ty.string
       let concat =
-        mk' ~builtin:Builtin.Str_concat ~pos:Pretty.Infix "++"
+        mk' ~builtin:(Builtin.Str Concat) ~pos:Pretty.Infix "++"
           [] [Ty.string; Ty.string] Ty.string
       let sub =
-        mk' ~builtin:Builtin.Str_sub "sub"
+        mk' ~builtin:(Builtin.Str Sub) "sub"
           [] [Ty.string; Ty.int; Ty.int] Ty.string
       let index_of =
-        mk' ~builtin:Builtin.Str_index_of "index_of"
+        mk' ~builtin:(Builtin.Str Index_of) "index_of"
           [] [Ty.string; Ty.string; Ty.int] Ty.int
       let replace =
-        mk' ~builtin:Builtin.Str_replace "replace"
+        mk' ~builtin:(Builtin.Str Replace) "replace"
           [] [Ty.string; Ty.string; Ty.string] Ty.string
       let replace_all =
-        mk' ~builtin:Builtin.Str_replace_all "replace_all"
+        mk' ~builtin:(Builtin.Str Replace_all) "replace_all"
           [] [Ty.string; Ty.string; Ty.string] Ty.string
       let replace_re =
-        mk' ~builtin:Builtin.Str_replace_re "replace_re"
+        mk' ~builtin:(Builtin.Str Replace_re) "replace_re"
           [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
       let replace_re_all =
-        mk' ~builtin:Builtin.Str_replace_re_all "replace_re_all"
+        mk' ~builtin:(Builtin.Str Replace_re_all) "replace_re_all"
           [] [Ty.string; Ty.string_reg_lang; Ty.string] Ty.string
       let is_prefix =
-        mk' ~builtin:Builtin.Str_is_prefix "is_prefix"
+        mk' ~builtin:(Builtin.Str Is_prefix) "is_prefix"
           [] [Ty.string; Ty.string] Ty.prop
       let is_suffix =
-        mk' ~builtin:Builtin.Str_is_suffix "is_suffix"
+        mk' ~builtin:(Builtin.Str Is_suffix) "is_suffix"
           [] [Ty.string; Ty.string] Ty.prop
       let contains =
-        mk' ~builtin:Builtin.Str_contains "contains"
+        mk' ~builtin:(Builtin.Str Contains) "contains"
           [] [Ty.string; Ty.string] Ty.prop
       let lt =
-        mk' ~builtin:Builtin.Str_lexicographic_strict
+        mk' ~builtin:(Builtin.Str Lexicographic_strict)
           ~pos:Pretty.Infix "lt"
           [] [Ty.string; Ty.string] Ty.prop
       let leq =
-        mk' ~builtin:Builtin.Str_lexicographic_large
+        mk' ~builtin:(Builtin.Str Lexicographic_large)
           ~pos:Pretty.Infix "leq"
           [] [Ty.string; Ty.string] Ty.prop
       let in_re =
-        mk' ~builtin:Builtin.Str_in_re "in_re"
+        mk' ~builtin:(Builtin.Str In_re) "in_re"
           [] [Ty.string; Ty.string_reg_lang] Ty.prop
 
       module Reg_Lang = struct
 
         let empty =
-          mk' ~builtin:Builtin.Re_empty "empty"
+          mk' ~builtin:(Builtin.Regexp Empty) "empty"
             [] [] Ty.string_reg_lang
         let all =
-          mk' ~builtin:Builtin.Re_all "all"
+          mk' ~builtin:(Builtin.Regexp All) "all"
             [] [] Ty.string_reg_lang
         let allchar =
-          mk' ~builtin:Builtin.Re_allchar "allchar"
+          mk' ~builtin:(Builtin.Regexp Allchar) "allchar"
             [] [] Ty.string_reg_lang
         let of_string =
-          mk' ~builtin:Builtin.Re_of_string "of_string"
+          mk' ~builtin:(Builtin.Regexp Of_string) "of_string"
             [] [Ty.string] Ty.string_reg_lang
         let range =
-          mk' ~builtin:Builtin.Re_range "range"
+          mk' ~builtin:(Builtin.Regexp Range) "range"
             [] [Ty.string; Ty.string] Ty.string_reg_lang
         let concat =
-          mk' ~builtin:Builtin.Re_concat ~pos:Pretty.Infix "++"
+          mk' ~builtin:(Builtin.Regexp Concat) ~pos:Pretty.Infix "++"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let union =
-          mk' ~builtin:Builtin.Re_union ~pos:Pretty.Infix "∪"
+          mk' ~builtin:(Builtin.Regexp Union) ~pos:Pretty.Infix "∪"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let inter =
-          mk' ~builtin:Builtin.Re_inter ~pos:Pretty.Infix "∩"
+          mk' ~builtin:(Builtin.Regexp Inter) ~pos:Pretty.Infix "∩"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let diff =
-          mk' ~builtin:Builtin.Re_diff ~pos:Pretty.Infix "-"
+          mk' ~builtin:(Builtin.Regexp Diff) ~pos:Pretty.Infix "-"
             [] [Ty.string_reg_lang; Ty.string_reg_lang] Ty.string_reg_lang
         let star =
-          mk' ~builtin:Builtin.Re_star ~pos:Pretty.Prefix "*"
+          mk' ~builtin:(Builtin.Regexp Star) ~pos:Pretty.Prefix "*"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let cross =
-          mk' ~builtin:Builtin.Re_cross ~pos:Pretty.Prefix "+"
+          mk' ~builtin:(Builtin.Regexp Cross) ~pos:Pretty.Prefix "+"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let complement =
-          mk' ~builtin:Builtin.Re_complement "complement"
+          mk' ~builtin:(Builtin.Regexp Complement) "complement"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let option =
-          mk' ~builtin:Builtin.Re_option "option"
+          mk' ~builtin:(Builtin.Regexp Option) "option"
             [] [Ty.string_reg_lang] Ty.string_reg_lang
         let power =
           with_cache (fun n ->
-              mk' ~builtin:(Builtin.Re_power n) (Format.asprintf "power_%d" n)
+              mk' ~builtin:(Builtin.Regexp (Power n)) (Format.asprintf "power_%d" n)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
         let loop =
           with_cache (fun (n1, n2) ->
-              mk' ~builtin:(Builtin.Re_loop (n1, n2)) (Format.asprintf "loop_%d_%d" n1 n2)
+              mk' ~builtin:(Builtin.Regexp (Loop (n1, n2))) (Format.asprintf "loop_%d_%d" n1 n2)
                 [] [Ty.string_reg_lang] Ty.string_reg_lang
             )
 
@@ -2866,7 +2866,7 @@ module Term = struct
 
     let tester c =
       match c.builtin with
-      | Builtin.Constructor { adt; case; } ->
+      | Builtin.Adt Constructor { adt; case; } ->
         begin match Ty.definition adt with
           | Some Adt { cases; _ } -> cases.(case).tester
           | _ -> assert false
@@ -2920,7 +2920,7 @@ module Term = struct
     (* Record creation *)
     let index ty_c f =
       match f.builtin with
-      | Builtin.Destructor { adt = ty_d; case = i; field = j; _ } ->
+      | Builtin.Adt Destructor { adt = ty_d; case = i; field = j; _ } ->
         if Id.equal ty_c ty_d then begin
           assert (i = 0);
           j
@@ -3258,7 +3258,7 @@ module Term = struct
     | [] -> raise (Invalid_argument "Dolmen.Expr.record")
     | ((f, _) :: _) as l ->
       begin match f.builtin with
-        | Builtin.Destructor { adt = ty_c; cstr = c; _ } when Ty.is_record ty_c ->
+        | Builtin.Adt Destructor { adt = ty_c; cstr = c; _ } when Ty.is_record ty_c ->
           let fields = build_record_fields ty_c l in
           (* Check that all fields are indeed present, and create the list
              of term arguments *)
@@ -3363,7 +3363,7 @@ module Term = struct
 
   let match_map_type t =
     match Ty.descr (ty t) with
-    | TyApp ({ builtin = Builtin.Map; _ }, [param; ret]) ->
+    | TyApp ({ builtin = Builtin.Map T; _ }, [param; ret]) ->
       param, ret
     | _ -> raise (Wrong_type (t, Ty.map Ty.unit Ty.unit))
 
@@ -3470,7 +3470,7 @@ module Term = struct
     (* Arrays *)
     let match_array_type t =
       match Ty.descr (ty t) with
-      | TyApp ({ builtin = Builtin.Array; _ }, [src; dst]) ->
+      | TyApp ({ builtin = Builtin.Array T; _ }, [src; dst]) ->
         src, dst
       | _ -> raise (Wrong_type (t, Ty.array Ty.unit Ty.unit))
 
@@ -3491,7 +3491,7 @@ module Term = struct
   module Bitv = struct
     let match_bitv_type t =
       match Ty.descr (ty t) with
-      | TyApp ({ builtin = Builtin.Bitv i; _ }, _) -> i
+      | TyApp ({ builtin = Builtin.Bitv T i; _ }, _) -> i
       | _ -> raise (Wrong_type (t, Ty.bitv 0))
 
     let mk s = apply_cst (Const.Bitv.bitv s) [] []
@@ -3671,7 +3671,7 @@ module Term = struct
     (* Floats *)
     let match_float_type t =
       match Ty.descr (ty t) with
-      | TyApp ({ builtin = Builtin.Float (e,s); _ }, _) -> (e,s)
+      | TyApp ({ builtin = Builtin.Float T (e,s); _ }, _) -> (e,s)
       | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
     let fp sign exp significand =
