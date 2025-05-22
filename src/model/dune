@@ -22,7 +22,7 @@
     ; Model checking
     Value Model Env Eval Ext
     ; Builtins
-    Adt Array Bool Core Fun Int Rat Real Bitv Fp Coercion
+    Adt Array Bool Core Fun Int Rat Real Arith Bitv Fp Coercion
     ; Loop Pipe
     Loop
   )

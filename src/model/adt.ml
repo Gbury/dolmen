@@ -56,16 +56,19 @@ let eval_dstr ~eval env dstr cstr field tys arg =
 
 let builtins ~eval env (cst : C.t) =
   match cst.builtin with
-  | B.Constructor _ ->
-    Some (Fun.fun_n ~cst (mk cst))
-  | B.Tester { cstr; _ } ->
-    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (eval_tester cstr))
-  | B.Destructor { cstr; field; _ } ->
-    Some (Fun.mk_clos @@ Fun.poly ~arity:1 ~cst (fun tys args ->
-        match args with
-        | [arg] -> eval_dstr ~eval env cst cstr field tys arg
-        | _ -> raise (Fun.Bad_arity (cst, 1, args))
-      ))
+  | B.Adt blt ->
+    begin match blt with
+      | Constructor _ ->
+        Some (Fun.fun_n ~cst (mk cst))
+      | Tester { cstr; _ } ->
+        Some (Fun.mk_clos @@ Fun.fun_1 ~cst (eval_tester cstr))
+      | Destructor { cstr; field; _ } ->
+        Some (Fun.mk_clos @@ Fun.poly ~arity:1 ~cst (fun tys args ->
+            match args with
+            | [arg] -> eval_dstr ~eval env cst cstr field tys arg
+            | _ -> raise (Fun.Bad_arity (cst, 1, args))
+          ))
+    end
   | _ -> None
 
 
@@ -79,10 +82,10 @@ type pat =
 let view_pat (t : T.t) =
   match t.term_descr with
   | Var v -> Var v
-  | Cst ( { builtin = B.Constructor _; _ } as cstr )
+  | Cst ( { builtin = B.Adt Constructor _; _ } as cstr )
     -> Cstr (cstr, [])
   | App ({ term_descr = Cst ({
-      builtin = B.Constructor _; _ } as cstr); _ }, _, args)
+      builtin = B.Adt Constructor _; _ } as cstr); _ }, _, args)
     -> Cstr (cstr, args)
   | Cst _ | App _ | Binder _ | Match _ ->
     raise (Not_a_pattern t)

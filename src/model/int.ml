@@ -15,21 +15,21 @@ let ops : t Value.ops = Value.ops ~compare ~print ()
 (* Helper functions on unbounded integers *)
 (* ************************************************************************* *)
 
-let ceil x = Z.cdiv x.Q.num x.Q.den
-let floor x = Z.fdiv x.Q.num x.Q.den
-let truncate x = Z.div x.Q.num x.Q.den (* it is truncated toward zero *)
+let raw_ceil x = Z.cdiv x.Q.num x.Q.den
+let raw_floor x = Z.fdiv x.Q.num x.Q.den
+let raw_truncate x = Z.div x.Q.num x.Q.den (* it is truncated toward zero *)
 
 let div_e a b =
   let s = Z.sign b in
   let d = Q.div (Q.of_bigint a) (Q.of_bigint b) in
-  if s > 0 then floor d else ceil d
+  if s > 0 then raw_floor d else raw_ceil d
 
 let mod_e a b = Z.sub a (Z.mul (div_e a b) b)
 
-let div_f a b = floor (Q.div (Q.of_bigint a) (Q.of_bigint b))
+let div_f a b = raw_floor (Q.div (Q.of_bigint a) (Q.of_bigint b))
 let mod_f a b = Z.sub a (Z.mul (div_f a b) b)
 
-let div_t a b = truncate (Q.div (Q.of_bigint a) (Q.of_bigint b))
+let div_t a b = raw_truncate (Q.div (Q.of_bigint a) (Q.of_bigint b))
 let mod_t a b = Z.sub a (Z.mul (div_t a b) b)
 
 let pow x y =
@@ -72,31 +72,28 @@ let op2_zero ~eval ~env ~cst f =
         mk @@ f v_x v_y
     ))
 
-let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
-  match cst.builtin with
-  | B.Integer i -> Some (mk (Z.of_string i))
-  | B.Lt `Int -> cmp ~cst Z.lt
-  | B.Gt `Int -> cmp ~cst Z.gt
-  | B.Geq `Int -> cmp ~cst Z.geq
-  | B.Leq `Int -> cmp ~cst Z.leq
-  | B.Minus `Int -> Some (fun1 ~cst (fun x -> Z.neg x))
-  | B.Add `Int -> op2 ~cst Z.add
-  | B.Sub `Int -> op2 ~cst Z.sub
-  | B.Mul `Int -> op2 ~cst Z.mul
-  | B.Pow `Int -> op2 ~cst pow
-  | B.Div_e `Int -> op2_zero ~eval ~env ~cst div_e
-  | B.Div_t `Int -> op2 ~cst div_t
-  | B.Div_f `Int -> op2 ~cst div_f
-  | B.Modulo_e `Int -> op2_zero ~eval ~env ~cst mod_e
-  | B.Modulo_t `Int -> op2 ~cst mod_t
-  | B.Modulo_f `Int -> op2 ~cst mod_f
-  | B.Divisible ->
-    Some (fun2 ~cst (fun x y -> Bool.mk @@ Z.divisible x y))
-  | B.Abs -> op1 ~cst Z.abs
-  | B.Is_int `Int | B.Is_rat `Int ->
-    Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun _ -> Bool.mk true))
-  | B.Floor `Int | B.Ceiling `Int
-  | B.Truncate `Int | B.Round `Int ->
-    op1 ~cst (fun x -> x)
-  | _ -> None
+let integer i = Some (mk (Z.of_string i))
+let lt ~cst = cmp ~cst Z.lt
+let gt ~cst = cmp ~cst Z.gt
+let geq ~cst = cmp ~cst Z.geq
+let leq ~cst = cmp ~cst Z.leq
+let minus ~cst = Some (fun1 ~cst (fun x -> Z.neg x))
+let add ~cst = op2 ~cst Z.add
+let sub ~cst = op2 ~cst Z.sub
+let mul ~cst = op2 ~cst Z.mul
+let pow ~cst = op2 ~cst pow
+let div_e ~cst ~eval ~env = op2_zero ~eval ~env ~cst div_e
+let div_t ~cst = op2 ~cst div_t
+let div_f ~cst = op2 ~cst div_f
+let mod_e ~cst ~eval ~env = op2_zero ~eval ~env ~cst mod_e
+let mod_t ~cst = op2 ~cst mod_t
+let mod_f ~cst = op2 ~cst mod_f
+let divisible ~cst = Some (fun2 ~cst (fun x y -> Bool.mk @@ Z.divisible x y))
+let abs ~cst = op1 ~cst Z.abs
+let is_int ~cst = Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun _ -> Bool.mk true))
+let is_rat ~cst = Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun _ -> Bool.mk true))
+let floor ~cst = op1 ~cst (fun x -> x)
+let ceiling ~cst = op1 ~cst (fun x -> x)
+let truncate ~cst = op1 ~cst (fun x -> x)
+let round ~cst = op1 ~cst (fun x -> x)
 

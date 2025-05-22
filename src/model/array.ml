@@ -103,9 +103,13 @@ let store array key value =
 
 let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
-  | B.Const -> Some (Fun.mk_clos @@ Fun.fun_1 ~cst const)
-  | B.Select -> Some (Fun.mk_clos @@ Fun.fun_2 ~cst select)
-  | B.Store -> Some (Fun.mk_clos @@ Fun.fun_3 ~cst store)
+  | Dolmen.Std.Builtin.Array blt ->
+    begin match blt with
+      | T -> assert false (* Types are not evaluated *)
+      | Const -> Some (Fun.mk_clos @@ Fun.fun_1 ~cst const)
+      | Select -> Some (Fun.mk_clos @@ Fun.fun_2 ~cst select)
+      | Store -> Some (Fun.mk_clos @@ Fun.fun_3 ~cst store)
+    end
   | _ -> None
 
 

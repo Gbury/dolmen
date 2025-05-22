@@ -271,9 +271,12 @@ module Make
       Bool.builtins;
       Core.builtins;
       Array.builtins;
+      Arith.builtins;
+      (*
       Int.builtins;
       Rat.builtins;
       Real.builtins;
+      *)
       Bitv.builtins;
       Fp.builtins;
       Coercion.builtins;

@@ -13,17 +13,47 @@ val ops : Z.t Value.ops
 val mk : Z.t -> Value.t
 (** integer value creation. *)
 
-(** {2 Builtins} *)
-(** ************************************************************************ *)
-
-val builtins : Env.builtins
-(** builtins for integers *)
-
 
 (** {2 Value helpers} *)
 (** ************************************************************************ *)
 
-val ceil : Q.t -> Z.t
-val floor : Q.t -> Z.t
-val truncate : Q.t -> Z.t
+val raw_ceil : Q.t -> Z.t
+val raw_floor : Q.t -> Z.t
+val raw_truncate : Q.t -> Z.t
 
+
+(** {2 Builtin values} *)
+(** ************************************************************************ *)
+
+val integer : string -> Value.t option
+val lt : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val gt : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val geq : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val leq : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val minus : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val add : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val sub : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val mul : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val pow : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val div_e :
+  cst:Dolmen.Std.Expr.Term.Const.t ->
+  eval:(Env.t -> Dolmen.Std.Expr.Term.t -> Value.t) ->
+  env:Env.t ->
+  Value.t option
+val div_t : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val div_f : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val mod_e :
+  cst:Dolmen.Std.Expr.Term.Const.t ->
+  eval:(Env.t -> Dolmen.Std.Expr.Term.t -> Value.t) ->
+  env:Env.t ->
+  Value.t option
+val mod_t : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val mod_f : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val divisible : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val abs : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val floor : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val ceiling : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val truncate : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val round : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val is_int : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
+val is_rat : cst:Dolmen.Std.Expr.Term.Const.t -> Value.t option
