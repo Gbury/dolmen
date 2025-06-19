@@ -47,24 +47,24 @@ class dolmen_lsp_server =
     method spawn_query_handler f = Linol_lwt.spawn f
 
     (* one env per document *)
-    val buffers: (Lsp.Types.DocumentUri.t, State.t) Hashtbl.t = Hashtbl.create 32
+    val buffers: (Linol.Lsp.Types.DocumentUri.t, State.t) Hashtbl.t = Hashtbl.create 32
 
     (* A list of include statements of the prelude files *)
     val mutable prelude = []
 
     method! config_sync_opts =
       (* configure how sync happens *)
-      let change = Lsp.Types.TextDocumentSyncKind.Incremental in
-      (* Lsp.Types.TextDocumentSyncKind.Full *)
-      Lsp.Types.TextDocumentSyncOptions.create ~openClose:true ~change
-        ~save:(`SaveOptions (Lsp.Types.SaveOptions.create ~includeText:false ()))
+      let change = Linol.Lsp.Types.TextDocumentSyncKind.Incremental in
+      (* Linol.Lsp.Types.TextDocumentSyncKind.Full *)
+      Linol.Lsp.Types.TextDocumentSyncOptions.create ~openClose:true ~change
+        ~save:(`SaveOptions (Linol.Lsp.Types.SaveOptions.create ~includeText:false ()))
         ()
 
     method private _on_doc
         ~(notify_back:Linol_lwt.Jsonrpc2.notify_back)
-        (uri:Lsp.Types.DocumentUri.t) (contents:string) =
+        (uri:Linol.Lsp.Types.DocumentUri.t) (contents:string) =
       (* TODO: unescape uri/translate it to a correct path ? *)
-      let uri_path = Lsp.Uri.to_path uri in
+      let uri_path = Linol.Lsp.Uri.to_path uri in
       match Loop.process prelude (preprocess_uri uri_path) (Some contents) with
       | Ok state ->
         let diags = State.get State.diagnostics state in
@@ -82,9 +82,9 @@ class dolmen_lsp_server =
       self#_on_doc ~notify_back d.uri new_content
 
     method! on_notification_unhandled
-        ~notify_back:_ (n:Lsp.Client_notification.t) =
+        ~notify_back:_ (n:Linol.Lsp.Client_notification.t) =
       match n with
-      | Lsp.Client_notification.ChangeConfiguration { settings; } ->
+      | Linol.Lsp.Client_notification.ChangeConfiguration { settings; } ->
         begin try
             prelude <- mk_prelude (parse_settings settings);
             Linol_lwt.Jsonrpc2.IO.return ()
@@ -92,7 +92,7 @@ class dolmen_lsp_server =
             Linol_lwt.Jsonrpc2.IO.failwith s
         end
       | _ ->
-        Lwt.return ()
+        Linol_lwt.Jsonrpc2.IO.return ()
 
     method on_notif_doc_did_close ~notify_back d =
       Hashtbl.remove buffers d.uri;

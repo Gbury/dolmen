@@ -1,13 +1,13 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
-type t = Lsp.Types.Diagnostic.t
+type t = Linol.Lsp.Types.Diagnostic.t
 
 let lsp_pos line character =
-  Lsp.Types.Position.create ~line ~character
+  Linol.Lsp.Types.Position.create ~line ~character
 
 let lsp_range start end_ =
-  Lsp.Types.Range.create ~start ~end_
+  Linol.Lsp.Types.Range.create ~start ~end_
 
 let start_pos = lsp_pos 1 1
 let start_range = lsp_range start_pos start_pos
@@ -23,14 +23,14 @@ let range_of_loc = function
         (lsp_pos (l.stop_line - 1) l.stop_column)
 
 let warn ?loc message =
-  Lsp.Types.Diagnostic.create ()
+  Linol.Lsp.Types.Diagnostic.create ()
     ~range:(range_of_loc loc)
     ~severity:Warning
     ~source:"dolmenls"
     ~message
 
 let error ?loc message =
-  Lsp.Types.Diagnostic.create ()
+  Linol.Lsp.Types.Diagnostic.create ()
     ~range:(range_of_loc loc)
     ~severity:Error
     ~source:"dolmenls"
