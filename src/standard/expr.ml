@@ -1003,13 +1003,13 @@ module Ty = struct
     let array = mk' ~builtin:(Builtin.Array T) "array" 2
     let map = mk' ~pos:Infix ~name:"~~>" ~builtin:(Builtin.Map T) "map" 2
     let bitv =
-      with_cache (fun i ->
-          if i <= 0 then raise (Non_positive_bitvector_size i)
-          else mk' ~builtin:(Builtin.Bitv (T i)) (Format.asprintf "Bitv_%d" i) 0
+      with_cache (fun n ->
+          if n <= 0 then raise (Non_positive_bitvector_size n)
+          else mk' ~builtin:(Builtin.Bitv (T {n})) (Format.asprintf "Bitv_%d" n) 0
         )
     let float =
       with_cache (fun (e,s) ->
-          mk' ~builtin:(Builtin.Float (T (e,s))) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
+          mk' ~builtin:(Builtin.Float (T {e;s})) (Format.asprintf "FloatingPoint_%d_%d" e s) 0
         )
     let roundingMode = mk' ~builtin:(Builtin.Float RoundingMode) "RoundingMode" 0
   end
@@ -1297,8 +1297,8 @@ module Ty = struct
         | Builtin.Arith Int -> `Int
         | Builtin.Arith Rat -> `Rat
         | Builtin.Arith Real -> `Real
-        | Builtin.Bitv T i -> `Bitv i
-        | Builtin.Float T (e, s) -> `Float (e, s)
+        | Builtin.Bitv T { n } -> `Bitv n
+        | Builtin.Float T { e; s } -> `Float (e, s)
         | Builtin.Map T -> begin match l with
             | [param; ret] -> `Map (param, ret)
             | _ -> assert false (* not possible *)
@@ -2375,149 +2375,149 @@ module Term = struct
 
       let not =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Not n)) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Not {n})) "bvnot" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let and_ =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (And n)) "bvand" []
+            mk' ~builtin:(Builtin.Bitv (And {n})) "bvand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let or_ =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Or n)) "bvor" []
+            mk' ~builtin:(Builtin.Bitv (Or {n})) "bvor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nand =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Nand n)) "bvnand" []
+            mk' ~builtin:(Builtin.Bitv (Nand {n})) "bvnand" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let nor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Nor n)) "bvnor" []
+            mk' ~builtin:(Builtin.Bitv (Nor {n})) "bvnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Xor n)) "bvxor" []
+            mk' ~builtin:(Builtin.Bitv (Xor {n})) "bvxor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let xnor =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Xnor n)) "bvxnor" []
+            mk' ~builtin:(Builtin.Bitv (Xnor {n})) "bvxnor" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let comp =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Comp n)) "bvcomp" []
+            mk' ~builtin:(Builtin.Bitv (Comp {n})) "bvcomp" []
               [Ty.bitv n; Ty.bitv n] (Ty.bitv 1)
           )
 
       let neg =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Neg n)) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Neg {n})) "bvneg" [] [Ty.bitv n] (Ty.bitv n)
           )
 
       let add =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Add n)) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Add {n})) "bvadd" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sub =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Sub n)) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Sub {n})) "bvsub" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let mul =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Mul n)) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Mul {n})) "bvmul" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let udiv =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Udiv n)) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Udiv {n})) "bvudiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let urem =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Urem n)) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Urem {n})) "bvurem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let sdiv =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Sdiv n)) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Sdiv {n})) "bvsdiv" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let srem =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Srem n)) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Srem {n})) "bvsrem" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let smod =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Smod n)) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Smod {n})) "bvsmod" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let shl =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Shl n)) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Shl {n})) "bvshl" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let lshr =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Lshr n)) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Lshr {n})) "bvlshr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ashr =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Ashr n)) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
+            mk' ~builtin:(Builtin.Bitv (Ashr {n})) "bvashr" [] [Ty.bitv n; Ty.bitv n] (Ty.bitv n)
           )
 
       let ult =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Ult n)) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ult {n})) "bvult" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ule =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Ule n)) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ule {n})) "bvule" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let ugt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Ugt n)) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Ugt {n})) "bvugt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let uge =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Uge n)) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Uge {n})) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let slt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Slt n)) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Slt {n})) "bvslt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sle =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Sle n)) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sle {n})) "bvsle" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sgt =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Sgt n)) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sgt {n})) "bvsgt" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let sge =
         with_cache (fun n ->
-            mk' ~builtin:(Builtin.Bitv (Sge n)) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
+            mk' ~builtin:(Builtin.Bitv (Sge {n})) "bvsge" [] [Ty.bitv n; Ty.bitv n] Ty.prop
           )
 
       let nego =
@@ -2559,7 +2559,7 @@ module Term = struct
 
       let fp =
         with_cache (fun (e, s) ->
-            mk' ~builtin:(Builtin.Float (Fp (e, s))) "fp" []
+            mk' ~builtin:(Builtin.Float (Fp { e; s })) "fp" []
               [Ty.bitv 1; Ty.bitv e; Ty.bitv (s-1)] (Ty.float e s)
           )
 
@@ -2596,122 +2596,122 @@ module Term = struct
 
       let plus_infinity =
         fp_gen_fun ~args:0 "plus_infinity"
-          (fun (e,s) -> Plus_infinity (e,s))
+          (fun (e,s) -> Plus_infinity {e;s})
       let minus_infinity =
         fp_gen_fun ~args:0 "minus_infinity"
-          (fun (e,s) -> Minus_infinity (e,s))
+          (fun (e,s) -> Minus_infinity {e;s})
       let plus_zero =
         fp_gen_fun ~args:0 "plus_zero"
-          (fun (e,s) -> Plus_zero (e,s))
+          (fun (e,s) -> Plus_zero {e;s})
       let minus_zero =
         fp_gen_fun ~args:0 "minus_zero"
-          (fun (e,s) -> Minus_zero (e,s))
+          (fun (e,s) -> Minus_zero {e;s})
       let nan =
         fp_gen_fun ~args:0 "nan"
-          (fun (e,s) -> NaN (e,s))
+          (fun (e,s) -> NaN {e;s})
       let abs =
         fp_gen_fun ~args:1 "fp.abs"
-          (fun (e,s) -> Abs (e,s))
+          (fun (e,s) -> Abs {e;s})
       let neg =
         fp_gen_fun ~args:1 "fp.neg"
-          (fun (e,s) -> Neg (e,s))
+          (fun (e,s) -> Neg {e;s})
       let add =
         fp_gen_fun ~args:2 ~rm:() "fp.add"
-          (fun (e,s) -> Add (e,s))
+          (fun (e,s) -> Add {e;s})
       let sub =
         fp_gen_fun ~args:2 ~rm:() "fp.sub"
-          (fun (e,s) -> Sub (e,s))
+          (fun (e,s) -> Sub {e;s})
       let mul =
         fp_gen_fun ~args:2 ~rm:() "fp.mul"
-          (fun (e,s) -> Mul (e,s))
+          (fun (e,s) -> Mul {e;s})
       let div =
         fp_gen_fun ~args:2 ~rm:() "fp.div"
-          (fun (e,s) -> Div (e,s))
+          (fun (e,s) -> Div {e;s})
       let fma =
         fp_gen_fun ~args:3 ~rm:() "fp.fma"
-          (fun (e,s) -> Fma (e,s))
+          (fun (e,s) -> Fma {e;s})
       let sqrt =
         fp_gen_fun ~args:1 ~rm:() "fp.sqrt"
-          (fun (e,s) -> Sqrt (e,s))
+          (fun (e,s) -> Sqrt {e;s})
       let rem =
         fp_gen_fun ~args:2 "fp.rem"
-          (fun (e,s) -> Rem (e,s))
+          (fun (e,s) -> Rem {e;s})
       let roundToIntegral =
         fp_gen_fun ~args:1 ~rm:() "fp.roundToIntegral"
-          (fun (e,s) -> RoundToIntegral (e,s))
+          (fun (e,s) -> RoundToIntegral {e;s})
       let min =
         fp_gen_fun ~args:2 "fp.min"
-          (fun (e,s) -> Min (e,s))
+          (fun (e,s) -> Min {e;s})
       let max =
         fp_gen_fun ~args:2 "fp.max"
-          (fun (e,s) -> Max (e,s))
+          (fun (e,s) -> Max {e;s})
       let leq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.leq"
-          (fun (e,s) -> Leq (e,s))
+          (fun (e,s) -> Leq {e;s})
       let lt =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.lt"
-          (fun (e,s) -> Lt (e,s))
+          (fun (e,s) -> Lt {e;s})
       let geq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.geq"
-          (fun (e,s) -> Geq (e,s))
+          (fun (e,s) -> Geq {e;s})
       let gt =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.gt"
-          (fun (e,s) -> Gt (e,s))
+          (fun (e,s) -> Gt {e;s})
       let eq =
         fp_gen_fun ~args:2 ~res:Ty.prop "fp.eq"
-          (fun (e,s) -> Eq (e,s))
+          (fun (e,s) -> Eq {e;s})
       let isNormal =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnormal"
-          (fun (e,s) -> IsNormal (e,s))
+          (fun (e,s) -> IsNormal {e;s})
       let isSubnormal =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.issubnormal"
-          (fun (e,s) -> IsSubnormal (e,s))
+          (fun (e,s) -> IsSubnormal {e;s})
       let isZero =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.iszero"
-          (fun (e,s) -> IsZero (e,s))
+          (fun (e,s) -> IsZero {e;s})
       let isInfinite =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isinfinite"
-          (fun (e,s) -> IsInfinite (e,s))
+          (fun (e,s) -> IsInfinite {e;s})
       let isNaN =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnan"
-          (fun (e,s) -> IsNaN (e,s))
+          (fun (e,s) -> IsNaN {e;s})
       let isNegative =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.isnegative"
-          (fun (e,s) -> IsNegative (e,s))
+          (fun (e,s) -> IsNegative {e;s})
       let isPositive =
         fp_gen_fun ~args:1 ~res:Ty.prop "fp.ispositive"
-          (fun (e,s) -> IsPositive (e,s))
+          (fun (e,s) -> IsPositive {e;s})
       let to_real =
         fp_gen_fun ~args:1 ~res:Ty.real "fp.to_real"
-          (fun (e,s) -> To_real (e,s))
+          (fun (e,s) -> To_real {e;s})
 
       let ieee_format_to_fp =
         with_cache (fun ((e,s) as es) ->
-            mk' ~builtin:(Builtin.Float (Ieee_format_to_fp (e,s))) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
+            mk' ~builtin:(Builtin.Float (Ieee_format_to_fp {e;s})) "to_fp" [] [Ty.bitv (e+s)] (Ty.float' es)
           )
       let to_fp =
         with_cache (fun (e1,s1,e2,s2) ->
-            mk' ~builtin:(Builtin.Float (To_fp (e1,s1,e2,s2))) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
+            mk' ~builtin:(Builtin.Float (To_fp {e1;s1;e2;s2})) "to_fp" [] [Ty.roundingMode;Ty.float e1 s1] (Ty.float e2 s2)
           )
       let real_to_fp =
         with_cache (fun ((e,s) as es) ->
-            mk' ~builtin:(Builtin.Float (Of_real (e,s))) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
+            mk' ~builtin:(Builtin.Float (Of_real {e;s})) "to_fp" [] [Ty.roundingMode;Ty.real] (Ty.float' es)
           )
       let sbv_to_fp =
-        with_cache (fun (bv,e,s) ->
-            mk' ~builtin:(Builtin.Float (Of_sbv (bv,e,s))) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+        with_cache (fun (m,e,s) ->
+            mk' ~builtin:(Builtin.Float (Of_sbv {m;e;s})) "to_fp" [] [Ty.roundingMode;Ty.bitv m] (Ty.float e s)
           )
       let ubv_to_fp =
-        with_cache (fun (bv,e,s) ->
-            mk' ~builtin:(Builtin.Float (Of_ubv (bv,e,s))) "to_fp" [] [Ty.roundingMode;Ty.bitv bv] (Ty.float e s)
+        with_cache (fun (m,e,s) ->
+            mk' ~builtin:(Builtin.Float (Of_ubv {m;e;s})) "to_fp" [] [Ty.roundingMode;Ty.bitv m] (Ty.float e s)
           )
       let to_ubv =
-        with_cache (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.Float (To_ubv (e,s,bv))) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+        with_cache (fun (e,s,m) ->
+            mk' ~builtin:(Builtin.Float (To_ubv {m;e;s})) "fp.to_ubv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv m)
           )
       let to_sbv =
-        with_cache (fun (e,s,bv) ->
-            mk' ~builtin:(Builtin.Float (To_sbv (e,s,bv))) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv bv)
+        with_cache (fun (e,s,m) ->
+            mk' ~builtin:(Builtin.Float (To_sbv {m;e;s})) "fp.to_sbv" [] [Ty.roundingMode;Ty.float e s] (Ty.bitv m)
           )
 
     end
@@ -3491,7 +3491,7 @@ module Term = struct
   module Bitv = struct
     let match_bitv_type t =
       match Ty.descr (ty t) with
-      | TyApp ({ builtin = Builtin.Bitv T i; _ }, _) -> i
+      | TyApp ({ builtin = Builtin.Bitv T {n}; _ }, _) -> n
       | _ -> raise (Wrong_type (t, Ty.bitv 0))
 
     let mk s = apply_cst (Const.Bitv.bitv s) [] []
@@ -3671,7 +3671,7 @@ module Term = struct
     (* Floats *)
     let match_float_type t =
       match Ty.descr (ty t) with
-      | TyApp ({ builtin = Builtin.Float T (e,s); _ }, _) -> (e,s)
+      | TyApp ({ builtin = Builtin.Float T {e;s}; _ }, _) -> (e,s)
       | _ -> raise (Wrong_type (t, Ty.float 0 0))
 
     let fp sign exp significand =

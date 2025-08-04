@@ -125,7 +125,7 @@ type 'a t += Array of 'a Array.t
 
 module Bitv = struct
   type _ t =
-    | T of int
+    | T of { n : int; }
     | Binary_lit of string
     | To_int of { n : int; signed : bool; }
     | Of_int of { n : int; }
@@ -136,34 +136,34 @@ module Bitv = struct
     | Sign_extend of { n : int; k : int }
     | Rotate_right of { n : int; i : int }
     | Rotate_left of { n : int; i : int }
-    | Not of int
-    | And of int
-    | Or of int
-    | Nand of int
-    | Nor of int
-    | Xor of int
-    | Xnor of int
-    | Comp of int
-    | Neg of int
-    | Add of int
-    | Sub of int
-    | Mul of int
-    | Udiv of int
-    | Urem of int
-    | Sdiv of int
-    | Srem of int
-    | Smod of int
-    | Shl of int
-    | Lshr of int
-    | Ashr of int
-    | Ult of int
-    | Ule of int
-    | Ugt of int
-    | Uge of int
-    | Slt of int
-    | Sle of int
-    | Sgt of int
-    | Sge of int
+    | Not of { n : int; }
+    | And of { n : int; }
+    | Or of { n : int; }
+    | Nand of { n : int; }
+    | Nor of { n : int; }
+    | Xor of { n : int; }
+    | Xnor of { n : int; }
+    | Comp of { n : int; }
+    | Neg of { n : int; }
+    | Add of { n : int; }
+    | Sub of { n : int; }
+    | Mul of { n : int; }
+    | Udiv of { n : int; }
+    | Urem of { n : int; }
+    | Sdiv of { n : int; }
+    | Srem of { n : int; }
+    | Smod of { n : int; }
+    | Shl of { n : int; }
+    | Lshr of { n : int; }
+    | Ashr of { n : int; }
+    | Ult of { n : int; }
+    | Ule of { n : int; }
+    | Ugt of { n : int; }
+    | Uge of { n : int; }
+    | Slt of { n : int; }
+    | Sle of { n : int; }
+    | Sgt of { n : int; }
+    | Sge of { n : int; }
     | Overflow_neg of { n : int; }
     | Overflow_add of { n : int; signed : bool; }
     | Overflow_sub of { n : int; signed : bool; }
@@ -179,51 +179,51 @@ type 'a t += Bitv of 'a Bitv.t
 
 module Float = struct
   type _ t =
-    | T of int * int
+    | T of { e : int; s : int; }
     | RoundingMode
-    | Fp of int * int
+    | Fp of { e : int; s : int; }
     | RoundNearestTiesToEven
     | RoundNearestTiesToAway
     | RoundTowardPositive
     | RoundTowardNegative
     | RoundTowardZero
-    | Plus_infinity of int * int
-    | Minus_infinity of int * int
-    | Plus_zero of int * int
-    | Minus_zero of int * int
-    | NaN of int * int
-    | Abs of int * int
-    | Neg of int * int
-    | Add of int * int
-    | Sub of int * int
-    | Mul of int * int
-    | Div of int * int
-    | Fma of int * int
-    | Sqrt of int * int
-    | Rem of int * int
-    | RoundToIntegral  of int * int
-    | Min of int * int
-    | Max of int * int
-    | Leq of int * int
-    | Lt of int * int
-    | Geq of int * int
-    | Gt of int * int
-    | Eq of int * int
-    | IsNormal of int * int
-    | IsSubnormal of int * int
-    | IsZero of int * int
-    | IsInfinite of int * int
-    | IsNaN of int * int
-    | IsNegative of int * int
-    | IsPositive of int * int
-    | Ieee_format_to_fp of int * int
-    | To_fp of int * int * int * int
-    | Of_real of int * int
-    | Of_sbv of int * int * int
-    | Of_ubv of int * int * int
-    | To_ubv of int * int * int
-    | To_sbv of int * int * int
-    | To_real of int * int
+    | Plus_infinity of { e : int; s : int; }
+    | Minus_infinity of { e : int; s : int; }
+    | Plus_zero of { e : int; s : int; }
+    | Minus_zero of { e : int; s : int; }
+    | NaN of { e : int; s : int; }
+    | Abs of { e : int; s : int; }
+    | Neg of { e : int; s : int; }
+    | Add of { e : int; s : int; }
+    | Sub of { e : int; s : int; }
+    | Mul of { e : int; s : int; }
+    | Div of { e : int; s : int; }
+    | Fma of { e : int; s : int; }
+    | Sqrt of { e : int; s : int; }
+    | Rem of { e : int; s : int; }
+    | RoundToIntegral  of { e : int; s : int; }
+    | Min of { e : int; s : int; }
+    | Max of { e : int; s : int; }
+    | Leq of { e : int; s : int; }
+    | Lt of { e : int; s : int; }
+    | Geq of { e : int; s : int; }
+    | Gt of { e : int; s : int; }
+    | Eq of { e : int; s : int; }
+    | IsNormal of { e : int; s : int; }
+    | IsSubnormal of { e : int; s : int; }
+    | IsZero of { e : int; s : int; }
+    | IsInfinite of { e : int; s : int; }
+    | IsNaN of { e : int; s : int; }
+    | IsNegative of { e : int; s : int; }
+    | IsPositive of { e : int; s : int; }
+    | Ieee_format_to_fp of { e : int; s : int; }
+    | To_fp of { e1 : int; s1 : int; e2 : int; s2 : int; }
+    | Of_real of { e : int; s : int; }
+    | Of_sbv of { m : int; e : int; s : int; }
+    | Of_ubv of { m : int; e : int; s : int; }
+    | To_ubv of { m : int; e : int; s : int; }
+    | To_sbv of { m : int; e : int; s : int; }
+    | To_real of { e : int; s : int; }
 end
 
 type 'a t += Float of 'a Float.t

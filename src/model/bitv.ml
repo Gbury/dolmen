@@ -149,61 +149,61 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
         op1 ~cst ~size:n (fun a -> rotate_left n i (ubitv n a))
       | Rotate_right { n; i } ->
         op1 ~cst ~size:n (fun a -> rotate_right n i (ubitv n a))
-      | Not n ->
+      | Not {n} ->
         op1 ~cst ~size:n (fun a -> extract n (Z.lognot (ubitv n a)))
-      | And n ->
+      | And {n} ->
         op2 ~cst ~size:n (fun a b -> Z.logand (ubitv n a) (ubitv n b))
-      | Or n ->
+      | Or {n} ->
         op2 ~cst ~size:n (fun a b ->
             from_bitv n (Z.logor (ubitv n a) (ubitv n b)))
-      | Nand n ->
+      | Nand {n} ->
         op2 ~cst ~size:n (fun a b ->
             extract n (Z.lognot (Z.logand (ubitv n a) (ubitv n b))))
-      | Nor n ->
+      | Nor {n} ->
         op2 ~cst ~size:n (fun a b ->
             extract n (Z.lognot (Z.logor (ubitv n a) (ubitv n b))))
-      | Xor n ->
+      | Xor {n} ->
         op2 ~cst ~size:n (fun a b -> extract n (Z.logxor (ubitv n a) (ubitv n b)))
-      | Xnor n ->
+      | Xnor {n} ->
         op2 ~cst ~size:n (fun a b ->
             extract n (Z.logxor (ubitv n a) (Z.lognot (ubitv n b))))
-      | Comp n ->
+      | Comp {n} ->
         op2 ~cst ~size:n (fun a b ->
             if Z.equal (ubitv n a) (ubitv n b)
             then extract 1 Z.minus_one
             else from_bitv 1 Z.zero)
-      | Neg n ->
+      | Neg {n} ->
         op1 ~cst ~size:n (fun a ->
             extract n (Z.sub (Z.shift_left Z.one n) (ubitv n a)))
-      | Add n ->
+      | Add {n} ->
         op2 ~cst ~size:n (fun a b -> extract n (Z.add (ubitv n a) (ubitv n b)))
-      | Sub n ->
+      | Sub {n} ->
         op2 ~cst ~size:n (fun a b -> extract n (Z.sub (ubitv n a) (ubitv n b)))
-      | Mul n ->
+      | Mul {n} ->
         op2 ~cst ~size:n (fun a b -> extract n (Z.mul (ubitv n a) (ubitv n b)))
-      | Udiv n ->
+      | Udiv {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = ubitv n b in
             if Z.equal b Z.zero then extract n Z.minus_one
             else extract n (Z.div (ubitv n a) b))
-      | Urem n ->
+      | Urem {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = ubitv n b in
             if Z.equal b Z.zero then from_bitv n (ubitv n a)
             else extract n (Z.rem (ubitv n a) b))
-      | Sdiv n ->
+      | Sdiv {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = sbitv n b in
             let a = sbitv n a in
             if Z.equal b Z.zero then
               if Z.sign a >= 0 then extract n Z.minus_one else extract n Z.one
             else extract n (Z.div a b))
-      | Srem n ->
+      | Srem {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = sbitv n b in
             if Z.equal b Z.zero then from_bitv n (ubitv n a)
             else extract n (Z.rem (sbitv n a) b))
-      | Smod n ->
+      | Smod {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = sbitv n b in
             if Z.equal b Z.zero then from_bitv n (ubitv n a)
@@ -211,29 +211,29 @@ let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
               let a = sbitv n a in
               extract n (Z.sub a (Z.mul (Z.fdiv a b) b))
             end)
-      | Shl n ->
+      | Shl {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = ubitv n b in
             if Z.leq (Z.of_int n) b then from_bitv n Z.zero
             else extract n (Z.shift_left (ubitv n a) (Z.to_int b)))
-      | Lshr n ->
+      | Lshr {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = ubitv n b in
             if Z.leq (Z.of_int n) b then from_bitv n Z.zero
             else extract n (Z.shift_right (ubitv n a) (Z.to_int b)))
-      | Ashr n ->
+      | Ashr {n} ->
         op2 ~cst ~size:n (fun a b ->
             let b = ubitv n b in
             let b = if Z.leq (Z.of_int n) b then n else Z.to_int b in
             extract n (Z.shift_right (sbitv n a) b))
-      | Ult n -> cmp ~cst (fun a b -> Z.lt (ubitv n a) (ubitv n b))
-      | Ule n -> cmp ~cst (fun a b -> Z.leq (ubitv n a) (ubitv n b))
-      | Ugt n -> cmp ~cst (fun a b -> Z.gt (ubitv n a) (ubitv n b))
-      | Uge n -> cmp ~cst (fun a b -> Z.geq (ubitv n a) (ubitv n b))
-      | Slt n -> cmp ~cst (fun a b -> Z.lt (sbitv n a) (sbitv n b))
-      | Sle n -> cmp ~cst (fun a b -> Z.leq (sbitv n a) (sbitv n b))
-      | Sgt n -> cmp ~cst (fun a b -> Z.gt (sbitv n a) (sbitv n b))
-      | Sge n -> cmp ~cst (fun a b -> Z.geq (sbitv n a) (sbitv n b))
+      | Ult {n} -> cmp ~cst (fun a b -> Z.lt (ubitv n a) (ubitv n b))
+      | Ule {n} -> cmp ~cst (fun a b -> Z.leq (ubitv n a) (ubitv n b))
+      | Ugt {n} -> cmp ~cst (fun a b -> Z.gt (ubitv n a) (ubitv n b))
+      | Uge {n} -> cmp ~cst (fun a b -> Z.geq (ubitv n a) (ubitv n b))
+      | Slt {n} -> cmp ~cst (fun a b -> Z.lt (sbitv n a) (sbitv n b))
+      | Sle {n} -> cmp ~cst (fun a b -> Z.leq (sbitv n a) (sbitv n b))
+      | Sgt {n} -> cmp ~cst (fun a b -> Z.gt (sbitv n a) (sbitv n b))
+      | Sge {n} -> cmp ~cst (fun a b -> Z.geq (sbitv n a) (sbitv n b))
       | Overflow_neg { n; } -> neg_overflow ~cst ~size:n
       | Overflow_add { n; signed; } -> binary_overflow ~cst ~size:n ~signed Z.add
       | Overflow_sub { n; signed; } -> binary_overflow ~cst ~size:n ~signed Z.sub

@@ -128,20 +128,20 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
       | RoundTowardPositive -> Some (Value.mk ~ops:ops_rm Mode.UP)
       | RoundTowardNegative -> Some (Value.mk ~ops:ops_rm Mode.DN)
       | RoundTowardZero -> Some (Value.mk ~ops:ops_rm Mode.ZR)
-      | Of_real (ew, prec) ->
+      | Of_real { e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m r ->
             check ~ew ~mw:(prec - 1);
             mk (f_of_q ~ew ~mw:(prec - 1) (mode m) (Real.get r))))
-      | To_fp (_ew1, _prec1, ew2, prec2) ->
+      | To_fp { e1 = _ew1; s1 = _prec1; e2 = ew2; s2 = prec2; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst
                 (fun m f1 -> mk @@ f_round ~ew:ew2 ~mw:(prec2 - 1) (mode m) (fp f1)))
-      | Of_sbv (n, ew, prec) ->
+      | Of_sbv { m = n; e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m bv ->
             mk @@ f_of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.sbitv n bv))))
-      | Of_ubv (n, ew, prec) ->
+      | Of_ubv { m = n; e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m bv ->
             mk @@ f_of_q ~ew ~mw:(prec - 1) (mode m) (Q.of_bigint (Bitv.ubitv n bv))))
-      | Fp (ew, prec) ->
+      | Fp { e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_3 ~cst (fun bvs bve bvm ->
             mk @@
             f_of_bits ~ew ~mw:(prec - 1)
@@ -154,64 +154,64 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
                        (Bitv.ubitv ew bve)
                        (prec - 1)))
                  (Bitv.ubitv (prec - 1) bvm))))
-      | Ieee_format_to_fp (ew, prec) ->
+      | Ieee_format_to_fp { e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun bv ->
             mk @@
             f_of_bits ~ew ~mw:(prec - 1) (Bitv.ubitv (ew + prec) bv)))
-      | To_real (_ew, _prec) ->
+      | To_real { e = _ew; s = _prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_1 ~cst (fun f -> Real.mk @@ (F.to_q (fp f))))
-      | Plus_infinity (ew, prec) ->
+      | Plus_infinity { e = ew; s = prec; } ->
         Some (mk @@ f_inf ~ew ~mw:(prec - 1) false)
-      | Minus_infinity (ew, prec) ->
+      | Minus_infinity { e = ew; s = prec; } ->
         Some (mk @@ f_inf ~ew ~mw:(prec - 1) true)
-      | NaN (ew, prec) ->
+      | NaN { e = ew; s = prec; } ->
         Some (mk @@ f_nan ~ew ~mw:(prec - 1))
-      | Plus_zero (ew, prec) ->
+      | Plus_zero { e = ew; s = prec; } ->
         Some (mk @@ f_zero ~ew ~mw:(prec - 1) false)
-      | Minus_zero (ew, prec) ->
+      | Minus_zero { e = ew; s = prec; } ->
         Some (mk @@ f_zero ~ew ~mw:(prec - 1) true)
-      | Add (_ew, _prec) ->
+      | Add { e = _ew; s = _prec; } ->
         op2_mode ~cst F.add
-      | Sub (_ew, _prec) ->
+      | Sub { e = _ew; s = _prec; } ->
         op2_mode ~cst F.sub
-      | Mul (_ew, _prec) ->
+      | Mul { e = _ew; s = _prec; } ->
         op2_mode ~cst F.mul
-      | Abs (_ew, _prec) ->
+      | Abs { e = _ew; s = _prec; } ->
         op1 ~cst F.abs
-      | Neg (_ew, _prec) ->
+      | Neg { e = _ew; s = _prec; } ->
         op1 ~cst F.neg
-      | Sqrt (_ew, _prec) ->
+      | Sqrt { e = _ew; s = _prec; } ->
         op1_mode ~cst F.sqrt
-      | Div (_ew, _prec) ->
+      | Div { e = _ew; s = _prec; } ->
         op2_mode ~cst F.div
-      | Fma (_ew, _prec) ->
+      | Fma { e = _ew; s = _prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_4 ~cst (fun m x y z ->
             mk @@ F.fma (mode m) (fp x) (fp y) (fp z)))
-      | Eq (_ew, _prec) ->
+      | Eq { e = _ew; s = _prec; } ->
         cmp ~cst F.eq
-      | Leq (_ew, _prec) ->
+      | Leq { e = _ew; s = _prec; } ->
         cmp ~cst F.le
-      | Lt (_ew, _prec) ->
+      | Lt { e = _ew; s = _prec; } ->
         cmp ~cst F.lt
-      | Geq (_ew, _prec) ->
+      | Geq { e = _ew; s = _prec; } ->
         cmp ~cst F.ge
-      | Gt (_ew, _prec) ->
+      | Gt { e = _ew; s = _prec; } ->
         cmp ~cst F.gt
-      | IsInfinite (_ew, _prec) ->
+      | IsInfinite { e = _ew; s = _prec; } ->
         test ~cst F.is_infinite
-      | IsZero (_ew, _prec) ->
+      | IsZero { e = _ew; s = _prec; } ->
         test ~cst F.is_zero
-      | IsNaN (_ew, _prec) ->
+      | IsNaN { e = _ew; s = _prec; } ->
         test ~cst F.is_nan
-      | IsNegative (_ew, _prec) ->
+      | IsNegative { e = _ew; s = _prec; } ->
         test ~cst F.is_negative
-      | IsPositive (_ew, _prec) ->
+      | IsPositive { e = _ew; s = _prec; } ->
         test ~cst F.is_positive
-      | IsNormal (_ew, _prec) ->
+      | IsNormal { e = _ew; s = _prec; } ->
         test ~cst F.is_normal
-      | IsSubnormal (_ew, _prec) ->
+      | IsSubnormal { e = _ew; s = _prec; } ->
         test ~cst F.is_subnormal
-      | Rem (ew,prec) ->
+      | Rem {e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun f g ->
             let f = fp f in
             let g = fp g in
@@ -228,7 +228,7 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
               let x = Q.sub qf (Q.mul qg (Q.of_bigint y)) in
               mk (round_q ~neg:(F.is_negative f) mode ~ew ~mw x)
           ))
-      | RoundToIntegral (ew,prec) ->
+      | RoundToIntegral {e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
             let f = fp f in
             let mode = mode m in
@@ -240,9 +240,9 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
               let n = toIntegral mode q in
               mk (round_q ~neg:(F.is_negative f) ~mw ~ew mode (Q.of_bigint n))
           ))
-      | Min (_ew,_prec) -> min_max ~eval env ~cmp:F.lt ~cst
-      | Max (_ew,_prec) -> min_max ~eval env ~cmp:F.gt ~cst
-      | To_ubv (_ew,_prec,size) ->
+      | Min { e = _ew; s = _prec; } -> min_max ~eval env ~cmp:F.lt ~cst
+      | Max { e = _ew; s = _prec; } -> min_max ~eval env ~cmp:F.gt ~cst
+      | To_ubv { m = size; e = _ew; s = _prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
             let f' = fp f in
             let mode = mode m in
@@ -257,7 +257,7 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
               else
                 Fun.corner_case ~eval env cst [] [m; f]
           ))
-      | To_sbv (_ew,_prec,size) ->
+      | To_sbv { m = size; e = _ew; s = _prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m f ->
             let f' = fp f in
             let mode = mode m in

@@ -382,156 +382,156 @@ type 'a t += Array of 'a Array.t
 
 module Bitv : sig
   type _ t =
-    | T of int
-    (** [Bitv.T n: ttype]: type constructor for bitvectors of length [n].
+    | T of { n: int; }
+    (** [Bitv.T{n}: ttype]: type constructor for bitvectors of length [n].
         Ensures that [n > 0]. *)
     | Binary_lit of string
     (** [Lit s: Bitv.T]: bitvector litteral. The string [s] should
         be a binary representation of bitvectors using characters
         ['0'], and ['1'] (lsb last) *)
     | To_int of { n : int; signed : bool; }
-    (** [To_int(n,signed): Bitv.T(n) -> Int]:
+    (** [To_int{n; signed; }: Bitv.T{n} -> Int]:
         conversion from bitvectors to signed integers. *)
     | Of_int of { n : int; }
-    (** [Of_int(n): Int -> Bitv.T(n)]:
+    (** [Of_int{n}: Int -> Bitv.T{n}]:
         conversion fromm (signed) integers to bitvectors. *)
     | Concat of { n : int; m : int }
-    (** [Concat(n,m): Bitv.T(n) -> Bitv.T(m) -> Bitv.T(n+m)]:
+    (** [Concat{n;m}: Bitv.T{n} -> Bitv.T{m} -> Bitv.T{n+m}]:
         concatenation operator on bitvectors. *)
     | Extract of { n : int; i : int; j : int }
-    (** [Extract(n, i, j): Bitv.T(n) -> Bitv.T(i - j + 1)]:
+    (** [Extract{n; i; j}: Bitv.T{n} -> Bitv.T{i - j + 1}]:
         bitvector extraction, from index [j] up to [i] (both included).
         Ensures that [0 <= j <= i < n]. *)
     | Repeat of { n : int; k : int }
-    (** [Repeat(n,k): Bitv.T(n) -> Bitv.T(n*k)]:
+    (** [Repeat{n;k}: Bitv.T{n} -> Bitv.T{n*k}]:
         bitvector repeatition. *)
     | Zero_extend of { n : int; k : int }
-    (** [Zero_extend(n,k): Bitv.T(n) -> Bitv.T(n + k)]:
+    (** [Zero_extend{n;k}: Bitv.T{n} -> Bitv.T{n + k}]:
         zero extension for bitvectors (produces a representation of the
         same unsigned integer). *)
     | Sign_extend of { n : int; k : int }
-    (** [Sign_extend(n,k): Bitv.T(n) -> Bitv.T(n + k)]:
+    (** [Sign_extend{n;k}: Bitv.T{n} -> Bitv.T{n + k}]:
         sign extension for bitvectors ((produces a representation of the
         same signed integer). *)
     | Rotate_right of { n : int; i : int }
-    (** [Rotate_right(n,i): Bitv.T(n) -> Bitv.T(n)]:
+    (** [Rotate_right{n;i}: Bitv.T{n} -> Bitv.T{n}]:
         logical rotate right for bitvectors by [i]. *)
     | Rotate_left of { n : int; i : int }
-    (** [Rotate_left(n,i): Bitv.T(n) -> Bitv.T(n)]:
+    (** [Rotate_left{n;i}: Bitv.T{n} -> Bitv.T{n}]:
         logical rotate left for bitvectors by [i]. *)
-    | Not of int
-    (** [not(n): Bitv.T(n) -> Bitv.T(n)]:
+    | Not of { n : int; }
+    (** [Not{n}: Bitv.T{n} -> Bitv.T{n}]:
         bitwise negation for bitvectors. *)
-    | And of int
-    (** [and(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | And of { n : int; }
+    (** [And{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise conjunction for bitvectors. *)
-    | Or of int
-    (** [bitv_or(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Or of { n : int; }
+    (** [Or{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise disjunction for bitvectors. *)
-    | Nand of int
-    (** [nand(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Nand of { n : int; }
+    (** [Nand{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise negated conjunction for bitvectors.
         [Nand s t] abbreviates [Not (And s t))]. *)
-    | Nor of int
-    (** [Nor(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Nor of { n : int; }
+    (** [Nor{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise negated disjunction for bitvectors.
         [Nor s t] abbreviates [Not (Or s t))]. *)
-    | Xor of int
-    (** [Xor(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Xor of { n: int; }
+    (** [Xor{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise exclusive disjunction for bitvectors.
         [Xor s t] abbreviates
         [Or (And s (Not t)) (And (Not s) t) ]. *)
-    | Xnor of int
-    (** [Xnor(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Xnor of { n : int; }
+    (** [Xnor{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         bitwise negated exclusive disjunction for bitvectors.
         [Xnor s t] abbreviates
         [Or (And s t) (And (Not s) (Not t))]. *)
-    | Comp of int
-    (** [Comp(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(1)]:
+    | Comp of { n : int; }
+    (** [Comp{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{1}]:
         Returns the constant bitvector ["1"] is all bits are equal,
         and the bitvector ["0"] if not. *)
-    | Neg of int
-    (** [Neg(n): Bitv.T(n) -> Bitv.T(n)]:
+    | Neg of { n : int; }
+    (** [Neg{n}: Bitv.T{n} -> Bitv.T{n}]:
         2's complement unary minus. *)
-    | Add of int
-    (** [Add(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Add of { n : int; }
+    (** [Add{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         addition modulo 2^n. *)
-    | Sub of int
-    (** [Sub(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Sub of { n : int; }
+    (** [Sub{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         2's complement subtraction modulo 2^n. *)
-    | Mul of int
-    (** [Mul(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Mul of { n : int; }
+    (** [Mul{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         multiplication modulo 2^n. *)
-    | Udiv of int
-    (** [Udiv(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Udiv of { n : int; }
+    (** [Udiv{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         unsigned division, truncating towards 0. *)
-    | Urem of int
-    (** [Urem(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Urem of { n : int; }
+    (** [Urem{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         unsigned remainder from truncating division. *)
-    | Sdiv of int
-    (** [Sdiv(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Sdiv of { n : int; }
+    (** [Sdiv{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         2's complement signed division. *)
-    | Srem of int
-    (** [Srem(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Srem of { n : int; }
+    (** [Srem{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         2's complement signed remainder (sign follows dividend). *)
-    | Smod of int
-    (** [Smod(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Smod of { n : int; }
+    (** [Smod{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         2's complement signed remainder (sign follows divisor). *)
-    | Shl of int
-    (** [Shl(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Shl of { n : int; }
+    (** [Shl{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         shift left (equivalent to multiplication by 2^x where x
         is the value of the second argument). *)
-    | Lshr of int
-    (** [Lshr(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Lshr of { n : int; }
+    (** [Lshr{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         logical shift right (equivalent to unsigned division by 2^x,
         where x is the value of the second argument). *)
-    | Ashr of int
-    (** [Ashr(n): Bitv.T(n) -> Bitv.T(n) -> Bitv.T(n)]:
+    | Ashr of { n : int; }
+    (** [Ashr{n}: Bitv.T{n} -> Bitv.T{n} -> Bitv.T{n}]:
         Arithmetic shift right, like logical shift right except that
         the most significant bits of the result always copy the most
         significant bit of the first argument. *)
-    | Ult of int
-    (** [Ult(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Ult of { n : int; }
+    (** [Ult{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for unsigned less-than. *)
-    | Ule of int
-    (** [ule(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Ule of { n : int; }
+    (** [Ule{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for unsigned less than or equal. *)
-    | Ugt of int
-    (** [Ugt(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Ugt of { n : int; }
+    (** [Ugt{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for unsigned greater-than. *)
-    | Uge of int
-    (** [Uge(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Uge of { n : int; }
+    (** [Uge{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for unsigned greater than or equal. *)
-    | Slt of int
-    (** [Slt(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Slt of { n : int; }
+    (** [Slt{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for signed less-than. *)
-    | Sle of int
-    (** [Sle(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Sle of { n : int; }
+    (** [Sle{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for signed less than or equal. *)
-    | Sgt of int
-    (** [Sgt(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Sgt of { n: int; }
+    (** [Sgt{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for signed greater-than. *)
-    | Sge of int
-    (** [Sge(n): Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    | Sge of { n : int; }
+    (** [Sge{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary predicate for signed greater than or equal. *)
     | Overflow_neg of { n : int; }
-    (** [Overflow_neg(n) : Bitv.T(n) -> Prop.T]:
+    (** [Overflow_neg{n} : Bitv.T{n} -> Prop.T]:
         unary overflow predicate for signed unary minus
         (i.e. returns [true] if the negation would overflow) *)
     | Overflow_add of { n : int; signed : bool; }
-    (** [Overflow_add(n,signed) : Bitv.T(n) -> Bitv.T(n) -> Prop.T]:
+    (** [Overflow_add{n;signed} : Bitv.T{n} -> Bitv.T{n} -> Prop.T]:
         binary overflow predicate for signed/unsigned addition
         (i.e. returns [true] if the operation would overflow) *)
     | Overflow_sub of { n : int; signed : bool; }
-    (** [Overflow_sub(n,signed): Bitv.T(n) -> Bitv.T(n) -> Prop.T
+    (** [Overflow_sub{n;signed}: Bitv.T{n} -> Bitv.T{n} -> Prop.T
         binary overflow predicate for signed/unsigned subtraction
         (i.e. returns [true] if the operation would overflow) *)
     | Overflow_mul of { n : int; signed : bool; }
-    (** [Overflow_mul(n,signed): Bitv.T(n) -> Bitv.T(n) -> Prop.T
+    (** [Overflow_mul{n;signed}: Bitv.T{n} -> Bitv.T{n} -> Prop.T
         binary overflow predicate for signed/unsigned multiplication
         (i.e. returns [true] if the operation would overflow) *)
     | Overflow_div of { n : int; }
-    (** [Overflow_mul(n,signed): Bitv.T(n) -> Bitv.T(n) -> Prop.T
+    (** [Overflow_div{n}: Bitv.T{n} -> Bitv.T{n} -> Prop.T
         binary overflow predicate for signed division
         (i.e. returns [true] if the operation would overflow) *)
 end
@@ -545,14 +545,14 @@ type 'a t += Bitv of 'a Bitv.t
 
 module Float : sig
   type _ t =
-    | T of int * int
+    | T of { e : int; s : int; }
     (** [Float(e,s): ttype]: type constructor for floating point of exponent of
         size [e] and significand of size [s] (hidden bit included). Those size are
         greater than 1 *)
     | RoundingMode
     (** [RoundingMode: ttype]: type for enumerated type of rounding modes. *)
-    | Fp of int * int
-    (** [Fp(e, s): Bitv.T(1) -> Bitv.T(e) -> Bitv.T(s-1) -> Fp(e,s)]: bitvector literal.
+    | Fp of { e : int; s : int; }
+    (** [Fp(e, s): Bitv.T{1} -> Bitv.T{e} -> Bitv.T{s-1} -> Fp(e,s)]: bitvector literal.
         The IEEE-format is used for the conversion [sb^se^ss].
         All the NaN are converted to the same value. *)
     | RoundNearestTiesToEven
@@ -565,81 +565,81 @@ module Float : sig
     (** [RoundTowardNegative : RoundingMode *)
     | RoundTowardZero
     (** [RoundTowardZero : RoundingMode *)
-    | Plus_infinity of int * int
-    (** [Plus_infinity(s,e) : Fp(s,e)] *)
-    | Minus_infinity of int * int
-    (** [Minus_infinity(s,e) : Fp(s,e)] *)
-    | Plus_zero of int * int
-    (** [Plus_zero(s,e) : Fp(s,e)] *)
-    | Minus_zero of int * int
-    (** [Minus_zero(s,e) : Fp(s,e)] *)
-    | NaN of int * int
-    (** [NaN(s,e) : Fp(s,e)] *)
-    | Abs  of int * int
-    (** [Fp_abs(s,e): Fp(s,e) -> Fp(s,e)]: absolute value *)
-    | Neg  of int * int
-    (** [Fp_neg(s,e): Fp(s,e) -> Fp(s,e)]: negation *)
-    | Add  of int * int
-    (** [Fp_add(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: addition *)
-    | Sub  of int * int
-    (** [Fp_sub(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: subtraction *)
-    | Mul  of int * int
-    (** [Fp_mul(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: multiplication *)
-    | Div  of int * int
-    (** [Fp_div(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: division *)
-    | Fma  of int * int
-    (** [Fp_fma(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: fuse multiply add *)
-    | Sqrt  of int * int
-    (** [Fp_sqrt(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: square root *)
-    | Rem  of int * int
-    (** [Fp_rem(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: remainder *)
-    | RoundToIntegral  of int * int
-    (** [Fp_roundToIntegral(s,e): RoundingMode -> Fp(s,e) -> Fp(s,e)]: round to integral *)
-    | Min  of int * int
-    (** [Fp_min(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: minimum *)
-    | Max  of int * int
-    (** [Fp_max(s,e): Fp(s,e) -> Fp(s,e) -> Fp(s,e)]: maximum *)
-    | Leq  of int * int
-    (** [Fp_leq(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE less or equal *)
-    | Lt  of int * int
-    (** [Fp_lt(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE less than *)
-    | Geq  of int * int
-    (** [Fp_geq(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE greater or equal *)
-    | Gt  of int * int
-    (** [Fp_gt(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE greater than *)
-    | Eq  of int * int
-    (** [Fp_eq(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE equality *)
-    | IsNormal  of int * int
-    (** [Fp_isNormal(s,e): Fp(s,e) -> Prop.T]: test if it is a normal floating point *)
-    | IsSubnormal  of int * int
-    (** [Fp_isSubnormal(s,e): Fp(s,e) -> Prop.T]: test if it is a subnormal floating point *)
-    | IsZero  of int * int
-    (** [Fp_isZero(s,e): Fp(s,e) -> Prop.T]: test if it is a zero *)
-    | IsInfinite  of int * int
-    (** [Fp_isInfinite(s,e): Fp(s,e) -> Prop.T]: test if it is an infinite *)
-    | IsNaN  of int * int
-    (** [Fp_isNaN(s,e): Fp(s,e) -> Prop.T]: test if it is Not a Number *)
-    | IsNegative  of int * int
-    (** [Fp_isNegative(s,e): Fp(s,e) -> Prop.T]: test if it is negative *)
-    | IsPositive  of int * int
-    (** [Fp_isPositive(s,e): Fp(s,e) -> Prop.T]: test if it is positive *)
-    | Ieee_format_to_fp of int * int
-    (** [Ieee_format_to_fp(s,e): Bv(s+e) -> Fp(s,e)]: Convert from IEEE interchange format *)
-    | To_fp of int * int * int * int
-    (** [Fp_to_fp(s1,e1,s2,e2): RoundingMode -> Fp(s1,e1) -> Fp(s2,e2)]:
+    | Plus_infinity of { e: int; s : int; }
+    (** [Plus_infinity{e;s} : Fp{e;s}] *)
+    | Minus_infinity of { e : int; s : int; }
+    (** [Minus_infinity{e;s} : Fp{e;s}] *)
+    | Plus_zero of { e: int; s : int; }
+    (** [Plus_zero{e;s} : Fp{e;s}] *)
+    | Minus_zero of { e : int; s : int; }
+    (** [Minus_zero{e;s} : Fp{e;s}] *)
+    | NaN of { e : int; s : int; }
+    (** [NaN{e;s} : Fp{e;s}] *)
+    | Abs of { e : int; s : int; }
+    (** [abs{e;s}: Fp{e;s} -> Fp{e;s}]: absolute value *)
+    | Neg of { e : int; s : int; }
+    (** [neg{e;s}: Fp{e;s} -> Fp{e;s}]: negation *)
+    | Add of { e : int; s : int; }
+    (** [add{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: addition *)
+    | Sub of { e : int; s : int; }
+    (** [Sub{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: subtraction *)
+    | Mul of { e : int; s : int; }
+    (** [Mul{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: multiplication *)
+    | Div of { e : int; s : int; }
+    (** [Div{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: division *)
+    | Fma of { e : int; s : int; }
+    (** [Fma{e:s}: RoundingMode -> Fp{e;s} -> Fp{e;s}]: fuse multiply add *)
+    | Sqrt of { e : int; s : int; }
+    (** [Sqrt{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s}]: square root *)
+    | Rem of { e : int; s : int; }
+    (** [Rem{e;s}: Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: remainder *)
+    | RoundToIntegral of { e : int; s : int; }
+    (** [RoundToIntegral{e;s}: RoundingMode -> Fp{e;s} -> Fp{e;s}]: round to integral *)
+    | Min of { e : int; s : int; }
+    (** [Min{e;s}: Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: minimum *)
+    | Max of { e : int; s : int; }
+    (** [Max{e;s}: Fp{e;s} -> Fp{e;s} -> Fp{e;s}]: maximum *)
+    | Leq of { e : int; s : int; }
+    (** [Leq{e;s}: Fp{e;s} -> Fp{e;s} -> Prop.T]: IEEE less or equal *)
+    | Lt of { e: int; s : int; }
+    (** [Lt{e;s}: Fp{e;s} -> Fp{e;s} -> Prop.T]: IEEE less than *)
+    | Geq of { e: int; s : int; }
+    (** [Geq{e;s}: Fp{e;s} -> Fp{e;s} -> Prop.T]: IEEE greater or equal *)
+    | Gt of { e : int; s : int; }
+    (** [Gt{e;s}: Fp{e;s} -> Fp{e;s} -> Prop.T]: IEEE greater than *)
+    | Eq of { e : int; s : int; }
+    (** [Eq(s,e): Fp(s,e) -> Fp(s,e) -> Prop.T]: IEEE equality *)
+    | IsNormal of { e : int; s : int; }
+    (** [IsNormal{e;s}: Fp{e;s} -> Prop.T]: test if it is a normal floating point *)
+    | IsSubnormal of { e: int; s : int; }
+    (** [IsSubnormal{e;s}: Fp{e;s} -> Prop.T]: test if it is a subnormal floating point *)
+    | IsZero of { e : int; s : int; }
+    (** [IsZero{e;s}: Fp{e;s} -> Prop.T]: test if it is a zero *)
+    | IsInfinite of { e : int; s : int; }
+    (** [IsInfinite{e;s}: Fp{e;s} -> Prop.T]: test if it is an infinite *)
+    | IsNaN of { e : int; s : int; }
+    (** [IsNaN{e;s}: Fp{e;s} -> Prop.T]: test if it is Not a Number *)
+    | IsNegative of { e : int; s : int; }
+    (** [IsNegative{e;s}: Fp{e;s} -> Prop.T]: test if it is negative *)
+    | IsPositive of { e : int; s : int; }
+    (** [IsPositive{e;s}: Fp{e;s} -> Prop.T]: test if it is positive *)
+    | Ieee_format_to_fp of { e : int; s : int; }
+    (** [Ieee_format_to_fp{e;s}: Bv{n=s+e} -> Fp{e;s}]: Convert from IEEE interchange format *)
+    | To_fp of { e1 :int; s1 : int; e2 : int; s2 : int; }
+    (** [To_fp{e1;s1;e2;s2}: RoundingMode -> Fp{e1;s2} -> Fp{e2;s2}]:
         Convert from another floating point format *)
-    | Of_real of int * int
-    (** [Real_to_fp(s,e): RoundingMode -> Real -> Fp(s,e)]: Convert from a real *)
-    | Of_sbv of int * int * int
-    (** [Sbv_to_fp(m,s,e): RoundingMode -> Bitv.T(m) -> Fp(s,e)]: Convert from a signed integer *)
-    | Of_ubv of int * int * int
-    (** [Ubv_to_fp(m,s,e): RoundingMode -> Bitv.T(m) -> Fp(s,e)]: Convert from a unsigned integer *)
-    | To_ubv of int * int * int
-    (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv.T(m)]: Convert to an unsigned integer *)
-    | To_sbv of int * int * int
-    (** [To_ubv(s,e,m): RoundingMode -> Fp(s,e) -> Bitv.T(m)]: Convert to an signed integer *)
-    | To_real of int * int
-    (** [To_real(s,e): Fp(s,e) -> Real]: Convert to real *)
+    | Of_real of { e : int; s : int; }
+    (** [Of_real{e;s}: RoundingMode -> Real -> Fp{e;s}]: Convert from a real *)
+    | Of_sbv of { m : int; e: int; s: int; }
+    (** [Of_sbv{m;e;s}: RoundingMode -> Bitv.T{n=m} -> Fp{e;s}]: Convert from a signed integer *)
+    | Of_ubv of { m : int; e : int; s : int; }
+    (** [Of_ubv{m;e;s}: RoundingMode -> Bitv.T{n=m} -> Fp{e;s}]: Convert from a unsigned integer *)
+    | To_ubv of { m : int; e : int; s : int; }
+    (** [To_ubv{m;e;s}: RoundingMode -> Fp{e;s} -> Bitv.T{n=m}]: Convert to an unsigned integer *)
+    | To_sbv of { m : int; e : int; s : int; }
+    (** [To_sbv{m;e;s}: RoundingMode -> Fp{e;s} -> Bitv.T{n=m}]: Convert to an signed integer *)
+    | To_real of { e : int; s : int; }
+    (** [To_real{e;s}: Fp{e;s} -> Real]: Convert to real *)
 end
 
 type 'a t += Float of 'a Float.t
