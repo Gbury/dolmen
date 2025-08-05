@@ -64,7 +64,7 @@ and eval_cst env (c : Cst.t) =
       | Some value -> value
       | None -> raise (Undefined_constant c)
     end
-  | B.Map_app ->
+  | B.Map App ->
     Fun.(mk_clos @@ fun_lazy ~cst:c (fun env _eval args ->
         match args with
         | [f; x] -> eval_apply env f [] [x]

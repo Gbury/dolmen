@@ -36,16 +36,29 @@ let fun_n f ~cst =
 
 let builtins ~eval:_ _ (cst : Dolmen.Std.Expr.Term.Const.t) =
   match cst.builtin with
-  | B.True -> Some true_v
-  | B.False -> Some false_v
-  | B.Neg -> Some (fun1 ~cst not)
-  | B.And -> Some (fun_n ~cst @@ fun l -> List.fold_left (&&) true l)
-  | B.Or -> Some (fun_n ~cst @@ fun l -> List.fold_left (||) false l)
-  | B.Nand -> Some (fun2 ~cst (fun b1 b2 -> not (b1 && b2)))
-  | B.Nor -> Some (fun2 ~cst (fun b1 b2 -> not (b1 || b2)))
-  | B.Xor -> Some (fun2 ~cst (fun b1 b2 -> b1 <> b2))
-  | B.Imply -> Some (fun2 ~cst (fun b1 b2 -> not b1 || b2))
-  | B.Implied -> Some (fun2 ~cst (fun b1 b2 -> not b2 || b1))
-  | B.Equiv -> Some (fun2 ~cst (fun b1 b2 -> b1 = b2))
+  | B.Prop blt ->
+    begin match blt with
+      | T -> assert false (* Types are not evlauated *)
+      | True -> Some true_v
+      | False -> Some false_v
+      | Neg -> Some (fun1 ~cst not)
+      | And -> Some (fun_n ~cst @@ fun l -> List.fold_left (&&) true l)
+      | Or -> Some (fun_n ~cst @@ fun l -> List.fold_left (||) false l)
+      | Nand -> Some (fun2 ~cst (fun b1 b2 -> not (b1 && b2)))
+      | Nor -> Some (fun2 ~cst (fun b1 b2 -> not (b1 || b2)))
+      | Xor -> Some (fun2 ~cst (fun b1 b2 -> b1 <> b2))
+      | Imply -> Some (fun2 ~cst (fun b1 b2 -> not b1 || b2))
+      | Implied -> Some (fun2 ~cst (fun b1 b2 -> not b2 || b1))
+      | Equiv -> Some (fun2 ~cst (fun b1 b2 -> b1 = b2))
+      | Ite ->
+        Some (Fun.mk_clos @@ Fun.fun_lazy ~cst (fun env eval args ->
+            match args with
+            | [cond; then_; else_] ->
+              if Value.extract_exn ~ops (eval env cond)
+              then eval env then_
+              else eval env else_
+            | _ -> assert false
+          ))
+    end
   | _ -> None
 
