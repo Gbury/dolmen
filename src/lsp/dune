@@ -6,7 +6,7 @@
     ; ocaml deps
     threads.posix
     ; lwp deps
-    lsp linol linol-lwt
+    linol linol-lwt
     ; other external deps
     gen logs logs.fmt
     ; dolmen deps

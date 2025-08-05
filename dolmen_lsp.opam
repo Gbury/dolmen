@@ -18,9 +18,14 @@ depends: [
   "ocaml-syntax-shims"
   "odoc" { with-doc }
   "logs"
-  "lsp"
-  "linol" { >= "0.8" & < "0.9" }
-  "linol-lwt" { >= "0.8" & < "0.9" }
+  "linol" { >= "0.10" & < "0.11" }
+  "linol-lwt" { >= "0.10" & < "0.11" }
+  # override transitive dependency version from linol due
+  # to yojson dropping support for tuples and variants in
+  # https://github.com/ocaml-community/yojson/pull/158
+  # https://github.com/c-cube/linol/issues/57#issuecomment-3154170759
+  # https://github.com/Gbury/dolmen/pull/241#issuecomment-3154175998
+  "yojson" { < "3.0.0" }
 ]
 tags: [ "logic" "computation" "automated theorem prover" "lsp" "language server protocol"]
 homepage: "https://github.com/Gbury/dolmen"
