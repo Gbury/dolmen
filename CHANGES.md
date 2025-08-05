@@ -25,6 +25,11 @@ next
   plugins (using dune-site) for users of the Dolmen binary. See
   doc/extensions.md for more details. (PR#214)
 
+- Hierarchical builtins: instead of a flat namespace of builtins, use one
+  constructor for each theory. This should make it easier to pattern
+  match on builtins, especially wrt to completeness of pattern matching.
+  Also is likely to have a small performance improvement. (PR#240)
+
 
 v0.10
 -----
