@@ -288,6 +288,7 @@ module Smtlib2
       st, acc
     with
     | Dolmen.Smtlib2.Script.V2_6.Print.Cannot_print msg
+    | Dolmen.Smtlib2.Script.V2_7.Print.Cannot_print msg
     | Dolmen.Smtlib2.Script.Poly.Print.Cannot_print msg ->
       let message = Format.asprintf "Could not print: %s" msg in
       let st = State.error st internal_error message in
@@ -337,8 +338,17 @@ module Smtlib2
     | `Term_decl c -> pp_stmt st acc P.declare_fun c
 
   let print_decls st acc decls recursive =
+    let decls =
+      List.filter_map (function
+          | `Implicit_type_var -> None
+          | (`Type_decl _ | `Term_decl _) as res -> Some res
+        ) decls
+    in
     let simples, adts = List.partition_map map_decl decls in
     match simples, adts, recursive with
+    | [], [], _ ->
+      (* This can happen when there are only implicit type var declarations *)
+      st, acc
     | [], l, _ ->
       (* slight over-approximation: we always treat all adts as recursive *)
       let acc =
@@ -436,7 +446,7 @@ module Smtlib2
   let is_not_trivially_false t =
     match View.Term.view t with
     | App (c, [], []) when (match View.Term.Cst.builtin c with
-          | Dolmen_std.Builtin.False -> true
+          | Dolmen_std.Builtin.Prop False -> true
           | _ -> false) -> false
       | _ -> true
 
@@ -607,6 +617,7 @@ module Make
 
   module Dummy = Dummy(Expr)(Typer_Types)
   module Smtlib2_6 = Smtlib2(State)(Dolmen.Smtlib2.Script.V2_6.Print.Make)(Expr)(Sexpr)(View)(Typer_Types)
+  module Smtlib2_7 = Smtlib2(State)(Dolmen.Smtlib2.Script.V2_7.Print.Make)(Expr)(Sexpr)(View)(Typer_Types)
   module Smtlib2_Poly = Smtlib2(State)(Dolmen.Smtlib2.Script.Poly.Print.Make)(Expr)(Sexpr)(View)(Typer_Types)
 
   (* setup *)
@@ -653,12 +664,18 @@ module Make
           fmt, close
       in
       match (lang : language) with
-      | Smtlib2 (`V2_6 | `Latest) ->
-        let acc = Smtlib2_6.init ~close fmt in
-        st, mk acc (module Smtlib2_6)
-      | Smtlib2 `Poly ->
-        let acc = Smtlib2_Poly.init ~close fmt in
-        st, mk acc (module Smtlib2_Poly)
+      | Smtlib2 version ->
+        begin match version with
+          | `V2_7 | `Latest ->
+            let acc = Smtlib2_7.init ~close fmt in
+            st, mk acc (module Smtlib2_7)
+          | `V2_6 ->
+            let acc = Smtlib2_6.init ~close fmt in
+            st, mk acc (module Smtlib2_6)
+          | `Poly ->
+            let acc = Smtlib2_Poly.init ~close fmt in
+            st, mk acc (module Smtlib2_Poly)
+        end
       | lang ->
         let () = close () in
         let st = State.error st unsupported_language lang in

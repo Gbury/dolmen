@@ -1,3 +1,15 @@
+File "tests/print/smtlib/poly/unit_and_dec.ae", line 5, character 4-42:
+5 | type fpa_rounding_mode = NearestTiesToEven
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning Shadowing: `fpa_rounding_mode` is already defined by a builtin theory
+File "tests/print/smtlib/poly/unit_and_dec.ae", line 5, character 4-42:
+5 | type fpa_rounding_mode = NearestTiesToEven
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning Shadowing: `NearestTiesToEven` is already defined by a builtin theory
+File "tests/print/smtlib/poly/unit_and_dec.ae", line 6, character 0-31:
+6 | logic real_of_int : int -> real
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Warning Shadowing: `real_of_int` is already defined by a builtin theory
 File "tests/print/smtlib/poly/unit_and_dec.ae", line 998, character 0-34:
 998 | logic rotate_right : t1, int -> t1
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

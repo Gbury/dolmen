@@ -236,6 +236,7 @@ module Smtlib2
         Option.map (fun scan_acc ->
             List.fold_left (fun scan_acc decl ->
                 match decl with
+                | `Implicit_type_var -> scan_acc
                 | `Term_decl c -> S.scan_term_decl ~in_adt:false scan_acc c
                 | `Type_decl (_, ty_def) ->
                   begin match (ty_def : Dolmen.Std.Expr.ty_def option) with

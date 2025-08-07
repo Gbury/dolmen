@@ -4048,6 +4048,7 @@ module View = struct
             | Forall (type_vars, term_vars) ->
               let triggers = Term.get_tag_list body Tags.triggers in
               V.Term.Forall { type_vars; term_vars; triggers; }
+            | Map l -> V.Term.Map l
             | Lambda _ -> raise (Not_first_order t)
           in
           V.Term.Binder (binder, body)
