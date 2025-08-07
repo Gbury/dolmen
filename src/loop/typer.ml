@@ -2171,6 +2171,9 @@ module Make
       and type formula := Expr.formula)
 = struct
 
+  type state = State.t
+  type 'a key = 'a State.key
+
   include Types(Expr)
 
   module S = Dolmen.Std.Statement

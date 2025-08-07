@@ -28,8 +28,10 @@ module type Types = sig
     attrs       : Dolmen.Std.Term.t list;
     implicit    : bool;
   }
+  (** Wrapper around statements. It records implicit type declarations. *)
 
   type decl = [
+    | `Implicit_type_var
     | `Type_decl of ty_cst * ty_def option
     | `Term_decl of term_cst
   ]
@@ -297,94 +299,6 @@ module type S = sig
 
   val init :
     type_check:bool -> state -> state
-
-  (** {2 Types} *)
-
-  type +'a stmt = {
-    id          : Dolmen.Std.Id.t;
-    loc         : Dolmen.Std.Loc.t;
-    contents    : 'a;
-    attrs       : Dolmen.Std.Term.t list;
-    implicit    : bool;
-  }
-  (** Wrapper around statements. It records implicit type declarations. *)
-
-  type decl = [
-    | `Implicit_type_var
-    | `Type_decl of ty_cst * ty_def option
-    | `Term_decl of term_cst
-  ]
-  (** The type of top-level type declarations. *)
-
-  type decls = [
-    | `Decls of decl list
-  ]
-  (** A list of type declarations. *)
-
-  type def = [
-    | `Type_alias of Dolmen.Std.Id.t * ty_cst * ty_var list * ty
-    | `Term_def of Dolmen.Std.Id.t * term_cst * ty_var list * term_var list * term
-    | `Instanceof of Dolmen.Std.Id.t * term_cst * ty list * ty_var list * term_var list * term
-  ]
-  (** The type of top-level type definitions. Type definitions are inlined and so can be ignored. *)
-
-  type defs = [
-    | `Defs of def list
-  ]
-  (** A list of definitions *)
-
-  type assume = [
-    | `Hyp of formula
-    | `Goal of formula
-    | `Clause of formula list
-  ]
-  (** The type of top-level assertion statements *)
-
-  type solve = [
-    | `Solve of formula list * formula list
-    (** [`Solve (hyps, goals)] represents a sequent with local hypotheses [hyps]
-        and local goals [goals]. *)
-  ]
-  (** Top-level solve instruction *)
-
-  type get_info = [
-    | `Get_info of string
-    | `Get_option of string
-    | `Get_proof
-    | `Get_unsat_core
-    | `Get_unsat_assumptions
-    | `Get_model
-    | `Get_value of term list
-    | `Get_assignment
-    | `Get_assertions
-    | `Echo of string
-    | `Other of Dolmen.Std.Id.t * Dolmen.Std.Statement.term list
-  ]
-  (** Various info getters *)
-
-  type set_info = [
-    | `Set_logic of string * Dolmen_type.Logic.t
-    | `Set_info of Dolmen.Std.Statement.term
-    | `Set_option of Dolmen.Std.Statement.term
-  ]
-  (** Info setters *)
-
-  type stack_control = [
-    | `Pop of int
-    | `Push of int
-    | `Reset_assertions
-    | `Reset
-  ]
-  (** Stack control *)
-
-  type exit = [
-    | `Exit
-  ]
-  (** Exit statement *)
-
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
-  (** The type of statements after typechecking *)
-
 
   (** {2 Entry points} *)
 

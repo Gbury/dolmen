@@ -94,6 +94,9 @@ module TFF = struct
       | Letand : ('term_var * 'term) list ->
           < term_var : 'term_var; term : 'term; .. > binder
       (** Parallel Let bindings *)
+      | Map : 'term_var list ->
+          < term_var : 'term_var; .. > binder
+      (** Maps: encoding of higher-order functions in first-order. *)
     (** First-order binders that can occur in terms. *)
 
     type _ pattern =

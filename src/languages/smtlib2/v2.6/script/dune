@@ -4,7 +4,7 @@
   (name           dolmen_smtlib2_v6_script)
   (public_name    dolmen.smtlib2.v6_script)
   (instrumentation (backend bisect_ppx))
-  (libraries      dolmen_std dolmen_intf menhirLib)
+  (libraries      dolmen_std dolmen_intf dolmen_smtlib2_print menhirLib)
   (modules        Dolmen_smtlib2_v6_script Tokens Lexer Parser Ast Syntax_messages Print)
 )
 

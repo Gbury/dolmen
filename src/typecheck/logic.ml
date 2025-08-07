@@ -448,10 +448,10 @@ module Smtlib2 = struct
       | Var _ -> `Other
       | App (f, args) ->
         begin match V.Ty.Cst.builtin f with
-          | B.Int -> `Int
-          | B.Real -> `Real
-          | B.Bitv _ -> `Bitv
-          | B.Array ->
+          | B.Arith Int -> `Int
+          | B.Arith Real -> `Real
+          | B.Bitv T _ -> `Bitv
+          | B.Array T ->
             begin match List.map ty_array_view args with
               | [indexes; elts] -> `Arrays (indexes, elts)
               | _ -> assert false (* incorrect use of builtin B.Array *)
@@ -468,13 +468,13 @@ module Smtlib2 = struct
           | B.Base -> aux (add_free_sort acc)
           | B.Univ -> aux (add_univ acc)
           | B.Unit -> aux (add_unit acc)
-          | B.Prop -> aux acc
-          | B.Int -> aux (add_arith `Int acc)
-          | B.Real -> aux (add_arith `Real acc)
-          | B.Bitv _ -> aux (add_bitvs acc)
-          | B.Float _ | B.RoundingMode -> aux (add_floats acc)
-          | B.String | B.String_RegLan -> aux (add_string acc)
-          | B.Array ->
+          | B.Prop T -> aux acc
+          | B.Arith Int -> aux (add_arith `Int acc)
+          | B.Arith Real -> aux (add_arith `Real acc)
+          | B.Bitv T _ -> aux (add_bitvs acc)
+          | B.Float T _ | B.Float RoundingMode -> aux (add_floats acc)
+          | B.Str T | B.Regexp T -> aux (add_string acc)
+          | B.Array T ->
             begin match args with
               | [indexes; elts] ->
                 begin match ty_array_view indexes, ty_array_view elts with
@@ -509,23 +509,28 @@ module Smtlib2 = struct
       | App (head, ty_args, t_args) ->
         begin match V.Term.Cst.builtin head, ty_args, t_args with
           | B.Base, [], [] -> `Constant head
-          | B.Integer s, [], [] -> `Numeral s
-          | B.Decimal s, [], [] -> `Decimal s
-          | B.Minus #arith, [], [t'] -> `Negation t'
-          | B.Add #arith, [], l -> `Addition l
-          | B.Sub #arith, [], l -> `Substraction l
-          | B.Div `Real, [], [x; y] -> `Division (x, y)
-          | B.Lt #arith, _, _ | B.Leq #arith, _, _
-          | B.Gt #arith, _, _ | B.Geq #arith, _, _
-          | B.Mul #arith, _, _ | B.Pow #arith, _, _
-          | B.Div_e #arith, _, _ | B.Div_t #arith, _, _ | B.Div_f #arith, _, _
-          | B.Modulo_e #arith, _, _ | B.Modulo_t #arith, _, _ | B.Modulo_f #arith, _, _
-          | B.Abs, _, _ | B.Divisible, _, _
-          | B.Is_int #arith, _, _ | B.Is_rat #arith, _, _
-          | B.Floor #arith, _, _ | B.Floor_to_int `Real, _, _
-          | B.Ceiling #arith, _, _ | B.Truncate #arith, _, _
-          | B.Round #arith, _, _
-            -> `Complex_arith
+          | B.Arith blt, _, _ ->
+            begin match blt, ty_args, t_args with
+              | Integer s, _, _ -> `Numeral s
+              | Decimal s, _, _ -> `Decimal s
+              | Minus #arith, _, [t'] -> `Negation t'
+              | Add #arith, _, l -> `Addition l
+              | Sub #arith, _, l -> `Substraction l
+              | Div `Real, _, [x; y] -> `Division (x, y)
+              | Lt #arith, _, _ | Leq #arith, _, _
+              | Gt #arith, _, _ | Geq #arith, _, _
+              | Mul #arith, _, _ | Pow #arith, _, _
+              | Div_e #arith, _, _ | Div_t #arith, _, _ | Div_f #arith, _, _
+              | Modulo_e #arith, _, _ | Modulo_t #arith, _, _ | Modulo_f #arith, _, _
+              | Abs, _, _ | Divisible, _, _
+              | Is_int #arith, _, _ | Is_rat #arith, _, _
+              | Floor #arith, _, _ | Floor_to_int `Real, _, _
+              | Ceiling #arith, _, _ | Truncate #arith, _, _
+              | Round #arith, _, _
+                -> `Complex_arith
+              | _ ->
+                assert false (* internal assumption: we should have already matched all cases that make sense *)
+            end
           | B.Coercion, [src; dst], [t] ->
             begin match ty_array_view src, ty_array_view dst with
               | `Int, `Real -> term_arith_view t
@@ -592,6 +597,9 @@ module Smtlib2 = struct
         scan_quant acc term_vars body
       | Binder (Forall { type_vars = _; term_vars; triggers = _; }, body) ->
         scan_quant acc term_vars body
+      | Binder ((Map term_vars), body) ->
+        (* TODO: add a field to track whether we need HO-CORE ? *)
+        scan_quant acc term_vars body
       | Binder ((Letand l | Letin l), body) ->
         scan_let acc l body
 
@@ -644,13 +652,13 @@ module Smtlib2 = struct
         end
 
       (* Datatypes *)
-      | B.Constructor _ | B.Destructor _ | B.Tester _ ->
+      | B.Adt (Constructor _ | Destructor _ | Tester _) ->
         aux (add_datatypes acc)
 
       (* Core *)
-      | B.True | B.False
-      | B.Neg | B.And | B.Or | B.Nor | B.Xor
-      | B.Imply | B.Implied | B.Ite | B.Equiv
+      | B.Prop (True | False
+               | Neg | And | Or | Nor | Xor
+               | Imply | Implied | Ite | Equiv)
         -> aux acc
 
       | B.Equal | B.Distinct
@@ -666,173 +674,151 @@ module Smtlib2 = struct
          To do that, we only need to look at the type of arrays used,
          for which we only need to look at the type of the first argument.
       *)
-      | B.Store
-      | B.Select
-        -> begin match t_args with
-            | arr :: _ -> aux (scan_ty acc (V.Term.ty arr))
-            | _ -> assert false (* incorrect use of the B.Store/B.Select builtins *)
-          end
+      | B.(Array (Store | Select)) ->
+        begin match t_args with
+          | arr :: _ -> aux (scan_ty acc (V.Term.ty arr))
+          | _ -> assert false (* incorrect use of the B.Store/B.Select builtins *)
+        end
 
       (* Arithmetic
          We have to try and track smtlib2's insane list of specifications.
          To do this, we replicate most of the logic that is present in the [Arith]
          module for typechecking. *)
-      | B.Integer _ -> aux (add_int_lits acc)
-      | B.Decimal _ -> aux (add_arith `Real acc)
+      | B.Arith blt ->
+        begin match blt with
+          | Int | Rat | Real -> assert false (* cannot occur in terms *)
+          | Integer _ -> aux (add_int_lits acc)
+          | Decimal _ -> aux (add_arith `Real acc)
 
-      | B.Abs -> aux (add_arith `Int acc)
+          | Abs -> aux (add_arith `Int acc)
 
-      | B.Floor_to_int `Real ->
-        aux (add_arith `Real (add_arith `Int acc))
+          | Floor_to_int `Real ->
+            aux (add_arith `Real (add_arith `Int acc))
 
 
-      | B.Is_int (`Real as k)
-      | B.Lt (#arith as k) | B.Leq (#arith as k)
-      | B.Gt (#arith as k) | B.Geq (#arith as k)
-        -> aux (add_arith k acc)
+          | Is_int (`Real as k)
+          | Lt (#arith as k) | Leq (#arith as k)
+          | Gt (#arith as k) | Geq (#arith as k)
+            -> aux (add_arith k acc)
 
-      | B.Minus (#arith as k) ->
-        begin match t_args with
-          | [t'] ->
-            begin match term_arith_view t' with
-              | `Numeral _ | `Decimal _ -> add_dl_arith k acc
+          | Minus (#arith as k) ->
+            begin match t_args with
+              | [t'] ->
+                begin match term_arith_view t' with
+                  | `Numeral _ | `Decimal _ -> add_dl_arith k acc
+                  | _ -> aux (add_linear_arith_strict k acc)
+                end
+              | _ -> assert false (* incorrect use of B.Minus *)
+            end
+
+          | Add (`Int as k) -> add_linear_arith_strict k acc
+          | Add (`Real as k) ->
+            begin match term_arith_difference_count_list `Init t_args with
+              | `Ok _ -> add_dl_arith k acc
+              | `Nope -> aux (add_linear_arith_strict k acc)
+            end
+
+          | Sub (`Int as k) ->
+            begin match t_args with
+              | [a; b] ->
+                begin match term_arith_classify a, term_arith_classify b with
+                  | `Var_or_cst, `Var_or_cst -> add_dl_arith k acc
+                  | _ -> aux (add_linear_arith_strict k acc)
+                end
               | _ -> aux (add_linear_arith_strict k acc)
             end
-          | _ -> assert false (* incorrect use of B.Minus *)
-        end
 
-      | B.Add (`Int as k) -> add_linear_arith_strict k acc
-      | B.Add (`Real as k) ->
-        begin match term_arith_difference_count_list `Init t_args with
-          | `Ok _ -> add_dl_arith k acc
-          | `Nope -> aux (add_linear_arith_strict k acc)
-        end
-
-      | B.Sub (`Int as k) ->
-        begin match t_args with
-          | [a; b] ->
-            begin match term_arith_classify a, term_arith_classify b with
-              | `Var_or_cst, `Var_or_cst -> add_dl_arith k acc
+          | Sub (`Real as k) ->
+            begin match t_args with
+              | [a; b] ->
+                begin match term_arith_difference_count a, term_arith_difference_count b with
+                  | `Ok (_, n), `Ok (_, n') when n = n' && n > 1 -> add_dl_arith k acc
+                  | _ -> aux (add_linear_arith_strict k acc)
+                end
               | _ -> aux (add_linear_arith_strict k acc)
             end
-          | _ -> aux (add_linear_arith_strict k acc)
-        end
 
-      | B.Sub (`Real as k) ->
-        begin match t_args with
-          | [a; b] ->
-            begin match term_arith_difference_count a, term_arith_difference_count b with
-              | `Ok (_, n), `Ok (_, n') when n = n' && n > 1 -> add_dl_arith k acc
-              | _ -> aux (add_linear_arith_strict k acc)
+          | Div (`Real as k)
+          | Div_e (`Int as k)
+          | Modulo_e (`Int as k)->
+            begin match t_args with
+              | [a; b] ->
+                begin match term_arith_classify a, term_arith_view b with
+                  | `Int_coef, `Numeral s when s <> "0" -> add_linear_arith_strict k acc
+                  | _ -> aux (add_non_linear_arith k acc)
+                end
+              | _ -> assert false (* incorrect use of B.Div/B.Div_e/B.Modulo_e *)
             end
-          | _ -> aux (add_linear_arith_strict k acc)
-        end
 
-      | B.Div (`Real as k)
-      | B.Div_e (`Int as k)
-      | B.Modulo_e (`Int as k)->
-        begin match t_args with
-          | [a; b] ->
-            begin match term_arith_classify a, term_arith_view b with
-              | `Int_coef, `Numeral s when s <> "0" -> add_linear_arith_strict k acc
-              | _ -> aux (add_non_linear_arith k acc)
+          | Divisible -> aux (add_non_linear_arith `Int acc)
+
+          | Mul (#arith as k) ->
+            begin match t_args with
+              | [a; b] ->
+                begin match term_arith_classify a, term_arith_classify b with
+                  | (`Int_coef | `Rat_coef), `Var_or_cst
+                  | `Var_or_cst, (`Int_coef | `Rat_coef)
+                    -> aux (add_linear_arith_strict k acc)
+                  | (`Int_coef | `Rat_coef), `Top_symbol_not_in_arith
+                  | `Top_symbol_not_in_arith, (`Int_coef | `Rat_coef)
+                    -> aux (add_linear_arith_large k acc)
+                  | (`Int_coef | `Rat_coef), (`Int_coef | `Rat_coef)
+                  | (`Int_coef | `Rat_coef), `Complex_arith
+                  | `Complex_arith, (`Int_coef | `Rat_coef)
+                    -> (* NOTE: this is annoying, but it is the spec... *)
+                    aux (add_non_linear_arith k acc)
+                  | _ -> aux (add_non_linear_arith k acc)
+                end
+              | _ -> assert false (* Incorrect use of B.Mul *)
             end
-          | _ -> assert false (* incorrect use of B.Div/B.Div_e/B.Modulo_e *)
-        end
 
-      | B.Divisible -> aux (add_non_linear_arith `Int acc)
+          | Rational _
+          | Floor_to_int `Rat
+          | Is_int (`Int | `Rat)
+          | Lt `Rat | Leq `Rat | Gt `Rat | Geq `Rat
+          | Minus `Rat | Add `Rat | Sub `Rat | Mul `Rat | Div `Rat
+          | Div_e (`Rat | `Real) | Modulo_e (`Rat | `Real)
+          | Pow _ | Div_t _ | Modulo_t _ | Div_f _ | Modulo_f _
+          | Is_rat _ | Floor _ | Ceiling _ | Truncate _ | Round _
+            (* These builtins cannot be printed in smtlib scripts.
+               TODO: should this be an error instead ? *)
+            -> acc
 
-      | B.Mul (#arith as k) ->
-        begin match t_args with
-          | [a; b] ->
-            begin match term_arith_classify a, term_arith_classify b with
-              | (`Int_coef | `Rat_coef), `Var_or_cst
-              | `Var_or_cst, (`Int_coef | `Rat_coef)
-                -> aux (add_linear_arith_strict k acc)
-              | (`Int_coef | `Rat_coef), `Top_symbol_not_in_arith
-              | `Top_symbol_not_in_arith, (`Int_coef | `Rat_coef)
-                -> aux (add_linear_arith_large k acc)
-              | (`Int_coef | `Rat_coef), (`Int_coef | `Rat_coef)
-              | (`Int_coef | `Rat_coef), `Complex_arith
-              | `Complex_arith, (`Int_coef | `Rat_coef)
-                -> (* NOTE: this is annoying, but it is the spec... *)
-                aux (add_non_linear_arith k acc)
-              | _ -> aux (add_non_linear_arith k acc)
-            end
-          | _ -> assert false (* Incorrect use of B.Mul *)
         end
 
       (* Bitvectors *)
-      | B.Bitvec _ -> aux (add_bitv_lits acc)
-      | B.Bitv_not _ | B.Bitv_and _ | B.Bitv_or _
-      | B.Bitv_nand _ | B.Bitv_nor _
-      | B.Bitv_xor _ | B.Bitv_xnor _
-      | B.Bitv_comp _
-      | B.Bitv_neg _ | B.Bitv_add _ | B.Bitv_sub _ | B.Bitv_mul _
-      | B.Bitv_udiv _ | B.Bitv_urem _
-      | B.Bitv_sdiv _ | B.Bitv_srem _ | B.Bitv_smod _
-      | B.Bitv_shl _ | B.Bitv_lshr _ | B.Bitv_ashr _
-      | B.Bitv_ult _ | B.Bitv_ule _
-      | B.Bitv_ugt _ | B.Bitv_uge _
-      | B.Bitv_slt _ | B.Bitv_sle _
-      | B.Bitv_sgt _ | B.Bitv_sge _ | B.Bitv_concat _
-      | B.Bitv_repeat _ | B.Bitv_zero_extend _ | B.Bitv_sign_extend _
-      | B.Bitv_rotate_right _ | B.Bitv_rotate_left _ | B.Bitv_extract _
-        -> aux (add_bitvs acc)
-      (* BVconv extension *)
-      | B.Bitv_to_nat _ | B.Bitv_of_int _
-        -> aux (add_bitvs (add_arith `Int acc))
+      | B.Bitv blt ->
+        begin match blt with
+          | T _ -> assert false (* cannot occur in terms *)
+          | Binary_lit _ -> aux (add_bitv_lits acc)
+          | Not _ | And _ | Or _
+          | Nand _ | Nor _
+          | Xor _ | Xnor _
+          | Comp _
+          | Neg _ | Add _ | Sub _ | Mul _
+          | Udiv _ | Urem _
+          | Sdiv _ | Srem _ | Smod _
+          | Shl _ | Lshr _ | Ashr _
+          | Ult _ | Ule _
+          | Ugt _ | Uge _
+          | Slt _ | Sle _
+          | Sgt _ | Sge _ | Concat _
+          | Repeat _ | Zero_extend _ | Sign_extend _
+          | Rotate_right _ | Rotate_left _ | Extract _
+          | Overflow_neg _
+          | Overflow_add _ | Overflow_sub _
+          | Overflow_mul _ | Overflow_div _
+            -> aux (add_bitvs acc)
+          (* 2.6 BVconv extension, 2.7 regular *)
+          | To_int _ | Of_int _
+            -> aux (add_bitvs (add_arith `Int acc))
+        end
 
       (* Floats *)
-      | B.Fp _
-      | B.RoundNearestTiesToEven | B.RoundNearestTiesToAway
-      | B.RoundTowardPositive | B.RoundTowardNegative | B.RoundTowardZero
-      | B.Fp_abs _
-      | B.Fp_neg _ | B.Fp_add _ | B.Fp_sub _
-      | B.Fp_mul _ | B.Fp_div _ | B.Fp_rem _
-      | B.Fp_fma _
-      | B.Fp_sqrt _
-      | B.Fp_roundToIntegral _
-      | B.Fp_min _ | B.Fp_max _
-      | B.Fp_leq _ | B.Fp_lt _
-      | B.Fp_geq _ | B.Fp_gt _
-      | B.Fp_eq _
-      | B.Fp_isNormal _ | B.Fp_isSubnormal _
-      | B.Fp_isZero _ | B.Fp_isInfinite _ | B.Fp_isNaN _
-      | B.Fp_isNegative _ | B.Fp_isPositive _
-      | B.To_real _
-      | B.Plus_infinity _ | B.Minus_infinity _
-      | B.Plus_zero _ | B.Minus_zero _
-      | B.NaN _
-      | B.Ieee_format_to_fp _
-      | B.Fp_to_fp _ | B.Real_to_fp _
-      | B.Sbv_to_fp _ | B.Ubv_to_fp _
-      | B.To_ubv _ | B.To_sbv _
-        -> aux (add_floats acc)
+      | B.Float _ -> aux (add_floats acc)
 
       (* B.Strings and regular languages *)
-      | B.Str _
-      | B.Str_length | B.Str_at
-      | B.Str_to_code | B.Str_of_code
-      | B.Str_is_digit
-      | B.Str_to_int | B.Str_of_int
-      | B.Str_concat | B.Str_sub
-      | B.Str_index_of
-      | B.Str_replace | B.Str_replace_all
-      | B.Str_replace_re | B.Str_replace_re_all
-      | B.Str_is_prefix | B.Str_is_suffix
-      | B.Str_contains
-      | B.Str_lexicographic_strict
-      | B.Str_lexicographic_large
-      | B.Str_in_re
-      | B.Re_empty | B.Re_all
-      | B.Re_allchar | B.Re_of_string
-      | B.Re_range
-      | B.Re_concat | B.Re_union | B.Re_inter
-      | B.Re_star | B.Re_cross | B.Re_complement
-      | B.Re_diff | B.Re_option
-      | B.Re_power _ | B.Re_loop _
-        -> aux (add_string acc)
+      | B.Str _ | B.Regexp _ -> aux (add_string acc)
 
       | b ->
         (* non-smtlib builtin *)
@@ -861,7 +847,7 @@ module Smtlib2 = struct
                 then Difference `IDL
                 else Difference `UFIDL
               else if not acc.ints && acc.reals &&
-                 not acc.free_sorts && not acc.free_functions
+                      not acc.free_sorts && not acc.free_functions
               then Difference `RDL
               else Linear `Strict
             | Difference `UFIDL -> Difference `UFIDL
