@@ -304,12 +304,12 @@ module Smtlib2
 
   let map_decl = function
     | `Type_decl (c, None) ->
-      Either.Left (`Type_decl c)
+      `Left (`Type_decl c)
     | `Term_decl c ->
-      Either.Left (`Term_decl c)
+      `Left (`Term_decl c)
     | `Type_decl (c, Some def) ->
       begin match View.Ty.Def.view ~expand:false def with
-        | Abstract -> Either.Left (`Type_decl c)
+        | Abstract -> `Left (`Type_decl c)
         | Algebraic { vars; cases; } ->
           let cases =
             List.map (function
@@ -317,7 +317,7 @@ module Smtlib2
                   constructor, params
               ) cases
           in
-          Either.Right (c, vars, cases)
+          `Right (c, vars, cases)
       end
 
   let register_simple_decl env = function
@@ -344,7 +344,7 @@ module Smtlib2
           | (`Type_decl _ | `Term_decl _) as res -> Some res
         ) decls
     in
-    let simples, adts = List.partition_map map_decl decls in
+    let simples, adts = Dolmen.Std.Misc.list_partition_map map_decl decls in
     match simples, adts, recursive with
     | [], [], _ ->
       (* This can happen when there are only implicit type var declarations *)
@@ -376,8 +376,8 @@ module Smtlib2
   (* *********** *)
 
   let map_def st = function
-    | `Type_alias (_, c, vars, body) -> Either.Left (c, vars, body)
-    | `Term_def (_, c, vars, params, body) -> Either.Right (c, vars, params, body)
+    | `Type_alias (_, c, vars, body) -> `Left (c, vars, body)
+    | `Term_def (_, c, vars, params, body) -> `Right (c, vars, params, body)
     | `Instanceof _ ->
       let st =
         State.error st internal_error
@@ -391,7 +391,7 @@ module Smtlib2
     | None -> ()
 
   let print_defs st acc defs recursive =
-    match List.partition_map (map_def st) defs, recursive with
+    match Dolmen.Std.Misc.list_partition_map (map_def st) defs, recursive with
     | exception Error st -> st, acc
     | ([], []), _ -> assert false (* internal invariant: should not happen *)
     | (_ :: _, _ :: _), _ -> assert false (* can this happen ? *)

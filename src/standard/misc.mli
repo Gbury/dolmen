@@ -84,6 +84,10 @@ val list_map_sharing : ('a -> 'a) -> 'a list -> 'a list
 (** Same as `List.map` but if all elements of the new lists are physically
     equal to the ones from the original list, then the original list is returned. *)
 
+val list_partition_map :
+  ('a -> [ `Left of 'b | `Right of 'c ]) -> 'a list -> 'b list * 'c list
+(** Re-implementation of [List.partition_map] (which was added in ocaml 4.12). *)
+
 
 (** {2 Lexbuf helpers} *)
 

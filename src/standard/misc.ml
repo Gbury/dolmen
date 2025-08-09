@@ -228,6 +228,17 @@ let list_map_sharing f l =
   let l' = List.map f l in
   if List.for_all2 (==) l l' then l else l'
 
+let list_partition_map f l =
+  let rec aux f l1 l2 = function
+    | [] -> List.rev l1, List.rev l2
+    | x :: r ->
+      begin match f x with
+        | `Left y -> aux f (y :: l1) l2 r
+        | `Right z -> aux f l1 (z :: l2) r
+      end
+  in
+  aux f [] [] l
+
 
 (* Iteration *)
 (* ************************************************************************* *)
