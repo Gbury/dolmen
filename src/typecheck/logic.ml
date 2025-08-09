@@ -287,15 +287,16 @@ module Smtlib2 = struct
     (* BV+Arith restrictions / correct cases *)
     | ("QF_ABV"| "QF_AUFBV"), (Only_bitvec | None), _ -> s
     | ("QF_AUFLIRA" | "AUFLIRA"), Only_ints_real, _ -> s
-    | ("QF_AUFLIA" | "AUFLIA"), Only_int_int, Linear `Large -> s
-    | ("QF_ALIA" | "ALIA"), _, Linear `Large -> s
+    | ("QF_AUFLIA" | "AUFLIA"), Only_int_int, _ -> s
+    | ("QF_ALIA" | "ALIA"), _, _ -> s
     | ("QF_UFIDL" | "UFIDL"), _, Difference `UFIDL -> s
 
     (* Incorrect cases *)
     | _, _, (Linear `Large | Difference `UFIDL) ->
       (* TODO: try and find a fallback logic ? *)
       assert false
-    | _, (All | Only_int_int | Only_ints_real | Only_bitvec), _ ->
+    | _, (All | Only_int_int | Only_ints_real | Only_bitvec), arith_config ->
+      Format.eprintf "Logic: %s / %a ?!@." s Arith.Smtlib2.print_config arith_config;
       (* TODO: try and find a fallback logic ? *)
       assert false
 
@@ -413,7 +414,6 @@ module Smtlib2 = struct
     (* array helpers *)
 
     let add_any_array acc =
-      Format.eprintf "ANY !@.";
       match acc.arrays with
       | All -> acc
       | _ -> { acc with arrays = All; }
