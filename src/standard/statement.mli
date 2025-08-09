@@ -123,12 +123,12 @@ type descr =
   | Set_logic of string
   (** Set the logic to use for proving. *)
 
-  | Get_info of string
+  | Get_info of term
   (** Get required information. *)
   | Set_info of term
   (** Set the information value. *)
 
-  | Get_option of string
+  | Get_option of term
   (** Get the required option value. *)
   | Set_option of term
   (** Set the option value. *)
@@ -164,6 +164,9 @@ type descr =
   (** Full reset of the prover to its initial state. *)
   | Exit
   (** Exit the interactive loop. *)
+
+  | End
+  (** End of statements, useful for stream processing. *)
 
 and t = {
   id : Id.t option;
@@ -212,6 +215,9 @@ val prove : ?loc:location -> unit -> t
 
 val pack : ?id:Id.t -> ?loc:location -> ?attrs:term list -> t list -> t
 (** Pack a list of statements into a single one. *)
+
+val end_ : unit -> t
+(** Create an [End] statement. *)
 
 
 (** {2 Printing functions} *)

@@ -2,7 +2,17 @@
 next
 ----
 
+### UI
+
+- Add the export feature to the `dolmen` binary (PR#211)
+
+### Printing
+
+- Add printers for the SMT-LIB format (PR#211)
+
 ### Typing
+
+- Add a logic detection mechanism (PR#211)
 
 - Fix error message about expected arity of a non-polymorphic
   function in first order language with flexible poly arguments

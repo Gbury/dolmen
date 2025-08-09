@@ -249,6 +249,14 @@ include Dolmen_intf.Term.Logic
 (** Include the Logic interface. This interface defines almost all term building
     functions that you may want to use. *)
 
+module View : sig
+
+  module Sexpr : Dolmen_intf.View.Sexpr.S
+    with type t = t
+     and type id = Id.t
+  (** Include a view of terms as s-expressions. *)
+
+end
 
 (** {2 Term constructor not in implemented interfaces} *)
 

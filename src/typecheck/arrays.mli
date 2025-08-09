@@ -26,7 +26,8 @@ module Smtlib2 : sig
     | All
     | Only_int_int
     | Only_ints_real
-    | Only_bitvec (**)
+    | Only_bitvec
+    | None (**)
   (** The difference type of array restrictions that can be imposed by
       logics. *)
 

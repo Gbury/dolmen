@@ -178,14 +178,19 @@ module Print = struct
     Fmt.styled (`Fg (`Hi `Black)) aux fmt v
 
   let id fmt (v : _ id) =
+    let wild =
+      match v.builtin with
+      | Builtin.Wildcard _ when !print_index -> "*"
+      | _ -> ""
+    in
     match Tag.get v.tags name with
     | Some (Pretty.Exact s | Pretty.Renamed s) ->
-      Format.fprintf fmt "%s%a" s pp_tags v.tags
+      Format.fprintf fmt "%s%s%a" wild s pp_tags v.tags
     | None ->
       if !print_index then
-        Format.fprintf fmt "%a%a%a" Path.print v.path pp_index v pp_tags v.tags
+        Format.fprintf fmt "%s%a%a%a" wild Path.print v.path pp_index v pp_tags v.tags
       else
-        Format.fprintf fmt "%a%a" Path.print v.path pp_tags v.tags
+        Format.fprintf fmt "%s%a%a" wild Path.print v.path pp_tags v.tags
 
   let id_pretty fmt (v : _ id) =
     match Tag.get v.tags pos with
@@ -410,7 +415,6 @@ module Tags = struct
 end
 
 
-
 (* Helpers *)
 (* ************************************************************************* *)
 
@@ -470,6 +474,12 @@ let with_cache ?(size=16) f =
        res)
 
 
+(* Maps from integers *)
+(* ************************************************************************* *)
+
+module M = Map.Make(Int)
+
+
 (* Ids *)
 (* ************************************************************************* *)
 
@@ -478,6 +488,8 @@ module Id = struct
   type 'a t = 'a id
 
   let print = Print.id
+
+  let path id = id.path
 
   (* Usual functions *)
   let hash (v : _ t) = v.index
@@ -513,12 +525,40 @@ module Id = struct
     in
     { path = id_path; id_ty; builtin; tags; index = !id_counter; }
 
+  (* Maps of ids *)
+  module Make_map(P : sig type ty end)
+    : Dolmen_intf.Map.S with type key = P.ty id
+  = struct
+    type key = P.ty id
+    type 'a t = (key * 'a) M.t
+
+    let empty = M.empty
+
+    let find_exn k t =
+      snd @@ M.find k.index t
+
+    let find_opt k t =
+      try Some (find_exn k t)
+      with Not_found -> None
+
+    let add k v t =
+      M.add k.index (k, v) t
+
+    let find_add k f t =
+      M.update k.index (function
+          | None -> Some (k, f None)
+          | Some (_, v) -> Some (k, f (Some v))
+        ) t
+
+    let iter f t =
+      M.iter (fun _ (k, v) -> f k v) t
+
+    let fold f t acc =
+      M.fold (fun _ (k, v) acc -> f k v acc) t acc
+
+  end
+
 end
-
-(* Maps from integers *)
-(* ************************************************************************* *)
-
-module M = Map.Make(Int)
 
 
 (* Sets of variables *)
@@ -948,6 +988,7 @@ module Ty = struct
   (* Module for namespacing *)
   module Var = struct
     type t = ty_var
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -960,6 +1001,8 @@ module Ty = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type ty = type_ end)
 
     let mk name = Id.mk (Path.local name) Type
     let wildcard () = wildcard_var ()
@@ -973,6 +1016,7 @@ module Ty = struct
 
   module Const = struct
     type t = ty_cst
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -985,6 +1029,8 @@ module Ty = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type ty = type_fun end)
 
     let arity (c : t) = c.id_ty.arity
     let mk path n =
@@ -1034,9 +1080,9 @@ module Ty = struct
   let bool = prop
 
   (* *)
-  let split_pi t =
+  let split_pi_aux ~expand t =
     let rec aux acc ty =
-      let ty' = expand_head ty in
+      let ty' = if expand then expand_head ty else ty in
       match ty'.ty_descr with
       | Pi (vars, body) -> aux (vars :: acc) body
       | _ ->
@@ -1045,9 +1091,9 @@ module Ty = struct
     in
     aux [] t
 
-  let split_arrow t =
+  let split_arrow_aux ~expand t =
     let rec aux acc t =
-      let t' = expand_head t in
+      let t' = if expand then expand_head t else t in
       match t'.ty_descr with
       | Arrow (args, ret) -> aux (args :: acc) ret
       | TyVar _ | TyApp _ ->
@@ -1057,17 +1103,21 @@ module Ty = struct
     in
     aux [] t
 
-  let poly_sig t =
-    let vars, t = split_pi t in
-    let args, ret = split_arrow t in
+  let poly_sig_aux ~expand t =
+    let vars, t = split_pi_aux ~expand t in
+    let args, ret = split_arrow_aux ~expand t in
     vars, args, ret
+
+  let split_pi t = split_pi_aux ~expand:true t
+  let split_arrow t = split_arrow_aux ~expand:true t
+  let poly_sig t = poly_sig_aux ~expand:true t
 
   let pi_arity t =
     let l, _ = split_pi t in
     List.length l
 
   let t_arity t =
-    let _, l, _ = poly_sig t in
+    let _, l, _ = poly_sig_aux ~expand:true t in
     List.length l
 
   (* Matching *)
@@ -1832,6 +1882,7 @@ module Term = struct
   (* Variables *)
   module Var = struct
     type t = term_var
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -1844,6 +1895,8 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type nonrec ty = ty end)
 
     let ty ({ id_ty; _ } : t) = id_ty
     let create path ty = Id.mk path ty
@@ -1853,6 +1906,7 @@ module Term = struct
   (* Constants *)
   module Const = struct
     type t = term_cst
+    let path = Id.path
     let hash = Id.hash
     let print = Id.print
     let equal = Id.equal
@@ -1865,6 +1919,8 @@ module Term = struct
     let add_tag_opt = Id.add_tag_opt
     let add_tag_list = Id.add_tag_list
     let unset_tag = Id.unset_tag
+
+    module Map = Id.Make_map(struct type nonrec ty = ty end)
 
     let ty ({ id_ty; _ } : t) = id_ty
 
@@ -3315,8 +3371,7 @@ module Term = struct
       raise (Wrong_type (t, ty))
 
   (* coercion *)
-  let coerce dst_ty t =
-    let src_ty = ty t in
+  let coerce src_ty dst_ty t =
     apply_cst Const.coerce [src_ty; dst_ty] [t]
 
   (* Common constructions *)
@@ -3400,9 +3455,9 @@ module Term = struct
     let round a = apply_cst Const.Int.round [] [a]
     let is_int a = apply_cst Const.Int.is_int [] [a]
     let is_rat a = apply_cst Const.Int.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.int Ty.int t
+    let to_rat t = coerce Ty.int Ty.rat t
+    let to_real t = coerce Ty.int Ty.real t
     let divisible s t = apply_cst Const.Int.divisible [] [int s; t]
   end
 
@@ -3429,9 +3484,9 @@ module Term = struct
     let round a = apply_cst Const.Rat.round [] [a]
     let is_int a = apply_cst Const.Rat.is_int [] [a]
     let is_rat a = apply_cst Const.Rat.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.rat Ty.int t
+    let to_rat t = coerce Ty.rat Ty.rat t
+    let to_real t = coerce Ty.rat Ty.real t
   end
 
   module Real = struct
@@ -3460,9 +3515,9 @@ module Term = struct
     let round a = apply_cst Const.Real.round [] [a]
     let is_int a = apply_cst Const.Real.is_int [] [a]
     let is_rat a = apply_cst Const.Real.is_rat [] [a]
-    let to_int t = coerce Ty.int t
-    let to_rat t = coerce Ty.rat t
-    let to_real t = coerce Ty.real t
+    let to_int t = coerce Ty.real Ty.int t
+    let to_rat t = coerce Ty.real Ty.rat t
+    let to_real t = coerce Ty.real Ty.real t
   end
 
   (* Arrays *)
@@ -3847,3 +3902,181 @@ module Term = struct
     of_var v
 
 end
+
+module Formula = Term
+
+
+(* Views *)
+(* ************************************************************************* *)
+
+module View = struct
+
+  module V = Dolmen_intf.View.TFF
+
+  (* First-order views *)
+  module TFF = struct
+
+    type nonrec ty = ty
+    type nonrec ty_var = ty_var
+    type nonrec ty_cst = ty_cst
+    type nonrec ty_def = ty_def
+    type nonrec term = term
+    type nonrec term_var = term_var
+    type nonrec term_cst = term_cst
+    type nonrec builtin = builtin
+
+    module Sig = struct
+
+      type t = ty
+
+      let view ~expand ty =
+        let vars, params, ret = Ty.poly_sig_aux ~expand ty in
+        V.Sig.Signature (vars, params, ret)
+
+    end
+
+    module Ty = struct
+
+      type t = ty
+
+      module Var = struct
+        type t = ty_var
+      end
+
+      module Cst = struct
+        type t = ty_cst
+        let arity = Ty.Const.arity
+        let builtin c = c.builtin
+      end
+
+      module Def = struct
+        type t = ty_def
+
+        let adt_vars ty cases =
+          if Array.length cases = 0 then begin
+            let n = Cst.arity ty in
+            init_list n (fun i ->
+                let c = Char.chr (i + Char.code 'a') in
+                Ty.Var.mk (Format.asprintf "'%c" c)
+              )
+          end else begin
+            let { cstr; _ } = cases.(0) in
+            let vars, _, _ = Ty.poly_sig cstr.id_ty in
+            vars
+          end
+
+        let view ~expand = function
+          | Abstract -> V.TypeDef.Abstract
+          | Adt { ty; cases; _ } ->
+            let vars = adt_vars ty cases in
+            let cases = List.map (fun { cstr; dstrs; _ } ->
+                let c_vars, c_params_ty, _ = Ty.poly_sig_aux ~expand cstr.id_ty in
+                let subst = List.fold_left2 (fun acc def_var c_var ->
+                    Subst.Var.bind acc c_var (Ty.of_var def_var)
+                  ) Subst.empty vars c_vars
+                in
+                let params =
+                  List.map2 (fun param_ty o ->
+                    let dstr =
+                      match o with
+                      | Some dstr -> dstr
+                      | None -> assert false (* TODO: create a fresh constant *)
+                    in
+                    Ty.subst ~fix:false subst param_ty, dstr
+                    ) c_params_ty (Array.to_list dstrs)
+                in
+                V.TypeDef.Case {
+                  constructor = cstr; params }
+              ) (Array.to_list cases)
+            in
+            V.TypeDef.Algebraic { vars; cases; }
+      end
+
+      exception Not_first_order of t
+
+      let view ~expand ty =
+        let ty = if expand then Ty.expand_head ty else ty in
+        match ty.ty_descr with
+        | TyVar v -> V.Ty.Var v
+        | TyApp (c, args) -> V.Ty.App (c, args)
+        (* error case *)
+        | Arrow _ | Pi _ -> raise (Not_first_order ty)
+
+    end
+
+    module Term = struct
+
+      type t = term
+
+      let equal = Term.equal
+
+      module Var = struct
+        type t = term_var
+        let ty v = v.id_ty
+        let equal = Term.Var.equal
+      end
+
+      module Cst = struct
+        type t = term_cst
+        let ty c = c.id_ty
+        let builtin c = c.builtin
+        let hash = Term.Const.hash
+        let equal = Term.Const.equal
+      end
+
+      exception Not_first_order of t
+
+      let ty = Term.ty
+
+      let rec view t =
+        match t.term_descr with
+        | Var v -> V.Term.Var v
+        | Cst c -> V.Term.App (c, [], [])
+        | App (f, ty_args, t_args) ->
+          begin match f.term_descr with
+            | Cst c -> V.Term.App (c, ty_args, t_args)
+            | _ -> raise (Not_first_order t)
+          end
+        | Binder (b, body) ->
+          let binder =
+            match b with
+            | Let_seq l -> V.Term.Letin l
+            | Let_par l -> V.Term.Letand l
+            | Exists (type_vars, term_vars) ->
+              let triggers = Term.get_tag_list body Tags.triggers in
+              V.Term.Exists { type_vars; term_vars; triggers; }
+            | Forall (type_vars, term_vars) ->
+              let triggers = Term.get_tag_list body Tags.triggers in
+              V.Term.Forall { type_vars; term_vars; triggers; }
+            | Map l -> V.Term.Map l
+            | Lambda _ -> raise (Not_first_order t)
+          in
+          V.Term.Binder (binder, body)
+        | Match (scrutinee, cases) ->
+          let cases' = List.map (fun (pat, arm) -> view_pattern pat, arm) cases in
+          V.Term.Match (scrutinee, cases')
+
+      and view_pattern t : _ V.Term.pattern =
+        match t.term_descr with
+        | Var v -> V.Term.Var v
+        | Cst c -> V.Term.Constructor (c, [])
+        | App (f, _tys_args, t_args) ->
+          begin match f.term_descr with
+            | Cst c ->
+              V.Term.Constructor (c, List.map view_pattern_arg t_args)
+            | _ ->
+              raise (Not_first_order t)
+          end
+        | _ -> raise (Not_first_order t)
+
+      and view_pattern_arg t =
+        match t.term_descr with
+        | Var v -> v
+        | _ -> raise (Not_first_order t)
+
+    end
+
+  end
+
+end
+

@@ -55,12 +55,14 @@ module Smtlib2 = struct
     | Only_int_int
     | Only_ints_real
     | Only_bitvec
+    | None
 
   let print_config fmt = function
     | All -> Format.fprintf fmt "all"
     | Only_int_int -> Format.fprintf fmt "only_int_int"
     | Only_ints_real -> Format.fprintf fmt "only_ints_real"
     | Only_bitvec -> Format.fprintf fmt "only_bitvec"
+    | None -> Format.fprintf fmt "no_arrays"
 
   module Tff
       (Type : Tff_intf.S)
@@ -76,6 +78,7 @@ module Smtlib2 = struct
 
     let msg = function
       | All -> assert false
+      | None -> "No arrays are allowed (this is likely an internal error)"
       | Only_int_int ->
         "Only array types of the form (Array Int Int) are allowed by the logic"
       | Only_ints_real ->
@@ -89,6 +92,7 @@ module Smtlib2 = struct
       let error () = Type._error env (Ast ast) (Forbidden (msg config)) in
       begin match config, Ty.view src, Ty.view dst with
         | All, _, _ -> ()
+        | None, _, _ -> error ()
         (* AUFLIA, QF_AUFLIA restrictions *)
         | Only_int_int, `Int, `Int -> ()
         | Only_int_int, _, _ -> error ()
