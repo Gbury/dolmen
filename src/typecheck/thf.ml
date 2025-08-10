@@ -56,7 +56,6 @@ module Make
   type arity =
     | Exact of int
     | At_least of int
-    | Polymorphic of int * int
     | Overloaded of int list
 
   (* The source of a wildcard. *)
@@ -1353,7 +1352,7 @@ module Make
         `Fixed (tys, args)
       end else begin
         let expected =
-          if n_ty = 0 then Exact n_t else Polymorphic (n_ty, n_t)
+          if n_ty = 0 then Exact n_t else Overloaded [n_t; n_ty + n_t]
         in
         `Bad_arity (expected, n_args)
       end

@@ -142,7 +142,6 @@ let print_arity fmt arity =
   match (arity : T.arity) with
   | Exact n -> Format.fprintf fmt "%d" n
   | At_least n -> Format.fprintf fmt "at least %d" n
-  | Polymorphic (n_ty, n_t) -> Format.fprintf fmt "%d or %d" n_ty (n_ty + n_t)
   | Overloaded l ->
     let pp_sep fmt () = Format.fprintf fmt " or " in
     Format.pp_print_list ~pp_sep Format.pp_print_int fmt l
@@ -328,13 +327,13 @@ let poly_hint (c, arity, actual) =
       Format.dprintf "%a" Format.pp_print_text
         "the head of the application is polymorphic, \
          you probably forgot the type arguments@]")
-  | Exact x when x = n_t && n_ty <> 0 ->
+  | Exact x when x = n_t && n_ty <> 0 && actual = n_ty ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "it looks like the language enforces implicit polymorphism, \
          i.e. no type arguments are to be provided to applications \
          (and instead type annotation/coercions should be used).")
-  | Polymorphic _ ->
+  | Overloaded _ when n_ty <> 0 ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "this is a polymorphic function, and multiple accepted arities \

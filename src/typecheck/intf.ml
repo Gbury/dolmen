@@ -56,7 +56,6 @@ module type Formulas = sig
   type arity =
     | Exact of int
     | At_least of int
-    | Polymorphic of int * int
     | Overloaded of int list
   (** Type for arities of symbols/operators *)
 
