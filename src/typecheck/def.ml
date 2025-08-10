@@ -72,7 +72,7 @@ module Subst
                   take_drop n_ty args
                 else begin
                   Type._error env (Ast ast)
-                    (Type.Bad_op_arity (symbol, [n_ty + n_t], n_args))
+                    (Type.Bad_op_arity (symbol, Exact (n_ty + n_t), n_args))
                 end
               in
               let ty_l = List.map2 (fun x y -> x, y) ty_vars

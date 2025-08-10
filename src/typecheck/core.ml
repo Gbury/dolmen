@@ -599,9 +599,13 @@ module Smtlib2 = struct
 
       (* Equality *)
       | Type.Id { name = Simple "distinct"; ns = Term } ->
-        Type.builtin_term (fun _ast args ->
-            let args = List.map (Type.parse_term env) args in
-            T.distinct args)
+        Type.builtin_term (fun ast args ->
+            match args with
+            | [] | [_] ->
+              Type._error env (Ast ast) (Type.Bad_op_arity (s, At_least 2, List.length args))
+            | _ :: _ ->
+              let args = List.map (Type.parse_term env) args in
+              T.distinct args)
       | Type.Id { name = Simple "="; ns = Term } ->
         Type.builtin_term (Base.term_app_chain (module Type) env s T.eq)
 

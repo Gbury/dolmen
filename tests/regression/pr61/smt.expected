@@ -1,4 +1,4 @@
 File "tests/regression/pr61/smt.smt2", line 57, character 14-86:
 57 |  (let (($x159 (and (and (fp.eq x!FP (fp.add roundNearestTiesToEven xFP ?x151)) $x157))))
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error Bad arity for symbol 'and': expected 2 arguments but got 1
+Error Bad arity for symbol 'and': expected at least 2 arguments but got 1
