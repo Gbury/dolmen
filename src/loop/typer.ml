@@ -138,10 +138,13 @@ let print_opt pp fmt = function
   | None -> Format.fprintf fmt "<none>"
   | Some x -> pp fmt x
 
-let rec print_expected fmt = function
-  | [] -> assert false
-  | x :: [] -> Format.fprintf fmt "%d" x
-  | x :: r -> Format.fprintf fmt "%d or %a" x print_expected r
+let print_arity fmt arity =
+  match (arity : T.arity) with
+  | Exact n -> Format.fprintf fmt "%d" n
+  | At_least n -> Format.fprintf fmt "at least %d" n
+  | Overloaded l ->
+    let pp_sep fmt () = Format.fprintf fmt " or " in
+    Format.pp_print_list ~pp_sep Format.pp_print_int fmt l
 
 let print_fragment (type a) fmt (env, fragment : T.env * a T.fragment) =
   match fragment with
@@ -313,24 +316,24 @@ let text_hint2 = function
   | _, "" -> None
   | _, msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
 
-let poly_hint (c, expected, actual) =
+let poly_hint (c, arity, actual) =
   let vars, params, _ = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
   let n_ty = List.length vars in
   let n_t = List.length params in
   let total_arity = n_ty + n_t in
-  match expected with
-  | [x] when x = total_arity && actual = n_t ->
+  match (arity : T.arity) with
+  | Exact x when x = total_arity && actual = n_t ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "the head of the application is polymorphic, \
          you probably forgot the type arguments@]")
-  | [x] when x = n_t && n_ty <> 0 ->
+  | Exact x when x = n_t && n_ty <> 0 && actual = n_ty ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "it looks like the language enforces implicit polymorphism, \
          i.e. no type arguments are to be provided to applications \
          (and instead type annotation/coercions should be used).")
-  | _ :: _ :: _ ->
+  | Overloaded _ when n_ty <> 0 ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "this is a polymorphic function, and multiple accepted arities \
@@ -494,10 +497,10 @@ let expect_error =
 
 let bad_index_arity =
   Report.Error.mk ~code ~mnemonic:"bad-index-arity"
-    ~message:(fun fmt (s, expected, actual) ->
+    ~message:(fun fmt (s, arity, actual) ->
         Format.fprintf fmt
-          "The indexed family of operators '%s' expects %d indexes, but was given %d"
-          s expected actual)
+          "The indexed family of operators '%s' expects %a indexes, but was given %d"
+          s print_arity arity actual)
     ~name:"Incorrect arity for indexed operator" ()
 
 let bad_type_arity =
@@ -509,28 +512,28 @@ let bad_type_arity =
 
 let bad_op_arity =
   Report.Error.mk ~code ~mnemonic:"bad-op-arity"
-    ~message:(fun fmt (symbol, expected, actual) ->
+    ~message:(fun fmt (symbol, arity, actual) ->
         Format.fprintf fmt
           "Bad arity for symbol '%a':@ expected %a arguments but got %d"
-          print_symbol symbol print_expected expected actual)
+          print_symbol symbol print_arity arity actual)
     ~name:"Incorrect arity for operator application" ()
 
 let bad_cstr_arity =
   Report.Error.mk ~code ~mnemonic:"bad-cstr-arity"
     ~hints:[poly_hint]
-    ~message:(fun fmt (c, expected, actual) ->
+    ~message:(fun fmt (c, arity, actual) ->
         Format.fprintf fmt
           "Bad arity: expected %a arguments but got %d arguments for constructor@ %a"
-          print_expected expected actual Dolmen.Std.Expr.Print.term_cst c)
+          print_arity arity actual Dolmen.Std.Expr.Print.term_cst c)
     ~name:"Incorrect arity for constructor application" ()
 
 let bad_term_arity =
   Report.Error.mk ~code ~mnemonic:"bad-term-arity"
     ~hints:[poly_hint]
-    ~message:(fun fmt (c, expected, actual) ->
+    ~message:(fun fmt (c, arity, actual) ->
         Format.fprintf fmt
           "Bad arity: expected %a but got %d arguments for function@ %a"
-          print_expected expected actual Dolmen.Std.Expr.Print.term_cst c)
+          print_arity arity actual Dolmen.Std.Expr.Print.term_cst c)
     ~name:"Incorrect arity for term application" ()
 
 let bad_poly_arity =

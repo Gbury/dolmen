@@ -1,0 +1,5 @@
+File "tests/regression/issue242/distinct_zero.smt2", line 3, character 8-16:
+3 | (assert distinct)
+            ^^^^^^^^
+Error Bad arity for symbol 'distinct':
+      expected at least 2 arguments but got 0

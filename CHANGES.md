@@ -4,6 +4,9 @@ next
 
 ### Typing
 
+- Reject application of SMT-LIB2's distinct to less than 2
+  arguments (Issue#242, PR#243)
+
 - Fix error message about expected arity of a non-polymorphic
   function in first order language with flexible poly arguments
   (PR#234)

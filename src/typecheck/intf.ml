@@ -53,6 +53,12 @@ module type Formulas = sig
         and later instantiated when needed. *)
   (** The various polymorphism mode for the typechecker *)
 
+  type arity =
+    | Exact of int
+    | At_least of int
+    | Overloaded of int list
+  (** Type for arities of symbols/operators *)
+
   type sym_inference_source = {
     symbol : Dolmen.Std.Id.t;
     symbol_loc : Dolmen.Std.Loc.t;
@@ -306,7 +312,7 @@ module type Formulas = sig
   type _ err +=
     | Expected : string * res option -> Dolmen.Std.Term.t err
     (** The parsed term didn't match the expected shape *)
-    | Bad_index_arity : string * int * int -> Dolmen.Std.Term.t err
+    | Bad_index_arity : string * arity * int -> Dolmen.Std.Term.t err
     (** [Bad_index_arity (name, expected, actual)] denotes an error where
         an indexed family of operators (based on [name]) expect to be indexed
         by [expected] arguments but got [actual] instead. *)
@@ -314,16 +320,16 @@ module type Formulas = sig
     (** [Bad_ty_arity (cst, actual)] denotes a type constant that was applied
         to [actual] arguments, but which has a different arity (which should
         be accessible by getting its type/sort/arity). *)
-    | Bad_op_arity : symbol * int list * int -> Dolmen.Std.Term.t err
+    | Bad_op_arity : symbol * arity * int -> Dolmen.Std.Term.t err
     (** [Bad_op_arity (symbol, expected, actual)] denotes a named operator
         (which may be a builtin operator, a top-level defined constant which
         is being substituted, etc...) expecting a number of arguments among
         the [expected] list, but instead got [actual] number of arguments. *)
-    | Bad_cstr_arity : term_cstr * int list * int -> Dolmen.Std.Term.t err
+    | Bad_cstr_arity : term_cstr * arity * int -> Dolmen.Std.Term.t err
     (** [Bad_cstr_arity (cstr, expected, actual)] denotes an ADT constructor,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)
-    | Bad_term_arity : term_cst * int list * int -> Dolmen.Std.Term.t err
+    | Bad_term_arity : term_cst * arity * int -> Dolmen.Std.Term.t err
     (** [Bad_term_arity (func, expected, actual)] denotes a function symbol,
         which was expecting one of [expected] arguments, but which was applied
         to [actual] arguments. *)

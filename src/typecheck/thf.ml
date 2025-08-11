@@ -52,6 +52,12 @@ module Make
     | Implicit
     | Flexible
 
+  (* Type for arities of symbols/operators *)
+  type arity =
+    | Exact of int
+    | At_least of int
+    | Overloaded of int list
+
   (* The source of a wildcard. *)
   type sym_inference_source = {
     symbol : Id.t;
@@ -369,11 +375,11 @@ module Make
   (* Errors that occur on term fragments, i.e. Ast.t fragments *)
   type _ err +=
     | Expected : string * res option -> Ast.t err
-    | Bad_index_arity : string * int * int -> Ast.t err
+    | Bad_index_arity : string * arity * int -> Ast.t err
     | Bad_ty_arity : Ty.Const.t * int -> Ast.t err
-    | Bad_op_arity : symbol * int list * int -> Ast.t err
-    | Bad_cstr_arity : T.Cstr.t * int list * int -> Ast.t err
-    | Bad_term_arity : T.Const.t * int list * int -> Ast.t err
+    | Bad_op_arity : symbol * arity * int -> Ast.t err
+    | Bad_cstr_arity : T.Cstr.t * arity * int -> Ast.t err
+    | Bad_term_arity : T.Const.t * arity * int -> Ast.t err
     | Bad_poly_arity : Ty.Var.t list * Ty.t list -> Ast.t err
     | Over_application : T.t list -> Ast.t err
     | Repeated_record_field : T.Field.t -> Ast.t err
@@ -756,8 +762,8 @@ module Make
   let _expected env s t res =
     _error env (Ast t) (Expected (s, res))
 
-  let _bad_op_arity env s n m t =
-    _error env (Ast t) (Bad_op_arity (s, [n], m))
+  let _bad_op_arity env s arity m t =
+    _error env (Ast t) (Bad_op_arity (s, arity, m))
 
   let _bad_ty_arity env f n t =
     _error env (Ast t) (Bad_ty_arity (f, n))
@@ -1323,7 +1329,7 @@ module Make
       if n_args = n_ty + n_t then
         `Ok (Misc.Lists.take_drop n_ty args)
       else
-        `Bad_arity ([n_ty + n_t], n_args)
+        `Bad_arity (Exact (n_ty + n_t), n_args)
     | Implicit ->
       if n_args = n_t then begin
         let src = Added_type_argument ast in
@@ -1333,7 +1339,7 @@ module Make
         in
         `Fixed (tys, args)
       end else
-        `Bad_arity ([n_t], n_args)
+        `Bad_arity (Exact n_t, n_args)
     | Flexible ->
       if n_args = n_ty + n_t then
         `Ok (Misc.Lists.take_drop n_ty args)
@@ -1346,7 +1352,7 @@ module Make
         `Fixed (tys, args)
       end else begin
         let expected =
-          if n_ty = 0 then [n_t] else [n_t; n_ty + n_t]
+          if n_ty = 0 then Exact n_t else Overloaded [n_t; n_ty + n_t]
         in
         `Bad_arity (expected, n_args)
       end
@@ -1912,7 +1918,7 @@ module Make
       let c = parse_adt_cstr env cstr_ast in
       Term (_wrap2 env ast T.cstr_tester c adt)
     | l ->
-      _bad_op_arity env (Builtin Ast.Adt_check) 2 (List.length l) ast
+      _bad_op_arity env (Builtin Ast.Adt_check) (Exact 2) (List.length l) ast
 
   and parse_adt_project env ast = function
     | [ adt_ast; dstr_ast ] ->
@@ -1935,7 +1941,7 @@ module Make
         | _ -> _expected env "adt destructor/field name" ast None
       end
     | l ->
-      _bad_op_arity env (Builtin Ast.Adt_project) 2 (List.length l) ast
+      _bad_op_arity env (Builtin Ast.Adt_project) (Exact 2) (List.length l) ast
 
   and parse_record_field env ast =
     match ast with
@@ -1980,7 +1986,7 @@ module Make
       let field = parse_record_field env f in
       Term (create_record_access env ast t field)
     | l ->
-      _bad_op_arity env (Builtin Ast.Record_access) 2 (List.length l) ast
+      _bad_op_arity env (Builtin Ast.Record_access) (Exact 2) (List.length l) ast
 
   and parse_symbol env ast s s_ast =
     parse_app_symbol env ast s s_ast []

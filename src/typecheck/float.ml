@@ -123,7 +123,7 @@ module Smtlib2 = struct
                 Type.Expected ("a real, bitvector or float", Some (Term b)))
           end
         | _ -> Type._error env (Ast ast)
-                 (Type.Bad_op_arity (symbol, [1; 2], List.length args))
+                 (Type.Bad_op_arity (symbol, Overloaded [1; 2], List.length args))
       )
 
     let parse version env s =
