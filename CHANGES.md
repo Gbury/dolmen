@@ -2,6 +2,10 @@
 next
 ----
 
+### General
+
+- Add support for SMT-LIB2.7 (PR#235)
+
 ### Typing
 
 - Reject application of SMT-LIB2's distinct to less than 2
