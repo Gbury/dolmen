@@ -576,6 +576,15 @@ let partial_pattern_match =
       )
     ~name:"Missing cases in pattern matching" ()
 
+let mismatch_sum_type =
+  Report.Error.mk ~code ~mnemonic:"mismatch-sum-type"
+    ~message:(fun fmt (cstr, ty) ->
+        Format.fprintf fmt
+          "The constructor %a does not belong to type %a"
+          Dolmen.Std.Expr.Print.term_cst cstr
+          Dolmen.Std.Expr.Print.ty ty
+      ) ~name:"Wrong sum type" ()
+
 let repeated_record_field =
   Report.Error.mk ~code ~mnemonic:"repeated-field"
     ~message:(fun fmt f ->
@@ -1103,7 +1112,7 @@ let typer_state { typer; _ } = typer
 (* Make functor *)
 (* ************************************************************************ *)
 
-type 'a file = 'a State.file
+type 'a file = 'a State.input_file
 
 module type Typer_Full = Typer_intf.Typer_Full
 
@@ -1291,6 +1300,8 @@ module Typer(State : State.S) = struct
     (* Pattern matching errors *)
     | T.Partial_pattern_match missing ->
       error ~input ~loc st partial_pattern_match missing
+    | T.Mismatch_sum_type (cstr, ty) ->
+      error ~input ~loc st mismatch_sum_type (cstr, ty)
     (* Record constuction errors *)
     | T.Repeated_record_field f ->
       error ~input ~loc st repeated_record_field f
@@ -1897,6 +1908,7 @@ module Typer(State : State.S) = struct
   type 'a ret = {
     implicit_decls : decl list;
     implicit_defs : def list;
+    recursive : bool;
     ret : 'a;
   }
 
@@ -1957,6 +1969,7 @@ module Typer(State : State.S) = struct
   let empty_ret ret =
     { implicit_decls = [];
       implicit_defs = [];
+      recursive = false;
       ret; }
 
   let mk_ret env ~f (ret : _ T.ret) =
@@ -1964,8 +1977,9 @@ module Typer(State : State.S) = struct
     let implicit_defs =
       List.map (tr_def env ~implicit:true ~recursive:false) ret.implicit_defs
     in
+    let recursive = ret.recursive in
     let ret = f ret.result in
-    { implicit_decls; implicit_defs; ret; }
+    { implicit_decls; implicit_defs; recursive; ret; }
 
   let merge_rets l =
     let implicit_decls =
@@ -1974,8 +1988,9 @@ module Typer(State : State.S) = struct
     let implicit_defs =
       Dolmen_std.Misc.list_concat_map (fun r -> r.implicit_defs) l
     in
+    let recursive = List.exists (fun r -> r.recursive) l in
     let ret = List.map (fun r -> r.ret) l in
-    { implicit_decls; implicit_defs; ret; }
+    { implicit_decls; implicit_defs; recursive; ret; }
 
   (* Declarations *)
   (* ************************************************************************ *)
@@ -2030,55 +2045,25 @@ module Typer(State : State.S) = struct
 end
 
 
-(* Pipes functor *)
+(* Type definitions *)
 (* ************************************************************************ *)
 
-module type Typer = Typer_intf.Typer
+type +'a stmt = 'a Typer_intf.stmt = {
+  id : Dolmen.Std.Id.t;
+  loc : Dolmen.Std.Loc.t;
+  contents  : 'a;
+  attrs     : Dolmen.Std.Term.t list;
+  implicit  : bool;
+}
 
-module type S = Typer_intf.S
+module type Types = Typer_intf.Types
 
-module Make
-    (Expr : Expr_intf.S)
-    (Print : Expr_intf.Print
-     with type ty := Expr.ty
-      and type ty_var := Expr.ty_var
-      and type ty_cst := Expr.ty_cst
-      and type ty_def := Expr.ty_def
-      and type term := Expr.term
-      and type term_var := Expr.term_var
-      and type term_cst := Expr.term_cst
-      and type formula := Expr.formula)
-    (State : State.S)
-    (Typer : Typer
-     with type state := State.t
-      and type ty := Expr.ty
-      and type ty_var := Expr.ty_var
-      and type ty_cst := Expr.ty_cst
-      and type ty_def := Expr.ty_def
-      and type term := Expr.term
-      and type term_var := Expr.term_var
-      and type term_cst := Expr.term_cst
-      and type formula := Expr.formula)
-= struct
+module Types(Expr : Expr_intf.S) = struct
 
-  module S = Dolmen.Std.Statement
-
-  let pipe = "Typer_pipe"
-  let type_check : bool State.key = State.create_key ~pipe "type_check"
-
-  let init
-      ~type_check:type_check_value
-      st =
-    st
-    |> State.set type_check type_check_value
-
-  (* Types used in Pipes *)
-  (* ************************************************************************ *)
-
-  type env = Typer.env
+  include Expr
 
   (* Used for representing typed statements *)
-  type +'a stmt = {
+  type +'a stmt = 'a Typer_intf.stmt = {
     id        : Dolmen.Std.Id.t;
     loc       : Dolmen.Std.Loc.t;
     contents  : 'a;
@@ -2093,7 +2078,7 @@ module Make
   ]
 
   type defs = [
-    | `Defs of def list
+    | `Defs of bool * def list
   ]
 
   type decl = [
@@ -2103,7 +2088,7 @@ module Make
   ]
 
   type decls = [
-    | `Decls of decl list
+    | `Decls of bool * decl list
   ]
 
   type assume = [
@@ -2117,8 +2102,8 @@ module Make
   ]
 
   type get_info = [
-    | `Get_info of string
-    | `Get_option of string
+    | `Get_info of Dolmen.Std.Statement.term
+    | `Get_option of Dolmen.Std.Statement.term
     | `Get_proof
     | `Get_unsat_core
     | `Get_unsat_assumptions
@@ -2147,8 +2132,60 @@ module Make
     | `Exit
   ]
 
+  type end_ = [
+    | `End
+  ]
+
   (* Agregate types *)
-  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit ]
+  type typechecked = [ defs | decls | assume | solve | get_info | set_info | stack_control | exit | end_ ]
+
+end
+
+
+(* Pipes functor *)
+(* ************************************************************************ *)
+
+module type S = Typer_intf.S
+module type Typer = Typer_intf.Typer
+module Make
+    (Expr : Expr_intf.S)
+    (Print : Expr_intf.Print
+     with type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
+    (State : State.S)
+    (Typer : Typer
+     with type state := State.t
+      and type ty := Expr.ty
+      and type ty_var := Expr.ty_var
+      and type ty_cst := Expr.ty_cst
+      and type ty_def := Expr.ty_def
+      and type term := Expr.term
+      and type term_var := Expr.term_var
+      and type term_cst := Expr.term_cst
+      and type formula := Expr.formula)
+= struct
+
+  type state = State.t
+  type 'a key = 'a State.key
+
+  include Types(Expr)
+
+  module S = Dolmen.Std.Statement
+
+  let pipe = "Typer_pipe"
+  let type_check : bool State.key = State.create_key ~pipe "type_check"
+
+  let init
+      ~type_check:type_check_value
+      st =
+    st
+    |> State.set type_check type_check_value
 
   (* Simple constructor *)
   let mk_stmt ?(implicit=false) id loc attrs (contents: typechecked) =
@@ -2193,11 +2230,13 @@ module Make
 
   let print_typechecked fmt t =
     match (t : typechecked) with
-    | `Defs l ->
-      Format.fprintf fmt "@[<v 2>defs:@ %a@]"
+    | `Defs (recursive, l) ->
+      Format.fprintf fmt "@[<v 2>%sdefs:@ %a@]"
+        (if recursive then "rec " else "")
         (Format.pp_print_list print_def) l
-    | `Decls l ->
-      Format.fprintf fmt "@[<v 2>decls:@ %a@]"
+    | `Decls (recursive, l) ->
+      Format.fprintf fmt "@[<v 2>%sdecls:@ %a@]"
+        (if recursive then "rec " else "")
         (Format.pp_print_list print_decl) l
     | `Hyp f ->
       Format.fprintf fmt "@[<hov 2>hyp:@ %a@]" Print.formula f
@@ -2210,10 +2249,12 @@ module Make
       Format.fprintf fmt "@[<hv 2>solve: @[<v>%a@]@ assuming: @[<v>%a@]@]"
         (Format.pp_print_list Print.formula) goals
         (Format.pp_print_list Print.formula) hyps
-    | `Get_info s ->
-      Format.fprintf fmt "@[<hov 2>get-info: %s@]" s
-    | `Get_option s ->
-      Format.fprintf fmt "@[<hov 2>get-option: %s@]" s
+    | `Get_info t ->
+      Format.fprintf fmt "@[<hov 2>get-info: %a@]"
+        Dolmen.Std.Term.print t
+    | `Get_option t ->
+      Format.fprintf fmt "@[<hov 2>get-option: %a@]"
+        Dolmen.Std.Term.print t
     | `Get_proof ->
       Format.fprintf fmt "@[<hov 2>get-proof@]"
     | `Get_unsat_core ->
@@ -2255,6 +2296,8 @@ module Make
       Format.fprintf fmt "@[<hov 2>reset@]"
     | `Exit ->
       Format.fprintf fmt "@[<hov 2>exit@]"
+    | `End ->
+      Format.fprintf fmt "@[<hov 2>end@]"
 
   let print_attr fmt t =
     Format.fprintf fmt "{%a}@," Dolmen.Std.Term.print t
@@ -2297,15 +2340,16 @@ module Make
   let implicit_decl_name = new_stmt_id "implicit_decl"
   let implicit_def_name = new_stmt_id "implicit_def"
 
-  let implicits loc attrs ({ implicit_decls; implicit_defs; ret = _; } : _ Typer.ret) =
+  let implicits loc attrs ({ implicit_decls; implicit_defs;
+                             recursive = _; ret = _; } : _ Typer.ret) =
     let decls =
       List.map (fun d ->
-          mk_stmt ~implicit:true (implicit_decl_name ()) loc attrs (`Decls [d])
+          mk_stmt ~implicit:true (implicit_decl_name ()) loc attrs (`Decls (false, [d]))
         ) implicit_decls
     in
     let defs =
       List.map (fun d ->
-          mk_stmt ~implicit:true (implicit_def_name ()) loc attrs (`Defs [d])
+          mk_stmt ~implicit:true (implicit_def_name ()) loc attrs (`Defs (false, [d]))
         ) implicit_defs
     in
     decls @ defs
@@ -2410,11 +2454,15 @@ module Make
     (* Declarations and definitions *)
     | { S.descr = S.Decls l; loc; attrs; _ } ->
       let st, res = Typer.decls st ~input ~loc ~attrs l in
-      let decls : typechecked stmt = mk_stmt (decl_id c) loc attrs (`Decls res.ret) in
+      let decls : typechecked stmt =
+        mk_stmt (decl_id c) loc attrs (`Decls (res.recursive, res.ret))
+      in
       st, (implicits loc attrs res @ [decls])
     | { S.descr = S.Defs d; loc; attrs; _ } ->
       let st, res = Typer.defs ~mode:`Create_id st ~input ~loc ~attrs d in
-      let defs : typechecked stmt = mk_stmt (def_id c) loc attrs (`Defs res.ret) in
+      let defs : typechecked stmt =
+        mk_stmt (def_id c) loc attrs (`Defs (res.recursive, res.ret))
+      in
       st, (implicits loc attrs res @ [defs])
 
     (* Smtlib's proof/model instructions *)
@@ -2439,6 +2487,8 @@ module Make
       st, [mk_stmt (other_id c) loc attrs (`Echo s)]
     | { S.descr = S.Exit; loc; attrs; _ } ->
       st, [mk_stmt (other_id c) loc attrs `Exit]
+    | { S.descr = S.End; loc; attrs; _ } ->
+      st, [mk_stmt (other_id c) loc attrs `End]
 
     (* packs and includes *)
     | { S.descr = S.Include _; _ } -> assert false

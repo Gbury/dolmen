@@ -233,10 +233,10 @@ module type Statement = sig
 
   (** Inspecting settings *)
 
-  val get_info : ?loc:location -> string -> t
+  val get_info : ?loc:location -> term -> t
   (** Get information (see smtlib manual). *)
 
-  val get_option : ?loc:location -> string -> t
+  val get_option : ?loc:location -> term -> t
   (** Get the value of a prover option. *)
 
   (** Scripts commands *)

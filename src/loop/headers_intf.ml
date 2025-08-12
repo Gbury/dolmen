@@ -36,8 +36,4 @@ module type S = sig
     state -> Dolmen.Std.Statement.t -> state * Dolmen.Std.Statement.t
   (** Check the headers *)
 
-  val check : state -> state
-  (** Check a state for the required headers (once a whole pipeline
-      has been completed *)
-
 end

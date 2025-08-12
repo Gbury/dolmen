@@ -166,7 +166,7 @@ let map_chain
   match aux mk args with
   | [] -> assert false
   | [x] -> x
-  | l -> Type.T._and l
+  | l -> fold_left_assoc (fun a b -> Type.T._and [a; b]) l
 
 (* High level helpers *)
 (* ************************************************************************ *)

@@ -4,7 +4,7 @@
   (name           dolmen_smtlib2_poly)
   (public_name    dolmen.smtlib2.poly)
   (instrumentation (backend bisect_ppx))
-  (libraries      dolmen_std dolmen_intf menhirLib)
+  (libraries      dolmen_std dolmen_intf dolmen_smtlib2_print menhirLib)
   (modules        Dolmen_smtlib2_poly Tokens Lexer Parser Ast Syntax_messages Print)
 )
 

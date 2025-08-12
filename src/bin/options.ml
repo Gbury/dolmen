@@ -28,6 +28,8 @@ let () =
     Dolmen_loop.Headers.code, 5;
     Dolmen_model.Loop.code, 6;
     Dolmen_loop.Flow.code, 7;
+    Dolmen_loop.Transform.code, 8;
+    Dolmen_loop.Export.code, 9;
   ]
 
 (* Main commands *)
@@ -36,8 +38,8 @@ let () =
 type cmd =
   | Run of {
       state : Loop.State.t;
-      preludes: Dolmen_loop.Logic.language Loop.State.file list;
-      logic_file : Dolmen_loop.Logic.language Loop.State.file;
+      preludes: Dolmen_loop.Logic.language Loop.State.input_file list;
+      logic_file : Dolmen_loop.Logic.language Loop.State.input_file;
     }
   | List_reports of {
       conf : Dolmen_loop.Report.Conf.t;
@@ -74,15 +76,18 @@ let set_color file_descr formatter color =
   Fmt.set_style_renderer formatter style
 
 
-(* Input format converter *)
+(* Input/Output format converter *)
 (* ************************************************************************* *)
 
 let input_format_conv = Arg.enum Dolmen_loop.Logic.enum
+let output_format_conv = Arg.enum Dolmen_loop.Export.enum
 let response_format_conv = Arg.enum Dolmen_loop.Response.enum
 
 
-(* Input source converter *)
+(* Input/Output source converter *)
 (* ************************************************************************* *)
+
+let output_dest_conv = Arg.string
 
 (* Converter for input file/stdin *)
 let input_to_string = function
@@ -352,12 +357,29 @@ let reports_opts strict warn_modifiers =
   in
   `Ok res
 
+let split_input = function
+  | `Stdin ->
+    Sys.getcwd (), `Stdin
+  | `File f ->
+    Filename.dirname f, `File (Filename.basename f)
+
+let mk_output_file lang filename : Dolmen_loop.Export.file option =
+  match filename, lang with
+  | None, None -> None
+  | None, Some _ -> Some { lang; sink = `Stdout; }
+  | Some filename, _ -> Some { lang; sink = `File filename; }
+
+let mk_input_file lang mode input : _ Dolmen_loop.State.input_file =
+  let dir, source = split_input input in
+  { lang; mode; dir; source ;
+    loc = Dolmen.Std.Loc.mk_file ""; }
+
 let mk_run_state
     () gc gc_opt bt colors
     abort_on_bug
     time_limit size_limit
-    response_file
-    flow_check
+    response_file output_file
+    flow_check compute_logic
     header_check header_licenses header_lang_version
     smtlib2_forced_logic smtlib2_exts
     type_check extensions
@@ -377,6 +399,13 @@ let mk_run_state
   let () = if gc then at_exit (fun () -> Gc.print_stat stdout;) in
   let () = if abort_on_bug then Dolmen_loop.Code.abort Dolmen_loop.Code.bug in
   let () = Hints.model ~check_model (* ~check_model_mode *) in
+  (* compute logic by default, but only do so if we are also exporting.
+     TODO: more control over this. (e.g. compute logic and emit warning/error
+     even without exporting, and also enable exporting without computing the logic). *)
+  let compute_logic =
+    compute_logic ||
+    (match output_file with Some _ -> true | None -> false)
+  in
   (* State creation *)
   let st =
     Loop.State.empty
@@ -394,6 +423,8 @@ let mk_run_state
       ~check_model
       (* ~check_model_mode *)
     |> Loop.Flow.init ~flow_check
+    |> Loop.Export.init ?output_file
+    |> Loop.Transform.init ~compute_logic
     |> Loop.Header.init
       ~header_check
       ~header_licenses
@@ -414,6 +445,7 @@ let mk_run_state
       st
   in
   Ok st
+
 
 (* Profiling *)
 (* ************************************************************************* *)
@@ -505,7 +537,7 @@ let logic_file =
         "Set the input language to $(docv); must be %s."
         (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Logic.enum) in
     Arg.(value & opt (some input_format_conv) None &
-         info ["i"; "input"; "lang"] ~docv:"INPUT" ~doc ~docs)
+         info ["i"; "input"] ~docv:"INPUT" ~doc ~docs)
   in
   let in_mode =
     let doc = Format.asprintf
@@ -521,7 +553,7 @@ let logic_file =
                dolmen will enter interactive mode and read on stdin." in
     Arg.(value & pos 0 input_source_conv `Stdin & info [] ~docv:"FILE" ~doc)
   in
-  Term.(const mk_file $ in_lang $ in_mode $ input)
+  Term.(const mk_input_file $ in_lang $ in_mode $ input)
 
 let response_file =
   let docs = model_section in
@@ -545,7 +577,22 @@ let response_file =
     let doc = "Response file." in
     Arg.(value & opt input_source_conv `Stdin & info ["r"; "response"] ~doc ~docs)
   in
-  Term.(const mk_file $ response_lang $ response_mode $ response)
+  Term.(const mk_input_file $ response_lang $ response_mode $ response)
+
+let output_file =
+  let docs = common_section in
+  let lang =
+    let doc = Format.asprintf
+        "Set the export language to $(docv); must be %s."
+        (Arg.doc_alts_enum ~quoted:true Dolmen_loop.Export.enum) in
+    Arg.(value & opt (some output_format_conv) None &
+         info ["o"; "output"] ~docv:"OUTPUT" ~doc ~docs)
+  in
+  let output =
+    let doc = "Export file. If no file is specified, no export will be performed." in
+    Arg.(value & pos 1 (some output_dest_conv) None & info [] ~docv:"FILE" ~doc)
+  in
+  Term.(const mk_output_file $ lang $ output)
 
 let mk_preludes =
   List.map (fun f -> mk_file None None (`File f))
@@ -600,6 +647,13 @@ let state =
     let doc = "If true, then check the coherence of top-level statements.
                This is mainly useful for the smtlib language." in
     Arg.(value & opt bool false & info ["check-flow"] ~doc ~docs:flow_section)
+  in
+  let compute_logic =
+    let doc = "If true, then Dolmen will compute the minimal logic needed to typecheck \
+               all of the statements it has read, and emit a warning if that minimal logic \
+               is smaller than the logic used by the problem. This new logic will also be \
+               used during export to the smtlib2 format." in
+    Arg.(value & opt bool false & info ["compute-logic"] ~doc) (* TODO: new doc section *)
   in
   let header_check =
     let doc = "If true, then the presence of headers will be checked in the
@@ -705,8 +759,8 @@ let state =
         gc $ gc_t $ bt $ colors $
         abort_on_bug $
         time $ size $
-        response_file $
-        flow_check $
+        response_file $ output_file $
+        flow_check $ compute_logic $
         header_check $ header_licenses $ header_lang_version $
         force_smtlib2_logic $ smtlib2_extensions $
         typing $ ext $

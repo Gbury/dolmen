@@ -10,6 +10,7 @@
     )
   )
 )
+(assert (= 0 (length (as nil (list Int)))))
 (define-fun-rec is_nil ((l (list Int))) Bool
   ((_ is nil) l)
 )

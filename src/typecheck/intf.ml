@@ -707,6 +707,7 @@ module type Formulas = sig
   type 'a ret = {
     implicit_decls : decl list;
     implicit_defs : def list;
+    recursive : bool;
     result : 'a;
   }
 

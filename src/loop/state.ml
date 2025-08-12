@@ -25,17 +25,27 @@ type source = [
   | `Raw of string * string
 ]
 
+type sink = [
+  | `Stdout
+  | `File of string
+]
+
 type mode = [
   | `Full
   | `Incremental
 ]
 
-type 'lang file = {
+type 'lang input_file = {
   lang    : 'lang option;
   mode    : mode option;
   loc     : Dolmen.Std.Loc.file;
   dir     : string;
   source  : source;
+}
+
+type 'lang output_file = {
+  lang    : 'lang option;
+  sink    : sink;
 }
 
 exception Error of t
@@ -113,13 +123,13 @@ module type S = sig
       @since 0.9 *)
 
   val warn :
-    ?file:_ file ->
+    ?file:_ input_file ->
     ?loc:Dolmen.Std.Loc.full ->
     t -> 'a Report.Warning.t -> 'a -> t
   (** Emit a warning *)
 
   val error :
-    ?file:_ file ->
+    ?file:_ input_file ->
     ?loc:Dolmen.Std.Loc.full ->
     t -> 'a Report.Error.t -> 'a -> t
   (** Emit an error. *)
@@ -131,8 +141,9 @@ module type S = sig
   val cur_warn : int key
   val time_limit : float key
   val size_limit : float key
-  val logic_file : Logic.language file key
-  val response_file : Response.language file key
+  val logic_file : Logic.language input_file key
+  val response_file : Response.language input_file key
+  val export_file : Logic.language output_file key
   (* common keys *)
 
 end
@@ -189,8 +200,9 @@ let cur_warn : int key = create_key ~pipe "cur_warn"
 let time_limit : float key = create_key ~pipe "time_limit"
 let size_limit : float key = create_key ~pipe "size_limit"
 
-let logic_file : Logic.language file key = create_key ~pipe "logic_file"
-let response_file : Response.language file key = create_key ~pipe "response_file"
+let logic_file : Logic.language input_file key = create_key ~pipe "logic_file"
+let response_file : Response.language input_file key = create_key ~pipe "response_file"
+let export_file : Logic.language output_file key = create_key ~pipe "output_file"
 
 let init
     ?bt:(bt_value=(Printexc.backtrace_status ()))
@@ -224,7 +236,7 @@ let loc_input ?file st (loc : Dolmen.Std.Loc.loc) =
      loc.stop_line - loc.start_line >= 100 then
     None
   else begin
-    match get report_style st, (file : _ file option) with
+    match get report_style st, (file : _ input_file option) with
     | _, None -> None
     | _, Some { source = `Stdin; _ } -> None
     | (Minimal | Regular), _ -> None
