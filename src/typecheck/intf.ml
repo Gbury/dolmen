@@ -156,10 +156,17 @@ module type Formulas = sig
       therefore cannot/should not occur at some positions. This type tries and explain
       the reason for such restrictions. *)
 
+  type bound_context =
+    | Pattern of Dolmen.Std.Term.t
+    | Binder of Dolmen.Std.Term.binder * Dolmen.Std.Term.t
+    | Definition_parameter of Dolmen.Std.Statement.def
+    | Declaration_parameter of Dolmen.Std.Statement.decl (**)
+  (** Context for where bound variables are bound. *)
+
   type reason =
     | Builtin
     | Reserved of reservation * string
-    | Bound of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
+    | Bound of Dolmen.Std.Loc.file * Dolmen.Std.Term.t * bound_context
     | Inferred of Dolmen.Std.Loc.file * Dolmen.Std.Term.t
     | Defined of Dolmen.Std.Loc.file * Dolmen.Std.Statement.def
     | Declared of Dolmen.Std.Loc.file * Dolmen.Std.Statement.decl
@@ -612,11 +619,11 @@ module type Formulas = sig
   (** Return the reason (if any) for the given typed symbol. *)
 
   val add_type_var :
-    env -> Dolmen.Std.Id.t -> ty_var -> Dolmen.Std.Term.t -> env
+    env -> bound_context -> Dolmen.Std.Id.t -> ty_var -> Dolmen.Std.Term.t -> env
   (** Add a local type variable to the env *)
 
   val add_term_var :
-    env -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
+    env -> bound_context -> Dolmen.Std.Id.t -> term_var -> Dolmen.Std.Term.t -> env
   (** Add a local term variable to the env *)
 
   val decl_ty_const :

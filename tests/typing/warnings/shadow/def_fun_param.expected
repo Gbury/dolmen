@@ -1,0 +1,8 @@
+File "tests/typing/warnings/shadow/def_fun_param.smt2", line 6, character 15-23:
+6 | (define-fun P ((x Bool)) Bool x)
+                   ^^^^^^^^
+Warning Shadowing: `x` was already declared at line 5, character 0-22
+File "tests/typing/warnings/shadow/def_fun_param.smt2", line 8, character 37-45:
+8 | (declare-const y Bool)(define-fun Q ((y Bool)) Bool y)
+                                         ^^^^^^^^
+Warning Shadowing: `y` was already declared at line 8, character 0-22

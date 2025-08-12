@@ -616,7 +616,7 @@ module Smtlib2 = struct
         Type.builtin_term (Base.term_app_left (module Type) env s T.map_app)
 
       | Type.Builtin Ast.Map_lambda ->
-        Type.builtin_term (fun _ast args ->
+        Type.builtin_term (fun ast args ->
             match split_map_lambda_args args with
             | Error () -> assert false (* TODO: error message *)
             | Ok (params, body) ->
@@ -625,7 +625,9 @@ module Smtlib2 = struct
                     match Type.parse_var_in_binding_pos env param_ast with
                     | `Ty _ -> assert false (* TODO: error message *)
                     | `Term (id, var) ->
-                      let env = Type.add_term_var env id var param_ast in
+                      (* using `Fun` as binder is a bit of over-approximation here,
+                         ideally we'd use a dedicate Map_fun binder *)
+                      let env = Type.add_term_var env (Binder (Fun, ast)) id var param_ast in
                       var :: params, env
                   ) ([], env) params
               in

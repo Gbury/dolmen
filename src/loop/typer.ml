@@ -188,7 +188,7 @@ let print_reason ?(already=false) fmt r =
       Format.pp_print_text
       "Therefore, the definition of the model corner case would take \
        priority and prevent defining a value for this constant."
-  | Bound (file, ast) ->
+  | Bound (file, ast, _) ->
     Format.fprintf fmt "was%a bound at %a"
       pp_already () Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.loc file ast.loc)
   | Inferred (file, ast) ->
@@ -302,6 +302,9 @@ let print_reserved fmt = function
 
 (* Hint printers *)
 (* ************************************************************************ *)
+
+let raw_hint msg _ =
+  Some (Format.dprintf "%a" Format.pp_print_text msg)
 
 let fo_hint _ =
   Some (
@@ -427,6 +430,21 @@ let shadowing =
           (pp_wrap Dolmen.Std.Id.print) id
           (print_reason_opt ~already:true) (T.binding_reason old))
     ~name:"Shadowing of identifier" ()
+
+let smt_fun_def_param_overlapping =
+  Report.Warning.mk ~code ~mnemonic:"smt-param-overlapping"
+    ~message:(fun fmt (id, old) ->
+        Format.fprintf fmt
+          "Parameter %a %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason_opt ~already:true) (T.binding_reason old))
+    ~hints:[raw_hint "Shadowing between parameters in the same function definition \
+                      in SMT-LIB2 has extremely un-inuitive semantics, and lead to \
+                      partially specified functions. It definitely doesn't do what you \
+                      expect and such definitions are therefore strongly discouraged. \
+                      For more information, read \
+                      https://github.com/SMT-LIB/SMT-LIB-2/issues/36"]
+    ~name:"Overlapping Parameters in Function Definition" ()
 
 let redundant_pattern =
   Report.Warning.mk ~code ~mnemonic:"redundant-pattern"
@@ -1226,11 +1244,26 @@ module Typer(State : State.S) = struct
     | Local { name; } when String.length name >= 1 && name.[0] = '_' -> true
     | _ -> false
 
-  let smtlib2_6_shadow_rules (input : input) =
+  let smtlib2_shadow_rules (input : input) =
     match input with
-    | `Logic { lang = Some Smtlib2 (`Latest | `V2_6 | `Poly); _ }
-    | `Response { lang = Some Smtlib2 (`Latest | `V2_6); _ }
-      -> true
+    | `Logic { lang = Some Smtlib2 version; _ } ->
+      begin match version with
+        | `Latest | `V2_6 | `V2_7 | `Poly -> true
+      end
+    | `Response { lang = Some Smtlib2 version; _ } ->
+      begin match version with
+        | `Latest | `V2_6 | `V2_7 -> true
+      end
+    | _ -> false
+
+  let bound_by_same_fun_definition binding1 binding2 =
+    let extract_def b =
+      match T.binding_reason b with
+      | Some Bound (_, _, Definition_parameter d) -> Some d
+      | _ -> None
+    in
+    match extract_def binding1, extract_def binding2 with
+    | Some d, Some d' when Dolmen.Std.Loc.eq d.loc d'.loc -> true
     | _ -> false
 
   let typing_logic input =
@@ -1247,8 +1280,13 @@ module Typer(State : State.S) = struct
     (* typer warnings that are actually errors given some languages spec *)
     | T.Shadowing (id, ((`Builtin `Term | `Not_found) as old), `Variable _)
     | T.Shadowing (id, ((`Constant _ | `Builtin _ | `Not_found) as old), `Constant _)
-      when smtlib2_6_shadow_rules input ->
+      when smtlib2_shadow_rules input ->
       error ~input ~loc st multiple_declarations (id, old)
+    (* shadowing between parameters of a function definition: this does not do
+       what anyone expects *)
+    | T.Shadowing (id, last, curr)
+      when smtlib2_shadow_rules input && bound_by_same_fun_definition last curr ->
+      warn ~input ~loc st smt_fun_def_param_overlapping (id, last)
 
     (* unused variables *)
     | T.Unused_type_variable (kind, v) ->
