@@ -1,0 +1,5 @@
+File "tests/typing/errors/overlapping_parallel_binding/let.smt2", line 2, character 21-22:
+2 | (assert (let ((x 1) (x 2)) (= x 0)))
+                         ^
+Error The identifier `x` is defined multiple time in a parallel binding.
+      The last definition was at line 2, character 15-16
