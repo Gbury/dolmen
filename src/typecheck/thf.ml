@@ -418,6 +418,7 @@ module Make
         Id.t * Ty.Const.t * reason * int -> Stmt.def err
     | Incoherent_term_redefinition :
         Id.t * T.Const.t * reason * Ty.t -> Stmt.def err
+    | Overlapping_parallel_bindings : Id.t * Ast.t fragment -> Ast.t err
     | Inferred_builtin : Ast.builtin -> Ast.t err
     | Forbidden_hook : Ast.t err
     | Uncaught_exn : exn * Printexc.raw_backtrace -> Ast.t err
@@ -1882,6 +1883,11 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ }
         | { Ast.term = Ast.App ({Ast.term = Ast.Builtin Ast.Equiv; _}, [
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
+          begin match List.find_opt (fun (s', _, _, _, _) -> Id.equal s s') acc with
+            | None -> ()
+            | Some (_, _, _, _, w') ->
+              _error env (Ast w) (Overlapping_parallel_bindings (s, Ast w'));
+          end;
           begin match parse_term env e with
             | t ->
               let v = mk_term_var env (Id.name s) (T.ty t) in

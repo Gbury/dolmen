@@ -639,6 +639,17 @@ let var_in_binding_pos_underspecified =
         Format.fprintf fmt "Cannot infer type for a variable in binding position")
     ~name:"Inference of a variable in binding position's type" ()
 
+let overlapping_parallel_bindings =
+  Report.Error.mk ~code ~mnemonic:"overlapping-parallel-bindings"
+    ~message:(fun fmt (id, other_loc) ->
+        Format.fprintf fmt
+          "The identifier %a is defined multiple time in a parallel binding.@ \
+           The last definition was at %a"
+          (pp_wrap Dolmen.Std.Id.print) id
+          Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.full_loc other_loc)
+      )
+    ~name:"Overlapping Parallel Bindings" ()
+
 let unhandled_builtin =
   Report.Error.mk ~code:Code.bug ~mnemonic:"typer-unhandled-builtin"
     ~message:(fun fmt b ->
@@ -1319,6 +1330,9 @@ module Typer(State : State.S) = struct
       error ~input ~loc st type_mismatch (t, expected)
     | T.Var_in_binding_pos_underspecified ->
       error ~input ~loc st var_in_binding_pos_underspecified ()
+    | T.Overlapping_parallel_bindings (id, fragment') ->
+      let loc' = T.fragment_loc env fragment' in
+      error ~input ~loc st overlapping_parallel_bindings (id, loc')
     | T.Unhandled_builtin b ->
       error ~input ~loc st unhandled_builtin b
     | T.Cannot_tag_tag ->

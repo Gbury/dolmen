@@ -306,7 +306,7 @@ module type Formulas = sig
   type _ err +=
     | Not_well_founded_datatypes :
         Dolmen.Std.Statement.decl list -> Dolmen.Std.Statement.decls err
-    (** Not well-dounded datatypes definitions. *)
+    (** Not well-founded datatypes definitions. *)
   (** Errors that occur on declaration(s) *)
 
   type _ err +=
@@ -423,6 +423,9 @@ module type Formulas = sig
     (** *)
     | Incoherent_term_redefinition :
         Dolmen.Std.Id.t * term_cst * reason * ty -> Dolmen.Std.Statement.def err
+    (** *)
+    | Overlapping_parallel_bindings :
+        Dolmen.Std.Id.t * Dolmen.Std.Term.t fragment -> Dolmen.Std.Term.t err
     (** *)
     | Inferred_builtin : Dolmen.Std.Term.builtin -> Dolmen.Std.Term.t err
     (** *)
