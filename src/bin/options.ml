@@ -343,8 +343,6 @@ let reports_opts strict warn_modifiers =
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.bad_arith_expr))
       |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.unknown_logic))
-      |> fatal
-        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.smt_fun_def_param_overlapping))
     end
   in
   let res =

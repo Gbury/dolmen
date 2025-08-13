@@ -431,21 +431,6 @@ let shadowing =
           (print_reason_opt ~already:true) (T.binding_reason old))
     ~name:"Shadowing of identifier" ()
 
-let smt_fun_def_param_overlapping =
-  Report.Warning.mk ~code ~mnemonic:"smt-param-overlapping"
-    ~message:(fun fmt (id, old) ->
-        Format.fprintf fmt
-          "Parameter %a %a"
-          (pp_wrap Dolmen.Std.Id.print) id
-          (print_reason_opt ~already:true) (T.binding_reason old))
-    ~hints:[raw_hint "Shadowing between parameters in the same function definition \
-                      in SMT-LIB2 has extremely un-inuitive semantics, and lead to \
-                      partially specified functions. It definitely doesn't do what you \
-                      expect and such definitions are therefore strongly discouraged. \
-                      For more information, read \
-                      https://github.com/SMT-LIB/SMT-LIB-2/issues/36"]
-    ~name:"Overlapping Parameters in Function Definition" ()
-
 let redundant_pattern =
   Report.Warning.mk ~code ~mnemonic:"redundant-pattern"
     ~message:(fun fmt _pattern ->
@@ -667,6 +652,21 @@ let overlapping_parallel_bindings =
           Dolmen.Std.Loc.fmt_pos (Dolmen.Std.Loc.full_loc other_loc)
       )
     ~name:"Overlapping Parallel Bindings" ()
+
+let overlapping_smt_fun_def_params =
+  Report.Error.mk ~code ~mnemonic:"overlapping-smt-fun-def-params"
+    ~message:(fun fmt (id, old) ->
+        Format.fprintf fmt
+          "Parameter %a %a@ as another parameter of the same function definition"
+          (pp_wrap Dolmen.Std.Id.print) id
+          (print_reason_opt ~already:true) (T.binding_reason old))
+    ~hints:[raw_hint "Shadowing between parameters in the same function definition \
+                      in SMT-LIB2 has extremely un-inuitive semantics, and lead to \
+                      partially specified functions. It definitely doesn't do what you \
+                      expect and such definitions are therefore strongly discouraged. \
+                      For more information, read \
+                      https://github.com/SMT-LIB/SMT-LIB-2/issues/36"]
+    ~name:"Overlapping Parameters in Function Definition" ()
 
 let unhandled_builtin =
   Report.Error.mk ~code:Code.bug ~mnemonic:"typer-unhandled-builtin"
@@ -1286,7 +1286,7 @@ module Typer(State : State.S) = struct
        what anyone expects *)
     | T.Shadowing (id, last, curr)
       when smtlib2_shadow_rules input && bound_by_same_fun_definition last curr ->
-      warn ~input ~loc st smt_fun_def_param_overlapping (id, last)
+      error ~input ~loc st overlapping_smt_fun_def_params (id, last)
 
     (* unused variables *)
     | T.Unused_type_variable (kind, v) ->

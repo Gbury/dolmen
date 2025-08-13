@@ -36,9 +36,6 @@ val bad_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Warning.
     specification (e.g. linear arithmetic), but are close enough that they
     should probably be accepted. *)
 
-val smt_fun_def_param_overlapping : (Dolmen.Std.Id.t * T.binding) Report.Warning.t
-(** Warning for overlapping between parameters of the same function definition in smtlib. *)
-
 val unknown_logic : string Report.Warning.t
 (** Unknown logic warning *)
 
