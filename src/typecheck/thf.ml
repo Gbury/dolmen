@@ -125,10 +125,16 @@ module Make
     | Strict
     | Model_completion
 
+  type bound_context =
+    | Pattern of Ast.t
+    | Binder of Ast.binder * Ast.t
+    | Definition_parameter of Stmt.def
+    | Declaration_parameter of Stmt.decl
+
   type reason =
     | Builtin
     | Reserved of reservation * string
-    | Bound of Loc.file * Ast.t
+    | Bound of Loc.file * Ast.t * bound_context
     | Inferred of Loc.file * Ast.t
     | Defined of Loc.file * Stmt.def
     | Declared of Loc.file * Stmt.decl
@@ -1028,8 +1034,8 @@ module Make
     ()
 
   (* Add local variables to environment *)
-  let add_type_var env id v ast =
-    let reason = Bound (env.file, ast) in
+  let add_type_var env ctx id v ast =
+    let reason = Bound (env.file, ast, ctx) in
     begin match find_bound env id with
       | `Not_found -> ()
       | #bound as old ->
@@ -1040,23 +1046,23 @@ module Make
       type_locs = E.add v reason env.type_locs;
     }
 
-  let add_type_vars env l =
+  let add_type_vars env ctx l =
     let env =
       List.fold_left (fun acc (id, v, ast) ->
-          add_type_var acc id v ast
+          add_type_var acc ctx id v ast
         ) env l
     in
     let l' = List.map (fun (_, v, _) -> v) l in
     l', env
 
-  let register_term_var env v ast =
-    let reason = Bound (env.file, ast) in
+  let register_term_var env ctx v ast =
+    let reason = Bound (env.file, ast, ctx) in
     { env with
       term_locs = F.add v reason env.term_locs;
     }
 
-  let add_term_var env id v ast =
-    let reason = Bound (env.file, ast) in
+  let add_term_var env ctx id v ast =
+    let reason = Bound (env.file, ast, ctx) in
     begin match find_bound env id with
       | `Not_found -> ()
       | #bound as old ->
@@ -1067,8 +1073,8 @@ module Make
       term_locs = F.add v reason env.term_locs;
     }
 
-  let bind_term_var env id e v t ast =
-    let reason = Bound (env.file, ast) in
+  let bind_term_var env ctx id e v t ast =
+    let reason = Bound (env.file, ast, ctx) in
     begin match find_bound env id with
       | `Not_found -> ()
       | #bound as old ->
@@ -1246,7 +1252,7 @@ module Make
        escape their scope, which is more informative. *)
     else match find_ty_var_reason env v with
     (* Variable bound or inferred *)
-    | Bound (_, t) | Inferred (_, t) ->
+    | Bound (_, t, _) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_type_variable (kind, v))
     (* variables should not be declare-able nor builtin *)
     | Builtin | Reserved _ | Declared _ | Defined _
@@ -1262,7 +1268,7 @@ module Make
   let _unused_term env kind v =
     match find_term_var_reason env v with
     (* Variable bound or inferred *)
-    | Bound (_, t) | Inferred (_, t) ->
+    | Bound (_, t, _) | Inferred (_, t) ->
       _warn env (Ast t) (Unused_term_variable (kind, v))
     (* variables should not be declare-able nor builtin,
        and we do not use any term wildcards. *)
@@ -1726,22 +1732,22 @@ module Make
       let ret = parse_ty env ret in
       Ty (_wrap2 env ast Ty.arrow args ret)
 
-  and parse_binder_vars env l =
+  and parse_binder_vars env ctx l =
     let ttype_vars, typed_vars, env' = List.fold_left (
         fun (l1, l2, acc) v ->
           match parse_var_in_binding_pos acc v with
           | `Ty (id, v') ->
-            let acc' = add_type_var acc id v' v in
+            let acc' = add_type_var acc ctx id v' v in
             (v' :: l1, l2, acc')
           | `Term (id, v') ->
-            let acc' = add_term_var acc id v' v in
+            let acc' = add_term_var acc ctx id v' v in
             (l1, v' :: l2, acc')
       ) ([], [], env) l in
     List.rev ttype_vars, List.rev typed_vars, env'
 
   and parse_binder parse_inner mk b env ast ttype_acc ty_acc = function
-    | { Ast.term = Ast.Binder (b', vars, f); _ } when b = b' ->
-      let ttype_vars, ty_vars, env = parse_binder_vars env vars in
+    | { Ast.term = Ast.Binder (b', vars, f); _ } as ast when b = b' ->
+      let ttype_vars, ty_vars, env = parse_binder_vars env (Binder (b, ast)) vars in
       let ttype_acc = ttype_acc @ ttype_vars in
       let ty_acc = ty_acc @ ty_vars in
       (* if there are any attributes, do **not** try and collapse successive
@@ -1769,38 +1775,38 @@ module Make
     Term (_wrap2 env ast (T.pattern_match ~redundant) t l)
 
   and parse_branch ty env (pattern, body) =
-    let p, env = parse_pattern ty env pattern in
+    let p, env = parse_pattern (Pattern pattern) ty env pattern in
     let b = parse_term env body in
     (p, b)
 
-  and parse_pattern ty env t =
+  and parse_pattern ctx ty env t =
     match t with
     | { Ast.term = Ast.Builtin Ast.Wildcard; _ } as ast_s ->
       let v = mk_term_var env (Dolmen.Std.Name.simple "_") ty in
-      let env = register_term_var env v ast_s in
+      let env = register_term_var env ctx v ast_s in
       T.of_var v, env
     | { Ast.term = Ast.Symbol s; _ } as ast_s ->
-      parse_pattern_app ty env t ast_s s []
+      parse_pattern_app ctx ty env t ast_s s []
     | { Ast.term = Ast.App (
         ({ Ast.term = Ast.Symbol s; _ } as ast_s), args); _ } ->
-      parse_pattern_app ty env t ast_s s args
+      parse_pattern_app ctx ty env t ast_s s args
     | _ -> _expected env "pattern" t None
 
-  and parse_pattern_app ty env ast ast_s s args =
+  and parse_pattern_app ctx ty env ast ast_s s args =
     match find_bound env s with
-    | `Cstr c -> parse_pattern_app_cstr ty env ast c args
+    | `Cstr c -> parse_pattern_app_cstr ctx ty env ast c args
     | _ ->
       begin match args with
-        | [] -> parse_pattern_var ty env ast_s s
+        | [] -> parse_pattern_var ctx ty env ast_s s
         | _ -> _expected env "a variable (or an ADT constructor)" ast_s None
       end
 
-  and parse_pattern_var ty env ast s =
+  and parse_pattern_var ctx ty env ast s =
     let v = mk_term_var env (Id.name s) ty in
-    let env = add_term_var env s v ast in
+    let env = add_term_var env ctx s v ast in
     T.of_var v, env
 
-  and parse_pattern_app_cstr ty env t c args =
+  and parse_pattern_app_cstr ctx ty env t c args =
     (* Inlined version of parse_app_cstr *)
     let n_ty, n_t = arity (T.Cstr.ty c) in
     let ty_args, t_l =
@@ -1816,14 +1822,14 @@ module Make
     (* Compute the expected types of arguments *)
     let ty_arity = _wrap3 env t T.Cstr.pattern_arity c ty ty_args in
     (* Pattern args are allowed to introduce new variables *)
-    let t_args, env = parse_pattern_app_cstr_args env t_l ty_arity in
+    let t_args, env = parse_pattern_app_cstr_args env ctx t_l ty_arity in
     let res = _wrap3 env t T.apply_cstr c ty_args t_args in
     res, env
 
-  and parse_pattern_app_cstr_args env args args_ty =
+  and parse_pattern_app_cstr_args env ctx args args_ty =
     let l, env =
       List.fold_left2 (fun (l, env) arg ty ->
-        let arg, env = parse_pattern ty env arg in
+        let arg, env = parse_pattern ctx ty env arg in
         (arg :: l, env)
         ) ([], env) args args_ty
     in
@@ -1858,7 +1864,7 @@ module Make
                 { Ast.term = Ast.Symbol s; _ } as w; e]); _ } ->
           let t = parse_term env e in
           let v = mk_term_var env (Id.name s) (T.ty t) in
-          let env' = bind_term_var env s e v t w in
+          let env' = bind_term_var env (Binder (Let_seq, ast)) s e v t w in
           parse_let_seq env' ast ((v, t) :: acc) f r
         | t -> _expected env "variable binding" t None
       end
@@ -1867,7 +1873,7 @@ module Make
     | [] ->
       let env, rev_l =
         List.fold_right (fun (s, e, v, t, w) (env, acc) ->
-            let env' = bind_term_var env s e v t w in
+            let env' = bind_term_var env (Binder (Let_par, ast)) s e v t w in
             (env', (v, t) :: acc)
           ) acc (env, [])
       in
@@ -2288,10 +2294,10 @@ module Make
     | `Ty (_, v) ->
       _expected env "typed variable" t (Some (Ty (Ty.of_var v)))
 
-  let rec parse_sig_quant env = function
+  let rec parse_sig_quant env ctx = function
     | { Ast.term = Ast.Binder (Ast.Pi, vars, t); _ } ->
       let ttype_vars = List.map (parse_ttype_var_in_binding_pos env) vars in
-      let ttype_vars, env' = add_type_vars env ttype_vars in
+      let ttype_vars, env' = add_type_vars env ctx ttype_vars in
       let l = List.combine vars ttype_vars in
       parse_sig_arrow l [] env' t
     | t ->
@@ -2339,12 +2345,12 @@ module Make
     | t ->
       [t, parse_expr env t]
 
-  let parse_sig env = function
+  let parse_sig env ctx = function
     | { Ast.term = Ast.Builtin Ast.Implicit_type_var; _ }
     | { Ast.term = Ast.App (
             { Ast.term = Ast.Builtin Ast.Implicit_type_var; _ }, []); _ } ->
       `Implicit_type_var
-    | t -> parse_sig_quant env t
+    | t -> parse_sig_quant env ctx t
 
   let parse_inductive_arg env = function
     | { Ast.term = Ast.Colon ({ Ast.term = Ast.Symbol s; _ }, e); _ } ->
@@ -2431,7 +2437,7 @@ module Make
 
   let record env d ty_cst { Stmt.vars; fields; _ } =
     let ttype_vars = List.map (parse_ttype_var_in_binding_pos env) vars in
-    let ty_vars, env = add_type_vars env ttype_vars in
+    let ty_vars, env = add_type_vars env (Declaration_parameter d) ttype_vars in
     let l = List.map (fun (id, t) ->
         let ty = parse_ty env t in
         check_no_free_vars_or_wildcards env t;
@@ -2446,7 +2452,7 @@ module Make
   let inductive env d ty_cst { Stmt.id; vars; cstrs; _ } =
     (* Parse the type variables *)
     let ttype_vars = List.map (parse_ttype_var_in_binding_pos env) vars in
-    let ty_vars, env = add_type_vars env ttype_vars in
+    let ty_vars, env = add_type_vars env (Declaration_parameter d) ttype_vars in
     (* Parse the constructors *)
     let cstrs_with_ids = List.map (fun (id, args) ->
         id, List.map (fun t ->
@@ -2502,7 +2508,7 @@ module Make
     match t with
     | Abstract { id; ty = ast; loc = _; attrs; } ->
       let tags = tags @ parse_attrs env [] attrs in
-      begin match parse_sig env ast with
+      begin match parse_sig env (Declaration_parameter t) ast with
         | `Implicit_type_var ->
           check_no_free_vars_or_wildcards env ast;
           env, (id, `Implicit_type_var)
@@ -2585,29 +2591,29 @@ module Make
   (* Definitions *)
   (* ************************************************************************ *)
 
-  let parse_def_vars env vars =
+  let parse_def_vars env d vars =
     let rec aux env acc = function
       | [] -> env, List.rev acc
       | v :: r ->
         let id, v, ast = parse_ttype_var_in_binding_pos env v in
-        let env = add_type_var env id v ast in
+        let env = add_type_var env (Definition_parameter d) id v ast in
         aux env (v :: acc) r
     in
     aux env [] vars
 
-  let parse_def_params env params =
+  let parse_def_params env d params =
     let rec aux env acc = function
       | [] -> env, List.rev acc
       | p :: r ->
         let id, v, ast = parse_typed_var_in_binding_pos env p in
-        let env = add_term_var env id v ast in
+        let env = add_term_var env (Definition_parameter d) id v ast in
         aux env (v :: acc) r
     in
     aux env [] params
 
   let parse_def_sig env (d: Stmt.def) =
-    let env, vars = parse_def_vars env d.vars in
-    let env, params = parse_def_params env d.params in
+    let env, vars = parse_def_vars env d d.vars in
+    let env, params = parse_def_params env d d.params in
     match parse_expr env d.ret_ty with
     | Ttype ->
       begin match params with

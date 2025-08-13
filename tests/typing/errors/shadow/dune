@@ -97,6 +97,102 @@
   (action (diff builtin-term-var.expected builtin-term-var.full)))
 
 
+; Test for def_fun_param.smt2
+; Incremental test
+
+(rule
+   (target  def_fun_param.incremental)
+   (deps    (:input def_fun_param.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_param.expected def_fun_param.incremental)))
+
+; Full mode test
+
+(rule
+   (target  def_fun_param.full)
+   (deps    (:input def_fun_param.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_param.expected def_fun_param.full)))
+
+
+; Test for def_fun_param2.smt2
+; Incremental test
+
+(rule
+   (target  def_fun_param2.incremental)
+   (deps    (:input def_fun_param2.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_param2.expected def_fun_param2.incremental)))
+
+; Full mode test
+
+(rule
+   (target  def_fun_param2.full)
+   (deps    (:input def_fun_param2.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_param2.expected def_fun_param2.full)))
+
+
+; Test for def_fun_rec_param.smt2
+; Incremental test
+
+(rule
+   (target  def_fun_rec_param.incremental)
+   (deps    (:input def_fun_rec_param.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_rec_param.expected def_fun_rec_param.incremental)))
+
+; Full mode test
+
+(rule
+   (target  def_fun_rec_param.full)
+   (deps    (:input def_fun_rec_param.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff def_fun_rec_param.expected def_fun_rec_param.full)))
+
+
 ; Test for redefinition.smt2
 ; Incremental test
 

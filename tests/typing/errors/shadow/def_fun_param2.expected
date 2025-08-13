@@ -1,0 +1,14 @@
+File "tests/typing/errors/shadow/def_fun_param2.smt2", line 3, character 15-23:
+3 | (define-fun P ((x Bool) (x Bool)) Bool x)
+                   ^^^^^^^^
+Warning Shadowing: `x` was already declared at line 2, character 0-22
+File "tests/typing/errors/shadow/def_fun_param2.smt2", line 3, character 24-32:
+3 | (define-fun P ((x Bool) (x Bool)) Bool x)
+                            ^^^^^^^^
+Error Parameter `x` was already bound at line 3, character 15-23
+      as another parameter of the same function definition
+Hint: Shadowing between parameters in the same function definition in
+  SMT-LIB2 has extremely un-inuitive semantics, and lead to partially
+  specified functions. It definitely doesn't do what you expect and such
+  definitions are therefore strongly discouraged. For more information, read
+  https://github.com/SMT-LIB/SMT-LIB-2/issues/36

@@ -36,9 +36,10 @@ val bad_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Warning.
     specification (e.g. linear arithmetic), but are close enough that they
     should probably be accepted. *)
 
-
 val unknown_logic : string Report.Warning.t
 (** Unknown logic warning *)
+
+
 
 module Ext : sig
   (** Define typing extensions.
