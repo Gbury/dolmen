@@ -16,6 +16,8 @@ next
 
 - Add a logic detection mechanism (PR#211)
 
+- Reject overlapping parallel let-bindings (PR#246)
+
 - Reject application of SMT-LIB2's distinct to less than 2
   arguments (Issue#242, PR#243)
 
