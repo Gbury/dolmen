@@ -1,0 +1,10 @@
+File "tests/typing/errors/shadow/def_fun_rec_param.smt2", line 2, character 27-34:
+2 | (define-fun-rec f ((x Int) (x Int)) Int (ite (= x 0) 0 (f (- x 1) (- x 1))))
+                               ^^^^^^^
+Error Parameter `x` was already bound at line 2, character 19-26
+      as another parameter of the same function definition
+Hint: Shadowing between parameters in the same function definition in
+  SMT-LIB2 has extremely un-inuitive semantics, and lead to partially
+  specified functions. It definitely doesn't do what you expect and such
+  definitions are therefore strongly discouraged. For more information, read
+  https://github.com/SMT-LIB/SMT-LIB-2/issues/36
