@@ -753,20 +753,20 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
 
           | To_int { n = _; signed = true; } ->
             begin match Config.version with
-              | V2_7 -> simple "sbv_to_int"
-              | V2_6 | Poly -> _cannot_print "sbv_to_int"
+              | V2_7 | Poly -> simple "sbv_to_int"
+              | V2_6 -> _cannot_print "sbv_to_int"
             end
           | To_int { n = _; signed = false; } ->
             begin match Config.version with
-              | V2_7 -> simple "ubv_to_int"
+              | V2_7 | Poly -> simple "ubv_to_int"
               (* bvconv extension
                  TODO: use a flag to enable extensions such as this one ? *)
-              | V2_6 | Poly -> simple "bv2nat" (* 2.7: "sbv_to_int" *)
+              | V2_6 -> simple "bv2nat" (* 2.7: "sbv_to_int" *)
             end
           | Of_int { n } ->
             begin match Config.version with
-              | V2_6 | Poly -> p Term (N.indexed "int2bv" [int n])
-              | V2_7 -> p Term (N.indexed "int_to_bv" [int n])
+              | V2_6 -> p Term (N.indexed "int2bv" [int n])
+              | V2_7 | Poly -> p Term (N.indexed "int_to_bv" [int n])
             end
         end
 
