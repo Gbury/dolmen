@@ -232,11 +232,12 @@ module Smtlib2 = struct
       | _ -> T.extract i j bitv
 
     let parse version env s =
-      let atleast2_7 () =
+      (* Whether to include bit-vector operators from smt-lib 2.7 *)
+      let bitv2_7 () =
         match (version : Dolmen.Smtlib2.version) with
-        | `Script (`Latest | `V2_7)
+        | `Script (`Latest | `V2_7 | `Poly)
         | `Response (`Latest | `V2_7) -> true
-        | `Script (`V2_6 | `Poly)
+        | `Script (`V2_6)
         | `Response (`V2_6) -> false
       in
       match s with
@@ -325,26 +326,26 @@ module Smtlib2 = struct
       | Type.Id { ns = Term; name = Simple "concat"; } ->
         Type.builtin_term (Base.term_app2 (module Type) env s T.concat)
 
-      | Type.Id { ns = Term; name = Simple "bvnego"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvnego"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app1 (module Type) env s T.nego)
-      | Type.Id { ns = Term; name = Simple "bvsaddo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvsaddo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.addo ~signed:true))
-      | Type.Id { ns = Term; name = Simple "bvuaddo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvuaddo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.addo ~signed:false))
-      | Type.Id { ns = Term; name = Simple "bvssubo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvssubo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.subo ~signed:true))
-      | Type.Id { ns = Term; name = Simple "bvusubo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvusubo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.subo ~signed:false))
-      | Type.Id { ns = Term; name = Simple "bvsmulo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvsmulo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.mulo ~signed:true))
-      | Type.Id { ns = Term; name = Simple "bvumulo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvumulo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s (T.mulo ~signed:false))
-      | Type.Id { ns = Term; name = Simple "bvsdivo"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "bvsdivo"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app2 (module Type) env s T.divo)
 
-      | Type.Id { ns = Term; name = Simple "ubv_to_int"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "ubv_to_int"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app1 (module Type) env s (T.to_int ~signed:false))
-      | Type.Id { ns = Term; name = Simple "sbv_to_int"; } when atleast2_7 () ->
+      | Type.Id { ns = Term; name = Simple "sbv_to_int"; } when bitv2_7 () ->
         Type.builtin_term (Base.term_app1 (module Type) env s (T.to_int ~signed:true))
 
       (* indexed terms *)
@@ -352,7 +353,7 @@ module Smtlib2 = struct
         Base.parse_indexed basename indexes (function
             | s when (String.length s >= 2 && s.[0] = 'b' && s.[1] = 'v') ->
               `Unary (fun n -> Type.builtin_term (parse_extended_lit env symbol s n))
-            | "int_to_bv" when atleast2_7 () -> `Unary (function i_s ->
+            | "int_to_bv" when bitv2_7 () -> `Unary (function i_s ->
                 Type.builtin_term (Base.term_app1_ast (module Type) env symbol
                           (indexed_positive env T.of_int i_s)))
             | "repeat" -> `Unary (function i_s ->
