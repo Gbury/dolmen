@@ -14,6 +14,9 @@ next
 
 ### Typing
 
+- Allow the new bitv operators from SMT-LIB v2.7 to also be
+  used for psmt2 (PR#249)
+
 - Add a logic detection mechanism (PR#211)
 
 - Reject overlapping/shadowing between parameters of the
