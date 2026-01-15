@@ -54,7 +54,7 @@ let () =
 
 ## Global architecture
 
-Contrary to aprsing, where `dolmen` provides one parser for each language,
+Contrary to parsing, where `dolmen` provides one parser for each language,
 the typechecking part of `dolmen` provides one typechecker, which can be
 parameterized depending on which language one wants to type-check.
 
