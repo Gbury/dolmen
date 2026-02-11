@@ -58,7 +58,7 @@ module Ae = struct
             Ast.App ({ Ast.term = Ast.Symbol sym; _ }, []); _
         } ->
         begin
-          match Type.find_bound env sym with
+          match Type.find_bound ~instantiate:false env sym with
           | `Term_var v -> T.semantic_trigger (T.maps_to v t)
           | _ -> Type._error env (Ast ast) (Type.Cannot_find (sym, ""))
         end
@@ -750,7 +750,7 @@ module Smtlib2 = struct
           ~err:(fun _ _ _ -> `Not_found) (function
               | "is" -> `Unary (function s ->
                   let id = Id.mk Term s in
-                  begin match Type.find_bound env id with
+                  begin match Type.find_bound ~instantiate:false env id with
                     | `Cstr c ->
                       Type.builtin_term (Base.term_app1 (module Type) env symbol (Type.T.cstr_tester c))
                     | _ -> `Not_found

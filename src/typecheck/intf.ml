@@ -425,6 +425,9 @@ module type Formulas = sig
     | Unbound_type_wildcards :
         (ty_var * wildcard_source list) list -> Dolmen.Std.Term.t err
     (** *)
+    | Unbound_type_vars :
+        (ty_var * reason) list -> Dolmen.Std.Term.t err
+    (** *)
     | Incoherent_type_redefinition :
         Dolmen.Std.Id.t * ty_cst * reason * int -> Dolmen.Std.Statement.def err
     (** *)
@@ -605,10 +608,21 @@ module type Formulas = sig
   val find_builtin : env -> Dolmen.Std.Id.t -> [ builtin | not_found ]
   (** Try and find the given id in the set of bound builtin symbols. *)
 
-  val find_bound : env -> Dolmen.Std.Id.t -> [ bound | not_found ]
+  val find_bound : instantiate:bool -> env -> Dolmen.Std.Id.t -> [ bound | not_found ]
   (** Try and find a bound identifier in the env, whether it be locally bound
       (such as bound variables), constants bound at top-level, or builtin
-      symbols bound by the builtin theory. *)
+      symbols bound by the builtin theory.
+
+      The [~instantiate] parameter is used to control the (optinal) auto-instantiation
+      of implicit type variables. If [true] implicit type variables will be instantiated
+      and [find_bound] will directly return a [`Ty_var _], while if [false] [find_bound]
+      will return [`Implicit_type_var _]. As a rule of thumb, if you want a general lookup
+      (e.g. for a variable in most position in a term), use [true]; however, if your lookup
+      is more specific (for instance, a lookup to check some shadowing condition, or a lookup
+      in a position that does not allow instantiation of implicit type variables), use [false].
+      In particular, any implicit type variable instantiated this will will be deemed as used
+      in the built expression, and may raise some spurious unbound errors if the resulting
+      type variable is not actually used. *)
 
   val find_symbol : env -> symbol -> [ bound | not_found ]
   (** Try and find a bound symbol in the env, whether it be locally bound

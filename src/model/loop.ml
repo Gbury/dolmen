@@ -384,7 +384,7 @@ module Make
     let input = `Response (State.get State.response_file st) in
     Typer.typing_wrap ~input st ~f:(fun env ->
         List.for_all (fun (def : Dolmen.Std.Statement.def) ->
-            match Dolmen_loop.Typer.T.find_bound env def.id with
+            match Dolmen_loop.Typer.T.find_bound ~instantiate:false env def.id with
             | #Dolmen_loop.Typer.T.not_found ->
               false
             | _ -> true
