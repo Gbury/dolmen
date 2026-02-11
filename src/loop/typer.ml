@@ -864,6 +864,23 @@ let unbound_type_wildcards =
       )
     ~name:"Under-specified type inference" ()
 
+let unbound_implicit_type_vars =
+  Report.Error.mk ~code ~mnemonic:"implicit-type-vars-unbound"
+    ~message:(fun fmt l ->
+        let pp_sep fmt () = Format.fprintf fmt "@ " in
+        let pp_var fmt (v, reason) =
+          Format.fprintf fmt "%a which @[<v>%a@]"
+            (pp_wrap Dolmen.Std.Expr.Print.id) v
+            (print_reason ~already:false) reason
+        in
+        Format.fprintf fmt
+          "@[<v 2>@[<hov>%a@]:@ %a@]"
+          Format.pp_print_text
+          "This expression should be closed, but the following implicit type variables are free"
+          (Format.pp_print_list ~pp_sep pp_var) l
+      )
+    ~name:"Implicit type variable not bound" ()
+
 let incoherent_type_redefinition =
   Report.Error.mk ~code ~mnemonic:"incoherent-type-def"
     ~message:(fun fmt (id, cst, reason, n) ->
@@ -1256,6 +1273,11 @@ module Typer(State : State.S) = struct
       end
     | _ -> false
 
+  let bound_by_datatype_decl binding =
+    match T.binding_reason binding with
+    | Some Bound (_, _, Declaration_parameter Inductive _) -> true
+    | _ -> false
+
   let bound_by_same_fun_definition binding1 binding2 =
     let extract_def b =
       match T.binding_reason b with
@@ -1287,6 +1309,11 @@ module Typer(State : State.S) = struct
     | T.Shadowing (id, last, curr)
       when smtlib2_shadow_rules input && bound_by_same_fun_definition last curr ->
       error ~input ~loc st overlapping_smt_fun_def_params (id, last)
+    (* in some statements, only explicit type variables are allowed, so they cannot
+       be shadowed by implicit type variables *)
+    | T.Shadowing (_id, (`Variable (`Implicit_type_var _)), curr)
+      when smtlib2_shadow_rules input && bound_by_datatype_decl curr ->
+      st
 
     (* unused variables *)
     | T.Unused_type_variable (kind, v) ->
@@ -1405,6 +1432,8 @@ module Typer(State : State.S) = struct
       error ~input ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
     | T.Unbound_type_wildcards tys ->
       error ~input ~loc st unbound_type_wildcards (env, tys)
+    | T.Unbound_type_vars tys ->
+      error ~input ~loc st unbound_implicit_type_vars tys
     | T.Incoherent_type_redefinition (id, cst, reason, n) ->
       error ~input ~loc st incoherent_type_redefinition (id, cst, reason, n)
     | T.Incoherent_term_redefinition (id, cst, reason, ty) ->

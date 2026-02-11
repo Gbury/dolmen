@@ -1,0 +1,6 @@
+File "tests/typing/errors/unbound_type_vars/datatype_decl.smt2", line 7, character 16-22:
+7 |   ((par (b) ((C (C1 a) (C2 b))))))
+                    ^^^^^^
+Error This expression should be closed, but the following implicit type
+      variables are free:
+        `a` which was declared at line 4, character 0-26

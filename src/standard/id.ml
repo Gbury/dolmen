@@ -32,6 +32,8 @@ let print fmt { name; ns; } =
   | Attr -> Format.fprintf fmt "%a" Name.print name
   | _ -> Name.print fmt name
 
+let debug fmt ({ ns; _ } as t) =
+  Format.fprintf fmt "%a::%a" Namespace.print ns print t
 
 (* Namespaces *)
 (* ************************************************************************* *)

@@ -27,7 +27,10 @@ val compare : t -> t -> int
 (** Usual functions for hashing, comparisons, equality. *)
 
 val print : Format.formatter -> t -> unit
-(** Printing functions. *)
+(** Printing function. *)
+
+val debug : Format.formatter -> t -> unit
+(** Debug printing function. *)
 
 module Map : Maps.S with type key := t
 (** Maps for ids *)

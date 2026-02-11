@@ -65,4 +65,36 @@
   (action (diff poly_id.expected poly_id.full)))
 
 
+; Test for sort_param_shadowed_in_datatype_decl.smt2
+; Incremental test
+
+(rule
+   (target  sort_param_shadowed_in_datatype_decl.incremental)
+   (deps    (:input sort_param_shadowed_in_datatype_decl.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff sort_param_shadowed_in_datatype_decl.expected sort_param_shadowed_in_datatype_decl.incremental)))
+
+; Full mode test
+
+(rule
+   (target  sort_param_shadowed_in_datatype_decl.full)
+   (deps    (:input sort_param_shadowed_in_datatype_decl.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff sort_param_shadowed_in_datatype_decl.expected sort_param_shadowed_in_datatype_decl.full)))
+
+
 ; Auto-generated part end

@@ -707,7 +707,7 @@ module Make
   let instantiate_implicit_type_var env id reason =
     (* If there is an global implicit type var, instantiate it.
        No need to emit a warning in case of a conflict: if there is
-       a conflict with some binding [b], then a wrning would have already
+       a conflict with some binding [b], then a warning would have already
        be emitted when [b] was created. *)
     let v = mk_ty_var env (Id.name id) in
     let res = `Ty_var v in
@@ -738,22 +738,25 @@ module Make
     | `Not_found -> `Not_found
     | #builtin_res as res -> `Builtin res
 
-  let find_bound env id : [ bound | not_found ] =
+  let find_bound ~instantiate env id : [ bound | not_found ] =
     match find_var env id with
     | #var as res -> (res :> [ bound | not_found ])
     | `Not_found ->
       begin match find_global env id with
         | #cst as res ->
           (res :> [ bound | not_found ])
-        | `Implicit_type_var reason ->
-          instantiate_implicit_type_var env id reason
+        | `Implicit_type_var reason as res ->
+          if instantiate then
+            instantiate_implicit_type_var env id reason
+          else
+            res
         | `Not_found ->
           (find_builtin env id :> [ bound | not_found ])
       end
 
   let find_symbol env symbol : [ bound | not_found ] =
     match symbol with
-    | Id id -> find_bound env id
+    | Id id -> find_bound ~instantiate:true env id
     | Builtin _ ->
       begin match env.builtins env symbol with
         | `Not_found -> `Not_found
@@ -926,7 +929,7 @@ module Make
 
   (* Const declarations *)
   let add_global env fragment id reason (v : [ cst | implicit_type_var ] ) =
-    begin match find_bound env id with
+    begin match find_bound ~instantiate:false env id with
       | `Not_found -> ()
       | `Builtin `Infer _ -> () (* inferred builtins are meant to be shadowed/replaced *)
       | #bound as old -> _shadow env fragment id old reason v
@@ -1024,7 +1027,7 @@ module Make
   (* add a global inferred variable/wildcard *)
   let add_inferred_type_wildcard env id v ast =
     let reason = Inferred (env.file, ast) in
-    begin match find_bound env id with
+    begin match find_bound ~instantiate:false env id with
       | `Not_found -> ()
       | #bound as old ->
         _shadow env (Ast ast) id old reason (`Ty_var v)
@@ -1036,7 +1039,7 @@ module Make
   (* Add local variables to environment *)
   let add_type_var env ctx id v ast =
     let reason = Bound (env.file, ast, ctx) in
-    begin match find_bound env id with
+    begin match find_bound ~instantiate:false env id with
       | `Not_found -> ()
       | #bound as old ->
         _shadow env (Ast ast) id old reason (`Ty_var v)
@@ -1063,7 +1066,7 @@ module Make
 
   let add_term_var env ctx id v ast =
     let reason = Bound (env.file, ast, ctx) in
-    begin match find_bound env id with
+    begin match find_bound ~instantiate:false env id with
       | `Not_found -> ()
       | #bound as old ->
         _shadow env (Ast ast) id old reason (`Term_var v)
@@ -1075,7 +1078,7 @@ module Make
 
   let bind_term_var env ctx id e v t ast =
     let reason = Bound (env.file, ast, ctx) in
-    begin match find_bound env id with
+    begin match find_bound ~instantiate:false env id with
       | `Not_found -> ()
       | #bound as old ->
         _shadow env (Ast ast) id old reason (`Term_var v)
@@ -1793,7 +1796,7 @@ module Make
     | _ -> _expected env "pattern" t None
 
   and parse_pattern_app ctx ty env ast ast_s s args =
-    match find_bound env s with
+    match find_bound ~instantiate:false env s with
     | `Cstr c -> parse_pattern_app_cstr ctx ty env ast c args
     | _ ->
       begin match args with
@@ -1917,7 +1920,7 @@ module Make
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
     | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
-      begin match find_bound env s with
+      begin match find_bound ~instantiate:false env s with
         | `Cstr c -> c
         | `Not_found -> _cannot_find env ast s
         | _ -> _expected env "adt constructor" ast None
@@ -1937,7 +1940,7 @@ module Make
       begin match dstr_ast with
         | { Ast.term = Ast.Symbol s; _ }
         | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
-          begin match find_bound env s with
+          begin match find_bound ~instantiate:false env s with
             | `Dstr d ->
               parse_app_term_cst env ast d [adt_ast]
             (* field access for records can be seen as a special case of adt
@@ -1959,7 +1962,7 @@ module Make
     match ast with
     | { Ast.term = Ast.Symbol s; _ }
     | { Ast.term = Ast.App ({ Ast.term = Ast.Symbol s; _ }, []); _} ->
-      begin match find_bound env s with
+      begin match find_bound ~instantiate:false env s with
         | `Field f -> f
         | `Not_found -> _cannot_find env ast s
         | _ -> _expected env "record field" ast None
@@ -2040,7 +2043,7 @@ module Make
     Term (_wrap3 env ast T.apply f ty_args t_args)
 
   and parse_app_symbol env ast s s_ast args =
-    parse_app_resolved env ast s s_ast args (find_bound env s)
+    parse_app_resolved env ast s s_ast args (find_bound ~instantiate:true env s)
 
   and parse_app_resolved env ast s s_ast args = function
     | `Ty_var v -> parse_app_ty_var env ast v s_ast args
@@ -2261,7 +2264,7 @@ module Make
           | Wildcard shape ->
             let t_args = List.map (parse_term env) args in
             let f =
-              match find_bound env s with
+              match find_bound ~instantiate:false env s with
               | `Term_cst f -> f
               | `Not_found | `Builtin `Infer _ ->
                 let sym = {
@@ -2678,7 +2681,7 @@ module Make
     end
 
   let lookup_id_for_def _ (env, vars, params, ssig) (d: Stmt.def) =
-    match ssig, find_bound env d.id with
+    match ssig, find_bound ~instantiate:false env d.id with
     (* Type definitions *)
     | `Ty_def, ((`Ty_cst cst) as c) ->
       begin match find_reason env c with
