@@ -11,7 +11,7 @@ build: [
 depends: [
   # note: macos/arm64 -> ocaml >= 4.10
   "ocaml" { >= "4.08.1"}
-  "menhir" {>= "20211230" }
+  "menhir" {>= "20211230" & < "20260112"}
   "dune" { >= "3.0" }
   "dune-site" { >= "3.0" }
   "fmt" { >= "0.8.7" }

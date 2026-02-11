@@ -8,6 +8,9 @@ next
 
 - Add the export feature to the `dolmen` binary (PR#211)
 
+- Add upper bounds on menhir dependency as the lastest release
+  (20260112) breaks some tests
+
 ### Printing
 
 - Add printers for the SMT-LIB format (PR#211)
