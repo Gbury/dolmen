@@ -195,6 +195,7 @@ module Smtlib2
 
   let accumulate_logic_aux (st, acc, res) (stmt : Typer_Types.typechecked Typer_Types.stmt) =
     match stmt.contents with
+
     (* Just record the old logic, if any *)
     | `Set_logic (s, _) ->
       begin match acc.old_logic with
@@ -205,6 +206,7 @@ module Smtlib2
           (* TODO: proper error *)
           assert false
       end
+
     (* Not much to do for these statements *)
     | #Typer_Types.get_info
     | #Typer_Types.set_info

@@ -227,36 +227,8 @@ module Make(State : State.S) = struct
       end
     | `File f ->
       let s = Dolmen.Std.Statement.include_ f [] in
-      (* - Formats Dimacs and Tptp are descriptive and lack the emission
-           of formal solve/prove instructions, so we need to add them.
-         - Additionally, we also need to ensure that there is an 'exit'
-           statement at the end of the statements generator, so that some
-           algorithms now when things end, and can finish their computation
-           and start outputting things (e.g. the logic calculus); *)
-      let s' =
-        match lang with
-        | Logic.Zf
-        | Logic.ICNF
-        | Logic.Alt_ergo ->
-          Dolmen.Std.Statement.pack [
-            s;
-            Dolmen.Std.Statement.exit ()
-          ]
-
-        | Logic.Smtlib2 _ ->
-          (* TODO: check that there is an exit statement at the end /
-             add one if missing ? or auto-enable the flow check *)
-          s
-        | Logic.Dimacs
-        | Logic.Tptp _ ->
-          Dolmen.Std.Statement.pack [
-            s;
-            Dolmen.Std.Statement.prove ();
-            Dolmen.Std.Statement.exit ()
-          ]
-      in
       let file = { file with lang = Some lang; } in
-      st, file, (Gen.of_list [s'; Dolmen.Std.Statement.end_ ()])
+      st, file, Gen.singleton s
 
   (* This is a ['a Gen.t] with a threaded state. *)
   type 'a gen' = {g: State.t -> State.t * 'a option} [@@unboxed]
@@ -286,6 +258,14 @@ module Make(State : State.S) = struct
     in
     { g = aux }
 
+  let st_gen_append_once f g =
+    let r = ref true in
+    { g = fun st ->
+      match g.g st with
+      | (_, Some _) as res -> res
+      | st, None ->
+        if !r then (r := false; f st) else st, None }
+
   (* [map_st_gen f g] calls [f] on all the values produced by [g] in order,
      threading the state.
 
@@ -303,32 +283,45 @@ module Make(State : State.S) = struct
         (of_list preludes |> map (fun p -> (p, true)))
         (singleton (file, false)))
     |> map_st_gen (fun st ((file : _ file), is_prelude) ->
-      match file.source with
-      | `Stdin when is_prelude ->
-        State.error ~file st stdin_prelude (), None
-      | `Stdin ->
-        let st, file, g = parse_stdin st file in
-        let st = State.set State.logic_file file st in
-        st, Some ({ g = wrap_parser ~file g })
-      | `Raw (filename, _) | `File filename as source ->
-        (* NB: We need to make sure the lang is set before calling
-            [switch_to_full_mode_if_needed] *)
-        try
-          let file, lang =
-            match file.lang with
-            | Some l -> file, l
-            | None ->
-              (* Auto-detect input format *)
-              let l, _, _ = Logic.of_filename filename in
-              { file with lang = Some l }, l
-          in
-          let st, file = switch_to_full_mode_if_needed st file file in
-          let st, file, g = parse_file st source file lang in
+        match file.source with
+        | `Stdin when is_prelude ->
+          State.error ~file st stdin_prelude (), None
+        | `Stdin ->
+          let st, file, g = parse_stdin st file in
           let st = State.set State.logic_file file st in
           st, Some ({ g = wrap_parser ~file g })
-        with Logic.Extension_not_found ext ->
-          State.error st extension_not_found ext, None
-    ) |> flat_map Fun.id |> fun { g } -> g
+        | `Raw (filename, _) | `File filename as source ->
+          (* NB: We need to make sure the lang is set before calling
+             [switch_to_full_mode_if_needed] *)
+          try
+            let file, lang =
+              match file.lang with
+              | Some l -> file, l
+              | None ->
+                (* Auto-detect input format *)
+                let l, _, _ = Logic.of_filename filename in
+                { file with lang = Some l }, l
+            in
+            let st, file = switch_to_full_mode_if_needed st file file in
+            let st, file, g = parse_file st source file lang in
+            let st = State.set State.logic_file file st in
+            st, Some ({ g = wrap_parser ~file g })
+          with Logic.Extension_not_found ext ->
+            State.error st extension_not_found ext, None
+      ) |> flat_map Fun.id
+    (* Formats Dimacs and Tptp are descriptive and lack the emission
+       of formal solve/prove instructions, so we need to add them. *)
+    |> st_gen_append_once (fun st ->
+        match (State.get State.logic_file st).lang with
+        | Some Dimacs
+        | Some Tptp _ -> st, Some (Dolmen.Std.Statement.prove ())
+        | _ -> st, None
+      )
+    (* Add an end statement at the very end of the generator *)
+    |> st_gen_append_once (fun st ->
+        st, Some (Dolmen.Std.Statement.end_ ())
+      )
+    |> fun { g } -> g
 
   let parse_response prelude st (file : Response.language file) =
     (* Parse the input *)
