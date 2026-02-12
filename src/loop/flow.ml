@@ -96,7 +96,7 @@ module Smtlib2(State : State.S)
   (* Smtlib transitions, the reference is page 53 of:
      http://smtlib.cs.uiowa.edu/papers/smt-lib-reference-v2.6-r2017-07-18.pdf
 
-     However, here we are insterested in doing a bit, and actually ensuring
+     However, here we are insterested in doing a bit more, and actually ensuring
      that any assertions is never "lost". For instance, consider the following:
      ```smt2
      (set-logic ALL)
