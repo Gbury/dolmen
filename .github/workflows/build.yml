@@ -62,7 +62,7 @@ jobs:
     # Pin a specific version of menhir to ensure stability for
     # .messages ordering and state numbering
     - name: Install menhir
-      run: opam install menhir.20260209
+      run: opam pin menhir.20260209
     # Install ocaml deps
     - name: Install Ocaml deps
       run: opam install . --deps-only --with-test --with-doc
