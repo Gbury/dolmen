@@ -21,10 +21,10 @@ gentests: tools/gentests.ml $(filter-out $(wildcard tests/**/*.t/**/*),$(wildcar
 	dune exec -- tools/gentests.exe tests/
 
 test: gentests
-	dune build $(FLAGS) @runtest
+	dune build $(FLAGS) @runtest @messages
 
 promote: gentests
-	-dune build $(FLAGS) @runtest
+	-dune build $(FLAGS) @runtest @messages
 	dune promote $(FLAGS)
 
 coverage:

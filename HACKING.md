@@ -4,6 +4,17 @@ This file is incomplete, but may have interesting tips if you want to start
 hacking on dolmen. If you're having troubles, don't hesitate to contact me
 directly, ^^
 
+## Menhir version
+
+Some tests may depend on specifi versions of menhir. Notably the syntax error
+messages files can have slight changes between menhir versions (harmless changes,
+but they still induce a diff on the .messages files). Therefore to ensure that all
+tests succeed, users are encouraged to use the following version of menhir:
+
+```
+opam install menhir.20260209
+```
+
 ## Build locally
 
 You need to have [ocaml](https://ocaml.org/) installed to compile dolmen.
