@@ -61,7 +61,7 @@
 )
 
 (rule
-  (alias runtest)
+  (alias messages)
   (package dolmen)
   (deps syntax.messages syntax.messages.updated)
   (action (diff syntax.messages syntax.messages.updated))

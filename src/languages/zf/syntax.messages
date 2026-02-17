@@ -22,7 +22,7 @@ file: VAL WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET WITH
+file: VAL LEFT_BRACKET WITH
 ##
 ## Ends in an error in state: 2.
 ##
@@ -34,7 +34,7 @@ file: ASSERT LEFT_BRACKET WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LEFT_PAREN WITH
+file: VAL LEFT_BRACKET LEFT_PAREN WITH
 ##
 ## Ends in an error in state: 6.
 ##
@@ -46,7 +46,7 @@ file: ASSERT LEFT_BRACKET LEFT_PAREN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LOWER_WORD WITH
+file: VAL LEFT_BRACKET LOWER_WORD WITH
 ##
 ## Ends in an error in state: 7.
 ##
@@ -59,7 +59,7 @@ file: ASSERT LEFT_BRACKET LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LOWER_WORD LOWER_WORD WITH
+file: VAL LEFT_BRACKET LOWER_WORD LOWER_WORD WITH
 ##
 ## Ends in an error in state: 11.
 ##
@@ -72,7 +72,7 @@ file: ASSERT LEFT_BRACKET LOWER_WORD LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LEFT_PAREN QUOTED WITH
+file: VAL LEFT_BRACKET LEFT_PAREN LOWER_WORD RIGHT_BRACKET
 ##
 ## Ends in an error in state: 13.
 ##
@@ -81,10 +81,17 @@ file: ASSERT LEFT_BRACKET LEFT_PAREN QUOTED WITH
 ## The known suffix of the stack is as follows:
 ## LEFT_PAREN attr
 ##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 7, spurious reduction of production atomic_attr -> raw_var
+## In state 15, spurious reduction of production attr -> atomic_attr
+##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET QUOTED WITH
+file: VAL LEFT_BRACKET LOWER_WORD RIGHT_PAREN
 ##
 ## Ends in an error in state: 18.
 ##
@@ -94,10 +101,17 @@ file: ASSERT LEFT_BRACKET QUOTED WITH
 ## The known suffix of the stack is as follows:
 ## attr
 ##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 7, spurious reduction of production atomic_attr -> raw_var
+## In state 15, spurious reduction of production attr -> atomic_attr
+##
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_BRACKET LOWER_WORD COMMA WITH
+file: VAL LEFT_BRACKET LOWER_WORD COMMA WITH
 ##
 ## Ends in an error in state: 19.
 ##
@@ -145,7 +159,7 @@ file: VAL LOWER_WORD COLON WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI WITH
+file: REWRITE PI WITH
 ##
 ## Ends in an error in state: 27.
 ##
@@ -157,7 +171,7 @@ file: ASSERT PI WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LEFT_PAREN WITH
+file: REWRITE PI LEFT_PAREN WITH
 ##
 ## Ends in an error in state: 28.
 ##
@@ -169,7 +183,7 @@ file: ASSERT PI LEFT_PAREN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LEFT_PAREN LOWER_WORD WITH
+file: REWRITE LOGIC_FORALL LEFT_PAREN LOWER_WORD WITH
 ##
 ## Ends in an error in state: 29.
 ##
@@ -182,7 +196,7 @@ file: ASSERT FUN LEFT_PAREN LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LEFT_PAREN LOWER_WORD COLON WITH
+file: REWRITE PI LEFT_PAREN LOWER_WORD COLON WITH
 ##
 ## Ends in an error in state: 32.
 ##
@@ -194,7 +208,7 @@ file: ASSERT PI LEFT_PAREN LOWER_WORD COLON WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LEFT_PAREN LOWER_WORD COLON TYPE WITH
+file: REWRITE PI LEFT_PAREN LOWER_WORD COLON TYPE WITH
 ##
 ## Ends in an error in state: 34.
 ##
@@ -206,7 +220,7 @@ file: ASSERT PI LEFT_PAREN LOWER_WORD COLON TYPE WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LOWER_WORD DOT WITH
+file: REWRITE PI LOWER_WORD DOT WITH
 ##
 ## Ends in an error in state: 37.
 ##
@@ -218,7 +232,7 @@ file: ASSERT PI LOWER_WORD DOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH WITH
+file: REWRITE MATCH WITH
 ##
 ## Ends in an error in state: 38.
 ##
@@ -230,7 +244,7 @@ file: ASSERT MATCH WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_NOT WITH
+file: REWRITE LOGIC_NOT WITH
 ##
 ## Ends in an error in state: 40.
 ##
@@ -242,7 +256,7 @@ file: ASSERT LOGIC_NOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_PAREN WITH
+file: REWRITE LEFT_PAREN WITH
 ##
 ## Ends in an error in state: 42.
 ##
@@ -254,7 +268,7 @@ file: ASSERT LEFT_PAREN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_FORALL WITH
+file: REWRITE LOGIC_FORALL WITH
 ##
 ## Ends in an error in state: 43.
 ##
@@ -266,7 +280,7 @@ file: ASSERT LOGIC_FORALL WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LEFT_PAREN WITH
+file: REWRITE LOGIC_FORALL LEFT_PAREN WITH
 ##
 ## Ends in an error in state: 44.
 ##
@@ -278,7 +292,7 @@ file: ASSERT FUN LEFT_PAREN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON WITH
+file: REWRITE LOGIC_FORALL LEFT_PAREN LOWER_WORD COLON WITH
 ##
 ## Ends in an error in state: 46.
 ##
@@ -290,7 +304,7 @@ file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_EXISTS WITH
+file: REWRITE LOGIC_EXISTS WITH
 ##
 ## Ends in an error in state: 47.
 ##
@@ -302,7 +316,7 @@ file: ASSERT LOGIC_EXISTS WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_EXISTS LOWER_WORD DOT WITH
+file: REWRITE LOGIC_EXISTS LOWER_WORD DOT WITH
 ##
 ## Ends in an error in state: 50.
 ##
@@ -314,7 +328,7 @@ file: ASSERT LOGIC_EXISTS LOWER_WORD DOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT IF WITH
+file: REWRITE IF WITH
 ##
 ## Ends in an error in state: 53.
 ##
@@ -326,7 +340,7 @@ file: ASSERT IF WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN WITH
+file: REWRITE FUN WITH
 ##
 ## Ends in an error in state: 54.
 ##
@@ -338,7 +352,7 @@ file: ASSERT FUN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LOWER_WORD DOT WITH
+file: REWRITE FUN LOWER_WORD DOT WITH
 ##
 ## Ends in an error in state: 56.
 ##
@@ -350,7 +364,7 @@ file: ASSERT FUN LOWER_WORD DOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT ARITH_MINUS WITH
+file: REWRITE ARITH_MINUS WITH
 ##
 ## Ends in an error in state: 57.
 ##
@@ -362,7 +376,7 @@ file: ASSERT ARITH_MINUS WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT VAL
+file: REWRITE INT VAL
 ##
 ## Ends in an error in state: 62.
 ##
@@ -375,7 +389,7 @@ file: ASSERT INT VAL
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT INT VAL
+file: REWRITE INT INT VAL
 ##
 ## Ends in an error in state: 64.
 ##
@@ -388,7 +402,7 @@ file: ASSERT INT INT VAL
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_LT WITH
+file: REWRITE INT ARITH_LT WITH
 ##
 ## Ends in an error in state: 69.
 ##
@@ -400,7 +414,7 @@ file: ASSERT INT ARITH_LT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_PLUS WITH
+file: REWRITE INT ARITH_PLUS WITH
 ##
 ## Ends in an error in state: 72.
 ##
@@ -412,7 +426,7 @@ file: ASSERT INT ARITH_PLUS WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_NOT INT ARROW
+file: REWRITE LOGIC_NOT INT ARROW
 ##
 ## Ends in an error in state: 74.
 ##
@@ -431,7 +445,7 @@ file: ASSERT LOGIC_NOT INT ARROW
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_PRODUCT WITH
+file: REWRITE INT ARITH_PRODUCT WITH
 ##
 ## Ends in an error in state: 75.
 ##
@@ -443,7 +457,7 @@ file: ASSERT INT ARITH_PRODUCT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_MINUS WITH
+file: REWRITE INT ARITH_MINUS WITH
 ##
 ## Ends in an error in state: 77.
 ##
@@ -455,7 +469,7 @@ file: ASSERT INT ARITH_MINUS WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_LEQ WITH
+file: REWRITE INT ARITH_LEQ WITH
 ##
 ## Ends in an error in state: 79.
 ##
@@ -467,7 +481,7 @@ file: ASSERT INT ARITH_LEQ WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_GT WITH
+file: REWRITE INT ARITH_GT WITH
 ##
 ## Ends in an error in state: 81.
 ##
@@ -479,7 +493,7 @@ file: ASSERT INT ARITH_GT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_GEQ WITH
+file: REWRITE INT ARITH_GEQ WITH
 ##
 ## Ends in an error in state: 83.
 ##
@@ -491,7 +505,7 @@ file: ASSERT INT ARITH_GEQ WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARITH_GEQ INT ARITH_LT
+file: REWRITE INT ARITH_GEQ INT ARITH_LT
 ##
 ## Ends in an error in state: 86.
 ##
@@ -515,7 +529,7 @@ file: ASSERT INT ARITH_GEQ INT ARITH_LT
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_NEQ WITH
+file: REWRITE INT LOGIC_NEQ WITH
 ##
 ## Ends in an error in state: 87.
 ##
@@ -527,7 +541,7 @@ file: ASSERT INT LOGIC_NEQ WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_EQ WITH
+file: REWRITE INT LOGIC_EQ WITH
 ##
 ## Ends in an error in state: 90.
 ##
@@ -539,7 +553,7 @@ file: ASSERT INT LOGIC_EQ WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_EQ INT LOGIC_NEQ
+file: REWRITE INT LOGIC_EQ INT LOGIC_NEQ
 ##
 ## Ends in an error in state: 92.
 ##
@@ -563,7 +577,7 @@ file: ASSERT INT LOGIC_EQ INT LOGIC_NEQ
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_AND WITH
+file: REWRITE INT LOGIC_AND WITH
 ##
 ## Ends in an error in state: 93.
 ##
@@ -575,7 +589,7 @@ file: ASSERT INT LOGIC_AND WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT ARROW WITH
+file: REWRITE INT ARROW WITH
 ##
 ## Ends in an error in state: 96.
 ##
@@ -587,7 +601,7 @@ file: ASSERT INT ARROW WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_OR WITH
+file: REWRITE INT LOGIC_OR WITH
 ##
 ## Ends in an error in state: 99.
 ##
@@ -599,7 +613,7 @@ file: ASSERT INT LOGIC_OR WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_IMPLY WITH
+file: REWRITE INT LOGIC_IMPLY WITH
 ##
 ## Ends in an error in state: 101.
 ##
@@ -611,7 +625,7 @@ file: ASSERT INT LOGIC_IMPLY WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT INT LOGIC_EQUIV WITH
+file: REWRITE INT LOGIC_EQUIV WITH
 ##
 ## Ends in an error in state: 103.
 ##
@@ -623,7 +637,7 @@ file: ASSERT INT LOGIC_EQUIV WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LOWER_WORD WITH
+file: REWRITE LOGIC_FORALL LOWER_WORD WITH
 ##
 ## Ends in an error in state: 105.
 ##
@@ -636,7 +650,7 @@ file: ASSERT FUN LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT IF INT WITH
+file: REWRITE IF INT WITH
 ##
 ## Ends in an error in state: 108.
 ##
@@ -662,7 +676,7 @@ file: ASSERT IF INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT IF INT THEN WITH
+file: REWRITE IF INT THEN WITH
 ##
 ## Ends in an error in state: 109.
 ##
@@ -674,7 +688,7 @@ file: ASSERT IF INT THEN WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT IF INT THEN INT WITH
+file: REWRITE IF INT THEN INT WITH
 ##
 ## Ends in an error in state: 110.
 ##
@@ -700,7 +714,7 @@ file: ASSERT IF INT THEN INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT IF INT THEN INT ELSE WITH
+file: REWRITE IF INT THEN INT ELSE WITH
 ##
 ## Ends in an error in state: 111.
 ##
@@ -712,7 +726,7 @@ file: ASSERT IF INT THEN INT ELSE WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON INT WITH
+file: REWRITE LOGIC_FORALL LEFT_PAREN LOWER_WORD COLON INT WITH
 ##
 ## Ends in an error in state: 114.
 ##
@@ -738,7 +752,7 @@ file: ASSERT FUN LEFT_PAREN LOWER_WORD COLON INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LOGIC_FORALL LOWER_WORD DOT WITH
+file: REWRITE LOGIC_FORALL LOWER_WORD DOT WITH
 ##
 ## Ends in an error in state: 117.
 ##
@@ -750,7 +764,7 @@ file: ASSERT LOGIC_FORALL LOWER_WORD DOT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT LEFT_PAREN INT WITH
+file: REWRITE LEFT_PAREN INT WITH
 ##
 ## Ends in an error in state: 119.
 ##
@@ -776,7 +790,7 @@ file: ASSERT LEFT_PAREN INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WHERE
+file: REWRITE MATCH INT WHERE
 ##
 ## Ends in an error in state: 122.
 ##
@@ -802,7 +816,7 @@ file: ASSERT MATCH INT WHERE
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH WITH
+file: REWRITE MATCH INT WITH WITH
 ##
 ## Ends in an error in state: 123.
 ##
@@ -814,7 +828,7 @@ file: ASSERT MATCH INT WITH WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH VERTICAL_BAR WITH
+file: REWRITE MATCH INT WITH VERTICAL_BAR WITH
 ##
 ## Ends in an error in state: 124.
 ##
@@ -826,7 +840,7 @@ file: ASSERT MATCH INT WITH VERTICAL_BAR WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD WITH
+file: REWRITE MATCH INT WITH VERTICAL_BAR LOWER_WORD WITH
 ##
 ## Ends in an error in state: 125.
 ##
@@ -838,7 +852,7 @@ file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD LOWER_WORD WITH
+file: REWRITE MATCH INT WITH VERTICAL_BAR LOWER_WORD LOWER_WORD WITH
 ##
 ## Ends in an error in state: 127.
 ##
@@ -850,7 +864,7 @@ file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW WITH
+file: REWRITE MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW WITH
 ##
 ## Ends in an error in state: 131.
 ##
@@ -862,7 +876,7 @@ file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW INT WITH
+file: REWRITE MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW INT WITH
 ##
 ## Ends in an error in state: 135.
 ##
@@ -890,7 +904,7 @@ file: ASSERT MATCH INT WITH VERTICAL_BAR LOWER_WORD ARROW INT WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LOWER_WORD COLON TYPE WITH
+file: REWRITE PI LOWER_WORD COLON TYPE WITH
 ##
 ## Ends in an error in state: 138.
 ##
@@ -903,7 +917,7 @@ file: ASSERT PI LOWER_WORD COLON TYPE WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LOWER_WORD WITH
+file: REWRITE PI LOWER_WORD WITH
 ##
 ## Ends in an error in state: 140.
 ##
@@ -916,7 +930,7 @@ file: ASSERT PI LOWER_WORD WITH
 
 <YOUR SYNTAX ERROR MESSAGE HERE>
 
-file: ASSERT PI LOWER_WORD COLON WITH
+file: REWRITE PI LOWER_WORD COLON WITH
 ##
 ## Ends in an error in state: 141.
 ##

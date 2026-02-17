@@ -59,6 +59,10 @@ jobs:
     # Run opam udpate to get an up-to-date repo
     - name: Update opam repo
       run: opam update
+    # Pin a specific version of menhir to ensure stability for
+    # .messages ordering and state numbering
+    - name: Install menhir
+      run: opam pin add menhir 20260209
     # Install ocaml deps
     - name: Install Ocaml deps
       run: opam install . --deps-only --with-test --with-doc
