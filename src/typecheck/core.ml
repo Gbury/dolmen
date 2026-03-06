@@ -401,6 +401,13 @@ module Smtlib2 = struct
       index
     | _ -> raise (Bad_index_in_sexpr ast)
 
+  let version_at_least_2_7 version =
+    match (version : Dolmen.Smtlib2.version) with
+    | `Script (`Poly | `V2_6)
+    | `Response (`V2_6) -> false
+    | `Script (`V2_7 | `Latest)
+    | `Response (`V2_7 | `Latest) -> true
+
   let rec sexpr_as_term (version : Dolmen.Smtlib2.version) sexpr =
     match (sexpr : Ast.t) with
 
@@ -441,7 +448,8 @@ module Smtlib2 = struct
     | { term = App ({ term = Builtin Sexpr; _ }, f :: args); loc; attr } ->
       let f = sexpr_as_term version f in
       let args = List.map (sexpr_as_term version) args in
-      Ast.apply ~loc f args
+      let app = if version_at_least_2_7 version then Ast.fake_apply else Ast.apply in
+      app ~loc f args
       |> Ast.add_attrs attr
 
     (* check that we handle all Sexpr cases *)
