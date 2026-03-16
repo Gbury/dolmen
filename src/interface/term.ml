@@ -1361,6 +1361,9 @@ module type Smtlib_Int = sig
   val abs : t -> t
   (** Arithmetic absolute value. *)
 
+  val pow : t -> t -> t
+  (** Exponentiation / power operation. *)
+
   val divisible : string -> t -> t
   (** Arithmetic divisibility predicate. Indexed over
       constant integers (represented as strings, see {!int}). *)

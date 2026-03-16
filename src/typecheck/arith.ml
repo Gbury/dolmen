@@ -243,7 +243,8 @@ module Smtlib2 = struct
 
      There are therefore a few different "variants" of arithmetic that one
      can typecheck for:
-     - regular arithmetic where everything is allowed
+     - regular arithmetic where everything (except expoentiation) is allowed
+     - extended arithmetic with everything including exponentiation
      - lenient linear arithmetic (as specified by AUFLIA)
      - strict linear arithmetic (as specified by other logics)
      - integer difference logic
@@ -252,11 +253,13 @@ module Smtlib2 = struct
   *)
   type config =
     | Regular
+    | Exponential
     | Linear of [ `Large | `Strict ]
     | Difference of [ `IDL | `RDL | `UFIDL ]
 
   let print_config fmt = function
     | Regular -> Format.fprintf fmt "regular"
+    | Exponential -> Format.fprintf fmt "exponential"
     | Linear `Large -> Format.fprintf fmt "linear (large)"
     | Linear `Strict -> Format.fprintf fmt "linear"
     | Difference `IDL -> Format.fprintf fmt "IDL"
@@ -700,6 +703,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> Ok
         | Difference (`IDL | `RDL) ->
           minus_dl parse version env args
@@ -714,6 +718,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> sub_idl parse version env args
         | Difference `RDL -> sub_rdl parse version env args
@@ -727,6 +732,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> forbidden "addition" "integer difference logic"
         | Difference `RDL -> add_rdl parse version env args
@@ -740,11 +746,24 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear `Strict -> mul_linear ~strict:true parse version env args
         | Linear `Large -> mul_linear ~strict:false parse version env args
         | Difference `IDL -> forbidden "multiplication" "integer difference logic"
         | Difference `RDL -> forbidden "multiplication" "real difference logic"
         | Difference `UFIDL -> forbidden "multiplication" "difference logic (QF_UFIDL variant)"
+
+    let exp config version _args =
+      match (version : Dolmen.Smtlib2.version) with
+      | `Response _ ->
+        (* Allow all operations in responses, since we will evaluate them *)
+        Ok
+      | `Script _ ->
+        match config with
+        | Exponential -> Ok
+        | Regular -> forbidden "exponentiation" "regular arithmetic"
+        | Linear _ -> forbidden "exponentiation" "linear arithmetic"
+        | Difference _ -> forbidden "exponentiation" "difference logic"
 
     let div config parse version env args =
       match (version : Dolmen.Smtlib2.version) with
@@ -754,6 +773,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> div_linear parse version env args
         | Difference `IDL -> forbidden "division" "integer difference logic"
         | Difference `RDL -> div_linear parse version env args
@@ -767,6 +787,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> forbidden "euclidean division" "linear arithmetic"
         | Difference _ -> forbidden "euclidean division" "difference logic"
 
@@ -778,6 +799,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> forbidden "mod" "linear arithmetic"
         | Difference _ -> forbidden "mod" "difference logic"
 
@@ -789,6 +811,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> forbidden "abs" "linear arithmetic"
         | Difference _ -> forbidden "abs" "difference logic"
 
@@ -800,6 +823,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> Ok
         | Difference `IDL -> comp_idl parse version env args
         | Difference `RDL -> comp_rdl parse version env args
@@ -813,6 +837,7 @@ module Smtlib2 = struct
       | `Script _ ->
         match config with
         | Regular -> Ok
+        | Exponential -> Ok
         | Linear _ -> forbidden "divisible" "linear arithmetic"
         | Difference _ -> forbidden "divisible" "difference logic"
 
@@ -871,6 +896,9 @@ module Smtlib2 = struct
             | "*" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.mul
                        ~check:(check config env (F.mul config (parse ~config) version env)))
+            | "**" ->
+              Type.builtin_term (Base.term_app_left (module Type) env s T.pow
+                       ~check:(check config env (F.exp config version)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.div
                                    ~check:(check config env (F.ediv config version)))
@@ -1084,6 +1112,9 @@ module Smtlib2 = struct
               Type.builtin_term (Base.term_app_left_ast (module Type) env s
                        (dispatch2 env (T.Int.mul, T.Real.mul))
                        ~check:(check config env (F.mul config (parse ~config) version env)))
+            | "**" ->
+              Type.builtin_term (Base.term_app2 (module Type) env s T.Int.pow
+                       ~check:(check2 config env (F.exp config version)))
             | "div" ->
               Type.builtin_term (Base.term_app_left (module Type) env s T.Int.div
                                    ~check:(check config env (F.ediv config version)))

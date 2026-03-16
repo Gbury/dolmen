@@ -1,22 +1,25 @@
 (theory Ints
 
- :smt-lib-version 2.6
- :smt-lib-release "2017-11-24"
+ :smt-lib-version 2.7
+ :smt-lib-release "2024-07-21"
  :written-by "Cesare Tinelli"
  :date "2010-04-17"
- :last-updated "2015-04-25"
+ :last-updated "2024-07-21"
  :update-history
  "Note: history only accounts for content changes, not release changes.
+  2026-01-16 Added exponentiation.
+  2024-07-21 Updated to Version 2.7.
   2015-04-25 Updated to Version 2.5.
  "
 
  :sorts ((Int 0))
 
  :funs ((NUMERAL Int)
-        (- Int Int)                 ; negation
-        (- Int Int Int :left-assoc) ; subtraction
+        (- Int Int)                   ; negation
+        (- Int Int Int :left-assoc)   ; subtraction
         (+ Int Int Int :left-assoc)
         (* Int Int Int :left-assoc)
+        (** Int Int Int)              ; exponentiation
         (div Int Int Int :left-assoc)
         (mod Int Int Int)
         (abs Int Int)
@@ -26,7 +29,7 @@
         (>  Int Int Bool :chainable)
        )
 
- :funs_description
+ :funs-description
  "All ranked function symbols of the form
     ((_ divisible n) Int Bool)
   where n is a positive numeral.
@@ -54,11 +57,22 @@
   - div and mod according to Boute's Euclidean definition [1], that is,
     so as to satify the formula
 
-    (for all ((m Int) (n Int))
+    (forall ((m Int) (n Int))
       (=> (distinct n 0)
           (let ((q (div m n)) (r (mod m n)))
             (and (= m (+ (* n q) r))
                  (<= 0 r (- (abs n) 1))))))
+
+  - ** as the exponentiation function if the second argument is non-negative.
+    That is (** m n) is m to the power of n.  In particular, (= (** 0 0) 1) holds.
+    If n is strictly smaller than 0, then ** is defined so as to satisfy the formula
+
+    (= (** m n) (div 1 (** m (- n))))
+
+    So the following holds for all integers n < 0:
+    - (= (** 0 n) (div 1 0))
+    - (= (** m n) (** m (- n))) if (= (abs m) 1)
+    - (= (** m n) 0)            if (> (abs m) 1)
 
   - the other function symbols of Ints as expected.
 

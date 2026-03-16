@@ -9,6 +9,8 @@
 (** {2 Smtlib logics} *)
 module Smtlib2 : sig
 
+  type version = Dolmen.Smtlib2.version
+
   type theory = [
     | `Core
     | `Arrays
@@ -43,7 +45,7 @@ module Smtlib2 : sig
   val print_features : Format.formatter -> features -> unit
   (** Printing functions *)
 
-  val parse : string -> t option
+  val parse : version -> string -> t option
   (** Parses an smtlib logic string and returns its structured version. *)
 
   val to_string : t -> string
