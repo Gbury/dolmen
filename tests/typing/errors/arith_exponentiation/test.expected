@@ -1,0 +1,5 @@
+File "tests/typing/errors/arith_exponentiation/test.smt2", line 4, character 13-21:
+4 | (assert (= 0 (** a b)))
+                 ^^^^^^^^
+Error Forbidden expression in regular arithmetic
+Hint: exponentiation is not allowed in regular arithmetic
