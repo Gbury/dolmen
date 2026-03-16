@@ -284,7 +284,10 @@ let extension =
 
 let smtlib2_logic =
   let parse s =
-    match Dolmen_type.Logic.Smtlib2.parse s with
+    (* Note: we consider that the latest version of smt2 is a superset of
+       previous ones when checking that the logic set is legitimate. It
+       will be checked once again anyway during typechecking. *)
+    match Dolmen_type.Logic.Smtlib2.parse (`Script `Latest) s with
     | Some _ -> Result.Ok s
     | None -> Result.Error (`Msg (
         Format.asprintf "'%s' is not a valid smtlib2 logic" s))

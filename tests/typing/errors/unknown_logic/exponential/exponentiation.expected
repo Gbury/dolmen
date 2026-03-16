@@ -1,0 +1,4 @@
+File "tests/typing/errors/unknown_logic/exponential/exponentiation.smt2", line 1, character 0-18:
+1 | (set-logic QF_EIA)
+    ^^^^^^^^^^^^^^^^^^
+Fatal Warning Unknown logic: QF_EIA

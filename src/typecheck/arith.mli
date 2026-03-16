@@ -24,6 +24,7 @@ module Smtlib2 : sig
 
   type config =
     | Regular
+    | Exponential
     | Linear of [ `Large | `Strict ]
     | Difference of [ `IDL | `RDL | `UFIDL ] (**)
   (** The different type of arithmetic restrictions, see the comment in

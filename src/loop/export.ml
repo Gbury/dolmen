@@ -268,21 +268,22 @@ module Smtlib2
   module P = Printer(Env)(Sexpr)(View)
 
   type acc = {
+    version : Dolmen.Smtlib2.version;
     env : Env.t;
     fmt : Format.formatter;
     close : unit -> unit;
   }
 
-  let init ~close fmt =
+  let init ~close ~version fmt =
     let rename = Env.Scope.mk_rename 0 rename_num_postfix in
     let sanitize = Dolmen.Smtlib2.Script.V2_6.Print.sanitize in
     let on_conflict ~prev_id:_ ~new_id:_ ~name:_ = Env.Scope.Rename in
     let scope = Env.Scope.empty ~rename ~sanitize ~on_conflict in
     let env = Env.empty scope in
     let env = P.set_split_dec env split_dec in
-    { env; fmt; close; }
+    { version; env; fmt; close; }
 
-  let pp_stmt st ({ env; fmt; close = _; } as acc) pp x =
+  let pp_stmt st ({ version = _; env; fmt; close = _; } as acc) pp x =
     try
       Format.fprintf fmt "%a@." (pp env) x;
       st, acc
@@ -487,7 +488,7 @@ module Smtlib2
     match stmt.contents with
       (* info setters *)
       | `Set_logic (s, _) ->
-        begin match Dolmen_type.Logic.Smtlib2.parse s with
+        begin match Dolmen_type.Logic.Smtlib2.parse acc.version s with
           | Some _ ->
             pp_stmt st acc P.set_logic s
           | None ->
@@ -667,13 +668,13 @@ module Make
       | Smtlib2 version ->
         begin match version with
           | `V2_7 | `Latest ->
-            let acc = Smtlib2_7.init ~close fmt in
+            let acc = Smtlib2_7.init ~close ~version:(`Script version) fmt in
             st, mk acc (module Smtlib2_7)
           | `V2_6 ->
-            let acc = Smtlib2_6.init ~close fmt in
+            let acc = Smtlib2_6.init ~close ~version:(`Script version) fmt in
             st, mk acc (module Smtlib2_6)
           | `Poly ->
-            let acc = Smtlib2_Poly.init ~close fmt in
+            let acc = Smtlib2_Poly.init ~close ~version:(`Script version) fmt in
             st, mk acc (module Smtlib2_Poly)
         end
       | lang ->

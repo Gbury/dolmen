@@ -9,6 +9,15 @@ module B = Dolmen_std.Builtin
 
 module Smtlib2 = struct
 
+  type version = Dolmen.Smtlib2.version
+
+  let version_at_least_2_7 version =
+    match (version : Dolmen.Smtlib2.version) with
+    | `Script (`Poly | `V2_6)
+    | `Response (`V2_6) -> false
+    | `Script (`V2_7 | `Latest)
+    | `Response (`V2_7 | `Latest) -> true
+
   type theory = [
     | `Core
     | `Arrays
@@ -97,7 +106,7 @@ module Smtlib2 = struct
   N before IA, RA, or IRA for the non-linear fragment of those arithmetics
   UF for the extension allowing free sort and function symbols
   *)
-  let parse s =
+  let parse version s =
     let default = {
       theories = [ `Core ];
       features = {
@@ -118,6 +127,7 @@ module Smtlib2 = struct
     let set_idl c = set_features c (fun f -> { f with arithmetic = Difference `IDL}) in
     let set_rdl c = set_features c (fun f -> { f with arithmetic = Difference `RDL}) in
     let set_la c = set_features c (fun f -> { f with arithmetic = Linear `Strict}) in
+    let set_exp c = set_features c (fun f -> { f with arithmetic = Exponential }) in
     (* Entry-point for a best effort at parsing a logic name into a
        structured representation of what theories the logic includes and
        what restrictions it imposes. *)
@@ -178,6 +188,11 @@ module Smtlib2 = struct
       | 'N'::'I'::'A'::l -> parse_end (add_theory `Ints c) l
       | 'N'::'R'::'A'::l -> parse_end (add_theory `Reals c) l
       | 'N'::'I'::'R'::'A'::l -> parse_end (add_theory `Reals_Ints c) l
+      (* Note: the EIA logic has been introduced in version 2.7 *)
+      | 'E'::'I'::'A'::l when version_at_least_2_7 version ->
+        parse_end (add_theory `Ints (set_exp c)) l
+      | 'E'::'I'::'R'::'A'::l when version_at_least_2_7 version ->
+        parse_end (add_theory `Reals_Ints (set_exp c)) l
       | l -> parse_end c l
     (* End of list *)
     and parse_end c = function
@@ -270,6 +285,7 @@ module Smtlib2 = struct
     then begin match l.features.arithmetic with
       | Difference `IDL -> Buffer.add_string b "IDL"
       | Linear _ -> Buffer.add_string b "LIA"
+      | Exponential -> Buffer.add_string b "EIA"
       | _ -> Buffer.add_string b "NIA"
     end else if reals
     then begin match l.features.arithmetic with
@@ -279,6 +295,7 @@ module Smtlib2 = struct
     end else if reals_ints
     then begin match l.features.arithmetic with
       | Linear _ -> Buffer.add_string b "LIRA"
+      | Exponential -> Buffer.add_string b "EIRA"
       | _ -> Buffer.add_string b "NIRA"
     end;
     let s = Buffer.contents b in
@@ -319,6 +336,7 @@ module Smtlib2 = struct
     exception Unknown_term_builtin of V.term_cst
 
     type arith_config =
+      | Exponential
       | Non_linear
       | No_constraint
       | Linear of [ `Strict | `Large ]
@@ -380,6 +398,7 @@ module Smtlib2 = struct
     let add_dl_arith kind acc =
       let acc = add_arith kind acc in
       match acc.arith with
+      | Exponential -> acc
       | Non_linear -> acc
       | Difference _ -> acc
       | No_constraint -> { acc with arith = Difference `Normal; }
@@ -391,7 +410,7 @@ module Smtlib2 = struct
       | Non_linear | Difference `UFIDL -> acc
       | Difference `Normal -> { acc with arith = Difference `UFIDL; }
       | No_constraint -> { acc with arith = Difference `Normal; }
-      | Linear _ -> acc
+      | Linear _ | Exponential -> acc
 
     let add_linear_arith_strict kind acc =
       let acc = add_arith kind acc in
@@ -408,8 +427,13 @@ module Smtlib2 = struct
     let add_non_linear_arith kind acc =
       let acc = add_arith kind acc in
       match acc.arith with
-      | Non_linear -> acc
+      | Non_linear | Exponential -> acc
       | _ -> { acc with arith = Non_linear; }
+
+    let add_exponential_arith acc =
+      match acc.arith with
+      | Exponential -> acc
+      | _ -> { acc with arith = Exponential; }
 
     (* array helpers *)
 
@@ -772,6 +796,8 @@ module Smtlib2 = struct
               | _ -> assert false (* Incorrect use of B.Mul *)
             end
 
+          | Pow `Int -> aux (add_exponential_arith acc)
+
           | Rational _
           | Floor_to_int `Rat
           | Is_int (`Int | `Rat)
@@ -836,6 +862,7 @@ module Smtlib2 = struct
         quantifiers = acc.quantifiers;
         arithmetic =
           begin match acc.arith with
+            | Exponential -> Exponential
             | No_constraint ->
               (* by default, we prefer linear arith (over DL) if there is no constraint *)
               Linear `Strict

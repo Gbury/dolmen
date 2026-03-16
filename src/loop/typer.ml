@@ -1940,14 +1940,14 @@ module Typer(State : State.S) = struct
     match lang_of_input input with
     | `Logic ICNF -> st, Dolmen_type.Logic.Auto
     | `Logic Dimacs -> st, Dolmen_type.Logic.Auto
-    | `Logic Smtlib2 _ ->
+    | `Logic Smtlib2 version ->
       let logic =
         match State.get smtlib2_forced_logic st with
         | None -> s
         | Some forced_logic -> forced_logic
       in
       let st, l =
-        match Dolmen_type.Logic.Smtlib2.parse logic with
+        match Dolmen_type.Logic.Smtlib2.parse (`Script version) logic with
         | Some l -> st, l
         | None ->
           let st = warn ~input ~loc st unknown_logic s in
