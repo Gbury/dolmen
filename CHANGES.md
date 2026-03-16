@@ -17,6 +17,9 @@ next
 
 ### Typing
 
+- Add support for exponentiation in SMT-LIB2.7, as per the new
+  Ints theory and EIA sub-logic (PR#259)
+
 - Allow the new bitv operators from SMT-LIB v2.7 to also be
   used for psmt2 (PR#249)
 
