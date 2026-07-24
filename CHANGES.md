@@ -20,6 +20,10 @@ next
 - Better errors when a lexing error occurs inside of a quoted symbol
   (PR#265)
 
+### Parsing
+
+- Stop emitting exit statement at the end of preludes (PR#263)
+
 ### Typing
 
 - Add support for exponentiation in SMT-LIB2.7, as per the new
