@@ -42,19 +42,7 @@ jobs:
         # - dolmen_lsp -> linol~0.8 -> ocaml >= 4.14
         include:
           # linux
-          - ocaml-version: ocaml-base-compiler.4.08.1
-            os: ubuntu-latest
-            pkgs: dolmen dolmen_type dolmen_loop
-          - ocaml-version: ocaml-base-compiler.4.10.2
-            os: ubuntu-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-base-compiler.4.12.1
-            os: ubuntu-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-base-compiler.4.13.1
-            os: ubuntu-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
+          - ocaml-version: ocaml-variants.4.14.4+options,ocaml-option-flambda
             os: ubuntu-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.0.0
@@ -67,20 +55,17 @@ jobs:
             os: ubuntu-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.3.0
+            os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+          - ocaml-version: ocaml-base-compiler.5.4.1
+            os: ubuntu-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+          - ocaml-version: ocaml-base-compiler.5.5.0
             os: ubuntu-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # macos
-          - ocaml-version: ocaml-base-compiler.4.10.2
-            os: macos-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-base-compiler.4.12.1
-            os: macos-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-base-compiler.4.13.1
-            os: macos-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
+          - ocaml-version: ocaml-variants.4.14.4+options,ocaml-option-flambda
             os: macos-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
           - ocaml-version: ocaml-base-compiler.5.0.0
@@ -95,14 +80,21 @@ jobs:
           - ocaml-version: ocaml-base-compiler.5.3.0
             os: macos-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+          - ocaml-version: ocaml-base-compiler.5.4.1
+            os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+          - ocaml-version: ocaml-base-compiler.5.5.0
+            os: macos-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
 
           # Windows
-          - ocaml-version: ocaml-variants.4.13.1+options,system-mingw
-            os: windows-latest
-            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin
-          - ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda,system-mingw
+          - ocaml-version: ocaml-variants.4.14.4+options,ocaml-option-flambda,system-mingw
             os: windows-latest
             pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+          - ocaml-version: ocaml-base-compiler.5.5.0,system-mingw
+            os: windows-latest
+            pkgs: dolmen dolmen_type dolmen_loop dolmen_model dolmen_bin dolmen_lsp
+
 
     # Build ENV
     # ---------
