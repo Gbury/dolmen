@@ -15,6 +15,11 @@ next
 
 - Add printers for the SMT-LIB format (PR#211)
 
+### Lexing
+
+- Better errors when a lexing error occurs inside of a quoted symbol
+  (PR#265)
+
 ### Typing
 
 - Add support for exponentiation in SMT-LIB2.7, as per the new
