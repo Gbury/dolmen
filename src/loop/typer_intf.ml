@@ -252,6 +252,10 @@ module type Typer_Full = sig
   (** Force the typechecker to use the given logic (instead of using the one declared
       in the `set-logic` statement). *)
 
+  val smtlib2_fake_apply_sugar : bool option key
+  (** If true, then enable the higher-order application syntactic sugar (which was
+      briefly introduced before being removed from SMT-LIB2.7) *)
+
   val extension_builtins : extension list key
   (** Use typing extensions defined by the typechecker.
 
@@ -268,6 +272,7 @@ module type Typer_Full = sig
   val init :
     ?ty_state:ty_state ->
     ?smtlib2_forced_logic:string option ->
+    ?smtlib2_fake_apply_sugar:bool option ->
     ?extension_builtins:(extension list) ->
     ?additional_builtins:(state -> lang -> builtin_symbols) ->
     state -> state

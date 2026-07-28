@@ -20,6 +20,7 @@ module Smtlib2 = struct
 
   type theory = [
     | `Core
+    | `HO
     | `Arrays
     | `Bitvectors
     | `Floats
@@ -32,6 +33,7 @@ module Smtlib2 = struct
   let print_theory fmt th =
     match (th : theory) with
     | `Core -> Format.fprintf fmt "core"
+    | `HO -> Format.fprintf fmt "ho"
     | `Arrays -> Format.fprintf fmt "arrays"
     | `Bitvectors -> Format.fprintf fmt "bitv"
     | `Floats -> Format.fprintf fmt "floats"
@@ -81,7 +83,7 @@ module Smtlib2 = struct
       print_theories theories print_features features
 
   let all = {
-    theories = [ `Core; `Arrays; `Bitvectors; `Floats; `String; `Reals_Ints ];
+    theories = [ `HO; `Arrays; `Bitvectors; `Floats; `String; `Reals_Ints; `Core ];
     features = {
       free_sorts = true;
       free_functions = true;
@@ -136,10 +138,11 @@ module Smtlib2 = struct
        a logic including all that is supported by the solver. *)
     and parse_all c = function
       | 'A'::'L'::'L'::l -> parse_end all l
-      | l -> parse_qf c l
+      | l -> parse_qf_or_ho c l
     (* The QF theory can only appear as a prefix "QF_" *)
-    and parse_qf c = function
+    and parse_qf_or_ho c = function
       | [] -> Some c
+      | 'H'::'O'::'_'::l when version_at_least_2_7 version -> parse_array (add_theory `HO c) l
       | 'Q'::'F'::'_'::l -> parse_array (set_qf c) l
       | l -> parse_array c l
     (* The Array theory is specified first after an optional QF_, and

@@ -384,7 +384,7 @@ let mk_run_state
     response_file output_file
     flow_check compute_logic
     header_check header_licenses header_lang_version
-    smtlib2_forced_logic smtlib2_exts
+    smtlib2_forced_logic smtlib2_fake_apply_sugar smtlib2_exts
     type_check extensions
     check_model (* check_model_mode *)
     debug report_style max_warn reports syntax_error_ref
@@ -421,6 +421,7 @@ let mk_run_state
       ~interactive_prompt:Loop.Parser.interactive_prompt_lang
     |> Loop.Typer.init
       ~smtlib2_forced_logic
+      ~smtlib2_fake_apply_sugar
     |> Loop.Typer_Pipe.init ~type_check
     |> Loop.Check.init
       ~check_model
@@ -687,6 +688,10 @@ let state =
                the one given on the command line." in
     Arg.(value & opt (some smtlib2_logic) None & info ["force-smtlib2-logic"] ~doc ~docs)
   in
+  let smt2_fake_apply_sugar =
+    let doc = "Enable the short-lived syntactic sugar for HO maps/functions." in
+    Arg.(value & opt (some bool) None & info ["smtlib2-fake-apply-sugar"] ~doc ~docs)
+  in
   let smtlib2_extensions =
     let doc = Format.asprintf
         "Activate smtlib2 extension. Currently an experimental option. \
@@ -765,7 +770,7 @@ let state =
         response_file $ output_file $
         flow_check $ compute_logic $
         header_check $ header_licenses $ header_lang_version $
-        force_smtlib2_logic $ smtlib2_extensions $
+        force_smtlib2_logic $ smt2_fake_apply_sugar $ smtlib2_extensions $
         typing $ ext $
         check_model $ (* check_model_mode $ *)
         debug $ report_style $ max_warn $ reports $ syntax_error_ref))

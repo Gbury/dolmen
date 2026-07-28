@@ -73,10 +73,8 @@ module Smtlib2 : sig
       (Type : Tff_intf.S)
       (Tag : Dolmen.Intf.Tag.Smtlib_Base with type 'a t = 'a Type.Tag.t
                                           and type term := Type.T.t)
-      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t
-                                        and type var := Type.Ty.Var.t)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Base with type t = Type.Ty.t)
       (T : Dolmen.Intf.Term.Smtlib_Base with type t = Type.T.t
-                                         and type var := Type.T.Var.t
                                          and type cstr := Type.T.Cstr.t) : sig
 
     type _ Type.warn +=
@@ -90,6 +88,21 @@ module Smtlib2 : sig
 
     val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
+
+  module Ho
+      (Type : Tff_intf.S)
+      (Ty : Dolmen.Intf.Ty.Smtlib_Ho with type t = Type.Ty.t
+                                        and type var := Type.Ty.Var.t)
+      (T : Dolmen.Intf.Term.Smtlib_Ho with type t = Type.T.t
+                                       and type var := Type.T.Var.t) : sig
+
+    type config = {
+      fake_apply_sugar : bool;
+    }
+
+    val parse : config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+  end
+
 end
 
 (** Zf builtins *)

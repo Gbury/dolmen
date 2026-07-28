@@ -43,6 +43,9 @@ module Tptp_Arith =
 module Smtlib2_Core =
   Dolmen_type.Core.Smtlib2.Tff(T)(Dolmen.Std.Expr.Tags)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
+module Smtlib2_Ho =
+  Dolmen_type.Core.Smtlib2.Ho(T)
+    (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term)
 module Smtlib2_Ints =
   Dolmen_type.Arith.Smtlib2.Int.Tff(T)
     (Dolmen.Std.Expr.Ty)(Dolmen.Std.Expr.Term.Int)
@@ -320,23 +323,29 @@ let text_hint2 = function
   | _, msg -> Some (Format.dprintf "%a" Format.pp_print_text msg)
 
 let poly_hint (c, arity, actual) =
-  let vars, params, _ = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
+  let vars, params, ty = Dolmen.Std.Expr.(Ty.poly_sig @@ Term.Const.ty c) in
   let n_ty = List.length vars in
   let n_t = List.length params in
   let total_arity = n_ty + n_t in
-  match (arity : T.arity) with
-  | Exact x when x = total_arity && actual = n_t ->
+  match (arity : T.arity), Dolmen.Std.Expr.Ty.view ty with
+  | Exact x, _ when x = total_arity && actual = n_t ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "the head of the application is polymorphic, \
          you probably forgot the type arguments@]")
-  | Exact x when x = n_t && n_ty <> 0 && actual = n_ty ->
+  | _, `Map _ when actual > 0 ->
+    Some (
+      Format.dprintf "%a" Format.pp_print_text
+        "It looks like you're trying to apply a polymorphic map (i.e. a \
+        higher-order function encoded into first-order), are you sure you \
+        are using the correct syntax ?")
+  | Exact x, _ when x = n_t && n_ty <> 0 && actual = n_ty ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "it looks like the language enforces implicit polymorphism, \
          i.e. no type arguments are to be provided to applications \
          (and instead type annotation/coercions should be used).")
-  | Overloaded _ when n_ty <> 0 ->
+  | Overloaded _, _ when n_ty <> 0 ->
     Some (
       Format.dprintf "%a" Format.pp_print_text
         "this is a polymorphic function, and multiple accepted arities \
@@ -535,8 +544,10 @@ let bad_term_arity =
     ~hints:[poly_hint]
     ~message:(fun fmt (c, arity, actual) ->
         Format.fprintf fmt
-          "Bad arity: expected %a but got %d arguments for function@ %a"
-          print_arity arity actual Dolmen.Std.Expr.Print.term_cst c)
+          "Bad arity: expected %a but got %d arguments for %s@ %a"
+          print_arity arity actual
+          (match arity with Exact 0 -> "constant" | _ -> "function")
+          Dolmen.Std.Expr.Print.term_cst c)
     ~name:"Incorrect arity for term application" ()
 
 let bad_poly_arity =
@@ -1186,6 +1197,8 @@ module Typer(State : State.S) = struct
     State.create_key ~pipe:"Model" "check_model"
   let smtlib2_forced_logic : string option State.key =
     State.create_key ~pipe "smtlib2_forced_logic"
+  let smtlib2_fake_apply_sugar : bool option State.key =
+    State.create_key ~pipe "smtlib2_fake_apply_sugar"
   let extension_builtins : Ext.t list State.key =
     State.create_key ~pipe "extensions_builtins"
   let additional_builtins :
@@ -1195,12 +1208,14 @@ module Typer(State : State.S) = struct
   let init
       ?ty_state:(ty_state_value=new_state ())
       ?smtlib2_forced_logic:(smtlib2_forced_logic_value=None)
+      ?smtlib2_fake_apply_sugar:(smtlib2_fake_apply_sugar_value=None)
       ?extension_builtins:(extension_builtins_value=[])
       ?additional_builtins:(additional_builtins_value=fun _ _ _ _ -> `Not_found)
       st =
     st
     |> State.set ty_state ty_state_value
     |> State.set smtlib2_forced_logic smtlib2_forced_logic_value
+    |> State.set smtlib2_fake_apply_sugar smtlib2_fake_apply_sugar_value
     |> State.set extension_builtins extension_builtins_value
     |> State.set additional_builtins additional_builtins_value
 
@@ -1565,10 +1580,20 @@ module Typer(State : State.S) = struct
         | (Some _) as res -> res
       end
 
-  let builtins_of_smtlib2_logic v (l : Dolmen_type.Logic.Smtlib2.t) =
-    List.fold_left (fun acc th ->
+  let builtins_of_smtlib2_logic st v (l : Dolmen_type.Logic.Smtlib2.t) =
+    (* We really prefer for the specifi theory, and in particular the HO
+       theory, to be before the Core one, mainly because the HO one
+       overrides the handling of `Fake_apply`. *)
+    List.fold_right (fun th acc ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
         | `Core -> Smtlib2_Core.parse v :: acc
+        | `HO ->
+          let fake_apply_sugar =
+            match State.get smtlib2_fake_apply_sugar st with
+            | Some true -> true
+            | _ -> false
+          in
+          Smtlib2_Ho.parse { fake_apply_sugar } v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
         | `Floats -> Smtlib2_Float.parse v :: acc
         | `String -> Smtlib2_String.parse v :: acc
@@ -1580,7 +1605,7 @@ module Typer(State : State.S) = struct
           Smtlib2_Reals.parse ~config:l.features.arithmetic v :: acc
         | `Reals_Ints ->
           Smtlib2_Reals_Ints.parse ~config:l.features.arithmetic v :: acc
-      ) [] l.Dolmen_type.Logic.Smtlib2.theories
+      ) l.Dolmen_type.Logic.Smtlib2.theories []
 
   let typing_env ?(attrs=[]) ~loc warnings (st : State.t) (input : input) =
     let file = file_loc_of_input input in
@@ -1807,7 +1832,7 @@ module Typer(State : State.S) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               user_builtins @
-              builtins_of_smtlib2_logic (`Script v) logic
+              builtins_of_smtlib2_logic st (`Script v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
@@ -1848,7 +1873,7 @@ module Typer(State : State.S) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               user_builtins @
-              builtins_of_smtlib2_logic (`Response v) logic
+              builtins_of_smtlib2_logic st (`Response v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order

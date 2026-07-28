@@ -34,7 +34,10 @@ let qualified path basename =
 
 let print fmt = function
   | Simple basename ->
-    Format.fprintf fmt "%s" basename
+    if String.exists (function ' ' | '\n' | '\t' -> true | _ -> false) basename then
+      Format.fprintf fmt "'%s'" basename
+    else
+      Format.fprintf fmt "%s" basename
   | Indexed { basename; indexes; } ->
     Format.fprintf fmt "(_ %s %a)" basename
       (Format.pp_print_list ~pp_sep:Format.pp_print_space

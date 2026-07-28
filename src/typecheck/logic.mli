@@ -13,6 +13,7 @@ module Smtlib2 : sig
 
   type theory = [
     | `Core
+    | `HO
     | `Arrays
     | `Bitvectors
     | `Floats

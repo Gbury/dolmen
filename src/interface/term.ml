@@ -1243,9 +1243,6 @@ module type Smtlib_Base = sig
   type t
   (** The type of terms. *)
 
-  type var
-  (** The type of term variables *)
-
   type cstr
   (** The type of ADT constructor *)
 
@@ -1288,14 +1285,24 @@ module type Smtlib_Base = sig
   val distinct : t list -> t
   (** Distinct constraints on terms. *)
 
+  val multi_trigger : t list -> t
+  (** Create a multi trigger from a list of arbtirary terms. *)
+
+end
+
+module type Smtlib_Ho = sig
+
+  type t
+  (** The type of terms. *)
+
+  type var
+  (** The type of term variables *)
+
   val map_app : t -> t -> t
   (** Application operation for the encoding of higher-order terms into first-order. *)
 
   val map_lambda : var list -> t -> t
   (** Shallow embedding of lambdas/actual functions into the higher-order encoding. *)
-
-  val multi_trigger : t list -> t
-  (** Create a multi trigger from a list of arbtirary terms. *)
 
 end
 

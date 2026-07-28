@@ -5,12 +5,15 @@
 (define-const h (-> Int Int) (lambda ((x Int)) x))
 (define-const i (-> Int Int Int) (lambda ((x Int) (y Int)) (+ x y)))
 
-(assert (= 0 (f 0)))
+; the syntactic sugar was removed in the end
+; (assert (= 0 (f 0)))
 (assert (= 0 (@ f 0)))
-(assert (= 0 (g 1 2)))
+; the syntactic sugar was removed in the end
+; (assert (= 0 (g 1 2)))
 (assert (= 0 (@ g 1 2)))
 
-(assert (= 0 (@ (g 1) 2)))
-(assert (= 0 (i 1 (- 1))))
+(assert (= 0 (@ (@ g 1) 2)))
+; the syntactic sugar was removed in the end
+;(assert (= 0 (@ (@ i 1) (- 1))))
 
 (check-sat)

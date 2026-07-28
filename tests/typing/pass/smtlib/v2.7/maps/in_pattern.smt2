@@ -15,8 +15,8 @@
 (declare-const |set.intent Z| (-> |? Z| |POW Z|))
 (assert (!
   (forall ((p |? Z|) (x |Z|)) (!
-    (= (|set.in Z| x (|set.intent Z| p))
+    (= (|set.in Z| x (@ |set.intent Z| p))
        (@ p x))
-    :pattern ((|set.in Z| x (|set.intent Z| p)))))
+    :pattern ((|set.in Z| x (@ |set.intent Z| p)))))
   :named |ax.rw.intent Z|))
 (exit)

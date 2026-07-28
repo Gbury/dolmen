@@ -285,11 +285,20 @@ module type Smtlib_Base = sig
   type t
   (** The type of type constants (i.e. type constructors) *)
 
-  type var
-  (** The type for type variables *)
-
   val prop : t
   (** The type constructor of propositions. *)
+
+
+end
+
+(** Signature required by types for typing smtlib HO-Core theory *)
+module type Smtlib_Ho = sig
+
+  type t
+  (** The type of type constants (i.e. type constructors) *)
+
+  type var
+  (** The type for type variables *)
 
   val map : t -> t -> t
   (** The type of maps, i.e. higher-order functions encoded in first-order. *)
