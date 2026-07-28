@@ -1,0 +1,4 @@
+File "tests/parsing/smtlib/v2.6/errors/xxx_lexing_invalid_char_in_quoted_symbol.smt2", line 1, character 29-30:
+1 | (set-info :source |blablabla \ |)
+                                 ^
+Error Lexing error: invalid character '\' in a quoted_symbol

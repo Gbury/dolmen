@@ -2,7 +2,7 @@
 (* This file is free software, part of dolmen. See file "LICENSE" for more details. *)
 
 {
-  exception Error
+  exception Error of { context : string option; }
 
   module T = Dolmen_std.Tok
 
@@ -38,7 +38,7 @@ rule token newline = parse
   | [' ' '\t' '\r'] { token newline lexbuf }
   | number          { INT (int_of_string @@ Lexing.lexeme lexbuf) }
   | '\n'            { newline lexbuf; NEWLINE }
-  | _               { raise Error }
+  | _               { raise (Error { context = None }) }
 
 and comment newline = parse
   | eof   { EOF }

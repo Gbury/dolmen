@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (** {1 TPTP Lexer} *)
 
 {
-  exception Error
+  exception Error of { context : string option; }
 
   open Tokens
 
@@ -240,5 +240,5 @@ rule token newline = parse
   | rational            { RATIONAL(Lexing.lexeme lexbuf) }
   | real                { REAL(Lexing.lexeme lexbuf) }
 
-  | _ { raise Error }
+  | _ { raise (Error { context = None }) }
 

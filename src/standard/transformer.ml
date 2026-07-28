@@ -109,12 +109,12 @@ module Make
           let () = sync lexbuf in
           let () = k_exn () in
           raise e
-        | exception Lexer.Error ->
+        | exception Lexer.Error { context } ->
           let pos = Loc.of_lexbuf lexbuf in
           let err = Lexing.lexeme lexbuf in
           let () = sync lexbuf in
           let () = k_exn () in
-          raise (Loc.Lexing_error (pos, err))
+          raise (Loc.Lexing_error (pos, context, err))
         | exception Parser.Error state ->
           let pos = Loc.of_lexbuf lexbuf in
           let msg = error_message !last_token state in

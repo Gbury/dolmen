@@ -4,7 +4,7 @@
 (** {1 Smtlib Lexer} *)
 
 {
-  exception Error
+  exception Error of { context : string option; }
 
   module T = Dolmen_std.Tok
   module M = Map.Make(String)
@@ -138,16 +138,6 @@
     try M.find s reserved_words
     with Not_found -> SYMBOL s
 
-  let quoted_symbol newline lexbuf s =
-    (* register the newlines in quoted symbols to maintain correct locations.*)
-    for i = 0 to (String.length s - 1) do
-      match s.[i] with
-      | '\n' -> newline lexbuf
-      | _ -> ()
-    done;
-    (* Quoted symbols allow to use reserved words as symbols *)
-    SYMBOL s
-
 }
 
 let white_space_char = ['\t' '\n' '\r' ' ']
@@ -194,10 +184,17 @@ rule token newline = parse
   | hexadecimal as s    { HEX s }
   | binary as s         { BIN s }
   | '"'                 { string newline (Buffer.create 42) lexbuf }
+  | '|'                 { quoted_symbol newline (Buffer.create 42) lexbuf }
   | keyword as s        { KEYWORD s }
   | simple_symbol as s                  { symbol newline lexbuf s}
-  | '|' (quoted_symbol_char* as s) '|'  { quoted_symbol newline lexbuf s }
-  | _                                   { raise Error }
+  | _                                   { raise (Error { context = None }) }
+
+and quoted_symbol newline b = parse
+  | '|'                         { SYMBOL (Buffer.contents b) }
+  | quoted_symbol_char as c
+    { if c = '\n' then newline lexbuf;
+      Buffer.add_char b c; quoted_symbol newline b lexbuf }
+  | _                           { raise (Error { context = Some "quoted_symbol" }) }
 
 and string newline b = parse
   | '"' '"'             { Buffer.add_char b '"'; string newline b lexbuf }
@@ -205,7 +202,7 @@ and string newline b = parse
   | (printable_char | white_space_char) as c
     { if c = '\n' then newline lexbuf;
       Buffer.add_char b c; string newline b lexbuf }
-  | _                   { raise Error }
+  | _                   { raise (Error { context = Some "string" }) }
 
 (* these are there to simplify the task of printers, by allowing to
    check strings against some lexical categories *)

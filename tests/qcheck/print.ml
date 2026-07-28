@@ -31,7 +31,7 @@ let identifier
          let _ = Lazy.force l in
          true
        with
-       | Dolmen.Std.Loc.Lexing_error (_loc, lex) ->
+       | Dolmen.Std.Loc.Lexing_error (_loc, _context, lex) ->
          QCheck2.Test.fail_reportf "lexing: invalid char: '%s'" lex
        | Dolmen.Std.Loc.Syntax_error (_loc, perr) ->
          begin match perr with

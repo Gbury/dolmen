@@ -8,7 +8,7 @@ module type S = sig
   type token
   (** The type of token produced by the lexer. *)
 
-  exception Error
+  exception Error of { context : string option; }
   (** The exception raised by the lexer when it cannot produce a token. *)
 
   val descr : token -> Tok.descr

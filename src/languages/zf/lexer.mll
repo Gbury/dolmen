@@ -4,7 +4,7 @@
 (** {1 Lexer for Zipperposition Formulas} *)
 
 {
-  exception Error
+  exception Error of { context : string option; }
 
   module T = Dolmen_std.Tok
 
@@ -171,7 +171,7 @@ rule token newline = parse
   | upper_word { UPPER_WORD(Lexing.lexeme lexbuf) }
   | integer { INTEGER(Lexing.lexeme lexbuf) }
   | '"' { quoted newline (Buffer.create 42) lexbuf }
-  | _ { raise Error }
+  | _ { raise (Error { context = None }) }
 
 (* we unquote during lexing rather then during the parsing *)
 and quoted newline b = parse

@@ -21,8 +21,10 @@ module type S = sig
   exception Uncaught of t * exn * Printexc.raw_backtrace
   (** The exception to be raised whenever an unexpected exception is raised during parsing. *)
 
-  exception Lexing_error of t * string
-  (** The exception to be raised when the lexer cannot parse the input. *)
+  exception Lexing_error of t * string option * string
+  (** The exception to be raised when the lexer cannot parse the input.
+      It contains (in order) the location, the context (if any), and then the string that
+      could not be lexed. *)
 
   exception Syntax_error of t * [
       | `Regular of Msg.t

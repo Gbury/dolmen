@@ -42,9 +42,15 @@ let input_lang_changed =
 
 let lexing_error =
   Report.Error.mk ~code:Code.parsing ~mnemonic:"lexing-error"
-    ~message:(fun fmt lex ->
-        Format.fprintf fmt
-          "Lexing error: invalid character '%s'" lex)
+    ~message:(fun fmt (context, lex) ->
+        match context with
+        | None ->
+          Format.fprintf fmt
+            "Lexing error: invalid character '%s'" lex
+        | Some ctx ->
+          Format.fprintf fmt
+            "Lexing error: invalid character '%s' in a %s" lex ctx
+      )
     ~name:"Lexing error" ()
 
 let parsing_error =
@@ -183,8 +189,8 @@ module Make(State : State.S) = struct
           Report.Error.uncaught_exn (exn, bt)
       in
       st, None
-    | exception Dolmen.Std.Loc.Lexing_error (loc, lex) ->
-      let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error lex in
+    | exception Dolmen.Std.Loc.Lexing_error (loc, context, lex) ->
+      let st = State.error st ~file ~loc:{ file = file.loc; loc; } lexing_error (context, lex) in
       st, None
     | exception Dolmen.Std.Loc.Syntax_error (loc, perr) ->
       let syntax_error_ref = State.get_or ~default:false syntax_error_ref st in

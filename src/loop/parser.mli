@@ -9,7 +9,7 @@ val extension_not_found : string Report.error
 val file_not_found : (string * string) Report.error
 (** Error for a missing file *)
 
-val lexing_error : string Report.error
+val lexing_error : (string option * string) Report.error
 (** Lexing errors *)
 
 val parsing_error : (bool *

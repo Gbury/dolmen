@@ -4,7 +4,7 @@
 (** {1 Alt-ergo Lexer} *)
 
 {
-  exception Error
+  exception Error of { context : string option; }
 
   module T = Dolmen_std.Tok
 
@@ -209,12 +209,12 @@ rule token newline = parse
   | "|->"                     { MAPS_TO }
   | "\""                      { parse_string newline (Buffer.create 1024) lexbuf }
   | eof                       { EOF }
-  | _ { raise Error }
+  | _ { raise (Error { context = None }) }
 
 and parse_comment newline = parse
   | "*)"    { () }
   | "(*"    { parse_comment newline lexbuf; parse_comment newline lexbuf }
-  | eof     { raise Error }
+  | eof     { raise (Error { context = Some "comment" }) }
   | _ as c  { if c = '\n' then newline lexbuf; parse_comment newline lexbuf }
 
 and parse_string newline str_buf = parse
@@ -224,7 +224,7 @@ and parse_string newline str_buf = parse
   | '\n'          { newline lexbuf;
                     Buffer.add_char str_buf '\n';
                     parse_string newline str_buf lexbuf }
-  | eof           { raise Error }
+  | eof           { raise (Error { context = Some "string" }) }
   | _ as c        { Buffer.add_char str_buf c;
                     parse_string newline str_buf lexbuf }
 
