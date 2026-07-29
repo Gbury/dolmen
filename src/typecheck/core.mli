@@ -96,11 +96,8 @@ module Smtlib2 : sig
       (T : Dolmen.Intf.Term.Smtlib_Ho with type t = Type.T.t
                                        and type var := Type.T.Var.t) : sig
 
-    type config = {
-      fake_apply_sugar : bool;
-    }
 
-    val parse : config -> Dolmen.Smtlib2.version -> Type.builtin_symbols
+    val parse : Dolmen.Smtlib2.version -> Type.builtin_symbols
   end
 
 end

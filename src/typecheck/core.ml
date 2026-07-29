@@ -743,10 +743,6 @@ module Smtlib2 = struct
       (T : Dolmen.Intf.Term.Smtlib_Ho with type t = Type.T.t
                                          and type var := Type.T.Var.t) = struct
 
-    type config = {
-      fake_apply_sugar : bool;
-    }
-
     let split_map_lambda_args l =
       let rec aux acc = function
         | [] -> Error ()
@@ -755,7 +751,7 @@ module Smtlib2 = struct
       in
       aux [] l
 
-    let parse config (version : Dolmen.Smtlib2.version) env s =
+    let parse (version : Dolmen.Smtlib2.version) env s =
       if not (version_at_least_2_7 version) then
         (* HO-Core does not exist in version 2.6 and before *)
         `Not_found
@@ -796,8 +792,6 @@ module Smtlib2 = struct
                 begin match Type.find_symbol env (Type.Id id) with
                   | (`Term_cst c) as f ->
                     begin match Ty.view (Type.T.Const.ty c) with
-                      | _ when not config.fake_apply_sugar ->
-                        `Regular_apply (id, s_ast, actual_args, f)
                       | `Map _ ->
                         let f' = Type.T.apply_cst c [] [] in
                         `HO_app (f', actual_args)
@@ -824,12 +818,8 @@ module Smtlib2 = struct
               (* If the function applied is a complex term, it can only
                  be a higher-order application. *)
               | f :: actual_args ->
-                if config.fake_apply_sugar then begin
-                  let f' = Type.parse_term env f in
-                  `HO_app (f', actual_args)
-                end else begin
-                  Type._error env (Ast ast) Type.Higher_order_application
-                end
+                let f' = Type.parse_term env f in
+                `HO_app (f', actual_args)
             in
             match foo with
             | `HO_app (f, args) ->

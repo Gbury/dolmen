@@ -1197,8 +1197,6 @@ module Typer(State : State.S) = struct
     State.create_key ~pipe:"Model" "check_model"
   let smtlib2_forced_logic : string option State.key =
     State.create_key ~pipe "smtlib2_forced_logic"
-  let smtlib2_fake_apply_sugar : bool option State.key =
-    State.create_key ~pipe "smtlib2_fake_apply_sugar"
   let extension_builtins : Ext.t list State.key =
     State.create_key ~pipe "extensions_builtins"
   let additional_builtins :
@@ -1208,14 +1206,12 @@ module Typer(State : State.S) = struct
   let init
       ?ty_state:(ty_state_value=new_state ())
       ?smtlib2_forced_logic:(smtlib2_forced_logic_value=None)
-      ?smtlib2_fake_apply_sugar:(smtlib2_fake_apply_sugar_value=None)
       ?extension_builtins:(extension_builtins_value=[])
       ?additional_builtins:(additional_builtins_value=fun _ _ _ _ -> `Not_found)
       st =
     st
     |> State.set ty_state ty_state_value
     |> State.set smtlib2_forced_logic smtlib2_forced_logic_value
-    |> State.set smtlib2_fake_apply_sugar smtlib2_fake_apply_sugar_value
     |> State.set extension_builtins extension_builtins_value
     |> State.set additional_builtins additional_builtins_value
 
@@ -1580,20 +1576,14 @@ module Typer(State : State.S) = struct
         | (Some _) as res -> res
       end
 
-  let builtins_of_smtlib2_logic st v (l : Dolmen_type.Logic.Smtlib2.t) =
+  let builtins_of_smtlib2_logic v (l : Dolmen_type.Logic.Smtlib2.t) =
     (* We really prefer for the specifi theory, and in particular the HO
        theory, to be before the Core one, mainly because the HO one
        overrides the handling of `Fake_apply`. *)
     List.fold_right (fun th acc ->
         match (th : Dolmen_type.Logic.Smtlib2.theory) with
         | `Core -> Smtlib2_Core.parse v :: acc
-        | `HO ->
-          let fake_apply_sugar =
-            match State.get smtlib2_fake_apply_sugar st with
-            | Some true -> true
-            | _ -> false
-          in
-          Smtlib2_Ho.parse { fake_apply_sugar } v :: acc
+        | `HO -> Smtlib2_Ho.parse v :: acc
         | `Bitvectors -> Smtlib2_Bitv.parse v :: acc
         | `Floats -> Smtlib2_Float.parse v :: acc
         | `String -> Smtlib2_String.parse v :: acc
@@ -1832,7 +1822,7 @@ module Typer(State : State.S) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               user_builtins @
-              builtins_of_smtlib2_logic st (`Script v) logic
+              builtins_of_smtlib2_logic (`Script v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
@@ -1873,7 +1863,7 @@ module Typer(State : State.S) = struct
         | Smtlib2 logic ->
           let builtins = Dolmen_type.Base.merge (
               user_builtins @
-              builtins_of_smtlib2_logic st (`Response v) logic
+              builtins_of_smtlib2_logic (`Response v) logic
             ) in
           let quants = logic.features.quantifiers in
           T.empty_env ~order:First_order
