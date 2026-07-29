@@ -353,6 +353,9 @@ module type Logic = sig
       have no logical meaning (they can be safely ignored), but may serve to give
       hints or meta-information. *)
 
+  val as_     : ?loc:location -> t -> t -> t list -> t
+  (** SMT-LIB's `as` """type annotation""" (big quotes). *)
+
   val sexpr   : ?loc:location -> t list -> t
   (** S-expressions (for smtlib attributes), should probably be related
       to the [data_t] term. *)

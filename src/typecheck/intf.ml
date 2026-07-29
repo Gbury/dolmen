@@ -38,8 +38,14 @@ module type Formulas = sig
     | Higher_order  (** Higher-order typechecking *)
   (** Control whether the typechecker should type *)
 
-
   type poly =
+    | Normal
+    | Dumb (** SMT-lib version of "local" polymoprhism that is insanely
+               annoting to use, made worse by their extremely unintuitive
+               type annotations *)
+  (** Controls restrictions on polymoprhism and inference. *)
+
+  type poly_args =
     | Explicit
     (** Type arguments must be explicitly given in funciton applications *)
     | Implicit
@@ -77,7 +83,7 @@ module type Formulas = sig
     | Arg_of of wildcard_source
     | Ret_of of wildcard_source
     | From_source of Dolmen.Std.Term.t
-    | Added_type_argument of Dolmen.Std.Term.t
+    | Added_type_argument of Dolmen.Std.Term.t * int
     | Symbol_inference of sym_inference_source
     | Variable_inference of var_inference_source (**)
   (** *)
@@ -410,6 +416,9 @@ module type Formulas = sig
     (** *)
     | Non_prenex_polymorphism : ty -> Dolmen.Std.Term.t err
     (** *)
+    | Dumb_polymorphism :
+        ty * ty_var * wildcard_source list -> Dolmen.Std.Term.t err
+    (** *)
     | Inference_forbidden :
         ty_var * wildcard_source * ty -> Dolmen.Std.Term.t err
     (** *)
@@ -496,6 +505,7 @@ module type Formulas = sig
     ?sym_infer:sym_infer ->
     ?order:order ->
     ?poly:poly ->
+    ?poly_args:poly_args ->
     ?quants:bool ->
     ?free_wildcards:free_wildcards ->
     warnings:(warning -> unit) ->
@@ -653,6 +663,9 @@ module type Formulas = sig
   val register_implicit : env -> implicit -> unit
   (** Register a new implicit declaration/definition *)
 
+  val expect_type : env -> env
+  val expect_term : env -> env
+
 
   (** {2 Custom global state} *)
 
@@ -705,6 +718,7 @@ module type Formulas = sig
   (** Wrappers around {parse_expr} to set the expect field of the env,
       and unwrap an expected return value. *)
 
+  val parse_app_aux : (Dolmen.Std.Term.t list -> Dolmen.Std.Term.t -> res) typer
   val parse_app_ty_cst : (ty_cst -> Dolmen.Std.Term.t list -> res) typer
   val parse_app_term_cst : (term_cst -> Dolmen.Std.Term.t list -> res) typer
   (** Function used for parsing applications. The first dolmen term given

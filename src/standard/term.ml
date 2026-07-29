@@ -58,6 +58,8 @@ type builtin =
   | Map_lambda          (* smtlib2.7 builtin for function encoding into first order *)
   | Implicit_type_var   (* The "type"/sort of an implicit type variable. *)
 
+  | As                  (* A builtin for the SMT-LIB's `as` """type annotation""", that
+                           affects type-checking so much it needs its own builtin *)
   | Fake_apply          (* Workaround for languages who "function application" syntax
                            does not actually have the semantics of function application.
                            For instance, smtlib2.7 has extremely weird and unobvious
@@ -164,6 +166,7 @@ let builtin_to_string = function
   | Sexpr -> "sexpr"
   | Map_lambda -> "map-lambda"
   | Implicit_type_var -> "TypeVar"
+  | As -> "as"
   | Fake_apply -> "&"
 
 let binder_to_string = function
@@ -442,6 +445,7 @@ let record_access_t     = builtin Record_access
 let sexpr_t             = builtin Sexpr
 let map_lambda_t        = builtin Map_lambda
 let implicit_type_var_t = builtin Implicit_type_var
+let as_t                = builtin As
 let fake_apply_t        = builtin Fake_apply
 
 let nary t = (fun ?loc l -> apply ?loc (t ?loc ()) l)
@@ -612,6 +616,8 @@ let atom ?loc i =
 
 
 (* {2 Wrappers for smtlib} *)
+
+let as_ ?loc ty f args = nary as_t ?loc (ty :: f :: args)
 
 let str ?loc s = const ?loc Id.(mk (Value String) s)
 let int ?loc s = const ?loc Id.(mk (Value Integer) s)

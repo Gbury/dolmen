@@ -63,6 +63,9 @@ module type Term = sig
   val colon   : ?loc:location -> t -> t -> t
   (** Juxtaposition of terms, used to annotate terms with their type. *)
 
+  val as_     : ?loc:location -> t -> t -> t list -> t
+  (** SMT-LIB's `as` """type annotation""" (big quotes). *)
+
   val apply   : ?loc:location -> t -> t list -> t
   (** Application. *)
 

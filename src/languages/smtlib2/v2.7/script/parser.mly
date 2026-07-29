@@ -217,12 +217,12 @@ term:
   | s=qual_identifier
     { match s with
       | `NoAs f -> f
-      | `As (f, ty, loc) -> T.colon ~loc f ty }
+      | `As (f, ty, loc) -> T.as_ ~loc ty f [] }
   | OPEN s=qual_identifier args=term+ CLOSE
     { let loc = L.mk_pos $startpos $endpos in
       match s with
       | `NoAs f -> T.fake_apply ~loc f args
-      | `As (f, ty, as_loc) -> T.colon ~loc:as_loc (T.fake_apply ~loc f args) ty }
+      | `As (f, ty, _as_loc) -> T.as_ ~loc ty f args }
   | OPEN LET OPEN l=var_binding+ CLOSE t=term CLOSE
     { let loc = L.mk_pos $startpos $endpos in T.letand ~loc l t }
   | OPEN LAMBDA OPEN l=sorted_var+ CLOSE t=term CLOSE

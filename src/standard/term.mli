@@ -143,6 +143,9 @@ type builtin =
   (** The "Type"/"Sort" of an implicit global type variable (e.g. from a
       (declare-sort-parameter in SMT2.7). *)
 
+  | As
+  (** SMT-LIB's `æs` """type annotation""" that alters type-checking so much
+      it needs its own builtin. *)
   | Fake_apply
   (** Workaround for languages whose "function application" syntax
       does not actually have the semantics of function application.

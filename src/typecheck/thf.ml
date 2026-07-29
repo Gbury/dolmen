@@ -46,8 +46,12 @@ module Make
     | First_order
     | Higher_order
 
-  (* Different behavior of polymorphism *)
   type poly =
+    | Normal
+    | Dumb
+
+  (* Different behavior of polymorphism *)
+  type poly_args =
     | Explicit
     | Implicit
     | Flexible
@@ -75,7 +79,7 @@ module Make
     | Arg_of of wildcard_source
     | Ret_of of wildcard_source
     | From_source of Ast.t
-    | Added_type_argument of Ast.t
+    | Added_type_argument of Ast.t * int
     | Symbol_inference of sym_inference_source
     | Variable_inference of var_inference_source
 
@@ -410,6 +414,8 @@ module Make
     | Higher_order_env_in_tff_typechecker : Loc.t err
     | Polymorphic_function_argument : Ast.t err
     | Non_prenex_polymorphism : Ty.t -> Ast.t err
+    | Dumb_polymorphism :
+        Ty.t * Ty.Var.t * wildcard_source list -> Ast.t err
     | Inference_forbidden :
         Ty.Var.t * wildcard_source * Ty.t -> Ast.t err
     | Inference_conflict :
@@ -500,6 +506,7 @@ module Make
     (* Typechecker configuration *)
     order     : order;
     poly      : poly;
+    poly_args : poly_args;
     quants    : bool;
     expect    : expect;
     var_infer : var_infer;
@@ -991,7 +998,8 @@ module Make
           infer_term_csts = Wildcard Any_in_scope;
         })
       ?(order=Higher_order)
-      ?(poly=Flexible)
+      ?(poly=Normal)
+      ?(poly_args=Flexible)
       ?(quants=true)
       ?(free_wildcards=Forbidden)
       ~warnings ~file
@@ -1012,7 +1020,7 @@ module Make
       implicit_vars_introduced;
       wildcards;
 
-      order; poly; quants;
+      order; poly; poly_args; quants;
       var_infer; sym_infer;
       expect; free_wildcards;
     }
@@ -1317,10 +1325,12 @@ module Make
       let n_ty = List.length vars in
       if n_ty = 0 then t
       else begin
-        let src = Added_type_argument ast in
         let ty_l =
           Misc.Lists.init n_ty
-            (fun _ -> wildcard env src Any_in_scope)
+            (fun i ->
+               let src = Added_type_argument (ast, i) in
+               wildcard env src Any_in_scope
+            )
         in
         _wrap3 env ast T.apply t ty_l []
       end
@@ -1334,7 +1344,7 @@ module Make
   (* Split arguments for first order application *)
   let split_fo_args env ast n_ty n_t args =
     let n_args = List.length args in
-    match env.poly with
+    match env.poly_args with
     | Explicit ->
       if n_args = n_ty + n_t then
         `Ok (Misc.Lists.take_drop n_ty args)
@@ -1342,10 +1352,12 @@ module Make
         `Bad_arity (Exact (n_ty + n_t), n_args)
     | Implicit ->
       if n_args = n_t then begin
-        let src = Added_type_argument ast in
         let tys =
           Misc.Lists.init n_ty
-            (fun _ -> wildcard env src Any_in_scope)
+            (fun i ->
+               let src = Added_type_argument (ast, i) in
+               wildcard env src Any_in_scope
+            )
         in
         `Fixed (tys, args)
       end else
@@ -1354,10 +1366,12 @@ module Make
       if n_args = n_ty + n_t then
         `Ok (Misc.Lists.take_drop n_ty args)
       else if n_args = n_t then begin
-        let src = Added_type_argument ast in
         let tys =
           Misc.Lists.init n_ty
-            (fun _ -> wildcard env src Any_in_scope)
+            (fun i ->
+               let src = Added_type_argument (ast, i) in
+               wildcard env src Any_in_scope
+            )
         in
         `Fixed (tys, args)
       end else begin
@@ -1384,10 +1398,12 @@ module Make
       aux_ty [] args
     in
     let implicit ast n_ty args =
-      let src = Added_type_argument ast in
       let ty_l =
         Misc.Lists.init n_ty
-          (fun _ -> wildcard env src Any_in_scope)
+          (fun i ->
+             let src = Added_type_argument (ast, i) in
+             wildcard env src Any_in_scope
+          )
       in
       let t_l = List.map (function
           | ast, Term t -> ast, t
@@ -1397,7 +1413,7 @@ module Make
       ty_l, t_l
     in
     let ty_l, t_l =
-      match env.poly with
+      match env.poly_args with
       | Explicit -> explicit args
       | Implicit -> implicit ast n_ty args
       | Flexible ->
@@ -1407,7 +1423,7 @@ module Make
         end
     in
     let t_l =
-      match env.poly with
+      match env.poly_args with
       | Explicit ->
         List.map (fun (ast, t) -> check_not_poly env ast t) t_l
       | Implicit | Flexible ->
@@ -1564,6 +1580,26 @@ module Make
       _error env (Ast ast) (Unbound_type_vars free_implicits)
     | `Univ (env, ((_ :: _) as free_wildcards), _, _) ->
       _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
+
+  let poly_checkpoint env ast res =
+    match env.poly with
+    | Normal -> ()
+    | Dumb ->
+      let check_ty ty =
+        let fv = Ty.fv ty in
+        let fw = List.filter Ty.Var.is_wildcard fv in
+        match fw with
+        | [] -> ()
+        | w :: _ ->
+          let l = E.find w !(env.wildcards) in
+          let sources = List.map _src l in
+          _error env (Ast ast) (Dumb_polymorphism (ty, w, sources))
+      in
+      begin match res with
+        | Ty ty -> check_ty ty
+        | Term t -> check_ty (T.ty t)
+        | _ -> ()
+      end
 
 
   (* Tag application *)
@@ -2008,7 +2044,9 @@ module Make
 
   and parse_app env ast f_ast args_asts =
     let[@inline] aux t = parse_app_aux env ast args_asts t in
-    (wrap_attr[@inlined]) apply_attr env f_ast aux
+    let res = (wrap_attr[@inlined]) apply_attr env f_ast aux in
+    poly_checkpoint env ast res;
+    res
 
   and parse_app_aux env ast args_asts = function
     | { Ast.term = Ast.App (g, inner_args); _ } ->

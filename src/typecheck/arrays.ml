@@ -128,7 +128,7 @@ module Smtlib2 = struct
             Type.builtin_term (fun ast args ->
                 Type._warn env (Ast ast) (Extension c);
                 let index_ty =
-                  Type.wildcard env (Added_type_argument ast) Any_in_scope
+                  Type.wildcard env (Added_type_argument (ast, 0)) Any_in_scope
                 in
                 Base.term_app1 (module Type) env s (T.const index_ty) ast args)
         end

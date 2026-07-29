@@ -33,12 +33,12 @@ module Make
 
   let empty_env
       ?st ?expect ?var_infer ?sym_infer
-      ?(order=First_order) ?poly ?quants
+      ?(order=First_order) ?poly ?poly_args ?quants
       ?free_wildcards ~warnings ~file builtin_symbols =
     let env =
       empty_env ?st
         ?expect ?var_infer ?sym_infer
-        ~order ?poly ?quants ?free_wildcards
+        ~order ?poly ?poly_args ?quants ?free_wildcards
         ~warnings ~file builtin_symbols
     in
     match order with
