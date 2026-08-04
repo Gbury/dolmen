@@ -362,6 +362,8 @@ module Make
        was asked for. This warning can very safely be ignored. *)
     | Redundant_pattern : T.t -> Ast.t warn
     (* Redundant cases in pattern matching *)
+    | Dumb_polymorphism :
+        Ty.t * Ty.Var.t * wildcard_source list -> Ast.t warn
 
   (* Special case for shadowing, as it can happen both from a term but also
      a declaration, hence why the type variable of [warn] is left wild. *)
@@ -414,8 +416,6 @@ module Make
     | Higher_order_env_in_tff_typechecker : Loc.t err
     | Polymorphic_function_argument : Ast.t err
     | Non_prenex_polymorphism : Ty.t -> Ast.t err
-    | Dumb_polymorphism :
-        Ty.t * Ty.Var.t * wildcard_source list -> Ast.t err
     | Inference_forbidden :
         Ty.Var.t * wildcard_source * Ty.t -> Ast.t err
     | Inference_conflict :
@@ -1328,7 +1328,7 @@ module Make
         let ty_l =
           Misc.Lists.init n_ty
             (fun i ->
-               let src = Added_type_argument (ast, i) in
+               let src = Added_type_argument (ast, i - 1) in
                wildcard env src Any_in_scope
             )
         in
@@ -1355,7 +1355,7 @@ module Make
         let tys =
           Misc.Lists.init n_ty
             (fun i ->
-               let src = Added_type_argument (ast, i) in
+               let src = Added_type_argument (ast, i - 1) in
                wildcard env src Any_in_scope
             )
         in
@@ -1369,7 +1369,7 @@ module Make
         let tys =
           Misc.Lists.init n_ty
             (fun i ->
-               let src = Added_type_argument (ast, i) in
+               let src = Added_type_argument (ast, i - 1) in
                wildcard env src Any_in_scope
             )
         in
@@ -1401,7 +1401,7 @@ module Make
       let ty_l =
         Misc.Lists.init n_ty
           (fun i ->
-             let src = Added_type_argument (ast, i) in
+             let src = Added_type_argument (ast, i - 1) in
              wildcard env src Any_in_scope
           )
       in
@@ -1581,7 +1581,7 @@ module Make
     | `Univ (env, ((_ :: _) as free_wildcards), _, _) ->
       _error env (Ast ast) (Unbound_type_wildcards free_wildcards)
 
-  let poly_checkpoint env ast res =
+  let poly_checkpoint env ast res : unit =
     match env.poly with
     | Normal -> ()
     | Dumb ->
@@ -1593,7 +1593,7 @@ module Make
         | w :: _ ->
           let l = E.find w !(env.wildcards) in
           let sources = List.map _src l in
-          _error env (Ast ast) (Dumb_polymorphism (ty, w, sources))
+          _warn env (Ast ast) (Dumb_polymorphism (ty, w, sources))
       in
       begin match res with
         | Ty ty -> check_ty ty
@@ -2040,7 +2040,9 @@ module Make
       _bad_op_arity env (Builtin Ast.Record_access) (Exact 2) (List.length l) ast
 
   and parse_symbol env ast s s_ast =
-    parse_app_symbol env ast s s_ast []
+    let res = parse_app_symbol env ast s s_ast [] in
+    poly_checkpoint env ast res;
+    res
 
   and parse_app env ast f_ast args_asts =
     let[@inline] aux t = parse_app_aux env ast args_asts t in

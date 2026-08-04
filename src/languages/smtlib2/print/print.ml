@@ -379,6 +379,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       | B.Float RoundingMode -> N.simple "RoundingMode"
       | B.Str T -> N.simple "String"
       | B.Regexp T -> N.simple "RegLan"
+      | B.Map T -> N.simple "->"
       | _ ->
         (* Fallback: some builtins may be explicitly defined (e.g. unit) *)
         Env.Ty_cst.name env c
@@ -457,6 +458,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       let right () = `Right_assoc (blt b) in
       match b with
       (* left associative builtins *)
+      | B.Map App
       | B.Prop (Or | And | Xor)
       | B.Arith Add (`Int | `Real)
       | B.Arith Sub (`Int | `Real)
@@ -471,10 +473,28 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
 
     let term_cst_poly _env c =
       (* Here, we want the actual concrete type, since this matters for
-         actual typing afterwards, that begin said, expansion of type aliases
+         actual typing afterwards, that being said, expansion of type aliases
          should not introduce polymorphism in principle. *)
       match V.Sig.view ~expand:true (V.Term.Cst.ty c) with
       | Signature (_ :: _, _, _) -> true
+      | _ -> false
+
+    let is_full_ho_map_apply t args =
+      let rec consume ty_args t_args =
+        match ty_args, t_args with
+        | [], _ -> assert false
+        | [_ty_ret], _ -> true
+        | _ :: ty_args, _ :: t_args -> consume ty_args t_args
+        | _ :: _ty_args, [] -> false
+      in
+      (* similarly to the situation in `term_cst_poly`, we want the actual type,
+         and not stop at aliases *)
+      match V.Ty.view ~expand:true (V.Term.ty t) with
+      | App (ty_cst, ty_args) ->
+        begin match V.Ty.Cst.builtin ty_cst with
+          | B.Map T -> consume ty_args args
+          | _ -> false
+        end
       | _ -> false
 
     (* smtlib has implicit type arguments, i.e. the type args are not printed.
@@ -637,6 +657,37 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
             aux (Dolmen_std.Id.create Term (Dolmen_std.Name.simple "=>")) (List.rev args)
           | Ite -> simple "ite"
           | Equiv -> simple "="
+        end
+
+      (* Maps
+
+         This gets complicated because the SMT-LIB people like to keep things """simple"""
+         and for that they introduce so many corner cases that we need to dig deep here
+         to recognize the one very highly specifi use-case where we can short-circuit
+         the printing of '@' and omit type annotations. *)
+      | B.Map blt ->
+        begin match blt with
+          | T -> assert false (* cannot occur in terms *)
+          | App ->
+            begin match Config.version with
+              | V2_6 -> assert false (* TODO: error *)
+              | V2_7 | Poly ->
+                (* if the first arg is a symbol/function name (and not a more complex
+                   term), **and** the application is full, we should not need any type
+                   annotation (assuming that function type do not have phantom types). *)
+                begin match args with
+                  | f :: other_args ->
+                    begin match V.Term.view f with
+                      | App (c, _, []) when is_full_ho_map_apply f other_args ->
+                        let name = Env.Term_cst.name env c in
+                        let id = Dolmen_std.Id.create Term name in
+                        app ~pp:term env fmt (id, other_args)
+                      | _ -> simple "@"
+                    end
+                  | _ ->
+                    simple "@"
+                end
+            end
         end
 
       (* Arrays *)
@@ -1146,24 +1197,40 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       let name = Env.Term_cst.name env c in
       let c_sig = V.Term.Cst.ty c in
       match V.Sig.view ~expand:false c_sig with
+      (* Non-polymorphic constants/functions *)
       | Signature ([], [], c_ty) ->
         Format.fprintf fmt "@[<hov 2>(declare-const %a@ %a)@]"
           (symbol env) name (ty env) c_ty
       | Signature ([], params, ret) ->
         Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (%a)@ %a)@]"
           (symbol env) name (list ty env) params (ty env) ret
+      (* Polymorphic constants *)
+      | Signature (vars, [], ret) ->
+        begin match Config.version with
+          | V2_6 -> raise Polymorphic_function_declaration
+          | V2_7 ->
+            let env = declare_sort_params env fmt vars in
+            Format.fprintf fmt "@[<hov 2>(declare-const %a@ %a)@]"
+              (symbol env) name (ty env) ret
+          | Poly ->
+            let env = List.fold_left Env.Ty_var.bind env vars in
+            Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (par@ (%a)@ (%a)@ %a))@]"
+              (symbol env) name (list ty_var env) vars
+              (list ty env) [] (ty env) ret
+        end
+      (* Polymorphic functions *)
       | Signature (vars, params, ret) ->
         begin match Config.version with
           | V2_6 -> raise Polymorphic_function_declaration
+          | V2_7 ->
+            let env = declare_sort_params env fmt vars in
+            Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (%a)@ %a)@]"
+              (symbol env) name (list ty env) params (ty env) ret
           | Poly ->
             let env = List.fold_left Env.Ty_var.bind env vars in
             Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (par@ (%a)@ (%a)@ %a))@]"
               (symbol env) name (list ty_var env) vars
               (list ty env) params (ty env) ret
-          | V2_7 ->
-            let env = declare_sort_params env fmt vars in
-            Format.fprintf fmt "@[<hov 2>(declare-fun %a@ (%a)@ %a)@]"
-              (symbol env) name (list ty env) params (ty env) ret
         end
 
     let define_sort env fmt (c, params, body) =

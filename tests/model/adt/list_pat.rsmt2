@@ -1,5 +1,5 @@
 sat
 (
   (define-fun l () (list Int)
-    (cons 3 (cons 4 nil)))
+    (cons 3 (cons 4 (as nil (list Int)))))
 )

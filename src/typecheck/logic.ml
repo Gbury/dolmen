@@ -253,6 +253,7 @@ module Smtlib2 = struct
     let n_th = List.length l.theories in
     (* TODO: these computations could all be shared by doing a single loop
        over the [l.theories] list, but performance should not matter here *)
+    let ho = List.mem `HO l.theories in
     let arrays = List.mem `Arrays l.theories in
     let bitvs = List.mem `Bitvectors l.theories in
     let floats = List.mem `Floats l.theories in
@@ -261,7 +262,9 @@ module Smtlib2 = struct
     let reals = List.mem `Reals l.theories in
     let reals_ints = List.mem `Reals_Ints l.theories in
     (* QF *)
-    if not l.features.quantifiers
+    if ho
+    then Buffer.add_string b "HO_"
+    else if not l.features.quantifiers
     then Buffer.add_string b "QF_";
     (* Arrays *)
     if arrays then
@@ -338,6 +341,7 @@ module Smtlib2 = struct
 
     exception Unknown_ty_builtin of V.ty_cst
     exception Unknown_term_builtin of V.term_cst
+    exception HO_Maps_unavailable
 
     type arith_config =
       | Exponential
@@ -347,10 +351,12 @@ module Smtlib2 = struct
       | Difference of [ `Normal | `UFIDL ]
 
     type acc = {
+      version : version;
       need_univ       : bool;
       need_unit       : bool;
       free_sorts      : bool;
       free_functions  : bool;
+      ho_maps     : bool;
       quantifiers : bool;
       datatypes   : bool;
       bitvectors  : bool;
@@ -376,6 +382,13 @@ module Smtlib2 = struct
       if acc.free_functions then acc else { acc with free_functions = true; }
     let add_quants acc =
       if acc.quantifiers then acc else { acc with quantifiers = true; }
+    let add_ho_maps acc =
+      if version_at_least_2_7 acc.version then
+        if acc.ho_maps
+        then acc
+        else { acc with ho_maps = true; }
+      else
+        raise HO_Maps_unavailable
     let add_datatypes acc =
       if acc.datatypes then acc else { acc with datatypes = true; }
     let add_bitvs acc =
@@ -497,6 +510,7 @@ module Smtlib2 = struct
           | B.Univ -> aux (add_univ acc)
           | B.Unit -> aux (add_unit acc)
           | B.Prop T -> aux acc
+          | B.Map T -> aux (add_ho_maps acc)
           | B.Arith Int -> aux (add_arith `Int acc)
           | B.Arith Real -> aux (add_arith `Real acc)
           | B.Bitv T _ -> aux (add_bitvs acc)
@@ -626,8 +640,7 @@ module Smtlib2 = struct
       | Binder (Forall { type_vars = _; term_vars; triggers = _; }, body) ->
         scan_quant acc term_vars body
       | Binder ((Map term_vars), body) ->
-        (* TODO: add a field to track whether we need HO-CORE ? *)
-        scan_quant acc term_vars body
+        scan_quant (add_ho_maps acc) term_vars body
       | Binder ((Letand l | Letin l), body) ->
         scan_let acc l body
 
@@ -695,6 +708,11 @@ module Smtlib2 = struct
            can create and compare values of bitvector type without the
            BV theory. *)
         -> aux_terms acc
+
+      (* Maps
+         We can only add the HO theory if we are at least in version 2.7.
+         Any use of these means we need the HO theory. *)
+      | B.(Map App) -> aux (add_ho_maps acc)
 
       (* Arrays
          for these, we try and accurately track exactly what kind
@@ -888,6 +906,7 @@ module Smtlib2 = struct
       let add b (th : theory) l = if b then th :: l else l in
       let theories =
         [ `Core ]
+        |> add acc.ho_maps `HO
         |> add (acc.bitvectors || (acc.bitv_lits && not acc.floats)) `Bitvectors
         |> add acc.floats `Floats
         |> add acc.strings `String
@@ -901,11 +920,13 @@ module Smtlib2 = struct
     let need_univ acc = acc.need_univ
     let need_unit acc = acc.need_unit
 
-    let nothing = {
+    let nothing version = {
+      version;
       need_univ = false;
       need_unit = false;
       free_sorts = false;
       free_functions = false;
+      ho_maps = false;
       quantifiers = false;
       datatypes = false;
       bitvectors = false;

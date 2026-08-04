@@ -92,10 +92,10 @@ module Smtlib2
     post_logic_stmts : Typer_Types.typechecked Typer_Types.stmt list;
   }
 
-  let init ~compute_logic =
+  let init ~compute_logic ~version =
     {
       seen_exit = false;
-      scan_acc = if compute_logic then Some S.nothing else None;
+      scan_acc = if compute_logic then Some (S.nothing version) else None;
       old_logic = Not_seen_yet;
       pre_logic_stmts = [];
       post_logic_stmts = [];
@@ -366,8 +366,8 @@ module Make
     in
     let mk st lang =
       match (lang : language) with
-      | Smtlib2 _ ->
-        let acc = Smt2.init ~compute_logic in
+      | Smtlib2 v ->
+        let acc = Smt2.init ~compute_logic ~version:(`Script v) in
         st, mk acc (module Smt2)
       | lang ->
         let st = State.error st unsupported_language lang in

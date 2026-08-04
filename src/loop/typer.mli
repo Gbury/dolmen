@@ -27,6 +27,9 @@ val typer_state : ty_state -> T.state
 
 (* {2 Warnings} *)
 
+val dumb_polymorphism : (T.env * T.Ty.t * T.Ty.Var.t * T.wildcard_source list) Report.Warning.t
+(** *)
+
 val forbidden_arith_expr : (Dolmen_type.Arith.Smtlib2.config * string) Report.Error.t
 (** Error for arithmetic expressions that do not respect the specification (e.g.
     non-linear expressions, expressions not in difference logic, etc...). *)

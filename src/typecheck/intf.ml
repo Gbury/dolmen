@@ -302,6 +302,9 @@ module type Formulas = sig
         was asked for. This warning can very safely be ignored. *)
     | Redundant_pattern : term -> Dolmen.Std.Term.t warn
     (** Redundant cases in pattern matching *)
+    | Dumb_polymorphism :
+        ty * ty_var * wildcard_source list -> Dolmen.Std.Term.t warn
+    (** *)
   (** Warnings that cna trigger on regular parsed terms. *)
 
   type _ warn +=
@@ -415,9 +418,6 @@ module type Formulas = sig
     | Polymorphic_function_argument : Dolmen.Std.Term.t err
     (** *)
     | Non_prenex_polymorphism : ty -> Dolmen.Std.Term.t err
-    (** *)
-    | Dumb_polymorphism :
-        ty * ty_var * wildcard_source list -> Dolmen.Std.Term.t err
     (** *)
     | Inference_forbidden :
         ty_var * wildcard_source * ty -> Dolmen.Std.Term.t err

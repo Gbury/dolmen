@@ -66,7 +66,7 @@ module Smtlib2 : sig
     type acc
     (** accumulator for computing minimal logics *)
 
-    val nothing : acc
+    val nothing : version -> acc
     (** The empty accumulator. *)
 
     val need_univ : acc -> bool

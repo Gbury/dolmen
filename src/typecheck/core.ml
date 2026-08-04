@@ -765,7 +765,7 @@ module Smtlib2 = struct
       in
       aux [] l
 
-    let parse_app _version env s ast args =
+    let parse_app ~force_ho _version env s ast args =
       (* Try and determine which application should be done at this point. *)
       let foo =
         match args with
@@ -806,8 +806,10 @@ module Smtlib2 = struct
       match foo with
       | `HO_app (f, args) ->
         Base.term_app_left' (module Type) env s T.map_app ast f args
-      | `Regular_apply (id, s_ast, args, f) ->
-        Type.parse_app_resolved env ast id s_ast args f
+      | `Regular_apply _ when force_ho ->
+        Base.term_app_left (module Type) env s T.map_app ast args
+      | `Regular_apply (id, f_ast, args, f) ->
+        Type.parse_app_resolved env ast id f_ast args f
         |> Type.unwrap_term env ast
 
     let parse_as version env s ast args =
@@ -818,7 +820,7 @@ module Smtlib2 = struct
         assert false
       | ty :: f_and_args ->
         let ty = Type.parse_ty env ty in
-        let t = parse_app version (Type.expect_term env) s ast f_and_args in
+        let t = parse_app ~force_ho:false version (Type.expect_term env) s ast f_and_args in
         Type.T.ensure t ty
 
     let parse (version : Dolmen.Smtlib2.version) env s =
@@ -829,8 +831,6 @@ module Smtlib2 = struct
         (* Application, Higher-order and indexed identifiers *)
         | Type.Id { name = Simple "->"; ns = Sort } ->
           Type.builtin_ty (Base.ty_app_right (module Type) env s Ty.map)
-        | Type.Id { name = Simple "@"; ns = Term } ->
-          Type.builtin_term (Base.term_app_left (module Type) env s T.map_app)
 
         | Type.Builtin Ast.Map_lambda ->
           Type.builtin_term (fun ast args ->
@@ -854,9 +854,10 @@ module Smtlib2 = struct
 
         | Type.Builtin Ast.As ->
           Type.builtin_term (parse_as version env s)
-
+        | Type.Id { name = Simple "@"; ns = Term } ->
+          Type.builtin_term (parse_app ~force_ho:true version env s)
         | Type.Builtin Ast.Fake_apply ->
-          Type.builtin_term (parse_app version env s)
+          Type.builtin_term (parse_app ~force_ho:false version env s)
 
         | _ -> `Not_found
 

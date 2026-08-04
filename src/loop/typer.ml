@@ -863,7 +863,7 @@ let inference_scope_escape =
     ~name:"Scope escape from a type due to inference" ()
 
 let dumb_polymorphism =
-  Report.Error.mk ~code ~mnemonic:"dumb-poly"
+  Report.Warning.mk ~code ~mnemonic:"dumb-poly"
     ~message:(fun fmt (env, ty, w, sources) ->
         let pp_sep fmt () = Format.fprintf fmt "@ " in
         let pp_src fmt src =
@@ -1369,6 +1369,10 @@ module Typer(State : State.S) = struct
       if var_can_be_unused v then st
       else warn ~input ~loc st unused_term_variable (kind, v)
 
+    (* SMT-LIB's dumb polymorphism *)
+    | T.Dumb_polymorphism (ty, w, sources) ->
+      warn ~input ~loc st dumb_polymorphism (env, ty, w, sources)
+
     (* *)
     | T.Superfluous_destructor _ ->
       warn ~input ~loc st superfluous_destructor ()
@@ -1476,8 +1480,6 @@ module Typer(State : State.S) = struct
       error ~input ~loc st inference_conflict (env, w_src, inferred_ty, allowed_tys)
     | T.Inference_scope_escape (_, w_src, escaping_var, var_reason) ->
       error ~input ~loc st inference_scope_escape (env, w_src, escaping_var, var_reason)
-    | T.Dumb_polymorphism (ty, w, sources) ->
-      error ~input ~loc st dumb_polymorphism (env, ty, w, sources)
     | T.Unbound_type_wildcards tys ->
       error ~input ~loc st unbound_type_wildcards (env, tys)
     | T.Unbound_type_vars tys ->
@@ -1827,7 +1829,11 @@ module Typer(State : State.S) = struct
          wildcards that are implicitly universally quantified
     *)
     | `Logic Smtlib2 v ->
-      let poly = T.Dumb in
+      let poly =
+        match v with
+        | `Poly -> T.Normal
+        | _ -> T.Dumb
+      in
       let poly_args = T.Implicit in
       let var_infer = T.{
           var_hook = ignore;

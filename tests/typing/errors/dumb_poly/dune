@@ -33,4 +33,36 @@
   (action (diff ho_poly_restriction.expected ho_poly_restriction.full)))
 
 
+; Test for nullary_symbol.smt2
+; Incremental test
+
+(rule
+   (target  nullary_symbol.incremental)
+   (deps    (:input nullary_symbol.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff nullary_symbol.expected nullary_symbol.incremental)))
+
+; Full mode test
+
+(rule
+   (target  nullary_symbol.full)
+   (deps    (:input nullary_symbol.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff nullary_symbol.expected nullary_symbol.full)))
+
+
 ; Auto-generated part end
