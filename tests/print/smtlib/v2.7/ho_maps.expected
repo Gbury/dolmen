@@ -1,0 +1,8 @@
+(set-logic HO_LIA)
+(declare-sort-parameter A)
+(declare-const id_ (-> A A))
+(define-fun b1 () Int (id_ (as id_ (-> Int Int)) 5))
+(assert (forall ((x Int))
+         (! (= x x)
+         :pattern ((id_ (as id_ (-> Int Int)) x)))))
+(exit)

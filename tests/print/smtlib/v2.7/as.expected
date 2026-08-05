@@ -1,0 +1,5 @@
+Warning The logic used to typecheck the problem (ALL) is not minimal. The minimal logic actually is: QF_LIA
+(set-logic QF_LIA)
+(declare-const a Int)
+(assert (= 0 a))
+(exit)

@@ -2082,8 +2082,8 @@ module Typer(State : State.S) = struct
       end
     | `Term_decl (c : Dolmen.Std.Expr.term_cst) ->
       let is_function =
-        let vars, args, _ = Dolmen.Std.Expr.Ty.poly_sig c.id_ty in
-        vars <> [] || args <> []
+        let _, params, _ = Dolmen.Std.Expr.Ty.poly_sig c.id_ty in
+        params <> []
       in
       if is_function && not (allow_function_decl st) then
         T._error env (Decl d) Illegal_decl

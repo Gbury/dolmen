@@ -415,24 +415,21 @@ module Smtlib2 = struct
     | { term = App ({ term = Builtin Sexpr; _ }, {
         term = App ({ term = Builtin Sexpr; _ }, [
             { term = Symbol { name = Simple "as"; _ }; _}; f; ty]);
-        loc = loc_as; attr = attr_as
+        loc = _loc_as; attr = attr_as
       } :: args); loc = loc_out; attr = attr_out} ->
       let ty = sexpr_as_sort ty in
       let f = sexpr_as_term version f in
       let args = List.map (sexpr_as_term version) args in
-      let function_app =
-        Ast.apply ~loc:loc_out f args
-        |> Ast.add_attrs attr_out
-      in
-      Ast.colon ~loc:loc_as function_app ty
+      Ast.as_ ~loc:loc_out ty f args
       |> Ast.add_attrs attr_as
+      |> Ast.add_attrs attr_out
 
     | { term = App ({ term = Builtin Sexpr; _ }, [
         { term = Symbol { name = Simple "as"; _ }; _}; f; ty])
       ; loc=loc_as; attr=attr_as } ->
       let f = sexpr_as_term version f in
       let ty = sexpr_as_sort ty in
-      Ast.colon ~loc:loc_as f ty
+      Ast.as_ ~loc:loc_as ty f []
       |> Ast.add_attrs attr_as
 
     (* indexed identifiers *)
@@ -607,7 +604,7 @@ module Smtlib2 = struct
         Type.builtin_term (Base.term_app_chain (module Type) env s T.eq)
 
       (* As """type annotation""" *)
-      | Type.Builtin As ->
+      | Type.Builtin Ast.As ->
         Type.builtin_term (fun ast args ->
             match args with
             | ty :: f :: args ->
@@ -804,6 +801,8 @@ module Smtlib2 = struct
           `HO_app (f', actual_args)
       in
       match foo with
+      | `HO_app (f, []) ->
+        f
       | `HO_app (f, args) ->
         Base.term_app_left' (module Type) env s T.map_app ast f args
       | `Regular_apply _ when force_ho ->
@@ -821,7 +820,8 @@ module Smtlib2 = struct
       | ty :: f_and_args ->
         let ty = Type.parse_ty env ty in
         let t = parse_app ~force_ho:false version (Type.expect_term env) s ast f_and_args in
-        Type.T.ensure t ty
+        let res = Type.T.ensure t ty in
+        res
 
     let parse (version : Dolmen.Smtlib2.version) env s =
       if not (version_at_least_2_7 version) then
