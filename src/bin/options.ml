@@ -336,18 +336,23 @@ let profiling_opts stats
     end
 
 let reports_opts strict warn_modifiers =
-  let conf = Dolmen_loop.Report.Conf.mk ~default:Enabled in
+  let fatal warn conf = Dolmen_loop.Report.Conf.fatal conf warn in
+  let conf =
+    Dolmen_loop.Report.Conf.mk ~default:Enabled
+    (* That warning should be fatal, because new benchmarks to the SMT-LIB are
+       checked using the non-strict mode, but the SMT-LIB committee seems to really
+       want dumb polymorphism. *)
+    |> fatal
+      (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.dumb_polymorphism))
+  in
   let conf =
     if not strict then conf
     else begin
-      let fatal warn conf = Dolmen_loop.Report.Conf.fatal conf warn in
       conf
       |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.bad_arith_expr))
       |> fatal
         (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.unknown_logic))
-      |> fatal
-        (`Warning (Dolmen_loop.Report.Any_warn Dolmen_loop.Typer.dumb_polymorphism))
     end
   in
   let res =
