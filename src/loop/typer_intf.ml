@@ -155,6 +155,9 @@ module type Typer = sig
   val reset_assertions :
     state -> ?loc:Dolmen.Std.Loc.t -> unit -> state
 
+  val set_option :
+    state -> input:input -> ?loc:Dolmen.Std.Loc.t -> Dolmen.Std.Term.t -> state
+
   val push :
     state -> input:input -> ?loc:Dolmen.Std.Loc.t -> int -> state
 

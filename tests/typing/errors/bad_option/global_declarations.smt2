@@ -1,0 +1,7 @@
+(set-logic ALL)
+(push 1)
+(set-option :global-declarations)
+(declare-const x Int)
+(pop 1)
+(assert (= x x))
+(check-sat)

@@ -1,0 +1,4 @@
+File "tests/typing/errors/bad_option/global_declarations.smt2", line 3, character 0-33:
+3 | (set-option :global-declarations)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error Incorrect use of option :global-declarations: this option cannot be set after a push

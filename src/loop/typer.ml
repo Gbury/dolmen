@@ -501,6 +501,13 @@ let unknown_warning =
 (* Typing errors *)
 (* ************************************************************************ *)
 
+let bad_option =
+  Report.Error.mk ~code ~mnemonic:"bad-option"
+    ~message:(fun fmt (option, msg) ->
+        Format.fprintf fmt "Incorrect use of option %a: %t"
+          Dolmen.Std.Term.print option msg)
+    ~name:"Bad Option" ()
+
 let not_well_founded_datatype =
   Report.Error.mk ~code ~mnemonic:"wf-datatype"
     ~message:(fun fmt () ->
@@ -1182,6 +1189,8 @@ let unknown_error =
    passed in the pipes, which will contain the typing state. *)
 
 type ty_state = {
+  (* global assertions (i.e. not on the stack) *)
+  global : bool;
   (* logic used *)
   logic : Dolmen_type.Logic.t;
   logic_loc : Dolmen.Std.Loc.loc;
@@ -1192,6 +1201,7 @@ type ty_state = {
 }
 
 let new_state () = {
+  global = false;
   logic = Auto;
   logic_loc = Dolmen.Std.Loc.dummy;
   typer = T.new_state ();
@@ -1259,6 +1269,11 @@ module Typer(State : State.S) = struct
     | `Response of Response.language file
   ]
 
+  let file_loc_of_input (input : input) =
+    match input with
+    | `Logic f -> f.loc
+    | `Response f -> f.loc
+
   let warn ~input ~loc st warn payload =
     match (input : input) with
     | `Logic file -> State.warn ~file ~loc st warn payload
@@ -1269,10 +1284,13 @@ module Typer(State : State.S) = struct
     | `Logic file -> State.error ~file ~loc st err payload
     | `Response file -> State.error ~file ~loc st err payload
 
-  let file_loc_of_input (input : input) =
-    match input with
-    | `Logic f -> f.loc
-    | `Response f -> f.loc
+  let _warn' ~input ~loc st w payload =
+    let file = file_loc_of_input input in
+    warn ~input ~loc:{ file; loc; } st w payload
+
+  let error' ~input ~loc st err payload =
+    let file = file_loc_of_input input in
+    error ~input ~loc:{ file; loc; } st err payload
 
   let lang_of_input (input : input) : [ Typer_intf.lang | `Missing ] =
     match input with
@@ -1926,6 +1944,29 @@ module Typer(State : State.S) = struct
       let st = report_error ~input !st err in
       raise (State.Error st)
 
+  (* Set options *)
+  (* ************************************************************************ *)
+
+  let set_option st ~input ?(loc=Dolmen.Std.Loc.no_loc) t =
+    let opt =
+      match (t : Dolmen.Std.Term.t).term with
+      | Symbol { name = Simple ":global-declarations"; _}
+        -> `Global_declarations
+      | _ -> `No_option
+    in
+    match opt with
+    | `Global_declarations ->
+      let state = State.get ty_state st in
+      begin match state.stack with
+        | [] ->
+          let state = { state with global = true; } in
+          State.set ty_state state st
+        | _ :: _ ->
+          let msg = Format.dprintf "this option cannot be set after a push" in
+          error' ~input ~loc st bad_option (t, msg)
+      end
+    | `No_option -> st
+
 
   (* Push&Pop *)
   (* ************************************************************************ *)
@@ -1936,9 +1977,10 @@ module Typer(State : State.S) = struct
   let reset_assertions st ?loc:_ () =
     let state = State.get ty_state st in
     State.set ty_state {
+      global = state.global;
       logic = state.logic;
       logic_loc = state.logic_loc;
-      typer = T.new_state ();
+      typer = if state.global then state.typer else T.new_state ();
       stack = [];
     } st
 
@@ -1951,10 +1993,13 @@ module Typer(State : State.S) = struct
           )
       else begin
         let t = State.get ty_state st in
-        let st' = T.copy_state t.typer in
-        let t' = { t with stack = st' :: t.stack; } in
-        let st' = State.set ty_state t' st in
-        push st' ~input ~loc (i - 1)
+        if t.global then st
+        else begin
+          let st' = T.copy_state t.typer in
+          let t' = { t with stack = st' :: t.stack; } in
+          let st' = State.set ty_state t' st in
+          push st' ~input ~loc (i - 1)
+        end
       end
 
   let rec pop st ~input ?(loc=Dolmen.Std.Loc.no_loc) = function
@@ -1966,7 +2011,8 @@ module Typer(State : State.S) = struct
           )
       else begin
         let t = State.get ty_state st in
-        match t.stack with
+        if t.global then st
+        else match t.stack with
         | [] ->
           fst @@ typing_wrap ~input ~loc st ~f:(fun env ->
               T._error env (Located loc) Pop_with_empty_stack
@@ -2590,6 +2636,7 @@ module Make
     | { S.descr = S.Get_option s; loc; attrs; _ } ->
       st, [mk_stmt (other_id c) loc attrs (`Get_option s)]
     | { S.descr = S.Set_option t; loc; attrs; _ } ->
+      let st = Typer.set_option st ~input ~loc t in
       st, [mk_stmt (other_id c) loc attrs (`Set_option t)]
 
     (* Declarations and definitions *)
