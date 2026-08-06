@@ -1949,8 +1949,9 @@ module Typer(State : State.S) = struct
 
   let set_option st ~input ?(loc=Dolmen.Std.Loc.no_loc) t =
     let opt =
-      match (t : Dolmen.Std.Term.t).term with
-      | Symbol { name = Simple ":global-declarations"; _}
+      match lang_of_input input, (t : Dolmen.Std.Term.t).term with
+      | (`Logic Smtlib2 _ | `Response Smtlib2 _ ),
+        Symbol { name = Simple ":global-declarations"; _}
         -> `Global_declarations
       | _ -> `No_option
     in
