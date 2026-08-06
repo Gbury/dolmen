@@ -26,6 +26,8 @@ next
 
 ### Typing
 
+- Add support for SMT-LIB's ":global-declarations" (PR#269)
+
 - Add support for exponentiation in SMT-LIB2.7, as per the new
   Ints theory and EIA sub-logic (PR#259)
 
