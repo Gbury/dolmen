@@ -487,13 +487,32 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       (* all others are non-associative *)
       | _ -> `None
 
-    let term_cst_poly _env c =
+    let rec ty_var_occurs v ty =
+      match V.Ty.view ~expand:true ty with
+      | Var v' -> V.Ty.Var.equal v v'
+      | App (_, args) -> List.exists (ty_var_occurs v) args
+
+    let term_cst_needs_type_info env c =
       (* Here, we want the actual concrete type, since this matters for
          actual typing afterwards, that being said, expansion of type aliases
          should not introduce polymorphism in principle. *)
       match V.Sig.view ~expand:true (V.Term.Cst.ty c) with
-      | Signature (_ :: _, _, _) -> true
-      | _ -> false
+      | Signature (vars, params, ret) ->
+        (* "(as ...)" is needed when a type variable does not occur in argument
+           types but occurs in the return type, in this case, since it is not
+           unified, it needs an explicit cast for typechecking.
+           If it's absent from both, then it can't be disambiguated, and the
+           application can't be printed. *)
+        List.fold_left (fun needs_as v ->
+            if List.exists (ty_var_occurs v) params then needs_as
+            else if ty_var_occurs v ret then true
+            else
+              _cannot_print
+                "polymorphic symbol %a has a type variable that occurs \
+                 neither in its arguments nor in its return type, and thus \
+                 cannot be disambiguated"
+                (term_cst env) c
+          ) false vars
 
     let rec is_ho_map_apply_full ty args =
       let rec consume ty_args t_args =
@@ -503,8 +522,8 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
         | _ :: ty_args, _ :: t_args -> consume ty_args t_args
         | _ :: _ty_args, [] -> false
       in
-      (* similarly to the situation in `term_cst_poly`, we want the actual type,
-         and not stop at aliases *)
+      (* similarly to the situation in `term_cst_needs_type_info`, we want the
+         actual type, and not stop at aliases *)
       match V.Ty.view ~expand:true ty with
       | App (ty_cst, ty_args) ->
         begin match V.Ty.Cst.builtin ty_cst with
@@ -521,15 +540,18 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
        we suppose that a symbol's type arguments can be deduced from the term
        arguments. *)
     let term_app_aux ~poly ~pp ~env fmt (head, args) =
-      match args with
-      | [] ->
-        begin match poly () with
-          | Some t_ty ->
+      begin match poly () with
+        | None -> app ~pp env fmt (head, args)
+        | Some t_ty ->
+          match args with
+          | [] ->
             Format.fprintf fmt "@[<hov 1>(as@ %a@ %a)@]"
               (id ~allow_keyword:false env) head (ty env) t_ty
-          | None -> app ~pp env fmt (head, args)
-        end
-      | _ :: _ -> app ~pp env fmt (head, args)
+          | _ :: _ ->
+            Format.fprintf fmt "@[<hov 1>((as@ %a@ %a)@ %a)@]"
+              (id ~allow_keyword:false env) head (ty env) t_ty
+              (list pp env) args
+      end
 
     (* Note: unfortunately, most of the smtlib term constructions end with a
        parenthesis, and therefore their printers are currently not tail-rec.
@@ -609,7 +631,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
 
       (* Algebraic datatypes *)
       | B.Adt Constructor _ | B.Adt Destructor _ ->
-        let poly () = if term_cst_poly env head then Some t_ty else None in
+        let poly () = if term_cst_needs_type_info env head then Some t_ty else None in
         p ~poly Term (Env.Term_cst.name env head)
       | B.Adt Tester { cstr; _ } ->
         begin match Env.Term_cst.name env cstr with
@@ -938,7 +960,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       | B.Base | _ ->
         begin match find_named env head with
           | None ->
-            let poly () = if term_cst_poly env head then Some t_ty else None in
+            let poly () = if term_cst_needs_type_info env head then Some t_ty else None in
             let h = Env.Term_cst.name env head in
             p ~poly Term h
           | Some expr ->

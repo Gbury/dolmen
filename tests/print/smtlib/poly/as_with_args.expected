@@ -1,0 +1,6 @@
+Warning The logic used to typecheck the problem (ALL) is not minimal. The minimal logic actually is: UFLIA
+(set-logic UFLIA)
+(declare-fun f (par (t1) (Int) t1))
+(declare-fun p (par (t2) (t2) Bool))
+(assert (par (t3) (forall ((_x t3)) (p ((as f t3) 0)))))
+(exit)
