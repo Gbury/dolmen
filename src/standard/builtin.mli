@@ -543,17 +543,8 @@ type 'a t += Bitv of 'a Bitv.t
 (*  ************************************************************************* *)
 
 module Float : sig
-  type _ t =
-    | T of { e : int; s : int; }
-    (** [Float(e,s): ttype]: type constructor for floating point of exponent of
-        size [e] and significand of size [s] (hidden bit included). Those size are
-        greater than 1 *)
-    | RoundingMode
-    (** [RoundingMode: ttype]: type for enumerated type of rounding modes. *)
-    | Fp of { e : int; s : int; }
-    (** [Fp(e, s): Bitv.T{1} -> Bitv.T{e} -> Bitv.T{s-1} -> Fp(e,s)]: bitvector literal.
-        The IEEE-format is used for the conversion [sb^se^ss].
-        All the NaN are converted to the same value. *)
+
+  type rounding_mode =
     | RoundNearestTiesToEven
     (** [RoundNearestTiesToEven : RoundingMode]: *)
     | RoundNearestTiesToAway
@@ -564,6 +555,20 @@ module Float : sig
     (** [RoundTowardNegative : RoundingMode *)
     | RoundTowardZero
     (** [RoundTowardZero : RoundingMode *)
+
+  type _ t =
+    | T of { e : int; s : int; }
+    (** [Float(e,s): ttype]: type constructor for floating point of exponent of
+        size [e] and significand of size [s] (hidden bit included). Those size are
+        greater than 1 *)
+    | RoundingMode
+    (** [RoundingMode: ttype]: type for enumerated type of rounding modes. *)
+    | RM of rounding_mode
+    (** [RM r: RoundingMode]: rounding mode literals. *)
+    | Fp of { e : int; s : int; }
+    (** [Fp(e, s): Bitv.T{1} -> Bitv.T{e} -> Bitv.T{s-1} -> Fp(e,s)]: bitvector literal.
+        The IEEE-format is used for the conversion [sb^se^ss].
+        All the NaN are converted to the same value. *)
     | Plus_infinity of { e: int; s : int; }
     (** [Plus_infinity{e;s} : Fp{e;s}] *)
     | Minus_infinity of { e : int; s : int; }

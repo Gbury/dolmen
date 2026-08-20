@@ -72,6 +72,9 @@ next
   match on builtins, especially wrt to completeness of pattern matching.
   Also is likely to have a small performance improvement. (PR#240)
 
+- Separate floating-point rounding modes into their own
+  `Builtin.Float.rounding_mode` type, so that pattern matching over
+  rounding modes can be exhaustive on its own (PR#271)
 
 v0.10
 -----

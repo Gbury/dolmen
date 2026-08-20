@@ -175,15 +175,19 @@ type 'a t += Bitv of 'a Bitv.t
 (* ************************************************************************* *)
 
 module Float = struct
-  type _ t =
-    | T of { e : int; s : int; }
-    | RoundingMode
-    | Fp of { e : int; s : int; }
+
+  type rounding_mode =
     | RoundNearestTiesToEven
     | RoundNearestTiesToAway
     | RoundTowardPositive
     | RoundTowardNegative
     | RoundTowardZero
+
+  type _ t =
+    | T of { e : int; s : int; }
+    | RoundingMode
+    | RM of rounding_mode
+    | Fp of { e : int; s : int; }
     | Plus_infinity of { e : int; s : int; }
     | Minus_infinity of { e : int; s : int; }
     | Plus_zero of { e : int; s : int; }
