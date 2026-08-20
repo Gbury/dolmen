@@ -492,19 +492,37 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       | Var v' -> V.Ty.Var.equal v v'
       | App (_, args) -> List.exists (ty_var_occurs v) args
 
-    let term_cst_needs_type_info env c =
+    (* if [ty] is a map type, unfolds it, returning the list of its parameter
+       types and its "last" return type. *)
+    let rec unfold_ho_params ty =
+      match V.Ty.view ~expand:true ty with
+      | App (ty_cst, [param; ret]) when
+          (match V.Ty.Cst.builtin ty_cst with B.Map T -> true | _ -> false) ->
+        let params, final = unfold_ho_params ret in
+        param :: params, final
+      | _ -> [], ty
+
+    (* if [is_ho] is true then [c] is applied through the HO `@` symbol to more
+       arguments than its signature's arity, the types of the extra arguments
+       are recovered from its return type with [unfold_ho_params]. *)
+    let term_cst_needs_type_info ?(is_ho = false) env c =
       (* Here, we want the actual concrete type, since this matters for
          actual typing afterwards, that being said, expansion of type aliases
          should not introduce polymorphism in principle. *)
       match V.Sig.view ~expand:true (V.Term.Cst.ty c) with
       | Signature (vars, params, ret) ->
+        let ho_ret_params, ret =
+          if is_ho then unfold_ho_params ret else [], ret
+        in
         (* "(as ...)" is needed when a type variable does not occur in argument
            types but occurs in the return type, in this case, since it is not
            unified, it needs an explicit cast for typechecking.
            If it's absent from both, then it can't be disambiguated, and the
            application can't be printed. *)
         List.fold_left (fun needs_as v ->
-            if List.exists (ty_var_occurs v) params then needs_as
+            if List.exists (ty_var_occurs v) params ||
+               List.exists (ty_var_occurs v) ho_ret_params
+            then needs_as
             else if ty_var_occurs v ret then true
             else
               _cannot_print
@@ -711,15 +729,20 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
               | V2_6 -> assert false (* TODO: error *)
               | V2_7 | Poly ->
                 (* if the first arg is a symbol/function name (and not a more complex
-                   term), **and** the application is full, we should not need any type
-                   annotation (assuming that function type do not have phantom types). *)
+                   term), **and** the application is full, we can print it as an
+                   application of that symbol without the `@`.
+                   It might still need a `(as ...)`, if the symbol has a type
+                   variable that only occurs in its return type. *)
                 begin match args with
                   | f :: other_args ->
                     begin match V.Term.view f with
                       | App (c, _, []) when is_ho_map_apply_full (V.Term.ty f) other_args ->
+                        let poly () =
+                          if term_cst_needs_type_info ~is_ho:true env c
+                          then Some t_ty else None
+                        in
                         let name = Env.Term_cst.name env c in
-                        let id = Dolmen_std.Id.create Term name in
-                        app ~pp:term env fmt (id, other_args)
+                        aux ~poly (Dolmen_std.Id.create Term name) other_args
                       | _ -> simple "@"
                     end
                   | _ ->
