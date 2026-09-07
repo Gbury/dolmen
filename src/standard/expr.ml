@@ -3941,6 +3941,7 @@ module View = struct
 
       module Var = struct
         type t = ty_var
+        let equal = Ty.Var.equal
       end
 
       module Cst = struct

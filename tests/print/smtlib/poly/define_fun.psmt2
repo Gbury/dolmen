@@ -1,0 +1,3 @@
+(set-logic ALL)
+
+(define-fun id (par (t) ((x t)) t x))

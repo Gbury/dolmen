@@ -33,6 +33,38 @@
   (action (diff as.expected as.full)))
 
 
+; Test for ho_map_with_as.smt2
+; Incremental test
+
+(rule
+   (target  ho_map_with_as.incremental)
+   (deps    (:input ho_map_with_as.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=incremental --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff ho_map_with_as.expected ho_map_with_as.incremental)))
+
+; Full mode test
+
+(rule
+   (target  ho_map_with_as.full)
+   (deps    (:input ho_map_with_as.smt2))
+   (package dolmen_bin)
+   (action (chdir %{workspace_root}
+            (with-outputs-to %{target}
+             (with-accepted-exit-codes (or 0 (not 0))
+              (run dolmen --mode=full --color=never %{input} %{read-lines:flags.dune}))))))
+(rule
+  (alias runtest)
+  (package dolmen_bin)
+  (action (diff ho_map_with_as.expected ho_map_with_as.full)))
+
+
 ; Test for ho_maps.smt2
 ; Incremental test
 

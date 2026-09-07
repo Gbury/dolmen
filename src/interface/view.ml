@@ -159,6 +159,8 @@ module TFF = struct
 
         type t = ty_var
 
+        val equal : t -> t -> bool
+
       end
 
       module Cst : sig
