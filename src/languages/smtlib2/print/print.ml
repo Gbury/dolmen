@@ -1316,6 +1316,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
         begin match Config.version with
           | V2_6 -> raise Polymorphic_function_definition
           | Poly ->
+            let env = List.fold_left Env.Ty_var.bind env vars in
             Format.fprintf fmt
               "@[<hv 2>(@[<hov 1>%s %a@ (par (%a)@ (%a) %a@]@ @[<hov>%a@]))@]"
               (if recursive then "define-fun-rec" else "define-fun")
