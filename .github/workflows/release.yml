@@ -35,9 +35,9 @@ jobs:
             ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
           - os: macos-latest
             dolmen_artifact: dolmen
-            dolmen_asset: dolmen-macos-amd64
+            dolmen_asset: dolmen-macos-arm64
             dolmenls_artifact: dolmenls
-            dolmenls_asset: dolmenls-macos-amd64
+            dolmenls_asset: dolmenls-macos-arm64
             ocaml-version: ocaml-variants.4.14.2+options,ocaml-option-flambda
           - os: windows-latest
             dolmen_artifact: dolmen.exe
