@@ -20,9 +20,6 @@ depends: [
   "smt-string" { >= "0.2" }
   "uutf"
 ]
-pin-depends: [
-  ["smt-string.0.2" "git+https://github.com/ocamlpro/smt-string.git#0.2"]
-]
 tags: [ "logic" "type" "model" "modelchecking" "first order" ]
 homepage: "https://github.com/Gbury/dolmen"
 dev-repo: "git+https://github.com/Gbury/dolmen.git"
