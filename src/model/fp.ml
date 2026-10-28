@@ -123,11 +123,11 @@ let builtins ~eval env (cst : Dolmen.Std.Expr.Term.Const.t) =
   | Dolmen.Std.Builtin.Float blt ->
     begin match blt with
       | T _ | RoundingMode -> assert false (* Types are not evaluated *)
-      | RoundNearestTiesToEven -> Some (Value.mk ~ops:ops_rm Mode.NE)
-      | RoundNearestTiesToAway -> Some (Value.mk ~ops:ops_rm Mode.NA)
-      | RoundTowardPositive -> Some (Value.mk ~ops:ops_rm Mode.UP)
-      | RoundTowardNegative -> Some (Value.mk ~ops:ops_rm Mode.DN)
-      | RoundTowardZero -> Some (Value.mk ~ops:ops_rm Mode.ZR)
+      | RM RoundNearestTiesToEven -> Some (Value.mk ~ops:ops_rm Mode.NE)
+      | RM RoundNearestTiesToAway -> Some (Value.mk ~ops:ops_rm Mode.NA)
+      | RM RoundTowardPositive -> Some (Value.mk ~ops:ops_rm Mode.UP)
+      | RM RoundTowardNegative -> Some (Value.mk ~ops:ops_rm Mode.DN)
+      | RM RoundTowardZero -> Some (Value.mk ~ops:ops_rm Mode.ZR)
       | Of_real { e = ew; s = prec; } ->
         Some (Fun.mk_clos @@ Fun.fun_2 ~cst (fun m r ->
             check ~ew ~mw:(prec - 1);

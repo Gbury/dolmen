@@ -2620,19 +2620,19 @@ module Term = struct
           )
 
       let roundNearestTiesToEven =
-        mk' ~builtin:(Builtin.Float RoundNearestTiesToEven) "RoundNearestTiesToEven" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float (RM RoundNearestTiesToEven)) "RoundNearestTiesToEven" [] [] Ty.roundingMode
 
       let roundNearestTiesToAway =
-        mk' ~builtin:(Builtin.Float RoundNearestTiesToAway) "RoundNearestTiesToAway" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float (RM RoundNearestTiesToAway)) "RoundNearestTiesToAway" [] [] Ty.roundingMode
 
       let roundTowardPositive =
-        mk' ~builtin:(Builtin.Float RoundTowardPositive) "RoundTowardPositive" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float (RM RoundTowardPositive)) "RoundTowardPositive" [] [] Ty.roundingMode
 
       let roundTowardNegative =
-        mk' ~builtin:(Builtin.Float RoundTowardNegative) "RoundTowardNegative" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float (RM RoundTowardNegative)) "RoundTowardNegative" [] [] Ty.roundingMode
 
       let roundTowardZero =
-        mk' ~builtin:(Builtin.Float RoundTowardZero) "RoundTowardZero" [] [] Ty.roundingMode
+        mk' ~builtin:(Builtin.Float (RM RoundTowardZero)) "RoundTowardZero" [] [] Ty.roundingMode
 
       (** Generic function for creating functions primarily on the same floating
           point format with optionally a rounding mode and a particular result

@@ -842,11 +842,11 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
         begin match blt with
           | T _ | RoundingMode -> assert false (* cannot occur in terms *)
           | Fp _ -> simple "fp"
-          | RoundNearestTiesToEven -> simple "RNE"
-          | RoundNearestTiesToAway -> simple "RNA"
-          | RoundTowardPositive -> simple "RTP"
-          | RoundTowardNegative -> simple "RTN"
-          | RoundTowardZero -> simple "RTZ"
+          | RM RoundNearestTiesToEven -> simple "RNE"
+          | RM RoundNearestTiesToAway -> simple "RNA"
+          | RM RoundTowardPositive -> simple "RTP"
+          | RM RoundTowardNegative -> simple "RTN"
+          | RM RoundTowardZero -> simple "RTZ"
           | Abs _ -> simple "fp.abs"
           | Neg _ -> simple "fp.neg"
           | Add _ -> simple "fp.add"
