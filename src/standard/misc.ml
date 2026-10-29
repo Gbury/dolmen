@@ -247,6 +247,19 @@ let rec foldn n f acc =
   if n <= 0 then acc
   else foldn (n - 1) f (f acc)
 
+(* Strings *)
+(* ************************************************************************* *)
+
+let exists_in_string p s =
+  let n = String.length s in
+  let rec loop i =
+    if i >= n then false
+    else if p (String.unsafe_get s i) then true
+    else loop (i + 1)
+  in
+  loop 0
+
+
 (* Lexbufs *)
 (* ************************************************************************* *)
 

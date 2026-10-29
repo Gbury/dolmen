@@ -89,6 +89,13 @@ val list_partition_map :
 (** Re-implementation of [List.partition_map] (which was added in ocaml 4.12). *)
 
 
+(** {2 String helpers} *)
+
+val exists_in_string : (char -> bool) -> string -> bool
+(** Simialr to stdlib's {!String.exists}, but without require recent enough
+    versions of the compiler. *)
+
+
 (** {2 Lexbuf helpers} *)
 
 val filename_of_input :

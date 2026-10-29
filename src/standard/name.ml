@@ -34,7 +34,7 @@ let qualified path basename =
 
 let print fmt = function
   | Simple basename ->
-    if String.exists (function ' ' | '\n' | '\t' -> true | _ -> false) basename then
+    if Misc.exists_in_string (function ' ' | '\n' | '\t' -> true | _ -> false) basename then
       Format.fprintf fmt "'%s'" basename
     else
       Format.fprintf fmt "%s" basename
