@@ -1,0 +1,4 @@
+Warning The logic used to typecheck the problem (ALL) is not minimal. The minimal logic actually is: QF_UF
+(set-logic QF_UF)
+(define-fun id (par (t) ((x t)) t x))
+(exit)
