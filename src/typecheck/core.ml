@@ -401,6 +401,12 @@ module Smtlib2 = struct
       index
     | _ -> raise (Bad_index_in_sexpr ast)
 
+  let version_psmt version =
+    match (version : Dolmen.Smtlib2.version) with
+    | `Script (`V2_6 | `V2_7 | `Latest)
+    | `Response (`V2_6 | `V2_7 | `Latest) -> false
+    | `Script `Poly -> true
+
   let version_at_least_2_7 version =
     match (version : Dolmen.Smtlib2.version) with
     | `Script (`Poly | `V2_6)
@@ -824,7 +830,7 @@ module Smtlib2 = struct
         res
 
     let parse (version : Dolmen.Smtlib2.version) env s =
-      if not (version_at_least_2_7 version) then
+      if not ((version_at_least_2_7 version) || (version_psmt version)) then
         (* HO-Core does not exist in version 2.6 and before *)
         `Not_found
       else match s with

@@ -11,6 +11,12 @@ module Smtlib2 = struct
 
   type version = Dolmen.Smtlib2.version
 
+  let version_psmt version =
+    match (version : Dolmen.Smtlib2.version) with
+    | `Script (`V2_6 | `V2_7 | `Latest)
+    | `Response (`V2_6 | `V2_7 | `Latest) -> false
+    | `Script `Poly -> true
+
   let version_at_least_2_7 version =
     match (version : Dolmen.Smtlib2.version) with
     | `Script (`Poly | `V2_6)
@@ -142,7 +148,9 @@ module Smtlib2 = struct
     (* The QF theory can only appear as a prefix "QF_" *)
     and parse_qf_or_ho c = function
       | [] -> Some c
-      | 'H'::'O'::'_'::l when version_at_least_2_7 version -> parse_array (add_theory `HO c) l
+      | 'H'::'O'::'_'::l when
+          (version_psmt version || version_at_least_2_7 version) ->
+        parse_array (add_theory `HO c) l
       | 'Q'::'F'::'_'::l -> parse_array (set_qf c) l
       | l -> parse_array c l
     (* The Array theory is specified first after an optional QF_, and
@@ -192,9 +200,11 @@ module Smtlib2 = struct
       | 'N'::'R'::'A'::l -> parse_end (add_theory `Reals c) l
       | 'N'::'I'::'R'::'A'::l -> parse_end (add_theory `Reals_Ints c) l
       (* Note: the EIA logic has been introduced in version 2.7 *)
-      | 'E'::'I'::'A'::l when version_at_least_2_7 version ->
+      | 'E'::'I'::'A'::l
+        when (version_psmt version || version_at_least_2_7 version) ->
         parse_end (add_theory `Ints (set_exp c)) l
-      | 'E'::'I'::'R'::'A'::l when version_at_least_2_7 version ->
+      | 'E'::'I'::'R'::'A'::l
+        when (version_psmt version || version_at_least_2_7 version) ->
         parse_end (add_theory `Reals_Ints (set_exp c)) l
       | l -> parse_end c l
     (* End of list *)
@@ -383,7 +393,7 @@ module Smtlib2 = struct
     let add_quants acc =
       if acc.quantifiers then acc else { acc with quantifiers = true; }
     let add_ho_maps acc =
-      if version_at_least_2_7 acc.version then
+      if version_psmt acc.version || version_at_least_2_7 acc.version then
         if acc.ho_maps
         then acc
         else { acc with ho_maps = true; }
