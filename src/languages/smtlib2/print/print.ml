@@ -502,35 +502,40 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
         param :: params, final
       | _ -> [], ty
 
-    (* if [is_ho] is true then [c] is applied through the HO `@` symbol to more
-       arguments than its signature's arity, the types of the extra arguments
-       are recovered from its return type with [unfold_ho_params]. *)
-    let term_cst_needs_type_info ?(is_ho = false) env c =
+    (* if [is_ho] is true then [c] is applied through the HO `@` symbol; in that case,
+       the type fo the arguments provided correspond to parameters that are not the
+       usual "params" of the signature (since ho maps are poly constants), and thus we
+       need to get the actualy type of the parameters through `unfold_ho_params`. *)
+    let term_cst_needs_disambiguation_when_fully_applied ?(is_ho = false) env c =
       (* Here, we want the actual concrete type, since this matters for
          actual typing afterwards, that being said, expansion of type aliases
          should not introduce polymorphism in principle. *)
-      match V.Sig.view ~expand:true (V.Term.Cst.ty c) with
-      | Signature (vars, params, ret) ->
-        let ho_ret_params, ret =
-          if is_ho then unfold_ho_params ret else [], ret
-        in
-        (* "(as ...)" is needed when a type variable does not occur in argument
-           types but occurs in the return type, in this case, since it is not
-           unified, it needs an explicit cast for typechecking.
-           If it's absent from both, then it can't be disambiguated, and the
-           application can't be printed. *)
-        List.fold_left (fun needs_as v ->
-            if List.exists (ty_var_occurs v) params ||
-               List.exists (ty_var_occurs v) ho_ret_params
-            then needs_as
-            else if ty_var_occurs v ret then true
-            else
-              _cannot_print
-                "polymorphic symbol %a has a type variable that occurs \
-                 neither in its arguments nor in its return type, and thus \
-                 cannot be disambiguated"
-                (term_cst env) c
-          ) false vars
+      let Signature (vars, params, ret) = V.Sig.view ~expand:true (V.Term.Cst.ty c) in
+      let actual_params, actual_ret =
+        if not is_ho then params, ret
+        else match params with
+          | [] -> unfold_ho_params ret
+          | _ :: _ ->
+            (* this should not happen: a well-typed term applied through a `@`
+               must be a ho-map constant, and thus have no parameters. *)
+            assert false
+      in
+      (* "(as ...)" is needed when a type variable does not occur in argument
+         types but occurs in the return type, in this case, since it is not
+         unified, it needs an explicit cast for typechecking.
+         If it's absent from both, then it can't be disambiguated, and the
+         application can't be printed. *)
+      List.fold_left (fun needs_as v ->
+          if List.exists (ty_var_occurs v) actual_params
+          then needs_as
+          else if ty_var_occurs v actual_ret then true
+          else
+            _cannot_print
+              "polymorphic symbol %a has a type variable that occurs \
+               neither in its arguments nor in its return type, and thus \
+               cannot be disambiguated"
+              (term_cst env) c
+        ) false vars
 
     let rec is_ho_map_apply_full ty args =
       let rec consume ty_args t_args =
@@ -540,8 +545,7 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
         | _ :: ty_args, _ :: t_args -> consume ty_args t_args
         | _ :: _ty_args, [] -> false
       in
-      (* similarly to the situation in `term_cst_needs_type_info`, we want the
-         actual type, and not stop at aliases *)
+      (* we want the actual type, and not stop at aliases *)
       match V.Ty.view ~expand:true ty with
       | App (ty_cst, ty_args) ->
         begin match V.Ty.Cst.builtin ty_cst with
@@ -649,7 +653,9 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
 
       (* Algebraic datatypes *)
       | B.Adt Constructor _ | B.Adt Destructor _ ->
-        let poly () = if term_cst_needs_type_info env head then Some t_ty else None in
+        let poly () =
+          if term_cst_needs_disambiguation_when_fully_applied env head then Some t_ty else None
+        in
         p ~poly Term (Env.Term_cst.name env head)
       | B.Adt Tester { cstr; _ } ->
         begin match Env.Term_cst.name env cstr with
@@ -729,16 +735,19 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
               | V2_6 -> assert false (* TODO: error *)
               | V2_7 | Poly ->
                 (* if the first arg is a symbol/function name (and not a more complex
-                   term), **and** the application is full, we can print it as an
-                   application of that symbol without the `@`.
-                   It might still need a `(as ...)`, if the symbol has a type
-                   variable that only occurs in its return type. *)
+                   term), we can print the application without the `@`.
+                   Additionally, if the application is full, and the ehad symbol
+                   has reasonable use of its type variables (i.e. all of the variables
+                   appear in the type of parameters), then we do not need disambiguation.
+                   (that is not to say that else we definitely needs a disambiguation, but
+                   it's not easy to have an exact criterion for when we positively need
+                   disambigutaion). *)
                 begin match args with
                   | f :: other_args ->
                     begin match V.Term.view f with
                       | App (c, _, []) when is_ho_map_apply_full (V.Term.ty f) other_args ->
                         let poly () =
-                          if term_cst_needs_type_info ~is_ho:true env c
+                          if term_cst_needs_disambiguation_when_fully_applied ~is_ho:true env c
                           then Some t_ty else None
                         in
                         let name = Env.Term_cst.name env c in
@@ -983,7 +992,9 @@ module Make(Config : Config)(Lexer : Lexer with type token := Config.token) = st
       | B.Base | _ ->
         begin match find_named env head with
           | None ->
-            let poly () = if term_cst_needs_type_info env head then Some t_ty else None in
+            let poly () =
+              if term_cst_needs_disambiguation_when_fully_applied env head then Some t_ty else None
+            in
             let h = Env.Term_cst.name env head in
             p ~poly Term h
           | Some expr ->
