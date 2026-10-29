@@ -1,4 +1,4 @@
-  (set-logic HO_UFLIA)
+(set-logic HO_UFLIA)
 
 (declare-sort-parameter A)
 (declare-sort-parameter B)
