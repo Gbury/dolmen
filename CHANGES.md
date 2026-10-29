@@ -13,7 +13,7 @@ next
 
 ### Printing
 
-- Add printers for the SMT-LIB format (PR#211)
+- Add printers for the SMT-LIB format (PR#211, PR#270)
 
 ### Lexing
 
