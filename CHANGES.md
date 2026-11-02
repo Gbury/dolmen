@@ -58,6 +58,8 @@ next
 
 ### API
 
+- Expose all of the warnigns and errors in `loop/typer.ml`
+
 - Fix the implementation of `Loc.compact` which was broken and useless
   in practice. The new version takes a file (metadata) and a full loc
   and returns a compact loc. (PR#229)

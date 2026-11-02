@@ -498,6 +498,35 @@ let unknown_warning =
           "@[<v>Unknown warning:@ %s@ please report upstream, ^^@]" cstr_name)
     ~name:"Unknown warning" ()
 
+let dumb_polymorphism =
+  Report.Warning.mk ~code ~mnemonic:"dumb-poly"
+    ~message:(fun fmt (env, ty, w, sources) ->
+        let pp_sep fmt () = Format.fprintf fmt "@ " in
+        let pp_src fmt src =
+          Format.fprintf fmt "@[<hov>%a@]" (print_wildcard_origin_loc env) src
+        in
+        let pp_wild fmt (w, srcs) =
+          Format.fprintf fmt "%a, @[<v>%a@]"
+            (pp_wrap Dolmen.Std.Expr.Print.id) w
+            (Format.pp_print_list ~pp_sep pp_src) srcs
+        in
+        Format.fprintf fmt
+          "@[<v>This term has type@ \
+                  %s%a@ \
+                which contains the following free variable@ \
+                  %s%a@ \
+                @[<hov>%a@]@]"
+          "  " Dolmen.Std.Expr.Print.ty ty
+          "  " (Format.pp_print_list ~pp_sep pp_wild) [w, sources]
+          Format.pp_print_text
+          "This is not allowed because the SMT-LIB enforces seriously \
+           limiting constraints on type inference, which are particularly \
+           surprising and annoying in the context of polymorphism and \
+           higher-order."
+      )
+    ~name:"SMT-LIB polymorphism limitations" ()
+
+
 (* Typing errors *)
 (* ************************************************************************ *)
 
@@ -868,34 +897,6 @@ let inference_scope_escape =
           (pp_wrap Dolmen.Std.Expr.Ty.Var.print) escaping_var
           (print_reason_opt ~already:false) var_reason)
     ~name:"Scope escape from a type due to inference" ()
-
-let dumb_polymorphism =
-  Report.Warning.mk ~code ~mnemonic:"dumb-poly"
-    ~message:(fun fmt (env, ty, w, sources) ->
-        let pp_sep fmt () = Format.fprintf fmt "@ " in
-        let pp_src fmt src =
-          Format.fprintf fmt "@[<hov>%a@]" (print_wildcard_origin_loc env) src
-        in
-        let pp_wild fmt (w, srcs) =
-          Format.fprintf fmt "%a, @[<v>%a@]"
-            (pp_wrap Dolmen.Std.Expr.Print.id) w
-            (Format.pp_print_list ~pp_sep pp_src) srcs
-        in
-        Format.fprintf fmt
-          "@[<v>This term has type@ \
-                  %s%a@ \
-                which contains the following free variable@ \
-                  %s%a@ \
-                @[<hov>%a@]@]"
-          "  " Dolmen.Std.Expr.Print.ty ty
-          "  " (Format.pp_print_list ~pp_sep pp_wild) [w, sources]
-          Format.pp_print_text
-          "This is not allowed because the SMT-LIB enforces seriously \
-           limiting constraints on type inference, which are particularly \
-           surprising and annoying in the context of polymorphism and \
-           higher-order."
-      )
-    ~name:"SMT-LIB polymorphism limitations" ()
 
 let unbound_type_wildcards =
   Report.Error.mk ~code ~mnemonic:"inference-incomplete"
