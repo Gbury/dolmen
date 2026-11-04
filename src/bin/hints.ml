@@ -1,6 +1,11 @@
 
 (* This file is free software, part of dolmen. See file "LICENSE" for more information *)
 
+let () =
+  Dolmen_loop.Report.add_hint Dolmen_loop.Typer.dumb_polymorphism
+    (Format.dprintf "%a" Format.pp_print_text
+       "You can report issues concerning the SMT-LIB specification at: \
+        https://github.com/SMT-LIB/SMT-LIB-2/issues")
 
 let model ~check_model:_ =
   (*

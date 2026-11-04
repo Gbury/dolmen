@@ -6,7 +6,10 @@ Fatal Warning This term has type
               which contains the following free variable
                 `_`, the 1st implicit type argument to provide to the
                      polymorphic application at line 21, character 36-40
-              This is not allowed because the SMT-LIB enforces seriously
-              limiting constraints on type inference, which are particularly
-              surprising and annoying in the context of polymorphism and
-              higher-order.
+              This is not allowed because the SMT-LIB specification enforces
+              a seriously limiting and annoying (particularly in the context
+              of polymorphism and/or higher-order) strict locality of
+              type-checking, forbidding any (sub)term with non-determined
+              type variables
+Hint: You can report issues concerning the SMT-LIB specification at:
+  https://github.com/SMT-LIB/SMT-LIB-2/issues

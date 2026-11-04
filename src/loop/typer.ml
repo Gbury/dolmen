@@ -519,12 +519,12 @@ let dumb_polymorphism =
           "  " Dolmen.Std.Expr.Print.ty ty
           "  " (Format.pp_print_list ~pp_sep pp_wild) [w, sources]
           Format.pp_print_text
-          "This is not allowed because the SMT-LIB enforces seriously \
-           limiting constraints on type inference, which are particularly \
-           surprising and annoying in the context of polymorphism and \
-           higher-order."
+          "This is not allowed because the SMT-LIB specification enforces a seriously \
+          limiting and annoying (particularly in the context of polymorphism \
+          and/or higher-order) strict locality of type-checking, forbidding any \
+          (sub)term with non-determined type variables"
       )
-    ~name:"SMT-LIB polymorphism limitations" ()
+    ~name:"SMT-LIB polymorphism locality" ()
 
 
 (* Typing errors *)
