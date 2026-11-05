@@ -10,6 +10,8 @@
     dolmen_loop
     ; arbitrary int/rationals
     zarith
+    ; smtlib strings/regexes
+    smt-string uutf
     ; floats
     ; about ppx_deriving.runtime: a type alias from that lib appears in the
     ; .cmi file of farith. Since we use (implicit_dependencies false), if we omit
@@ -22,7 +24,7 @@
     ; Model checking
     Value Model Env Eval Ext
     ; Builtins
-    Adt Array Bool Core Fun Int Rat Real Arith Bitv Fp Coercion
+    Adt Array Bool Core Fun Int Rat Real Arith Bitv Fp Strings Coercion
     ; Loop Pipe
     Loop
   )

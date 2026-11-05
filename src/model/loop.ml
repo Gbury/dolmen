@@ -278,6 +278,7 @@ module Make
       *)
       Bitv.builtins;
       Fp.builtins;
+      Strings.builtins;
       Coercion.builtins;
     ]
 

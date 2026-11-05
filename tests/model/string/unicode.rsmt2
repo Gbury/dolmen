@@ -1,0 +1,4 @@
+sat
+(
+(define-fun s () String "a\u{e9}\u{1f600}z")
+)

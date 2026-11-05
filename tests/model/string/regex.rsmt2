@@ -1,0 +1,4 @@
+sat
+(
+(define-fun s () String "hello")
+)
